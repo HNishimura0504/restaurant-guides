@@ -55,12 +55,14 @@
 | 東京都 | 八王子市 | 67 | [japan/tokyo/](japan/tokyo/) |
 | 神奈川県 | 横浜市 | 68 | [japan/kanagawa/](japan/kanagawa/) |
 | 神奈川県 | 川崎市 | 71 | [japan/kanagawa/](japan/kanagawa/) |
+| 新潟県 | 新潟市 | 67 | [japan/niigata/](japan/niigata/) |
+| 新潟県 | 長岡市 | 48 | [japan/niigata/](japan/niigata/) |
 | 大阪府 | 大阪市 | 72 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 吹田市 | 49 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 藤井寺市 | 45 | [japan/osaka/](japan/osaka/) |
 | 京都府 | 京都市 | 71 | [japan/kyoto/](japan/kyoto/) |
 
-小計 32冊 / 1853店
+小計 34冊 / 1968店
 
 ## 欧州
 
@@ -85,7 +87,7 @@
 
 小計 1冊 / 63店
 
-**合計 41冊 / 2207店**（2026-08-20 時点）
+**合計 43冊 / 2322店**（2026-08-21 時点）
 
 ## 進行中の発注
 
