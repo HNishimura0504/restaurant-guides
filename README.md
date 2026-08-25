@@ -61,12 +61,14 @@
 | 富山県 | 高岡市 | 47 | [japan/toyama/](japan/toyama/) |
 | 石川県 | 金沢市 | 57 | [japan/ishikawa/](japan/ishikawa/) |
 | 石川県 | 白山市 | 45 | [japan/ishikawa/](japan/ishikawa/) |
+| 福井県 | 福井市 | 54 | [japan/fukui/](japan/fukui/) |
+| 福井県 | 坂井市 | 46 | [japan/fukui/](japan/fukui/) |
 | 大阪府 | 大阪市 | 72 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 吹田市 | 49 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 藤井寺市 | 45 | [japan/osaka/](japan/osaka/) |
 | 京都府 | 京都市 | 71 | [japan/kyoto/](japan/kyoto/) |
 
-小計 38冊 / 2172店
+小計 40冊 / 2272店
 
 ## 欧州
 
@@ -91,7 +93,7 @@
 
 小計 1冊 / 63店
 
-**合計 47冊 / 2526店**（2026-08-25 時点）
+**合計 49冊 / 2626店**（2026-08-26 時点）
 
 ## 進行中の発注
 

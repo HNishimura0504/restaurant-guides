@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>福井美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / FUKUI・福井県 🇯🇵</div>
+  <h1>福井美食ガイド</h1>
+  <div class="sub">越前の国府が置かれ、柴田勝家と松平家が城を構えた城下町。大根おろしの汁で手繰る越前おろしそば、ウスターソースをくぐらせた薄いカツを載せるソースカツ丼、冬だけ黄色いタグが付く越前がに、糠に漬け込むへしこ、そして水ようかんを冬に食べる不思議な習慣まで厳選54スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年8月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/fukui/_map.png" alt="全域マップ">
+<a href="#c-amidasoba_yubuan_fukui" style="left:43.47%;top:27.95%;width:3.62%;height:1.9%;"></a>
+<a href="#c-miyoshiya_junka_fukui" style="left:40.93%;top:27.26%;width:3.62%;height:1.9%;"></a>
+<a href="#c-shakudanisoba_asuwa_fukui" style="left:30.9%;top:30.1%;width:3.62%;height:1.9%;"></a>
+<a href="#c-kyouya_wadanaka_fukui" style="left:61.04%;top:33.96%;width:3.62%;height:1.9%;"></a>
+<a href="#c-kenzousoba_eiheiji" style="left:91.65%;top:16.76%;width:3.62%;height:1.9%;"></a>
+<a href="#c-moriroku_echizenshi" style="left:53.45%;top:87.6%;width:3.62%;height:1.9%;"></a>
+<a href="#c-europaken_sohonten_fukui" style="left:39.48%;top:27.07%;width:3.62%;height:1.9%;"></a>
+<a href="#c-yokogawabunten_echizenshi" style="left:8.35%;top:92.44%;width:3.62%;height:1.9%;"></a>
+<a href="#c-raden_happiring_fukui" style="left:44.14%;top:28.28%;width:3.62%;height:1.9%;"></a>
+<a href="#c-yanagimachi_junka_fukui" style="left:39.24%;top:26.73%;width:3.62%;height:1.9%;"></a>
+<a href="#c-kaikatei_chuo_fukui" style="left:38.62%;top:27.6%;width:3.62%;height:1.9%;"></a>
+<a href="#c-ajimiya_hinode_fukui" style="left:45.97%;top:27.87%;width:3.62%;height:1.9%;"></a>
+<a href="#c-otan_happiring_fukui" style="left:44.28%;top:28.17%;width:3.62%;height:1.9%;"></a>
+<a href="#c-egawa_teruteo_fukui" style="left:34.65%;top:25.5%;width:3.62%;height:1.9%;"></a>
+<a href="#c-kinbaido_junka_fukui" style="left:39.58%;top:26.95%;width:3.62%;height:1.9%;"></a>
+<a href="#c-matsuokaken_chuo_fukui" style="left:38.91%;top:27.44%;width:3.62%;height:1.9%;"></a>
+<a href="#c-kishida_shokuhin_tonyacho_fukui" style="left:64.25%;top:30.66%;width:3.62%;height:1.9%;"></a>
+<a href="#c-sushi_jubei_bunkyo" style="left:32.45%;top:21.94%;width:3.62%;height:1.9%;"></a>
+<a href="#c-sushidokoro_kurage_junka" style="left:40.8%;top:27.24%;width:3.62%;height:1.9%;"></a>
+<a href="#c-sushi_yoshida_junka" style="left:41.08%;top:27.05%;width:3.62%;height:1.9%;"></a>
+<a href="#c-yoshino_zushi_chuo" style="left:42.13%;top:29.11%;width:3.62%;height:1.9%;"></a>
+<a href="#c-hatsumi_sushi_minori" style="left:39.47%;top:32.4%;width:3.62%;height:1.9%;"></a>
+<a href="#c-nigiriya_uogokoro_bunkyo" style="left:28.61%;top:22.17%;width:3.62%;height:1.9%;"></a>
+<a href="#c-unashin_keya" style="left:39.69%;top:30.06%;width:3.62%;height:1.9%;"></a>
+<a href="#c-tengiku_junka" style="left:40.4%;top:26.88%;width:3.62%;height:1.9%;"></a>
+<a href="#c-oryori_itto_haruyama" style="left:39.51%;top:25.74%;width:3.62%;height:1.9%;"></a>
+<a href="#c-shunmi_taihei_chuo" style="left:40.34%;top:28.09%;width:3.62%;height:1.9%;"></a>
+<a href="#c-ramen_mahoroba_fukui" style="left:21.44%;top:34.02%;width:3.62%;height:1.9%;"></a>
+<a href="#c-chukasoba_marusei_fukui" style="left:48.86%;top:33.26%;width:3.62%;height:1.9%;"></a>
+<a href="#c-echizen_chuka_fukui" style="left:36.48%;top:23.43%;width:3.62%;height:1.9%;"></a>
+<a href="#c-ramen_muranaka_fukui" style="left:34.56%;top:21.81%;width:3.62%;height:1.9%;"></a>
+<a href="#c-pilliken_honten_fukui" style="left:37.52%;top:28.01%;width:3.62%;height:1.9%;"></a>
+<a href="#c-konpiratei_honten_fukui" style="left:64.41%;top:31.49%;width:3.62%;height:1.9%;"></a>
+<a href="#c-takaraya_shindenzuka_fukui" style="left:35.62%;top:16.79%;width:3.62%;height:1.9%;"></a>
+<a href="#c-junin_toiro_junka" style="left:39.42%;top:26.94%;width:3.62%;height:1.9%;"></a>
+<a href="#c-karigurashi_junka" style="left:39.89%;top:26.52%;width:3.62%;height:1.9%;"></a>
+<a href="#c-kemuriya_ote" style="left:44.08%;top:27.48%;width:3.62%;height:1.9%;"></a>
+<a href="#c-yaemaki_sakaemachi" style="left:45.44%;top:8.65%;width:3.62%;height:1.9%;"></a>
+<a href="#c-aji_no_seihachi_chuo" style="left:40.63%;top:27.72%;width:3.62%;height:1.9%;"></a>
+<a href="#c-wabouzu_junka" style="left:39.64%;top:26.32%;width:3.62%;height:1.9%;"></a>
+<a href="#c-hamamachi_yasubun_chuo" style="left:39.5%;top:27.66%;width:3.62%;height:1.9%;"></a>
+<a href="#c-sakanauo_shimada_junka" style="left:39.38%;top:26.3%;width:3.62%;height:1.9%;"></a>
+<a href="#c-restaurant_ohtsuka_fukui" style="left:42.19%;top:27.41%;width:3.62%;height:1.9%;"></a>
+<a href="#c-restaurant_bulldog_fukui" style="left:55.23%;top:23.5%;width:3.62%;height:1.9%;"></a>
+<a href="#c-restaurant_alta_fukui" style="left:48.77%;top:37.58%;width:3.62%;height:1.9%;"></a>
+<a href="#c-trattoria_ciao_fukui" style="left:43.13%;top:28.97%;width:3.62%;height:1.9%;"></a>
+<a href="#c-bistro_moustache_fukui" style="left:23.23%;top:26.41%;width:3.62%;height:1.9%;"></a>
+<a href="#c-kankoku_chubo_senara_fukui" style="left:57.98%;top:19.79%;width:3.62%;height:1.9%;"></a>
+<a href="#c-muranaka_kansendo_fukui" style="left:42.27%;top:28.62%;width:3.62%;height:1.9%;"></a>
+<a href="#c-a_volonte_kyoden_fukui" style="left:40.19%;top:17.27%;width:3.62%;height:1.9%;"></a>
+<a href="#c-europan_kimuraya_sabae" style="left:22.13%;top:75.03%;width:3.62%;height:1.9%;"></a>
+<a href="#c-kissa_chinchirorin_fukui" style="left:47.38%;top:32.84%;width:3.62%;height:1.9%;"></a>
+<a href="#c-moriame_coffee_fukui" style="left:52.9%;top:7.58%;width:3.62%;height:1.9%;"></a>
+<a href="#c-nao_coffee_fukui" style="left:46.8%;top:21.67%;width:3.62%;height:1.9%;"></a>
+</div>
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(福井駅〜片町・順化)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/fukui/_map2.png" alt="中心部拡大(福井駅〜片町・順化)">
+<a href="#c-amidasoba_yubuan_fukui" style="left:50.48%;top:55.02%;width:2.4%;height:2.64%;"></a>
+<a href="#c-miyoshiya_junka_fukui" style="left:36.97%;top:47.26%;width:2.4%;height:2.64%;"></a>
+<a href="#c-europaken_sohonten_fukui" style="left:29.27%;top:45.12%;width:2.4%;height:2.64%;"></a>
+<a href="#c-raden_happiring_fukui" style="left:54.01%;top:58.69%;width:2.4%;height:2.64%;"></a>
+<a href="#c-yanagimachi_junka_fukui" style="left:28.03%;top:41.31%;width:2.4%;height:2.64%;"></a>
+<a href="#c-kaikatei_chuo_fukui" style="left:24.7%;top:51.1%;width:2.4%;height:2.64%;"></a>
+<a href="#c-ajimiya_hinode_fukui" style="left:63.72%;top:54.13%;width:2.4%;height:2.64%;"></a>
+<a href="#c-otan_happiring_fukui" style="left:54.75%;top:57.39%;width:2.4%;height:2.64%;"></a>
+<a href="#c-egawa_teruteo_fukui" style="left:3.65%;top:27.66%;width:2.4%;height:2.64%;"></a>
+<a href="#c-kinbaido_junka_fukui" style="left:29.8%;top:43.83%;width:2.4%;height:2.64%;"></a>
+<a href="#c-matsuokaken_chuo_fukui" style="left:26.25%;top:49.34%;width:2.4%;height:2.64%;"></a>
+<a href="#c-sushidokoro_kurage_junka" style="left:36.27%;top:47.11%;width:2.4%;height:2.64%;"></a>
+<a href="#c-sushi_yoshida_junka" style="left:37.8%;top:44.95%;width:2.4%;height:2.64%;"></a>
+<a href="#c-yoshino_zushi_chuo" style="left:43.36%;top:67.95%;width:2.4%;height:2.64%;"></a>
+<a href="#c-unashin_keya" style="left:30.38%;top:78.53%;width:2.4%;height:2.64%;"></a>
+<a href="#c-tengiku_junka" style="left:34.18%;top:42.99%;width:2.4%;height:2.64%;"></a>
+<a href="#c-oryori_itto_haruyama" style="left:29.43%;top:30.29%;width:2.4%;height:2.64%;"></a>
+<a href="#c-shunmi_taihei_chuo" style="left:33.87%;top:56.54%;width:2.4%;height:2.64%;"></a>
+<a href="#c-echizen_chuka_fukui" style="left:13.39%;top:4.55%;width:2.4%;height:2.64%;"></a>
+<a href="#c-pilliken_honten_fukui" style="left:18.9%;top:55.68%;width:2.4%;height:2.64%;"></a>
+<a href="#c-junin_toiro_junka" style="left:29.0%;top:43.75%;width:2.4%;height:2.64%;"></a>
+<a href="#c-karigurashi_junka" style="left:31.44%;top:39.06%;width:2.4%;height:2.64%;"></a>
+<a href="#c-kemuriya_ote" style="left:53.68%;top:49.74%;width:2.4%;height:2.64%;"></a>
+<a href="#c-aji_no_seihachi_chuo" style="left:35.4%;top:52.36%;width:2.4%;height:2.64%;"></a>
+<a href="#c-wabouzu_junka" style="left:30.13%;top:36.79%;width:2.4%;height:2.64%;"></a>
+<a href="#c-hamamachi_yasubun_chuo" style="left:29.41%;top:51.76%;width:2.4%;height:2.64%;"></a>
+<a href="#c-sakanauo_shimada_junka" style="left:28.76%;top:36.56%;width:2.4%;height:2.64%;"></a>
+<a href="#c-restaurant_ohtsuka_fukui" style="left:43.69%;top:48.94%;width:2.4%;height:2.64%;"></a>
+<a href="#c-trattoria_ciao_fukui" style="left:48.66%;top:66.36%;width:2.4%;height:2.64%;"></a>
+<a href="#c-muranaka_kansendo_fukui" style="left:44.08%;top:62.51%;width:2.4%;height:2.64%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+
+<div class="toc">
+<div class="th">目次</div>
+<div class="sec red">福井のご当地(越前おろしそば・ソースカツ丼・越前がに)</div>
+<div class="links">
+<a href="#c-amidasoba_yubuan_fukui"><span class="tn" style="background:#e34948;">1</span>駅前で夜も食べられる十割おろしそば</a>
+<a href="#c-miyoshiya_junka_fukui"><span class="tn" style="background:#e34948;">2</span>昭和7年創業、一子相伝の鰹だし</a>
+<a href="#c-shakudanisoba_asuwa_fukui"><span class="tn" style="background:#e34948;">3</span>足羽山麓、庭を望む百年のそば処</a>
+<a href="#c-kyouya_wadanaka_fukui"><span class="tn" style="background:#e34948;">4</span>丸岡産玄そばを毎日石臼で挽く十割</a>
+<a href="#c-kenzousoba_eiheiji"><span class="tn" style="background:#e34948;">5</span>辛み大根が立つ民家の十割そば</a>
+<a href="#c-moriroku_echizenshi"><span class="tn" style="background:#e34948;">6</span>明治4年創業、福井在来種だけの十割</a>
+<a href="#c-europaken_sohonten_fukui"><span class="tn" style="background:#e34948;">7</span>ソースカツ丼の元祖、福井で百年</a>
+<a href="#c-yokogawabunten_echizenshi"><span class="tn" style="background:#e34948;">8</span>武生のご当地ボルガライス発祥格</a>
+<a href="#c-raden_happiring_fukui"><span class="tn" style="background:#e34948;">9</span>駅前30秒で越前がにと日本海の魚</a>
+<a href="#c-yanagimachi_junka_fukui"><span class="tn" style="background:#e34948;">10</span>越前町漁協の認定を受けた蟹専門</a>
+<a href="#c-kaikatei_chuo_fukui"><span class="tn" style="background:#e34948;">11</span>明治23年創業、登録有形文化財の料亭</a>
+<a href="#c-ajimiya_hinode_fukui"><span class="tn" style="background:#e34948;">12</span>80年変えない鰹だしおでんとへしこ</a>
+<a href="#c-otan_happiring_fukui"><span class="tn" style="background:#e34948;">13</span>創業75年超、昼から開く駅前おでん</a>
+<a href="#c-egawa_teruteo_fukui"><span class="tn" style="background:#e34948;">14</span>冬だけ売る水羊かんの専門店</a>
+<a href="#c-kinbaido_junka_fukui"><span class="tn" style="background:#e34948;">15</span>弘化4年創業、羽二重餅の元祖</a>
+<a href="#c-matsuokaken_chuo_fukui"><span class="tn" style="background:#e34948;">16</span>明治30年創業、和カフェ併設の本店</a>
+<a href="#c-kishida_shokuhin_tonyacho_fukui"><span class="tn" style="background:#e34948;">17</span>1時間かけて揚げる「ざぶとん揚げ」</a>
+</div>
+<div class="sec blue">寿司・海鮮・和食</div>
+<div class="links">
+<a href="#c-sushi_jubei_bunkyo"><span class="tn" style="background:#2a78d6;">18</span>福井が全国に誇る完全予約制の鮨</a>
+<a href="#c-sushidokoro_kurage_junka"><span class="tn" style="background:#2a78d6;">19</span>カウンター8席の創作づかいの鮨</a>
+<a href="#c-sushi_yoshida_junka"><span class="tn" style="background:#2a78d6;">20</span>越前がにを極めた三代続く寿司割烹</a>
+<a href="#c-yoshino_zushi_chuo"><span class="tn" style="background:#2a78d6;">21</span>シャリがなくなり次第終いの50年店</a>
+<a href="#c-hatsumi_sushi_minori"><span class="tn" style="background:#2a78d6;">22</span>5m超のネタケースが並ぶ昭和39年創業</a>
+<a href="#c-nigiriya_uogokoro_bunkyo"><span class="tn" style="background:#2a78d6;">23</span>レールを使わない福井の回転寿司</a>
+<a href="#c-unashin_keya"><span class="tn" style="background:#2a78d6;">24</span>地焼きと九州式せいろ蒸しの両方を出す鰻</a>
+<a href="#c-tengiku_junka"><span class="tn" style="background:#2a78d6;">25</span>江戸前天ぷらとうな丼の百名店</a>
+<a href="#c-oryori_itto_haruyama"><span class="tn" style="background:#2a78d6;">26</span>「越味料理」を掲げる福井随一の日本料理</a>
+<a href="#c-shunmi_taihei_chuo"><span class="tn" style="background:#2a78d6;">27</span>古民家で一品ずつ頼める日本料理</a>
+</div>
+<div class="sec aqua">ラーメン・うどん・町中華</div>
+<div class="links">
+<a href="#c-ramen_mahoroba_fukui"><span class="tn" style="background:#1baf7a;">28</span>鶏と水だけで炊く澄んだ一杯</a>
+<a href="#c-chukasoba_marusei_fukui"><span class="tn" style="background:#1baf7a;">29</span>昼だけ開く澄んだ中華そば</a>
+<a href="#c-echizen_chuka_fukui"><span class="tn" style="background:#1baf7a;">30</span>昭和60年から続く魚介醤油の中華そば</a>
+<a href="#c-ramen_muranaka_fukui"><span class="tn" style="background:#1baf7a;">31</span>8種の味噌を配合した味噌だれ</a>
+<a href="#c-pilliken_honten_fukui"><span class="tn" style="background:#1baf7a;">32</span>大正10年創業、足羽川の大箱町中華</a>
+<a href="#c-konpiratei_honten_fukui"><span class="tn" style="background:#1baf7a;">33</span>高松仕込みの自家製麺讃岐うどん</a>
+<a href="#c-takaraya_shindenzuka_fukui"><span class="tn" style="background:#1baf7a;">34</span>煮立ったまま出る石焼カレーうどん</a>
+</div>
+<div class="sec beer">居酒屋・酒どころ</div>
+<div class="links">
+<a href="#c-junin_toiro_junka"><span class="tn" style="background:#0d366b;">35</span>常時50種、片町のレトロな日本酒店</a>
+<a href="#c-karigurashi_junka"><span class="tn" style="background:#0d366b;">36</span>築60年の古民家で炭火と藁焼き</a>
+<a href="#c-kemuriya_ote"><span class="tn" style="background:#0d366b;">37</span>全国70～80種の酒を100種の器で</a>
+<a href="#c-yaemaki_sakaemachi"><span class="tn" style="background:#0d366b;">38</span>明治創業の酒屋が併設した立ち飲み</a>
+<a href="#c-aji_no_seihachi_chuo"><span class="tn" style="background:#0d366b;">39</span>福井名物の親鳥を炭火で焼く焼き鳥</a>
+<a href="#c-wabouzu_junka"><span class="tn" style="background:#0d366b;">40</span>越前町直送の魚を好みの調理法で</a>
+<a href="#c-hamamachi_yasubun_chuo"><span class="tn" style="background:#0d366b;">41</span>創業100年超の酒屋で地酒を飲み比べ</a>
+<a href="#c-sakanauo_shimada_junka"><span class="tn" style="background:#0d366b;">42</span>仕入れ次第で毎日献立が変わる魚の店</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-restaurant_ohtsuka_fukui"><span class="tn" style="background:#4a3aa7;">43</span>昼は洋食、夜はビストロの路地裏</a>
+<a href="#c-restaurant_bulldog_fukui"><span class="tn" style="background:#4a3aa7;">44</span>昭和45年から続く量の洋食店</a>
+<a href="#c-restaurant_alta_fukui"><span class="tn" style="background:#4a3aa7;">45</span>手ごねハンバーグ一本の町の洋食</a>
+<a href="#c-trattoria_ciao_fukui"><span class="tn" style="background:#4a3aa7;">46</span>30年続く福井のイタリア食堂</a>
+<a href="#c-bistro_moustache_fukui"><span class="tn" style="background:#4a3aa7;">47</span>パイ包み焼きと自然派ワイン</a>
+<a href="#c-kankoku_chubo_senara_fukui"><span class="tn" style="background:#4a3aa7;">48</span>1978年から続く韓国料理の老舗</a>
+</div>
+<div class="sec yellow">カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-muranaka_kansendo_fukui"><span class="tn" style="background:#eda100;">49</span>明治43年創業の羽二重餅の店</a>
+<a href="#c-a_volonte_kyoden_fukui"><span class="tn" style="background:#eda100;">50</span>朝7時から90種が焼き上がる</a>
+<a href="#c-europan_kimuraya_sabae"><span class="tn" style="background:#eda100;">51</span>1927年創業、大福あんぱんの店</a>
+<a href="#c-kissa_chinchirorin_fukui"><span class="tn" style="background:#eda100;">52</span>親子三代の昭和レトロ純喫茶</a>
+<a href="#c-moriame_coffee_fukui"><span class="tn" style="background:#eda100;">53</span>深煎りをネルドリップで落とす</a>
+<a href="#c-nao_coffee_fukui"><span class="tn" style="background:#eda100;">54</span>豆の個性で焙煎度を決める小店</a>
+</div>
+</div>
+
+<div class="note"><b>回り方のコツ:</b>店は福井駅の西口から片町・順化の繁華街にかけてと、足羽川沿いに散らばる。夜の飲み屋街は片町。越前がには11月6日の解禁から3月20日ごろまでで、雌のせいこ蟹は12月末で終わる。越前おろしそばの店は昼のみ・売り切れ終了が多いので早い時間に。水ようかんは11月から3月ごろの冬季限定で、県内の菓子舗が一斉に出す。えちぜん鉄道と福井鉄道が市内から永平寺・武生方面へ延びる。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-fukui" class="c-red">福井のご当地(越前おろしそば・ソースカツ丼・越前がに)</h2>
+<div class="card" id="c-amidasoba_yubuan_fukui">
+<img class="hero" src="img/fukui/amidasoba_yubuan_fukui.jpg" alt="あみだそば 遊歩庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>あみだそば 遊歩庵<span class="yomi">あみだそば ゆうぶあん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1997年に越前市で個人事業として始まり、2016年に福井駅前ハピリンへ「福の井」を、続いて福町ブロックに「遊歩庵」を構えた十割そばの店。福井県産の特上そば粉だけを使い、安いそば粉や小麦粉を混ぜないと明言している。越前おろしそばは辛みのある大根おろしと出汁をそばにかけ回して食べる福井の定番で、ここでは細めの十割で供される。焼き鯖を載せた焼サバおろしそばも看板。23時まで通しで営業するため、夜の締めの一杯にも使える数少ない店。</div>
+<div class="sig"><b>一皿:</b>越前おろしそば（並）1,200円／焼サバおろしそば1,750円</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>福井県福井市中央１丁目３−５ FUKUMACHI BLOCK 1F MINIE</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://www.amidasoba.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井市公式観光サイト「福いろ」のそば特集で筆頭に挙げられる駅前の代表店。公式サイトで2025年11月末の「はなれ」閉店を告知しつつ遊歩庵は継続営業と明示しており、現行営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%BF%E3%81%A0%E3%81%9D%E3%81%B0%20%E9%81%8A%E6%AD%A9%E5%BA%B5%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%95%20FUKUMACHI%20BLOCK%201F%20MINIE">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.amidasoba.com/">あみだそば 公式サイト</a> / <a href="https://fuku-iro.jp/blog/detail_41.html">福いろ（福井市公式観光サイト）福井の人気そば屋9選</a></div>
+</div></div>
+<div class="card" id="c-miyoshiya_junka_fukui">
+<img class="hero" src="img/fukui/miyoshiya_junka_fukui.jpg" alt="越前そば 見吉屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>越前そば 見吉屋<span class="yomi">えちぜんそば みよしや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和7年（1932年）に創業し、90年以上続く福井市中心部の老舗そば店。福井県産のそばの実を石臼で挽き、加水の温度管理と手練りにこだわって打つ。だしは一子相伝で受け継がれた鰹だしで、大根おろしと合わせる越前おろしそばの土台になっている。おろしそばのほか冷たいたぬきそば、おろしもちそば、玉子でとじたカツ丼など品数が広く、地元の常連が昼から通う。予約は受け付けず、日曜と第2・第4月曜が休み。無料駐車場15台。</div>
+<div class="sig"><b>一皿:</b>越前おろしそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市順化１丁目１１−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776233448">☎ 0776-23-3448</a> ／ <a href="https://www.miyoshiya-fukui.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井市公式観光サイト「福いろ」のそば特集に昭和7年創業の老舗として掲載され、店の公式サイトが現行の営業時間・定休日を掲出しているため2025〜2026年の営業が裏取りできる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%B6%8A%E5%89%8D%E3%81%9D%E3%81%B0%20%E8%A6%8B%E5%90%89%E5%B1%8B%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.miyoshiya-fukui.com/">越前そば 見吉屋 公式サイト</a> / <a href="https://fuku-iro.jp/blog/detail_41.html">福いろ（福井市公式観光サイト）福井の人気そば屋9選</a></div>
+</div></div>
+<div class="card" id="c-shakudanisoba_asuwa_fukui">
+<img class="hero" src="img/fukui/shakudanisoba_asuwa_fukui.jpg" alt="笏谷そば 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>笏谷そば 本店<span class="yomi">しゃくだにそば ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">足羽山のふもとに構える百年以上続く老舗。店名は福井城の石垣などに使われた青緑色の笏谷石に由来し、店内にも笏谷石を配した庭のような造りで、京町家を思わせる半個室の小上がりが並ぶ。そば粉の種類ごとにつなぎの配合を変えて打ち、平打ちのやや太めの麺に濃いめのつゆがよく絡む。一番人気はおろしそばに天ぷらや蟹身、油揚げを載せた「いなりおろしそば」で、温かい鴨南蛮や、器を重ねて出す割子そばも揃う。70席、駐車場18台と団体でも入りやすい。</div>
+<div class="sig"><b>一皿:</b>いなりおろしそば 1,728円</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>福井県福井市足羽４丁目５−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776360476">☎ 0776-36-0476</a> ／ <a href="https://www.hotpepper.jp/strJ000105904/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県の情報誌「月刊ウララ」が店の造りと看板メニューを詳報しており、食べログには2025年12月の来店口コミがあって現在も営業中と確認できる。福いろのそば特集でも老舗として掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%AC%8F%E8%B0%B7%E3%81%9D%E3%81%B0%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E8%B6%B3%E7%BE%BD%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://urala.today/116765/">日々URALA（月刊ウララ）笏谷そば 本店</a> / <a href="https://fuku-iro.jp/blog/detail_41.html">福いろ（福井市公式観光サイト）福井の人気そば屋9選</a></div>
+</div></div>
+<div class="card" id="c-kyouya_wadanaka_fukui">
+<img class="hero" src="img/fukui/kyouya_wadanaka_fukui.jpg" alt="石うす挽き手うちそば処 きょうや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>石うす挽き手うちそば処 きょうや<span class="yomi">いしうすびきてうちそばどころ きょうや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">福井市和田中の住宅街にある十割そばの店。地元福井県丸岡産の玄そばを毎日石臼で挽き、玄そばと丸抜きを別々に挽いて合わせたそば粉を手打ちする。辛み大根のおろしと出汁で食べる越前おろしそばに加え、福井では珍しいくるみそばを出すのが特徴で、器には越前焼など福井の伝統工芸を使う。そばがなくなり次第終了。令和6年5月からは土日以外の夜営業を休止しており、座敷は椅子席に改装されて車椅子やベビーカーでも入りやすくなっている。</div>
+<div class="sig"><b>一皿:</b>越前おろしそば／くるみ蕎麦</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 11:00〜15:00 ／ 土・日 11:00〜15:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>福井県福井市和田中２丁目９３６−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776251662">☎ 0776-25-1662</a> ／ <a href="https://www.kyouya-soba.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが令和6年以降の営業変更（平日夜の休止、座敷の椅子席化）を随時告知しており現行営業が確認できる。福いろのそば特集でも「くるみ蕎麦が珍しい」店として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%9F%B3%E3%81%86%E3%81%99%E6%8C%BD%E3%81%8D%E6%89%8B%E3%81%86%E3%81%A1%E3%81%9D%E3%81%B0%E5%87%A6%20%E3%81%8D%E3%82%87%E3%81%86%E3%82%84%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E5%92%8C%E7%94%B0%E4%B8%AD%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%99%EF%BC%93%EF%BC%96%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kyouya-soba.com/">石うす挽き手うちそば処きょうや 公式サイト</a> / <a href="https://fuku-iro.jp/blog/detail_41.html">福いろ（福井市公式観光サイト）福井の人気そば屋9選</a></div>
+</div></div>
+<div class="card" id="c-kenzousoba_eiheiji">
+<img class="hero" src="img/fukui/kenzousoba_eiheiji.jpg" alt="けんぞう蕎麦 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>けんぞう蕎麦<span class="yomi">けんぞうそば</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">永平寺町松岡にある手打ち十割そばの店。民家を改装した建物で、福井県産と北海道産のそば粉を合わせ、香りと甘みを残した十割そばに仕上げる。看板は辛み大根のおろし汁をかけて食べる越前おろしそばで、大根の辛さがはっきり立ち、そばの甘みと対比される。通販も手がけるが、店では打ちたてを出す。福井市公式観光サイトのそば特集でも県内屈指の人気店として挙げられ、開店前から行列ができる。月曜定休で、祝日の場合は営業する。</div>
+<div class="sig"><b>一皿:</b>おろしそば（辛味大根）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 11:00〜14:00 ／ 土・日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県吉田郡永平寺町松岡春日３丁目26−２６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776611481">☎ 0776-61-1481</a> ／ <a href="https://www.kenzousoba.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが営業カレンダーとオンライン販売を運用しており現行営業が確認できる。福井市公式観光サイトのそば特集にも「辛味大根の爽やかさが特徴」の人気店として掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%91%E3%82%93%E3%81%9E%E3%81%86%E8%95%8E%E9%BA%A6%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E5%90%89%E7%94%B0%E9%83%A1%E6%B0%B8%E5%B9%B3%E5%AF%BA%E7%94%BA%E6%9D%BE%E5%B2%A1%E6%98%A5%E6%97%A5%EF%BC%93%E4%B8%81%E7%9B%AE26%E2%88%92%EF%BC%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kenzousoba.com/">けんぞう蕎麦 公式サイト</a> / <a href="https://fuku-iro.jp/blog/detail_41.html">福いろ（福井市公式観光サイト）福井の人気そば屋9選</a></div>
+</div></div>
+<div class="card" id="c-moriroku_echizenshi">
+<img class="hero" src="img/fukui/moriroku_echizenshi.jpg" alt="手打そば 森六 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>手打そば 森六<span class="yomi">てうちそば もりろく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">明治4年（1871年）創業、越前市粟田部で4代続く越前そばの老舗。そば粉は福井県産の在来種だけを使い、未熟な緑の実と完熟した黒い実が混ざった状態のまま自家製粉して手打ちする。だしは醤油を3種類ブレンドして仕込み、おろしに使う大根も4種類を自家栽培して季節ごとに使い分ける。創業当時から使う富山県高岡の鉄鍋を今も現役で使い続けている。冬季のみ蟹を載せたかにおろしそばが出る。月曜と第3火曜が定休で、祝日の場合は翌日が振替休業になる。</div>
+<div class="sig"><b>一皿:</b>おろしそば（十割）／冬季限定のかにおろしそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 11:00〜14:00 ／ 土・日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県越前市粟田部町２６−２０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0778420216">☎ 0778-42-0216</a> ／ <a href="https://soba-moriroku.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現行の営業時間・定休日・振替休業の運用まで掲出しており営業が確認できる。福井のそばを紹介する専門メディアでも「福井を代表するおろしそばの名店」として扱われている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%9D%E3%81%B0%20%E6%A3%AE%E5%85%AD%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E8%B6%8A%E5%89%8D%E5%B8%82%E7%B2%9F%E7%94%B0%E9%83%A8%E7%94%BA%EF%BC%92%EF%BC%96%E2%88%92%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://moriroku-soba.com/">福井そばの「森六」公式サイト</a></div>
+</div></div>
+<div class="card" id="c-europaken_sohonten_fukui">
+<img class="hero" src="img/fukui/europaken_sohonten_fukui.jpg" alt="ヨーロッパ軒 総本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>ヨーロッパ軒 総本店<span class="yomi">よーろっぱけん そうほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">ソースカツ丼の元祖とされる店。創業者の高畠増太郎がドイツ・ベルリンで料理を学んで帰国し、大正2年（1913年）に東京の料理発表会で、ウスターソースにくぐらせたカツを飯に載せた丼を発表したのが始まり。関東大震災を機に大正13年（1924年）に郷里の福井へ移り、福井空襲と福井地震を越えて2024年に福井での営業100周年を迎えた。豚肉を細かいパン粉で包んでラードで揚げ、初代が試行錯誤で完成させた秘伝のソースにくぐらせる。メンチカツを使うパリ丼も名物。</div>
+<div class="sig"><b>一皿:</b>ソースカツ丼 1,180円／パリ丼 1,180円</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 11:00〜19:50</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>福井県福井市順化１丁目７−４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776214681">☎ 0776-21-4681</a> ／ <a href="http://yo-roppaken.gourmet.coocan.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井市公式観光サイトが四代目店主に取材した特集を出しており創業経緯と現行メニュー・価格が一次に近い形で確認できる。食べログには2026年6月の来店口コミがあり営業継続を裏取りできる。福井発祥のため本店のみ掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A8%E3%83%BC%E3%83%AD%E3%83%83%E3%83%91%E8%BB%92%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fuku-iro.jp/feature/detail_236.html">福いろ（福井市公式観光サイト）ヨーロッパ軒総本店 徹底深掘り</a></div>
+</div></div>
+<div class="card" id="c-yokogawabunten_echizenshi">
+<img class="hero" src="img/fukui/yokogawabunten_echizenshi.jpg" alt="ヨコガワ分店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>ヨコガワ分店<span class="yomi">よこがわぶんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">越前市の総社大神宮前で50年以上続く洋食店。名物は創業当時から出している「ボルガライス」で、薄焼き玉子で包んだケチャップライスの上にカツを載せ、自家製ソースをかけた越前市（旧武生）のご当地料理。玉子は鶏の餌に昆布の粉末を使う地元産で、玉子自体にほんのり塩味があるのが旨みの元になっている。客席は座敷4席とカウンター12席の計16席と小さく、昼どきはボルガライス目当ての行列ができる。ソースカツ丼と並ぶ福井の「カツを飯に載せる」食文化を代表する一軒。</div>
+<div class="sig"><b>一皿:</b>ボルガライス 930円</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜15:30, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>福井県越前市京町１丁目４−３５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0778227172">☎ 0778-22-7172</a> ／ <a href="https://linx-l.ink/yokogawa">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>越前市観光協会の公式サイトが住所・営業時間・価格・玉子のこだわりまで掲載しており、ホットペッパーグルメの口コミ機能も2026年1月時点で稼働中の店舗として扱っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A8%E3%82%B3%E3%82%AC%E3%83%AF%E5%88%86%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E8%B6%8A%E5%89%8D%E5%B8%82%E4%BA%AC%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.echizen-tourism.jp/travel_echizen/food_detail/51">越前市観光協会公式サイト ヨコガワ分店</a></div>
+</div></div>
+<div class="card" id="c-raden_happiring_fukui">
+<img class="hero" src="img/fukui/raden_happiring_fukui.jpg" alt="らでん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>らでん<span class="yomi">らでん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">JR福井駅正面のハピリン1階にある魚料理の店。越前がにを30年以上扱ってきた職人が仕入れを担い、11月6日の解禁後、11月8日から越前がに料理を出す。黄色いタグの付いた越前がにを茹でて出す茹蟹のコースのほか、かに刺しや焼き蟹まで含むフルコースを用意し、雌のせいこ蟹も季節に合わせて扱う。蟹の季節以外も日本海で毎日水揚げされる魚介を使い、カウンター席から個室まで席の幅が広い。駅から徒歩30秒という立地のため、旅程の最後や乗り継ぎの合間に寄りやすい。</div>
+<div class="sig"><b>一皿:</b>越前がに 茹蟹コース／かに刺し・焼き蟹入りフルコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜13:30, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央１丁目２−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776502901">☎ 0776-50-2901</a> ／ <a href="http://www.fukui-raden.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが「11月6日の漁解禁日以降、11月8日より承ります」と毎シーズンの受付開始日を明記して運用しており、越前がにを看板にする駅前店として現行営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%A7%E3%82%93%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fukui-raden.jp/">らでん 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-yanagimachi_junka_fukui">
+<img class="hero" src="img/fukui/yanagimachi_junka_fukui.jpg" alt="越前かに料理 やなぎ町 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>越前かに料理 やなぎ町<span class="yomi">えちぜんかにりょうり やなぎまち</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">福井随一の繁華街・片町にある越前がに専門の日本料理店。大阪と京都で修業した主人が暖簾を掲げて48年になり、越前がにの水揚げ港である越前町漁業協同組合から「正真正銘の越前がに使用店」として認定を受けている。11月から3月は越前漁港直送の越前がに料理を出し、コースは37,400円から。雄の越前がにだけでなく季節の魚も献立に組み込む。全室個室で、25名まで入る宴会場から少人数の部屋まで揃い、完全予約制のため蟹の入荷に合わせて内容が決まる。</div>
+<div class="sig"><b>一皿:</b>越前がに料理コース 37,400円（税込）～</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:00, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>福井県福井市順化２丁目１２−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776213087">☎ 0776-21-3087</a> ／ <a href="https://www.yanagimachi.biz/yanagimachi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが越前町漁業協同組合による「越前がに使用店」認定と、11月〜3月限定の価格・完全予約制を明示している。産地認定を根拠に蟹を出す市内の店として位置づけが明確。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%B6%8A%E5%89%8D%E3%81%8B%E3%81%AB%E6%96%99%E7%90%86%20%E3%82%84%E3%81%AA%E3%81%8E%E7%94%BA%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.yanagimachi.biz/yanagimachi/">越前かに料理やなぎ町 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-kaikatei_chuo_fukui">
+<img class="hero" src="img/fukui/kaikatei_chuo_fukui.jpg" alt="料亭 開花亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>料亭 開花亭<span class="yomi">りょうてい かいかてい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治23年（1890年）創業、足羽川のほとりに建つ福井を代表する料亭。福井空襲と福井地震で二度失われながらそのつど建て直され、2007年に建物が国の登録有形文化財となった。冬は越前がにが主役で、蟹を出汁で炊き上げる独自の「蟹炊き」など、茹で蟹一辺倒ではない仕立てを見せる。全室が個室の座敷で、建築家・隈研吾が設計した別館「sou-an」も併設する。せいこ蟹を添えた季節料理は16,500円、越前がに懐石は8万円からと幅が広く、蟹は11月6日から3月21日の漁期に要予約。</div>
+<div class="sig"><b>一皿:</b>越前がにの「蟹炊き」／せいこ蟹添えの季節料理 16,500円</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:30〜14:00, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央３丁目９−２１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776231009">☎ 0776-23-1009</a> ／ <a href="https://www.kaikatei.biz/?utm_source=google&amp;utm_medium=organic&amp;utm_campaign=gbp_ryotei">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井市公式観光サイトが2026年版ゴ・エ・ミヨでの高評価と、越前がにシーズン（11月6日〜3月21日）の受付を掲載しており、現行営業と冬の蟹の扱いが確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%20%E9%96%8B%E8%8A%B1%E4%BA%AD%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fuku-iro.jp/gourmet/detail_10604.html">福いろ（福井市公式観光サイト）料亭 開花亭</a></div>
+</div></div>
+<div class="card" id="c-ajimiya_hinode_fukui">
+<img class="hero" src="img/fukui/ajimiya_hinode_fukui.jpg" alt="味美家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>味美家<span class="yomi">あじみや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">福井駅東口から徒歩1分、創業から80年以上続く食事処兼居酒屋。カウンターに並ぶ自家製おでんは鰹だしの効いた汁で、味を80年変えていないという。福井らしいのは、分厚い厚揚げを焼いて醤油をかける「あげ焼き」と、鯖を糠に漬け込んだ「鯖へしこ」を通年で置くところで、福井市公式観光サイトのへしこ特集でも食べられる店として名前が挙がる。昼は1,050円前後の定食、夜は旬魚の刺身や串揚げで地酒を飲む使われ方が多い。全64席、駐車場8台。</div>
+<div class="sig"><b>一皿:</b>自家製おでん／あげ焼き／鯖へしこ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市日之出１丁目１７−２０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776224817">☎ 0776-22-4817</a> ／ <a href="http://www.ajimiya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井県公式観光サイトの「福井駅から徒歩1分の老舗居酒屋3選（個人店限定）」に創業80年以上の店として掲載され、へしことあげ焼きという福井の二大郷土食を通年で出す点が明記されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E7%BE%8E%E5%AE%B6%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%97%A5%E4%B9%8B%E5%87%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.fuku-e.com/fukutabi/detail_321.html">ふくいドットコム（福井県公式観光サイト）福井駅から徒歩1分の老舗居酒屋3選</a> / <a href="https://urala.jp/gourmet/shop/detail.php?id=2659">URALAグルメ 旬魚とおでん 味美家</a></div>
+</div></div>
+<div class="card" id="c-otan_happiring_fukui">
+<img class="hero" src="img/fukui/otan_happiring_fukui.jpg" alt="味処 おたん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">13</span>味処 おたん<span class="yomi">あじどころ おたん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">福井駅西口すぐのハピリン1階にある創業75年以上の老舗。名物のおでんは大根、白滝、車麩、豆腐など具の幅が広く、黒めの出汁がよく染みている。福井らしい品として、分厚い厚揚げを焼いた「あげ焼き」、鯖を糠に漬けた「へしこ」、冬は雌蟹の「せいこがに」を出す。ぶりの刺身や牛鉄板も定番で、昼11時半から夜23時まで通しで開いているため、観光の合間でも列車待ちでも入れる。福井市公式観光サイトのへしこ特集でも、へしこが食べられる店として紹介されている。</div>
+<div class="sig"><b>一皿:</b>おでん／あげ焼き／冬季のせいこがに</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 12:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央１丁目２−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776282502">☎ 0776-28-2502</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井県公式観光サイトが創業75年以上の個人店として取り上げ、福井市公式観光サイトのへしこ特集にも掲載。あげ焼き・へしこ・せいこがにという福井の名物を一軒でまかなえる点で採用。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%87%A6%20%E3%81%8A%E3%81%9F%E3%82%93%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.fuku-e.com/fukutabi/detail_321.html">ふくいドットコム（福井県公式観光サイト）福井駅から徒歩1分の老舗居酒屋3選</a> / <a href="https://fuku-iro.jp/feature/detail_220.html">福いろ（福井市公式観光サイト）へしこ特集</a></div>
+</div></div>
+<div class="card" id="c-egawa_teruteo_fukui">
+<img class="hero" src="img/fukui/egawa_teruteo_fukui.jpg" alt="えがわ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">14</span>えがわ<span class="yomi">えがわ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和12年（1937年）創業、福井市照手の水羊かん専門店。昭和25年から水羊かんの製造販売に力を入れ、全国菓子大博覧会で内閣総理大臣賞や名誉総裁賞を受けている。福井の水ようかんは夏ではなく冬の菓子で、11月から3月ごろにかけて菓子舗が一斉に出す。えがわは寒天と小豆の餡に沖縄県産の黒糖とざらめを合わせ、福井の冬の寒さを利用して冷まし固める作り方を守っている。平たい箱に流した一枚流しで、暖かい部屋で切り分けて食べるのが福井の流儀。冬季は無休。</div>
+<div class="sig"><b>一皿:</b>水羊かん（一枚流し）／あずき粒入り水羊かん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 8:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水・日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市照手３丁目６−１４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776224952">☎ 0776-22-4952</a> ／ <a href="https://www.egawanomizuyoukan.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが創業年・営業時間・11月〜3月は無休という季節運用まで掲出。福井県公式観光サイトの水ようかん販売店一覧にも掲載され、冬季限定という福井独特の食習慣を代表する店として採用。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%88%E3%81%8C%E3%82%8F%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E7%85%A7%E6%89%8B%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.egawa-mizukanten.com/">有限会社えがわ 公式サイト</a> / <a href="https://www.fuku-e.com/feature/detail_330.html">ふくいドットコム（福井県公式観光サイト）福井の冬の名物『水ようかん』販売店一覧</a></div>
+</div></div>
+<div class="card" id="c-kinbaido_junka_fukui">
+<img class="hero" src="img/fukui/kinbaido_junka_fukui.jpg" alt="錦梅堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">15</span>錦梅堂<span class="yomi">きんばいどう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">弘化4年（1847年）創業、福井城址にほど近い順化の老舗菓子舗で、福井銘菓・羽二重餅の元祖とされる。冬の名物である水ようかんも扱い、9月から4月中旬まで販売する。福井の水ようかんが冬の菓子になった背景には、菓子屋に奉公していた丁稚が年末に帰郷する際、水で薄めた羊かんを土産に持たされたという言い伝えがあり、この店の水ようかんもその系譜にある。羽二重餅は個包装のものが土産の定番。朝8時から開いているため、朝の出発前でも買えるのがありがたい。</div>
+<div class="sig"><b>一皿:</b>水ようかん（9月～4月中旬）／羽二重餅</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>福井県福井市順化１丁目７−７ 錦梅堂</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776240383">☎ 0776-24-0383</a> ／ <a href="https://kinabaido.base.shop/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井市公式観光サイトが創業年（弘化4年）と水ようかんの販売期間（9月～4月中旬）を明記。福井県公式観光サイトの水ようかん販売店一覧にも掲載されており、羽二重餅の元祖という位置づけと合わせて採用。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%8C%A6%E6%A2%85%E5%A0%82%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%97%20%E9%8C%A6%E6%A2%85%E5%A0%82">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fuku-iro.jp/gourmet/detail_10686.html">福いろ（福井市公式観光サイト）錦梅堂</a> / <a href="https://www.fuku-e.com/feature/detail_330.html">ふくいドットコム（福井県公式観光サイト）福井の冬の名物『水ようかん』販売店一覧</a></div>
+</div></div>
+<div class="card" id="c-matsuokaken_chuo_fukui">
+<img class="hero" src="img/fukui/matsuokaken_chuo_fukui.jpg" alt="羽二重餅總本舗 松岡軒 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">16</span>羽二重餅總本舗 松岡軒 本店<span class="yomi">はぶたえもちそうほんぽ まつおかけん ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治30年（1897年）創業、羽二重餅を看板にする福井市中央の老舗菓子舗。もち米を蒸して搗き、砂糖と水飴を加えて薄く延ばした羽二重餅のほか、羽二重どら焼き、羽二重もなか、そして冬の名物である一枚流しの水ようかんを揃える。2023年には本店に和カフェを併設し、夏はかんなで削る「手かき氷」を本店限定で出す。店舗は9時から18時、カフェは11時から17時（L.O.16:30）で、カフェのみ木曜が休み。駅から歩ける距離にあり、土産と甘味をまとめて済ませられる。</div>
+<div class="sig"><b>一皿:</b>羽二重餅／一枚流し水ようかん（冬季）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>福井県福井市中央３丁目５−１９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776224400">☎ 0776-22-4400</a> ／ <a href="http://www.habutae.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井市公式観光サイトが2023年開業の和カフェを含む現行の営業内容を掲載。福井県公式観光サイトの水ようかん販売店一覧にも入っており、冬の水ようかんと通年の羽二重餅の両方を押さえられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%BE%BD%E4%BA%8C%E9%87%8D%E9%A4%85%E7%B8%BD%E6%9C%AC%E8%88%97%20%E6%9D%BE%E5%B2%A1%E8%BB%92%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fuku-iro.jp/gourmet/detail_10577.html">福いろ（福井市公式観光サイト）羽二重餅總本舗 松岡軒</a> / <a href="https://www.fuku-e.com/feature/detail_330.html">ふくいドットコム（福井県公式観光サイト）福井の冬の名物『水ようかん』販売店一覧</a></div>
+</div></div>
+<div class="card" id="c-kishida_shokuhin_tonyacho_fukui">
+<img class="hero" src="img/fukui/kishida_shokuhin_tonyacho_fukui.jpg" alt="岸田食品 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">17</span>岸田食品<span class="yomi">きしだしょくひん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">昭和32年（1957年）創業、福井市問屋町で三代続く豆腐・揚げの製造元。福井県は油揚げ・がんもどきの一世帯あたり消費額が全国上位で、福井でいう「あげ」は薄い油揚げではなく分厚い厚揚げを指す。岸田食品はその代表格である座布団のように大きな「ざぶとん揚げ」を作り、福井県産大豆「里のほほえみ」を100％使って約1時間かけて揚げる。低温から高温へと揚げ分けて中に気泡を作るため、表面は香ばしく中はふんわりする。オーブントースターで焦げ目をつけ醤油をたらすのが地元の食べ方。</div>
+<div class="sig"><b>一皿:</b>ざぶとん揚げ（大判あげ）／福井県産大豆100%の厚揚げセット5,050円</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>福井県福井市問屋町２丁目１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776231648">☎ 0776-23-1648</a> ／ <a href="https://www.kishida-syokuhin.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井市公式観光サイトの土産ページに掲載され、自社公式サイトで製法と店頭販売を告知。福井駅前で毎年11月に開かれる「あげフェス」（2025年は11月8〜9日開催）が示す福井の厚揚げ文化を、製造元の側から見られる一軒として採用。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B2%B8%E7%94%B0%E9%A3%9F%E5%93%81%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E5%95%8F%E5%B1%8B%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kishida-syokuhin.co.jp/">岸田食品株式会社 公式サイト</a> / <a href="https://fuku-iro.jp/omiyage/detail_13868.html">福いろ（福井市公式観光サイト）岸田食品</a> / <a href="https://fuku-iro.jp/event/detail_12133.html">福いろ（福井市公式観光サイト）あげフェス2025</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・海鮮・和食</h2>
+<div class="card" id="c-sushi_jubei_bunkyo">
+<img class="hero" src="img/fukui/sushi_jubei_bunkyo.jpg" alt="鮨 十兵衛 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>鮨 十兵衛<span class="yomi">すし じゅうべえ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">文京の住宅街で四十年以上続く鮨店で、2013年に二代目へ代替わりした際に店を改装した。福井の漁港に揚がる鯖・ぶり・鯛を軸に、石川産の甘えびや福井産の剣先いかなど北陸の魚を合わせ、その日の仕入れでおまかせの中身が変わる。昼夜とも完全予約制で、カウンターの客が食べる速さに合わせて一貫ずつ出す。食べログでは2019年から連続してシルバーを受け、2026年もシルバー、寿司WEST百名店2025にも選ばれた。福井駅からは離れており、地元客と県外からの予約客が入り混じる。</div>
+<div class="sig"><b>一皿:</b>その日の地魚を握るおまかせコース（福井産剣先イカ、炙りのどぐろなど）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 12:00〜14:00, 18:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市文京５丁目１７−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776243080">☎ 0776-24-3080</a> ／ <a href="https://www.tablecheck.com/shops/sushi-jubei/reserve?utm_source=google">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログでThe Tabelog Award 2026 Silverを受賞し、寿司WEST百名店2025にも選出。点数4.49・486件の口コミで、県内の鮨店では突出した評価を受けている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E5%8D%81%E5%85%B5%E8%A1%9B%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%96%87%E4%BA%AC%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18001608/">食べログ 鮨 十兵衛</a></div>
+</div></div>
+<div class="card" id="c-sushidokoro_kurage_junka">
+<img class="hero" src="img/fukui/sushidokoro_kurage_junka.jpg" alt="鮨処 海月 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>鮨処 海月<span class="yomi">すしどころ くらげ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">片町の路地から順化1丁目へ移り、2018年6月に現在の店で再開した。カウンターは8席のみで、店主が客の目の前で握る。ネタは福井県産を軸に北陸各地へ広げ、季節の食材は全国からも取り寄せる。のどぐろの炙りや蛸のやわらか煮といった煮物・焼き物を握りの合間に挟むコース構成で、地元野菜を使った一品も出る。器と地酒にこだわり、酒は福井の蔵を中心に揃える。ミシュランガイド北陸2021に掲載された。予約が前提で、貸切にも応じる。</div>
+<div class="sig"><b>一皿:</b>のどぐろの炙り、蛸のやわらか煮を挟んで進むおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市順化１丁目１０−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05058713498">☎ 050-5871-3498</a> ／ <a href="https://hitosara.com/0020001908/?cid=gm_hp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランガイド北陸2021掲載店。ヒトサラ・ふーぽとも「品位を保ちつつ居心地を追求した8席の鮨処」として県内食材の使い方を評価している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E5%87%A6%20%E6%B5%B7%E6%9C%88%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0020001908/">ヒトサラ 鮨処 海月</a> / <a href="https://fupo.jp/spot/kurage/">ふーぽ 鮨処 海月（くらげ）</a></div>
+</div></div>
+<div class="card" id="c-sushi_yoshida_junka">
+<img class="hero" src="img/fukui/sushi_yoshida_junka.jpg" alt="寿し吉田 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>寿し吉田<span class="yomi">すし よしだ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">順化1丁目で三代続く寿司割烹で、開業から五十有余年になる。司馬遼太郎が『街道をゆく』に「よい鮨と、よい女将に会った」と書き残した店として知られ、福井の名士が通ってきた。看板は越前がにで、店主自ら越前漁港へ足を運んで蟹を選び、年間およそ5万杯を扱うという。11月6日の解禁を境に県内外から予約が集中する。蟹の甲羅を器にした料理や、ほぐした蟹身を握りに仕立てた品を組み合わせ、冬以外は若狭湾・越前海岸の地魚で握る。</div>
+<div class="sig"><b>一皿:</b>越前がにをほぐして仕立てた握りと蟹料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市順化１丁目１１−１５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776231066">☎ 0776-23-1066</a> ／ <a href="https://sushiyoshida.tv/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店公式サイトが司馬遼太郎『街道をゆく』での言及と三代・五十有余年の歴史を明示し、越前がに取扱の実績（年間約5万杯）を具体的に示している。福井市公式観光サイトの寿司特集にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%E5%90%89%E7%94%B0%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sushiyoshida.tv/">寿し吉田 公式サイト</a> / <a href="https://fuku-iro.jp/blog/detail_128.html">福いろ（福井市公式観光サイト）福旅blog 寿司特集</a></div>
+</div></div>
+<div class="card" id="c-yoshino_zushi_chuo">
+<img class="hero" src="img/fukui/yoshino_zushi_chuo.jpg" alt="吉野寿司 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>吉野寿司<span class="yomi">よしのずし</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和49年（1974年）12月に福井市中央で開業し、50年営業を続けている。「安くて美味しい」を掲げ、江戸前の仕事をしつつネタは大ぶりに切って握るのが身上。福井の市場で仕入れた地の魚を使い、特上にぎりと刺身盛合せが看板になっている。夜17時半に開けてシャリがなくなり次第終了という商売の仕方で、遅くとも21時には閉める。福井駅から歩ける昔ながらの構えで、カウンターと小上がりがある。日曜が定休、月に一度の臨時休業がある。</div>
+<div class="sig"><b>一皿:</b>特上にぎりと刺身盛合せ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央２丁目６−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776221810">☎ 0776-22-1810</a> ／ <a href="https://fukui-yoshinozushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店公式サイトが「昭和四十九年にオープンし、五十年に渡り地域の皆様に支えられ営業してまいりました」と記し、現在の営業時間・定休日を掲示している。福井市公式観光サイトの寿司特集にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%90%89%E9%87%8E%E5%AF%BF%E5%8F%B8%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fukui-yoshinozushi.com/information">吉野寿司 公式サイト 店舗情報</a> / <a href="https://fuku-iro.jp/blog/detail_128.html">福いろ（福井市公式観光サイト）福旅blog 寿司特集</a></div>
+</div></div>
+<div class="card" id="c-hatsumi_sushi_minori">
+<img class="hero" src="img/fukui/hatsumi_sushi_minori.jpg" alt="初味寿司 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>初味寿司 本店<span class="yomi">はつみずし ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">昭和39年（1964年）創業。福井市みのりの、5メートルを超えるガラスのネタケースが目を引く店で、福井市場から仕入れた旬の魚と珍しい魚が並ぶ。シャリは奥越産コシヒカリを名水で炊き、山吹酢で締める。カウンターは黒御影石、床には選び抜いた鉄平石を敷いている。越前鯖のへしこにチーズを合わせた「越前 鯖へしこチーズ」、蟹を使った「越前蟹乃醤」など、店オリジナルの加工品も手がける。昼11時から夜23時まで通しに近い形で営業し、日曜が休み。</div>
+<div class="sig"><b>一皿:</b>福井市場から仕入れた旬の地魚のにぎり、越前 鯖へしこチーズ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜14:00, 17:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市みのり２丁目３−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776367017">☎ 0776-36-7017</a> ／ <a href="https://hatumisushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに2025年12月30日付の年末年始休業の告知があり現在も営業中。福井の情報サイト「フクブロ」も2025年4月に「超老舗だけど肩ひじ張らずに楽しめる」と紹介している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%88%9D%E5%91%B3%E5%AF%BF%E5%8F%B8%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E3%81%BF%E3%81%AE%E3%82%8A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hatumisushi.com/">初味寿司 本店 公式サイト</a> / <a href="https://fuku-iro.jp/blog/detail_128.html">福いろ（福井市公式観光サイト）福旅blog 寿司特集</a></div>
+</div></div>
+<div class="card" id="c-nigiriya_uogokoro_bunkyo">
+<img class="hero" src="img/fukui/nigiriya_uogokoro_bunkyo.jpg" alt="にぎり屋 魚心 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>にぎり屋 魚心<span class="yomi">にぎりや うおごころ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">福井市文京、福井工業大学の近くにある回転寿司。回転レーンはあるがそこにはほとんど寿司が流れておらず、注文を受けた職人がその場で握って手渡す。福井県観光サイトの取材では注文から最速3秒で出たという記録があり、ネタは80種類以上。炙りのどぐろやスマガツオなど他店で見かけない魚も並ぶ。福井サーモン、生赤えび、生しらすといった地物が大ぶりで、2貫165円が基本という安さ。酢飯をやや温かめにして魚を生かす工夫もある。木曜が定休。</div>
+<div class="sig"><b>一皿:</b>その場で握る福井サーモン・生赤えび・炙りのどぐろ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金 11:00〜14:00, 18:00〜21:00 ／ 土・日 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>福井県福井市文京６丁目２３−２３０２ にぎり屋魚心</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776244117">☎ 0776-24-4117</a> ／ <a href="https://instagram.com/uoshin024?utm_medium=copy_link">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井県公式観光サイトが「握る速さは日本一」と特集し、80種類以上のネタと2貫165円という価格を具体的に報告。食べログでも2025年12月・2026年6月の訪問口コミがあり、開店前から行列ができる状況が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AB%E3%81%8E%E3%82%8A%E5%B1%8B%20%E9%AD%9A%E5%BF%83%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%96%87%E4%BA%AC%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%93%EF%BC%90%EF%BC%92%20%E3%81%AB%E3%81%8E%E3%82%8A%E5%B1%8B%E9%AD%9A%E5%BF%83">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.fuku-e.com/feature/detail_718.html">ふくいドットコム（福井県公式観光サイト）魚心特集</a> / <a href="https://tabelog.com/fukui/A1801/A180101/18000770/">食べログ 魚心</a></div>
+</div></div>
+<div class="card" id="c-unashin_keya">
+<img class="hero" src="img/fukui/unashin_keya.jpg" alt="うな信 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>うな信<span class="yomi">うなしん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">足羽山のふもと、毛矢の一角に建つ3階建てのうなぎ屋。創業以来50年以上継ぎ足してきたタレを使う。関西風に蒸さずに焼く「地焼き」と、九州に伝わる「せいろ蒸し」の両方を出すのが特徴で、中部地方では珍しい。せいろ蒸しは地焼きの蒲焼をタレを混ぜたご飯にのせ、強火で7分きっかり蒸し上げる。女将は醤油の使い手を認定する「醤油名匠」の称号を持ち、へしこなど醤油を生かした料理も出す。大広間があり120席、宴会や法事にも使われる。</div>
+<div class="sig"><b>一皿:</b>大蒸し定食（うなぎのせいろ蒸し重）5,280円</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・木 11:00〜14:00 ／ 水・金・土・日 11:00〜14:00, 17:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県福井市毛矢１丁目７−２２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776352220">☎ 0776-35-2220</a> ／ <a href="http://unasin.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井県公式観光サイトのうなぎ特集で県内5選に選ばれ、公式サイトも現行メニューと価格を掲示。月刊fu（福井新聞）は女将が「醤油名匠」であることを取り上げている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E4%BF%A1%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%AF%9B%E7%9F%A2%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://unasin.com/menu/">うな信 公式サイト メニュー</a> / <a href="https://www.fuku-e.com/fukutabi/detail_664.html">ふくいドットコム（福井県公式観光サイト）うなぎ5選</a> / <a href="https://r.gnavi.co.jp/13406v7k0000/">ぐるなび うな信</a></div>
+</div></div>
+<div class="card" id="c-tengiku_junka">
+<img class="hero" src="img/fukui/tengiku_junka.jpg" alt="天菊 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>天菊<span class="yomi">てんぎく</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">順化1丁目の天ぷら店。店主は東京・六本木の江戸前天ぷら「みかわ」の早乙女哲哉に学び、その仕事を福井に持ち込んだ。ササガレイ、イカに塩ウニを詰めたもの、鯛、九頭竜舞茸など、素材ごとに揚げ方を変える。天ぷらだけでなく、丼ごと蒸し上げるうな丼も看板で、ご飯と鰻が一心同体になる仕上がりだと福井県観光サイトが紹介している。昼の営業は火・木・金・土のみで、夜は17時半から。天ぷら屋でうな丼も食べられるという構成が珍しい。</div>
+<div class="sig"><b>一皿:</b>イカの塩ウニ詰め天ぷらと、丼ごと蒸し上げるうな丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木 17:30〜20:00 ／ 火・金・土 11:30〜13:00, 17:30〜20:00 ／ 水 11:30〜13:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市順化１丁目１４−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776274628">☎ 0776-27-4628</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「天ぷら 百名店」に2022年・2023年・2025年と選出（点数3.69）。福井県公式観光サイトも「福井に天ぷらの名店あり」として単独特集を組んでいる。2026年6月の訪問口コミあり。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E8%8F%8A%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000487/">食べログ 天菊</a> / <a href="https://www.fuku-e.com/feature/detail_657.html">ふくいドットコム（福井県公式観光サイト）天菊特集</a></div>
+</div></div>
+<div class="card" id="c-oryori_itto_haruyama">
+<img class="hero" src="img/fukui/oryori_itto_haruyama.jpg" alt="御料理 一燈 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>御料理 一燈<span class="yomi">おりょうり いっとう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">店主・倉橋紀宏が「越味（えつみ）料理」を掲げる日本料理店。越中・越後・越前の食材で「越の味」を組み立てるという意味で、若狭ぐじ、天然の鰻や鮎、若狭牛などを使う。2019年に福井市中央から春山へ移転した。冬の蟹の季節には全国から予約が集まり、松茸や蟹のコースは時価になる。夜のコースは1万6千円台から。カウンターを中心とした静かな構えで、日曜と月に3日ほどが休み。福井の食材を一皿ごとに追い込んでいく組み立てが特徴。</div>
+<div class="sig"><b>一皿:</b>若狭ぐじ・天然鰻・若狭牛を軸にした越味料理のコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市春山２丁目１−７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05058703162">☎ 050-5870-3162</a> ／ <a href="https://www.oryouri-ittou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの福井市 日本料理ランキング1位（4.17）で、日本料理WEST百名店2025選出、2026年Bronze受賞。ミシュランガイド北陸版では初登場で二つ星を獲得している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E6%96%99%E7%90%86%20%E4%B8%80%E7%87%88%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%98%A5%E5%B1%B1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18008141/">食べログ 御料理 一燈</a> / <a href="https://tabelog.com/japanese/fukui/A1801/A180101/rank/">食べログ 福井市 日本料理・割烹・懐石ランキング</a></div>
+</div></div>
+<div class="card" id="c-shunmi_taihei_chuo">
+<img class="hero" src="img/fukui/shunmi_taihei_chuo.jpg" alt="旬味 泰平 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">27</span>旬味 泰平<span class="yomi">しゅんみ たいへい</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">福井城址大名町の近く、昭和初期の町家を改装した日本料理店。会席のコースだけでなく100種類を超える一品料理を用意しており、気軽に一品ずつ頼んで飲むこともできる。名物は加賀れんこんを使った蓮根まんじゅうで、常連が繰り返し頼む一品として知られる。塩と醤油を料理ごとに使い分けて、選んだ旬の素材を仕立てる。福井の地酒を20種以上、ワインを30種以上置き、料理に合わせて選べる。カウンターのほか個室もあり、昼は日替わり定食を出す。</div>
+<div class="sig"><b>一皿:</b>加賀れんこんの蓮根まんじゅう</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:30〜13:30, 18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央３丁目１４−１１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776254686">☎ 0776-25-4686</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの福井市 日本料理ランキング3位（3.76）で、2026年6月・7月の訪問口コミがある現役店。地酒20種以上・ワイン30種以上という品揃えを一休.comも紹介している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E5%91%B3%20%E6%B3%B0%E5%B9%B3%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000628/">食べログ 旬味 泰平</a> / <a href="https://tabelog.com/japanese/fukui/A1801/A180101/rank/">食べログ 福井市 日本料理・割烹・懐石ランキング</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・うどん・町中華</h2>
+<div class="card" id="c-ramen_mahoroba_fukui">
+<img class="hero" src="img/fukui/ramen_mahoroba_fukui.jpg" alt="まほろば 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">28</span>まほろば<span class="yomi">まほろば</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">石川県の「そらみち」と福井県の「めん屋さる」という二つの人気店の作り手が手を組んで生まれた店。スープは素材の味を出し切るために鶏と水だけで炊き、化学調味料を使わない。看板は特製鶏醤油で、泡立てた鶏白湯にトリュフを合わせた一杯や鶏塩も並ぶ。カウンター8席とテーブル2卓の計16席と小さく、昼夜とも待ちが出る。ミシュランガイド北陸2021でビブグルマンに選ばれ、食べログのラーメンWEST百名店にも2024年・2025年と連続で選出されている。</div>
+<div class="sig"><b>一皿:</b>特製鶏醤油ラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:00, 18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>福井県福井市渕４丁目２０７−２０７ 社中央ビル</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://www.facebook.com/mahoroba0425">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの福井市ラーメンランキングで3.68点の1位を占め、ラーメンWEST百名店2024・2025に連続選出。福井市公式観光サイトの県民おすすめ特集でも筆頭に挙げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%81%BB%E3%82%8D%E3%81%B0%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%B8%95%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%EF%BC%97%E2%88%92%EF%BC%92%EF%BC%90%EF%BC%97%20%E7%A4%BE%E4%B8%AD%E5%A4%AE%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18007900/">食べログ まほろば</a> / <a href="https://fuku-iro.jp/blog/detail_116.html">福いろ（福井市公式観光サイト）県民おすすめ人気ラーメン16店</a></div>
+</div></div>
+<div class="card" id="c-chukasoba_marusei_fukui">
+<img class="hero" src="img/fukui/chukasoba_marusei_fukui.jpg" alt="中華そば まるせい 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">29</span>中華そば まるせい<span class="yomi">ちゅうかそば まるせい</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">商社勤めだった店主が、大学時代に熱中したラーメンをそのまま仕事にして開いた一軒。板垣中央公園の向かいに構え、営業は月曜から土曜の昼のみという潔い組み方をしている。看板は鶏の旨みと醤油のコクを土台に、胡椒の香りと鶏油を重ねた中華そばで、濁りのない澄んだスープに中細麺を合わせる。これに唐揚げとライスを付けた定食や、餃子・焼き飯も定番。カウンター5席、テーブル8席、座敷8席の計21席で、食べログの福井市ラーメンランキングでは長く上位を保っている。</div>
+<div class="sig"><b>一皿:</b>中華そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:30〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市板垣２丁目１４２９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776333791">☎ 0776-33-3791</a> ／ <a href="https://m.facebook.com/pages/%E3%81%BE%E3%82%8B%E3%81%9B%E3%81%84%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0/148611651839024">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市ラーメンランキング2位（3.50点）。2026年2月・6月の訪問投稿があり、昼のみ営業ながら評価が落ちていないことを確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E3%81%BE%E3%82%8B%E3%81%9B%E3%81%84%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%9D%BF%E5%9E%A3%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%EF%BC%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18004274/">食べログ 中華そば まるせい</a> / <a href="https://tabelog.com/ramen/fukui/A1801/A180101/rank/">食べログ 福井市ラーメンランキング</a></div>
+</div></div>
+<div class="card" id="c-echizen_chuka_fukui">
+<img class="hero" src="img/fukui/echizen_chuka_fukui.jpg" alt="越前中華 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">30</span>越前中華<span class="yomi">えちぜんちゅうか</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和60年創業、福井大学にほど近い乾徳の一角で夫婦が続けてきた昔ながらの中華そば店。鰹など魚介の効いたあっさりした醤油スープに細めの縮れ麺を合わせる、福井に古くからある中華そばの型を守っている。看板の中華そばは750円、チャーシューメンは950円で、5個390円の餃子や炒飯を付けたセットもよく出る。店内はカウンター10席と奥の小上がりだけのこぢんまりした造りで、駐車場も備える。派手さはないが、地元客の日常食として通われ続けている一杯である。</div>
+<div class="sig"><b>一皿:</b>中華そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:30, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県福井市乾徳２丁目５−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776275102">☎ 0776-27-5102</a> ／ <a href="https://japoncompany.business/fukui/544931-">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市ラーメンランキング9位（3.32点）。2025年3月・9月の口コミがあり、昭和60年創業の老舗が現役で回っていることを確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%B6%8A%E5%89%8D%E4%B8%AD%E8%8F%AF%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B9%BE%E5%BE%B3%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000827/">食べログ 越前中華</a> / <a href="https://tabelog.com/ramen/fukui/A1801/A180101/rank/">食べログ 福井市ラーメンランキング</a></div>
+</div></div>
+<div class="card" id="c-ramen_muranaka_fukui">
+<img class="hero" src="img/fukui/ramen_muranaka_fukui.jpg" alt="らーめん ムラナカ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">31</span>らーめん ムラナカ<span class="yomi">らーめん むらなか</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2021年7月に開いた比較的新しい店ながら、食べログの福井市ラーメンランキングで上位に食い込む一軒。片町で支持を集めたのち文京へ移っている。看板は8種類の味噌を配合した自家製の味噌だれを使う味噌らーめんで、鶏白湯と煮干しを合わせたスープに、品ごとに特注した麺を使い分ける。中華そばや鶏白湯らーめんも通年で並び、冬には海老の旨煮を載せた季節限定も出る。カウンター9席とテーブル4卓の17席。福井市公式観光サイトの県民おすすめラーメン特集にも選ばれている。</div>
+<div class="sig"><b>一皿:</b>味噌らーめん</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜15:00, 18:00〜21:00 ／ 日 11:30〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県福井市文京５丁目１３−３８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:09023710095">☎ 090-2371-0095</a> ／ <a href="https://www.instagram.com/raaamen_muranaka/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市ラーメンランキング17位。2026年1月17日訪問の口コミがあり現役を確認。福いろ（福井市公式観光サイト）の県民おすすめ16店にも入る。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E3%83%A0%E3%83%A9%E3%83%8A%E3%82%AB%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%96%87%E4%BA%AC%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18008677/">食べログ らーめん ムラナカ</a> / <a href="https://fuku-iro.jp/blog/detail_116.html">福いろ（福井市公式観光サイト）県民おすすめ人気ラーメン16店</a></div>
+</div></div>
+<div class="card" id="c-pilliken_honten_fukui">
+<img class="hero" src="img/fukui/pilliken_honten_fukui.jpg" alt="つくも橋ピリケン 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">32</span>つくも橋ピリケン 本店<span class="yomi">つくもばしぴりけん ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正10年（1921年）創業、足羽川に架かるつくも橋のたもとに建つ100年続く中華の大店。大きな窓から桜並木と川面を望む座敷と椅子席を合わせて285席あり、家族の食事から法事、大宴会までを引き受けてきた。福を招く神ピリケンを屋号と看板にしている。酢豚770円、肉焼売5個500円といった昔ながらの品を手頃な値で出す一方、大連産くらげの冷菜やガーリック炒飯に牛ステーキを載せた品も並ぶ。大皿を囲んで取り分ける、福井の町中華の原型のような店である。</div>
+<div class="sig"><b>一皿:</b>酢豚</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜15:00, 17:00〜21:00 ／ 土・日 11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>福井県福井市つくも１丁目５−２８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776363536">☎ 0776-36-3536</a> ／ <a href="https://www.pilliken.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>月刊ウララの町中華特集で「大正10年創業・100周年の老舗中の老舗」として巻頭に据えられた。公式サイトに2026年8月6日付のお盆営業の告知があり、現在も通常営業していることを確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A4%E3%81%8F%E3%82%82%E6%A9%8B%E3%83%94%E3%83%AA%E3%82%B1%E3%83%B3%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E3%81%A4%E3%81%8F%E3%82%82%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://urala.today/126598/">日々URALA 月刊ウララ「The 町中華」特集</a> / <a href="https://honten.pilliken.jp/">つくも橋ピリケン本店 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-konpiratei_honten_fukui">
+<img class="hero" src="img/fukui/konpiratei_honten_fukui.jpg" alt="こんぴら亭 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">33</span>こんぴら亭 本店<span class="yomi">こんぴらてい ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">香川県高松出身の先代が福井に持ち込んだ讃岐うどんを、40年以上受け継いでいる自家製麺の店。問屋町の本店では、こしと小麦の香りを大切にした手打ち麺に、昆布と数種の節を惜しまず使って毎日引く出汁を合わせる。天ぷらを載せて大根おろしで締める天おろしうどんが看板で、玉子カツ丼を付けたセットやとりから定食といった食事メニューも厚い。福井市内には三の丸店も構える。食べログの福井市うどんランキングでは本店・支店がそろって上位に入っている。</div>
+<div class="sig"><b>一皿:</b>天おろしうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・金 11:00〜20:00 ／ 火・木 11:00〜15:00 ／ 土 11:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市問屋町４丁目１１７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776232973">☎ 0776-23-2973</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市うどんランキング2位で、2026年1月の訪問投稿を確認。福いろ（福井市公式観光サイト）の「福井の人気うどん屋さん」にも選ばれている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%82%93%E3%81%B4%E3%82%89%E4%BA%AD%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E5%95%8F%E5%B1%8B%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000714/">食べログ こんぴら亭 本店</a> / <a href="https://fuku-iro.jp/blog/detail_273.html">福いろ（福井市公式観光サイト）福井の人気うどん屋さん</a></div>
+</div></div>
+<div class="card" id="c-takaraya_shindenzuka_fukui">
+<img class="hero" src="img/fukui/takaraya_shindenzuka_fukui.jpg" alt="美・味・麺・庵 たからや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">34</span>美・味・麺・庵 たからや<span class="yomi">び・み・めん・あん たからや</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">新田塚の芦原街道沿いに構える蕎麦とうどんの店で、県内産の材料にこだわった麺を打つ。名物は石焼カレーうどん。熱した石の器でぐつぐつ煮立ったまま供され、蕎麦屋の出汁が下地にあるカレーに、もっちりした太めのうどんが絡む。とろけるチーズを足す食べ方が定番になっている。桜海老のかき揚げそばや、夏の冷やしトマトうどん、野菜せいろといった季節の品も置く。食べログの福井市うどんランキングでは1位を保ち、地元紙のグルメ連載でも名物として取り上げられた。</div>
+<div class="sig"><b>一皿:</b>石焼カレーうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜15:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>福井県福井市新田塚１丁目２５−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776261175">☎ 0776-26-1175</a> ／ <a href="http://www.e-takaraya.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市うどんランキング1位（3.33点）で、2026年4月訪問の投稿を確認。福井新聞の連載「ふくジェンヌ」でも名物の石焼カレーうどんが実食紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E3%83%BB%E5%91%B3%E3%83%BB%E9%BA%BA%E3%83%BB%E5%BA%B5%20%E3%81%9F%E3%81%8B%E3%82%89%E3%82%84%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%96%B0%E7%94%B0%E5%A1%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%95%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000161/">食べログ たからや</a> / <a href="https://www.fukuishimbun.co.jp/articles/-/2259041">福井新聞「ふくジェンヌ」たからやの石焼カレーうどん</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・酒どころ</h2>
+<div class="card" id="c-junin_toiro_junka">
+<img class="hero" src="img/fukui/junin_toiro_junka.jpg" alt="日本酒 十人十色 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>日本酒 十人十色<span class="yomi">にほんしゅ じゅうにんといろ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">順化2丁目の城戸ビルにあり、1階がバー、2階が日本酒の店という構え。福井の地酒に加えて全国の限定酒を常時50種類ほど置く。店主はイギリスで働いた経験があり、和洋中の枠にとらわれない創作料理を酒に合わせて出す。冷やと燗を器で使い分け、希少な酒器を揃えているのが特徴で、同じ酒を器を変えて試すこともできる。片町の一角にあるレトロな内装で、日本酒に慣れていない客にも銘柄を説明しながら出す。姉妹店に自然派ワインを扱う「十人十色koya」がある。</div>
+<div class="sig"><b>一皿:</b>希少な酒器で供される冷や・燗の飲み分け</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00～23:00（金・土は～24:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜、12/29～1/3</td></tr>
+<tr><th>住所</th><td>福井県福井市順化２丁目７−１６</td></tr>
+<tr><th>予約</th><td>可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ふーぽ（福井のローカルメディア）の「福井で日本酒が楽しめる名店8選」に選出され、常時50種類の品揃えと酒器の使い分けが取り上げられている。月刊fu（福井新聞）も「日本酒のおいしい片町のレトロバー」として紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E9%85%92%20%E5%8D%81%E4%BA%BA%E5%8D%81%E8%89%B2%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fupo.jp/article/%E7%A6%8F%E4%BA%95%E3%81%AE%E6%97%A5%E6%9C%AC%E9%85%92%E5%90%8D%E5%BA%97%E3%81%BE%E3%81%A8%E3%82%81/">ふーぽ 福井で日本酒が楽しめる名店8選</a></div>
+</div></div>
+<div class="card" id="c-karigurashi_junka">
+<img class="hero" src="img/fukui/karigurashi_junka.jpg" alt="酒彩 雁ぐらし 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">36</span>酒彩 雁ぐらし<span class="yomi">しゅさい かりぐらし</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2018年2月、築60年の古民家を和モダンに改装して順化1丁目に開いた店。北陸で揚がる魚を炭火と藁焼きで仕上げ、のどぐろやあまだいなど、市場にあまり出回らない魚や野菜を使った創作料理を出す。県内8つの蔵から季節の酒を選んで置き、ワインにも力を入れる。酒器はほとんどが作家ものの一点もので、月替わりで器を変えるのも楽しみのひとつ。1階と2階に個室が3室あり、片町の喧騒からは切り離された造りで、女子会や少人数の宴会に使われる。</div>
+<div class="sig"><b>一皿:</b>北陸の地魚の藁焼き（のどぐろ・あまだい）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市順化１丁目１６−１５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776270076">☎ 0776-27-0076</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ふーぽの「福井で日本酒が楽しめる名店8選」に選出。月刊fu（福井新聞）は「大人のための古民家居酒屋」として、県内8酒造の季節の酒と作家ものの酒器を評価している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E5%BD%A9%20%E9%9B%81%E3%81%90%E3%82%89%E3%81%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fupo.jp/article/%E7%A6%8F%E4%BA%95%E3%81%AE%E6%97%A5%E6%9C%AC%E9%85%92%E5%90%8D%E5%BA%97%E3%81%BE%E3%81%A8%E3%82%81/">ふーぽ 福井で日本酒が楽しめる名店8選</a> / <a href="https://urala.jp/gourmet/shop/detail.php?id=14387">URALAグルメLIBRARY 酒彩 雁ぐらし</a></div>
+</div></div>
+<div class="card" id="c-kemuriya_ote">
+<img class="hero" src="img/fukui/kemuriya_ote.jpg" alt="旬香酒燈 煙や 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">37</span>旬香酒燈 煙や<span class="yomi">しゅんこうしゅとう けむりや</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">福井駅西口から歩いてすぐ、大手2丁目にある居酒屋。福井の地酒と全国の銘酒を70～80種類そろえ、酒器は100種類以上を用意して銘柄ごとに合う器で出す。酒には銘柄の説明を書いた札を添え、気に入れば持ち帰れる。魚は漁師から直接仕入れ、肉料理も出す。福井市の居酒屋のなかでは食べログの点数が高く3.5台を保っており、コースはおよそ8千円台。カウンターと個室があるので、接待や県外客の案内にも使われる。17時半から24時まで、日曜が定休。</div>
+<div class="sig"><b>一皿:</b>銘柄ごとに器を変えて出す全国の日本酒と、漁師直送の魚</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市大手２丁目７−２３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776250088">☎ 0776-25-0088</a> ／ <a href="https://kemuriya.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ふーぽの「福井で日本酒が楽しめる名店8選」に選出。食べログの福井市 居酒屋ランキングでも3.54と上位で、2026年7月の訪問口コミがある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E9%A6%99%E9%85%92%E7%87%88%20%E7%85%99%E3%82%84%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18007484/">食べログ 煙や</a> / <a href="https://fupo.jp/article/%E7%A6%8F%E4%BA%95%E3%81%AE%E6%97%A5%E6%9C%AC%E9%85%92%E5%90%8D%E5%BA%97%E3%81%BE%E3%81%A8%E3%82%81/">ふーぽ 福井で日本酒が楽しめる名店8選</a></div>
+</div></div>
+<div class="card" id="c-yaemaki_sakaemachi">
+<img class="hero" src="img/fukui/yaemaki_sakaemachi.jpg" alt="ヨリミチのみや やえまき 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">38</span>ヨリミチのみや やえまき<span class="yomi">よりみちのみや やえまき</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治23年（1890年）創業、130年余り続く八重巻酒店が森田駅前へ移転したのを機に併設した立ち飲み屋。店主の竹内滋人が「客の声を直接聞きたい」と始めた。県内各蔵の日本酒を常時15種ほど置き、グラス90mlまたはハーフ45mlで、200～500円ほどから飲める。つまみは手作りの小皿が中心で、こちらも300円前後から。ヨーロッパの食前酒（アペリティフ）の習慣を日本酒でやる、という考え方が下敷きにある。17時半から21時まで、日曜・祝日が休み。</div>
+<div class="sig"><b>一皿:</b>県内各蔵の地酒15種をハーフグラス45mlで飲み比べ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 10:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市栄町１２−４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776560102">☎ 0776-56-0102</a> ／ <a href="https://yaemaki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ふーぽの角打ち特集で福井市の代表格として紹介され、130年余の八重巻酒店併設という成り立ちとグラス／ハーフの提供方式が具体的に記されている。URALAグルメLIBRARYにも現行の営業時間が掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A8%E3%83%AA%E3%83%9F%E3%83%81%E3%81%AE%E3%81%BF%E3%82%84%20%E3%82%84%E3%81%88%E3%81%BE%E3%81%8D%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fupo.jp/article/fukui-kakuuchi/">ふーぽ 福井で楽しむ「角打ち」のススメ</a> / <a href="https://urala.jp/gourmet/shop/detail.php?id=19253">URALAグルメLIBRARY ヨリミチのみや やえまき</a> / <a href="https://tabelog.com/fukui/A1801/A180101/18009398/">食べログ ヨリミチのみや やえまき</a></div>
+</div></div>
+<div class="card" id="c-aji_no_seihachi_chuo">
+<img class="hero" src="img/fukui/aji_no_seihachi_chuo.jpg" alt="味の清八 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">39</span>味の清八<span class="yomi">あじのせいはち</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">中央3丁目、片町寄りにある焼き鳥の店。炭火で一本ずつじっくり焼き上げるのが基本で、福井でよく食べられる親鳥（ひね鶏）が名物。噛みごたえのあるひね鶏やレバー、厚切りの牛タン、「チキン棒」が定番で、豚足、串揚げ、おでんも出す。焼きおにぎりなど〆の品も揃う。福井の地酒を数多く置き、焼き鳥に合わせて飲める。カウンター中心の店で、17時から深夜まで開いているため、片町で一杯やったあとの二軒目に使う客も多い。日曜が定休。</div>
+<div class="sig"><b>一皿:</b>炭火で焼く親鳥（ひね鶏）とチキン棒</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央３丁目２−２ １CDIビル 1階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776280322">☎ 0776-28-0322</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井県公式観光サイトの「片町居酒屋3選」に選ばれ、福井ならではの親鳥（ひね）が推されている。食べログには2025年および2026年6月の訪問口コミがあり、現在も営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E3%81%AE%E6%B8%85%E5%85%AB%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%20%EF%BC%91CDI%E3%83%93%E3%83%AB%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.fuku-e.com/fukutabi/detail_638.html">ふくいドットコム（福井県公式観光サイト）片町居酒屋3選</a> / <a href="https://tabelog.com/fukui/A1801/A180101/18003247/dtlrvwlst/">食べログ 味の清八 口コミ一覧</a></div>
+</div></div>
+<div class="card" id="c-wabouzu_junka">
+<img class="hero" src="img/fukui/wabouzu_junka.jpg" alt="癒しんぼ 和ぼうず 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">40</span>癒しんぼ 和ぼうず<span class="yomi">いやしんぼ わぼうず</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">片町・順化2丁目のコジマビル1階にある居酒屋。越前町から毎日直送される魚をガラスケースに並べ、刺身、寿司、焼き、煮付けなど客の希望に合わせて調理する。北陸の海鮮に加えて和牛ステーキも出し、開店当初から続く「デミカツ」（デミグラスソースのカツ）は900円で長く人気がある。木の温もりのある落ち着いた内装で、個室もあり、少人数から宴会まで使える。福井の地酒を数多く揃え、料理に合わせて選べる。17時半から23時半まで、月曜が定休。</div>
+<div class="sig"><b>一皿:</b>越前町直送の鮮魚の造りと、開店以来のデミカツ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 17:30〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県福井市順化２丁目２０−１８ コジマビル １Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776218710">☎ 0776-21-8710</a> ／ <a href="https://japoncompany.business/fukui/545603-wabouzu">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井県公式観光サイトの「片町居酒屋3選」に選出。2025年5月の福井のグルメブログでも実訪レビューが確認でき、現在も営業している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%92%E3%81%97%E3%82%93%E3%81%BC%20%E5%92%8C%E3%81%BC%E3%81%86%E3%81%9A%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%98%20%E3%82%B3%E3%82%B8%E3%83%9E%E3%83%93%E3%83%AB%20%EF%BC%91%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.fuku-e.com/fukutabi/detail_638.html">ふくいドットコム（福井県公式観光サイト）片町居酒屋3選</a></div>
+</div></div>
+<div class="card" id="c-hamamachi_yasubun_chuo">
+<img class="hero" src="img/fukui/hamamachi_yasubun_chuo.jpg" alt="浜町安文酒店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">41</span>浜町安文酒店<span class="yomi">はままちやすぶんさけてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">福井城址大名町駅から徒歩4分、料亭が並んできた浜町にある創業100年超の酒販店。店頭で福井の地酒の飲み比べができ、店主が選んだ3種770円、7種1,650円、10種1,650円といったコースを予約制で用意している。1回30分ほどで、11時から19時のあいだに受けられる。福井の蔵の酒がどう違うのかを、店の人の説明を聞きながら順に飲めるのが特徴で、この店限定の商品も置く。飲食店ではなく酒屋なので営業は10時から19時まで。日曜・祝日が休み。</div>
+<div class="sig"><b>一皿:</b>店主厳選の福井地酒7種飲み比べ（1,650円・30分）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 9:30〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央３丁目３−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776214632">☎ 0776-21-4632</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ふーぽの角打ち特集で福井市4店のひとつとして紹介され、じゃらん遊び体験でも7種飲み比べが予約商品として販売されている。夜の飲み屋ではなく昼から地酒を学べる場として他店と役割が違う。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E7%94%BA%E5%AE%89%E6%96%87%E9%85%92%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fupo.jp/article/fukui-kakuuchi/">ふーぽ 福井で楽しむ「角打ち」のススメ</a></div>
+</div></div>
+<div class="card" id="c-sakanauo_shimada_junka">
+<img class="hero" src="img/fukui/sakanauo_shimada_junka.jpg" alt="酒菜魚 しまだ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">42</span>酒菜魚 しまだ<span class="yomi">さかなうお しまだ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">片町・順化2丁目の中村ビル1階にある居酒屋。仕入れた魚によってその日のメニューが変わり、長いカウンターの上には大皿料理が並ぶ。北陸の天然ぶりなど季節の魚を刺身や焼きで出し、何を頼めばよいか聞けば旬のものを教えてくれる。小上がりと掘りごたつの個室があり、一人客から宴会まで受ける。店主と料理人が客に声をかけながら勧める形で、片町のなかでは落ち着いて飲める部類に入る。福井の地酒を魚に合わせて置く。17時から23時まで、日曜・祝日が定休。</div>
+<div class="sig"><b>一皿:</b>その日の仕入れで変わる大皿料理と北陸の天然ぶり</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市順化２丁目２０−９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776210053">☎ 0776-21-0053</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログでは2025年11月の訪問口コミがあり営業を確認。フクブロが「メニューが毎日変わる！？新鮮な魚が味わえる居酒屋」として取り上げており、片町で魚を目当てに行く店として定着している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%8F%9C%E9%AD%9A%20%E3%81%97%E3%81%BE%E3%81%A0%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%A0%86%E5%8C%96%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000466/">食べログ 酒菜魚 しまだ</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-restaurant_ohtsuka_fukui">
+<img class="hero" src="img/fukui/restaurant_ohtsuka_fukui.jpg" alt="レストラン オオツカ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">43</span>レストラン オオツカ<span class="yomi">れすとらん おおつか</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">福井市役所のそば、大手の路地裏に構える一軒。東京の名店で修業した大塚シェフが「丁寧につくる本物の味を故郷で供したい」として開き、昼は洋食、夜は洋食とビストロの両輪で献立を組む。ハンバーガーはバンズまで自家製にするなど、既製品に頼らない作りを通している。昼は予約を取らず気軽に、夜はコース予約にも応じるという使い分けができる。全席禁煙で家族連れも入れる。食べログの福井市洋食ランキングでも、ソースカツ丼の老舗に次ぐ位置を占め続けている。</div>
+<div class="sig"><b>一皿:</b>自家製バンズのハンバーガー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・土 11:30〜14:00, 18:00〜21:30 ／ 木・金 11:30〜14:00, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>福井県福井市大手３丁目５−１８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776283234">☎ 0776-28-3234</a> ／ <a href="https://www.instagram.com/restaurantotsuka?igsh=MXBpdDBoM202c214aA==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市洋食ランキング3位（3.31点）で、2026年7月の口コミを確認。ヒトサラでも「東京の名店で腕を磨いたシェフ」の店として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%AA%E3%82%AA%E3%83%84%E3%82%AB%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18007253/">食べログ オオツカ</a> / <a href="https://tabelog.com/yoshoku/fukui/A1801/A180101/rank/">食べログ 福井市洋食ランキング</a></div>
+</div></div>
+<div class="card" id="c-restaurant_bulldog_fukui">
+<img class="hero" src="img/fukui/restaurant_bulldog_fukui.jpg" alt="レストラン ブルドック 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">44</span>レストラン ブルドック<span class="yomi">れすとらん ぶるどっく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和45年（1970年）創業、志比口で半世紀以上続く洋食店。ハンバーグ定食を筆頭に、オムライス、ポークステーキといった定番を、量をたっぷり取って手頃な値で出す構えを変えていない。昼は近隣の勤め人や家族連れで席が埋まり、夕方も17時から21時まで通して開ける。休みは木曜だけで、それ以外は昼と夕の二部制。派手な仕掛けはないが、食べログの福井市洋食ランキングではソースカツ丼の老舗に次ぐ2位につけ、2026年に入ってからの投稿も途切れていない現役の地元密着店である。</div>
+<div class="sig"><b>一皿:</b>ハンバーグ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:00〜14:30, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>福井県福井市志比口２丁目２０−２２ レストランブルドック</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776543438">☎ 0776-54-3438</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市洋食ランキング2位（3.35点・83件）で、2026年6月訪問の口コミを確認。同ページに昭和45年創業の老舗と明記されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%96%E3%83%AB%E3%83%89%E3%83%83%E3%82%AF%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E5%BF%97%E6%AF%94%E5%8F%A3%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%92%20%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%96%E3%83%AB%E3%83%89%E3%83%83%E3%82%AF">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000460/">食べログ ブルドック</a> / <a href="https://tabelog.com/yoshoku/fukui/A1801/A180101/rank/">食べログ 福井市洋食ランキング</a></div>
+</div></div>
+<div class="card" id="c-restaurant_alta_fukui">
+<img class="hero" src="img/fukui/restaurant_alta_fukui.jpg" alt="レストラン アルタ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">45</span>レストラン アルタ<span class="yomi">れすとらん あるた</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">越前花堂駅にほど近い羽水の洋食店。看板は手ごねの手作りハンバーグで、オムライスと並んで注文の中心を占める。ソースから付け合わせまで既製品に頼らず店で仕込む方針を通しており、家庭的な量と値付けを求めて通う客が多い。営業は11時から14時半と、17時から19時半までと早じまいで、月曜と火曜が休み。派手な内装も宣伝もないが、食べログの福井市洋食ランキングでは常に上位に残り、2025年秋の訪問記も投稿されている、地元でしっかり回り続けている店である。</div>
+<div class="sig"><b>一皿:</b>手作りハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:30, 17:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県福井市羽水３丁目１０４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776341788">☎ 0776-34-1788</a> ／ <a href="https://menu-navi.jp/shop/aruta/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市洋食ランキング4位（3.28点）で、2025年9月訪問の投稿を確認。ヒトサラでもオムライスとハンバーグが評判の洋食の名店として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%A2%E3%83%AB%E3%82%BF%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E7%BE%BD%E6%B0%B4%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000163/">食べログ レストラン アルタ</a> / <a href="https://tabelog.com/yoshoku/fukui/A1801/A180101/rank/">食べログ 福井市洋食ランキング</a></div>
+</div></div>
+<div class="card" id="c-trattoria_ciao_fukui">
+<img class="hero" src="img/fukui/trattoria_ciao_fukui.jpg" alt="トラットリア チャオ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">46</span>トラットリア チャオ<span class="yomi">とらっとりあ ちゃお</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">30年以上福井で続くイタリア料理店で、2025年9月12日に福井駅から徒歩6分の中央一丁目へ移転して営業を再開した。イタリアの食堂を思わせる内装で、福井と北陸の旬の素材を使い、季節ごとに献立を組み替える。イタリアワインの品ぞろえも厚い。昼は11時半から14時、夜は17時半から22時まで（ラストオーダー20時半）で、月曜が休み。派手さより落ち着きで選ばれる店として、福井市公式観光サイトでも「大人が満足できるお店」として紹介されている。</div>
+<div class="sig"><b>一皿:</b>季節の福井食材のパスタ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00, 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央２丁目２−１ パラッツォ.イ 1階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776230617">☎ 0776-23-0617</a> ／ <a href="http://www.fukui-ciao.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井市公式観光サイト「福いろ」に2025年9月12日移転オープンと明記されており、30年以上続く店が現行で営業していることを確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%88%E3%83%A9%E3%83%83%E3%83%88%E3%83%AA%E3%82%A2%20%E3%83%81%E3%83%A3%E3%82%AA%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%20%E3%83%91%E3%83%A9%E3%83%83%E3%83%84%E3%82%A9.%E3%82%A4%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fuku-iro.jp/gourmet/detail_10634.html">福いろ（福井市公式観光サイト）トラットリア チャオ</a></div>
+</div></div>
+<div class="card" id="c-bistro_moustache_fukui">
+<img class="hero" src="img/fukui/bistro_moustache_fukui.jpg" alt="ビストロ moustache 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">47</span>ビストロ moustache<span class="yomi">びすとろ むすたしゅ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">福井市水越のビストロ。フランス料理の技法を踏まえながら、素材の持ち味を残して軽く仕上げる作りで、パイ包み焼きと手作りの菓子が評判を取る。自然派ワインをそろえ、気取らない雰囲気で昼から使えるのが持ち味。木を基調にした温かみのある店内で、昼は12時から14時、夜は18時から22時までの営業、休みは月曜と第2・第4火曜。要予約。県内情報サイト「ふーぽ」の「福井市のカジュアルフレンチ6選」に選ばれ、2025年5月の更新でも掲載が続いている。</div>
+<div class="sig"><b>一皿:</b>パイ包み焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 12:00〜14:30, 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>福井県福井市水越１丁目８０３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776502276">☎ 0776-50-2276</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県内情報サイト「ふーぽ」の『福井市のカジュアルフレンチ6選』（2025年5月13日更新）に掲載。パイ包み焼きと手作りスイーツが評判と紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20moustache%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%B0%B4%E8%B6%8A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%EF%BC%90%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fupo.jp/article/fukui-casual-french/">ふーぽ 福井市のカジュアルフレンチ6選</a></div>
+</div></div>
+<div class="card" id="c-kankoku_chubo_senara_fukui">
+<img class="hero" src="img/fukui/kankoku_chubo_senara_fukui.jpg" alt="韓国厨房セナラ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">48</span>韓国厨房セナラ<span class="yomi">かんこくちゅうぼう せなら</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1978年創業、福井市開発の韓国料理店。焼肉とホルモンを軸に冷麺までそろえ、食べログでの評価は3.72点と、福井市のアジア・各国料理店のなかでも突出して高い。店の紹介では福井県の焼肉ランキング1位を掲げている。昼は11時半から14時半、夜は17時から23時まで（入店は22時まで）で、火曜が休み。40年以上にわたり地元の家族連れや会社帰りの客を集めてきた店で、2026年7月の訪問投稿も出ており、老舗でありながら現在も評価が落ちていない一軒である。</div>
+<div class="sig"><b>一皿:</b>ホルモンと冷麺</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>福井県福井市開発３丁目２５０９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776534040">☎ 0776-53-4040</a> ／ <a href="http://servicecreate.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの福井市アジア・エスニック一覧で3.72点と群を抜いて高く、2026年7月訪問の口コミを確認。1978年創業と明記された長寿店である。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E5%8E%A8%E6%88%BF%E3%82%BB%E3%83%8A%E3%83%A9%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E9%96%8B%E7%99%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%95%EF%BC%90%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18000442/">食べログ 韓国厨房セナラ</a> / <a href="https://tabelog.com/fukui/A1801/A180101/rstLst/RC04/">食べログ 福井市のアジア・エスニック一覧</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・和菓子・パン</h2>
+<div class="card" id="c-muranaka_kansendo_fukui">
+<img class="hero" src="img/fukui/muranaka_kansendo_fukui.jpg" alt="佐佳枝上町 村中甘泉堂 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>佐佳枝上町 村中甘泉堂 本店<span class="yomi">さかえかみまち むらなかかんせんどう ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治43年（1910年）創業、2010年に創業100年を迎えた際に屋号を創業当時の「村中甘泉堂」へ戻し、店舗を一新した和菓子店。福井駅にほど近い中央一丁目の本店では、銘菓・羽二重餅を中心に、福井の四季を映した生菓子や季節限定の一二三餅を並べる。ギャラリースペースを設けクラシック音楽が流れる落ち着いた造りで、洋菓子部門のパティスリーKANSENDOも併設する。福井駅の商業施設くるふ福井駅にも出店しており、土産としても買いやすい。</div>
+<div class="sig"><b>一皿:</b>羽二重餅</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 9:00〜18:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>福井県福井市中央１丁目２１−２４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0120224354">☎ 0120-224-354</a> ／ <a href="http://www.kansendo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>明治43年創業で羽二重餅を代表商品とする老舗。公式サイトと福井駅の商業施設くるふ福井駅の出店ページが現行の商品・営業情報を掲載しており、営業継続を確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BD%90%E4%BD%B3%E6%9E%9D%E4%B8%8A%E7%94%BA%20%E6%9D%91%E4%B8%AD%E7%94%98%E6%B3%89%E5%A0%82%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kansendo.com/">村中甘泉堂 公式サイト</a> / <a href="https://www.curu-f.jp/shop/detail.php?id=492">くるふ福井駅 佐佳枝上町 村中甘泉堂</a> / <a href="https://www.fukuishimbun.co.jp/feature/fu/gourmet?id=58e4906977656150037f0200">月刊fu（福井新聞）村中甘泉堂本店＆パティスリーKANSENDO</a></div>
+</div></div>
+<div class="card" id="c-a_volonte_kyoden_fukui">
+<img class="hero" src="img/fukui/a_volonte_kyoden_fukui.jpg" alt="ブーランジェリー ア・ヴォロンテ 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>ブーランジェリー ア・ヴォロンテ 本店<span class="yomi">ぶーらんじぇりー あ・う゛ぉろんて ほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">福井市経田の住宅地にあるベーカリー。朝7時から開き、約90種類のパンが時間ごとに次々と焼き上がる。福井の料理人が監修した総菜パンやサンドイッチ、デザート系まで幅を広く取り、練乳クリームを挟んだミルクフランスは個数制限がかかるほど売れる。ベーグルサンドやクリームチーズを使った品も定番。店前に12台分の駐車場があるが常に埋まる盛況で、売り切れ次第終了となる。休みは火曜と水曜。食べログの福井市パンランキングで1位を占め、市内でもっとも支持を集める部類の店である。</div>
+<div class="sig"><b>一皿:</b>練乳ミルクフランス</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 7:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>福井県福井市経田２丁目４０６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0776232399">☎ 0776-23-2399</a> ／ <a href="https://www.instagram.com/a_volonte_fukui/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ福井市パンランキング1位（3.41点・90件）で、2025年7月訪問の投稿を確認。駐車場が常に満車になる人気店として複数のメディアで扱われている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%96%E3%83%BC%E3%83%A9%E3%83%B3%E3%82%B8%E3%82%A7%E3%83%AA%E3%83%BC%20%E3%82%A2%E3%83%BB%E3%83%B4%E3%82%A9%E3%83%AD%E3%83%B3%E3%83%86%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E7%B5%8C%E7%94%B0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%90%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/fukui/A1801/A180101/18004410/">食べログ ア･ヴォロンテ 本店</a> / <a href="https://tabelog.com/pan/fukui/A1801/A180101/rank/">食べログ 福井市パンランキング</a></div>
+</div></div>
+<div class="card" id="c-europan_kimuraya_sabae">
+<img class="hero" src="img/fukui/europan_kimuraya_sabae.jpg" alt="ヨーロッパン・キムラヤ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">51</span>ヨーロッパン・キムラヤ<span class="yomi">よーろっぱん・きむらや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">1927年創業、鯖江市旭町の老舗ベーカリー。初代が東京の木村屋で修業中に関東大震災に遭い、郷里の鯖江でパン屋を始めたのが起こりで、鯖江に初めてあんぱんを持ち込み「ハイカラな店」として知られた。1953年に銀座木村屋總本店からのれん分けを受けている。二代目はフランスとドイツで研修して欧州の製法を持ち帰り、三代目が現在の品ぞろえを作った。看板は餅とあんを合わせた大福あんぱんと、日本一堅いとも言われる軍隊堅麺麭。まもなく創業100年を迎える。</div>
+<div class="sig"><b>一皿:</b>大福あんぱん</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 9:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>福井県鯖江市旭町２丁目３−２０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0778510502">☎ 0778-51-0502</a> ／ <a href="http://www.e-kimuraya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鯖江市公式の観光グルメページと美めぐりふくいが、1927年創業・銀座木村屋からののれん分けという由来と現行の営業時間を掲載している。福井市外のため neighbor として収録。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A8%E3%83%BC%E3%83%AD%E3%83%83%E3%83%91%E3%83%B3%E3%83%BB%E3%82%AD%E3%83%A0%E3%83%A9%E3%83%A4%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E9%AF%96%E6%B1%9F%E5%B8%82%E6%97%AD%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.city.sabae.fukui.jp/kanko/gourmet/kimuraya.html">鯖江市 公式サイト ヨーロッパン･キムラヤ</a> / <a href="https://bimeguri.jp/spot/11717/">美めぐりふくい キムラヤ</a></div>
+</div></div>
+<div class="card" id="c-kissa_chinchirorin_fukui">
+<img class="hero" src="img/fukui/kissa_chinchirorin_fukui.jpg" alt="喫茶ちんちろりん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">52</span>喫茶ちんちろりん<span class="yomi">きっさ ちんちろりん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和56年（1981年）開店、福井市板垣で親子三代が続ける純喫茶。赤いソファ席や店内の絵画・オブジェは歴代店主が趣味で集めたもので、開店当時の空気がそのまま残っている。名物は「大人のお子様ランチ」1200円で、オムライスにエビフライ、唐揚げ、ウインナー、ミニハンバーグとサラダを盛り、みかんゼリーまで付く。自家栽培の野菜を使った日替わりランチや、昔ながらのプリンも定番。朝9時から夕方までの営業で、土日祝は休むため平日にしか行けない。</div>
+<div class="sig"><b>一皿:</b>大人のお子様ランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜15:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>福井県福井市板垣１丁目２０７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0776355588">☎ 0776-35-5588</a> ／ <a href="https://m.facebook.com/tinntirorinn/?locale2=ja_JP">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福井の情報サイト「フクブロ」が2025年7月2日に実食記事を公開しており、現在も営業していることを確認できた。ふーぽの「福井県のレトロな喫茶店4選」の筆頭にも挙げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%81%A1%E3%82%93%E3%81%A1%E3%82%8D%E3%82%8A%E3%82%93%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E6%9D%BF%E5%9E%A3%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fukublo.jp/gourmet/2025/07/02/43308/">フクブロ レトロ喫茶で贅沢すぎるお子様ランチ発見！「喫茶 ちんちろりん」</a> / <a href="https://fupo.jp/article/fukui-retro-kissa/">ふーぽ 福井県のレトロな喫茶店4選</a></div>
+</div></div>
+<div class="card" id="c-moriame_coffee_fukui">
+<img class="hero" src="img/fukui/moriame_coffee_fukui.jpg" alt="森雨珈琲 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">53</span>森雨珈琲<span class="yomi">もりあめこーひー</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">福井市上野本町で夫婦が営む自家焙煎の珈琲店。2024年秋に開いた新しい店で、深煎りの豆をネルドリップで落とす淹れ方を軸に据えている。布を通すことで口当たりが丸くなり、苦みの角が立たない一杯になるという。勧めの一つにグアテマラを挙げる。平日は正午から18時（月曜は17時まで）、土日祝は午前10時から15時までと、曜日によって開ける時間が変わる。水曜と木曜が休み。県内情報サイト「ふーぽ」の自家焙煎コーヒーショップ特集にも取り上げられている。</div>
+<div class="sig"><b>一皿:</b>ネルドリップの深煎りグアテマラ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 12:00〜17:00 ／ 火・金 12:00〜18:00 ／ 土・日 10:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>福井県福井市上野本町１丁目２０１９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:09077493232">☎ 090-7749-3232</a> ／ <a href="https://www.instagram.com/moriamecoffee?igsh=bGhsOWwzdmZ4dTBx&amp;utm_source=qr">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県内情報サイト「ふーぽ」の2026年6月号連動企画『店主のこだわりが光る「自家焙煎コーヒーショップ」8選』に選出されており、現行の営業を確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E9%9B%A8%E7%8F%88%E7%90%B2%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E4%B8%8A%E9%87%8E%E6%9C%AC%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fupo.jp/article/fu2606_asaniniauippai/">ふーぽ 店主のこだわりが光る「自家焙煎コーヒーショップ」8選</a></div>
+</div></div>
+<div class="card" id="c-nao_coffee_fukui">
+<img class="hero" src="img/fukui/nao_coffee_fukui.jpg" alt="nao coffee 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">54</span>nao coffee<span class="yomi">なおこーひー</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">福井市町屋の自家焙煎珈琲店。中深煎りから深煎りの範囲で、豆それぞれの個性がもっとも立つ焙煎度合いを探る作りをしており、夏にはレモンを合わせたコーヒーのような新作も出す。営業は11時から17時まで、水曜のみ13時開店で、木曜から土曜までが休みという変則的な週の組み方をしている。豆の量り売りも行う。2026年夏の県内情報サイト「ふーぽ」の特集『店主のこだわりが光る「自家焙煎コーヒーショップ」8選』では、福井市内から選ばれた2軒のうちの1軒として紹介された。</div>
+<div class="sig"><b>一皿:</b>中深～深煎りのシングルオリジン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・日 11:00〜17:00 ／ 水 13:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">木・金・土曜</td></tr>
+<tr><th>住所</th><td>福井県福井市町屋３丁目９−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://nao-coffee.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県内情報サイト「ふーぽ」の2026年6月号連動企画で県内8軒の自家焙煎店の1つとして紹介され、福井市内では森雨珈琲と並ぶ2軒に入っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=nao%20coffee%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E7%A6%8F%E4%BA%95%E5%B8%82%E7%94%BA%E5%B1%8B%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fupo.jp/article/fu2606_asaniniauippai/">ふーぽ 店主のこだわりが光る「自家焙煎コーヒーショップ」8選</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
