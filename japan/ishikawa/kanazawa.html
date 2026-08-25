@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>金沢美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / ISHIKAWA・石川県 🇯🇵</div>
+  <h1>金沢美食ガイド</h1>
+  <div class="sub">加賀百万石の城下町。加賀野菜と治部煮に代表される武家の料理、近江町市場に揚がる日本海の魚、車麩と赤巻を入れる金沢おでん、薄焼き卵に白身魚フライとタルタルを重ねるハントンライス、そして茶の湯が育てた和菓子まで厳選57スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年8月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kanazawa/_map.png" alt="全域マップ">
+<a href="#c-tsubajin_teramachi" style="left:57.75%;top:56.98%;width:2.54%;height:2.3%;"></a>
+<a href="#c-ootomorou_oyamacho" style="left:60.71%;top:44.63%;width:2.54%;height:2.3%;"></a>
+<a href="#c-gyohan_korinbo" style="left:58.89%;top:48.18%;width:2.54%;height:2.3%;"></a>
+<a href="#c-daimyochaya_konohanacho" style="left:57.26%;top:34.44%;width:2.54%;height:2.3%;"></a>
+<a href="#c-fumuroya_cafe_kanazawaeki" style="left:54.29%;top:33.91%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kikuichi_katamachi" style="left:59.39%;top:50.36%;width:2.54%;height:2.3%;"></a>
+<a href="#c-oden_takasago_katamachi" style="left:59.94%;top:50.54%;width:2.54%;height:2.3%;"></a>
+<a href="#c-akadama_honten_katamachi" style="left:58.08%;top:52.58%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kuroyuri_kanazawaeki" style="left:54.2%;top:34.67%;width:2.54%;height:2.3%;"></a>
+<a href="#c-oden_miyuki_katamachi" style="left:58.9%;top:53.49%;width:2.54%;height:2.3%;"></a>
+<a href="#c-amatsubo_omicho" style="left:61.48%;top:41.19%;width:2.54%;height:2.3%;"></a>
+<a href="#c-grill_ootsuka_katamachi" style="left:58.22%;top:50.33%;width:2.54%;height:2.3%;"></a>
+<a href="#c-daidai_katamachi" style="left:58.8%;top:49.82%;width:2.54%;height:2.3%;"></a>
+<a href="#c-champion_curry_nonoichi_honten" style="left:34.44%;top:81.88%;width:2.54%;height:2.3%;"></a>
+<a href="#c-turban_curry_hirosaka" style="left:61.08%;top:50.38%;width:2.54%;height:2.3%;"></a>
+<a href="#c-ikiikitei_omicho" style="left:62.14%;top:40.47%;width:2.54%;height:2.3%;"></a>
+<a href="#c-ajidokoro_takasaki_nagamachi" style="left:58.47%;top:48.83%;width:2.54%;height:2.3%;"></a>
+<a href="#c-itaru_honten_kakinokibatake" style="left:61.76%;top:51.39%;width:2.54%;height:2.3%;"></a>
+<a href="#c-sushi_mitsukawa_higashiyama" style="left:71.41%;top:40.21%;width:2.54%;height:2.3%;"></a>
+<a href="#c-sushi_kibatani_hikosomachi" style="left:66.98%;top:39.63%;width:2.54%;height:2.3%;"></a>
+<a href="#c-sushi_tobi_oyamacho" style="left:60.57%;top:45.63%;width:2.54%;height:2.3%;"></a>
+<a href="#c-otomezushi_kiguramachi" style="left:58.02%;top:50.83%;width:2.54%;height:2.3%;"></a>
+<a href="#c-sushi_mekumi_nonoichi" style="left:14.47%;top:90.38%;width:2.54%;height:2.3%;"></a>
+<a href="#c-sentorizushi_ishibiki" style="left:76.95%;top:58.44%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kataori_namikicho" style="left:72.32%;top:42.76%;width:2.54%;height:2.3%;"></a>
+<a href="#c-zeniya_katamachi" style="left:56.51%;top:51.53%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kanazawa_seturi_takaokamachi" style="left:59.91%;top:42.35%;width:2.54%;height:2.3%;"></a>
+<a href="#c-tempura_koizumi_ikedamachi" style="left:58.96%;top:54.47%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kabayakiya_kanaiwa" style="left:9.22%;top:9.63%;width:2.54%;height:2.3%;"></a>
+<a href="#c-katocho_sohonten_omicho" style="left:63.6%;top:40.79%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kobashi_otafuku_hikoso" style="left:66.12%;top:36.63%;width:2.54%;height:2.3%;"></a>
+<a href="#c-sarashina_fujii_kakinokibatake" style="left:62.07%;top:51.72%;width:2.54%;height:2.3%;"></a>
+<a href="#c-teuchi_soba_koyori_nagata" style="left:48.27%;top:36.08%;width:2.54%;height:2.3%;"></a>
+<a href="#c-manmi_chukasoba_honmachi" style="left:55.47%;top:37.8%;width:2.54%;height:2.3%;"></a>
+<a href="#c-menya_taiga_horikawa" style="left:58.55%;top:33.58%;width:2.54%;height:2.3%;"></a>
+<a href="#c-dai7_gyoza_morinosato" style="left:90.78%;top:61.41%;width:2.54%;height:2.3%;"></a>
+<a href="#c-izakaya_kappo_tamura_namikicho" style="left:70.8%;top:41.87%;width:2.54%;height:2.3%;"></a>
+<a href="#c-shubo_shojo_korinbo" style="left:58.85%;top:48.23%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kawabata_sengyoten_katamachi" style="left:58.13%;top:52.05%;width:2.54%;height:2.3%;"></a>
+<a href="#c-uogin_katamachi" style="left:57.75%;top:52.19%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kanazawa_jizakegura_station" style="left:54.12%;top:34.45%;width:2.54%;height:2.3%;"></a>
+<a href="#c-sakeshop_fukumitsuya_ishibiki" style="left:76.14%;top:58.5%;width:2.54%;height:2.3%;"></a>
+<a href="#c-nihonshu_makoto_higashiyama" style="left:70.14%;top:39.79%;width:2.54%;height:2.3%;"></a>
+<a href="#c-jiyuken_higashiyama" style="left:70.86%;top:39.97%;width:2.54%;height:2.3%;"></a>
+<a href="#c-grill_new_tanuki_kodatsuno" style="left:81.26%;top:64.15%;width:2.54%;height:2.3%;"></a>
+<a href="#c-todorokitei_higashiyama" style="left:69.62%;top:39.8%;width:2.54%;height:2.3%;"></a>
+<a href="#c-la_nenegoose_sennichimachi" style="left:55.89%;top:52.89%;width:2.54%;height:2.3%;"></a>
+<a href="#c-trattoria_tamaya_oyama" style="left:60.8%;top:44.38%;width:2.54%;height:2.3%;"></a>
+<a href="#c-kinteirou_shimeno" style="left:21.95%;top:34.34%;width:2.54%;height:2.3%;"></a>
+<a href="#c-respice_kakinokibatake" style="left:62.18%;top:51.97%;width:2.54%;height:2.3%;"></a>
+<a href="#c-morihachi_honten_otemachi" style="left:68.72%;top:42.88%;width:2.54%;height:2.3%;"></a>
+<a href="#c-wagashi_murakami_nagamachi" style="left:56.27%;top:48.26%;width:2.54%;height:2.3%;"></a>
+<a href="#c-moroeya_nomachi_honten" style="left:54.32%;top:57.78%;width:2.54%;height:2.3%;"></a>
+<a href="#c-higashide_coffee_jikkenmachi" style="left:62.74%;top:41.66%;width:2.54%;height:2.3%;"></a>
+<a href="#c-hiramipan_nagamachi" style="left:57.46%;top:45.99%;width:2.54%;height:2.3%;"></a>
+<a href="#c-le_musee_de_h_kanazawa" style="left:66.52%;top:52.32%;width:2.54%;height:2.3%;"></a>
+<a href="#c-mamezuki_higashiyama" style="left:72.11%;top:37.73%;width:2.54%;height:2.3%;"></a>
+</div>
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(金沢駅〜近江町市場・香林坊・片町)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kanazawa/_map2.png" alt="中心部拡大(金沢駅〜近江町市場・香林坊・片町)">
+<a href="#c-ootomorou_oyamacho" style="left:46.13%;top:55.09%;width:2.26%;height:2.22%;"></a>
+<a href="#c-gyohan_korinbo" style="left:39.63%;top:68.86%;width:2.26%;height:2.22%;"></a>
+<a href="#c-daimyochaya_konohanacho" style="left:33.83%;top:15.59%;width:2.26%;height:2.22%;"></a>
+<a href="#c-fumuroya_cafe_kanazawaeki" style="left:23.25%;top:13.53%;width:2.26%;height:2.22%;"></a>
+<a href="#c-kikuichi_katamachi" style="left:41.41%;top:77.3%;width:2.26%;height:2.22%;"></a>
+<a href="#c-oden_takasago_katamachi" style="left:43.38%;top:77.98%;width:2.26%;height:2.22%;"></a>
+<a href="#c-akadama_honten_katamachi" style="left:36.75%;top:85.88%;width:2.26%;height:2.22%;"></a>
+<a href="#c-kuroyuri_kanazawaeki" style="left:22.92%;top:16.48%;width:2.26%;height:2.22%;"></a>
+<a href="#c-oden_miyuki_katamachi" style="left:39.65%;top:89.4%;width:2.26%;height:2.22%;"></a>
+<a href="#c-amatsubo_omicho" style="left:48.86%;top:41.75%;width:2.26%;height:2.22%;"></a>
+<a href="#c-grill_ootsuka_katamachi" style="left:37.26%;top:77.16%;width:2.26%;height:2.22%;"></a>
+<a href="#c-daidai_katamachi" style="left:39.32%;top:75.2%;width:2.26%;height:2.22%;"></a>
+<a href="#c-turban_curry_hirosaka" style="left:47.44%;top:77.35%;width:2.26%;height:2.22%;"></a>
+<a href="#c-ikiikitei_omicho" style="left:51.2%;top:38.97%;width:2.26%;height:2.22%;"></a>
+<a href="#c-ajidokoro_takasaki_nagamachi" style="left:38.14%;top:71.37%;width:2.26%;height:2.22%;"></a>
+<a href="#c-itaru_honten_kakinokibatake" style="left:49.85%;top:81.26%;width:2.26%;height:2.22%;"></a>
+<a href="#c-sushi_mitsukawa_higashiyama" style="left:84.24%;top:37.93%;width:2.26%;height:2.22%;"></a>
+<a href="#c-sushi_kibatani_hikosomachi" style="left:68.44%;top:35.71%;width:2.26%;height:2.22%;"></a>
+<a href="#c-sushi_tobi_oyamacho" style="left:45.62%;top:58.95%;width:2.26%;height:2.22%;"></a>
+<a href="#c-otomezushi_kiguramachi" style="left:36.54%;top:79.09%;width:2.26%;height:2.22%;"></a>
+<a href="#c-kataori_namikicho" style="left:87.47%;top:47.84%;width:2.26%;height:2.22%;"></a>
+<a href="#c-zeniya_katamachi" style="left:31.17%;top:81.84%;width:2.26%;height:2.22%;"></a>
+<a href="#c-kanazawa_seturi_takaokamachi" style="left:43.28%;top:46.23%;width:2.26%;height:2.22%;"></a>
+<a href="#c-tempura_koizumi_ikedamachi" style="left:39.87%;top:93.23%;width:2.26%;height:2.22%;"></a>
+<a href="#c-katocho_sohonten_omicho" style="left:56.42%;top:40.19%;width:2.26%;height:2.22%;"></a>
+<a href="#c-kobashi_otafuku_hikoso" style="left:65.38%;top:24.05%;width:2.26%;height:2.22%;"></a>
+<a href="#c-sarashina_fujii_kakinokibatake" style="left:50.97%;top:82.57%;width:2.26%;height:2.22%;"></a>
+<a href="#c-teuchi_soba_koyori_nagata" style="left:2.18%;top:21.93%;width:2.26%;height:2.22%;"></a>
+<a href="#c-manmi_chukasoba_honmachi" style="left:27.47%;top:28.59%;width:2.26%;height:2.22%;"></a>
+<a href="#c-menya_taiga_horikawa" style="left:38.44%;top:12.24%;width:2.26%;height:2.22%;"></a>
+<a href="#c-izakaya_kappo_tamura_namikicho" style="left:82.06%;top:44.37%;width:2.26%;height:2.22%;"></a>
+<a href="#c-shubo_shojo_korinbo" style="left:39.48%;top:69.04%;width:2.26%;height:2.22%;"></a>
+<a href="#c-kawabata_sengyoten_katamachi" style="left:36.92%;top:83.83%;width:2.26%;height:2.22%;"></a>
+<a href="#c-uogin_katamachi" style="left:35.56%;top:84.39%;width:2.26%;height:2.22%;"></a>
+<a href="#c-kanazawa_jizakegura_station" style="left:22.66%;top:15.63%;width:2.26%;height:2.22%;"></a>
+<a href="#c-nihonshu_makoto_higashiyama" style="left:79.7%;top:36.31%;width:2.26%;height:2.22%;"></a>
+<a href="#c-jiyuken_higashiyama" style="left:82.26%;top:37.0%;width:2.26%;height:2.22%;"></a>
+<a href="#c-todorokitei_higashiyama" style="left:77.87%;top:36.35%;width:2.26%;height:2.22%;"></a>
+<a href="#c-la_nenegoose_sennichimachi" style="left:28.94%;top:87.1%;width:2.26%;height:2.22%;"></a>
+<a href="#c-trattoria_tamaya_oyama" style="left:46.43%;top:54.11%;width:2.26%;height:2.22%;"></a>
+<a href="#c-respice_kakinokibatake" style="left:51.37%;top:83.53%;width:2.26%;height:2.22%;"></a>
+<a href="#c-morihachi_honten_otemachi" style="left:74.65%;top:48.29%;width:2.26%;height:2.22%;"></a>
+<a href="#c-wagashi_murakami_nagamachi" style="left:30.31%;top:69.14%;width:2.26%;height:2.22%;"></a>
+<a href="#c-higashide_coffee_jikkenmachi" style="left:53.33%;top:43.55%;width:2.26%;height:2.22%;"></a>
+<a href="#c-hiramipan_nagamachi" style="left:34.54%;top:60.34%;width:2.26%;height:2.22%;"></a>
+<a href="#c-le_musee_de_h_kanazawa" style="left:66.8%;top:84.89%;width:2.26%;height:2.22%;"></a>
+<a href="#c-mamezuki_higashiyama" style="left:86.74%;top:28.33%;width:2.26%;height:2.22%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+
+<div class="toc">
+<div class="th">目次</div>
+<div class="sec red">金沢のご当地(加賀料理・金沢おでん・ハントンライス)</div>
+<div class="links">
+<a href="#c-tsubajin_teramachi"><span class="tn" style="background:#e34948;">1</span>金沢最古の料亭で味わう加賀会席</a>
+<a href="#c-ootomorou_oyamacho"><span class="tn" style="background:#e34948;">2</span>加賀藩御膳所の系譜を継ぐ料亭</a>
+<a href="#c-gyohan_korinbo"><span class="tn" style="background:#e34948;">3</span>明治30年創業、じぶ鍋とゴリ料理</a>
+<a href="#c-daimyochaya_konohanacho"><span class="tn" style="background:#e34948;">4</span>金沢駅すぐ、加賀料理と蟹の会席</a>
+<a href="#c-fumuroya_cafe_kanazawaeki"><span class="tn" style="background:#e34948;">5</span>加賀麩の老舗がつくる麩の膳</a>
+<a href="#c-kikuichi_katamachi"><span class="tn" style="background:#e34948;">6</span>昭和9年創業、カニ面の名づけ親</a>
+<a href="#c-oden_takasago_katamachi"><span class="tn" style="background:#e34948;">7</span>生姜味噌で食べる関東風の出汁</a>
+<a href="#c-akadama_honten_katamachi"><span class="tn" style="background:#e34948;">8</span>昭和2年創業、醤油を使わない出汁</a>
+<a href="#c-kuroyuri_kanazawaeki"><span class="tn" style="background:#e34948;">9</span>1953年から続く駅ナカのおでん</a>
+<a href="#c-oden_miyuki_katamachi"><span class="tn" style="background:#e34948;">10</span>鶏ガラ出汁のおでんと金沢の一品</a>
+<a href="#c-amatsubo_omicho"><span class="tn" style="background:#e34948;">11</span>朝8時から近江町でおでんと丼</a>
+<a href="#c-grill_ootsuka_katamachi"><span class="tn" style="background:#e34948;">12</span>ハントンライス発祥の老舗洋食店</a>
+<a href="#c-daidai_katamachi"><span class="tn" style="background:#e34948;">13</span>金沢の名物洋食2品を並べて出す</a>
+<a href="#c-champion_curry_nonoichi_honten"><span class="tn" style="background:#e34948;">14</span>金沢カレーの型をつくった本店</a>
+<a href="#c-turban_curry_hirosaka"><span class="tn" style="background:#e34948;">15</span>1971年創業、香林坊の金沢カレー</a>
+<a href="#c-ikiikitei_omicho"><span class="tn" style="background:#e34948;">16</span>朝7時から近江町の地魚を丼で</a>
+<a href="#c-ajidokoro_takasaki_nagamachi"><span class="tn" style="background:#e34948;">17</span>のどぐろを三通りで出す割烹</a>
+<a href="#c-itaru_honten_kakinokibatake"><span class="tn" style="background:#e34948;">18</span>加賀野菜と地魚を出す人気居酒屋</a>
+</div>
+<div class="sec blue">寿司・海鮮・和食</div>
+<div class="links">
+<a href="#c-sushi_mitsukawa_higashiyama"><span class="tn" style="background:#2a78d6;">19</span>ひがし茶屋街の町家で握る一つ星</a>
+<a href="#c-sushi_kibatani_hikosomachi"><span class="tn" style="background:#2a78d6;">20</span>北陸の魚を一貫ごとに仕立て分ける</a>
+<a href="#c-sushi_tobi_oyamacho"><span class="tn" style="background:#2a78d6;">21</span>尾山神社そばの一回転限定の鮨</a>
+<a href="#c-otomezushi_kiguramachi"><span class="tn" style="background:#2a78d6;">22</span>木倉町の路地に佇む予約困難の鮨</a>
+<a href="#c-sushi_mekumi_nonoichi"><span class="tn" style="background:#2a78d6;">23</span>住宅街に潜む全国区の予約困難店</a>
+<a href="#c-sentorizushi_ishibiki"><span class="tn" style="background:#2a78d6;">24</span>昭和二十八年創業、石引の地元鮨</a>
+<a href="#c-kataori_namikicho"><span class="tn" style="background:#2a78d6;">25</span>浅野川沿い、素材主義の二つ星</a>
+<a href="#c-zeniya_katamachi"><span class="tn" style="background:#2a78d6;">26</span>昭和四十五年開業、金沢和食の本流</a>
+<a href="#c-kanazawa_seturi_takaokamachi"><span class="tn" style="background:#2a78d6;">27</span>つる幸二代目が開いたカウンター割烹</a>
+<a href="#c-tempura_koizumi_ikedamachi"><span class="tn" style="background:#2a78d6;">28</span>北陸の素材で通す天ぷら百名店</a>
+<a href="#c-kabayakiya_kanaiwa"><span class="tn" style="background:#2a78d6;">29</span>金沢名物どじょうの蒲焼を手焼きで</a>
+</div>
+<div class="sec aqua">ラーメン・そば・うどん・町中華</div>
+<div class="links">
+<a href="#c-katocho_sohonten_omicho"><span class="tn" style="background:#1baf7a;">30</span>甘口出汁と柔らか麺の金沢うどん</a>
+<a href="#c-kobashi_otafuku_hikoso"><span class="tn" style="background:#1baf7a;">31</span>昭和5年から続くいなりうどんの店</a>
+<a href="#c-sarashina_fujii_kakinokibatake"><span class="tn" style="background:#1baf7a;">32</span>金沢そばの基準をつくった百名店</a>
+<a href="#c-teuchi_soba_koyori_nagata"><span class="tn" style="background:#1baf7a;">33</span>完全予約制の戸隠そば・ぼっち盛り</a>
+<a href="#c-manmi_chukasoba_honmachi"><span class="tn" style="background:#1baf7a;">34</span>駅前で55年、深夜まで灯る町中華</a>
+<a href="#c-menya_taiga_horikawa"><span class="tn" style="background:#1baf7a;">35</span>イカ墨を練り込む黒味噌ラーメン</a>
+<a href="#c-dai7_gyoza_morinosato"><span class="tn" style="background:#1baf7a;">36</span>深夜2時まで開く金沢の餃子聖地</a>
+</div>
+<div class="sec beer">居酒屋・酒どころ</div>
+<div class="links">
+<a href="#c-izakaya_kappo_tamura_namikicho"><span class="tn" style="background:#0d366b;">37</span>梅ノ橋たもと、活ガニを通年で</a>
+<a href="#c-shubo_shojo_korinbo"><span class="tn" style="background:#0d366b;">38</span>せせらぎ通りの朝どれ鮮魚と地酒</a>
+<a href="#c-kawabata_sengyoten_katamachi"><span class="tn" style="background:#0d366b;">39</span>生簀を備えた食堂風の魚居酒屋</a>
+<a href="#c-uogin_katamachi"><span class="tn" style="background:#0d366b;">40</span>のどぐろを一本焼きで、地酒も厚い</a>
+<a href="#c-kanazawa_jizakegura_station"><span class="tn" style="background:#0d366b;">41</span>駅構内で県内全32蔵を飲み比べ</a>
+<a href="#c-sakeshop_fukumitsuya_ishibiki"><span class="tn" style="background:#0d366b;">42</span>寛永二年創業の蔵直営、店内にバー</a>
+<a href="#c-nihonshu_makoto_higashiyama"><span class="tn" style="background:#0d366b;">43</span>ひがし茶屋街入口の昼から開く酒バー</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-jiyuken_higashiyama"><span class="tn" style="background:#4a3aa7;">44</span>明治42年創業、醤油味の黒いオムライス</a>
+<a href="#c-grill_new_tanuki_kodatsuno"><span class="tn" style="background:#4a3aa7;">45</span>三代続くハヤシライスと黒いヤキメシ</a>
+<a href="#c-todorokitei_higashiyama"><span class="tn" style="background:#4a3aa7;">46</span>大正12年築の旧銀行で食べるビストロ</a>
+<a href="#c-la_nenegoose_sennichimachi"><span class="tn" style="background:#4a3aa7;">47</span>犀川沿いの町家で45年続くフレンチ</a>
+<a href="#c-trattoria_tamaya_oyama"><span class="tn" style="background:#4a3aa7;">48</span>尾山神社そばの平日だけのイタリアン</a>
+<a href="#c-kinteirou_shimeno"><span class="tn" style="background:#4a3aa7;">49</span>北京・上海帰りの料理長が作る広東料理</a>
+<a href="#c-respice_kakinokibatake"><span class="tn" style="background:#4a3aa7;">50</span>閉じたタイ料理の名店を継いだ一軒</a>
+</div>
+<div class="sec yellow">カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-morihachi_honten_otemachi"><span class="tn" style="background:#eda100;">51</span>寛永2年創業、加賀藩御用の落雁「長生殿」</a>
+<a href="#c-wagashi_murakami_nagamachi"><span class="tn" style="background:#eda100;">52</span>黒糖ふくさ餅ときんつばの明治創業店</a>
+<a href="#c-moroeya_nomachi_honten"><span class="tn" style="background:#eda100;">53</span>嘉永2年から落雁一筋の干菓子屋</a>
+<a href="#c-higashide_coffee_jikkenmachi"><span class="tn" style="background:#eda100;">54</span>赤煉瓦の自家焙煎店、名物は売切御免のプリン</a>
+<a href="#c-hiramipan_nagamachi"><span class="tn" style="background:#eda100;">55</span>大正の鉄工所跡で朝から開くベーカリー</a>
+<a href="#c-le_musee_de_h_kanazawa"><span class="tn" style="background:#eda100;">56</span>県立美術館内、辻口博啓の菓子カフェ</a>
+<a href="#c-mamezuki_higashiyama"><span class="tn" style="background:#eda100;">57</span>築80年の町家で豆の甘味だけを出す</a>
+</div>
+</div>
+
+<div class="note"><b>回り方のコツ:</b>店は金沢駅の東口から近江町市場・武蔵、片町・香林坊の繁華街、ひがし茶屋街、そして長町武家屋敷の周辺に分かれる。夜の飲み屋街は片町。近江町市場は朝から昼が本番で、夕方には仕舞う店が多い。加賀料理の治部煮とのどぐろは通年だが、香箱ガニは11月から12月末までの短い解禁期間に限られ、甘えびや寒ブリは冬が旬。市内の移動は城下まち金沢周遊バスが使いやすい。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-kanazawa" class="c-red">金沢のご当地(加賀料理・金沢おでん・ハントンライス)</h2>
+<div class="card" id="c-tsubajin_teramachi">
+<img class="hero" src="img/kanazawa/tsubajin_teramachi.jpg" alt="つば甚 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>つば甚<span class="yomi">つばじん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">前田利家に仕えた鍔師（刀の鍔をつくる職人）の家系が宝暦2年（1752）に小亭「つば屋」を開いたのが始まりで、金沢に現存する最古の料理屋とされる。犀川を見下ろす高台に建ち、座敷からは市街と山並みを望む。加賀藩以来の献立を土台に、鴨に小麦粉をまぶしてすだれ麩や椎茸と煮る治部煮、鯛の腹におからを詰めて蒸す鯛の唐蒸しといった加賀料理を、九谷焼や輪島塗の器で供する。近代には伊藤博文や高浜虚子ら要人・文人が訪れた記録が残り、建物と庭も含めて金沢の食文化そのものを体験する場になっている。完全予約制。</div>
+<div class="sig"><b>一皿:</b>加賀会席のなかの治部煮と鯛の唐蒸し</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市寺町５丁目１−８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762412181">☎ 076-241-2181</a> ／ <a href="https://tsubajin.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現在も朝・昼・夜の入店時間と予約受付を掲示しており稼働を確認できる。加賀料理の起点を示す「金沢最古の料理屋」として、このガイドの基準点になる一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A4%E3%81%B0%E7%94%9A%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%AF%BA%E7%94%BA%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsubajin.co.jp/access/">つば甚 公式サイト（アクセス・営業時間）</a></div>
+</div></div>
+<div class="card" id="c-ootomorou_oyamacho">
+<img class="hero" src="img/kanazawa/ootomorou_oyamacho.jpg" alt="大友楼 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>大友楼<span class="yomi">おおともろう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">天保元年（1830）創業。代々加賀藩の御膳所（藩主の台所）を務めた家柄で、藩に伝わる饗応料理や儀式料理の献立を書き継いできた。明治31年（1898）の金沢駅開業と同時に駅弁販売を始めた店でもあり、いまも駅弁と料亭の両方を続けている。鴨に小麦粉をまぶし、すだれ麩・椎茸とともに煮てとろみをつける治部煮、鯛の腹におからを詰めて蒸す鯛の唐蒸しなど、加賀料理の型を崩さずに供する。尾山神社近くの町なかに料亭と茶寮を構えるほか、金沢百番街あんとと香林坊大和に惣菜店を持つ。</div>
+<div class="sig"><b>一皿:</b>治部煮・鯛の唐蒸しを含む加賀会席</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜14:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市尾山町２−２７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762210305">☎ 076-221-0305</a> ／ <a href="https://ootomorou.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが加賀藩御膳所としての由緒と、料亭・茶寮・百番街店・大和店それぞれの現行営業時間を掲載しており営業中。治部煮の「原型」を確かめる目的でこのガイドに置く。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%8F%8B%E6%A5%BC%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%B0%BE%E5%B1%B1%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ootomorou.co.jp/">大友楼 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-gyohan_korinbo">
+<img class="hero" src="img/kanazawa/gyohan_korinbo.jpg" alt="魚半 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>魚半<span class="yomi">ぎょはん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治30年（1897）創業。香林坊の一角で四季の加賀・能登の食材を扱う老舗で、看板は鴨を使う治部煮と、それを鍋仕立てにした「じぶなべ」。冬に鴨の脂と煮汁のとろみが立つ鍋は、金沢でこの形で出す店が少ない。犀川や浅野川で獲れる小魚ゴリを刺身・唐揚げ・ゴリ汁で出すのも金沢では数少なく、加賀料理の古い姿を残している。ほかにのどぐろの炙り丼、生麩の田楽など加賀の素材を素直に扱う品が並ぶ。料亭ほど構えずに加賀料理へ入っていける価格と雰囲気で、昼から開いている。</div>
+<div class="sig"><b>一皿:</b>じぶなべ（治部鍋）／ゴリの唐揚げ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜14:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市香林坊２丁目１２−１５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054930335">☎ 050-5493-0335</a> ／ <a href="https://gyohan.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが明治30年創業と現行の営業時間（水曜休、日曜営業）を掲載。治部煮とゴリという金沢固有の二品を同時に扱い、昼から入れる老舗はきわめて限られる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E5%8D%8A%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%A6%99%E6%9E%97%E5%9D%8A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.gyohan.com/">金沢 加賀料理 魚半 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-daimyochaya_konohanacho">
+<img class="hero" src="img/kanazawa/daimyochaya_konohanacho.jpg" alt="加賀料理 大名茶家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>加賀料理 大名茶家<span class="yomi">かがりょうり だいみょうちゃや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和37年（1962）創業。金沢駅から歩いてすぐの立地で、金沢港直送の魚と石川の里山の食材を使う加賀料理の店。会席のなかに鴨とすだれ麩の治部煮が組み込まれ、のどぐろの塩焼きや加賀野菜の炊き合わせも通年で扱う。冬は加能ガニ（石川県産のズワイガニ）と、11月に解禁される雌の香箱ガニを使った蟹づくしの会席を組み、解禁日に合わせて特別献立を出す。春はホタルイカや白えび、夏は鱧と季節ごとに入れ替える。個室があり、旅程の初日や最終日に荷物を持ったまま使いやすい。</div>
+<div class="sig"><b>一皿:</b>治部煮つきの加賀会席／冬の蟹づくし会席</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:30, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市此花町７−５−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054848804">☎ 050-5484-8804</a> ／ <a href="http://www.kanazawaryouri.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現行の営業時間と価格帯を掲示し、金沢の情報サイトknzw.jpも2025年の香箱ガニ解禁（11月6日）に合わせた提供店として挙げている。料亭より手前の価格で加賀料理を通しで食べられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8A%A0%E8%B3%80%E6%96%99%E7%90%86%20%E5%A4%A7%E5%90%8D%E8%8C%B6%E5%AE%B6%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%AD%A4%E8%8A%B1%E7%94%BA%EF%BC%97%E2%88%92%EF%BC%95%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawaryouri.com/">加賀料理 大名茶家 公式サイト</a> / <a href="https://knzw.jp/%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9%E3%83%BB%E8%A9%B1%E9%A1%8C/2025%E5%B9%B4%E3%83%BB%E9%A6%99%E7%AE%B1%E3%82%AC%E3%83%8B%E8%A7%A3%E7%A6%81%EF%BC%81%E9%87%91%E6%B2%A2%E3%81%A7%E9%A3%9F%E3%81%B9%E3%82%89%E3%82%8C%E3%82%8B%E4%BA%BA%E6%B0%97%E5%BA%978%E9%81%B8/">2025年・香箱ガニ解禁！金沢で食べられる人気店8選（knzw.jp）</a></div>
+</div></div>
+<div class="card" id="c-fumuroya_cafe_kanazawaeki">
+<img class="hero" src="img/kanazawa/fumuroya_cafe_kanazawaeki.jpg" alt="不室屋カフェ 金沢百番街店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>不室屋カフェ 金沢百番街店<span class="yomi">ふむろやかふぇ かなざわひゃくばんがいてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">藩政期から加賀麩をつくり続ける不室屋が営むカフェ。治部煮に欠かせないすだれ麩をはじめ、車麩・生麩・宝の麩など、金沢の食がどれだけ麩に依ってきたかを一皿ずつ確かめられる。11時から出す「加賀麩とりどり膳」は小皿のすべてに麩を使った膳で、揚げ・煮・生と食感の違う麩を並べて味わう構成になっている。ほかにくるま麩のフレンチトースト、金沢生麩パフェ、麩ぜんざいなど甘味も揃う。改札を出てすぐの駅ナカにあり、朝9時から夜9時まで通しで開いているため列車待ちの時間に使える。</div>
+<div class="sig"><b>一皿:</b>加賀麩とりどり膳（3,200円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市木ノ新保町１丁目７−１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762352322">☎ 076-235-2322</a> ／ <a href="https://www.fumuroya.co.jp/shop-list/fumuroya-cafe/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>不室屋公式サイトが現行のメニューと価格、9:00～21:00の通し営業を掲載。治部煮のすだれ麩など金沢料理の土台にある「麩」を主題に据えた店で、郷土料理の背景を短時間で押さえられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8D%E5%AE%A4%E5%B1%8B%E3%82%AB%E3%83%95%E3%82%A7%20%E9%87%91%E6%B2%A2%E7%99%BE%E7%95%AA%E8%A1%97%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9C%A8%E3%83%8E%E6%96%B0%E4%BF%9D%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.fumuroya.co.jp/shop-list/fumuroya-cafe/">不室屋 公式サイト 不室屋カフェ</a></div>
+</div></div>
+<div class="card" id="c-kikuichi_katamachi">
+<img class="hero" src="img/kanazawa/kikuichi_katamachi.jpg" alt="おでん菊一 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>おでん菊一<span class="yomi">おでんきくいち</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和9年（1934）創業で、金沢で最も古いおでん屋とされる。地元の大野醤油をベースにした鰹昆布の出汁を創業から継ぎ足し、車麩・赤巻・バイ貝といった金沢ならではの種を煮る。香箱ガニの甲羅に身と内子・外子を詰めた「カニ面」は先代が考案し、剣道の面に似ていることから二代目が名づけたと伝わる（蟹漁が解禁される11～12月ごろの限定）。旧制第四高等学校の学生も通ったという店で、カウンター中心の小体な構えは当時の空気を残す。加賀れんこんのすり身団子も定番。</div>
+<div class="sig"><b>一皿:</b>カニ面（11～12月ごろ限定）／車麩・バイ貝</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町２丁目１−２３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762214676">☎ 076-221-4676</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金沢市観光協会の2025年版おでん店リストに営業中として掲載され、片町商店街の公式紹介も昭和9年創業を裏づける。カニ面の名の由来をもつ店として金沢おでんの中心にある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%A7%E3%82%93%E8%8F%8A%E4%B8%80%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.e-katamachi.com/kikuichi/">金沢・片町商店街 公式 菊一</a> / <a href="https://www.kanazawa-kankoukyoukai.or.jp/article/detail_490.html">金沢市観光協会【2025年版】金沢おでんが食べられるお店</a></div>
+</div></div>
+<div class="card" id="c-oden_takasago_katamachi">
+<img class="hero" src="img/kanazawa/oden_takasago_katamachi.jpg" alt="おでん高砂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>おでん高砂<span class="yomi">おでんたかさご</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和11年創業と伝わる老舗で、金沢では数少ない濃口の関東風出汁を使う。しっかり色の入ったおでんを、卓上の生姜味噌ダレをつけて食べるのがこの店の作法で、澄んだ出汁が主流の金沢おでんのなかでは異色にあたる。牛すじを煮込んだどて焼き、出汁にカレー粉を合わせたカレーおでんなど独自の品も長く続き、冬は香箱ガニのカニ面も並ぶ。車麩・赤巻・バイ貝といった金沢の定番種も一通り揃うため、他店と食べ比べると金沢おでんの幅が見えてくる。持ち帰り用のおでんパックもある。</div>
+<div class="sig"><b>一皿:</b>生姜味噌で食べるおでん／どて焼き・カレーおでん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 16:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町１丁目３−２９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762311018">☎ 076-231-1018</a> ／ <a href="http://oden-takasago.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金沢市観光協会の2025年版リストに掲載され現在も営業。石川の地域メディアFavoが「金沢おでん界で異彩を放つ老舗」として関東風出汁＋生姜味噌の独自性を評価している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%A7%E3%82%93%E9%AB%98%E7%A0%82%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ishikawa.favo-web.jp/store/kanazawa/gourmet/odentakasago/">Favo 石川のお店「金沢おでん界で異彩を放つ老舗 おでん高砂」</a> / <a href="https://www.kanazawa-kankoukyoukai.or.jp/article/detail_490.html">金沢市観光協会【2025年版】金沢おでんが食べられるお店</a></div>
+</div></div>
+<div class="card" id="c-akadama_honten_katamachi">
+<img class="hero" src="img/kanazawa/akadama_honten_katamachi.jpg" alt="金澤おでん 赤玉本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>金澤おでん 赤玉本店<span class="yomi">かなざわおでん あかだまほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和2年（1927）創業。昆布と煮干しを合わせた出汁に醤油を使わないのが特徴で、種の色が濁らず澄んだ仕上がりになる。この出汁は自家製おでんだけでなく、名物の元祖湯豆腐、牛すじ煮込み、茶めしにも共通して使われており、代々伝承されてきたと店は説明する。1階はテーブル中心、2階は座敷という造りで、昼12時から夜まで長く開けているため観光の合間に寄りやすい。車麩・赤巻・ふかしなど金沢固有の種が揃い、冬には香箱ガニのカニ面も登場する。おでんが売り切れ次第、閉店前でも閉めることがある。</div>
+<div class="sig"><b>一皿:</b>元祖湯豆腐／おでん（車麩・赤巻・ふかし）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 12:00〜15:00, 16:00〜23:00 ／ 日 12:00〜15:00, 16:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町２丁目２１−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762233330">☎ 076-223-3330</a> ／ <a href="http://www.oden-akadama.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが昭和2年創業と現行の営業時間・定休日を掲載し、金沢市観光協会の2025年版リストにも掲載されている。昼から金沢おでんを食べられる数少ない老舗という点で実用性が高い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%87%91%E6%BE%A4%E3%81%8A%E3%81%A7%E3%82%93%20%E8%B5%A4%E7%8E%89%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.oden-akadama.com/">金澤おでん赤玉本店 公式サイト</a> / <a href="https://www.kanazawa-kankoukyoukai.or.jp/article/detail_490.html">金沢市観光協会【2025年版】金沢おでんが食べられるお店</a></div>
+</div></div>
+<div class="card" id="c-kuroyuri_kanazawaeki">
+<img class="hero" src="img/kanazawa/kuroyuri_kanazawaeki.jpg" alt="季節料理・おでん 黒百合 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>季節料理・おでん 黒百合<span class="yomi">きせつりょうり・おでん くろゆり</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和28年（1953）に国鉄金沢駅の地下で創業し、いまは駅ビル金沢百番街あんとで営業する。澄んだ黄金色の出汁はあっさりとした味で、創業当時から変えていないという。立地柄、金沢固有の車麩やバイ貝がよく出るほか、白山堅豆腐や岩魚といった山の幸、刺身や海の一品も揃い、定食も豊富にある。11時から21時半まで通しで開いており、列車の待ち時間や到着直後に金沢おでんを一通り食べられるのが強み。カウンター25席とテーブル20席で、開店と同時に常連と観光客が入る。</div>
+<div class="sig"><b>一皿:</b>おでん盛り合わせ（車麩・バイ貝）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市木ノ新保町１−１ 金沢百番街「あんと」</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762603722">☎ 076-260-3722</a> ／ <a href="https://www.oden-kuroyuri.com/?utm_source=GBP&amp;utm_medium=GBP&amp;utm_term=GBP&amp;utm_content=GBP&amp;utm_campaign=GBP">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金沢市観光協会の2025年版リストに営業中として掲載され、地元メディア金沢日和も昭和28年創業・年中無休の通し営業を伝えている。移動の合間に金沢おでんを確実に食べられる一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AD%A3%E7%AF%80%E6%96%99%E7%90%86%E3%83%BB%E3%81%8A%E3%81%A7%E3%82%93%20%E9%BB%92%E7%99%BE%E5%90%88%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9C%A8%E3%83%8E%E6%96%B0%E4%BF%9D%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%91%20%E9%87%91%E6%B2%A2%E7%99%BE%E7%95%AA%E8%A1%97%E3%80%8C%E3%81%82%E3%82%93%E3%81%A8%E3%80%8D">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawabiyori.com/special/oden/2024/09/54849.html">金沢日和【金沢おでん】黒百合</a> / <a href="https://www.kanazawa-kankoukyoukai.or.jp/article/detail_490.html">金沢市観光協会【2025年版】金沢おでんが食べられるお店</a></div>
+</div></div>
+<div class="card" id="c-oden_miyuki_katamachi">
+<img class="hero" src="img/kanazawa/oden_miyuki_katamachi.jpg" alt="おでん居酒屋 三幸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>おでん居酒屋 三幸<span class="yomi">おでんいざかや みゆき</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和42年（1967）創業。鶏ガラに鰹と煮干しを合わせた出汁を継ぎ足して使い、色は上品ながら味の芯がはっきりしているのが持ち味。名物は魚のすり身を揚げた「みゆき揚げ」と、とろろの鉄板焼で、どちらもおでんと一緒に頼むのが定番になっている。おでん以外の一品やおばんざいが多く、加賀野菜や地魚を使った季節の皿も日替わりで並ぶため、おでん屋というより金沢の居酒屋として腰を据えて飲める。片町の裏通りの目立たない場所にあるが、開店直後から席が埋まる。</div>
+<div class="sig"><b>一皿:</b>みゆき揚げ／とろろの鉄板焼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 16:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町１丁目１０−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762226117">☎ 076-222-6117</a> ／ <a href="https://www.instagram.com/oden__miyuki_honten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金沢市観光協会の2025年版おでん店リストに掲載され営業中。地元編集部による「週末、金沢。」も鶏ガラベースの継ぎ足し出汁と混雑ぶりを具体的に伝えており、観光地価格から離れた地元向けの店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%A7%E3%82%93%E5%B1%85%E9%85%92%E5%B1%8B%20%E4%B8%89%E5%B9%B8%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.weekend-kanazawa.com/entry/kanazawa_oden">週末、金沢。「金沢おでんの老舗・有名店 おすすめ6選」</a> / <a href="https://www.kanazawa-kankoukyoukai.or.jp/article/detail_490.html">金沢市観光協会【2025年版】金沢おでんが食べられるお店</a></div>
+</div></div>
+<div class="card" id="c-amatsubo_omicho">
+<img class="hero" src="img/kanazawa/amatsubo_omicho.jpg" alt="市場めし あまつぼ 金沢近江町市場店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>市場めし あまつぼ 金沢近江町市場店<span class="yomi">いちばめし あまつぼ かなざわおうみちょういちばてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">居酒屋「あまつぼ」が近江町市場のエムザ口脇で営む食堂。朝8時から夜9時まで通しで開き、昆布と鰹に塩と酒だけを合わせた澄んだ出汁の金沢おでんと、市場から仕入れた魚の海鮮丼を同じ卓で食べられるのが利点になっている。金沢丼・百万石丼・近江町海鮮丼のほか能登牛ステーキ丼もあり、おでんは牛すじ煮込みや車麩など種類が多い。市場を歩いた流れでそのまま入れる立地で、石川の地酒も揃うため昼から一杯という使い方もできる。ネット予約は受け付けておらず電話のみ。</div>
+<div class="sig"><b>一皿:</b>金沢おでん盛り合わせ＋近江町海鮮丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市下堤町３８−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762083571">☎ 076-208-3571</a> ／ <a href="https://www.amatsubo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現行の営業時間（8:00～21:00、水曜休）を掲示し、金沢市観光協会の2025年版おでん店リストにも掲載されている。市場内でおでんと海鮮丼の両方を押さえられる店は少ない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B8%82%E5%A0%B4%E3%82%81%E3%81%97%20%E3%81%82%E3%81%BE%E3%81%A4%E3%81%BC%20%E9%87%91%E6%B2%A2%E8%BF%91%E6%B1%9F%E7%94%BA%E5%B8%82%E5%A0%B4%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E4%B8%8B%E5%A0%A4%E7%94%BA%EF%BC%93%EF%BC%98%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://amatsubo.com/shop02/">あまつぼ 公式サイト 市場めし あまつぼ</a> / <a href="https://www.kanazawa-kankoukyoukai.or.jp/article/detail_490.html">金沢市観光協会【2025年版】金沢おでんが食べられるお店</a></div>
+</div></div>
+<div class="card" id="c-grill_ootsuka_katamachi">
+<img class="hero" src="img/kanazawa/grill_ootsuka_katamachi.jpg" alt="グリルオーツカ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>グリルオーツカ<span class="yomi">ぐりるおーつか</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和32年（1957）創業の洋食店で、金沢名物ハントンライスを最初に出した店とされる。名はハンガリーの「ハン」と、フランス語でマグロを指す「トン」を合わせた造語と伝わり、1960年代後半に考案された。バターライスの上に卵を流し、半熟のうちにカジキマグロと海老のフライを載せて焼き上げるため、フライを後から載せる他店と違って卵とフライが一体になる。仕上げにケチャップとタルタルソースをかける。牛すじのブイヨンにミルクとクリームを合わせたクリームスープも長年の看板で、地元客はこちらを頼む。</div>
+<div class="sig"><b>一皿:</b>ハントンライス（小1,250円／大1,350円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜14:45, 17:00〜19:50</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町２丁目９−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762212646">☎ 076-221-2646</a> ／ <a href="https://www.instagram.com/grill_otsuka/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんの2025年版ハントンライス特集が発祥店として現行の営業時間と価格を掲載。名の由来と「後のせではなく焼き込む」という作り方を店自ら説明しており、この料理の起点を確かめられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B0%E3%83%AA%E3%83%AB%E3%82%AA%E3%83%BC%E3%83%84%E3%82%AB%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jalan.net/news/article/418283/">じゃらんニュース「金沢名物ハントンライスとは？県内のおすすめ7店＜2025＞」</a> / <a href="https://food-japon.com/p/grill-ootsuka">食べあるキング「グリルオーツカ」</a></div>
+</div></div>
+<div class="card" id="c-daidai_katamachi">
+<img class="hero" src="img/kanazawa/daidai_katamachi.jpg" alt="金沢カレー＆ハントンライス だいだい 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">13</span>金沢カレー＆ハントンライス だいだい<span class="yomi">かなざわかれーあんどはんとんらいす だいだい</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">金沢の二大ご当地洋食である金沢カレーとハントンライスを、どちらも看板に据えた店。カレーはステンレスの舟形皿に濃いルーを敷き、薄めのサクサクのロースカツにソースをかけ、千切りキャベツを添えるという金沢カレーの型をそのまま守る。ハントンライスは小判型の皿に盛り、自家製の橙（だいだい）酢を効かせたタルタルソースを合わせるのが独自の点で、店名もここから来ている。一皿にサラダまで盛れる、という発想が両方の盛り付けの下敷きになっているという。平日は朝9時から開ける。</div>
+<div class="sig"><b>一皿:</b>橙ハントンライス（2,000円）／カツカレー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:45</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町２丁目８−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762165922">☎ 076-216-5922</a> ／ <a href="https://kanazawa-daidai.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現行の営業時間と献立、店の由来を掲載し、じゃらんの2025年版ハントンライス特集にも掲載されている。ハントンライスと金沢カレーを同じ卓で比べられる構成はこの店ならでは。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%87%91%E6%B2%A2%E3%82%AB%E3%83%AC%E3%83%BC%EF%BC%86%E3%83%8F%E3%83%B3%E3%83%88%E3%83%B3%E3%83%A9%E3%82%A4%E3%82%B9%20%E3%81%A0%E3%81%84%E3%81%A0%E3%81%84%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kanazawa-daidai.com/">金沢カレー＆ハントンライス だいだい 公式サイト</a> / <a href="https://www.jalan.net/news/article/418283/">じゃらんニュース「金沢名物ハントンライスとは？県内のおすすめ7店＜2025＞」</a></div>
+</div></div>
+<div class="card" id="c-champion_curry_nonoichi_honten">
+<img class="hero" src="img/kanazawa/champion_curry_nonoichi_honten.jpg" alt="カレーのチャンピオン 野々市本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">14</span>カレーのチャンピオン 野々市本店<span class="yomi">かれーのちゃんぴおん ののいちほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">1961年に田中吉和が金沢市高岡町で開いた「洋食タナカ」が源流。1965年にカレー専門店化し、1971年に「ターバンカレー」と改称、1973年の共同経営解消で野々市へ移って「タナカのターバン」となり、1996年から現在の「カレーのチャンピオン」を名乗る。どろりと濃いルー、ステンレスの舟形皿、上に載る千切りキャベツとソースのかかったカツという金沢カレーの様式は、この店の作り方が原型とされる。代名詞はLカツカレー。カウンター40席で、23時まで開いている。</div>
+<div class="sig"><b>一皿:</b>Lカツカレー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県野々市市高橋町２０−１７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762481497">☎ 076-248-1497</a> ／ <a href="https://chancurry.com/shoplist/nonoichihonten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>チャンピオンカレー公式サイトが洋食タナカからの改称の経緯を年ごとに記し、金沢カレーのレシピの起点であることを示している。全国展開しているが、これは金沢カレー発祥の系譜そのものの本店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%AC%E3%83%BC%E3%81%AE%E3%83%81%E3%83%A3%E3%83%B3%E3%83%94%E3%82%AA%E3%83%B3%20%E9%87%8E%E3%80%85%E5%B8%82%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%8E%E3%80%85%E5%B8%82%E5%B8%82%E9%AB%98%E6%A9%8B%E7%94%BA%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://chancurry.com/history/">チャンピオンカレー公式「金沢カレーの歴史」</a> / <a href="https://hokuriku-curry.com/shopmap/chancurry/">北陸カレー図鑑「カレーのチャンピオン 野々市本店」</a></div>
+</div></div>
+<div class="card" id="c-turban_curry_hirosaka">
+<img class="hero" src="img/kanazawa/turban_curry_hirosaka.jpg" alt="ターバンカレー 総本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">15</span>ターバンカレー 総本店<span class="yomi">たーばんかれー そうほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">昭和46年（1971）に始まった金沢カレーの草分けの一軒で、広坂のビル1階に構える総本店。ステンレスの舟形皿に盛った濃厚なルー、薄く揚げたカツにソース、添えの千切りキャベツという金沢カレーの様式をそのまま出す。名の由来は、創業者の田中吉和と地元金融機関に勤めていた岡田隆が共同経営を始めた際の改称にさかのぼり、のちに共同経営を解消した田中側は現在のチャンピオンカレーとなった。現在はゴーゴーカレーグループの運営だが、店自体は1971年からこの場所の系譜を継ぐ総本店にあたる。年中無休の通し営業。</div>
+<div class="sig"><b>一皿:</b>Lカツカレー（ロースカツカレー）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市広坂１丁目１−４８ ウナシンビル １F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762656617">☎ 076-265-6617</a> ／ <a href="http://www.turbancurry.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>総本店の公式店舗ページが現行の営業時間（11:00～20:00、年末年始以外無休）と住所を掲載。チャンピオンカレー公式の沿革とも符合し、金沢カレー黎明期の系譜を市街中心部でたどれる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%BF%E3%83%BC%E3%83%90%E3%83%B3%E3%82%AB%E3%83%AC%E3%83%BC%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%BA%83%E5%9D%82%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%94%EF%BC%98%20%E3%82%A6%E3%83%8A%E3%82%B7%E3%83%B3%E3%83%93%E3%83%AB%20%EF%BC%91F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shop.gogocurry.com/stores/78">ターバンカレー 総本店 公式店舗ページ</a> / <a href="https://chancurry.com/history/">チャンピオンカレー公式「金沢カレーの歴史」</a></div>
+</div></div>
+<div class="card" id="c-ikiikitei_omicho">
+<img class="hero" src="img/kanazawa/ikiikitei_omicho.jpg" alt="いきいき亭 近江町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">16</span>いきいき亭 近江町店<span class="yomi">いきいきてい おうみちょうてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">近江町市場のなかで朝7時から開ける丼の店。カウンターだけの小さな構えで、金沢港に揚がった甘えび、のどぐろ、香箱ガニ（11～12月ごろ）など、その日入った魚をすし飯の上に重ねる。看板の「いきいき亭丼」は十数種の魚介を敷き詰めたもので、ネタと酢飯を分けて出す、苦手な魚やご飯の量を先に聞くといった応対でも知られる。冬は蟹、春は白えびと並ぶ魚が月ごとに替わるため、季節を変えて訪れる価値がある。市場の朝の空気ごと味わうなら開店直後がよい。</div>
+<div class="sig"><b>一皿:</b>いきいき亭丼 ローカル（2,200円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 7:00〜13:30 ／ 金・土・日 7:00〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市青草町８８ 近江町いちば館 1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762222621">☎ 076-222-2621</a> ／ <a href="https://www.instagram.com/ikiikiteiomicho?igsh=NWtiZnZzZHNpOTcw">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>近江町市場の公式サイトが現行の営業時間（7:00～15:00、火曜休）と価格を掲載。市場内で最も早く開ける丼屋のひとつで、朝の市場と日本海の地魚を同時に体験できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%8D%E3%81%84%E3%81%8D%E4%BA%AD%20%E8%BF%91%E6%B1%9F%E7%94%BA%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%9D%92%E8%8D%89%E7%94%BA%EF%BC%98%EF%BC%98%20%E8%BF%91%E6%B1%9F%E7%94%BA%E3%81%84%E3%81%A1%E3%81%B0%E9%A4%A8%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ohmicho-ichiba.com/gourmet/shop70401/">近江町市場 公式サイト いきいき亭</a></div>
+</div></div>
+<div class="card" id="c-ajidokoro_takasaki_nagamachi">
+<img class="hero" src="img/kanazawa/ajidokoro_takasaki_nagamachi.jpg" alt="味処 高崎 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">17</span>味処 高崎<span class="yomi">あじどころ たかさき</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">武家屋敷跡に近い長町のせせらぎ通りにある割烹で、創業から50年を超える。看板はのどぐろ（アカムツ）で、刺身、塩焼き、しゃぶしゃぶと調理を変えて出す。脂の強い白身をどう扱うかで差が出る魚だけに、一店で複数の形を比べられるのがこの店の使い方になる。11月7日から3月末までは加能ガニ（石川県産のズワイガニ）も入り、鴨とすだれ麩の治部煮を軸にした加賀会席に組み込まれる。個室があり、落ち着いて長く座れる構えで、夜のみの営業。</div>
+<div class="sig"><b>一皿:</b>のどぐろ会席（8,250円）／のどぐろの刺身（3,190円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市長町１丁目２−２２ 味処高崎</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762310116">☎ 076-231-0116</a> ／ <a href="http://www.kanazawatakasaki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現行の営業時間（日曜休）と加能ガニの取扱期間、コース価格を明示している。のどぐろを刺身・焼き・しゃぶしゃぶで比較できる割烹は金沢でも限られる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%87%A6%20%E9%AB%98%E5%B4%8E%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%95%B7%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%92%20%E5%91%B3%E5%87%A6%E9%AB%98%E5%B4%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://r177600.gorp.jp/">味処 高崎 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-itaru_honten_kakinokibatake">
+<img class="hero" src="img/kanazawa/itaru_honten_kakinokibatake.jpg" alt="いたる 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">18</span>いたる 本店<span class="yomi">いたる ほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1988年に柿木畠で始まった居酒屋。富山の新湊と能登の宇出津から仕入れる鮮魚が中心で、木桶に盛る大ぶりの造りが代名詞になっている。加賀野菜の扱いが厚く、五郎島金時（砂丘地で育つさつまいも）や金時草（葉の裏が紫の葉物）を使った小鉢やサラダ、加賀れんこんの一品が季節ごとに替わる。冬は香箱ガニや寒鰤、酔っ払い蟹が並ぶ。石川の純米酒を軸にした酒揃えも厚い。北陸新幹線の金沢開業後は観光客の行列ができるようになったが、地元の常連が通い続ける店でもある。予約推奨。</div>
+<div class="sig"><b>一皿:</b>木桶盛りの造り／加賀野菜の一品（五郎島金時・金時草）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市柿木畠３−８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762214194">☎ 076-221-4194</a> ／ <a href="http://www.itaru.ne.jp/honten.htm">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食のメディア食べあるキングが加賀野菜と地魚の扱いを具体的に挙げて評価し、現行の営業時間・定休日・価格帯も掲載している。料亭でなく居酒屋の形で加賀野菜に触れられる点で貴重。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%9F%E3%82%8B%20%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9F%BF%E6%9C%A8%E7%95%A0%EF%BC%93%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://food-japon.com/p/itaru">食べあるキング「いたる本店」</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・海鮮・和食</h2>
+<div class="card" id="c-sushi_mitsukawa_higashiyama">
+<img class="hero" src="img/kanazawa/sushi_mitsukawa_higashiyama.jpg" alt="鮨 みつ川 金沢本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>鮨 みつ川 金沢本店<span class="yomi">すし みつかわ かなざわほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">ひがし茶屋街の一角、築百年級の町家を生かした空間にカウンター8席だけを置く完全予約制の鮨店。石川・富山の定置網に上がる地物を軸に、能登の塩や酒で締める、寝かせて旨みを引き出すなど、ネタごとに手当てを変えて握る。赤酢を用いたシャリと魚の脂の均衡を重視する仕立てで、昼はにぎり、夜はおまかせのみという構成をとる。ミシュランで一つ星を得ており、2025年3月以降は店主不在時に二番手の職人が付け場に立つ体制で営業を続けている。金沢駅からも茶屋街観光の流れでも寄りやすい立地である。</div>
+<div class="sig"><b>一皿:</b>のどぐろの炙り握りと赤酢シャリのおまかせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 12:00〜14:00, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市東山１丁目１６−２ みつ川</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762535005">☎ 076-253-5005</a> ／ <a href="https://sushi-mitsukawa.com/kanazawa/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランガイドで一つ星を継続獲得し、公式サイトが2025年3月以降の営業体制を明示しているため現在の営業が確認できる。金沢市観光協会の寿司特集でも高級店の代表として掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E3%81%BF%E3%81%A4%E5%B7%9D%20%E9%87%91%E6%B2%A2%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9D%B1%E5%B1%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%92%20%E3%81%BF%E3%81%A4%E5%B7%9D">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sushi-mitsukawa.com/kanazawa/">鮨 みつ川 公式サイト 金沢本店</a> / <a href="https://www.kanazawa-kankoukyoukai.or.jp/sushi">金沢市観光協会 金沢の絶品寿司</a></div>
+</div></div>
+<div class="card" id="c-sushi_kibatani_hikosomachi">
+<img class="hero" src="img/kanazawa/sushi_kibatani_hikosomachi.jpg" alt="鮨 木場谷 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>鮨 木場谷<span class="yomi">すし きばたに</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2016年に彦三町で開いた、カウンター8席と半個室を備える小体な鮨店。富山湾の氷見や新湊、石川の港に揚がる魚を主に使い、塩と酒で旨みを立てる、香りのものを添えて奥行きを出すなど、魚ごとに仕込みを変えるのが身上である。おまかせ一本の構成で、季節の地物を軸に握りとつまみを織り交ぜて進む。ミシュランの一つ星に加え、食べログの寿司百名店2025にも選ばれており、金沢の新世代の鮨として国内外の食通に知られる存在になった。予約は電話とネットで受け付けている。</div>
+<div class="sig"><b>一皿:</b>氷見・新湊の地物を使ったおまかせ握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市彦三町１丁目８−２６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05058708418">☎ 050-5870-8418</a> ／ <a href="https://kibatani.com/?utm_medium=referral&amp;utm_source=google&amp;utm_campaign=mm&amp;utm_content=hp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン一つ星に加え食べログ「寿司WEST百名店2025」に選出されており、2025年の評価が確認できる。金沢市観光協会の寿司特集にも住所・席数入りで掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E6%9C%A8%E5%A0%B4%E8%B0%B7%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%BD%A6%E4%B8%89%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawa-kankoukyoukai.or.jp/sushi">金沢市観光協会 金沢の絶品寿司</a> / <a href="https://autoreserve.com/ja/restaurants/eC46SHgDMBR8vcYmqRo4">鮨 木場谷 公式ネット予約（AutoReserve）</a></div>
+</div></div>
+<div class="card" id="c-sushi_tobi_oyamacho">
+<img class="hero" src="img/kanazawa/sushi_tobi_oyamacho.jpg" alt="飛 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>飛<span class="yomi">とび</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">尾山神社のふもとに2016年に開いた鮨割烹。店主は石川の名店で二十五年余り修業したのち独立した。カウンター8席のみで昼夜とも一回転限定という構えを取り、昼からおまかせのフルコースを通しで出す。金沢前と呼ばれる地元の握りの流儀を土台に据えつつ、のどぐろの蒸し寿司や鰻の手巻きなど独自の一品を差し込むのが特徴である。近江町市場からも歩ける中心部にありながら路地の奥にあり、隠れ家のような佇まいで知られる。予約は電話が基本となる。</div>
+<div class="sig"><b>一皿:</b>のどぐろの蒸し寿司</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 12:00〜14:00, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市尾山町１２−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762552768">☎ 076-255-2768</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金沢市観光協会の寿司特集に住所・席数入りで掲載され、グルメサイトfood-japonが尾山神社そばの新進の寿司店として詳報している。昼夜一回転の営業形態も複数媒体で一致している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A3%9B%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%B0%BE%E5%B1%B1%E7%94%BA%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawa-kankoukyoukai.or.jp/sushi">金沢市観光協会 金沢の絶品寿司</a> / <a href="https://food-japon.com/p/sushitobi">food-japon「飛（とび）」</a></div>
+</div></div>
+<div class="card" id="c-otomezushi_kiguramachi">
+<img class="hero" src="img/kanazawa/otomezushi_kiguramachi.jpg" alt="乙女寿司 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>乙女寿司<span class="yomi">おとめずし</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">香林坊交差点から木倉町商店街へ入り、さらに路地を折れた先に静かに構える鮨店。地物にこだわり、金沢港や能登に揚がる魚を中心におまかせで組み立てる。カウンターのほか小上がりの個室も持ち、繁華街の只中にありながら落ち着いて食べられるのが持ち味である。最終入店を十九時半に区切るなど、握りの流れを崩さない運びを徹底している。食べログでは寿司WEST百名店2025に選ばれ、Tabelog Award 2026でブロンズを受賞しており、電話予約のみという構えもあって予約が取りにくい店として知られる。</div>
+<div class="sig"><b>一皿:</b>地物を主体にした夜のおまかせ握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 12:00〜14:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水・日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市木倉町４−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762317447">☎ 076-231-7447</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ寿司WEST百名店2025およびTabelog Award 2026ブロンズ受賞という直近の評価があり、2026年時点の営業が確認できる。金沢中心部で地物にこだわる代表的な鮨店として複数媒体が挙げている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B9%99%E5%A5%B3%E5%AF%BF%E5%8F%B8%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9C%A8%E5%80%89%E7%94%BA%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/en/ishikawa/A1701/A170101/17000107/">食べログ 乙女寿司</a> / <a href="https://retty.me/area/PRE17/ARE155/SUB15501/100000013329/">Retty 乙女寿司</a></div>
+</div></div>
+<div class="card" id="c-sushi_mekumi_nonoichi">
+<img class="hero" src="img/kanazawa/sushi_mekumi_nonoichi.jpg" alt="すし処 めくみ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>すし処 めくみ<span class="yomi">すしどころ めくみ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">金沢市の南西に隣接する野々市市の閑静な住宅街に建つ鮨店で、店内は檜の一枚板を使ったカウンター七席のみである。石川の海と山の恵みを軸に据え、生きたまま扱った魚を締めてから供する、能登の食材を織り込むなど、素材の状態を最優先に組み立てるおまかせ一本の構成をとる。ミシュランで二つ星を得ており、全国から食通が訪れる予約困難店として知られる。火曜から土曜は夜のみ、日曜は昼と夜の二部制で、最終入店を二十時半に区切って一組ずつ丁寧に進める。</div>
+<div class="sig"><b>一皿:</b>檜のカウンターで供するおまかせ握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県野々市市下林４丁目４８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762467781">☎ 076-246-7781</a> ／ <a href="https://japoncompany.business/nonoichi/545107-sushi-mekumi">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン二つ星の評価に加え、一休.comレストランやPayPayグルメで現在も予約枠が公開されており営業が確認できる。金沢近郊で最も予約が取りにくい鮨として各種グルメ媒体が挙げている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E5%87%A6%20%E3%82%81%E3%81%8F%E3%81%BF%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%8E%E3%80%85%E5%B8%82%E5%B8%82%E4%B8%8B%E6%9E%97%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://restaurant.ikyu.com/123199">一休.comレストラン すし処 めくみ</a> / <a href="https://hitosara.com/0006101633/">ヒトサラ すし処 めくみ</a></div>
+</div></div>
+<div class="card" id="c-sentorizushi_ishibiki">
+<img class="hero" src="img/kanazawa/sentorizushi_ishibiki.jpg" alt="千取寿し 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>千取寿し 本店<span class="yomi">せんとりずし ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和二十八年に創業し、兼六園の東側、石引商店街で三代続く寿司店である。金沢の鮨の流儀を守りつつ、旬の地物ネタを日替わりで並べ、昼から夜通しで営業するため観光客も地元の常連も入りやすい。六十席と規模があり、カウンターのほか座敷も備えるので家族連れや会食にも向く。地元の酒蔵である福光屋の酒を揃え、握りと合わせて楽しめるのも特徴。木曜定休のほか月に二回水曜が休みとなるが、水曜も開ける週があるのは旅程を組むうえでありがたい。</div>
+<div class="sig"><b>一皿:</b>旬の地物を集めた上にぎり</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土 11:00〜22:00 ／ 日 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市石引１丁目１７−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762215057">☎ 076-221-5057</a> ／ <a href="http://sentorisushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県の寿司店公式ポータル「百万石の鮨」に掲載され、店の公式サイトも稼働している。グルメサイトfood-japonが地元常連と観光客の双方が集まる石引の老舗として具体的に評価している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%83%E5%8F%96%E5%AF%BF%E3%81%97%20%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%9F%B3%E5%BC%95%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sentorisushi.com/">千取寿し 本店 公式サイト</a> / <a href="https://food-japon.com/p/sentori-sushi">食べ日本 千取寿し本店</a></div>
+</div></div>
+<div class="card" id="c-kataori_namikicho">
+<img class="hero" src="img/kanazawa/kataori_namikicho.jpg" alt="日本料理 片折 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>日本料理 片折<span class="yomi">にほんりょうり かたおり</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">浅野川のほとりに2018年に開いた日本料理店で、店主は金沢の料亭で料理長を務めたのち独立した。「料理は素材がすべて」という考えを掲げ、能登をはじめ石川各地の食材を自ら選び、日によって献立が変わるためメニューは事前に固定されない。出汁と水にこだわり、素材の力をそのまま出す方向に徹する。ミシュランガイド北陸2021特別版で二つ星を得て、その後も食べログで全国最上位級の評価を保ち、2026年のアジアのベストレストラン50にも名を連ねた。夜は二部制で、食事中の撮影は禁じられている。</div>
+<div class="sig"><b>一皿:</b>能登の食材を用いた日替わりのおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 17:00〜19:30, 20:00〜22:30 ／ 水・日 12:00〜14:30, 17:00〜19:30, 20:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市並木町３−３６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762551446">☎ 076-255-1446</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2026年3月発表の「アジアのベスト50レストラン」に82位で入るなど直近の国際評価があり営業が確認できる。金沢日和が住所・二部制の営業時間・撮影禁止まで具体的に掲載している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E7%89%87%E6%8A%98%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E4%B8%A6%E6%9C%A8%E7%94%BA%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawabiyori.com/spot/spot_14837.html">金沢日和 日本料理 片折</a> / <a href="https://food-japon.com/p/kataori">food-japon 片折</a></div>
+</div></div>
+<div class="card" id="c-zeniya_katamachi">
+<img class="hero" src="img/kanazawa/zeniya_katamachi.jpg" alt="日本料理 銭屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>日本料理 銭屋<span class="yomi">にほんりょうり ぜにや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和四十五年に片町で開業し、二代にわたり金沢の日本料理を担ってきた店である。加賀野菜、能登や金沢港の魚、山菜やきのこといった石川の食材を、季節ごとの献立に落とし込んで供する。器は九谷焼や輪島塗など地元の工芸を用い、料理と工芸を一体で見せる金沢らしい構えをとる。カウンターと個室を備え、昼は比較的手の届く価格の会席から用意される。ミシュランガイドで二つ星を得ており、金沢の和食を語るときに最初に挙げられる一軒として定着している。予約制で夜は最終入店が早い。</div>
+<div class="sig"><b>一皿:</b>加賀野菜と地魚を用いた季節の会席</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町２丁目２９−７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762333331">☎ 076-233-3331</a> ／ <a href="http://zeniya.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン二つ星の評価が続き、食べログのセレクション掲載や片町伝馬商店街の現行店舗一覧でも確認できる。金沢の日本料理の代表格として複数のガイド記事が筆頭に挙げている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E9%8A%AD%E5%B1%8B%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%99%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://selection.tabelog.com/ishikawa/A1701/A170101/17000088/">食べログ セレクション 日本料理 銭屋</a> / <a href="https://katamachi-denma.com/shop/%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86-%E9%8A%AD%E5%B1%8B-%EF%BC%88%E3%81%9C%E3%81%AB%E3%82%84%EF%BC%89/">片町伝馬商店街 日本料理 銭屋</a></div>
+</div></div>
+<div class="card" id="c-kanazawa_seturi_takaokamachi">
+<img class="hero" src="img/kanazawa/kanazawa_seturi_takaokamachi.jpg" alt="金澤せつ理 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">27</span>金澤せつ理<span class="yomi">かなざわせつり</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">金沢の名料亭「つる幸」の二代目である河田康雄氏が、料亭を離れて新たに開いたカウンター割烹である。料亭の座敷ではなく、板前と客が向き合う形に構えを改め、金沢の風土を映した和食を一皿ずつ手渡しで供する。食事は十八時三十分の一斉スタートで、一日一回転のみ。能登や金沢港の魚、加賀野菜など季節の地物を軸に献立を組む。二つ星を得た料亭の技を、より近い距離で受け取れる場として開業直後から注目を集めた。全席禁煙で完全予約制、キャンセル規定も明示されている。</div>
+<div class="sig"><b>一皿:</b>一斉スタートで供する季節のおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市高岡町４−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054933470">☎ 050-5493-3470</a> ／ <a href="https://ra0n200.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが稼働し予約規定と営業時間を明示しているほか、家庭画報が「つる幸」二代目の新店として開業を報じている。金沢和食の系譜が現在進行形で更新されている例として載せる価値がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%87%91%E6%BE%A4%E3%81%9B%E3%81%A4%E7%90%86%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%AB%98%E5%B2%A1%E7%94%BA%EF%BC%94%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kanazawa-seturi.com/access/">金澤せつ理 公式サイト アクセス</a> / <a href="https://www.kateigaho.com/article/detail/71333">家庭画報「つる幸」河田康雄さんの新店</a></div>
+</div></div>
+<div class="card" id="c-tempura_koizumi_ikedamachi">
+<img class="hero" src="img/kanazawa/tempura_koizumi_ikedamachi.jpg" alt="天ぷら 小泉 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">28</span>天ぷら 小泉<span class="yomi">てんぷら こいずみ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">片町の裏手、池田町の静かな通りに構える天ぷら専門店。北陸の食材を中心に据え、能登や金沢港の魚介と加賀野菜を、揚げる順と衣の加減を素材ごとに変えながらカウンターで一品ずつ出していく。派手な演出を避け、油を切る間合いと温度で食べさせる構成が持ち味である。食べログの天ぷら百名店には2022年、2023年に続き2025年も選ばれ、石川県から選出された唯一の店として地元メディアにも取り上げられた。席数が少なく予約が前提となるため、旅程が決まり次第押さえておきたい。</div>
+<div class="sig"><b>一皿:</b>北陸の魚介と加賀野菜を組んだ天ぷらコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 12:00〜14:00, 18:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水・日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市池田町４番丁３４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762230023">☎ 076-223-0023</a> ／ <a href="https://tempura-koizumi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「天ぷら百名店2025」に石川県から唯一選出され、地域情報サイトかなざわ速報が2025年の選出として報じている。金沢で天ぷらを主目的に訪ねる価値のある数少ない一軒である。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E5%B0%8F%E6%B3%89%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%B1%A0%E7%94%B0%E7%94%BA%EF%BC%94%E7%95%AA%E4%B8%81%EF%BC%93%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kanazawadays.com/archives/44192421.html">かなざわ速報 天ぷら百名店2025に天ぷら小泉</a> / <a href="https://tabelog.com/tempura/ishikawa/A1701/rank/">食べログ 金沢の天ぷらランキング</a></div>
+</div></div>
+<div class="card" id="c-kabayakiya_kanaiwa">
+<img class="hero" src="img/kanazawa/kabayakiya_kanaiwa.jpg" alt="かばやき屋 金石店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">29</span>かばやき屋 金石店<span class="yomi">かばやきや かないわてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">金沢港にほど近い金石で、どじょうの蒲焼と最高級うなぎの蒲焼を出す専門店である。どじょうの蒲焼は明治初期から金沢で親しまれてきた土地の食で、背開きにして串を打ち、職人が一枚ずつ手焼きで仕上げる。小骨まで香ばしく食べられ、うなぎとは違う軽さがあるのが持ち味。うなぎの蒲焼のほか、港町らしく船盛刺身や鮮魚フライ、海鮮定食も揃えており、蒲焼だけを目当てにしない客も入りやすい。全国発送にも対応する。2025年4月には野々市市押野に二店目を開き、商いを広げている。</div>
+<div class="sig"><b>一皿:</b>どじょうの蒲焼</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 10:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市金石北１丁目１−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762689770">☎ 076-268-9770</a> ／ <a href="https://www.kabayakiya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが2025年4月の押野店開店を告知しており現在の営業と拡大が確認できる。金沢日和のうなぎ特集にも掲載され、金沢固有の食であるどじょう蒲焼を今も手焼きで出す数少ない店である。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%81%B0%E3%82%84%E3%81%8D%E5%B1%8B%20%E9%87%91%E7%9F%B3%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%87%91%E7%9F%B3%E5%8C%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kabayakiya.com/">かばやき屋 公式サイト</a> / <a href="https://www.kanazawabiyori.com/special/unagi/">金沢日和 金沢・石川県のうなぎ＆どじょうの店</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・そば・うどん・町中華</h2>
+<div class="card" id="c-katocho_sohonten_omicho">
+<img class="hero" src="img/kanazawa/katocho_sohonten_omicho.jpg" alt="加登長 総本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">30</span>加登長 総本店<span class="yomi">かとちょうそうほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治30年（1897年）創業の大衆うどん店で、近江町市場のすぐ南、下近江町の角に店を構える。関西風にうるめ・いわし・さば・かつおなどから引いた出汁へ金沢特有の甘口醤油を合わせるのが加登長の流儀で、つゆは色が濃いのに角が立たず、後口に甘みが残る。麺は小麦粉と塩と水だけで打ち、あえてコシを立てずやわらかく仕上げるため出汁をよく吸う。創業時から品書きにある「たぬきうどん」は刻んだ油揚げとねぎだけの簡素な一杯で、金沢のうどん文化そのものを映している。九谷焼や輪島塗をあしらった落ち着いた店内も特徴。</div>
+<div class="sig"><b>一皿:</b>たぬきうどん（刻み油揚げとねぎだけの甘口出汁うどん）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜21:00 ／ 火 11:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市下近江町４２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762210435">☎ 076-221-0435</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県公式観光サイト「ほっと石川旅ねっと」の県民おすすめうどん店特集で筆頭に挙げられ、金沢甘口醤油を使う関西風出汁と柔らかい麺という金沢うどんの型を示す一軒として紹介されている。金沢市観光協会の公式ページでも1897年創業の大衆うどん屋として掲載が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8A%A0%E7%99%BB%E9%95%B7%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E4%B8%8B%E8%BF%91%E6%B1%9F%E7%94%BA%EF%BC%94%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawa-kankoukyoukai.or.jp/gourmet/detail_50609.html">金沢市観光協会 公式サイト「加登長総本店」</a> / <a href="https://www.hot-ishikawa.jp/feature/detail_378.html">ほっと石川旅ねっと「石川・金沢のうどん店7選」</a></div>
+</div></div>
+<div class="card" id="c-kobashi_otafuku_hikoso">
+<img class="hero" src="img/kanazawa/kobashi_otafuku_hikoso.jpg" alt="小橋お多福 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">31</span>小橋お多福<span class="yomi">こばしおたふく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和5年（1930年）創業、浅野川に近い彦三町で長く続くうどん・そば店。金沢に何軒かある「お多福」の暖簾分け一号店にあたる。全国から選んだかつおやさばを合わせた出汁は、金沢らしく甘みを含んだやわらかい味で、麺もコシで押さない柔らかな仕上げ。看板は大ぶりの甘い油揚げをのせた「いなりうどん」で、具がねぎと揚げだけという簡素さゆえに出汁の旨みが前に出る。ほかに野菜をたっぷり載せたつゆだくの「ジャジャメン」、カレーうどん、カツ丼なども長く親しまれ、昼夜とも地元客で埋まる。同じ会社が釜ごはんの店やカフェも近隣で営む。</div>
+<div class="sig"><b>一皿:</b>いなりうどん（甘く炊いた大判の油揚げとねぎのみ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 11:30〜14:00, 17:30〜20:00 ／ 土・日 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市彦三町１丁目９−３１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762317205">☎ 076-231-7205</a> ／ <a href="https://kobashiotafuku.jp/otahuku.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県公式観光サイト「ほっと石川旅ねっと」の県民おすすめうどん店特集に1955年からの老舗として掲載され、店の公式サイトでも昭和5年創業と明記されている。北陸中日新聞のおすすめスポット欄でも取り上げられた地元密着の一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E6%A9%8B%E3%81%8A%E5%A4%9A%E7%A6%8F%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%BD%A6%E4%B8%89%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%93%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kobashiotafuku.jp/otahuku.html">小橋お多福 公式サイト</a> / <a href="https://www.hot-ishikawa.jp/feature/detail_378.html">ほっと石川旅ねっと「石川・金沢のうどん店7選」</a></div>
+</div></div>
+<div class="card" id="c-sarashina_fujii_kakinokibatake">
+<img class="hero" src="img/kanazawa/sarashina_fujii_kakinokibatake.jpg" alt="更科藤井 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">32</span>更科藤井<span class="yomi">さらしなふじい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">金沢21世紀美術館にほど近い柿木畠の一角に立つ手打ちそば店。石臼で自家製粉した粉を用い、白く上品な更科と、そばの香りが立つ二八の二本立てで出す構成が長く支持されてきた。そばが売り切れ次第終了する日も多い。夜は焼き味噌や天ぷらなどの一品料理と地酒を合わせて蕎麦前を楽しむ客が中心で、そば会席のような使い方もできる。食べログの「そば EAST 百名店 2025」に石川県から選ばれた二軒のうちの一軒で、二年連続の選出。金沢のそばの標準をつくった店として、県内の同業者からも名前が挙がる存在である。</div>
+<div class="sig"><b>一皿:</b>二八そば（せいろ）と、蕎麦前の一品料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜14:00, 17:30〜19:30 ／ 日 11:30〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市柿木畠３−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762656870">☎ 076-265-6870</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「そば EAST 百名店 2025」に石川県から選出された2店のうちの1店で、2年連続の選出。地域情報サイト「かなざわ速報」が2025年8月の記事で受賞と所在地を報じている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9B%B4%E7%A7%91%E8%97%A4%E4%BA%95%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9F%BF%E6%9C%A8%E7%95%A0%EF%BC%93%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kanazawadays.com/archives/44889185.html">かなざわ速報「食べログ そば 百名店 2025 発表」（2025年8月5日）</a></div>
+</div></div>
+<div class="card" id="c-teuchi_soba_koyori_nagata">
+<img class="hero" src="img/kanazawa/teuchi_soba_koyori_nagata.jpg" alt="手打蕎麦 こより 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">33</span>手打蕎麦 こより<span class="yomi">てうちそばこより</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2020年に金沢市長田の閑静な住宅地で開いた手打ちそば店。長野・戸隠のそばを軸に据え、戸隠在来種のそば粉と国産小麦を合わせた二八を打つ。特徴は「ぼっち盛り」と呼ばれる戸隠式の盛り付けで、茹でたそばを水を切りきらないまま根曲がり竹のざるへ五つ六つに分けて並べる。そのため喉越しがよく、細く繊細な麺が滑るように入る。古民家を改装した店内での営業は昼のみの完全予約制で、当日キャンセル枠はインスタグラムで知らされる。開業から数年で食べログ「そば EAST 百名店 2025」に選ばれ、更科藤井と並ぶ金沢の代表格になった。</div>
+<div class="sig"><b>一皿:</b>戸隠そばのぼっち盛り（根曲がり竹のざる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市長田２丁目２０−１３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762054591">☎ 076-205-4591</a> ／ <a href="https://instagram.com/koyori_soba">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「そば EAST 百名店 2025」に2年連続で選出（かなざわ速報2025年8月報道）。グルメ媒体food-japonも古民家での完全予約制営業と戸隠式のぼっち盛りを詳しく取り上げている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E8%95%8E%E9%BA%A6%20%E3%81%93%E3%82%88%E3%82%8A%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%95%B7%E7%94%B0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kanazawadays.com/archives/44889185.html">かなざわ速報「食べログ そば 百名店 2025 発表」（2025年8月5日）</a> / <a href="https://food-japon.com/p/soba-koyori">food-japon「手打蕎麦こより」</a></div>
+</div></div>
+<div class="card" id="c-manmi_chukasoba_honmachi">
+<img class="hero" src="img/kanazawa/manmi_chukasoba_honmachi.jpg" alt="中華そば処 万味 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">34</span>中華そば処 万味<span class="yomi">ちゅうかそばどころまんみ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和45年（1970年）から金沢駅東口ほど近い本町の三和商店街で続く中華そば専門店。現在は金沢駅前で創業60年の居酒屋「番飛」のグループが引き継いで営業しており、開店は夕方六時、深夜一時まで灯りがついている。透き通った醤油スープは地元産醤油のコクにほんのり甘みが残る北陸らしい味で、細めのストレート麺に、かまぼこや煮玉子がのる構成も昔ながら。真っ赤なカウンターが並ぶ狭い店内は、飲んだ後の〆を求める地元客やライブ帰りの客で夜遅くまで賑わう。自家製チャーシューは土産にする常連も多い。</div>
+<div class="sig"><b>一皿:</b>中華そば（澄んだ醤油スープ・かまぼこ入り）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜1:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市本町２丁目９−２９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762657735">☎ 076-265-7735</a> ／ <a href="https://bannbi.jp/manmi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>運営元である番飛グループの公式サイトが昭和45年創業と現行の価格・営業時間を掲載しており、Rettyなどの口コミでも「金沢駅近くで50年以上愛される町中華」として飲んだ後の〆の定番に挙げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E5%87%A6%20%E4%B8%87%E5%91%B3%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9C%AC%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://bannbi.jp/manmi/">番飛グループ公式サイト「中華そば処 万味」</a></div>
+</div></div>
+<div class="card" id="c-menya_taiga_horikawa">
+<img class="hero" src="img/kanazawa/menya_taiga_horikawa.jpg" alt="味噌専門 麺屋 大河 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">35</span>味噌専門 麺屋 大河 本店<span class="yomi">みそせんもんめんやたいがほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">金沢駅から歩ける堀川町にある味噌ラーメン専門店。特製の赤味噌を炊き上げた濃厚なスープながら後味はすっきりしており、味噌・赤味噌・黒味噌・つけめんと選べる構成をとる。看板はイカ墨を練り込んだ「黒味噌ラーメン」で、真っ黒な見た目に反して味噌の角が取れたまろやかな味に仕上がり、日本海の食材を使う金沢らしい一杯として知られる。カウンター13席の小さな店で、開店前から列ができることも多い。系列として手揉み中華そばの新店を市内に出すなど、金沢のラーメンシーンを引っ張る存在になっている。</div>
+<div class="sig"><b>一皿:</b>黒味噌ラーメン（イカ墨入り）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:30, 17:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市堀川町６−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762607737">☎ 076-260-7737</a> ／ <a href="https://menyataiga.base.shop/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地域メディア「金沢日和」が本店の営業情報と味噌専門店としての位置づけを掲載しているほか、食べログのラーメンWEST百名店に選ばれた実績があり、金沢駅周辺のラーメンでは行列の絶えない店として繰り返し紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%99%8C%E5%B0%82%E9%96%80%20%E9%BA%BA%E5%B1%8B%20%E5%A4%A7%E6%B2%B3%20%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%A0%80%E5%B7%9D%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawabiyori.com/spot/spot_28426.html">金沢日和「麺屋大河 本店」</a></div>
+</div></div>
+<div class="card" id="c-dai7_gyoza_morinosato">
+<img class="hero" src="img/kanazawa/dai7_gyoza_morinosato.jpg" alt="第7ギョーザの店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">36</span>第7ギョーザの店<span class="yomi">だいななぎょうざのみせ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">金沢市もりの里で六十年以上続く餃子専門店。千葉・野田の「ホワイト餃子」の技術を受け継ぐ店で、厚めの皮に餡を詰めた俵型をたっぷりの油で揚げ焼きにするため、外は香ばしく硬いほどに焼き固まり、中には肉汁が閉じ込められる。焼き・水・蒸しの三通りで出し、豚汁とごはんを付けた定食が定番。1階は35席のカウンター、2階には有料の座敷個室がある。深夜2時まで開いており、金沢大学の学生や仕事帰りの客が一年中通う。観光向けというより、金沢の日常食として定着したソウルフードとして語られる店である。</div>
+<div class="sig"><b>一皿:</b>ホワイト餃子（10個）と豚汁付き定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市もりの里１丁目２５９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762610825">☎ 076-261-0825</a> ／ <a href="http://dai7gyoza.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイトが現行メニューと深夜2時までの営業を掲載しており、るるぶ+の金沢ソウルフード特集でもホワイト餃子の代表店として取り上げられている。地元客の日常利用が中心で、創業60年以上続く。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%AC%AC7%E3%82%AE%E3%83%A7%E3%83%BC%E3%82%B6%E3%81%AE%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E3%82%82%E3%82%8A%E3%81%AE%E9%87%8C%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%95%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.dai7-gyouza.com/">第7ギョーザの店 公式サイト</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・酒どころ</h2>
+<div class="card" id="c-izakaya_kappo_tamura_namikicho">
+<img class="hero" src="img/kanazawa/izakaya_kappo_tamura_namikicho.jpg" alt="居酒屋割烹 田村 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">37</span>居酒屋割烹 田村<span class="yomi">いざかやかっぽう たむら</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">浅野川に架かる梅ノ橋のたもと、ひがし茶屋街から歩いて数分の並木町にある居酒屋割烹。ズワイガニを生きたまま通年で用意しているのが最大の特徴で、冬の香箱ガニのほか、のどぐろやぶりなど北陸の旬の魚を、刺身・寿司・焼き・煮物・鍋と幅広い仕立てで出す。割烹の技を居酒屋の間口で味わえる構えで、地酒も石川の蔵を揃えて料理に合わせる。夜のほか土日は昼も予約制で開ける。茶屋街を歩いたあとにそのまま流れ込める立地で、観光と地元利用の双方に使われている。</div>
+<div class="sig"><b>一皿:</b>通年で用意する活ズワイガニ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市並木町２−１８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762220517">☎ 076-222-0517</a> ／ <a href="https://www.kanazawatamura.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトと金沢市観光協会の飲食店ページがいずれも稼働し、営業時間・定休日が一致して確認できる。年間を通じて活ガニを出す構えは金沢の居酒屋でも珍しく、冬以外の訪問でも意味がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%E5%89%B2%E7%83%B9%20%E7%94%B0%E6%9D%91%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E4%B8%A6%E6%9C%A8%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawatamura.com/">居酒屋割烹 田村 公式サイト</a> / <a href="https://www.kanazawa-kankoukyoukai.or.jp/gourmet/detail_50193.html">金沢市観光協会 居酒屋割烹 田村</a></div>
+</div></div>
+<div class="card" id="c-shubo_shojo_korinbo">
+<img class="hero" src="img/kanazawa/shubo_shojo_korinbo.jpg" alt="酒房 猩猩 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">38</span>酒房 猩猩<span class="yomi">しゅぼう しょうじょう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">香林坊の裏手、せせらぎ通りに面した割烹むら井ビルの一階にある酒房。店名の猩猩は中国の伝説に出てくる酒好きの生き物に由来する。金沢港の網元から直送される朝どれの鮮魚が主役で、刺身のほかしめ鯖や活け締めの黄アジのたたきなど、鮮度を前提にした仕立てが並ぶ。加賀野菜を使った料理も置く。日本酒は石川の地酒を中心に全国の銘酒を季節ごとに二十五から三十種類揃え、温度帯にこだわって出す。料理に合う酒を頼めば店主が選んでくれる。カウンター十席ほどと小上がりで、一人客も受け入れる。</div>
+<div class="sig"><b>一皿:</b>金沢港網元直送の朝どれ刺身盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市香林坊２丁目１２−１５ 鞍月用水側 ライオンズマンション向かいの小橋を渡ってお入りください（小川に面しています</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054843294">☎ 050-5484-3294</a> ／ <a href="https://r735900.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県公式観光サイトの居酒屋特集に加え、店の公式ページが住所・営業時間を掲示し稼働している。日本酒を温度帯まで管理して出す構えは、地酒を目的に据える客にとって金沢中心部で数少ない選択肢である。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E6%88%BF%20%E7%8C%A9%E7%8C%A9%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%A6%99%E6%9E%97%E5%9D%8A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%95%20%E9%9E%8D%E6%9C%88%E7%94%A8%E6%B0%B4%E5%81%B4%20%E3%83%A9%E3%82%A4%E3%82%AA%E3%83%B3%E3%82%BA%E3%83%9E%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%E5%90%91%E3%81%8B%E3%81%84%E3%81%AE%E5%B0%8F%E6%A9%8B%E3%82%92%E6%B8%A1%E3%81%A3%E3%81%A6%E3%81%8A%E5%85%A5%E3%82%8A%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%EF%BC%88%E5%B0%8F%E5%B7%9D%E3%81%AB%E9%9D%A2%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://r735900.gorp.jp/">酒房 猩猩 公式ページ</a> / <a href="https://www.hot-ishikawa.jp/blog/detail_489.html">ほっと石川旅ねっと 片町・香林坊周辺おすすめ居酒屋</a></div>
+</div></div>
+<div class="card" id="c-kawabata_sengyoten_katamachi">
+<img class="hero" src="img/kanazawa/kawabata_sengyoten_katamachi.jpg" alt="川端鮮魚店 片町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">39</span>川端鮮魚店 片町店<span class="yomi">かわばたせんぎょてん かたまちてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">片町の木谷ビル二階にある食堂風の居酒屋で、店内に生簀を備え、魚や貝を活かしたまま置いて注文ごとに締める。刺身のほか七輪焼きやぶりしゃぶなど食べ方の選択肢が広く、同じ魚を複数の仕立てで頼めるのが特徴である。マグロの中落ちが名物として知られ、量と価格の釣り合いから地元客の支持が厚い。営業は十七時から「お魚がなくなるまで」と区切っており、遅い時間に行くと品切れが出る。かしこまらない構えなので、片町で飲み歩く途中に魚をしっかり食べたいときの一軒として使いやすい。</div>
+<div class="sig"><b>一皿:</b>マグロの中落ち／ぶりしゃぶ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 17:00〜23:00 ／ 金 17:00〜23:30 ／ 土 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町２丁目２−２０ 木谷ビル 2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762223757">☎ 076-222-3757</a> ／ <a href="https://kawabatasengyoten-katamachi.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県公式観光サイトの居酒屋特集に掲載され、食べログには2025年から2026年にかけての口コミが継続して投稿されており現在の営業が確認できる。生簀を持つ食堂風の構えは片町でも珍しい。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E7%AB%AF%E9%AE%AE%E9%AD%9A%E5%BA%97%20%E7%89%87%E7%94%BA%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%90%20%E6%9C%A8%E8%B0%B7%E3%83%93%E3%83%AB%202F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hot-ishikawa.jp/blog/detail_489.html">ほっと石川旅ねっと 片町・香林坊周辺おすすめ居酒屋</a> / <a href="https://hitosara.com/0031083295/">ヒトサラ 川端鮮魚店 片町店</a></div>
+</div></div>
+<div class="card" id="c-uogin_katamachi">
+<img class="hero" src="img/kanazawa/uogin_katamachi.jpg" alt="大衆割烹 魚吟 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">40</span>大衆割烹 魚吟<span class="yomi">たいしゅうかっぽう うおぎん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">片町にある大衆割烹で、海と山の食材を並べつつ、のどぐろ料理の幅広さで名が知られる。炭火の一本焼きのほか、しゃぶしゃぶ、棒寿司と仕立てを揃え、高級魚を一種類でいろいろな形で味わえるのが売りである。石川の地酒を厚く揃えており、魚の脂に合わせて選べる。二階には掘りごたつの半個室があるため、少人数の会食にも使える。深夜二十三時三十分まで開けているので、片町で二軒目、三軒目に回るときにも入れる。大衆割烹を名乗るとおり、割烹の仕事を居酒屋の値段で出す構えを取っている。</div>
+<div class="sig"><b>一皿:</b>のどぐろの炭火一本焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市片町２丁目２４−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762258724">☎ 076-225-8724</a> ／ <a href="https://uogin1.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県公式観光サイトの居酒屋特集に加え、店の公式ページとホットペッパーグルメの現行掲載で営業時間・住所が一致して確認できる。のどぐろを複数の調理法で比べられる店は金沢でも限られる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E5%89%B2%E7%83%B9%20%E9%AD%9A%E5%90%9F%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%89%87%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%94%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://uogin1.owst.jp/">魚吟 うおぎん 金沢 公式ページ</a> / <a href="https://www.hot-ishikawa.jp/blog/detail_489.html">ほっと石川旅ねっと 片町・香林坊周辺おすすめ居酒屋</a></div>
+</div></div>
+<div class="card" id="c-kanazawa_jizakegura_station">
+<img class="hero" src="img/kanazawa/kanazawa_jizakegura_station.jpg" alt="金沢地酒蔵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">41</span>金沢地酒蔵<span class="yomi">かなざわじざけぐら</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">金沢駅構内の商業施設、金沢百番街あんとの中にある地酒専門店で、金沢・加賀・能登の全三十二蔵の酒を扱う。菊姫、天狗舞、手取川、常きげん、加賀鳶といった石川を代表する銘柄が一堂に並ぶため、飲み比べて好みを絞ってから土産を選べるのが利点である。店内には試飲用の自動販売機があり一杯百円から試せるほか、併設の地酒バーではおつまみ付きで利き酒ができ、店員が酒の特徴を説明してくれる。朝八時三十分から夜八時まで年中無休で開いており、列車の待ち時間にも立ち寄れる。</div>
+<div class="sig"><b>一皿:</b>県内32蔵の利き酒（試飲自販機は1杯100円〜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市木ノ新保町１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762603739">☎ 076-260-3739</a> ／ <a href="https://zizakegura.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県公式観光サイトの2025年の昼飲み特集で筆頭に挙げられ、店の公式サイトも稼働している。石川の地酒を一か所で横断して比べられる場所は他になく、旅の最初か最後に必ず効く。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%87%91%E6%B2%A2%E5%9C%B0%E9%85%92%E8%94%B5%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9C%A8%E3%83%8E%E6%96%B0%E4%BF%9D%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://zizakegura.com/">金沢地酒蔵 公式サイト</a> / <a href="https://www.hot-ishikawa.jp/blog/detail_654.html">ほっと石川旅ねっと 金沢×昼飲み7選</a></div>
+</div></div>
+<div class="card" id="c-sakeshop_fukumitsuya_ishibiki">
+<img class="hero" src="img/kanazawa/sakeshop_fukumitsuya_ishibiki.jpg" alt="SAKE SHOP 福光屋 金沢店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">42</span>SAKE SHOP 福光屋 金沢店<span class="yomi">さけしょっぷ ふくみつや かなざわてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">寛永二年（1625年）創業、金沢で最も古い酒蔵である福光屋の直営店。加賀鳶や黒帯といった同蔵の純米酒を全ブランド揃えるほか、酒器、地元の酒肴、酒を使った菓子や化粧品まで置く。店の奥にはバーカウンターが設えてあり、季節のおすすめ三種の飲み比べなどを立ち寄りで試せるのが特徴である。福光屋は全量純米造りに切り替えた蔵として知られ、その方針の違いを実際に飲んで確かめられる。兼六園から東へ延びる石引商店街に面しており、金沢城・兼六園を歩いたあとに立ち寄る動線に収まる。</div>
+<div class="sig"><b>一皿:</b>季節のおすすめ3種の飲み比べ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市石引２丁目８−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762231117">☎ 076-223-1117</a> ／ <a href="http://www.fukumitsuya.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県公式観光サイトの角打ち・試飲特集と金沢市観光協会の双方に掲載され、石引商店街の現行店舗一覧でも確認できる。蔵元直営で飲んでから買えるため、地酒を持ち帰る目的に最も合う。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SAKE%20SHOP%20%E7%A6%8F%E5%85%89%E5%B1%8B%20%E9%87%91%E6%B2%A2%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%9F%B3%E5%BC%95%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawa-kankoukyoukai.or.jp/spot/detail_10123.html">金沢市観光協会 SAKE SHOP 福光屋 金沢店</a> / <a href="https://isibikisyouten.com/shop/18/">石引商店街振興組合 SAKE SHOP 福光屋 金沢店</a></div>
+</div></div>
+<div class="card" id="c-nihonshu_makoto_higashiyama">
+<img class="hero" src="img/kanazawa/nihonshu_makoto_higashiyama.jpg" alt="日本酒 真琴 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">43</span>日本酒 真琴<span class="yomi">にほんしゅ まこと</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">ひがし茶屋街の入口に面した日本酒バーで、石川の地酒と能登杜氏が醸す酒を中心に常時五十種類ほどを置く。看板は石川の地酒三種に酒肴が付く飲み比べセットと、昼だけの一時間飲み放題で、三十種類の中から選べる。ふぐの卵巣糠漬けやイカの黒作りといった石川固有の珍味、おばんざい、チーズなども揃うため、酒に合わせて少しずつつまむ使い方に向く。十一時三十分から開けており、茶屋街の街歩きの途中に昼から一杯という金沢らしい過ごし方ができる。飾らない雰囲気で一人でも入りやすい。</div>
+<div class="sig"><b>一皿:</b>石川の地酒3種飲み比べセット（酒肴付き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・金 11:30〜15:00 ／ 水・木 11:30〜15:00, 17:00〜19:00 ／ 土・日 11:30〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市東山１丁目５−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762053800">☎ 076-205-3800</a> ／ <a href="https://www.facebook.com/nihonsyu.makoto/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県公式観光サイトの2025年の昼飲み特集に掲載され、グルメサイトfood-japonも珍味の品揃えまで具体的に紹介している。ふぐ卵巣糠漬けなど石川固有の肴を地酒と合わせられる点で他と替えが利かない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E9%85%92%20%E7%9C%9F%E7%90%B4%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9D%B1%E5%B1%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hot-ishikawa.jp/blog/detail_654.html">ほっと石川旅ねっと 金沢×昼飲み7選</a> / <a href="https://food-japon.com/p/nihonshu-makoto">food-japon 日本酒 真琴</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-jiyuken_higashiyama">
+<img class="hero" src="img/kanazawa/jiyuken_higashiyama.jpg" alt="レストラン自由軒 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">44</span>レストラン自由軒<span class="yomi">れすとらんじゆうけん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治42年（1909年）創業、ひがし茶屋街の入口に建つ洋食店。百年以上にわたって茶屋街の芸妓衆や地元客に通われてきた。名物は醤油ベースのソースでご飯を黒く炒めるオムライスで、デミグラスでもケチャップでもない金沢独自の味に仕上がる。芸妓のリクエストから生まれたと伝わる「昔のカツ丼」、特製ドミグラスソースのハヤシライス、カニクリームコロッケなども長く品書きに残る。1日30食限定の日替わり定食は近隣の常連が目当てにする一品。木の質感を生かした店内は観光客と地元客が入り混じり、昼夜とも回転が早い。</div>
+<div class="sig"><b>一皿:</b>オムライス（醤油ベースの黒いご飯）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 11:30〜15:00, 17:00〜21:00 ／ 土・日 11:30〜15:00, 16:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市東山１丁目６−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762521996">☎ 076-252-1996</a> ／ <a href="http://www.jiyuken.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイトが明治42年創業と現行の営業時間を明記。地域メディア「週末、金沢。」の老舗洋食店特集でも創業115年の代表格として紹介され、醤油味オムライスが金沢固有の洋食として評価されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E8%87%AA%E7%94%B1%E8%BB%92%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9D%B1%E5%B1%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jiyuken.com/">レストラン自由軒 公式サイト</a> / <a href="https://www.weekend-kanazawa.com/entry/shinise-yousyoku">週末、金沢。「石川・金沢の老舗洋食店まとめ5選」</a></div>
+</div></div>
+<div class="card" id="c-grill_new_tanuki_kodatsuno">
+<img class="hero" src="img/kanazawa/grill_new_tanuki_kodatsuno.jpg" alt="洋食屋 グリル ニュー狸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">45</span>洋食屋 グリル ニュー狸<span class="yomi">ようしょくやぐりるにゅーたぬき</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和42年（1967年）創業、金沢大学附属病院や県立美術館にほど近い小立野の洋食店で、現在は三代目が祖父・父とともに厨房に立つ。看板は900円のハヤシライスで、玉ねぎを長く炒めた自家製ソースは甘さより酸味とコクが立つ。もう一つの名物が「ヤキメシ」と呼ばれる黒いチャーハンで、ハヤシのソースを使う独特の一皿。ほかにサーモンステーキや、平日昼の「たぬき定食」も安く、学生と近隣の勤め人で昼は満席になる。三世代にわたって通う常連が多く、令和になっても価格を抑えたまま続けている点が支持されている。</div>
+<div class="sig"><b>一皿:</b>ハヤシライス／黒いヤキメシ（ブラックチャーハン）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:30, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市小立野３丁目２７−１２ グリルニュー狸</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762626658">☎ 076-262-6658</a> ／ <a href="https://www.instagram.com/tanuki0329/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地域メディア「週末、金沢。」が2023年の取材記事と老舗洋食店特集の双方で取り上げ、創業昭和42年・三代続く味として現行メニューと価格を掲載。地元客中心で観光地から外れた小立野に根を張る店として評価されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E3%82%B0%E3%83%AA%E3%83%AB%20%E3%83%8B%E3%83%A5%E3%83%BC%E7%8B%B8%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%B0%8F%E7%AB%8B%E9%87%8E%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%92%20%E3%82%B0%E3%83%AA%E3%83%AB%E3%83%8B%E3%83%A5%E3%83%BC%E7%8B%B8">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.weekend-kanazawa.com/entry/new-tanuki">週末、金沢。「洋食屋 グリル ニュー狸」</a> / <a href="https://www.weekend-kanazawa.com/entry/shinise-yousyoku">週末、金沢。「石川・金沢の老舗洋食店まとめ5選」</a></div>
+</div></div>
+<div class="card" id="c-todorokitei_higashiyama">
+<img class="hero" src="img/kanazawa/todorokitei_higashiyama.jpg" alt="ビストロ金沢 とどろき亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">46</span>ビストロ金沢 とどろき亭<span class="yomi">びすとろかなざわとどろきてい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">ひがし茶屋街の入口に建つビストロで、大正12年（1923年）に加州銀行（北國銀行の前身）として建てられた洋館をほぼ当時のまま改修して使っている。店の奥には金庫の跡がそのまま残り、金沢の近代建築としても価値が高い建物として知られる。料理は近海の魚介と能登産の牛肉・豚肉を軸に据え、季節ごとに組むシェフのコースのほか、昼はスパイスを効かせたカレーやハンバーグなど気軽な品も揃う。天井の高い空間で大正ロマンの意匠を眺めながら食事ができ、団体利用や子ども連れにも対応する。ワインの品揃えも厚い。</div>
+<div class="sig"><b>一皿:</b>能登産の肉と地物魚介を使うシェフ特選コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市東山１丁目２−２−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762525755">☎ 076-252-5755</a> ／ <a href="https://slowlife-kanazawa.com/todorokitei.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金沢市観光協会の公式グルメページが「大正12年築の銀行を当時のままに改修した老舗ビストロ」として現行の営業時間とともに掲載。建物自体が金沢の近代建築として紹介され、地域メディアでも繰り返し取り上げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%E9%87%91%E6%B2%A2%20%E3%81%A8%E3%81%A9%E3%82%8D%E3%81%8D%E4%BA%AD%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9D%B1%E5%B1%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawa-kankoukyoukai.or.jp/everyone/gourmet/detail_52018.html">金沢市観光協会 公式サイト「ビストロ金沢 とどろき亭」</a></div>
+</div></div>
+<div class="card" id="c-la_nenegoose_sennichimachi">
+<img class="hero" src="img/kanazawa/la_nenegoose_sennichimachi.jpg" alt="ラ・ネネグース 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">47</span>ラ・ネネグース<span class="yomi">らねねぐーす</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1980年5月開業、犀川沿いの千日町に立つ町家フレンチ。赤い格子戸が目印で、店内はアンティーク調の家具で統一されたクラシカルな設え。大きなガラス戸の向こうに庭の緑と川面が見え、金沢の町家とフランス料理が違和感なく同居している。テーブル席、カウンター席、2階席を合わせて28席。創業から続く「鴨とフォアグラのテリーヌ コンソメジュレ添え」と、火入れの評価が高い鴨のコンフィが看板で、メインには能登牛肩ロースの赤ワイン煮込みなど地元食材の皿が並ぶ。夜はコース中心、金土日祝は昼も営業する。</div>
+<div class="sig"><b>一皿:</b>鴨のコンフィ／鴨とフォアグラのテリーヌ コンソメジュレ添え</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木 17:30〜22:00 ／ 金 11:30〜14:00, 17:30〜22:00 ／ 土 11:30〜14:30, 17:30〜22:00 ／ 日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市千日町１−１６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762436651">☎ 076-243-6651</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>グルメ媒体food-japonの実食レポートが、1980年創業の犀川沿い町家フレンチとして内装・コース構成・価格を詳報し、鴨のコンフィの火入れを「なかなかありません」と高く評価している。金沢のフレンチ特集にも常連で登場する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BB%E3%83%8D%E3%83%8D%E3%82%B0%E3%83%BC%E3%82%B9%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%8D%83%E6%97%A5%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://food-japon.com/p/la-nenegoose">food-japon「ラ・ネネグース」</a></div>
+</div></div>
+<div class="card" id="c-trattoria_tamaya_oyama">
+<img class="hero" src="img/kanazawa/trattoria_tamaya_oyama.jpg" alt="トラットリア タマヤ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">48</span>トラットリア タマヤ<span class="yomi">とらっとりあたまや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">尾山神社にほど近い尾山町のビル2階にある、金沢では古参のイタリア料理店。カウンターとテーブルを備えた落ち着いた店で、前菜盛り合わせ、パスタ、肉や魚のメインという正統な構成を守る。とくに昼の定食は千円台で前菜からデザートまで付き、近隣の勤め人が通う定番として長く支持されてきた。土日祝は休みで平日のみの営業という営業形態からも、観光向けではなく地元の食事どころとしての性格が強いことがわかる。夜は四千円台からのアラカルトとワインが中心で、静かに食事をしたい客が集まる。</div>
+<div class="sig"><b>一皿:</b>前菜盛り合わせから始まる平日ランチコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜14:00, 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">土・日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市尾山町３−２ 笹井ビル</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762325520">☎ 076-232-5520</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの店舗ページで2025年4月付の口コミが確認でき現在も営業中。「ランチのコスパが最高」という評価が繰り返し寄せられ、金沢のイタリアン特集でも尾山神社エリアの本格派として名前が挙がる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%88%E3%83%A9%E3%83%83%E3%83%88%E3%83%AA%E3%82%A2%20%E3%82%BF%E3%83%9E%E3%83%A4%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%B0%BE%E5%B1%B1%E7%94%BA%EF%BC%93%E2%88%92%EF%BC%92%20%E7%AC%B9%E4%BA%95%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/ishikawa/A1701/A170101/17002101/">食べログ「トラットリア タマヤ」</a></div>
+</div></div>
+<div class="card" id="c-kinteirou_shimeno">
+<img class="hero" src="img/kanazawa/kinteirou_shimeno.jpg" alt="中国広東料理 金鼎樓 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">49</span>中国広東料理 金鼎樓<span class="yomi">ちゅうごくかんとんりょうりきんていろう</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">金沢市西部の示野町、大型店が並ぶ幹線沿いにある本格広東料理店。北京のホテルや上海の人気店で修業した中国人料理長が厨房を仕切り、飲茶や点心、北京ダック、フカヒレといった広東の定番を、日本人の口に合わせて塩気を抑えた味付けで供する。昼は油淋鶏や麻婆飯、炒飯、ラーメンなどの定食が千円前後で、夜は北京ダックのコースや食べ飲み放題のコースも用意される。宴会用の個室があり、観光地から離れた土地で地元の家族客や会食に使われている。金沢で本場仕込みの広東料理を日常価格で食べられる数少ない店の一つ。</div>
+<div class="sig"><b>一皿:</b>北京ダック（コース4,180円）と飲茶・点心</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:15〜14:15, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市示野町ト−４０８−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762683833">☎ 076-268-3833</a> ／ <a href="https://kinteirou.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイトが北京・上海で修業した中国人シェフによる本格広東料理という成り立ちと、現行のコース・単品価格を掲載。金沢周辺の中華料理店を紹介する石川県の地域メディアでも広東料理の代表店として挙げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E5%BA%83%E6%9D%B1%E6%96%99%E7%90%86%20%E9%87%91%E9%BC%8E%E6%A8%93%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E7%A4%BA%E9%87%8E%E7%94%BA%E3%83%88%E2%88%92%EF%BC%94%EF%BC%90%EF%BC%98%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kinteirou.gorp.jp/">中国広東料理 金鼎樓 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-respice_kakinokibatake">
+<img class="hero" src="img/kanazawa/respice_kakinokibatake.jpg" alt="Re:spice（リスパイス） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">50</span>Re:spice（リスパイス）<span class="yomi">りすぱいす</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">柿木畠で長く親しまれたタイ料理店「リトルスパイス」が2025年7月に店主の体調を理由に閉じたあと、その跡地に同年12月2日に開いた店。金沢のベトナム料理店「Pick PHO」と旧リトルスパイスの持ち味を合わせ、ガパオやグリーンカレーといった定番のタイ料理と、生の米粉から起こす麺のフォーを一つの品書きに並べる。11月25日から30日までのプレオープンを挟んで本開店した。香林坊と兼六園のあいだ、県立美術館へ抜ける柿木畠の長福ビル1階にあり、営業は夜だけ。</div>
+<div class="sig"><b>一皿:</b>生米粉麺のフォーと定番のタイ料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市柿木畠２−１１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:07089983933">☎ 070-8998-3933</a> ／ <a href="https://www.instagram.com/respice.kanazawa?igsh=NHlkcHlpOGVjbWZh&amp;utm_source=qr">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金沢の地域情報サイト「かなざわ速報」が2025年12月2日のグランドオープンを住所・営業時間つきで報じており、惜しまれて閉じたリトルスパイスの味を継ぐ店として位置づけている。前身の閉店をそのまま欠落にせず、現に営業している後継店へ差し替えた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Re%3Aspice%EF%BC%88%E3%83%AA%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%EF%BC%89%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9F%BF%E6%9C%A8%E7%95%A0%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kanazawadays.com/archives/45419716.html">かなざわ速報 Re:spice オープン</a> / <a href="https://article.yahoo.co.jp/detail/53297355c469d582ad4ef7955fca24f5076a3902">Yahoo!ニュース 柿木畠に Re:spice がオープン</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・和菓子・パン</h2>
+<div class="card" id="c-morihachi_honten_otemachi">
+<img class="hero" src="img/kanazawa/morihachi_honten_otemachi.jpg" alt="森八 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">51</span>森八 本店<span class="yomi">もりはちほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">寛永2年（1625年）創業、加賀藩の御用菓子司を390年余り務めてきた和菓子店。代表銘菓の「長生殿」は、加賀藩三代藩主前田利常が小堀遠州に意匠を求めたと伝わる紅白の落雁で、淡路産の和三盆糖と北陸産のもち米粉を菓子木型で打ち出して作る。日本三名菓の一つに数えられる。大手町の本店は2階に「金沢菓子木型美術館」を併設し、代々使われてきた木型を展示するほか、40分1,870円の落雁手作り体験もできる。1階奥の茶寮では生菓子と抹茶が味わえ、予約制の貴船弁当も用意される。</div>
+<div class="sig"><b>一皿:</b>長生殿（和三盆糖と北陸産もち米粉の紅白落雁）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市大手町１０−１５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762626251">☎ 076-262-6251</a> ／ <a href="https://www.morihachi.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金沢市観光協会の公式ページが寛永2年創業・加賀藩御用菓子司としての来歴と、本店併設の菓子木型美術館・茶寮・落雁手作り体験まで掲載。金沢の茶の湯文化を代表する和菓子店として、県内外の和菓子特集で必ず筆頭に挙がる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E5%85%AB%20%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanazawa-kankoukyoukai.or.jp/spot/detail_50898.html">金沢市観光協会 公式サイト「加賀藩御用菓子司 森八」</a></div>
+</div></div>
+<div class="card" id="c-wagashi_murakami_nagamachi">
+<img class="hero" src="img/kanazawa/wagashi_murakami_nagamachi.jpg" alt="和菓子 村上 金沢本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">52</span>和菓子 村上 金沢本店<span class="yomi">わがしむらかみかなざわほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治44年（1911年）創業の和菓子店。長町武家屋敷跡に近い金沢本店のほか、泉本町の本社店や金沢駅百番街などにも店を構える。看板は「ふくさ餅」で、黒糖を効かせたふわりとした薄皮で、もちもちの求肥と自家製餡を包む。秋には栗餡を合わせた季節版も出る。もう一つの名物が、選び抜いた小豆を使い切り口の角が立つように仕上げた「きんつば」。餡はすべて自家製で、粒の形を残した炊き方が特徴とされる。本店近くには甘味を出す「菓ふぇ MURAKAMI」もあり、店内で和菓子と茶を組み合わせて楽しめる。</div>
+<div class="sig"><b>一皿:</b>黒糖ふくさ餅／きんつば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市長町２丁目３−３２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762644223">☎ 076-264-4223</a> ／ <a href="https://www.wagashi-murakami.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式店舗案内が金沢本店（長町2-3-32）の現行営業時間を掲載し、明治44年創業を明示。金沢市観光協会の公式グルメページにも複数店舗が掲載され、金沢土産の定番として県内での知名度が高い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E8%8F%93%E5%AD%90%20%E6%9D%91%E4%B8%8A%20%E9%87%91%E6%B2%A2%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%95%B7%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shopinfo.wagashi-murakami.com/shop/">和菓子 村上 公式サイト 店舗のご案内</a></div>
+</div></div>
+<div class="card" id="c-moroeya_nomachi_honten">
+<img class="hero" src="img/kanazawa/moroeya_nomachi_honten.jpg" alt="落雁 諸江屋 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">53</span>落雁 諸江屋 本店<span class="yomi">らくがんもろえやほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">嘉永2年（1849年）創業、落雁を専門に作り続ける和菓子店。落雁は米粉と水飴、砂糖を練って木型で打ち出す干菓子で、茶の湯が根付いた金沢では茶席に欠かせない菓子として発達した。代表作は加賀の伝統を伝える「方丈菓子」や「加賀宝生」、そして紅白のうさぎをかたどった愛らしい「花うさぎ」で、昔ながらの製法を守りながら現代の贈答にも使われている。野町の本店は落ち着いた木造の構えで駐車場も備える。近くの西茶屋街には「西茶屋菓寮」を構え、菓子と抹茶をその場で味わうこともできる。</div>
+<div class="sig"><b>一皿:</b>花うさぎ（紅白のうさぎ形落雁）／方丈菓子</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市野町１丁目３−５９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762452854">☎ 076-245-2854</a> ／ <a href="http://moroeya.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイトが嘉永二年創業と代表商品の由来を掲載し、公式店舗案内で本店（野町1-3-59）の営業時間・定休日を明示している。金沢の和菓子特集で森八・村上と並ぶ老舗として繰り返し取り上げられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%90%BD%E9%9B%81%20%E8%AB%B8%E6%B1%9F%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%87%8E%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%95%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://moroeya.co.jp/">落雁 諸江屋 公式サイト</a> / <a href="https://moroeya.co.jp/shop/">落雁 諸江屋 公式サイト 店舗案内</a></div>
+</div></div>
+<div class="card" id="c-higashide_coffee_jikkenmachi">
+<img class="hero" src="img/kanazawa/higashide_coffee_jikkenmachi.jpg" alt="東出珈琲店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">54</span>東出珈琲店<span class="yomi">ひがしでこーひーてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">近江町市場のすぐ北、十間町の赤煉瓦造りの建物で営む自家焙煎珈琲店。ガラス越しに焙煎機が据わっているのが目印になっている。店主は30年以上金沢で愛された喫茶店「チャペック」で修業し、その店が移転する際に建物と器具を引き継いで2007年に開いた。焙煎の前後に欠点豆を一粒ずつ手で取り除く方法を守り、常時20種ほどの豆を揃える。看板は「東出ブレンド」。自家製のプリンとスフレチーズケーキも人気で、一日に作れる数が決まっているため夕方前に売り切れることが多い。レトロな設えで観光の合間の休憩にも使われる。</div>
+<div class="sig"><b>一皿:</b>東出ブレンドと自家製プリン（450円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水・日曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市十間町４２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762323399">☎ 076-232-3399</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>グルメ媒体food-japonの実食レポートが赤煉瓦の店構え、チャペックから受け継いだ経緯、豆の手選別と現行価格まで詳報。TripAdvisorやRettyには2025年の来店口コミがあり、営業が継続していることを確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%B1%E5%87%BA%E7%8F%88%E7%90%B2%E5%BA%97%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%8D%81%E9%96%93%E7%94%BA%EF%BC%94%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://food-japon.com/p/higashide-coffee">food-japon「東出珈琲店」</a></div>
+</div></div>
+<div class="card" id="c-hiramipan_nagamachi">
+<img class="hero" src="img/kanazawa/hiramipan_nagamachi.jpg" alt="ひらみぱん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">55</span>ひらみぱん<span class="yomi">ひらみぱん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2011年3月、犀川沿いのせせらぎ通りに開いたベーカリー兼ビストロ。大正時代の鉄工所跡をリノベーションした建物で、鉄骨の梁や古い建具をそのまま生かした空間が特徴になっている。朝8時からパンの販売とモーニングが始まり、卵とベシャメルをのせたクロックマダムのセット、金澤カヌレ、クリームパン、キッシュなどが並ぶ。昼はビストロ料理も出す。2025年4月に店内を広げてカウンター席を新設し、ウィリアム・モリスの英国テキスタイルを壁紙に採り入れた改装を行った。金沢駅の百番街Rintoに期間限定で出店することもある。</div>
+<div class="sig"><b>一皿:</b>クロックマダムセット（1,650円）と金澤カヌレ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 8:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市長町１丁目６−１１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0762217831">☎ 076-221-7831</a> ／ <a href="https://hiramipan.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>るるぶ&amp;more.が2025年4月のリニューアル（カウンター新設・壁紙刷新）を取材記事にしており、店の公式サイトでも2011年創業と定休日が確認できる。金沢の朝食スポットとして繰り返し紹介される人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B2%E3%82%89%E3%81%BF%E3%81%B1%E3%82%93%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E9%95%B7%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hiramipan.co.jp/">ひらみぱん 公式サイト</a> / <a href="https://rurubu.jp/andmore/article/24496">るるぶ&amp;more.「ひらみぱんがリニューアルオープン」</a></div>
+</div></div>
+<div class="card" id="c-le_musee_de_h_kanazawa">
+<img class="hero" src="img/kanazawa/le_musee_de_h_kanazawa.jpg" alt="ル ミュゼ ドゥ アッシュ KANAZAWA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">56</span>ル ミュゼ ドゥ アッシュ KANAZAWA<span class="yomi">るみゅぜどぅあっしゅかなざわ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">石川県立美術館の1階にある洋菓子店兼カフェ。七尾市出身で世界の菓子コンクールを制したパティシエ辻口博啓が手がけ、能登や金沢の素材を使った生菓子を出す。美術館の展覧会に合わせた限定のケーキが期間ごとに登場するのが特徴で、企画展を見たあとそのまま立ち寄れる構成になっている。カフェの利用だけなら観覧料は不要で、テイクアウトのみの利用もできる。兼六園や成巽閣に隣接する静かな一角に位置し、大きな窓から庭の緑を眺めながら休憩できる。金沢で辻口の菓子を落ち着いて味わえる代表的な場所。</div>
+<div class="sig"><b>一皿:</b>展覧会に合わせた期間限定ケーキ（テイクアウト可）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>石川県金沢市出羽町２−１ 石川県立美術館 内</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762046100">☎ 076-204-6100</a> ／ <a href="https://le-musee-de-h.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>石川県立美術館の公式サイト「ご利用案内・カフェ」が現行の営業時間と、2025年夏の企画展コラボ菓子「モンテリマール・ジャポン」の販売を告知しており、現在も営業中であることを一次情報で確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AB%20%E3%83%9F%E3%83%A5%E3%82%BC%20%E3%83%89%E3%82%A5%20%E3%82%A2%E3%83%83%E3%82%B7%E3%83%A5%20KANAZAWA%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E5%87%BA%E7%BE%BD%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%91%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E7%AB%8B%E7%BE%8E%E8%A1%93%E9%A4%A8%20%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.ishibi.pref.ishikawa.jp/guide/cafe/">石川県立美術館 公式サイト「ご利用案内・カフェ」</a></div>
+</div></div>
+<div class="card" id="c-mamezuki_higashiyama">
+<img class="hero" src="img/kanazawa/mamezuki_higashiyama.jpg" alt="豆月 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">57</span>豆月<span class="yomi">まめづき</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">ひがし茶屋街から少し外れた東山の路地にある、豆をテーマにした小さな甘味カフェ。2016年6月の開業で、築80年を超える金沢町家を、建築士でもある店主が手を入れて改装した。木虫籠と呼ばれる出格子を通して光と風が抜ける座敷は席数がごく少なく、混み合うと入れないこともある。北海道産をはじめ国産の豆を丁寧に炊き上げ、黒豆かん、豆しるこ、ぜんざい、わらび餅、豆のスープなどを出す。甘さを抑えた餡と、観光地の喧噪から離れた静かな時間の流れが評価されており、町家カフェ特集の常連になっている。</div>
+<div class="sig"><b>一皿:</b>黒豆かん／豆しるこ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 11:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>石川県金沢市東山２丁目３−２１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0762560465">☎ 076-256-0465</a> ／ <a href="http://mamezuki.exblog.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの店舗ページに2026年5月付の口コミがあり営業継続を確認できる。ことりっぷやるるぶのひがし茶屋街町家カフェ特集でも、築80年の町家を建築士の店主が改装した数席の店として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%B1%86%E6%9C%88%20%E7%9F%B3%E5%B7%9D%E7%9C%8C%E9%87%91%E6%B2%A2%E5%B8%82%E6%9D%B1%E5%B1%B1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/ishikawa/A1701/A170101/17011274/">食べログ「豆月」</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
