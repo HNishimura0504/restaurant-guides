@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>富山美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / TOYAMA・富山県 🇯🇵</div>
+  <h1>富山美食ガイド</h1>
+  <div class="sub">立山連峰の雪解け水が注ぐ富山湾、その「天然の生簀」が育てた白えび・ホタルイカ・寒ブリ。押し寿司のますのすし、真っ黒な醤油スープの富山ブラック、昆布を食べる文化まで、県都の食を厳選55スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年8月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/toyama/_map.png" alt="全域マップ">
+<a href="#c-taiki_nishicho_honten" style="left:38.44%;top:57.33%;width:2.4%;height:2.64%;"></a>
+<a href="#c-menya_iroha_cic" style="left:37.67%;top:50.84%;width:2.4%;height:2.64%;"></a>
+<a href="#c-darumaya_kitadai" style="left:25.35%;top:41.18%;width:2.4%;height:2.64%;"></a>
+<a href="#c-nakajima_toyama_black" style="left:36.99%;top:52.08%;width:2.4%;height:2.64%;"></a>
+<a href="#c-minamoto_masunosushi_museum" style="left:34.29%;top:91.87%;width:2.4%;height:2.64%;"></a>
+<a href="#c-aoyama_sohonpo_masuzushi" style="left:37.15%;top:50.93%;width:2.4%;height:2.64%;"></a>
+<a href="#c-kawakami_masuzushi_marunouchi" style="left:35.76%;top:54.2%;width:2.4%;height:2.64%;"></a>
+<a href="#c-ogiichi_masuzushi" style="left:39.94%;top:63.07%;width:2.4%;height:2.64%;"></a>
+<a href="#c-takadaya_masuzushi" style="left:35.58%;top:54.19%;width:2.4%;height:2.64%;"></a>
+<a href="#c-shiroebitei_toyama_ekimae" style="left:38.24%;top:50.06%;width:2.4%;height:2.64%;"></a>
+<a href="#c-oyaji_toyama" style="left:37.49%;top:51.27%;width:2.4%;height:2.64%;"></a>
+<a href="#c-gingyo_toyama" style="left:36.76%;top:51.16%;width:2.4%;height:2.64%;"></a>
+<a href="#c-odenya_kinta" style="left:37.5%;top:51.12%;width:2.4%;height:2.64%;"></a>
+<a href="#c-kousai_namerikawa" style="left:92.4%;top:8.15%;width:2.4%;height:2.64%;"></a>
+<a href="#c-mori_kobujime" style="left:74.73%;top:23.62%;width:2.4%;height:2.64%;"></a>
+<a href="#c-umekama_umeikan" style="left:70.15%;top:32.83%;width:2.4%;height:2.64%;"></a>
+<a href="#c-aburian_toyamazushi_sakuramachi" style="left:38.32%;top:50.85%;width:2.4%;height:2.64%;"></a>
+<a href="#c-mikizushi_honten_sakuramachi" style="left:38.02%;top:51.44%;width:2.4%;height:2.64%;"></a>
+<a href="#c-minozushi_marunouchi" style="left:36.01%;top:55.27%;width:2.4%;height:2.64%;"></a>
+<a href="#c-sushidokoro_sasaki_soganawa" style="left:38.09%;top:55.08%;width:2.4%;height:2.64%;"></a>
+<a href="#c-ayumizushi_honke_kitashinmachi" style="left:41.14%;top:53.73%;width:2.4%;height:2.64%;"></a>
+<a href="#c-kappou_ogawa_shintomicho" style="left:37.2%;top:51.71%;width:2.4%;height:2.64%;"></a>
+<a href="#c-gomangoku_honten_sakuramachi" style="left:38.39%;top:51.56%;width:2.4%;height:2.64%;"></a>
+<a href="#c-shogetsu_iwase" style="left:44.67%;top:17.18%;width:2.4%;height:2.64%;"></a>
+<a href="#c-unatomi_taromaru" style="left:37.16%;top:65.07%;width:2.4%;height:2.64%;"></a>
+<a href="#c-tempura_takano_shimizucho" style="left:41.91%;top:59.01%;width:2.4%;height:2.64%;"></a>
+<a href="#c-jinzumachi_tamura" style="left:34.81%;top:48.91%;width:2.4%;height:2.64%;"></a>
+<a href="#c-toyama_daruma_kurosekitamachi" style="left:32.58%;top:68.45%;width:2.4%;height:2.64%;"></a>
+<a href="#c-turuki_udon_toyama" style="left:38.06%;top:52.28%;width:2.4%;height:2.64%;"></a>
+<a href="#c-itosho_honten" style="left:37.07%;top:63.16%;width:2.4%;height:2.64%;"></a>
+<a href="#c-suikokaku_sakuramachi" style="left:38.23%;top:51.53%;width:2.4%;height:2.64%;"></a>
+<a href="#c-menya_tsukushi_honten" style="left:37.21%;top:65.05%;width:2.4%;height:2.64%;"></a>
+<a href="#c-menya_ikkaku_nakajima" style="left:42.82%;top:35.25%;width:2.4%;height:2.64%;"></a>
+<a href="#c-joya_sakuramachi" style="left:37.13%;top:52.14%;width:2.4%;height:2.64%;"></a>
+<a href="#c-yatsuhashi_sakuragicho" style="left:38.75%;top:54.17%;width:2.4%;height:2.64%;"></a>
+<a href="#c-saseki_iwase" style="left:44.25%;top:17.37%;width:2.4%;height:2.64%;"></a>
+<a href="#c-nunoichi_saketen_shintomicho" style="left:37.24%;top:51.64%;width:2.4%;height:2.64%;"></a>
+<a href="#c-odenya_ichibanmachi" style="left:37.57%;top:57.5%;width:2.4%;height:2.64%;"></a>
+<a href="#c-daito_shintomicho" style="left:36.65%;top:51.33%;width:2.4%;height:2.64%;"></a>
+<a href="#c-bar_de_mitomi_maroot" style="left:37.45%;top:50.09%;width:2.4%;height:2.64%;"></a>
+<a href="#c-arakawa_sakuramachi" style="left:37.4%;top:51.43%;width:2.4%;height:2.64%;"></a>
+<a href="#c-kawafuji_sakuramachi" style="left:37.46%;top:52.17%;width:2.4%;height:2.64%;"></a>
+<a href="#c-oshokujidokoro_pork" style="left:41.09%;top:53.35%;width:2.4%;height:2.64%;"></a>
+<a href="#c-himawari_shokudo_2" style="left:35.69%;top:49.62%;width:2.4%;height:2.64%;"></a>
+<a href="#c-piatto_suzuki_cinque_iwase" style="left:44.11%;top:17.3%;width:2.4%;height:2.64%;"></a>
+<a href="#c-suzukeema_nishicho" style="left:38.29%;top:57.1%;width:2.4%;height:2.64%;"></a>
+<a href="#c-restaurant_tokio_kojimacho" style="left:40.42%;top:53.97%;width:2.4%;height:2.64%;"></a>
+<a href="#c-shisen_itto_ushijima" style="left:38.1%;top:48.79%;width:2.4%;height:2.64%;"></a>
+<a href="#c-junkissa_tsutaya" style="left:38.99%;top:57.2%;width:2.4%;height:2.64%;"></a>
+<a href="#c-yamamuro_sogawa" style="left:38.04%;top:55.41%;width:2.4%;height:2.64%;"></a>
+<a href="#c-hazeru_coffee_furusawa" style="left:7.6%;top:56.04%;width:2.4%;height:2.64%;"></a>
+<a href="#c-tsukisekai_honpo" style="left:38.79%;top:57.61%;width:2.4%;height:2.64%;"></a>
+<a href="#c-suzukitei_nishicho" style="left:38.25%;top:57.13%;width:2.4%;height:2.64%;"></a>
+<a href="#c-shimakawa_ameten" style="left:39.5%;top:57.81%;width:2.4%;height:2.64%;"></a>
+<a href="#c-campagne_kureha" style="left:18.36%;top:40.92%;width:2.4%;height:2.64%;"></a>
+</div>
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(富山駅〜総曲輪・桜木町)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/toyama/_map2.png" alt="中心部拡大(富山駅〜総曲輪・桜木町)">
+<a href="#c-taiki_nishicho_honten" style="left:48.61%;top:89.63%;width:2.26%;height:2.62%;"></a>
+<a href="#c-menya_iroha_cic" style="left:42.84%;top:38.0%;width:2.26%;height:2.62%;"></a>
+<a href="#c-nakajima_toyama_black" style="left:37.73%;top:47.8%;width:2.26%;height:2.62%;"></a>
+<a href="#c-aoyama_sohonpo_masuzushi" style="left:38.96%;top:38.65%;width:2.26%;height:2.62%;"></a>
+<a href="#c-kawakami_masuzushi_marunouchi" style="left:28.51%;top:64.7%;width:2.26%;height:2.62%;"></a>
+<a href="#c-takadaya_masuzushi" style="left:27.1%;top:64.62%;width:2.26%;height:2.62%;"></a>
+<a href="#c-shiroebitei_toyama_ekimae" style="left:47.11%;top:31.73%;width:2.26%;height:2.62%;"></a>
+<a href="#c-oyaji_toyama" style="left:41.5%;top:41.39%;width:2.26%;height:2.62%;"></a>
+<a href="#c-gingyo_toyama" style="left:36.02%;top:40.48%;width:2.26%;height:2.62%;"></a>
+<a href="#c-odenya_kinta" style="left:41.55%;top:40.22%;width:2.26%;height:2.62%;"></a>
+<a href="#c-aburian_toyamazushi_sakuramachi" style="left:47.72%;top:38.06%;width:2.26%;height:2.62%;"></a>
+<a href="#c-mikizushi_honten_sakuramachi" style="left:45.47%;top:42.73%;width:2.26%;height:2.62%;"></a>
+<a href="#c-minozushi_marunouchi" style="left:30.39%;top:73.22%;width:2.26%;height:2.62%;"></a>
+<a href="#c-sushidokoro_sasaki_soganawa" style="left:46.01%;top:71.74%;width:2.26%;height:2.62%;"></a>
+<a href="#c-ayumizushi_honke_kitashinmachi" style="left:68.97%;top:60.98%;width:2.26%;height:2.62%;"></a>
+<a href="#c-kappou_ogawa_shintomicho" style="left:39.29%;top:44.92%;width:2.26%;height:2.62%;"></a>
+<a href="#c-gomangoku_honten_sakuramachi" style="left:48.28%;top:43.72%;width:2.26%;height:2.62%;"></a>
+<a href="#c-jinzumachi_tamura" style="left:21.33%;top:22.61%;width:2.26%;height:2.62%;"></a>
+<a href="#c-turuki_udon_toyama" style="left:45.78%;top:49.42%;width:2.26%;height:2.62%;"></a>
+<a href="#c-suikokaku_sakuramachi" style="left:47.06%;top:43.49%;width:2.26%;height:2.62%;"></a>
+<a href="#c-joya_sakuramachi" style="left:38.81%;top:48.34%;width:2.26%;height:2.62%;"></a>
+<a href="#c-yatsuhashi_sakuragicho" style="left:50.98%;top:64.46%;width:2.26%;height:2.62%;"></a>
+<a href="#c-nunoichi_saketen_shintomicho" style="left:39.58%;top:44.31%;width:2.26%;height:2.62%;"></a>
+<a href="#c-odenya_ichibanmachi" style="left:42.1%;top:91.01%;width:2.26%;height:2.62%;"></a>
+<a href="#c-daito_shintomicho" style="left:35.16%;top:41.83%;width:2.26%;height:2.62%;"></a>
+<a href="#c-bar_de_mitomi_maroot" style="left:41.18%;top:31.97%;width:2.26%;height:2.62%;"></a>
+<a href="#c-arakawa_sakuramachi" style="left:40.8%;top:42.69%;width:2.26%;height:2.62%;"></a>
+<a href="#c-kawafuji_sakuramachi" style="left:41.28%;top:48.56%;width:2.26%;height:2.62%;"></a>
+<a href="#c-oshokujidokoro_pork" style="left:68.58%;top:57.97%;width:2.26%;height:2.62%;"></a>
+<a href="#c-himawari_shokudo_2" style="left:27.98%;top:28.24%;width:2.26%;height:2.62%;"></a>
+<a href="#c-suzukeema_nishicho" style="left:47.47%;top:87.84%;width:2.26%;height:2.62%;"></a>
+<a href="#c-restaurant_tokio_kojimacho" style="left:63.55%;top:62.91%;width:2.26%;height:2.62%;"></a>
+<a href="#c-shisen_itto_ushijima" style="left:46.05%;top:21.67%;width:2.26%;height:2.62%;"></a>
+<a href="#c-junkissa_tsutaya" style="left:52.75%;top:88.65%;width:2.26%;height:2.62%;"></a>
+<a href="#c-yamamuro_sogawa" style="left:45.63%;top:74.37%;width:2.26%;height:2.62%;"></a>
+<a href="#c-tsukisekai_honpo" style="left:51.24%;top:91.85%;width:2.26%;height:2.62%;"></a>
+<a href="#c-suzukitei_nishicho" style="left:47.2%;top:88.04%;width:2.26%;height:2.62%;"></a>
+<a href="#c-shimakawa_ameten" style="left:56.6%;top:93.5%;width:2.26%;height:2.62%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+
+<div class="toc">
+<div class="th">目次</div>
+<div class="sec red">富山のご当地(ブラックラーメン・ますのすし・白えび)</div>
+<div class="links">
+<a href="#c-taiki_nishicho_honten"><span class="tn" style="background:#e34948;">1</span>富山ブラックの元祖、1947年創業</a>
+<a href="#c-menya_iroha_cic"><span class="tn" style="background:#e34948;">2</span>醤油の旨みで食べさせる現代型の黒</a>
+<a href="#c-darumaya_kitadai"><span class="tn" style="background:#e34948;">3</span>屋台由来、黒い裏メニュー「ヤング」</a>
+<a href="#c-nakajima_toyama_black"><span class="tn" style="background:#e34948;">4</span>大喜直弟子の味を継ぐ昼だけの7席</a>
+<a href="#c-minamoto_masunosushi_museum"><span class="tn" style="background:#e34948;">5</span>職人の手仕事を見て食べられる工場</a>
+<a href="#c-aoyama_sohonpo_masuzushi"><span class="tn" style="background:#e34948;">6</span>駅前の1947年創業、昼で売り切れる</a>
+<a href="#c-kawakami_masuzushi_marunouchi"><span class="tn" style="background:#e34948;">7</span>肉厚・半レアに仕上げる1923年創業</a>
+<a href="#c-ogiichi_masuzushi"><span class="tn" style="background:#e34948;">8</span>県内最高評価、予約必須の肉厚鱒</a>
+<a href="#c-takadaya_masuzushi"><span class="tn" style="background:#e34948;">9</span>1872年創業、県内最古の鱒寿し店</a>
+<a href="#c-shiroebitei_toyama_ekimae"><span class="tn" style="background:#e34948;">10</span>元祖白えび天丼、駅ナカの専門店</a>
+<a href="#c-oyaji_toyama"><span class="tn" style="background:#e34948;">11</span>富山湾の地魚が並ぶ大衆割烹</a>
+<a href="#c-gingyo_toyama"><span class="tn" style="background:#e34948;">12</span>食べログ百名店の海鮮居酒屋</a>
+<a href="#c-odenya_kinta"><span class="tn" style="background:#e34948;">13</span>とろろ昆布をのせる富山おでん</a>
+<a href="#c-kousai_namerikawa"><span class="tn" style="background:#e34948;">14</span>ホタルイカ料理を通年で出す海辺の店</a>
+<a href="#c-mori_kobujime"><span class="tn" style="background:#e34948;">15</span>昆布〆だけを作る珍しい専門店</a>
+<a href="#c-umekama_umeikan"><span class="tn" style="background:#e34948;">16</span>細工かまぼこの職人技を見て買える</a>
+</div>
+<div class="sec blue">寿司・海鮮・和食</div>
+<div class="links">
+<a href="#c-aburian_toyamazushi_sakuramachi"><span class="tn" style="background:#2a78d6;">17</span>駅前ホテル1階の富山湾鮨と炙り焼き</a>
+<a href="#c-mikizushi_honten_sakuramachi"><span class="tn" style="background:#2a78d6;">18</span>新湊・氷見の浜から直に仕入れる寿司</a>
+<a href="#c-minozushi_marunouchi"><span class="tn" style="background:#2a78d6;">19</span>富山城址そば、一手間かけた握り</a>
+<a href="#c-sushidokoro_sasaki_soganawa"><span class="tn" style="background:#2a78d6;">20</span>天然エビ五種を握る総曲輪の寿司</a>
+<a href="#c-ayumizushi_honke_kitashinmachi"><span class="tn" style="background:#2a78d6;">21</span>掘りごたつ座敷のある江戸前寿司</a>
+<a href="#c-kappou_ogawa_shintomicho"><span class="tn" style="background:#2a78d6;">22</span>全席個室で味わう富山湾の会席</a>
+<a href="#c-gomangoku_honten_sakuramachi"><span class="tn" style="background:#2a78d6;">23</span>現代の名工の技を継ぐ越中料理</a>
+<a href="#c-shogetsu_iwase"><span class="tn" style="background:#2a78d6;">24</span>明治44年創業、岩瀬の百年料亭</a>
+<a href="#c-unatomi_taromaru"><span class="tn" style="background:#2a78d6;">25</span>つぎ足しのタレで蒸して焼く鰻</a>
+<a href="#c-tempura_takano_shimizucho"><span class="tn" style="background:#2a78d6;">26</span>紅花油の薄衣、いたち川沿いの天ぷら</a>
+</div>
+<div class="sec aqua">ラーメン・そば・うどん・町中華</div>
+<div class="links">
+<a href="#c-jinzumachi_tamura"><span class="tn" style="background:#1baf7a;">27</span>産地を選べる純十割そば</a>
+<a href="#c-toyama_daruma_kurosekitamachi"><span class="tn" style="background:#1baf7a;">28</span>翁達磨の流れをくむ二八そば</a>
+<a href="#c-turuki_udon_toyama"><span class="tn" style="background:#1baf7a;">29</span>客の8割が頼む天ざるうどん</a>
+<a href="#c-itosho_honten"><span class="tn" style="background:#1baf7a;">30</span>富山名物もつ煮込みうどんの本家</a>
+<a href="#c-suikokaku_sakuramachi"><span class="tn" style="background:#1baf7a;">31</span>朝5時まで灯る老舗大衆中華</a>
+<a href="#c-menya_tsukushi_honten"><span class="tn" style="background:#1baf7a;">32</span>すみれ直伝の札幌味噌ラーメン</a>
+<a href="#c-menya_ikkaku_nakajima"><span class="tn" style="background:#1baf7a;">33</span>鶏と煮干しの濃厚あっさり</a>
+</div>
+<div class="sec beer">居酒屋・酒どころ</div>
+<div class="links">
+<a href="#c-joya_sakuramachi"><span class="tn" style="background:#0d366b;">34</span>地酒50種以上と炭火焼きの一軒</a>
+<a href="#c-yatsuhashi_sakuragicho"><span class="tn" style="background:#0d366b;">35</span>桜木町で月替わりの富山湾の魚</a>
+<a href="#c-saseki_iwase"><span class="tn" style="background:#0d366b;">36</span>満寿泉の蔵元直営、約100種の立ち飲み</a>
+<a href="#c-nunoichi_saketen_shintomicho"><span class="tn" style="background:#0d366b;">37</span>大正から続く酒屋の角打ち</a>
+<a href="#c-odenya_ichibanmachi"><span class="tn" style="background:#0d366b;">38</span>とろろ昆布をのせる富山おでん</a>
+<a href="#c-daito_shintomicho"><span class="tn" style="background:#0d366b;">39</span>駅前で富山湾の旬を通年で追う</a>
+<a href="#c-bar_de_mitomi_maroot"><span class="tn" style="background:#0d366b;">40</span>駅前で昼から飲める県内18蔵の酒</a>
+<a href="#c-arakawa_sakuramachi"><span class="tn" style="background:#0d366b;">41</span>1967年創業、酒は富山の蔵だけ</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-kawafuji_sakuramachi"><span class="tn" style="background:#4a3aa7;">42</span>自家製パン粉の半世紀洋食</a>
+<a href="#c-oshokujidokoro_pork"><span class="tn" style="background:#4a3aa7;">43</span>半世紀続くポーク風ライス</a>
+<a href="#c-himawari_shokudo_2"><span class="tn" style="background:#4a3aa7;">44</span>富山湾の幸を炭火で受けるイタリアン</a>
+<a href="#c-piatto_suzuki_cinque_iwase"><span class="tn" style="background:#4a3aa7;">45</span>岩瀬の町家で富山食材のイタリアン</a>
+<a href="#c-suzukeema_nishicho"><span class="tn" style="background:#4a3aa7;">46</span>煮干しが香るスパイスカレー</a>
+<a href="#c-restaurant_tokio_kojimacho"><span class="tn" style="background:#4a3aa7;">47</span>いたち川沿いのジビエフレンチ</a>
+<a href="#c-shisen_itto_ushijima"><span class="tn" style="background:#4a3aa7;">48</span>痺れが本式の四川料理</a>
+</div>
+<div class="sec yellow">カフェ・パン・菓子</div>
+<div class="links">
+<a href="#c-junkissa_tsutaya"><span class="tn" style="background:#eda100;">49</span>富山最古、100年続く純喫茶</a>
+<a href="#c-yamamuro_sogawa"><span class="tn" style="background:#eda100;">50</span>サイフォンと自家製パンの喫茶</a>
+<a href="#c-hazeru_coffee_furusawa"><span class="tn" style="background:#eda100;">51</span>焙煎の音が店名の自家焙煎店</a>
+<a href="#c-tsukisekai_honpo"><span class="tn" style="background:#eda100;">52</span>淡雪のように溶ける富山の銘菓</a>
+<a href="#c-suzukitei_nishicho"><span class="tn" style="background:#eda100;">53</span>立山杉の年輪を写した杢目羊羹</a>
+<a href="#c-shimakawa_ameten"><span class="tn" style="background:#eda100;">54</span>砂糖を使わない江戸創業の麦芽飴</a>
+<a href="#c-campagne_kureha"><span class="tn" style="background:#eda100;">55</span>県民が知らぬ者なきハード系パン</a>
+</div>
+</div>
+
+<div class="note"><b>回り方のコツ:</b>店は富山駅の南口側(桜町・総曲輪・西町)と、駅北の富岩運河環水公園の周辺に分かれる。夜の飲み屋街は桜木町。白えびの刺身は漁のある春〜秋、ホタルイカは3〜5月、寒ブリは冬と、旬がはっきり分かれるので訪問期に合わせて選ぶ。ますのすしは駅と市内の各製造元で味が違うため食べ比べができる。市内電車(富山地方鉄道の環状線)が総曲輪・グランドプラザ方面の移動に使える。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-toyama" class="c-red">富山のご当地(ブラックラーメン・ますのすし・白えび)</h2>
+<div class="card" id="c-taiki_nishicho_honten">
+<img class="hero" src="img/toyama/taiki_nishicho_honten.jpg" alt="西町大喜 西町本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>西町大喜 西町本店<span class="yomi">にしちょうたいき にしちょうほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1947年（昭和22年）創業。戦後復興の工事現場で働く人々が汗で失った塩分を補い、持参した白飯のおかずにもなるようにと、醤油ダレを極端に濃くした中華そばを出したのが始まりとされる。真っ黒に見えるスープは濃口醤油の色で、太めのストレート麺と手切りのチャーシュー、粗挽き黒胡椒とメンマが載る。胡椒の量は卓上で調整する流儀。カウンター27席のみの小さな店で、県内の人が「富山ブラック」と言えばまずこの名を挙げる。この一杯が後にご当地麺のジャンル名そのものになった。</div>
+<div class="sig"><b>一皿:</b>中華そば（濃口醤油の黒いスープ・粗挽き黒胡椒・太めストレート麺）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市太田口通り１丁目１−７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764233001">☎ 076-423-3001</a> ／ <a href="http://www.nisicho-taiki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんニュースの2026年版富山ブラック特集が「1947年創業の老舗」として筆頭に挙げ、富山市公式観光サイトもグルメ欄で紹介している。ジャンルの発祥店であり、ガイドの起点として外せない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%A5%BF%E7%94%BA%E5%A4%A7%E5%96%9C%20%E8%A5%BF%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%A4%AA%E7%94%B0%E5%8F%A3%E9%80%9A%E3%82%8A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.nisicho-taiki.com/shop/">元祖富山ブラックラーメン 西町大喜 公式サイト（店舗のご案内）</a> / <a href="https://www.jalan.net/news/article/283737/">じゃらんニュース 富山ブラックラーメンおすすめ3選</a></div>
+</div></div>
+<div class="card" id="c-menya_iroha_cic">
+<img class="hero" src="img/toyama/menya_iroha_cic.jpg" alt="富山ブラック 麺家いろは 富山駅前CiC店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>富山ブラック 麺家いろは 富山駅前CiC店<span class="yomi">とやまブラック めんやいろは とやまえきまえしーあいしーてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">射水市戸破に本店を構える店の富山市内店舗。元祖系の塩気の強さとは方向を変え、富山湾の海洋深層水と地元の醤油をベースに、黒い見た目のまま出汁の旨みで飲ませるスープを組み立てたのが特徴で、いわゆる「新・富山ブラック」の代表格として知られる。東京ラーメンショーで通算複数回の売上一位を獲得したことで県外にも名が広まった。CiC地下1階にあり富山駅から地下道で濡れずに行ける立地、夜21時台まで通し営業のため、旅程の前後どちらにも組み込みやすい。</div>
+<div class="sig"><b>一皿:</b>富山ブラック醤油ラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 11:00〜22:00 ／ 金 11:00〜23:00 ／ 土 10:00〜23:00 ／ 日 10:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市新富町１丁目２−３ CiC B1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764447211">☎ 076-444-7211</a> ／ <a href="http://www.menya-iroha.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市公式観光サイトがグルメ欄で紹介する定番店で、公式サイトでも東京ラーメンショー5度の売上一位を掲げる。元祖系と対になる「食べやすい黒」の基準として並べる価値がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%8C%E5%B1%B1%E3%83%96%E3%83%A9%E3%83%83%E3%82%AF%20%E9%BA%BA%E5%AE%B6%E3%81%84%E3%82%8D%E3%81%AF%20%E5%AF%8C%E5%B1%B1%E9%A7%85%E5%89%8DCiC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%96%B0%E5%AF%8C%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%93%20CiC%20B1F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.menya-iroha.com/branches/">富山ブラック麺家いろは 公式サイト（店舗一覧）</a></div>
+</div></div>
+<div class="card" id="c-darumaya_kitadai">
+<img class="hero" src="img/toyama/darumaya_kitadai.jpg" alt="ダルマヤラーメン 富山北代店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>ダルマヤラーメン 富山北代店<span class="yomi">だるまやらーめん とやまきただいてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">創業者が約50年前に開いた「桝屋食堂」を原点とし、屋台営業を経て1998年に呉羽・北代へ店を構えた。看板は二本立てで、カツンと醤油の効いたあっさりの「元祖」と、濃厚な再仕込み醤油で黒く仕上げた「ヤング」。ヤングは屋台時代に若い客へ出していた裏メニューが元になっており、「富山ブラック」という言葉が生まれる前から黒いラーメンを出していた店として語られる。中太のちぢれ麺を高岡銅器の大釜で茹でる。化学調味料に頼らず国産食材と天然昆布で旨みを取る作り方。</div>
+<div class="sig"><b>一皿:</b>ヤング（再仕込み醤油の黒いスープ）／元祖</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>富山県富山市北代５３３２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764363588">☎ 076-436-3588</a> ／ <a href="https://darumayaramen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんニュース2026年版の富山ブラック特集が「富山ブラックという言葉ができる前から黒いラーメンを提供していた歴史のある店」として選出。市街から離れるが、元祖系とは別系統の黒を示せる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%80%E3%83%AB%E3%83%9E%E3%83%A4%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E5%AF%8C%E5%B1%B1%E5%8C%97%E4%BB%A3%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%8C%97%E4%BB%A3%EF%BC%95%EF%BC%93%EF%BC%93%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://darumayaramen.com/">ダルマヤラーメン富山北代店 公式サイト</a> / <a href="https://www.jalan.net/news/article/283737/">じゃらんニュース 富山ブラックラーメンおすすめ3選</a></div>
+</div></div>
+<div class="card" id="c-nakajima_toyama_black">
+<img class="hero" src="img/toyama/nakajima_toyama_black.jpg" alt="富山ブラックラーメン 中嶋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>富山ブラックラーメン 中嶋<span class="yomi">とやまブラックラーメン なかじま</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">初代・中嶋修三が元祖・大喜の創業者のもとで修行した直弟子の一人で、長く居酒屋の一品として黒いラーメンを出していた。2025年2月、現店主がブラックラーメン専門店として店を継承した。味の要は3か月以上かけて仕込む秘伝の醤油ダレで、麺は元祖と同じ製麺所の中太ストレート。卓上の黒胡椒を自分で振る食べ方まで当時のまま再現している。昔ながらの濃口に加え、塩気を抑えて食べやすくした「モダンブラック」も用意する。カウンター7席のみ、昼の2時間半だけの営業。</div>
+<div class="sig"><b>一皿:</b>富山ブラックチャーシューメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市内幸町２−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764411124">☎ 076-441-1124</a> ／ <a href="https://www.instagram.com/toyamabkr_nakajima">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市公式観光サイトが「大喜の直弟子の味を守るべく2025年2月に専門店として継承」と紹介する新しい店で、元祖の系譜を現役で追える数少ない一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%8C%E5%B1%B1%E3%83%96%E3%83%A9%E3%83%83%E3%82%AF%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E4%B8%AD%E5%B6%8B%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%86%85%E5%B9%B8%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamashi-kankoukyoukai.jp/gourmet/%E5%AF%8C%E5%B1%B1%E3%83%96%E3%83%A9%E3%83%83%E3%82%AF%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3-%E4%B8%AD%E5%B6%8B/">富山市公式観光サイト 富山ブラックラーメン 中嶋</a></div>
+</div></div>
+<div class="card" id="c-minamoto_masunosushi_museum">
+<img class="hero" src="img/toyama/minamoto_masunosushi_museum.jpg" alt="ますのすし本舗 源 ますのすしミュージアム 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>ますのすし本舗 源 ますのすしミュージアム<span class="yomi">ますのすしほんぽ みなもと ますのすしみゅーじあむ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">駅弁業として100年余りますのすしを作り続けてきた源の本社に併設された見学施設。ますのすし伝承館では職人が笹を敷き、塩〆した鱒を並べて曲物に詰める昔ながらの工程をガラス越しに見学でき、製造ラインの様子も見られる。見学は無料で所要約30分。江戸から昭和の弁当容器を集めた「旅と食の文化史コレクション」の展示や、土産処「天人楼」での特産品販売もある。予約制のますのすし手作り体験、庭園を望む食事処「さくら亭」を併設し、作り方まで含めて土地の名物を理解できる。</div>
+<div class="sig"><b>一皿:</b>ますのすし（一重・二重）／手作り体験</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市南央町３７−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764297400">☎ 076-429-7400</a> ／ <a href="http://www.minamoto.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが見学無料・手作り体験・食事処の運営を明示しており、ますのすしを「買う」だけでなく「作り方を見る」ことができる県内唯一級の施設。ガイドの導入として機能する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%81%99%E3%81%AE%E3%81%99%E3%81%97%E6%9C%AC%E8%88%97%20%E6%BA%90%20%E3%81%BE%E3%81%99%E3%81%AE%E3%81%99%E3%81%97%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%8D%97%E5%A4%AE%E7%94%BA%EF%BC%93%EF%BC%97%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.minamoto.co.jp/museum">ますのすし本舗 源 公式サイト ますのすしミュージアム</a></div>
+</div></div>
+<div class="card" id="c-aoyama_sohonpo_masuzushi">
+<img class="hero" src="img/toyama/aoyama_sohonpo_masuzushi.jpg" alt="青山総本舗 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>青山総本舗<span class="yomi">あおやまそうほんぽ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1947年（昭和22年）創業のますのすし専門店で、富山駅から歩ける距離にある老舗。米・酢・鱒・笹・曲物の木まで素材を選び抜き、昆布だしを効かせた飯に粗塩で〆た鱒を合わせる作り。酸味を立てず上品にまとめる味筋で、県外への土産に選ばれることが多い。一切れずつ包んだ「ますの寿司 銘々包み」という珍しい商品も持つ。イートインはなく持ち帰り専門、作った分が終われば閉店するため、確実に買うなら午前中の来店か事前予約が要る。</div>
+<div class="sig"><b>一皿:</b>ますの寿し（一重）／ますの寿司 銘々包み</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00～16:00（売り切れ次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜（月曜が祝日の場合は翌日）</td></tr>
+<tr><th>住所</th><td>富山県富山市新富町１丁目４−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764325324">☎ 076-432-5324</a> ／ <a href="http://www.masuzusi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2025年11月公開のジモコロのます寿司食べ歩き記事、および2026年のフリーナビとやまの老舗19店チャートの双方に掲載され、現在も営業中であることが確認できる駅前の代表格。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9D%92%E5%B1%B1%E7%B7%8F%E6%9C%AC%E8%88%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%96%B0%E5%AF%8C%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.e-aidem.com/ch/jimocoro/entry/matsuoka29">ジモコロ 富山駅周辺 ます寿司食べ歩き（2025年11月18日）</a> / <a href="https://www.freenavi.co.jp/article/14611">フリーナビとやま 富山名産ますの寿司 老舗19店舗</a></div>
+</div></div>
+<div class="card" id="c-kawakami_masuzushi_marunouchi">
+<img class="hero" src="img/toyama/kawakami_masuzushi_marunouchi.jpg" alt="川上鱒寿し店 丸の内本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>川上鱒寿し店 丸の内本店<span class="yomi">かわかみますずしてん まるのうちほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1923年（大正12年）創業、現在は三代目が受け継ぐ鱒寿し専門店。厚めにスライスした鱒を特製の甘酢に漬け込み、火を通しきらない“半レア”の状態で仕上げるのが身上で、しっとりした身と艶のある地元産の飯、笹の香りが重なる。押しは強めでジューシーな食感と評される。早朝6時半から店を開け、その日の分が無くなれば閉めるという昔ながらの商いを続けている。富山駅前CiCビル地下にも店を持ち、駅に着いてすぐ買うこともできる。</div>
+<div class="sig"><b>一皿:</b>鱒の寿し（一段・二段）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 7:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>富山県富山市市丸の内１丁目２−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764325129">☎ 076-432-5129</a> ／ <a href="https://www.instagram.com/kawakami%20masuzushiten">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市観光協会の「すしのまち とやま」が創業1923年・三代目の半レア仕立てとして紹介し、フリーナビとやまの老舗19店チャートでも「強めの押しとジューシーな食感」と評価されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E4%B8%8A%E9%B1%92%E5%AF%BF%E3%81%97%E5%BA%97%20%E4%B8%B8%E3%81%AE%E5%86%85%E6%9C%AC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamashi-kankoukyoukai.jp/sushinomachitoyama/masu/kawakami/">富山市観光協会 すしのまち とやま 川上鱒寿し店</a> / <a href="https://www.freenavi.co.jp/article/14611">フリーナビとやま 富山名産ますの寿司 老舗19店舗</a></div>
+</div></div>
+<div class="card" id="c-ogiichi_masuzushi">
+<img class="hero" src="img/toyama/ogiichi_masuzushi.jpg" alt="扇一 ます寿し本舗 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>扇一 ます寿し本舗<span class="yomi">おぎいち ますずしほんぽ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">市内電車の小泉町電停の目の前にある鱒寿し専門店。酢で強く〆ず、厚く切った鱒の脂と持ち味をそのまま残す方向に振っているのが特徴で、飯と鱒の厚みがほぼ同じ比率になるほど身が厚い。刺身に近いしっとりした食感を求める人に支持され、食べログの富山県内ます寿司店では最高水準の評価が付いている。作る数が限られるため午前中で売り切れることが多く、電話での事前予約が事実上の必須になっている。店構えは小さく持ち帰りのみで、観光地然とした演出はない。地元客が日常的に買いに来る店の空気がそのまま残る。</div>
+<div class="sig"><b>一皿:</b>鱒の寿し（一段・二段）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜12:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市小泉町５４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764910342">☎ 076-491-0342</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2025年11月公開のジモコロの食べ歩き記事が「食べログ3.72点で富山県最高評価、事前予約推奨」と紹介。観光向けの定番とは別軸の、地元の本気の一軒として入れる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%87%E4%B8%80%20%E3%81%BE%E3%81%99%E5%AF%BF%E3%81%97%E6%9C%AC%E8%88%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%B0%8F%E6%B3%89%E7%94%BA%EF%BC%95%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://jksw.karakasa.com/">扇一 ます寿し本舗 公式案内ページ</a> / <a href="https://www.e-aidem.com/ch/jimocoro/entry/matsuoka29">ジモコロ 富山駅周辺 ます寿司食べ歩き（2025年11月18日）</a></div>
+</div></div>
+<div class="card" id="c-takadaya_masuzushi">
+<img class="hero" src="img/toyama/takadaya_masuzushi.jpg" alt="鱒の寿し 高田屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>鱒の寿し 高田屋<span class="yomi">ますのすし たかだや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1872年（明治5年）創業。県内のます寿し店の中でも記録上もっとも古く、150年以上にわたり同じ場所で作り続けている。季節や気候に合わせて塩加減と〆時間を毎日変える手作り製法を守り、酸味を強く立てずまろやかに仕上げるのが持ち味。鱒の旨みと、ふっくらした飯の甘みの均衡を身上とする。朝7時から店を開け、すぐ食べる分には重しを乗せて渡すなど、地元客の日常の買い方に合わせた商いを続けている。持ち帰り専門で通信販売にも対応する。</div>
+<div class="sig"><b>一皿:</b>ますの寿し（一重・二重）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 7:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市市丸の内１丁目１−１３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764324774">☎ 076-432-4774</a> ／ <a href="http://takataya.biz/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの店舗案内で営業時間を確認でき、2025年11月のジモコロ記事とフリーナビとやまの老舗チャートの双方が明治5年創業・まろやかな味筋として現役で紹介している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B1%92%E3%81%AE%E5%AF%BF%E3%81%97%20%E9%AB%98%E7%94%B0%E5%B1%8B%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://takataya.biz/access.html">鱒の寿し高田屋 公式サイト 店舗案内</a> / <a href="https://www.e-aidem.com/ch/jimocoro/entry/matsuoka29">ジモコロ 富山駅周辺 ます寿司食べ歩き（2025年11月18日）</a></div>
+</div></div>
+<div class="card" id="c-shiroebitei_toyama_ekimae">
+<img class="hero" src="img/toyama/shiroebitei_toyama_ekimae.jpg" alt="白えび亭 富山駅本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>白えび亭 富山駅本店<span class="yomi">しろえびてい とやまえきほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">富山湾でしか商業的な漁が成り立たない小さな海老、白えびだけを扱う専門店。「富山湾の宝石」と呼ばれる白えびは殻をむくのに手間がかかり、身も細いため、ここでは剥き身をまとめて揚げる「元祖白えび天丼」を看板に据える。衣は薄く、噛むと甘みが立つ。生の身を敷き詰めた白えび刺身丼は一杯におよそ90尾を使い、とろりとした甘さと歯ざわりを味わえる。JR富山駅1階の土産市場「とやマルシェ」内にあり、列車の待ち時間に立ち寄れる。</div>
+<div class="sig"><b>一皿:</b>白えび天丼／白えび刺身丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市明輪町１−２２０ ＪＲ富山駅 ホーム 1 きときと市場とやマルシェ 内</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764330355">☎ 076-433-0355</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>運営元の白えび屋（とやま屋）公式サイトが富山駅本店の営業時間と定休日（元日のみ）を掲載しており現行営業が確認できる。白えびを主役に据えた店として最も入りやすい一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E3%81%88%E3%81%B3%E4%BA%AD%20%E5%AF%8C%E5%B1%B1%E9%A7%85%E6%9C%AC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%98%8E%E8%BC%AA%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%92%EF%BC%90%20%EF%BC%AA%EF%BC%B2%E5%AF%8C%E5%B1%B1%E9%A7%85%20%E3%83%9B%E3%83%BC%E3%83%A0%201%20%E3%81%8D%E3%81%A8%E3%81%8D%E3%81%A8%E5%B8%82%E5%A0%B4%E3%81%A8%E3%82%84%E3%83%9E%E3%83%AB%E3%82%B7%E3%82%A7%20%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.shiroebiya.co.jp/guidance/toyama.html">白えび屋 公式サイト 飲食店舗のご案内 富山「白えび亭」</a></div>
+</div></div>
+<div class="card" id="c-oyaji_toyama">
+<img class="hero" src="img/toyama/oyaji_toyama.jpg" alt="親爺 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>親爺<span class="yomi">おやじ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">富山駅にほど近い桜町にある大衆割烹。品書きは富山湾の地魚が中心で、7種類以上を盛る刺身盛りのほか、ホタルイカの沖漬け、白えびのかき揚げ、ばい貝の煮付け、ゲンゲやミギスの天ぷらといった、県外の居酒屋ではまず見ない地方色の強い一品が並ぶ。ゲンゲは深海性の柔らかい魚、ミギスは干物や天ぷらにする地魚で、いずれも富山湾の水深の深さが生む顔ぶれ。地酒も揃い、値付けは一品数百円台からと構えず、観光客と地元客が同じ卓に着く空気がある。</div>
+<div class="sig"><b>一皿:</b>お刺身盛り（富山湾産7種以上）／白エビかき揚げ／ばい貝の煮付け</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 16:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町２丁目１−１７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764314415">☎ 076-431-4415</a> ／ <a href="https://www.toyama-oyaji.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>予約サイトの店舗情報で現行の営業時間・定休日・品書きが確認でき、ホタルイカ・白えび・ばい貝・ゲンゲといった富山湾の食材を一度に試せる。郷土料理の総覧として置く一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%A6%AA%E7%88%BA%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000339425/">ホットペッパーグルメ 富山 親爺</a></div>
+</div></div>
+<div class="card" id="c-gingyo_toyama">
+<img class="hero" src="img/toyama/gingyo_toyama.jpg" alt="吟魚 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>吟魚<span class="yomi">ぎんぎょ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">富山駅の南側、新富町にある海鮮居酒屋。仕入れは富山湾の旬に合わせて日替わりで、春のホタルイカの刺身、通年の白えび、冬の紅ズワイガニや寒ブリなどが主役になる。刺身だけでなく揚げ物や焼き物の評価も高く、白えびの天ぷらは衣を軽く仕上げて身の甘みと汁気を残す作り。県内各地の地酒も幅広く置き、料理に合わせて選べる。人気が高く予約なしで入るのは難しい。同経営で少し離れた場所に「吟魚のはなれ 吟チロリ」があり、こちらも同系統の品書きを持つ。</div>
+<div class="sig"><b>一皿:</b>ホタルイカの刺身／白海老の天ぷら・唐揚げ／紅ズワイガニ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市新富町２丁目１−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764824064">☎ 076-482-4064</a> ／ <a href="https://m.facebook.com/forza.gingyo/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの「居酒屋WEST百名店」に2024年・2025年と連続選出され、500件超のレビューで3.6点台を維持している。富山湾の地物を口コミの裏付きで確実に食べられる店として選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%90%9F%E9%AD%9A%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%96%B0%E5%AF%8C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/en/toyama/A1601/A160101/16007011/">食べログ 吟魚（ギンギョ）</a></div>
+</div></div>
+<div class="card" id="c-odenya_kinta">
+<img class="hero" src="img/toyama/odenya_kinta.jpg" alt="おでん屋 金太 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">13</span>おでん屋 金太<span class="yomi">おでんや きんた</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">富山のおでんは、器によそったあとにとろろ昆布をひとつまみのせて食べるのが土地の作法で、昆布の旨みと磯の香りが出汁に溶けて味が変わる。金太はその富山おでんを看板にする駅前の店で、種は練り物中心ながら、白えびのはんぺんや香箱蟹、ばい貝といった富山湾の食材を煮込んだ種が季節ごとに加わる。かまぼこと昆布という県の二大食文化がひと椀に同居しており、郷土料理を構えずに試せる。夜だけの営業で、カウンター主体の小さな構え。</div>
+<div class="sig"><b>一皿:</b>富山おでん（とろろ昆布のせ）／白えびはんぺん／香箱蟹のおでん</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00～22:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町２丁目１−１</td></tr>
+<tr><th>予約</th><td>可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>予約サイトに現行の営業情報が掲載され、白えびはんぺん・香箱蟹など富山湾の種を使う点が確認できる。かまぼこと昆布を主役に据える富山おでんを体験できる枠として入れた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%A7%E3%82%93%E5%B1%8B%20%E9%87%91%E5%A4%AA%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://autoreserve.com/ja/restaurants/jFAfzGAjRzFk2pGgmhBf">AutoReserve おでん屋 金太</a></div>
+</div></div>
+<div class="card" id="c-kousai_namerikawa">
+<img class="hero" src="img/toyama/kousai_namerikawa.jpg" alt="パノラマレストラン光彩 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">14</span>パノラマレストラン光彩<span class="yomi">ぱのらまれすとらん こうさい</span></div>
+<div class="chips"><span class="chip neighbor">隣接市</span><span class="chip local">地元密着</span></div>
+<div class="desc">ホタルイカ漁の本場・滑川にある「ほたるいかミュージアム」2階のレストラン。海側が全面ガラス張りで、富山湾越しに立山連峰を望みながら食事ができる。ホタルイカは春先の数週間しか獲れないが、この店は冷凍と加工を組み合わせて通年で料理として出しており、全国でも珍しい。定番の蛍烏賊天丼のほか、天ぷらやピザ、春限定の蛍烏賊御膳、筍と合わせたスパゲッティなどが並ぶ。白えびのフリッターを載せたトマトピザや白えびの昆布締めもある。</div>
+<div class="sig"><b>一皿:</b>蛍烏賊天丼／蛍烏賊御膳（春限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>富山県滑川市中川原４１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764761370">☎ 076-476-1370</a> ／ <a href="http://hotaruikamuseum.com/restaurant">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>滑川市公式サイトが営業時間・定休日と「全国でも珍しいホタルイカ料理を通年で提供」と明記している。旬を外した時期でもホタルイカを食べられる数少ない店で、富山市内で代替が効かない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%8E%E3%83%A9%E3%83%9E%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E5%85%89%E5%BD%A9%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E6%BB%91%E5%B7%9D%E5%B8%82%E4%B8%AD%E5%B7%9D%E5%8E%9F%EF%BC%94%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.city.namerikawa.toyama.jp/soshiki/13/2/1543.html">滑川市公式サイト パノラマレストラン光彩</a></div>
+</div></div>
+<div class="card" id="c-mori_kobujime">
+<img class="hero" src="img/toyama/mori_kobujime.jpg" alt="森昆布〆専門店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">15</span>森昆布〆専門店<span class="yomi">もりこぶじめせんもんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昆布〆は、北前船が北海道から運んだ昆布と富山湾の魚が結び付いて生まれた郷土の保存法で、刺身を昆布で挟んで旨みを移す。富山ではカジキ（地元名サス）が定番だが、この店はサスに加えてイカ、地甘海老、白海老、ヒラメ、ホタルイカと素材を広げ、昆布〆だけを専門に作る。単に昆布で挟むのではなく、筋を丁寧に除いて熟成させる工程を重視し、「包丁と知識で最高の昆布〆を」を掲げる。持ち帰り・贈答が中心で、ギフト用の特上カジキマグロ昆布〆も扱う。</div>
+<div class="sig"><b>一皿:</b>サス（カジキ）昆布〆／白海老昆布〆／ホタルイカ昆布〆</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・木・金・土 9:00〜17:00 ／ 水 9:00〜12:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市水橋辻ヶ堂２１６２−９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764782153">☎ 076-478-2153</a> ／ <a href="http://mori-kobujime.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで営業時間・定休日と商品構成が確認でき、昆布〆一本に絞る店は県内でも希少。富山の昆布食文化を土産の形で持ち帰れる枠として選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E6%98%86%E5%B8%83%E3%80%86%E5%B0%82%E9%96%80%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%B0%B4%E6%A9%8B%E8%BE%BB%E3%83%B6%E5%A0%82%EF%BC%92%EF%BC%91%EF%BC%96%EF%BC%92%E2%88%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://mori-kobujime.com/">森昆布〆専門店 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-umekama_umeikan">
+<img class="hero" src="img/toyama/umekama_umeikan.jpg" alt="梅かまミュージアム U-mei館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">16</span>梅かまミュージアム U-mei館<span class="yomi">うめかまみゅーじあむ ゆーめいかん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">かまぼこ製造80年を掲げる梅かまの見学施設。富山のかまぼこは板に乗らず、すり身を渦巻き状に巻いた昆布巻・赤巻が日常の顔で、祝いの席には鯛や鶴亀をかたどった細工蒲鉾を贈る風習がある。館内では展示と映像でその背景を知り、職人が細工蒲鉾を成形する工程を工場見学で間近に見られる。入館無料。予約すれば4〜20名で細工かまぼこ作り体験もでき、直売コーナーで昆布巻・赤巻・細工蒲鉾を買える。かまぼこと昆布が結び付いた富山の食文化を、実物で確かめられる場所。</div>
+<div class="sig"><b>一皿:</b>昆布巻かまぼこ／赤巻／細工蒲鉾</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 10:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">水・日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市水橋肘崎４８２−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764791850">☎ 076-479-1850</a> ／ <a href="https://www.umekama.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>梅かま公式サイトが営業時間・定休日と工場見学・体験の受付を掲載しており稼働が確認できる。婚礼の引き出物に細工蒲鉾を贈る富山特有の習慣を、実際の製造現場で説明できる施設。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E3%81%8B%E3%81%BE%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20U-mei%E9%A4%A8%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%B0%B4%E6%A9%8B%E8%82%98%E5%B4%8E%EF%BC%94%EF%BC%98%EF%BC%92%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.umekama.co.jp/u-mei-kan/about/">梅かま 公式サイト 梅かまミュージアム U-mei館</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・海鮮・和食</h2>
+<div class="card" id="c-aburian_toyamazushi_sakuramachi">
+<img class="hero" src="img/toyama/aburian_toyamazushi_sakuramachi.jpg" alt="炙庵とやま鮨 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>炙庵とやま鮨<span class="yomi">あぶりあんとやまずし</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">富山駅前のダイワロイネットホテル1階にある寿司と炙り焼きの店。県内各地の漁港から毎朝仕入れる魚介を使い、握りだけでなく炙り焼きや海鮮料理まで幅広く出す。県が推す「富山湾鮨」の提供店で、フクラギ、ノドグロ、アオリイカ、サクラマスなど季節ごとに入れ替わる地魚の握り十貫と富山らしい汁物のセットが看板。カウンターとテーブル席があり、朝6時からの朝食営業もあるためホテル利用者や出張客が一人でも入りやすい。年中無休で、旅程の都合がつけやすいのも利点。</div>
+<div class="sig"><b>一皿:</b>富山湾鮨セット（旬の地魚の握り十貫と汁物）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町１丁目３−１ ダイワロイネットホテル富山駅前 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764328780">☎ 076-432-8780</a> ／ <a href="https://r.gnavi.co.jp/c3dcmscv0000/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県公式「富山湾鮨」提供店一覧に掲載され、県観光公式サイト「とやま観光ナビ」の実食体験レポートでも紹介されている。駅至近・年中無休で旅行者が確実に富山湾鮨に当たれる一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%99%E5%BA%B5%E3%81%A8%E3%82%84%E3%81%BE%E9%AE%A8%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%20%E3%83%80%E3%82%A4%E3%83%AF%E3%83%AD%E3%82%A4%E3%83%8D%E3%83%83%E3%83%88%E3%83%9B%E3%83%86%E3%83%AB%E5%AF%8C%E5%B1%B1%E9%A7%85%E5%89%8D%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamawan-sushi.jp/shop/post.php?id=592">富山湾鮨 公式提供店ページ</a> / <a href="https://www.info-toyama.com/stories/toyama-station-sushi">とやま観光ナビ 富山駅周辺の寿司特集</a></div>
+</div></div>
+<div class="card" id="c-mikizushi_honten_sakuramachi">
+<img class="hero" src="img/toyama/mikizushi_honten_sakuramachi.jpg" alt="美喜鮨本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>美喜鮨本店<span class="yomi">みきずしほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">富山駅から徒歩5分、桜町にある寿司店。市場に加えて新湊や氷見の浜からも直接ネタを仕入れており、駅前にいながら富山湾各地の魚が食べられるのが身上。握りだけでなく焼き物や揚げ物も揃い、「天然の生け簀」と呼ばれる富山湾の幸を一軒でひととおり味わえる。宴会コースもあり地元の会合にも使われる。富山湾鮨の提供店だが、材料高騰のため富山湾鮨セットの提供は現在一時休止しており、通常の握りやコースで対応している。カウンターのほかに座敷もあり、家族連れでも使いやすい。</div>
+<div class="sig"><b>一皿:</b>新湊・氷見から直接仕入れた地魚の握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜14:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町１丁目７−５ 美喜鮨本店</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764327201">☎ 076-432-7201</a> ／ <a href="https://gzd3.jougennotuki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県公式「富山湾鮨」提供店一覧と、とやま観光ナビの富山駅周辺寿司特集の双方に掲載。仕入れの幅が広く、一店で富山湾各地の魚を通覧できる点を評価した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E5%96%9C%E9%AE%A8%E6%9C%AC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%95%20%E7%BE%8E%E5%96%9C%E9%AE%A8%E6%9C%AC%E5%BA%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamawan-sushi.jp/shop/post.php?id=736">富山湾鮨 公式提供店ページ</a> / <a href="https://www.info-toyama.com/stories/toyama-station-sushi">とやま観光ナビ 富山駅周辺の寿司特集</a></div>
+</div></div>
+<div class="card" id="c-minozushi_marunouchi">
+<img class="hero" src="img/toyama/minozushi_marunouchi.jpg" alt="美乃鮨 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>美乃鮨<span class="yomi">みのずし</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">平成30年3月に富山城址公園そばの丸の内交差点へ移転した寿司店。ショーケースには四方や氷見で揚がったネタが常時三十種ほど並び、〆る・漬ける・炙るといった一手間を加えた仕事で握る。昼はにぎり八種「黒部」から十三種「剱」まで段階的なコースを用意し、夜はおまかせが中心。市内電車「丸の内」電停の目の前という立地で、遠方からのリピーターも多い。前日までの予約で小鉢が一品付く。店内はカウンターが主体で、ネタの説明を受けながら食べ進められる。予約は入れておきたい。</div>
+<div class="sig"><b>一皿:</b>富山湾の地魚を組んだにぎりコース「富山湾」</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜14:00, 17:30〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市丸の内２丁目３−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764223034">☎ 076-422-3034</a> ／ <a href="https://www.instagram.com/mino_zushi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログで3.58（180件超）と富山市の寿司では上位の評価を保ち、県公式「富山湾鮨」提供店にも名を連ねる。昼はにぎり八種2,200円からと入りやすい。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E4%B9%83%E9%AE%A8%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamawan-sushi.jp/shop/post.php?id=623">富山湾鮨 公式提供店ページ</a> / <a href="https://tabelog.com/toyama/A1601/A160101/16008595/">食べログ 美乃鮨</a></div>
+</div></div>
+<div class="card" id="c-sushidokoro_sasaki_soganawa">
+<img class="hero" src="img/toyama/sushidokoro_sasaki_soganawa.jpg" alt="寿し処 佐々木 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>寿し処 佐々木<span class="yomi">すしどころささき</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">総曲輪の一角で2011年3月に移転リニューアルした寿司店。富山湾の各漁港から直接ネタを仕入れ、エビだけで五種類以上をすべて天然物にこだわって用意する。わさびは本わさびを卸し、付け合わせの味噌汁には季節によってズワイガニが入る。夜は要予約でラストインは21時、昼は二日前までの予約かつ四名以上という条件付き。繁華街のなかにありながら、地元客が会食に使う静かな構えの店で、ネタの説明を受けながら食べ進められる。</div>
+<div class="sig"><b>一皿:</b>天然エビ五種を含む富山湾鮨</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市総曲輪１丁目６−１１ Ｋｅｌｌｙビル 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764316788">☎ 076-431-6788</a> ／ <a href="https://eip4.chottu.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県公式「富山湾鮨」提供店で、とやま観光ナビの寿司特集にも掲載。エビを五種以上そろえ全て天然物で通すという仕入れの姿勢が明確な点を評価した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%E5%87%A6%20%E4%BD%90%E3%80%85%E6%9C%A8%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E7%B7%8F%E6%9B%B2%E8%BC%AA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%91%20%EF%BC%AB%EF%BD%85%EF%BD%8C%EF%BD%8C%EF%BD%99%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamawan-sushi.jp/shop/post.php?id=726">富山湾鮨 公式提供店ページ</a> / <a href="https://www.info-toyama.com/stories/toyama-station-sushi">とやま観光ナビ 富山駅周辺の寿司特集</a></div>
+</div></div>
+<div class="card" id="c-ayumizushi_honke_kitashinmachi">
+<img class="hero" src="img/toyama/ayumizushi_honke_kitashinmachi.jpg" alt="歩寿司本家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>歩寿司本家<span class="yomi">あゆみずしほんけ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">富山市北新町で夜だけ営業する江戸前仕立ての寿司店。富山湾の旬の地魚を中心に、産地直送の珍しいネタまで幅広く扱う。掘りごたつ式の座敷を備え、二人でも宴会でも使える構えで、全国共通すし券が使えるのも長く続く店らしいところ。富山駅前には姉妹店の「歩寿司分家」があり、本家のこちらは市内電車「桜橋」電停から歩いて十分ほどの落ち着いた場所に建つ。前日までの予約で小鉢が一品サービスされる。宴会にも対応しており、地元の集まりで使われることも多い一軒。</div>
+<div class="sig"><b>一皿:</b>富山湾の地魚を握る江戸前寿司</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>富山県富山市北新町１丁目２−３０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764335066">☎ 076-433-5066</a> ／ <a href="https://ayumi-zushi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県公式「富山湾鮨」提供店一覧ととやま観光ナビの寿司特集の双方に本家・分家とも掲載され、富山市内で分店を持つまでに続く寿司屋の一つ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%AD%A9%E5%AF%BF%E5%8F%B8%E6%9C%AC%E5%AE%B6%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%8C%97%E6%96%B0%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%93%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamawan-sushi.jp/shop/post.php?id=687">富山湾鮨 公式提供店ページ</a> / <a href="https://www.info-toyama.com/stories/toyama-station-sushi">とやま観光ナビ 富山駅周辺の寿司特集</a></div>
+</div></div>
+<div class="card" id="c-kappou_ogawa_shintomicho">
+<img class="hero" src="img/toyama/kappou_ogawa_shintomicho.jpg" alt="割烹小川 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>割烹小川<span class="yomi">かっぽうおがわ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">大阪の和食店で修行し、富山でも屈指の忙しさといわれた割烹で長く働いた店主が1999年に開いた日本料理店。富山駅と繁華街の間にある新富町ビルの2階にあり、個室主体の構えで会食や接待に使われる。ホタルイカ、白えび、のどぐろ、寒ブリ、松茸など季節の素材を一皿ずつ仕立てる会席が中心で、昼は要予約のコース、夜は21時半のラストオーダーまで。カウンターの喧噪から離れて富山湾の魚をゆっくり味わいたいときに向く。</div>
+<div class="sig"><b>一皿:</b>富山湾の旬の魚を組んだ会席コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜14:00, 17:00〜22:00 ／ 土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市新富町２丁目４−７ 新富町ビル 2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764391988">☎ 076-439-1988</a> ／ <a href="https://kappouogawa.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>大阪と富山で修業した店主が1999年に独立した個室割烹で、食べログの日本料理・割烹ランキングでも富山市の上位に挙がる。接待・会食用の選択肢として載せた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%E5%B0%8F%E5%B7%9D%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%96%B0%E5%AF%8C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%97%20%E6%96%B0%E5%AF%8C%E7%94%BA%E3%83%93%E3%83%AB%202F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kappouogawa.com/">割烹小川 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-gomangoku_honten_sakuramachi">
+<img class="hero" src="img/toyama/gomangoku_honten_sakuramachi.jpg" alt="越中料理 五万石本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>越中料理 五万石本店<span class="yomi">えっちゅうりょうりごまんごくほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">富山駅から徒歩六分、桜町にある越中料理の店。創業から五十年を超え、黄綬褒章と「現代の名工」に選ばれた創業者の仕事を受け継いでいる。富山湾の魚と県内の山の幸を使い、一皿ずつ器と盛りつけを整えて出す会席が中心で、完全予約制をとる。昼は四千円台のコースから、夜は八千八百円以上のコースを一千百円刻みで組める。総曲輪・桜木町の飲食街に近いが、宴席や法事など改まった席で使われることが多く、店内は落ち着いている。</div>
+<div class="sig"><b>一皿:</b>富山湾の幸と県内の山の幸を組んだ越中料理の会席</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町１丁目６−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764414649">☎ 076-441-4649</a> ／ <a href="http://www.gomangoku.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市公式観光サイトが掲載する老舗日本料理店で、創業者が現代の名工に選出されている。県外からの客を迎える会食先として定番であることを重視した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%B6%8A%E4%B8%AD%E6%96%99%E7%90%86%20%E4%BA%94%E4%B8%87%E7%9F%B3%E6%9C%AC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamashi-kankoukyoukai.jp/gourmet/gomangoku/">富山市公式観光サイト 五万石本店</a></div>
+</div></div>
+<div class="card" id="c-shogetsu_iwase">
+<img class="hero" src="img/toyama/shogetsu_iwase.jpg" alt="磯料理 松月 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>磯料理 松月<span class="yomi">いそりょうりしょうげつ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">北前船の寄港地として栄えた岩瀬に明治44年（1911年）に開いた料亭。土壁と黒瓦の建物は創業当時の姿を残し、御用邸の料理人の系譜を継ぐと伝わる。富山湾の活魚を使った四季の会席が中心で、名物は白えびの「福団子」。一個に二百匹分のえびを使い、皮をむいて包丁で叩き、粉と塩を合わせて団子にしてから炭火で焼く。ほかに鯛を丸ごと使う「大名椀」もあり、祝いの席で長く選ばれてきた。要予約。昼は八千円から、夜は九千円からのコースが基本になる。</div>
+<div class="sig"><b>一皿:</b>白えびの福団子（一個に約200匹分）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市岩瀬港町１１６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764381188">☎ 076-438-1188</a> ／ <a href="http://syougetsu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「百年料亭ネットワーク」に加盟する明治44年創業の料亭で、地元放送局KNBの取材記事もある。岩瀬の廻船問屋の町並みとあわせて訪ねられる点も含めて挙げた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%A3%AF%E6%96%99%E7%90%86%20%E6%9D%BE%E6%9C%88%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%B2%A9%E7%80%AC%E6%B8%AF%E7%94%BA%EF%BC%91%EF%BC%91%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://100nen.info/syogetsu/">百年料亭ネットワーク 磯料理 松月</a></div>
+</div></div>
+<div class="card" id="c-unatomi_taromaru">
+<img class="hero" src="img/toyama/unatomi_taromaru.jpg" alt="鰻料理 うな富 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>鰻料理 うな富<span class="yomi">うなぎりょうりうなとみ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">富山市太郎丸本町のうなぎ専門店。店主は昭和38年に先代のうな富に入って修業し、平成6年に太郎丸本町で店を再興した。関東の江戸前と同じく一度蒸してから焼く仕立てで、長年つぎ足してきたタレを使う。うな重のほか、県内産コシヒカリに肉厚のうなぎをのせ、わさびや出汁で味を変えながら食べるひつまぶしが人気で、女性客の注文が多い。昼と夜に分けた短い営業時間で、売り切れることもある。月曜定休。ヒトサラなどの掲載では昼の平均予算は四千円台とされている。</div>
+<div class="sig"><b>一皿:</b>県産コシヒカリで食べるひつまぶし</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:30, 17:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>富山県富山市太郎丸本町３丁目１０−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764920047">☎ 076-492-0047</a> ／ <a href="http://unatomi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2026年掲載のフリーナビとやま「富山県民が選ぶウナギ屋5選」に選ばれ、ヒトサラでも営業情報が更新されている現役の専門店。富山で蒸してから焼く関東風を守る数少ない店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B0%BB%E6%96%99%E7%90%86%20%E3%81%86%E3%81%AA%E5%AF%8C%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%A4%AA%E9%83%8E%E4%B8%B8%E6%9C%AC%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.freenavi.co.jp/article/14579">フリーナビとやま 富山県民が選ぶウナギ屋5選（2026年）</a> / <a href="https://hitosara.com/0031027169/">ヒトサラ 鰻料理 うな富</a></div>
+</div></div>
+<div class="card" id="c-tempura_takano_shimizucho">
+<img class="hero" src="img/toyama/tempura_takano_shimizucho.jpg" alt="天麩羅 たか乃 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>天麩羅 たか乃<span class="yomi">てんぷらたかの</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">富山市牛島町のアーバンプレイス地下で「天ぷら小泉 たかの」として営業していた店が、2025年7月15日にいたち川沿いの清水町へ新築移転した天ぷら専門店。店主は大阪の名店で十六年修業したのち富山で十二年店を構えた。紅花油100%で揚げる薄衣が身上で、小麦粉をマイナス60度で凍らせて余分な水分を飛ばすなど下ごしらえを徹底し、素材ごとに衣の厚さと油の温度を変える。白木のカウンターのみで、コースは一斉スタート。</div>
+<div class="sig"><b>一皿:</b>富山の旬の素材を紅花油で揚げるおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 12:00〜14:00, 18:30〜22:00 ／ 土・日 12:00〜14:00, 18:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市清水町７丁目３−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764618155">☎ 076-461-8155</a> ／ <a href="http://tempura-takano.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン一つ星と「食べログ 天ぷら 百名店 2025」に選ばれた店。2025年7月の清水町移転は地元メディア（富山ウォッチ、takt）が報じており、新店舗で営業を継続している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E9%BA%A9%E7%BE%85%20%E3%81%9F%E3%81%8B%E4%B9%83%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%B8%85%E6%B0%B4%E7%94%BA%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tempura-takano.jp/">天麩羅 たか乃 公式サイト</a> / <a href="https://takt-toyama.net/?tid=105571">takt 富山 天麩羅たか乃 紹介記事（2025年9月）</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・そば・うどん・町中華</h2>
+<div class="card" id="c-jinzumachi_tamura">
+<img class="hero" src="img/toyama/jinzumachi_tamura.jpg" alt="神通町 田村 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">27</span>神通町 田村<span class="yomi">じんずうまち たむら</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">富山駅南口から神通川へ向かう街なかに構える十割そばの店。北海道・福井・富山・九州・山形の五産地の玄そばを石臼挽きで常時揃え、これに月替わりの一種を加えて、客が産地を選んで注文する仕組みをとる。つなぎはもちろん打ち粉も使わず、そば粉と水だけで打ち上げるため、産地ごとの香りと甘み、色の差がそのまま一枚の違いとして表れる。福井の永平寺在来種のような希少品種が並ぶこともあり、常連は季節ごとに産地を選び分ける。昼のみの営業で、定休日が毎月10・11・20・21・30・31日という珍しい形をとるのも特徴。</div>
+<div class="sig"><b>一皿:</b>十割そば（産地を選ぶざるそば）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜15:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市神通町２丁目１−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764321505">☎ 076-432-1505</a> ／ <a href="http://j-tamura.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県内メディア「フリーナビとやま」の2026年版『富山県民が選ぶ絶対に外さない手打ち蕎麦5選』の筆頭格として紹介され、公式サイトでも打ち粉・つなぎ不使用の純十割と産地選択制を明示している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%A5%9E%E9%80%9A%E7%94%BA%20%E7%94%B0%E6%9D%91%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E7%A5%9E%E9%80%9A%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.j-tamura.jp/">神通町田村 公式サイト</a> / <a href="https://www.freenavi.co.jp/article/14584">フリーナビとやま «2026年»富山県民が選ぶ手打ち蕎麦5選</a></div>
+</div></div>
+<div class="card" id="c-toyama_daruma_kurosekitamachi">
+<img class="hero" src="img/toyama/toyama_daruma_kurosekitamachi.jpg" alt="富山 達磨 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">28</span>富山 達磨<span class="yomi">とやま だるま</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">「そばの神様」と呼ばれる高橋邦弘氏の翁達磨グループに連なる手打ちそばの店。高橋氏自身が「本家よりも先に達磨を名乗っているお店」と語るほど古い縁を持つ。南富山の黒瀬北町、幹線から一本入った落ち着いた場所にあり、昼の三時間ほどだけ暖簾を出す。玄そばの選別から石臼挽き、水回し、のしまで自店で行い、細く角の立ったそばを辛めのつゆで供する。天ぷらとの組み合わせが定番で、予約は受け付けず、そばが売り切れれば早じまいとなる。座敷を備えた落ち着いた店構えで、県外からの客も多い。</div>
+<div class="sig"><b>一皿:</b>せいろそばと天ぷら</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・土・日 11:30〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">木・金曜</td></tr>
+<tr><th>住所</th><td>富山県富山市黒瀬北町１丁目８−８ 達磨</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764923989">☎ 076-492-3989</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの「そば百名店 WEST」に選出され評点3.5台を維持、2026年8月付の口コミもあり現在も営業中。翁達磨グループ公式サイトにも掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%8C%E5%B1%B1%20%E9%81%94%E7%A3%A8%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E9%BB%92%E7%80%AC%E5%8C%97%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%98%20%E9%81%94%E7%A3%A8">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/en/toyama/A1601/A160101/16000054/">食べログ 達磨（南富山）</a> / <a href="https://okina-daruma.com/group/201403171742_47">翁達磨グループ 富山 達磨</a></div>
+</div></div>
+<div class="card" id="c-turuki_udon_toyama">
+<img class="hero" src="img/toyama/turuki_udon_toyama.jpg" alt="鶴喜 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">29</span>鶴喜<span class="yomi">つるき</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和37年ごろ、滋賀・大津の老舗そば店「鶴喜」で修業した初代が魚津で創業し、のちに富山市役所近くのこの地へ移した手打ちうどんの店。当初はそばも出していたが、現在はうどん一本に絞っている。注文の八割を占めるといわれる看板が天ざるうどんで、竹ざるに盛った麺と揚げたての海老天二本が付く。麺は一般的な店より多めに盛られ、もちもちとした弾力とみずみずしさが身上。営業は昼の二時間半ほどのみで、日・月・祝は休み。半世紀以上変わらない落ち着いた店内は老舗ならではの風格がある。</div>
+<div class="sig"><b>一皿:</b>天ざるうどん（1200円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市新桜町６−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764418496">☎ 076-441-8496</a> ／ <a href="https://turuki.amebaownd.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>北日本放送のグルメサイトnan-nanが2026年6月の記事で「客の8割が溺愛」と紹介し、創業経緯と現在の営業時間を取材で確認している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B6%B4%E5%96%9C%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%96%B0%E6%A1%9C%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.knb.ne.jp/nannan/7617/">KNB nan-nan 鶴喜（2026年6月22日）</a></div>
+</div></div>
+<div class="card" id="c-itosho_honten">
+<img class="hero" src="img/toyama/itosho_honten.jpg" alt="糸庄 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">30</span>糸庄 本店<span class="yomi">いとしょう ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1972年創業、富山の郷土グルメ「もつ煮込みうどん」を代表する店。四種の魚介と北海道産昆布からとった秘伝の出汁に味噌とにんにくを合わせ、下ごしらえした豚もつをじっくり煮込む。麺は手延べ・手打ちの氷見うどんを使い、煮込んでもコシが残ってもちもちとした食感が続く。鉄鍋のまま供され、熱いうちに啜ると味噌とにんにくの香りが立ち上がる。半世紀以上にわたり昼夜を問わず行列が絶えず、冷凍セットは富山市のふるさと納税返礼品にもなっている。締めに頼む濃厚な「本気のソフト」も名物。</div>
+<div class="sig"><b>一皿:</b>もつ煮込みうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 11:00〜15:00, 17:00〜22:00 ／ 土・日 11:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>富山県富山市太郎丸本町１丁目７−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764255581">☎ 076-425-5581</a> ／ <a href="https://www.itoshou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>北日本放送nan-nanが創業年・出汁の構成・氷見うどん使用まで取材して紹介しており、富山市のふるさと納税返礼品にも採用されるなど県を代表するご当地麺として定着している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B3%B8%E5%BA%84%20%E6%9C%AC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%A4%AA%E9%83%8E%E4%B8%B8%E6%9C%AC%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.knb.ne.jp/nannan/5444/">KNB nan-nan 糸庄本店</a> / <a href="https://www.furusato-tax.jp/product/detail/16201/6488520">ふるさとチョイス 富山市 糸庄もつ煮込みうどん</a></div>
+</div></div>
+<div class="card" id="c-suikokaku_sakuramachi">
+<img class="hero" src="img/toyama/suikokaku_sakuramachi.jpg" alt="粋宏閣 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">31</span>粋宏閣<span class="yomi">すいこうかく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">富山駅から徒歩数分、桜町の飲み屋街の一角で夕方6時から翌朝5時まで灯りをともし続ける大衆中華。飲んだ後の客や夜勤明けの客に長く支えられてきた老舗で、富山の深夜帯の食を受け止めてきた存在である。木須肉（ムースーロー）、海老マヨ、にんにくの芽炒めといった昔ながらの中華鍋料理が中心で、炒飯やラーメンも安定して旨い。年中無休で朝まで開けるため、終電を逃した人の駆け込み先にもなる。派手さはないが、変わらない味と温かい接客そのものが名物になっている町中華の典型といえる。</div>
+<div class="sig"><b>一皿:</b>木須肉（ムースーロー）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火 0:00〜3:30, 17:00〜3:30 ／ 水・木・日 17:00〜3:30 ／ 金・土 17:00〜4:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町１丁目６−１３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764312702">☎ 076-431-2702</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市公式観光サイトが「朝までの営業が嬉しい老舗中華料理店」として掲載し、タウン誌takt富山の町中華特集にも選出。エキテンには2025年8月の来店口コミがあり営業継続を確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B2%8B%E5%AE%8F%E9%96%A3%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamashi-kankoukyoukai.jp/gourmet/suikokaku/">富山市公式観光サイト 粋宏閣</a> / <a href="https://takt-toyama.net/?tid=104946">takt富山 町中華のおいしい逸品7店</a> / <a href="https://www.ekiten.jp/shop_2657080/">エキテン 粋宏閣（2025年8月口コミ）</a></div>
+</div></div>
+<div class="card" id="c-menya_tsukushi_honten">
+<img class="hero" src="img/toyama/menya_tsukushi_honten.jpg" alt="麺屋つくし 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">32</span>麺屋つくし 本店<span class="yomi">めんや つくし ほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2005年創業。店主の岩崎さんが札幌の味噌ラーメンの名店「すみれ」で夫婦そろって十年修業し、その味の継承を認められて富山で開いた店である。毎朝欠かさず店で仕込むスープに、札幌から取り寄せる中太ちぢれ卵麺を合わせる。もやしと挽き肉を秘伝の味噌とともに強火で香ばしく炒めてからスープと合わせるため、芳醇な焦がし味噌の香りと濃度が際立ち、表面をラードが覆って最後まで熱さが続く。北陸で唯一のすみれ系として知られ、富山ブラック一色になりがちな県内で異彩を放つ。近年はカレーも新名物になっている。</div>
+<div class="sig"><b>一皿:</b>味噌ラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 11:00〜14:45, 18:00〜21:00 ／ 土・日 11:00〜14:45, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市太郎丸本町３丁目１０−１ 第2 サクラギビル</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764232941">☎ 076-423-2941</a> ／ <a href="https://menya-tsukushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>宅麺.comの2025年版・富山ラーメン10選で食べログ富山県ラーメン部門1位として紹介され、KNB nan-nanが「すみれ」での十年修業という経歴を取材で確認している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%E3%81%A4%E3%81%8F%E3%81%97%20%E6%9C%AC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%A4%AA%E9%83%8E%E4%B8%B8%E6%9C%AC%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%20%E7%AC%AC2%20%E3%82%B5%E3%82%AF%E3%83%A9%E3%82%AE%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.takumen.com/magazines/toyama-must-eat-ramen">宅麺.com 2025年版 富山で人気のラーメン店10選</a> / <a href="https://www.knb.ne.jp/nannan/6049/">KNB nan-nan 麺屋つくし本店</a></div>
+</div></div>
+<div class="card" id="c-menya_ikkaku_nakajima">
+<img class="hero" src="img/toyama/menya_ikkaku_nakajima.jpg" alt="麺家 一鶴 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">33</span>麺家 一鶴<span class="yomi">めんや いっかく</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">富山市中島の住宅地に構える煮干しラーメンの店。関東の人気店の流れをくみ、鶏と煮干しを重ねたスープを看板とする。煮干しの香りは強く立つが臭みはなく、鶏がまろやかに下支えするため、濃厚でありながら後味は上品にまとまる。刻み玉ねぎがアクセントとして添えられ、自家製麺と鶏チャーシューを合わせるのも特徴である。ミシュランガイド北陸のビブグルマンに掲載された実績を持ち、富山ブラック一色になりがちな県内のラーメン地図のなかで、あっさり系の代表として名前が挙がる店。夜の営業日が限られる点は要注意。</div>
+<div class="sig"><b>一皿:</b>煮干しらーめん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:30〜13:50</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市中島１丁目４−３６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:09080997887">☎ 090-8099-7887</a> ／ <a href="https://mobile.twitter.com/menya_ikkaku">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>宅麺.comの2025年版・富山ラーメン10選に「煮干しと鶏ベース、自家製麺と鶏チャーシューが評判」として選出され、地元ブログ「とみもぐ」もミシュラン掲載店として詳報している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%AE%B6%20%E4%B8%80%E9%B6%B4%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E4%B8%AD%E5%B3%B6%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.takumen.com/magazines/toyama-must-eat-ramen">宅麺.com 2025年版 富山で人気のラーメン店10選</a> / <a href="https://kajitori.com/toyama/ikkaku">とみもぐ 麺家 一鶴</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・酒どころ</h2>
+<div class="card" id="c-joya_sakuramachi">
+<img class="hero" src="img/toyama/joya_sakuramachi.jpg" alt="醸家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>醸家<span class="yomi">じょうや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">富山駅から徒歩八分、桜町のビル一階にある日本酒中心の居酒屋。日本酒好きの店主が選んだ富山の地酒を軸に全国の酒を常時五十種以上そろえ、三種類の飲み比べセットを用意する。料理は炭火焼きが柱で、ホタルイカや白えびなど富山湾の旬の魚介をその日の「本日のおすすめ逸品」として出す。市内電車「新富町」電停から三分と近く、金曜と土曜は24時まで開ける。日曜が定休で、日月が連休のときは月曜が休みになる。カウンターが中心で、一人でも地酒を少量ずつ試していける。</div>
+<div class="sig"><b>一皿:</b>富山の地酒の飲み比べセットと炭火焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 17:00〜23:00 ／ 金・土 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町２丁目６−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764338100">☎ 076-433-8100</a> ／ <a href="http://www.jyo-ya.com/?utm_source=google-mybusiness&amp;utm_medium=referral">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが常時50種以上・飲み比べ3種を明示しており、富山市内で地酒の品揃えを語るときに必ず挙がる一軒。富山湾の旬魚を出す居酒屋としてもまとめ記事で繰り返し紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%86%B8%E5%AE%B6%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jyo-ya.com/drink.html">醸家 公式サイト お飲み物</a></div>
+</div></div>
+<div class="card" id="c-yatsuhashi_sakuragicho">
+<img class="hero" src="img/toyama/yatsuhashi_sakuragicho.jpg" alt="魚処やつはし 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>魚処やつはし<span class="yomi">さかなどころやつはし</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">桜木町の千歳ビル一階にある海鮮居酒屋。毎日富山の漁港から仕入れた魚を、刺身、焼き魚、煮付け、鍋と用途に応じて出し分ける。八月は岩牡蠣と白えび、春はホタルイカというように看板がひと月ごとに変わり、公式サイトでもその月のおすすめを更新している。日本酒は北陸から東海までの銘酒を選んで置いており、魚に合わせて選べる。17時半からの夜のみ営業で、繁華街のなかでも落ち着いて魚を食べたいときに向く。電話予約を受けており、旬の魚の入荷はその日ごとに変わる。</div>
+<div class="sig"><b>一皿:</b>その日の富山湾の魚の刺身盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市桜木町６−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764318284">☎ 076-431-8284</a> ／ <a href="http://toyama-yatsuhashi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが月ごとの旬の魚（8月は岩牡蠣・白えび）を更新し続けており営業が確認できる。桜木町の海鮮居酒屋としてRettyなどのまとめでも定番として扱われている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E5%87%A6%E3%82%84%E3%81%A4%E3%81%AF%E3%81%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E6%9C%A8%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://toyama-yatsuhashi.com/">魚処やつはし 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-saseki_iwase">
+<img class="hero" src="img/toyama/saseki_iwase.jpg" alt="沙石 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">36</span>沙石<span class="yomi">させき</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">「満寿泉」を醸す岩瀬の桝田酒造店が営む直営の立ち飲み唎酒店。北前船で栄えた廻船問屋の町並みが残る岩瀬大町の通りに面し、店内には約百種類の日本酒が並ぶ。木枡を買って好きな酒を自分で注ぐセルフ方式や時間制など複数の飲み方から選べ、市場にほとんど出回らない限定酒やヴィンテージも置く。10時に開いて18時（最終受付17:15）に閉まる昼型の営業で、岩瀬の町歩きの途中に寄れる。キャッシュレス決済に対応。店内は禁煙で、立ち飲みのため長居せず一杯だけ寄る使い方もできる。</div>
+<div class="sig"><b>一皿:</b>満寿泉を含む約100種の日本酒のセルフ利き酒</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>富山県富山市東岩瀬町９３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:08029626683">☎ 080-2962-6683</a> ／ <a href="https://www.instagram.com/masuizumi.saseki">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「食べログ 立ち飲み 百名店 2025」に富山市から初めて選出された店。蔵元直営で満寿泉の限定酒やヴィンテージを飲めるのは他店にない条件で、昼から開いている点も旅程に組みやすい。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B2%99%E7%9F%B3%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%9D%B1%E5%B2%A9%E7%80%AC%E7%94%BA%EF%BC%99%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamashi-kankoukyoukai.jp/gourmet/%E6%B2%99%E7%9F%B3/">富山市公式観光サイト 桝田酒造店 沙石</a> / <a href="https://toyamadays.com/archives/47535605.html">とやま速報 食べログ立ち飲み百名店2025に沙石が初選出</a></div>
+</div></div>
+<div class="card" id="c-nunoichi_saketen_shintomicho">
+<img class="hero" src="img/toyama/nunoichi_saketen_shintomicho.jpg" alt="布一酒店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">37</span>布一酒店<span class="yomi">ぬのいちさけてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正時代から続く富山駅南口近くの酒販店で、店内で買った酒をその場で飲む角打ちができる。富山の地酒を軸にビール、ワイン、焼酎、ウイスキーまで並び、クラフト生ビールのサーバーも置く。朝9時開店の通し営業で、平日は20時、金曜は22時まで。飲み屋というより酒屋の土間で一杯という空気で、値段も小売価格に近い。日曜・祝日は休み。何を買って帰るか相談しながら、その場で試せるのが酒販店直営ならではの利点。駅へ戻る道すがらに寄れる位置にあるのも使いやすい。</div>
+<div class="sig"><b>一皿:</b>富山の地酒の角打ちとクラフト生ビール</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 9:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市新富町２丁目４−５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764324712">☎ 076-432-4712</a> ／ <a href="https://www.nunoichisaketen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>大正創業の酒販店が続ける角打ちで、公式サイトが角打ちの営業時間を明示している。地酒を少量ずつ安く試せる場として、せんべろ・角打ち系の記事でも繰り返し取り上げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B8%83%E4%B8%80%E9%85%92%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%96%B0%E5%AF%8C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.nunoichisaketen.com/">布一酒店 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-odenya_ichibanmachi">
+<img class="hero" src="img/toyama/odenya_ichibanmachi.jpg" alt="味処 おでんや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">38</span>味処 おでんや<span class="yomi">あじどころおでんや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">総曲輪のグランドプラザ前電停から徒歩二分、一番町の路地にあるおでんの店。寡黙な主人がカウンターの内側で鍋を守り、大根やこんにゃく、練り物などを一年中出す。仕上げにとろろ昆布をのせるのが富山流で、昆布の一人当たり消費量が全国上位という土地柄がそのまま皿に出る。昼は11時半から、夜は17時から23時半までと遅くまで開いており、居酒屋としても使える。日本酒も置く。全席喫煙可でカードは使えないため現金を用意しておきたい。</div>
+<div class="sig"><b>一皿:</b>とろろ昆布をのせた富山おでん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市一番町６−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764230677">☎ 076-423-0677</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山おでんの特徴であるとろろ昆布がけを通年で出す専門店。食べログに掲載が継続し（3.06／18件、閉店表示なし）、Rettyの富山市おでん特集でも定番として挙げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%87%A6%20%E3%81%8A%E3%81%A7%E3%82%93%E3%82%84%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/toyama/A1601/A160101/16002280/">食べログ 味処 おでんや</a> / <a href="https://tabelog.com/matome/24863/">食べログまとめ 富山県のおでんが美味しいお店（2025年11月更新）</a></div>
+</div></div>
+<div class="card" id="c-daito_shintomicho">
+<img class="hero" src="img/toyama/daito_shintomicho.jpg" alt="酒と人情料理 だい人 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">39</span>酒と人情料理 だい人<span class="yomi">さけとにんじょうりょうりだいと</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">富山駅前・新富町のはまのやビル一階で2007年に開いた居酒屋で、2025年に十八周年を迎えた。春はホタルイカを酢味噌和え・刺身・天ぷらと出し分け、夏は岩牡蠣と白えび、冬は紅ズワイガニと寒ブリというように、富山湾の旬をそのまま品書きにする。げんげのように地元でしか流通しない魚も扱う。17時半から24時までと遅くまで開いているため、二軒目や会食後の一杯にも使える。日曜定休で、駅から徒歩三分と動きやすい。</div>
+<div class="sig"><b>一皿:</b>ホタルイカの酢味噌和え・刺身・天ぷらの食べ比べ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市新富町２丁目５−１ はまのやビル １階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764310122">☎ 076-431-0122</a> ／ <a href="http://www.daito-m.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2007年開業で2025年に18周年を迎えた駅前の居酒屋。ホタルイカ、白えび、げんげなど富山固有の食材を季節ごとに出し分けており、遅い時間まで開いている点も含めて選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E3%81%A8%E4%BA%BA%E6%83%85%E6%96%99%E7%90%86%20%E3%81%A0%E3%81%84%E4%BA%BA%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%96%B0%E5%AF%8C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%20%E3%81%AF%E3%81%BE%E3%81%AE%E3%82%84%E3%83%93%E3%83%AB%20%EF%BC%91%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://daito-m.net/hotaruika">居酒屋だい人 公式サイト ホタルイカ</a></div>
+</div></div>
+<div class="card" id="c-bar_de_mitomi_maroot">
+<img class="hero" src="img/toyama/bar_de_mitomi_maroot.jpg" alt="バール・デ・美富味 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">40</span>バール・デ・美富味<span class="yomi">ばーるでみとみ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">富山駅前の商業施設MAROOTの一階、市内電車の走る通りに面した日本酒バル。2022年3月の開業で、県内十八蔵から四十種前後の富山の酒を集め、季節に合わせた生酒や日本酒カクテルも出す。テラスを含め四十席あるがカウンターが主体で、朝10時から開いているため昼から一杯やれるのが特徴。日本酒に馴染みのない世代や旅行者が気軽に飲めるよう設計された店で、土産用の物販も併設する。金土日と祝前日は22時まで。テラス席もあり、市内電車を眺めながら飲める。</div>
+<div class="sig"><b>一皿:</b>県内18蔵から選ぶ富山の地酒の飲み比べ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 10:00〜20:00 ／ 金・土・日 10:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市明輪町１−１−２３１ MAROOT１F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764824799">☎ 076-482-4799</a> ／ <a href="https://toyama-stationcity.jp/shop/detail.php?id=144">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市公式観光サイトが掲載。県内18蔵・40種前後という品揃えを駅前で朝10時から飲める店は他にほぼなく、列車の待ち時間や旅程の隙間に使える点を評価した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%BC%E3%83%AB%E3%83%BB%E3%83%87%E3%83%BB%E7%BE%8E%E5%AF%8C%E5%91%B3%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%98%8E%E8%BC%AA%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%93%EF%BC%91%20MAROOT%EF%BC%91F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamashi-kankoukyoukai.jp/gourmet/bar-de-mitomi/">富山市公式観光サイト バール・デ・美富味</a></div>
+</div></div>
+<div class="card" id="c-arakawa_sakuramachi">
+<img class="hero" src="img/toyama/arakawa_sakuramachi.jpg" alt="大衆割烹あら川 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">41</span>大衆割烹あら川<span class="yomi">たいしゅうかっぽうあらかわ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1967年（昭和42年）創業、富山駅南口から徒歩三分の桜町にある割烹居酒屋。「地元の酒と魚に頑固にこだわる」を掲げ、置く日本酒は富山県内の蔵のものに絞っている。富山の清流の水と米で醸した地酒に、富山湾の旬の魚を刺身や煮付け、季節の珍味として合わせるのが店の組み立て。一階はカウンター、二階は個室という構えで、一人でも宴席でも使える。夜のみ17時から23時までの営業で、日曜・祝日は休み。半世紀以上、地元の勤め人の宴席と一人客の双方を受けてきた店。</div>
+<div class="sig"><b>一皿:</b>富山県産の地酒に合わせる富山湾の旬魚と季節の珍味</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町２丁目２−２２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764419369">☎ 076-441-9369</a> ／ <a href="https://savorjapan.com/0006137515/?utm_source=gm_en&amp;utm_medium=shoplink&amp;utm_campaign=0006137515/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1967年創業で富山市公式観光サイトにも掲載されている老舗。日本酒を県内の蔵だけに絞る方針を公式サイトで明言しており、富山の地酒を目的に飲むなら外せない一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E5%89%B2%E7%83%B9%E3%81%82%E3%82%89%E5%B7%9D%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.wildriver.jp/">大衆割烹あら川 公式サイト</a> / <a href="https://www.toyamashi-kankoukyoukai.jp/gourmet/arakawa/">富山市公式観光サイト 大衆割烹 あら川</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-kawafuji_sakuramachi">
+<img class="hero" src="img/toyama/kawafuji_sakuramachi.jpg" alt="川富士 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>川富士<span class="yomi">かわふじ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">富山駅南口から県庁へ向かう桜町の繁華街にある洋食・定食の店。もとはうなぎ店として始まり、現在の店主・安藤良行さんの父が五十五年ほど前に洋食へ転じた。最大の特徴は揚げ物の衣で、市販のパン粉を使わず、自分で焼いたパンを乾かして挽く自家製パン粉にしているため、衣が軽く香ばしい。かつ丼七〇〇円、日替わりランチ七五〇円という値付けを今も守り、エビフライとトンカツを合わせた「エビトン」、能登牡蠣を使う「カキトン」といったミックスフライ定食も人気。昼は近隣の勤め人で満席になる。</div>
+<div class="sig"><b>一皿:</b>かつ丼（自家製パン粉、700円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:30〜14:00, 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市桜町２丁目４−１５ 大井山ビル</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764323503">☎ 076-432-3503</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>北日本放送nan-nanが2025年11月の記事で「県庁前の繁華街で半世紀の老舗洋食店」として取材し、自家製パン粉づくりの工程まで確認している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E5%AF%8C%E5%A3%AB%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%95%20%E5%A4%A7%E4%BA%95%E5%B1%B1%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.knb.ne.jp/nannan/6987/">KNB nan-nan 川富士（2025年11月25日）</a></div>
+</div></div>
+<div class="card" id="c-oshokujidokoro_pork">
+<img class="hero" src="img/toyama/oshokujidokoro_pork.jpg" alt="お食事処 ポーク 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">43</span>お食事処 ポーク<span class="yomi">おしょくじどころ ぽーく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1968年、富山市東田地方町の雪見通り沿いに開業した洋食食堂。かつては日本赤十字病院の正門前にあり、その名残で今も皿には「日赤病院正門前」の文字が印字されている。半世紀以上変わらない名物が「ポーク風ライス」で、ソーセージ・海老・玉ねぎ・マッシュルーム・グリンピースを炒め込んだ隠し味で甘みを立てたピラフに、とろりとした半熟卵とポークカツを重ね、酒粕入りの具だくさんとん汁が付いて七〇〇円。テレビドラマ「絶メシロード」のロケ地にもなった。ご飯がなくなり次第終了する昼中心の営業。</div>
+<div class="sig"><b>一皿:</b>ポーク風ライス（とん汁付・700円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・日 11:30〜13:15</td></tr>
+<tr><th>定休日</th><td class="off">水・土曜</td></tr>
+<tr><th>住所</th><td>富山県富山市東田地方町１丁目４−１７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764417872">☎ 076-441-7872</a> ／ <a href="https://www.instagram.com/oshokujidokoro.pork">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>北日本放送nan-nanが2025年8月の記事で「半世紀愛され続ける名物ポーク風ライスは700円で今も健在」と現況を取材しており、創業年と皿の由来まで確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E3%83%9D%E3%83%BC%E3%82%AF%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%9D%B1%E7%94%B0%E5%9C%B0%E6%96%B9%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.knb.ne.jp/nannan/6638/">KNB nan-nan お食事処ポーク（2025年8月1日）</a></div>
+</div></div>
+<div class="card" id="c-himawari_shokudo_2">
+<img class="hero" src="img/toyama/himawari_shokudo_2.jpg" alt="ひまわり食堂2 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">44</span>ひまわり食堂2<span class="yomi">ひまわりしょくどう つー</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">富山市石倉町で評判を取ったイタリアン「ひまわり食堂」が、2024年4月に富山駅にほど近い神通本町へ移転して生まれ変わった店。オーナーシェフの田中穂積氏はイタリア各地と東京の名店で十年ほど研鑽を積んだのち、Uターンして富山で独立した。ホタルイカのクレープ、新湊の鰤のバポーレなど、富山湾と県内の食材を主役に据え、抜群の火入れと塩加減で仕上げる炭火焼きを軸に組み立てるコース一本の構成をとる。ミシュランガイドで一つ星を獲得し、北陸のガストロノミーの目的地として紹介されている。完全予約制。</div>
+<div class="sig"><b>一皿:</b>富山湾の魚介の炭火焼きを軸としたおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・日 18:00〜22:00 ／ 土 12:00〜15:00, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市神通本町１丁目５−１８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764826091">☎ 076-482-6091</a> ／ <a href="https://r930900.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランガイド一つ星店で、「北陸・トップ100レストラン」がシェフの経歴と料理構成を挙げて『富山で必ず訪れてほしい一店』と評している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B2%E3%81%BE%E3%82%8F%E3%82%8A%E9%A3%9F%E5%A0%822%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E7%A5%9E%E9%80%9A%E6%9C%AC%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hokuriku-top100restaurants.com/himawarishokudo2/">北陸・トップ100レストラン ひまわり食堂2</a> / <a href="https://gaultmillau-japan.info/restaurants/hokuriku004/">ゴ・エ・ミヨ ひまわり食堂 2</a></div>
+</div></div>
+<div class="card" id="c-piatto_suzuki_cinque_iwase">
+<img class="hero" src="img/toyama/piatto_suzuki_cinque_iwase.jpg" alt="Piatto Suzuki Cinque 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">45</span>Piatto Suzuki Cinque<span class="yomi">ぴあっと すずき ちんくえ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">北前船の廻船問屋の町並みが残る岩瀬の一角にあるイタリア料理店。東京・麻布十番の名店「ピアット スズキ」で腕を磨いたシェフが独立して開いた店で、店名の「チンクエ」はイタリア語の五を指す。天然の生け簀と呼ばれる富山湾の魚介と県産の野菜、そして岩瀬に蔵を構える酒蔵の地酒を組み合わせ、素材の持ち味を素直に出す構成をとる。昼夜ともプリフィクスのコースと「シェフおまかせコース」を用意し、家族連れから食べ手まで幅広く受け止める。ガラス張りの明るい店内から岩瀬の通りを眺められる。</div>
+<div class="sig"><b>一皿:</b>富山湾の魚介を使ったシェフおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜16:00, 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>富山県富山市東岩瀬町９３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764824014">☎ 076-482-4014</a> ／ <a href="https://p-suzuki5.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで富山の食材と地酒を軸にした構成を明示しており、岩瀬地区のイタリアンとして県内メディアでも本格派として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Piatto%20Suzuki%20Cinque%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E6%9D%B1%E5%B2%A9%E7%80%AC%E7%94%BA%EF%BC%99%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://p-suzuki5.com/">Piatto Suzuki Cinque 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-suzukeema_nishicho">
+<img class="hero" src="img/toyama/suzukeema_nishicho.jpg" alt="スズキーマ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">46</span>スズキーマ<span class="yomi">すずきーま</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">富山市西町、グランドプラザ前の電停からすぐのビル一階にあるスパイスカレーの専門店。提供するカレーは基本的にその日の一種類のみで、内容は不定期に入れ替わる。幾種ものスパイスを重ねた深い辛さのなかに、日本の出汁のように煮干しの旨みが差し込む独特の構成が持ち味で、県内のカレー好きが遠方からも通う。テイクアウトにも対応する。2021年のミシュランガイド北陸特別版でビブグルマンに選ばれ、2025年にニューヨーク・タイムズが富山市を「今年行くべき52か所」に選んだ際の特集でも取り上げられた。</div>
+<div class="sig"><b>一皿:</b>本日のキーマカレー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・土・日 11:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水・木・金曜</td></tr>
+<tr><th>住所</th><td>富山県富山市西町６−４ 西町河上ビル 1F-A</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764912184">☎ 076-491-2184</a> ／ <a href="https://www.instagram.com/szkeema/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランガイド北陸2021特別版のビブグルマン選出店で、2025年のニューヨーク・タイムズ「今年行くべき52の場所」富山特集でも紹介された。2026年更新の地元メディア記事で営業継続も確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%82%BA%E3%82%AD%E3%83%BC%E3%83%9E%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E8%A5%BF%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%94%20%E8%A5%BF%E7%94%BA%E6%B2%B3%E4%B8%8A%E3%83%93%E3%83%AB%201F-A">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://toyama-tram.com/suzukima/">とやま路面電車の旅 スズキーマ（2026年更新）</a></div>
+</div></div>
+<div class="card" id="c-restaurant_tokio_kojimacho">
+<img class="hero" src="img/toyama/restaurant_tokio_kojimacho.jpg" alt="restaurant TOKIO 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">47</span>restaurant TOKIO<span class="yomi">れすとらん ときお</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">いたち川沿い、小島町のリバーサイド小島一階に2025年9月3日に開いたフランス料理店。東京でジビエを扱うフレンチで腕を磨いたシェフが独立して構えた店で、猪や鹿を一頭買いし、その日入った部位に合わせて皿を組み立てる。昼は猪、夜は鹿を中心に据え、富山の野菜や旬の幸とヨーロッパの食材を組み合わせて、正統派の一皿から独創的な一皿までコース仕立てで出す。プレートランチは3300円、ディナーは完全予約制。川に面した静かな立地と、ジビエを軸に据えた明快な方針が新しい富山のフレンチとして注目されている。</div>
+<div class="sig"><b>一皿:</b>猪のプレートランチ（3300円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・土・日 11:30〜14:00, 18:00〜22:00 ／ 金 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>富山県富山市小島町２−２ リバーサイド小島 １階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764115061">☎ 076-411-5061</a> ／ <a href="https://www.instagram.com/restaurant__tokio?igsh=MThhYmFvbzNvbDB0OQ==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2025年9月に開業した新店で、地元メディア「ツタエル富山」が開店直後に取材し、一頭買いのジビエを軸とする構成とシェフの経歴を報じている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=restaurant%20TOKIO%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%B0%8F%E5%B3%B6%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%92%20%E3%83%AA%E3%83%90%E3%83%BC%E3%82%B5%E3%82%A4%E3%83%89%E5%B0%8F%E5%B3%B6%20%EF%BC%91%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsutaeru-toyama.com/restaurant-tokio/">ツタエル富山 restaurant TOKIO（2025年9月5日）</a> / <a href="https://toyama-watch.com/archives/17724">富山ウォッチ restaurant TOKIO 2025年9月3日オープン</a></div>
+</div></div>
+<div class="card" id="c-shisen_itto_ushijima">
+<img class="hero" src="img/toyama/shisen_itto_ushijima.jpg" alt="中国四川麺飯店 一燈 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">48</span>中国四川麺飯店 一燈<span class="yomi">ちゅうごくしせんめんはんてん いっとう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">富山駅にほど近い牛島町のアーバンプレイス地下一階にある四川料理店。町中華の延長ではなく、麻婆豆腐や担々麺といった四川の定番を花椒と唐辛子の効かせ方から本式に組み立てるのが身上で、点心や飲茶も揃える。看板のひとつが国産牛を花椒とともに煮込む「水煮牛肉」で、痺れと辛さが層になって押し寄せる一品。昼は麺飯の定食、夜はコースや一品料理と使い分けができ、富山で辛い物を求める人の拠り所になっている。土曜の夜は予約営業のみ、日曜・祝日は休みという商いの形も長く変わらない。</div>
+<div class="sig"><b>一皿:</b>水煮牛肉（国産牛の花椒煮込み）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市牛島町１８−７ アーバンプレイス B1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0764417905">☎ 076-441-7905</a> ／ <a href="http://shisen-itto.main.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>KNBの情報番組「ワンエフ」が2025年7月に取材して看板の水煮牛肉を紹介しており、公式サイトでも本格四川をベースにした幅広い品揃えを掲げている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E5%9B%9B%E5%B7%9D%E9%BA%BA%E9%A3%AF%E5%BA%97%20%E4%B8%80%E7%87%88%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E7%89%9B%E5%B3%B6%E7%94%BA%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%97%20%E3%82%A2%E3%83%BC%E3%83%90%E3%83%B3%E3%83%97%E3%83%AC%E3%82%A4%E3%82%B9%20B1F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.knb.ne.jp/nannan/6575/">KNB nan-nan 中国四川麺飯店 一燈（2025年7月9日）</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・パン・菓子</h2>
+<div class="card" id="c-junkissa_tsutaya">
+<img class="hero" src="img/toyama/junkissa_tsutaya.jpg" alt="純喫茶ツタヤ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>純喫茶ツタヤ<span class="yomi">じゅんきっさ つたや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1923年（大正12年）創業、富山でもっとも古い喫茶店とされる純喫茶。開業当時、店の壁を蔦が覆っていたことが「ツタヤ」の由来で、当時はモダンボーイ・モダンガールが集うステータススポットだった。現在は四代目の宇瀬崇氏が受け継ぎ、2023年に創業百年を迎えた。朝7時から始まるモーニング、看板のドリップ「ツタヤブレンド」、七十年前のレシピを復刻したカレーライス、店内で手作りするプリンやクリームソーダが名物。西町交差点の角で市電を眺めながら過ごせる、富山の町の歴史そのものと言える一軒。</div>
+<div class="sig"><b>一皿:</b>ツタヤブレンドとモーニングセット</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金 7:00〜15:00 ／ 土・日 7:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市堤町通り１丁目４−１ セントラルコート西町プレミア</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764244896">☎ 076-424-4896</a> ／ <a href="http://www.tsutaya-coffee.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>北日本放送nan-nanが創業100年の節目に四代目を取材した記事があり、2025年にニューヨーク・タイムズが富山市を取り上げた前後にも朝の目的地として各種メディアで紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E5%96%AB%E8%8C%B6%E3%83%84%E3%82%BF%E3%83%A4%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%A0%A4%E7%94%BA%E9%80%9A%E3%82%8A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91%20%E3%82%BB%E3%83%B3%E3%83%88%E3%83%A9%E3%83%AB%E3%82%B3%E3%83%BC%E3%83%88%E8%A5%BF%E7%94%BA%E3%83%97%E3%83%AC%E3%83%9F%E3%82%A2">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.knb.ne.jp/nannan/5105/">KNB nan-nan 純喫茶ツタヤ</a> / <a href="http://www.tsutaya-coffee.com/">純喫茶ツタヤ 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-yamamuro_sogawa">
+<img class="hero" src="img/toyama/yamamuro_sogawa.jpg" alt="珈琲とパンの店 やまむろ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>珈琲とパンの店 やまむろ<span class="yomi">こーひーとぱんのみせ やまむろ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1980年創業、富山市総曲輪のオフィス街に静かに佇む喫茶店。カウンターにサイフォンが並び、昭和のまま時間が止まったような内装が残る。マスターの父がかつて和洋菓子店を営んでいた背景があり、店で出すパンはすべて毎朝手作りしている。看板はコーヒーが付くホットサンドセットで、朝7時から開けているため出勤前の常連が入れ替わり立ち寄る。支払いは現金のみ、駐車場は三台のみという昔ながらの構えのまま、四十年以上にわたり近隣の勤め人に使われ続けてきた。落ち着いてコーヒーを味わってほしいという店の姿勢が貫かれている。</div>
+<div class="sig"><b>一皿:</b>ホットサンドセット（コーヒー付・780円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土 8:00〜19:00 ／ 日 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>富山県富山市総曲輪２丁目１−５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764213433">☎ 076-421-3433</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県内情報メディア「toieba」が創業1980年・全パン自家製という点を取材して紹介しており、富山のレトロ喫茶をまとめた各種特集でも常連的に取り上げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E3%81%A8%E3%83%91%E3%83%B3%E3%81%AE%E5%BA%97%20%E3%82%84%E3%81%BE%E3%82%80%E3%82%8D%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E7%B7%8F%E6%9B%B2%E8%BC%AA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://toyama.toieba.media/posts/a00256">toieba 珈琲とパンの店 やまむろ</a></div>
+</div></div>
+<div class="card" id="c-hazeru_coffee_furusawa">
+<img class="hero" src="img/toyama/hazeru_coffee_furusawa.jpg" alt="hazeru coffee 古沢本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">51</span>hazeru coffee 古沢本店<span class="yomi">はぜる こーひー ふるさわほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">富山市古沢の焙煎所を兼ねたカフェを本店とする自家焙煎スペシャルティコーヒー店。店名は焙煎中に豆が爆ぜる音に由来する。生豆の段階で欠点豆を手で選り分け、焙煎機やエスプレッソマシンにも独自の手を入れて、豆の個性を出し切る設計をとる。常時七〜八種類の豆を並べ、店頭で試飲しながら選べるのが特徴で、酒粕カフェラテのような富山らしい変化球も出す。総曲輪SOGAWA BASEの二号店は2025年6月末で営業を終えたが、同年11月には神通本町に焼き菓子を併設した新店を開き、現在も拠点を広げている。</div>
+<div class="sig"><b>一皿:</b>スペシャルティコーヒーのドリップ（試飲して豆を選べる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>富山県富山市古沢１１１番地２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="http://hazerucoffee.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ニューヨーク・タイムズの富山特集に関連してKNBが「アメリカ人記者が薦める富山の名店」として取り上げた自家焙煎店で、2025年11月には神通本町に新店を開くなど現在も拡大している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=hazeru%20coffee%20%E5%8F%A4%E6%B2%A2%E6%9C%AC%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%8F%A4%E6%B2%A2%EF%BC%91%EF%BC%91%EF%BC%91%E7%95%AA%E5%9C%B0%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://hazerucoffee.com/">hazeru coffee 公式サイト</a> / <a href="https://tsutaeru-toyama.com/hazeru-coffee/">ツタエル富山 hazeru coffee 古沢本店</a></div>
+</div></div>
+<div class="card" id="c-tsukisekai_honpo">
+<img class="hero" src="img/toyama/tsukisekai_honpo.jpg" alt="月世界本舗 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">52</span>月世界本舗<span class="yomi">つきせかいほんぽ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治30年創業、富山を代表する干菓子「月世界」をつくり続ける店。新鮮な鶏卵と和三盆糖、白双糖、寒天を煮詰めた糖蜜と合わせ、時間をかけて乾燥させる製法で、口に入れるとサクッとした歯ざわりのあとに淡雪のようにふわりと溶ける。暁の空に浮かぶ月影を思わせる見た目からその名が付いたといい、包み紙には月と兎が描かれる。常温で三十日ほど日持ちするため土産に選ばれることが多く、日本茶だけでなく紅茶やコーヒーにも合う。富山市上本町の本店で製造と販売を続けている。</div>
+<div class="sig"><b>一皿:</b>月世界（干菓子）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市上本町８−６ 福一ビル西町</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764212398">☎ 076-421-2398</a> ／ <a href="http://www.tukisekai.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市公式観光サイトが「富山を代表する銘菓」として素材・製法・名の由来まで掲載しており、とやま銘菓 富山のれん会にも加盟する富山を代表する菓子舗である。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%88%E4%B8%96%E7%95%8C%E6%9C%AC%E8%88%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E4%B8%8A%E6%9C%AC%E7%94%BA%EF%BC%98%E2%88%92%EF%BC%96%20%E7%A6%8F%E4%B8%80%E3%83%93%E3%83%AB%E8%A5%BF%E7%94%BA">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamashi-kankoukyoukai.jp/souvenir/tsukisekai/">富山市公式観光サイト 月世界本舗</a> / <a href="http://www.tukisekai.co.jp/">月世界本舗 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-suzukitei_nishicho">
+<img class="hero" src="img/toyama/suzukitei_nishicho.jpg" alt="鈴木亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">53</span>鈴木亭<span class="yomi">すずきてい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">慶応2年（1866年）創業、富山市西町で百六十年続く和菓子店。代表銘菓の杢目羊羹は、初代・岩城茂助が富山県の県木である立山杉の年輪模様を、白いんげんの白餡と小豆の赤い餡で写し取ったもので、どこを切っても異なる木目が現れる。やわらかくきめ細かい口当たりと、すっきりした上品な甘さが特徴である。「年輪を刻む」という縁起の良さから、贈答や祝いの品として選ばれることが多い。羊羹のほか季節の生菓子も手作りしており、路面電車の走る西町の交差点近くという中心市街地の一等地に店を構える。</div>
+<div class="sig"><b>一皿:</b>杢目羊羹</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市西町６−３ 鈴木亭</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764214972">☎ 076-421-4972</a> ／ <a href="https://www.suzukitei.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市公式観光サイトが富山を代表する土産菓子として掲載し、店の公式サイトでも慶応2年創業と立山杉の年輪を写した由来を明示している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%88%B4%E6%9C%A8%E4%BA%AD%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E8%A5%BF%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%93%20%E9%88%B4%E6%9C%A8%E4%BA%AD">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.toyamashi-kankoukyoukai.jp/souvenir/suzukitei/">富山市公式観光サイト 杢目羊羹／鈴木亭</a> / <a href="https://www.suzukitei.com/youkan_mokume.html">鈴木亭 公式サイト 杢目羊羹</a></div>
+</div></div>
+<div class="card" id="c-shimakawa_ameten">
+<img class="hero" src="img/toyama/shimakawa_ameten.jpg" alt="島川あめ店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">54</span>島川あめ店<span class="yomi">しまかわあめてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">寛文3年（1663年）創業、三百六十年以上にわたり富山で麦芽飴をつくり続けてきた店。砂糖を一切使わず、澱粉と麦芽だけを富山の清冽な水で時間をかけて炊き上げる江戸時代からの製法を今も守っている。かつては富山にいくつもあった飴屋のうち、この製法を続けるのは同店だけになった。素朴で穏やかな甘さの水飴は、そのまま舐めるだけでなく、煮物の照りや料理の隠し味としても使われてきた。近年は飴を使った菓子ブランド「あまみ」も展開し、富山土産の定番として市の観光サイトにも掲載されている。</div>
+<div class="sig"><b>一皿:</b>麦芽水飴</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>富山県富山市古鍛冶町６−７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764255104">☎ 076-425-5104</a> ／ <a href="https://shimakawanoame.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富山市公式観光サイトと富山県観光公式サイトの双方が、砂糖不使用の伝統製法を守る富山唯一の麦芽飴店として掲載しており、公式サイトでも寛文三年創業を明示している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B3%B6%E5%B7%9D%E3%81%82%E3%82%81%E5%BA%97%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%8F%A4%E9%8D%9B%E5%86%B6%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shimakawanoame.jp/">島川あめ店 公式サイト</a> / <a href="https://www.toyamashi-kankoukyoukai.jp/souvenir/shimakawaameten/">富山市公式観光サイト 麦芽水飴／島川あめ店</a></div>
+</div></div>
+<div class="card" id="c-campagne_kureha">
+<img class="hero" src="img/toyama/campagne_kureha.jpg" alt="カンパーニュ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">55</span>カンパーニュ<span class="yomi">かんぱーにゅ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">富山市呉羽町、呉羽駅にほど近い住宅地にあるベーカリー。朝7時から開け、パン好きの富山県民なら知らない人はいないとまで言われる存在で、昼前には駐車場が満車になる。バゲットをはじめとするハード系が充実し、それを使ったサンドイッチにも熱心なファンが多い。カツサンドなどの惣菜パンやデニッシュ、アップルパイ、揚げたてのドーナツまで品数が広く、朝食から昼食まで通しで買い手が絶えない。県内のベーカリー人気投票でも常に上位に挙がる一軒で、呉羽の丘のふもとという立地もあって週末は県内各地から客が訪れる。</div>
+<div class="sig"><b>一皿:</b>バゲットとハード系サンドイッチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土 8:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火・日曜</td></tr>
+<tr><th>住所</th><td>富山県富山市呉羽町１８１８−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0764348405">☎ 076-434-8405</a> ／ <a href="https://ja-jp.facebook.com/%E3%82%AB%E3%83%B3%E3%83%91%E3%83%BC%E3%83%8B%E3%83%A5-1409432322425356/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県内情報サイト「フリーナビとやま」の2026年版・富山市民が選ぶハード系パンの店5選で「パン好きの富山県民なら知らない人はいない」と紹介され、ねとらぼリサーチのGoogleクチコミ集計でも富山県2位に入っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%B3%E3%83%91%E3%83%BC%E3%83%8B%E3%83%A5%20%E5%AF%8C%E5%B1%B1%E7%9C%8C%E5%AF%8C%E5%B1%B1%E5%B8%82%E5%91%89%E7%BE%BD%E7%94%BA%EF%BC%91%EF%BC%98%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.freenavi.co.jp/article/14656">フリーナビとやま «2026年»富山市民が選ぶハード系パンのお店5選</a> / <a href="https://nlab.itmedia.co.jp/research/articles/3156025/">ねとらぼリサーチ 富山県で人気のパン（ベーカリー）ランキング</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>

@@ -57,12 +57,14 @@
 | 神奈川県 | 川崎市 | 71 | [japan/kanagawa/](japan/kanagawa/) |
 | 新潟県 | 新潟市 | 67 | [japan/niigata/](japan/niigata/) |
 | 新潟県 | 長岡市 | 48 | [japan/niigata/](japan/niigata/) |
+| 富山県 | 富山市 | 55 | [japan/toyama/](japan/toyama/) |
+| 富山県 | 高岡市 | 47 | [japan/toyama/](japan/toyama/) |
 | 大阪府 | 大阪市 | 72 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 吹田市 | 49 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 藤井寺市 | 45 | [japan/osaka/](japan/osaka/) |
 | 京都府 | 京都市 | 71 | [japan/kyoto/](japan/kyoto/) |
 
-小計 34冊 / 1968店
+小計 36冊 / 2070店
 
 ## 欧州
 
@@ -87,7 +89,7 @@
 
 小計 1冊 / 63店
 
-**合計 43冊 / 2322店**（2026-08-21 時点）
+**合計 45冊 / 2424店**（2026-08-25 時点）
 
 ## 進行中の発注
 
