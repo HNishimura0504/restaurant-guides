@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>甲府美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / YAMANASHI・山梨県 🇯🇵</div>
+  <h1>甲府美食ガイド</h1>
+  <div class="sub">武田信玄が府中を置いた盆地の城下町。かぼちゃを溶かし込んだ味噌仕立てのほうとう、砂糖と醤油で照りよく煮つめる甲府鳥もつ煮、馬刺し、そして日本のワイン造りが始まった甲州ぶどうの酒まで厳選46スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年8月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kofu/_map.png" alt="全域マップ">
+<a href="#c-okutou_honten_kokubo" style="left:13.07%;top:90.35%;width:3.56%;height:3.3%;"></a>
+<a href="#c-kawada_okutou_daini_bunten" style="left:62.0%;top:79.18%;width:3.56%;height:3.3%;"></a>
+<a href="#c-okumura_honten_kofu" style="left:27.25%;top:74.97%;width:3.56%;height:3.3%;"></a>
+<a href="#c-kosaku_kofu_ekimae" style="left:25.62%;top:69.93%;width:3.56%;height:3.3%;"></a>
+<a href="#c-houtou_kinpuu_tokugyo" style="left:8.31%;top:78.75%;width:3.56%;height:3.3%;"></a>
+<a href="#c-chiyoda_kofu" style="left:24.99%;top:69.86%;width:3.56%;height:3.3%;"></a>
+<a href="#c-houtou_shinshu_kamiishida" style="left:14.46%;top:75.16%;width:3.56%;height:3.3%;"></a>
+<a href="#c-kobaiya_kofu" style="left:26.93%;top:72.11%;width:3.56%;height:3.3%;"></a>
+<a href="#c-sanshiro_kofu" style="left:26.63%;top:73.65%;width:3.56%;height:3.3%;"></a>
+<a href="#c-bon_marche_kofu" style="left:26.2%;top:73.41%;width:3.56%;height:3.3%;"></a>
+<a href="#c-real_dor_sadoya_kofu" style="left:28.75%;top:68.38%;width:3.56%;height:3.3%;"></a>
+<a href="#c-koshu_jidori_ichiba_kofu" style="left:25.25%;top:83.1%;width:3.56%;height:3.3%;"></a>
+<a href="#c-funari_fruitline_yamanashi" style="left:91.69%;top:53.35%;width:3.56%;height:3.3%;"></a>
+<a href="#c-waraji_shosenkyo" style="left:23.95%;top:8.62%;width:3.56%;height:3.3%;"></a>
+<a href="#c-oka_chuo" style="left:26.51%;top:73.3%;width:3.56%;height:3.3%;"></a>
+<a href="#c-itsuku_chuo" style="left:29.31%;top:72.58%;width:3.56%;height:3.3%;"></a>
+<a href="#c-uoyasu_otamachi" style="left:26.92%;top:80.74%;width:3.56%;height:3.3%;"></a>
+<a href="#c-izumi_iida" style="left:18.6%;top:68.49%;width:3.56%;height:3.3%;"></a>
+<a href="#c-wakazushi_kokubo" style="left:14.77%;top:91.39%;width:3.56%;height:3.3%;"></a>
+<a href="#c-washin_kamiya_chuo" style="left:27.3%;top:73.37%;width:3.56%;height:3.3%;"></a>
+<a href="#c-ebisu_chuo" style="left:26.14%;top:73.28%;width:3.56%;height:3.3%;"></a>
+<a href="#c-sekisuitei_yokouchi" style="left:23.69%;top:68.75%;width:3.56%;height:3.3%;"></a>
+<a href="#c-senshinan_takahata" style="left:22.1%;top:80.37%;width:3.56%;height:3.3%;"></a>
+<a href="#c-senshu_udon_takahata" style="left:23.25%;top:82.46%;width:3.56%;height:3.3%;"></a>
+<a href="#c-houraiken_honten_chuo" style="left:28.34%;top:75.97%;width:3.56%;height:3.3%;"></a>
+<a href="#c-uedaya_shimoiida" style="left:14.93%;top:71.97%;width:3.56%;height:3.3%;"></a>
+<a href="#c-maruoka_shokudo_sumiyoshi" style="left:24.76%;top:88.94%;width:3.56%;height:3.3%;"></a>
+<a href="#c-wez_chukasoba_showa" style="left:10.39%;top:80.36%;width:3.56%;height:3.3%;"></a>
+<a href="#c-kusabue_chuo" style="left:26.58%;top:74.58%;width:3.56%;height:3.3%;"></a>
+<a href="#c-doteyaki_shimojo_chuo" style="left:28.24%;top:73.78%;width:3.56%;height:3.3%;"></a>
+<a href="#c-sakaba_hibi_marunouchi" style="left:27.07%;top:72.04%;width:3.56%;height:3.3%;"></a>
+<a href="#c-shichiken_marunouchi" style="left:25.12%;top:69.42%;width:3.56%;height:3.3%;"></a>
+<a href="#c-kaeru_no_yorimichi_marunouchi" style="left:26.73%;top:72.18%;width:3.56%;height:3.3%;"></a>
+<a href="#c-budoshu_ichibankan_marunouchi" style="left:25.97%;top:68.75%;width:3.56%;height:3.3%;"></a>
+<a href="#c-bettei_chuo" style="left:26.57%;top:74.24%;width:3.56%;height:3.3%;"></a>
+<a href="#c-brasserie_yamanashi_chuo" style="left:26.42%;top:73.16%;width:3.56%;height:3.3%;"></a>
+<a href="#c-melimelo_marunouchi" style="left:27.71%;top:69.07%;width:3.56%;height:3.3%;"></a>
+<a href="#c-kanzashi_kamiishida" style="left:16.72%;top:74.77%;width:3.56%;height:3.3%;"></a>
+<a href="#c-sagar_ratna_zenkoji" style="left:39.51%;top:74.38%;width:3.56%;height:3.3%;"></a>
+<a href="#c-sawataya_honten_chuo" style="left:27.67%;top:73.21%;width:3.56%;height:3.3%;"></a>
+<a href="#c-marujupan_honten_marunouchi" style="left:24.94%;top:71.25%;width:3.56%;height:3.3%;"></a>
+<a href="#c-cafe_roche_chuo" style="left:26.78%;top:73.89%;width:3.56%;height:3.3%;"></a>
+<a href="#c-kitenkan_marunouchi" style="left:25.55%;top:70.87%;width:3.56%;height:3.3%;"></a>
+<a href="#c-casa_frutta_yomogisawa" style="left:37.66%;top:86.34%;width:3.56%;height:3.3%;"></a>
+<a href="#c-sucre_yogashiten_iida" style="left:16.16%;top:70.78%;width:3.56%;height:3.3%;"></a>
+<a href="#c-nariya_kakigori_chuo" style="left:27.14%;top:75.02%;width:3.56%;height:3.3%;"></a>
+</div>
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(甲府駅〜中央・春日あべにゅー)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kofu/_map2.png" alt="中心部拡大(甲府駅〜中央・春日あべにゅー)">
+<a href="#c-okumura_honten_kofu" style="left:46.67%;top:77.68%;width:2.26%;height:2.44%;"></a>
+<a href="#c-kosaku_kofu_ekimae" style="left:38.47%;top:47.9%;width:2.26%;height:2.44%;"></a>
+<a href="#c-chiyoda_kofu" style="left:35.26%;top:47.47%;width:2.26%;height:2.44%;"></a>
+<a href="#c-kobaiya_kofu" style="left:45.06%;top:60.78%;width:2.26%;height:2.44%;"></a>
+<a href="#c-sanshiro_kofu" style="left:43.53%;top:69.87%;width:2.26%;height:2.44%;"></a>
+<a href="#c-bon_marche_kofu" style="left:41.4%;top:68.48%;width:2.26%;height:2.44%;"></a>
+<a href="#c-real_dor_sadoya_kofu" style="left:54.26%;top:38.7%;width:2.26%;height:2.44%;"></a>
+<a href="#c-oka_chuo" style="left:42.93%;top:67.83%;width:2.26%;height:2.44%;"></a>
+<a href="#c-itsuku_chuo" style="left:57.06%;top:63.54%;width:2.26%;height:2.44%;"></a>
+<a href="#c-izumi_iida" style="left:2.99%;top:39.4%;width:2.26%;height:2.44%;"></a>
+<a href="#c-washin_kamiya_chuo" style="left:46.94%;top:68.25%;width:2.26%;height:2.44%;"></a>
+<a href="#c-ebisu_chuo" style="left:41.07%;top:67.67%;width:2.26%;height:2.44%;"></a>
+<a href="#c-sekisuitei_yokouchi" style="left:28.67%;top:40.89%;width:2.26%;height:2.44%;"></a>
+<a href="#c-houraiken_honten_chuo" style="left:52.18%;top:83.61%;width:2.26%;height:2.44%;"></a>
+<a href="#c-kusabue_chuo" style="left:43.32%;top:75.4%;width:2.26%;height:2.44%;"></a>
+<a href="#c-doteyaki_shimojo_chuo" style="left:51.69%;top:70.63%;width:2.26%;height:2.44%;"></a>
+<a href="#c-sakaba_hibi_marunouchi" style="left:45.75%;top:60.34%;width:2.26%;height:2.44%;"></a>
+<a href="#c-shichiken_marunouchi" style="left:35.92%;top:44.85%;width:2.26%;height:2.44%;"></a>
+<a href="#c-kaeru_no_yorimichi_marunouchi" style="left:44.07%;top:61.2%;width:2.26%;height:2.44%;"></a>
+<a href="#c-budoshu_ichibankan_marunouchi" style="left:40.19%;top:40.91%;width:2.26%;height:2.44%;"></a>
+<a href="#c-bettei_chuo" style="left:43.25%;top:73.37%;width:2.26%;height:2.44%;"></a>
+<a href="#c-brasserie_yamanashi_chuo" style="left:42.46%;top:66.98%;width:2.26%;height:2.44%;"></a>
+<a href="#c-melimelo_marunouchi" style="left:49.02%;top:42.81%;width:2.26%;height:2.44%;"></a>
+<a href="#c-sawataya_honten_chuo" style="left:48.79%;top:67.28%;width:2.26%;height:2.44%;"></a>
+<a href="#c-marujupan_honten_marunouchi" style="left:35.01%;top:55.69%;width:2.26%;height:2.44%;"></a>
+<a href="#c-cafe_roche_chuo" style="left:44.3%;top:71.32%;width:2.26%;height:2.44%;"></a>
+<a href="#c-kitenkan_marunouchi" style="left:38.11%;top:53.47%;width:2.26%;height:2.44%;"></a>
+<a href="#c-nariya_kakigori_chuo" style="left:46.11%;top:77.98%;width:2.26%;height:2.44%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+
+<div class="toc">
+<div class="th">目次</div>
+<div class="sec red">甲府のご当地(ほうとう・鳥もつ煮・馬刺し)</div>
+<div class="links">
+<a href="#c-okutou_honten_kokubo"><span class="tn" style="background:#e34948;">1</span>甲府鳥もつ煮発祥の老舗そば店</a>
+<a href="#c-kawada_okutou_daini_bunten"><span class="tn" style="background:#e34948;">2</span>鳥もつ煮とそば食べ放題の分店</a>
+<a href="#c-okumura_honten_kofu"><span class="tn" style="background:#e34948;">3</span>寛文年間創業、甲府最古のそば店</a>
+<a href="#c-kosaku_kofu_ekimae"><span class="tn" style="background:#e34948;">4</span>県内随一のほうとうチェーン旗艦店</a>
+<a href="#c-houtou_kinpuu_tokugyo"><span class="tn" style="background:#e34948;">5</span>無添加・手打ちの地元密着ほうとう</a>
+<a href="#c-chiyoda_kofu"><span class="tn" style="background:#e34948;">6</span>冷やしほうとう「おざら」発祥の店</a>
+<a href="#c-houtou_shinshu_kamiishida"><span class="tn" style="background:#e34948;">7</span>信州味噌×手打ち麺の老舗ほうとう</a>
+<a href="#c-kobaiya_kofu"><span class="tn" style="background:#e34948;">8</span>甲州牛すき焼きと県産食材の和食</a>
+<a href="#c-sanshiro_kofu"><span class="tn" style="background:#e34948;">9</span>甲州地どりを備長炭で焼く専門店</a>
+<a href="#c-bon_marche_kofu"><span class="tn" style="background:#e34948;">10</span>甲州ワインビーフの老舗洋食店</a>
+<a href="#c-real_dor_sadoya_kofu"><span class="tn" style="background:#e34948;">11</span>老舗ワイナリー併設のフレンチ</a>
+<a href="#c-koshu_jidori_ichiba_kofu"><span class="tn" style="background:#e34948;">12</span>生産組合直営、甲州地どりの食堂</a>
+<a href="#c-funari_fruitline_yamanashi"><span class="tn" style="background:#e34948;">13</span>味くらべ三連覇「黄金ほうとう」の蔵</a>
+<a href="#c-waraji_shosenkyo"><span class="tn" style="background:#e34948;">14</span>昇仙峡の古民家で食べる田舎ほうとう</a>
+</div>
+<div class="sec blue">寿司・和食</div>
+<div class="links">
+<a href="#c-oka_chuo"><span class="tn" style="background:#2a78d6;">15</span>四季島仕込みの一枚カウンター</a>
+<a href="#c-itsuku_chuo"><span class="tn" style="background:#2a78d6;">16</span>2024年開店、魚と野菜の日本料理</a>
+<a href="#c-uoyasu_otamachi"><span class="tn" style="background:#2a78d6;">17</span>明治43年から続く甲州にぎり</a>
+<a href="#c-izumi_iida"><span class="tn" style="background:#2a78d6;">18</span>豊洲と沼津港から毎日仕入れる</a>
+<a href="#c-wakazushi_kokubo"><span class="tn" style="background:#2a78d6;">19</span>半世紀続く昼にぎり1210円</a>
+<a href="#c-washin_kamiya_chuo"><span class="tn" style="background:#2a78d6;">20</span>山梨の食材と地酒の小料理店</a>
+<a href="#c-ebisu_chuo"><span class="tn" style="background:#2a78d6;">21</span>品書きの無い夫婦のおまかせ</a>
+<a href="#c-sekisuitei_yokouchi"><span class="tn" style="background:#2a78d6;">22</span>駅前で炭火の国産うなぎ</a>
+</div>
+<div class="sec aqua">そば・うどん・ラーメン・町中華</div>
+<div class="links">
+<a href="#c-senshinan_takahata"><span class="tn" style="background:#1baf7a;">23</span>白州の水で打つ生粉打ちの十割そば</a>
+<a href="#c-senshu_udon_takahata"><span class="tn" style="background:#1baf7a;">24</span>昭和24年から続く吉田系の極太うどん</a>
+<a href="#c-houraiken_honten_chuo"><span class="tn" style="background:#1baf7a;">25</span>消えた支那そばを全国で初めて復元</a>
+<a href="#c-uedaya_shimoiida"><span class="tn" style="background:#1baf7a;">26</span>創業60年超、中華そばと焼きもつ</a>
+<a href="#c-maruoka_shokudo_sumiyoshi"><span class="tn" style="background:#1baf7a;">27</span>町中華仕込みのこってりと定食</a>
+<a href="#c-wez_chukasoba_showa"><span class="tn" style="background:#1baf7a;">28</span>県産銘柄豚の濃厚豚骨魚介つけめん</a>
+</div>
+<div class="sec beer">居酒屋・甲州ワインと地酒</div>
+<div class="links">
+<a href="#c-kusabue_chuo"><span class="tn" style="background:#0d366b;">29</span>オリンピック通りの手造りコロッケ</a>
+<a href="#c-doteyaki_shimojo_chuo"><span class="tn" style="background:#0d366b;">30</span>昭和12年からの味噌煮込み</a>
+<a href="#c-sakaba_hibi_marunouchi"><span class="tn" style="background:#0d366b;">31</span>炉ばたの原始焼と日本酒</a>
+<a href="#c-shichiken_marunouchi"><span class="tn" style="background:#0d366b;">32</span>銘酒七賢を看板に掲げる郷土料理店</a>
+<a href="#c-kaeru_no_yorimichi_marunouchi"><span class="tn" style="background:#0d366b;">33</span>発酵調味料のつまみと純米酒</a>
+<a href="#c-budoshu_ichibankan_marunouchi"><span class="tn" style="background:#0d366b;">34</span>改札前で立ち飲む県産ワイン</a>
+<a href="#c-bettei_chuo"><span class="tn" style="background:#0d366b;">35</span>管理栄養士が営むワイン食堂</a>
+<a href="#c-brasserie_yamanashi_chuo"><span class="tn" style="background:#0d366b;">36</span>富士河口湖のジビエと県産ワイン</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-melimelo_marunouchi"><span class="tn" style="background:#4a3aa7;">37</span>甲州夢小路の地産地消イタリアン</a>
+<a href="#c-kanzashi_kamiishida"><span class="tn" style="background:#4a3aa7;">38</span>高級中国料理を町中華の値段で</a>
+<a href="#c-sagar_ratna_zenkoji"><span class="tn" style="background:#4a3aa7;">39</span>山梨では希少な南インド料理</a>
+</div>
+<div class="sec yellow">カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-sawataya_honten_chuo"><span class="tn" style="background:#eda100;">40</span>山梨の銘菓「くろ玉」の本店</a>
+<a href="#c-marujupan_honten_marunouchi"><span class="tn" style="background:#eda100;">41</span>1921年創業、朝6時半開店の県内最古参</a>
+<a href="#c-cafe_roche_chuo"><span class="tn" style="background:#eda100;">42</span>銀座通りに続く自家焙煎の純喫茶</a>
+<a href="#c-kitenkan_marunouchi"><span class="tn" style="background:#eda100;">43</span>1972年から市役所近くで自家焙煎</a>
+<a href="#c-casa_frutta_yomogisawa"><span class="tn" style="background:#eda100;">44</span>4代続くぶどう農家直営のパフェ店</a>
+<a href="#c-sucre_yogashiten_iida"><span class="tn" style="background:#eda100;">45</span>余計なものを使わないシンプルな菓子</a>
+<a href="#c-nariya_kakigori_chuo"><span class="tn" style="background:#eda100;">46</span>富士山天然氷を削るかき氷専門</a>
+</div>
+</div>
+
+<div class="note"><b>回り方のコツ:</b>店は甲府駅の南口から中央・春日あべにゅー・オリオン通りにかけて集まり、夜の飲み屋街は中央1丁目から2丁目。ほうとうは煮込みに時間がかかるので、昼でも早めに入るか予約を。甲府鳥もつ煮はそば店の一品として出す店が多く、蕎麦と併せて頼むのが土地の食べ方。桃は7月から8月、ぶどうは8月から10月、ワインの新酒は11月3日の解禁。盆地なので夏は暑く冬は冷える。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-kofu" class="c-red">甲府のご当地(ほうとう・鳥もつ煮・馬刺し)</h2>
+<div class="card" id="c-okutou_honten_kokubo">
+<img class="hero" src="img/kofu/okutou_honten_kokubo.jpg" alt="奥藤本店 国母店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>奥藤本店 国母店<span class="yomi">おくとうほんてん こくぼてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正2年（1913年）創業、一世紀を超える歴史を持つ甲州流手打ちそばの老舗。昭和25年ごろ、当時捨てられていた鶏のもつを砂糖と醤油だけで飴色に照り煮した「甲府鳥もつ煮」がこの店で誕生し、甲府一円のそば店へ広まった。レバー・ハツ・砂肝・キンカン（玉道）を注文後に煮上げるため約15分かかるが、その照りと歯ごたえが身上。2010年のB級ご当地グルメの祭典B-1グランプリで甲府鳥もつ煮が日本一となり全国区になった、その本家にあたる。国母店は駐車場40台を備えた郊外型の店舗。</div>
+<div class="sig"><b>一皿:</b>元祖甲府鳥もつ煮（レバー・ハツ・砂肝・キンカン）と手打ちそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 11:30〜14:30, 17:00〜19:30 ／ 土・日 11:00〜14:30, 17:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市国母７丁目５−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552220910">☎ 055-222-0910</a> ／ <a href="https://okutou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甲府市の公式観光情報でも「鳥もつ煮発祥の店」として紹介される本家。公式サイトに2026年8月の営業カレンダーが掲載されており現在も営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A5%A5%E8%97%A4%E6%9C%AC%E5%BA%97%20%E5%9B%BD%E6%AF%8D%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E5%9B%BD%E6%AF%8D%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://okutou.com/">奥藤本店 公式サイト</a> / <a href="https://www.pref.yamanashi.jp/shokuhin-st/shokuiku/tabe_kae/19basashi.html">山梨県 馬刺し・郷土食取扱店紹介</a></div>
+</div></div>
+<div class="card" id="c-kawada_okutou_daini_bunten">
+<img class="hero" src="img/kofu/kawada_okutou_daini_bunten.jpg" alt="川田奥藤第二分店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>川田奥藤第二分店<span class="yomi">かわだおくとうだいにぶんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">鳥もつ煮発祥の奥藤ののれんを受け継ぐ分店で、甲府市東部の川田町にある。熟練職人が手がける甲府鳥もつ煮と、田舎風の手打ちそばが看板。名物のそば定食は手打ちそばがお替わり自由の食べ放題形式で、そばの旨味が濃いつゆと絡む素朴な味を腹一杯楽しめると地元客に長く支持されている。砂糖と醤油で照りよく煮つめた鳥もつ煮を、そばと一緒に頼むのが定番の食べ方。山梨県産ワインを置く和食店でもあり、観光客より地元の家族連れでにぎわう使い勝手のよい店。</div>
+<div class="sig"><b>一皿:</b>手打ちそば食べ放題のそば定食と甲府鳥もつ煮</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜14:00, 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市川田町４８４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552325365">☎ 055-232-5365</a> ／ <a href="http://kawada.okutou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甲府市観光協会の公式サイトに掲載され、公式サイトとインスタグラムで情報発信を続けている。奥藤系列の鳥もつ煮を郊外でゆったり味わえる店として定着。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E7%94%B0%E5%A5%A5%E8%97%A4%E7%AC%AC%E4%BA%8C%E5%88%86%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E5%B7%9D%E7%94%B0%E7%94%BA%EF%BC%94%EF%BC%98%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kawada.okutou.com/">川田奥藤第二分店 公式サイト</a> / <a href="https://kofu-tourism.com/gourmet/110">甲府観光ナビ（甲府市観光協会）</a></div>
+</div></div>
+<div class="card" id="c-okumura_honten_kofu">
+<img class="hero" src="img/kofu/okumura_honten_kofu.jpg" alt="純手打そば 奥村本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>純手打そば 奥村本店<span class="yomi">おくむらほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">江戸時代の寛文年間（1661～73年）創業と伝わる、360年以上の歴史を持つ甲府最古のそば店。現在は16代目が国産そば粉10につなぎ1の「外一そば」を毎日手打ちする。明治30年代に5代目が東京で食べたとんかつに着想を得て考案したかつ丼は「日本最古のかつ丼」の可能性が語られる名物で、甲州富士桜ポークの揚げたてカツにキャベツとポテトサラダを添える独特の形。甘辛い鳥もつ煮や予約制のほうとうも供し、甲府の食文化の生き字引のような一軒。</div>
+<div class="sig"><b>一皿:</b>外一そばと明治期から続くかつ丼、甘辛の鳥もつ煮</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 11:30〜20:50 ／ 日 11:30〜19:50</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央４丁目８−１６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552333340">☎ 055-233-3340</a> ／ <a href="https://www.okumura-honten.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甲府市観光協会が「甲府でもっとも古い老舗そば屋」と紹介。食べログに2026年1月の口コミがあり営業継続を確認済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E6%89%8B%E6%89%93%E3%81%9D%E3%81%B0%20%E5%A5%A5%E6%9D%91%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.okumura-honten.com/">奥村本店 公式サイト</a> / <a href="https://tabelog.com/en/yamanashi/A1901/A190101/19000459/">食べログ（2026年1月口コミ確認）</a> / <a href="https://kofu-tourism.com/gourmet/83">甲府観光ナビ</a></div>
+</div></div>
+<div class="card" id="c-kosaku_kofu_ekimae">
+<img class="hero" src="img/kofu/kosaku_kofu_ekimae.jpg" alt="甲州ほうとう小作 甲府駅前店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>甲州ほうとう小作 甲府駅前店<span class="yomi">こうしゅうほうとうこさく こうふえきまえてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1972年（昭和47年）に1号店を開いて以来、山梨県内を中心に9店舗を展開するほうとう専門店「小作」の甲府駅前店。県内多店舗のチェーンだが、甲府の玄関口で観光客が最初に出会うほうとうの代表格として、本ガイドではこの1店のみを掲載する。鉄鍋で供されるかぼちゃほうとうが看板で、かぼちゃが溶け込んだ味噌仕立ての汁に幅広の生麺と野菜がたっぷり入る王道の一杯。豚肉や鴨肉、辛口など種類も多く、座敷中心の広い店内は昼夜を問わず賑わう。年中無休で夜遅くまで開くのも駅前らしい。</div>
+<div class="sig"><b>一皿:</b>鉄鍋で出てくるかぼちゃほうとう</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜22:00 ／ 日 11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内１丁目７−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552338500">☎ 055-233-8500</a> ／ <a href="https://www.kosaku.co.jp/tenpo-kofuekimae">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山梨のほうとうを語る際に必ず名が挙がる存在で、公式サイトで甲府駅前店の営業情報を公開中。県内チェーンのため規定に従い甲府の旗艦格1店のみ掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%94%B2%E5%B7%9E%E3%81%BB%E3%81%86%E3%81%A8%E3%81%86%E5%B0%8F%E4%BD%9C%20%E7%94%B2%E5%BA%9C%E9%A7%85%E5%89%8D%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kosaku.co.jp/tenpo-kofuekimae">甲州ほうとう小作 公式（甲府駅前店）</a> / <a href="https://www.kosaku.co.jp/">甲州ほうとう小作 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-houtou_kinpuu_tokugyo">
+<img class="hero" src="img/kofu/houtou_kinpuu_tokugyo.jpg" alt="ほうとう 金峰 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>ほうとう 金峰<span class="yomi">ほうとうきんぷう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">甲府市徳行の住宅街にある、地元の人がわざわざ食べに来るほうとう店。山梨県産の無農薬小麦を使った自家手打ち麺と無添加の出汁にこだわり、米麺に替えるグルテンフリー対応もできる珍しい店。基本のかぼちゃほうとう1300円のほか、人気No.1は甲州地どりがごろりと入る甲州地鶏ほうとう。山梨の新ブランド魚・富士の介の刺身980円や、冷たいつけ麺仕立てのおざらも揃い、県産食材を一度に味わえる。観光地型の大型店とは対照的な、家庭の味の延長にある一軒。</div>
+<div class="sig"><b>一皿:</b>甲州地鶏ほうとうと富士の介の刺身</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市徳行１丁目１３−１８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552265493">☎ 055-226-5493</a> ／ <a href="https://houtou-kinpuu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんニュースの2025年版「ほうとうが美味しい店」特集で県内8店の一つに選出。公式サイトで無添加・グルテンフリー対応を明示する希少な専門店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BB%E3%81%86%E3%81%A8%E3%81%86%20%E9%87%91%E5%B3%B0%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E5%BE%B3%E8%A1%8C%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://houtou-kinpuu.com/">ほうとう金峰 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-chiyoda_kofu">
+<img class="hero" src="img/kofu/chiyoda_kofu.jpg" alt="ちよだ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>ちよだ<span class="yomi">ちよだ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">創業約70年、甲府の夏の郷土食「おざら」の発祥として知られる店。おざらは、ほうとうの麺を冷やし、かつおの風味が効いた温かいつけだれでいただくつけ麺仕立ての料理で、先代女将が郷里で食べていた料理をヒントに、夏に売れないほうとうを冷たくして出したのが始まりと伝わる。つるりとしたのどごしで「呑みのシメはちよだのおざら」と言われるほど地元に根付き、馬肉の煮物などの一品も地元らしい。飾らない店構えとアットホームな接客で、深夜ではなく夜の早い時間から地元客が集う。</div>
+<div class="sig"><b>一皿:</b>元祖おざら（ほうとう麺の冷たいつけ麺）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木 11:30〜13:30, 18:00〜21:00 ／ 金 11:30〜13:30, 18:00〜22:00 ／ 土・日 11:30〜14:00, 18:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内２丁目４−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552225613">☎ 055-222-5613</a> ／ <a href="http://marumaru115.blog.fc2.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甲府市公式の「甲府でしたい50のこと」でおざら発祥の店として紹介。食べログには2025年の訪問口コミが複数あり営業継続を確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A1%E3%82%88%E3%81%A0%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.city.kofu.yamanashi.jp/welcome/kofu50things/detail_25.html">甲府市公式「甲府でしたい50のこと」</a></div>
+</div></div>
+<div class="card" id="c-houtou_shinshu_kamiishida">
+<img class="hero" src="img/kofu/houtou_shinshu_kamiishida.jpg" alt="郷土料理・ほうとう 信州 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>郷土料理・ほうとう 信州<span class="yomi">きょうどりょうり・ほうとう しんしゅう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和43年（1968年）創業。先代の曾祖母が信州から甲府へ移り住んで開いた店で、屋号の「信州」はそこに由来する。長野県岡谷産の信州味噌を使い、二種類の粉を配合したもちもちの手打ちちぢれ麺を、メニューごとに打ち方を変えて仕込むのがこだわり。かぼちゃ・肉・里芋・じゃがいも・カレーなど種類豊富なほうとうに加え、全部入りのデラックスほうとうや、冷たい特製おざらも揃う。観光ルートから外れた住宅街の店ながら、半世紀以上地元の胃袋を支えてきた一軒。</div>
+<div class="sig"><b>一皿:</b>デラックスほうとうと特製おざら</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市上石田１丁目１３−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552222228">☎ 055-222-2228</a> ／ <a href="https://houtou-shinshu.jp/?fbclid=PAAaYl42nV4GTbvURsW-4PGC47AxnL50qWQ11TAWbevF64TUBkVcuUZbRffVU_aem_Acmzaof9G-8gnhbuhujb97oCc9gfvnpqAfuNxR7ym3oV55a7MHc49RIR0Ucjnw8-0yQ">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで創業の経緯と全メニュー手打ちのこだわりを公開している、昭和43年から続く地元密着のほうとう専門店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%83%B7%E5%9C%9F%E6%96%99%E7%90%86%E3%83%BB%E3%81%BB%E3%81%86%E3%81%A8%E3%81%86%20%E4%BF%A1%E5%B7%9E%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%8A%E7%9F%B3%E7%94%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://houtou-shinshu.jp/">郷土料理・ほうとう信州 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-kobaiya_kofu">
+<img class="hero" src="img/kofu/kobaiya_kofu.jpg" alt="山梨のおいしい料理 紅梅や 甲府本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>山梨のおいしい料理 紅梅や 甲府本店<span class="yomi">こうばいや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">「地元に誇れる山梨の和食」を掲げ、A4・A5等級の甲州牛をはじめ信玄鶏、富士桜ポーク、明野たまごなど県産食材にこだわる郷土料理店。オリオン通り南角の地球堂ビルにあり、1階は食事処、2階は鍋料理の座敷という構成。看板は甲州牛のすき焼き鍋と、信玄鶏と明野たまごを合わせた名物親子丼で、最後の一滴まで飲み干せると謳うスープ仕立てほうとうも近年の名物に加わった。山梨味わい会席など県産づくしのコースがあり、地元の会合から観光まで幅広く使われている。</div>
+<div class="sig"><b>一皿:</b>甲州牛すき焼き鍋と信玄鶏の名物親子丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜20:30 ／ 土・日 11:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸内１丁目１５−６ 地球堂ビル</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552231210">☎ 055-223-1210</a> ／ <a href="http://www.kobaiya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>観光メディア「たびらい」等が県産食材へのこだわりを取り上げる甲州牛の看板店。予約サイトぐるなび系公式ページで現在も予約を受け付けている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E6%A2%A8%E3%81%AE%E3%81%8A%E3%81%84%E3%81%97%E3%81%84%E6%96%99%E7%90%86%20%E7%B4%85%E6%A2%85%E3%82%84%20%E7%94%B2%E5%BA%9C%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%96%20%E5%9C%B0%E7%90%83%E5%A0%82%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nb9n100.gorp.jp/">紅梅や 店舗公式ページ（ぐるなび系）</a></div>
+</div></div>
+<div class="card" id="c-sanshiro_kofu">
+<img class="hero" src="img/kofu/sanshiro_kofu.jpg" alt="地鶏やきとり 三四郎 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>地鶏やきとり 三四郎<span class="yomi">じどりやきとりさんしろう</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">山梨の銘柄鶏「甲州地どり」と日本三大地鶏の比内地鶏を、高級備長炭で一気に焼き上げる焼き鳥専門店。甲州地どりは広い農場で約120日かけて放し飼いされる引き締まった肉質が持ち味で、外はパリッと中はふわっとした焼き加減で串に仕立てる。ささみやレバーは1本209円からと手頃で、〆には稲庭うどんと同じ製法の麺を使う鶏そばが名物。日本酒は季節替わりで常時10種類以上をグラス一律550円で揃える。完全キャッシュレス・QRコード注文のカウンター主体28席で、一人飲みにも向く。</div>
+<div class="sig"><b>一皿:</b>甲州地どりの備長炭焼きと〆の鶏そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央１丁目４−８ Kagビル 1f</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05018070523">☎ 050-1807-0523</a> ／ <a href="https://jidoriyakitori-sanshiro.foodre.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで甲州地どり使用を明示する数少ない市街地の専門店。ホットペッパーの公式ページで年中無休の営業と予約受付を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%B0%E9%B6%8F%E3%82%84%E3%81%8D%E3%81%A8%E3%82%8A%20%E4%B8%89%E5%9B%9B%E9%83%8E%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%98%20Kag%E3%83%93%E3%83%AB%201f">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://jidoriyakitori-sanshiro.foodre.jp/">地鶏やきとり三四郎 公式サイト</a> / <a href="https://www.hotpepper.jp/strJ001262267/">ホットペッパーグルメ 公式店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-bon_marche_kofu">
+<img class="hero" src="img/kofu/bon_marche_kofu.jpg" alt="レストラン＆パティスリー ボンマルシェ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>レストラン＆パティスリー ボンマルシェ<span class="yomi">ぼんまるしぇ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1965年創業、甲府の錦通りで半世紀以上続く洋食レストラン兼洋菓子店。シェフ・パティシエ・ソムリエが揃う体制で、山梨の銘柄牛「甲州ワインビーフ」のステーキをメインに据えたコースを看板にする。甲州ワインビーフはワインの搾りかすを飼料に育てる山梨ならではの牛で、まろやかな赤身の旨味が特徴。食後には併設パティスリーのデザートが続き、記念日や会食の店として地元で世代を超えて使われてきた。喫茶利用もできる間口の広さも老舗洋食店らしい。</div>
+<div class="sig"><b>一皿:</b>甲州ワインビーフのステーキコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:00, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央１丁目５−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552337877">☎ 055-233-7877</a> ／ <a href="http://bonmarche.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーに甲州ワインビーフステーキコースの公式プランを掲載。公式サイトに2026年7月付のお知らせがあり営業継続を確認済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%EF%BC%86%E3%83%91%E3%83%86%E3%82%A3%E3%82%B9%E3%83%AA%E3%83%BC%20%E3%83%9C%E3%83%B3%E3%83%9E%E3%83%AB%E3%82%B7%E3%82%A7%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://bonmarche.jp/">ボンマルシェ 公式サイト</a> / <a href="https://www.hotpepper.jp/strJ000351845/course_cnod03/">ホットペッパーグルメ（ワインビーフコース）</a></div>
+</div></div>
+<div class="card" id="c-real_dor_sadoya_kofu">
+<img class="hero" src="img/kofu/real_dor_sadoya_kofu.jpg" alt="SADOYAレストラン レアル・ドール 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>SADOYAレストラン レアル・ドール<span class="yomi">れあるどーる</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">大正6年（1917年）創業の甲府の老舗ワイナリー「サドヤ」の敷地内にあるフレンチレストラン。醸造所とワインセラーを備えた欧風の空間で、自社醸造のワインと山梨の地の素材を合わせたコース料理を出す。甲州ワインビーフなど県産肉を使った月替わりのメインや季節のコースが中心で、ワイナリー見学と食事を一度に楽しめるのは甲府市街ではここだけ。2026年の日本ワインコンクールでも自社ワインが金賞を受けるなど造り手としての評価も現役で、街なかにいながら産地の食文化を体感できる。</div>
+<div class="sig"><b>一皿:</b>サドヤの自社ワインと合わせる県産食材のフレンチコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 11:30〜14:30, 17:30〜21:00 ／ 土・日 11:30〜13:30, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市北口３丁目３−２４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552888723">☎ 055-288-8723</a> ／ <a href="http://realdor.sadoya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに2026年7月配信のお知らせがあり営業継続を確認。食べログの甲州ワインビーフ検索でも甲府駅周辺の提供店として挙がる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SADOYA%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%AC%E3%82%A2%E3%83%AB%E3%83%BB%E3%83%89%E3%83%BC%E3%83%AB%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E5%8C%97%E5%8F%A3%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://realdor.sadoya.jp/">レアル・ドール 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-koshu_jidori_ichiba_kofu">
+<img class="hero" src="img/kofu/koshu_jidori_ichiba_kofu.jpg" alt="甲州地どり市場 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>甲州地どり市場<span class="yomi">こうしゅうじどりいちば</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">甲州地どり生産組合が直営する直売所併設の食堂。豊かな自然で約120日かけて放し飼いにする甲州地どりを、生産者みずから精肉・調理して出す産直ならではの店で、ランチタイムには親子丼ならぬ「兄弟丼」、照り焼き、鶏の旨味を活かしたコラーゲンラーメンややまなし源水ラーメンなどを1000円未満の手頃さで提供する。店頭では朝どりの卵や地どり肉、曜日限定の焼き鳥も買えるため、食事と土産を一度に済ませられる。観光店ではなく生産者の顔が見える地元の台所という趣。</div>
+<div class="sig"><b>一皿:</b>甲州地どりの兄弟丼と照り焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市伊勢２丁目１０−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552220032">☎ 055-222-0032</a> ／ <a href="https://www.kosyujidori.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甲州地どり生産組合の公式サイトが直営店として営業情報を掲載。生産者直営で銘柄鶏を食べられる甲府市内唯一級の存在として掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%94%B2%E5%B7%9E%E5%9C%B0%E3%81%A9%E3%82%8A%E5%B8%82%E5%A0%B4%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%BC%8A%E5%8B%A2%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kosyujidori.com/pages/2324621/kosyujidoriichiba">甲州地どり生産組合 公式サイト</a> / <a href="https://www.yamanashi-kankou.jp/kankou/eat/p3_8381.html">富士の国やまなし観光ネット</a></div>
+</div></div>
+<div class="card" id="c-funari_fruitline_yamanashi">
+<img class="hero" src="img/kofu/funari_fruitline_yamanashi.jpg" alt="ほうとう蔵 歩成 フルーツライン店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">13</span>ほうとう蔵 歩成 フルーツライン店<span class="yomi">ほうとうぐら ふなり ふるーつらいんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">昭和54年（1979年）創業のほうとう専門店。甲府盆地を見下ろすフルーツライン沿いの蔵造りの店舗で、看板の「黄金ほうとう」は鮑と豚肉が入り、秘伝の自家製黄金味噌を溶かし込んだ贅沢な一杯。昇仙峡で開かれた「ほうとう味くらべ真剣勝負」で三連覇して殿堂入りした実績が知られ、自家農園の無農薬野菜や信玄どり、山梨ワイン豚など具材にも産地のものを使う。笛吹川フルーツ公園やほったらかし温泉への行き帰りに寄りやすく、夜景の時間帯まで通しで営業するのも便利。</div>
+<div class="sig"><b>一皿:</b>鮑入り・自家製黄金味噌の黄金ほうとう</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜21:00 ／ 土・日 11:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県山梨市万力１０９１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0553231567">☎ 0553-23-1567</a> ／ <a href="http://www.funari.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ほうとう味くらべ真剣勝負三連覇・殿堂入りの経歴を各グルメサイトが紹介する実力店。公式サイトで営業情報を確認。甲府市に隣接する山梨市のためneighborタグを付す。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BB%E3%81%86%E3%81%A8%E3%81%86%E8%94%B5%20%E6%AD%A9%E6%88%90%20%E3%83%95%E3%83%AB%E3%83%BC%E3%83%84%E3%83%A9%E3%82%A4%E3%83%B3%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E5%B1%B1%E6%A2%A8%E5%B8%82%E4%B8%87%E5%8A%9B%EF%BC%91%EF%BC%90%EF%BC%99%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.funari.jp/shop/yamanashi">歩成 公式サイト（山梨市エリア店舗）</a> / <a href="https://www.hotpepper.jp/strJ000972235/">ホットペッパーグルメ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-waraji_shosenkyo">
+<img class="hero" src="img/kofu/waraji_shosenkyo.jpg" alt="昇仙峡 甲州郷土料理 ほうとう・うなぎ わらじ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">14</span>昇仙峡 甲州郷土料理 ほうとう・うなぎ わらじ<span class="yomi">わらじ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">日本一の渓谷美と称される甲府・昇仙峡の仙娥滝近くにある食事処。江戸時代から残る築約150年の建物を改築した古民家で、屋号は昇仙峡の新道を切り拓いた開拓者・長田円右衛門の故事にちなむ。名物は特製の自家製味噌でたっぷりの野菜を煮込む田舎ほうとうで、とろろそばや特選うな重、鳥もつ煮など甲州の郷土色の濃い品が並ぶ。渓谷散策とセットで立ち寄る客が中心の観光地の店だが、味噌と出汁を自前で仕込む姿勢が支持されている。天候や季節で営業が変わる山あいの店のため、オフシーズンは事前確認が無難。</div>
+<div class="sig"><b>一皿:</b>自家製味噌の田舎ほうとうと特選うな重</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:30〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市猪狩町３９３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552872080">☎ 055-287-2080</a> ／ <a href="https://koshu-waraji.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昇仙峡観光協会の公式サイトに現役の食事処として掲載され、公式サイトでメニューと営業情報を発信中。昇仙峡は甲府市内であり、渓谷観光と組み合わせられる貴重なほうとう処。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%98%87%E4%BB%99%E5%B3%A1%20%E7%94%B2%E5%B7%9E%E9%83%B7%E5%9C%9F%E6%96%99%E7%90%86%20%E3%81%BB%E3%81%86%E3%81%A8%E3%81%86%E3%83%BB%E3%81%86%E3%81%AA%E3%81%8E%20%E3%82%8F%E3%82%89%E3%81%98%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E7%8C%AA%E7%8B%A9%E7%94%BA%EF%BC%93%EF%BC%99%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://koshu-waraji.com/">わらじ 公式サイト</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食</h2>
+<div class="card" id="c-oka_chuo">
+<img class="hero" src="img/kofu/oka_chuo.jpg" alt="岡 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>岡<span class="yomi">おか</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">甲府の中心街、中央一丁目の丸忠ビル一階にある日本料理店。店主はJR東日本のクルーズトレイン「TRAIN SUITE 四季島」の厨房を務めた経歴を持ち、独立して甲府に店を構えた。席はカウンターのみで、その日に入った魚介と山梨の野菜を中心に、季節ごとの椀物や焼き物を組み立てていく。夜は十八時から深夜一時まで開けており、飲んだあとに寄る客も多い。食べログの日本料理カテゴリでは甲府市内で最上位に近い評価が付き、予算は一万五千円前後と市内では高い部類に入るが、カウンター越しに一皿ずつ説明を受けながら食べられる点が支持されている。</div>
+<div class="sig"><b>一皿:</b>季節の魚介を組み立てたおまかせのコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>Maruchu Bldg., １丁目-６-6 中央 甲府市 山梨県 400-0032 日本</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552262888">☎ 055-226-2888</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ甲府市中央の日本料理一覧で3.64点と最高評価。2026年2月の口コミが投稿されており現在の営業を確認できた。四季島の厨房出身という経歴は甲府では珍しい。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B2%A1%20Maruchu%20Bldg.%2C%20%EF%BC%91%E4%B8%81%E7%9B%AE-%EF%BC%96-6%20%E4%B8%AD%E5%A4%AE%20%E7%94%B2%E5%BA%9C%E5%B8%82%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%20400-0032%20%E6%97%A5%E6%9C%AC">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19010053/">食べログ「岡」店舗ページ</a> / <a href="https://tabelog.com/yamanashi/C19201/C53134/rstLst/japanese/">食べログ 甲府市中央の日本料理一覧</a></div>
+</div></div>
+<div class="card" id="c-itsuku_chuo">
+<img class="hero" src="img/kofu/itsuku_chuo.jpg" alt="ITSUKU 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>ITSUKU<span class="yomi">いつく</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2024年5月に中央二丁目の甲栄ビル二階に開いた日本料理店。カウンター六席とテーブル三卓の十八席ほどで、席の間隔を広く取った木づくりの内装が特徴になっている。魚と野菜を主役に据えた構成で、日本酒とワインを料理に合わせて選べるよう揃えている。二階の分かりにくい入り口から「隠れ家」と評されることが多く、予約が前提。開店から二年ほどながら食べログでは3.5点台後半と甲府市内の和食で上位につけており、2025年9月にも口コミが投稿されている。夜のみの営業で日曜が定休、加えて不定休があるため予約時の確認が要る。</div>
+<div class="sig"><b>一皿:</b>旬の魚と野菜を組んだおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央２丁目１１−１０ 甲栄 ビル 2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05088830366">☎ 050-8883-0366</a> ／ <a href="https://itsuku-2024.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ甲府市中央の日本料理一覧で3.58点と上位。2024年5月開店で2025年9月の口コミがあり、新しい店ながら現在の営業を確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=ITSUKU%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%90%20%E7%94%B2%E6%A0%84%20%E3%83%93%E3%83%AB%202F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19013630/">食べログ「ITSUKU」店舗ページ</a> / <a href="https://tabelog.com/yamanashi/C19201/C53134/rstLst/japanese/">食べログ 甲府市中央の日本料理一覧</a></div>
+</div></div>
+<div class="card" id="c-uoyasu_otamachi">
+<img class="hero" src="img/kofu/uoyasu_otamachi.jpg" alt="魚保 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>魚保<span class="yomi">うおやす</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治四十三年（1910年）創業、甲府市太田町の寿司店。海の無い山梨で発達した「甲州にぎり」を今に伝える数少ない店として紹介されている。甲州にぎりは、魚の輸送に時間がかかった時代に煮たり漬けたりして仕立てた握りで、生の鮮魚だけに頼らない仕事が特徴。魚保では天然物と季節の食材を使い、握りのほかに蒸し物や揚げ物、昼の定食も出す。昼の予算は千円台と入りやすく、落ち着いた店構えで地元客が通う。水曜から日曜の営業で月火が休み。食べログには2025年10月の口コミが投稿されている。</div>
+<div class="sig"><b>一皿:</b>甲州にぎり</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土 11:30〜14:00, 17:00〜21:00 ／ 日 11:30〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市太田町２０−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0120457009">☎ 0120-457-009</a> ／ <a href="https://instagram.com/sushidokoro_uoyasu?igshid=g1gcvbk6dijw">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの店舗紹介が「創業100年以上の老舗」「山国の寿司の味を守る」と記し、甲州にぎりを掲げる甲府では希少な老舗。2025年10月の口コミで現在の営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E4%BF%9D%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E5%A4%AA%E7%94%B0%E7%94%BA%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19001103/">食べログ「魚保」店舗ページ</a> / <a href="https://tabelog.com/yamanashi/C19201/rstLst/sushi/">食べログ 甲府市の寿司一覧</a></div>
+</div></div>
+<div class="card" id="c-izumi_iida">
+<img class="hero" src="img/kofu/izumi_iida.jpg" alt="すし・うまいもの処 伊津美 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>すし・うまいもの処 伊津美<span class="yomi">すし・うまいものどころ いづみ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和三十三年（1958年）創業の「すし・うまいもの処」。甲府市飯田にあり、海の無い山梨で鮮度をどう確保するかという課題に対して、豊洲市場と沼津港から毎日仕入れるという答えを取っている。握りや刺身のほかに煮物・揚げ物といった「うまいもの」を幅広く出すのが屋号の由来で、座敷や掘りごたつの個室が多く、最大八十名の宴会にも対応する。昼はご飯のおかわりが自由で、火曜と金曜はデザートが付く。家族連れから接待まで幅広く使われる店で、食べログには2025年9月の口コミが投稿されている。</div>
+<div class="sig"><b>一皿:</b>日替わりの握りと海鮮丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市飯田４丁目１−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05053032300">☎ 050-5303-2300</a> ／ <a href="https://sushi-umaimonodokoro-izumi.foodre.jp/?utm_source=gbp&amp;utm_medium=organic&amp;utm_contents=website_link">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ甲府市の寿司一覧で3.29点。店舗情報に1958年創業と豊洲・沼津港からの毎日仕入れが明記され、2025年9月の口コミで営業を確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E3%83%BB%E3%81%86%E3%81%BE%E3%81%84%E3%82%82%E3%81%AE%E5%87%A6%20%E4%BC%8A%E6%B4%A5%E7%BE%8E%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E9%A3%AF%E7%94%B0%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19000222/">食べログ「すし・うまいもの処 伊津美」店舗ページ</a> / <a href="https://tabelog.com/yamanashi/C19201/rstLst/sushi/">食べログ 甲府市の寿司一覧</a></div>
+</div></div>
+<div class="card" id="c-wakazushi_kokubo">
+<img class="hero" src="img/kofu/wakazushi_kokubo.jpg" alt="若鮨 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>若鮨 本店<span class="yomi">わかずし ほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">甲府市国母にある半世紀続く寿司店で、2022年6月に本店を改装して開け直した。公式サイトは「SUSHIDO（寿司道）」を掲げ、握りのほか宴会、ケータリング、ドライブスルー、甘味処「若義」まで手掛けており、地方都市の寿司屋としては珍しい業態の広げ方をしている。看板は二十年以上値段を変えていないという昼にぎり千二百十円で、昼から夜まで通しで営業するため使い勝手がよい。食べログでは3.5点台後半と甲府市内の寿司でも上位にあり、2026年6月の口コミが投稿されている。水曜定休。</div>
+<div class="sig"><b>一皿:</b>昼にぎり（1,210円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市国母８丁目３−１１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552252228">☎ 055-225-2228</a> ／ <a href="http://www.wakazushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ甲府市の寿司一覧で3.56点と市内最上位クラス。公式サイトに2022年の改装と現行の営業時間が載り、2026年6月の口コミで営業を確認できた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8B%A5%E9%AE%A8%20%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E5%9B%BD%E6%AF%8D%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.wakazushi.com/">若鮨本店 公式サイト</a> / <a href="https://tabelog.com/yamanashi/A1901/A190101/19000008/">食べログ「若鮨」店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-washin_kamiya_chuo">
+<img class="hero" src="img/kofu/washin_kamiya_chuo.jpg" alt="和心 かみや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>和心 かみや<span class="yomi">わしん かみや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2016年5月、甲府の中央一丁目に開いた小料理店。居酒屋と日本料理の中間を狙った造りで、山梨県産の食材と地酒を軸に、新鮮な刺身と季節の一品を出す。四名用と八名用の個室・半個室があり、接待や会食にも使われる。地元の日本酒ブログ「純米狂＠takezo」が甲府中央方面の厳選十四店に挙げ、刺身の鮮度と旬の料理、個室対応を評価している。深夜零時まで開けているため二軒目としても使いやすく、日曜が定休で盆は営業する。食べログには2026年3月の口コミが投稿されており、現在も営業している。</div>
+<div class="sig"><b>一皿:</b>山梨県産食材の旬の刺身盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央１丁目１−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552152163">☎ 055-215-2163</a> ／ <a href="https://tabelog.com/yamanashi/A1901/A190101/19009403/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元の日本酒ブログ「純米狂＠takezo」が甲府中央方面の厳選14店に選出し、刺身と個室対応を評価。食べログの2026年3月口コミで営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E5%BF%83%20%E3%81%8B%E3%81%BF%E3%82%84%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19009403/">食べログ「和心 かみや」店舗ページ</a> / <a href="https://junmaikyo.exblog.jp/238539109/">純米狂＠takezo「甲府（中央方面）でホントに旨い店 厳選14店」</a></div>
+</div></div>
+<div class="card" id="c-ebisu_chuo">
+<img class="hero" src="img/kofu/ebisu_chuo.jpg" alt="えびす 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>えびす<span class="yomi">えびす</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">甲府の中央一丁目にある、夫婦二人で営む小さな日本料理店。品書きが無く、その日に仕入れた食材でおまかせの料理が順に出てくる形式を取る。カウンター五、六席とテーブル二卓だけの規模で、予約が前提になる。地元の日本酒ブログ「純米狂＠takezo」は甲府中央方面の厳選十四店にこの店を挙げ、店主任せのコースを紹介している。会計は現金のみで、カードや電子マネー、QRコード決済は使えず、駐車場も無い。食べログには2026年1月の口コミが投稿されており、現在も営業している。日曜定休。</div>
+<div class="sig"><b>一皿:</b>その日の仕入れによるおまかせ料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央１丁目７−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552276600">☎ 055-227-6600</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「純米狂＠takezo」が甲府中央方面の厳選14店に選び、店主お任せのコースを紹介。食べログの2026年1月口コミで現在の営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%88%E3%81%B3%E3%81%99%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19008981/">食べログ「えびす」店舗ページ</a> / <a href="https://junmaikyo.exblog.jp/238539109/">純米狂＠takezo「甲府（中央方面）でホントに旨い店 厳選14店」</a></div>
+</div></div>
+<div class="card" id="c-sekisuitei_yokouchi">
+<img class="hero" src="img/kofu/sekisuitei_yokouchi.jpg" alt="うなぎ割烹 石水庭 横内 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>うなぎ割烹 石水庭 横内<span class="yomi">うなぎかっぽう せきすいてい よこうち</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">甲府駅南口から歩いて数分の丸の内二丁目にあるうなぎ割烹。甲府は江戸期からうなぎの町として知られるが、この店も三十五年にわたって駅前で営業してきた。うなぎは国産のみを使い、静岡県産を中心に大将が選び、備長木炭の炭火で皮目をしっかり焼き上げる。タレは重くなりすぎないよう甘さを抑えた仕立てで、香ばしさと軽さの両立を狙っている。個室二十八席を含む全四十席で、法事や会食にも使われる。うな重は松二千六百四十円から特上四千八百四十円まで。月曜と第一・第三火曜が定休。</div>
+<div class="sig"><b>一皿:</b>うな重（松・上・特上）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内２丁目９−２５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552245830">☎ 055-224-5830</a> ／ <a href="https://www.unagi-yokouchi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山梨の地域情報サイトPORTAのうなぎ特集が「35年にわたり甲府駅前で愛され続ける名店」と紹介。地図サイトのクチコミに2026年6～7月の投稿が複数あり営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E5%89%B2%E7%83%B9%20%E7%9F%B3%E6%B0%B4%E5%BA%AD%20%E6%A8%AA%E5%86%85%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.porta-y.jp/gourmet/180606">PORTA（山梨のグルメ）うなぎ割烹 石水庭 横内</a> / <a href="https://map.yahoo.co.jp/v3/place/oWYJF-nUxGU/review">Yahoo!マップ クチコミ（2026年の投稿あり）</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">そば・うどん・ラーメン・町中華</h2>
+<div class="card" id="c-senshinan_takahata">
+<img class="hero" src="img/kofu/senshinan_takahata.jpg" alt="専心庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>専心庵<span class="yomi">せんしんあん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">甲府市高畑の住宅街にある手打ちそば専門店で、店主が白州の水と選び抜いたそば粉だけで打つ「生粉打ち（きこうち）」の十割そばを出す。つなぎを使わないため香りが立ちやすい反面、打ち方と茹で方に技術を要するそばで、粗挽きと細切りの二種を一度に味わえる「そばセット」が看板。そば豆腐が付き、土日には四種類の十割そばの食べ比べも用意される。器も店主の手作りという小さな店で、そばがなくなり次第終了、昼のみの営業という潔い商いを続けている。</div>
+<div class="sig"><b>一皿:</b>そばセット（粗挽き・細切りの十割そば二種＋そば豆腐）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 11:30〜13:00 ／ 木・土・日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水・金曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市高畑１丁目１３−１８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552336095">☎ 055-233-6095</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの甲府エリアそばランキングで3.65と首位につけ、山梨の地域メディアPORTAも生粉打ち十割と食べ比べを具体的に紹介しており、甲府で「そのものを味わう蕎麦」の代表格だから。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B0%82%E5%BF%83%E5%BA%B5%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E9%AB%98%E7%95%91%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.porta-y.jp/gourmet/103558">PORTA 専心庵</a> / <a href="https://tabelog.com/soba/yamanashi/A1901/A190101/rank/">食べログ 甲府 そばランキング</a></div>
+</div></div>
+<div class="card" id="c-senshu_udon_takahata">
+<img class="hero" src="img/kofu/senshu_udon_takahata.jpg" alt="手打ちうどん せんしゅう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>手打ちうどん せんしゅう<span class="yomi">てうちうどん せんしゅう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和24年（1949年）創業のうどん店で、富士吉田周辺で発達した「吉田のうどん」の系譜を甲府盆地で味わえる数少ない店。噛みごたえのある極太麺と、煮干しなどの出汁を効かせた汁の組み合わせが特徴で、具は自由に足せる。名物の「肉天わかめ」は麺が見えなくなるほど大きな天ぷらに、味を付けた肉・キャベツ・わかめがのる盛りで、甲府市観光協会も食べ応えのある一品として紹介する。昼のみの営業で、開店と同時に席が埋まる日も多い。</div>
+<div class="sig"><b>一皿:</b>肉天わかめ（大きな天ぷらと味付け肉・キャベツ・わかめ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市高畑２丁目３−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:09032452757">☎ 090-3245-2757</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甲府市観光協会が創業昭和24年の名店として掲載し、吉田のうどんを甲府市内で食べられる代表店として地元メディアでも繰り返し挙げられているため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%86%E3%81%A9%E3%82%93%20%E3%81%9B%E3%82%93%E3%81%97%E3%82%85%E3%81%86%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E9%AB%98%E7%95%91%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kofu-tourism.com/gourmet/558">甲府市観光協会 甲府観光ナビ</a> / <a href="https://yamanashi-jyouhou.net/udon-in-kofu/">やまなしファン 甲府盆地で吉田のうどん</a></div>
+</div></div>
+<div class="card" id="c-houraiken_honten_chuo">
+<img class="hero" src="img/kofu/houraiken_honten_chuo.jpg" alt="蓬来軒 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">25</span>蓬来軒 本店<span class="yomi">ほうらいけん ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和39年（1964年）創業。公式サイトによれば、明治38年に日本で生まれたとされる「支那そば」がその後途絶えたのを、全国で初めて復元した店を名乗る。看板の支那そばは、獣の脂や肉の匂いを抑えた醤油ベースの澄んだスープに細めのちぢれ麺を合わせ、厚めのチャーシューを重ねる。餃子も定番で、スープがなくなった時点で営業を終える日もある。甲府の中心街・中央四丁目にあり、地元客と県外からの食べ手が入り交じる、甲府のラーメンを語るときの基準点のような一軒。</div>
+<div class="sig"><b>一皿:</b>支那そば（醤油ベースの澄んだスープ＋細ちぢれ麺）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜14:20, 17:30〜20:20</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央４丁目１２−２８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552332458">☎ 055-233-2458</a> ／ <a href="https://houraiken.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが支那そば復元の経緯を明示し、食べログの甲府エリアのラーメンランキングでも2位（3.64）と、歴史と現在の評価が両立しているため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%93%AC%E6%9D%A5%E8%BB%92%20%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://houraiken.jp/">蓬来軒 公式サイト</a> / <a href="https://tabelog.com/ramen/yamanashi/A1901/A190101/rank/">食べログ 甲府 ラーメンランキング</a></div>
+</div></div>
+<div class="card" id="c-uedaya_shimoiida">
+<img class="hero" src="img/kofu/uedaya_shimoiida.jpg" alt="上田屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">26</span>上田屋<span class="yomi">うえだや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">アルプス通り沿いに立つ創業60年を超えるラーメン店。細めの中華麺に魚介の旨みを効かせた醤油スープを合わせる昔ながらの中華そばを軸に、代替わり後は自家製麺と鶏の旨みを重ねた現代的な仕立てへ手を入れている。もう一つの看板が甘辛いタレをからめた「焼きもつ」で、ラーメンと合わせたセットで頼む客が多い。2025年夏に外観をリニューアルし、木目を基調にした落ち着いた店内になった。甲府の人が普段づかいで通う、町のラーメン屋の姿を残す店である。</div>
+<div class="sig"><b>一皿:</b>焼きもつセット（中華そば＋甘辛ダレの焼きもつ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜14:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市下飯田２丁目３−１８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552280529">☎ 055-228-0529</a> ／ <a href="https://www.instagram.com/ued_aya/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの甲府エリアのラーメンランキングで9位（3.46）に入り、ラーメン専門メディアが2025年8月更新で外観リニューアルと現在の味を報告しているため、老舗かつ現役と確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E7%94%B0%E5%B1%8B%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%8B%E9%A3%AF%E7%94%B0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ore-ramen.com/uedaya">俺のラーメン 上田屋（2025年8月17日更新）</a> / <a href="https://tabelog.com/ramen/yamanashi/A1901/A190101/rank/">食べログ 甲府 ラーメンランキング</a></div>
+</div></div>
+<div class="card" id="c-maruoka_shokudo_sumiyoshi">
+<img class="hero" src="img/kofu/maruoka_shokudo_sumiyoshi.jpg" alt="丸岡食堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">27</span>丸岡食堂<span class="yomi">まるおかしょくどう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">甲府で名高い町中華で修業した店主が独立して構えた食堂で、ニンニクと背脂を効かせたこってりしたラーメンから、カツ定食、レバニラ、ブツ定食まで、麺と定食の両輪でメニューを組み立てている。看板のカツ定食は山梨のブランド豚「クリスタルポーク」を使い、脂がとろけるやわらかい肉質が特徴。昼は11時から15時、夜は17時から22時と通しに近い長い営業時間で、仕事帰りにも寄れる。飾らない構えで、量と価格のつり合いを重んじる甲府の食堂文化をそのまま受け継いだ一軒。</div>
+<div class="sig"><b>一皿:</b>カツ定食（クリスタルポークのとんかつ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 11:00〜14:30, 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市住吉２丁目３−３３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552060100">☎ 055-206-0100</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山梨の地域情報メディアPORTAが2025年の記事で店主の修業歴とブランド豚のカツ定食を具体的に取り上げており、甲府の町中華の現在形として紹介できるため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%B8%E5%B2%A1%E9%A3%9F%E5%A0%82%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%BD%8F%E5%90%89%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.porta-y.jp/gourmet/177689">PORTA 丸岡食堂</a></div>
+</div></div>
+<div class="card" id="c-wez_chukasoba_showa">
+<img class="hero" src="img/kofu/wez_chukasoba_showa.jpg" alt="中華蕎麦うゑず 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">28</span>中華蕎麦うゑず<span class="yomi">ちゅうかそば うゑず</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">甲府市に隣接する昭和町清水新居にある夜営業中心のラーメン店。看板は「濃厚豚骨魚介つけめん」で、山梨の銘柄豚「南アルプス桃源ポーク」をベースにしたスープと、小麦の香りが立つ極太麺を合わせる。セカンドブランド「Wez Noodles」も同じ場所で曜日を分けて動かしており、店の予約や土産の受け付けをLINEで行うなど、行列対策を仕組みでこなしている点も今どき。甲府エリアのラーメンランキングでは長く首位を保ち、県外からわざわざ足を運ぶ客も多い。</div>
+<div class="sig"><b>一皿:</b>濃厚豚骨魚介つけめん（南アルプス桃源ポークの濃厚スープ＋極太麺）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 11:00〜15:00, 20:00〜21:00 ／ 火・金 11:00〜15:00, 19:00〜21:00 ／ 木 11:00〜15:00 ／ 土 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水・日曜</td></tr>
+<tr><th>住所</th><td>山梨県中巨摩郡昭和町清水新居５９−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552878894">☎ 055-287-8894</a> ／ <a href="https://sites.google.com/view/wez-kofu">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの甲府エリアのラーメン・つけ麺ランキングで3.80の首位。公式サイトでスープの素材と麺の設計を自ら説明しており、根拠が一次情報で取れるため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E8%95%8E%E9%BA%A6%E3%81%86%E3%82%91%E3%81%9A%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E4%B8%AD%E5%B7%A8%E6%91%A9%E9%83%A1%E6%98%AD%E5%92%8C%E7%94%BA%E6%B8%85%E6%B0%B4%E6%96%B0%E5%B1%85%EF%BC%95%EF%BC%99%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sites.google.com/view/wez-kofu">中華蕎麦うゑず 公式サイト</a> / <a href="https://tabelog.com/ramen/yamanashi/A1901/A190101/rank/">食べログ 甲府 ラーメンランキング</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・甲州ワインと地酒</h2>
+<div class="card" id="c-kusabue_chuo">
+<img class="hero" src="img/kofu/kusabue_chuo.jpg" alt="くさ笛 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>くさ笛<span class="yomi">くさぶえ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">甲府で最も古い飲み屋小路のひとつ「オリンピック通り」に面した、昭和三十九年創業の居酒屋。小路の名は東京オリンピックの年にできたことに由来する。店はカウンターのみの細長い造りで、長く女将が一人で切り盛りしてきた。名物は手造りのコロッケで、地元のブログは「懐かしき母の味」と評す。甲州の地酒を中心に全国の銘酒を五十種類以上置いており、日本酒目当ての客も多い。火曜から金曜の夜のみという短い営業で、月・土・日と祝日は休み。食べログには2025年9月の口コミが入っている。</div>
+<div class="sig"><b>一皿:</b>手造りコロッケ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月・土・日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央１丁目２０−２３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552323948">☎ 055-232-3948</a> ／ <a href="https://kusabue.crayonsite.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元の日本酒ブログ「純米狂＠takezo」が甲府中央方面の厳選14店の筆頭に挙げる昭和39年創業店。食べログの2025年9月口コミで現在の営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%95%E7%AC%9B%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19002485/">食べログ「くさ笛」店舗ページ</a> / <a href="https://junmaikyo.exblog.jp/238539109/">純米狂＠takezo「甲府（中央方面）でホントに旨い店 厳選14店」</a></div>
+</div></div>
+<div class="card" id="c-doteyaki_shimojo_chuo">
+<img class="hero" src="img/kofu/doteyaki_shimojo_chuo.jpg" alt="どてやき下條 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>どてやき下條<span class="yomi">どてやきしもじょう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和十二年（1937年）創業、甲府市中央四丁目のどてやきの店。現在は三代目が営む。名物のどてやきは牛すじなどを味噌でじっくり煮込んだもので、名古屋風とも関西風とも違う独自の仕立てだと評される。コの字のカウンターの上に新聞が吊るしてある店内は開店当初の雰囲気を残す。営業は金曜から日曜・祝日の十五時から十九時までと短く、品が無くなり次第終了する。昼酒の店として一人客にも使いやすい。食べログには2026年7月の口コミが投稿されており、現在も営業している。</div>
+<div class="sig"><b>一皿:</b>どてやき</div>
+<table class="info">
+<tr><th>営業時間</th><td>金・土・日 15:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火・水・木曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央４丁目２−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552323044">☎ 055-232-3044</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「純米狂＠takezo」の甲府中央方面14選に昭和12年創業店として掲載。食べログの2026年7月口コミで営業と、金土日祝のみという現行の短時間営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A9%E3%81%A6%E3%82%84%E3%81%8D%E4%B8%8B%E6%A2%9D%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19002936/">食べログ「どてやき下條」店舗ページ</a> / <a href="https://junmaikyo.exblog.jp/238539109/">純米狂＠takezo「甲府（中央方面）でホントに旨い店 厳選14店」</a></div>
+</div></div>
+<div class="card" id="c-sakaba_hibi_marunouchi">
+<img class="hero" src="img/kofu/sakaba_hibi_marunouchi.jpg" alt="酒場 日々 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>酒場 日々<span class="yomi">さかば ひび</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2017年7月、甲府の丸の内一丁目、オリオン・スクエア商店街の薄暗い路地で開いた炉端焼きの店。魚を串に打って炉端の炭火の周りに立てて焼く「原始焼」と、おばんざいを組み合わせた構成で、山梨と全国の日本酒を揃える。カウンターとテーブル、個室を含めて四十席あるが、平日でも予約が要るほど埋まる。食べログでは3.6点台と甲府の居酒屋では上位で、口コミの実勢予算は八千円前後。月に二、三日の不定休があり、日程はInstagramで告知される。2026年8月の口コミが投稿されている。</div>
+<div class="sig"><b>一皿:</b>魚の原始焼</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 17:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内１丁目１５−８ 三星ビル １F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552446588">☎ 055-244-6588</a> ／ <a href="https://sansan-co.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ3.61点（162件）と甲府の居酒屋で上位、2026年8月の口コミがあり営業を確認。「純米狂＠takezo」の甲府中央方面14選にも掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E5%A0%B4%20%E6%97%A5%E3%80%85%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%98%20%E4%B8%89%E6%98%9F%E3%83%93%E3%83%AB%20%EF%BC%91F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19010075/">食べログ「酒場日々」店舗ページ</a> / <a href="https://junmaikyo.exblog.jp/238539109/">純米狂＠takezo「甲府（中央方面）でホントに旨い店 厳選14店」</a></div>
+</div></div>
+<div class="card" id="c-shichiken_marunouchi">
+<img class="hero" src="img/kofu/shichiken_marunouchi.jpg" alt="七賢 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>七賢<span class="yomi">しちけん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">甲府駅南口から徒歩二分にある郷土料理の居酒屋で、店名は北杜市白州の蔵元・山梨銘醸が造る銘酒「七賢」から取っている。本醸造から純米大吟醸の古酒まで七賢を幅広く置き、飲み比べができるのが特徴。料理は串揚げと季節の魚介、山梨の郷土料理が中心で、カウンターと座敷を合わせて七十二席という甲府では大きめの構え。夜は地元客と出張客で早い時間から埋まる。日曜が定休だが、月曜が祝日の場合は日曜に営業して月曜を休みにする。食べログには2026年5月の口コミが入っている。</div>
+<div class="sig"><b>一皿:</b>七賢の飲み比べと串揚げ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内２丁目１−５</td></tr>
+<tr><th>予約</th><td>可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ3.41点（105件）で店舗紹介は「甲府市内でも屈指の賑わい」と記す。2026年5月の口コミで営業を確認。山梨の代表銘柄を軸に据えた品揃えが選定理由。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%83%E8%B3%A2%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19000784/">食べログ「七賢」店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-kaeru_no_yorimichi_marunouchi">
+<img class="hero" src="img/kofu/kaeru_no_yorimichi_marunouchi.jpg" alt="発酵酒場かえるのより道 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>発酵酒場かえるのより道<span class="yomi">はっこうさかば かえるのよりみち</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">甲府の中心街、丸の内一丁目にある発酵をテーマにした酒場。塩麹や醤油麹などの発酵調味料をすべての料理に使うのが方針で、「酵ボーノ」という自家ブランドの調味料も手掛けている。酒は山梨の地酒と全国の個性的な純米酒、それに県産ワインを置き、日本酒バーとしてもワインバーとしても使える。基本は一組四名までの案内で、少量の飲食から満腹までという幅の広さを掲げている。2026年開催の「こうふはっこうマルシェ」にも出店しており、現在の営業が確認できる。日曜と不定休が休みで、営業時間の変更はInstagramで告知される。</div>
+<div class="sig"><b>一皿:</b>発酵調味料を使ったおつまみ</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00頃～21:00 L.O.（早仕舞いあり）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・不定休</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内１丁目２０−２１</td></tr>
+<tr><th>予約</th><td>可 — <a href="https://www.instagram.com/kaerushouten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甲府市の発酵イベント「こうふはっこうマルシェ2026」の出店店舗として紹介され、2026年の営業を確認。「純米狂＠takezo」の甲府中央方面14選にも入っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%BA%E9%85%B5%E9%85%92%E5%A0%B4%E3%81%8B%E3%81%88%E3%82%8B%E3%81%AE%E3%82%88%E3%82%8A%E9%81%93%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hakkou-marche.com/marche/store/2464/">こうふはっこうマルシェ2026 出店店舗ページ</a> / <a href="https://tabelog.com/yamanashi/A1901/A190101/19008553/">食べログ「発酵酒場かえるのより道」店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-budoshu_ichibankan_marunouchi">
+<img class="hero" src="img/kofu/budoshu_ichibankan_marunouchi.jpg" alt="カフェ＆ワインバー 葡萄酒一番館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>カフェ＆ワインバー 葡萄酒一番館<span class="yomi">かふぇあんどわいんばー ぶどうしゅいちばんかん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">JR甲府駅の改札正面、セレオ甲府二階にある立ち飲みのワインバー。山梨県産のワインを五十種類ほど揃え、グラスの飲み比べセットのほか、氷を入れたジョッキで出す「かち割りワイン」や湯呑み茶碗での提供といった独自の出し方をする。ほうとうグラタンなど県産食材を使ったつまみも置く。電車の待ち時間だけでも寄れる立地と千円前後の予算が支持され、食べログでは3.4点台と甲府のワインバーで上位につける。年中無休で朝十時から夜八時まで営業しており、旅の始めと終わりに県内ワインを一杯だけ飲む使い方に向く。</div>
+<div class="sig"><b>一皿:</b>かち割りワイン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内１丁目１−８ 甲府駅</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552695455">☎ 055-269-5455</a> ／ <a href="https://www.jrccd.co.jp/celeo/shop/kofu/785/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食通誌dancyuの2025年の連載が甲府のひとり飲みの店として取り上げ、県産ワイン約50種と独自の提供法を紹介。食べログにも2026年5月の口コミがあり営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%86%E3%83%AF%E3%82%A4%E3%83%B3%E3%83%90%E3%83%BC%20%E8%91%A1%E8%90%84%E9%85%92%E4%B8%80%E7%95%AA%E9%A4%A8%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%98%20%E7%94%B2%E5%BA%9C%E9%A7%85">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://dancyu.jp/read/2025_00009726.html">dancyu「山梨・甲府で出張ひとり飲み」（2025年）</a> / <a href="https://tabelog.com/yamanashi/A1901/A190101/19011923/">食べログ「カフェ&amp;ワインバー 葡萄酒一番館」店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-bettei_chuo">
+<img class="hero" src="img/kofu/bettei_chuo.jpg" alt="ワイン食堂 BETTEI 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>ワイン食堂 BETTEI<span class="yomi">わいんしょくどう べってい</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2023年6月30日に甲府の中央一丁目、春日あべにゅう沿いのビル一階に開いたワイン食堂。ピンクの扉が目印で、カウンター六、七席と奥の小さなテーブル席という小さな造りを、管理栄養士の店主が母親と二人で回している。山梨のワイナリーの県産ワインを中心に、気軽なグラスから高価格帯のボトルまで幅広く置く。料理は「家庭料理」がテーマで、手造りコロッケ、玉ねぎの粗いシュウマイ、デミグラスのハンバーグ、焼きそばといった品にワインを合わせる構成。店主は料理教室も主宰している。木・金・土の夜のみの営業。</div>
+<div class="sig"><b>一皿:</b>BETTEIサラダとおうちハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>木・金・土 19:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火・水・日曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央１丁目１５−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="https://www.instagram.com/bettei_kofu/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2025年3月の地元ブログ「甲府駅前でワインが楽しめるお店6選」が県内ワインを重点的に扱う店として掲載。食べログには2026年5月訪問の口コミがあり営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AF%E3%82%A4%E3%83%B3%E9%A3%9F%E5%A0%82%20BETTEI%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://huuhu-gourmet.com/2025/03/09/%E3%80%90%E9%A3%B2%E3%82%93%E3%81%B9%E3%81%88%E3%81%8C%E6%95%99%E3%81%88%E3%82%8B%E3%80%91%E7%94%B2%E5%BA%9C%E9%A7%85%E5%89%8D%E3%81%A7%E3%83%AF%E3%82%A4%E3%83%B3%E3%81%8C%E6%A5%BD%E3%81%97%E3%82%81/">ぐるめらいふ「甲府駅前でワインが楽しめるお店6選」（2025年3月）</a> / <a href="https://tabelog.com/yamanashi/A1901/A190101/19013113/">食べログ「ベッテイ（BETTEI）」店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-brasserie_yamanashi_chuo">
+<img class="hero" src="img/kofu/brasserie_yamanashi_chuo.jpg" alt="ジビエ＆ワイン ブラッスリー山梨 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">36</span>ジビエ＆ワイン ブラッスリー山梨<span class="yomi">じびえあんどわいん ぶらっすりーやまなし</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">甲府の中央一丁目、芳野ビル一階にあるジビエ専門のビストロ。フランスのロワール地方で修業したシェフが、富士河口湖町で獲れた鹿や猪を仕入れて調理する。山梨は野生鳥獣による農作物の被害が課題で、その獣肉を料理に生かす店が県内に少しずつ増えているが、この店はワインとの組み合わせを前面に出しているのが特徴。ソムリエの知識を生かして県産ワインと海外ワインを選び、皿ごとに合わせる。カウンター中心の落ち着いた造りで、土日祝は昼も営業する。木曜定休。食べログには2026年4月の口コミが入っている。</div>
+<div class="sig"><b>一皿:</b>富士河口湖産の鹿肉料理と山梨ワインのペアリング</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・日 18:00〜22:30 ／ 金・土 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央１丁目６−４ 芳野ビル 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552315272">☎ 055-231-5272</a> ／ <a href="https://tabelog.com/yamanashi/A1901/A190101/19010616/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの甲府市中央ワインバー一覧に掲載され、店舗情報にロワール修業のシェフと富士河口湖産ジビエ、山梨ワインとのペアリングが明記。2026年4月の口コミで営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B8%E3%83%93%E3%82%A8%EF%BC%86%E3%83%AF%E3%82%A4%E3%83%B3%20%E3%83%96%E3%83%A9%E3%83%83%E3%82%B9%E3%83%AA%E3%83%BC%E5%B1%B1%E6%A2%A8%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%94%20%E8%8A%B3%E9%87%8E%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/yamanashi/A1901/A190101/19010616/">食べログ「ジビエ＆ワイン ブラッスリー山梨」店舗ページ</a> / <a href="https://tabelog.com/yamanashi/C19201/C53134/rstLst/BC0103/">食べログ 甲府市中央のワインバー一覧</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-melimelo_marunouchi">
+<img class="hero" src="img/kofu/melimelo_marunouchi.jpg" alt="山梨レストラン メリメロ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>山梨レストラン メリメロ<span class="yomi">やまなしれすとらん めりめろ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">甲府駅北口の商業エリア「甲州夢小路」の弐ノ蔵2階にあるイタリア料理店。「地産地消のイタリアン」を掲げ、山梨県産の野菜や肉と甲州ワインの組み合わせを軸に献立を組む。甲州ワインビーフのグリルや、山梨のブランド豚クリスタルポークなど、県内の畜産物をそれぞれ最も向いた調理法で出すのが方針。土蔵造りの建物を生かした落ち着いた空間で、駅から徒歩数分という立地から旅程の途中に組み込みやすく、ワイナリー巡りの前後に県産ワインを料理と合わせる場として使われている。</div>
+<div class="sig"><b>一皿:</b>甲州ワインビーフのグリル</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土 11:30〜14:00, 18:00〜21:30 ／ 日 11:30〜14:00, 18:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内１丁目１−２５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552986668">☎ 055-298-6668</a> ／ <a href="https://meli-melo2013.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが地産地消と甲州ワインとのペアリングを店の柱として明記し、甲州夢小路の公式テナント紹介にも現在掲載されているため、駅前でワインに合わせる一軒として推せる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E6%A2%A8%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%A1%E3%83%AA%E3%83%A1%E3%83%AD%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://meli-melo2013.com/">山梨レストラン メリメロ 公式サイト</a> / <a href="https://koshuyumekouji.com/shop/melimelo/">甲州夢小路 公式サイト 店舗紹介</a></div>
+</div></div>
+<div class="card" id="c-kanzashi_kamiishida">
+<img class="hero" src="img/kofu/kanzashi_kamiishida.jpg" alt="中華ごはん かんざし 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>中華ごはん かんざし<span class="yomi">ちゅうかごはん かんざし</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">「高級中国料理をもっと身近に」を掲げる、甲府市上石田の中国料理店。オープンキッチンで鍋を振る様子が見える造りで、塩ラーメンや炒飯といった町中華の定番から、正統な中国料理の技法を使った皿までを一続きに出す。量が多めで価格を抑えているため昼の常連が多く、テレビ番組でも取り上げられた。麺料理単体の専門店ではなく、点心・炒め物・スープを含む献立をひととおり組めるのが特徴で、洋食・各国料理の枠で甲府の「中華」を代表させるならここになる。</div>
+<div class="sig"><b>一皿:</b>塩ラーメンと炒飯／本格中国料理の一品</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:30〜14:30, 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市上石田１丁目８−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552880288">☎ 055-288-0288</a> ／ <a href="https://kanzashi.life/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山梨の地域メディアPORTAが「高級中国料理をもっと身近に」というコンセプトごと紹介しており、甲府エリアの中華ランキングでも上位に挙がる現役の人気店だから。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%94%E3%81%AF%E3%82%93%20%E3%81%8B%E3%82%93%E3%81%96%E3%81%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%8A%E7%9F%B3%E7%94%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.porta-y.jp/gourmet/140215">PORTA 中華ごはん かんざし</a> / <a href="https://retty.me/theme/100270000/">Retty 甲府の中華まとめ</a></div>
+</div></div>
+<div class="card" id="c-sagar_ratna_zenkoji">
+<img class="hero" src="img/kofu/sagar_ratna_zenkoji.jpg" alt="サガル・ラトナ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>サガル・ラトナ<span class="yomi">さがる らとな</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">甲府市善光寺にある、山梨県内では数少ない南インド料理の店。インド出身のシェフが厨房に立ち、北インド系のナンとカレーが主流の日本の店では出会いにくいドサ（米粉とレンズ豆の発酵生地を薄く焼いたクレープ状の料理）やビリヤニ、ミールスを揃える。看板のドサセットは、パリパリに焼いた生地をちぎってルーに付けて食べる形式で、米粉そのものの香りが立つ。菜食中心のミールスは、カレー・スープ・ライス・副菜を一枚の皿に盛り、南インドの食べ方をそのまま体験できる構成になっている。</div>
+<div class="sig"><b>一皿:</b>ドサセット／ミールス（ワンプレートの南インド定食）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜15:00, 17:00〜22:30 ／ 火 17:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市善光寺１丁目１２−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0552366688">☎ 055-236-6688</a> ／ <a href="https://www.facebook.com/112881253427813/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山梨の地域メディアPORTAがスパイスカレー特集で南インド料理店として単独で取り上げ、食べログの甲府市インドカレー一覧でも上位の評価（3.31）を保っているため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B5%E3%82%AC%E3%83%AB%E3%83%BB%E3%83%A9%E3%83%88%E3%83%8A%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E5%96%84%E5%85%89%E5%AF%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.porta-y.jp/gourmet/88436">PORTA サガル・ラトナ</a> / <a href="https://www.porta-y.jp/feature/curry/sagar-ratna">PORTA 山梨のおすすめ絶品カレー特集</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・和菓子・パン</h2>
+<div class="card" id="c-sawataya_honten_chuo">
+<img class="hero" src="img/kofu/sawataya_honten_chuo.jpg" alt="澤田屋 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">40</span>澤田屋 本店<span class="yomi">さわたや ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">山梨の銘菓「くろ玉」を作る和菓子店の本店。くろ玉は昭和4年（1929年）に生まれた菓子で、先代の職人がさまざまな形の餡に羊羹をかけて試すうちに、まるい形に行き着いたと公式サイトは説明する。材料は二つだけで、中の「うぐいす餡」は良質な青えんどう豆を四日かけて煮込み、外側の「黒糖羊羹」には沖縄県多良間島の天然黒糖を使い、すべて手作業で仕上げる。本店にはカフェが併設されており、日持ちのする土産用とは別に、できたてのくろ玉をその場で食べられるのが本店ならではの楽しみ方になっている。</div>
+<div class="sig"><b>一皿:</b>くろ玉（青えんどうのうぐいす餡＋黒糖羊羹）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央４丁目３−２４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552351331">☎ 055-235-1331</a> ／ <a href="https://sawataya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが原材料と製法を明示し、2026年8月付で「くろ玉の日」開催を告知していて現在の営業が確かめられる。信玄餅とは別系統の、山梨を代表する菓子として押さえるべき一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%BE%A4%E7%94%B0%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sawataya.jp/">澤田屋 公式サイト</a> / <a href="https://kofu-tourism.com/spot/318">甲府市観光協会 澤田屋本店</a></div>
+</div></div>
+<div class="card" id="c-marujupan_honten_marunouchi">
+<img class="hero" src="img/kofu/marujupan_honten_marunouchi.jpg" alt="丸十パン 本店（丸十山梨製パン） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>丸十パン 本店（丸十山梨製パン）<span class="yomi">まるじゅうぱん ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正10年（1921年）創業、公式サイトが「山梨で創業100年、パン酵母の元祖老舗ベーカリー」と名乗る県内最古参のパン屋。「焼きたてのパンを朝食で食べられるように」という考えから朝6時30分に店を開け、常時80種類ほどが棚に並ぶ。甲府市が公式サイトの企画で取り上げるほど市民に定着しており、なかでも80年以上作り続けている「レモンパン」が人気の筆頭。レモン風味のクリームをやわらかい生地で包んだ菓子パンで、甲府で育った人が「丸十のレモンパン」と言えば通じる、地域の記憶と結びついた一品になっている。</div>
+<div class="sig"><b>一皿:</b>レモンパン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 6:30〜18:00 ／ 土・日 6:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内２丁目２８−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552263455">☎ 055-226-3455</a> ／ <a href="http://www.marujupan.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甲府市の公式サイトが「甲府50」の企画で市民に愛されるパンとして紹介し、製造元の公式サイトも1921年創業を明記しているため、来歴と現在の営業の双方が一次情報で取れる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%B8%E5%8D%81%E3%83%91%E3%83%B3%20%E6%9C%AC%E5%BA%97%EF%BC%88%E4%B8%B8%E5%8D%81%E5%B1%B1%E6%A2%A8%E8%A3%BD%E3%83%91%E3%83%B3%EF%BC%89%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%98%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.marujupan.co.jp/shop/">丸十山梨製パン 公式サイト 店舗情報</a> / <a href="https://www.city.kofu.yamanashi.jp/welcome/kofu50things/detail_08.html">甲府市公式サイト「甲府の50のこと」</a></div>
+</div></div>
+<div class="card" id="c-cafe_roche_chuo">
+<img class="hero" src="img/kofu/cafe_roche_chuo.jpg" alt="カフェ ロッシュ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>カフェ ロッシュ<span class="yomi">かふぇ ろっしゅ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1986年に甲府中心街の銀座通りで開いた、30年以上続く純喫茶。自家焙煎した豆をネルドリップで落とす一杯が看板で、深い苦みとすっきりした後味が持ち味とされる。カウンターを囲むように21席ほどが並ぶ小ぶりな造りで、照明を落とした落ち着いた内装、バイク好きのマスターとの会話も含めて店の雰囲気を作っている。定番の「ロッシュ」やウインナコーヒーのほか、クロックムッシュやシナモントーストといった軽食、レモンタルトやレアチーズケーキなどの自家製菓子も揃い、コーヒーと合わせるとセット割引になる。</div>
+<div class="sig"><b>一皿:</b>自家焙煎のネルドリップ珈琲「ロッシュ」＋クロックムッシュ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水 11:00〜22:00 ／ 木 11:00〜17:00 ／ 金 11:00〜23:00 ／ 土 12:00〜23:00 ／ 日 12:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央１丁目１３−９</td></tr>
+<tr><th>予約</th><td>要確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山梨の地域メディアPORTAが「純喫茶めぐり」特集で30年以上続く老舗として単独記事にし、自家焙煎とネルドリップという淹れ方まで具体的に記録しているため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%20%E3%83%AD%E3%83%83%E3%82%B7%E3%83%A5%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.porta-y.jp/gourmet/95668">PORTA カフェ ロッシュ</a> / <a href="https://www.porta-y.jp/feature/jyunkissa/cafe-roche">PORTA 山梨の喫茶店めぐり 純喫茶特集</a></div>
+</div></div>
+<div class="card" id="c-kitenkan_marunouchi">
+<img class="hero" src="img/kofu/kitenkan_marunouchi.jpg" alt="自家焙煎珈琲 徽典館 丸の内店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>自家焙煎珈琲 徽典館 丸の内店<span class="yomi">じかばいせんこーひー きてんかん まるのうちてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1972年からこの場所に構える、甲府市役所近くの自家焙煎珈琲店。「徽典館」という店名は、江戸時代に甲斐国に置かれた学問所の名で、山梨大学の前身にあたる。店主が自ら焙煎した豆を使い、カウンターとテーブル席でゆっくり飲ませる昔ながらの珈琲店で、豆の販売も行う。昼から夜22時まで通しで開いているため、仕事の合間にも、食事のあとにも寄れる。甲府市内には上石田店もあり、市街地で「深く焼いた自家焙煎の一杯」を求めるときの定番として、地元の人が長く使い続けている店である。</div>
+<div class="sig"><b>一皿:</b>自家焙煎珈琲</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 12:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市丸の内１丁目８−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552379480">☎ 055-237-9480</a> ／ <a href="http://kitenkan.okoshi-yasu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの山梨県コーヒー専門店特集が1972年からこの地に佇む老舗として掲載し、飲食店情報サイトでも現在の営業時間が確認できるため、甲府の自家焙煎文化の古株として挙げられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%E7%8F%88%E7%90%B2%20%E5%BE%BD%E5%85%B8%E9%A4%A8%20%E4%B8%B8%E3%81%AE%E5%86%85%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/matome/23743/">食べログまとめ 山梨県のコーヒー専門店25選</a> / <a href="https://hitosara.com/0031022721/">ヒトサラ 自家焙煎珈琲 徽典館 丸の内店</a></div>
+</div></div>
+<div class="card" id="c-casa_frutta_yomogisawa">
+<img class="hero" src="img/kofu/casa_frutta_yomogisawa.jpg" alt="CASA FRUTTA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>CASA FRUTTA<span class="yomi">かーざ ふるった</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">甲府で4代にわたってぶどうを育てる古谷葡萄園が2023年に開いた、農園直営のフルーツショップ兼パーラー。自園のぶどうを中心に、山梨の旬の果物をその時期だけのパフェやジュースに仕立てる。看板は「シャインマスカットと旬のぶどうのパフェ」で、夏から秋にかけての主役。7月ごろは生の桃とブリュレにした桃を組み合わせたパフェ、冬から春はいちごと、季節でメニューが入れ替わる。営業は金・土・日・祝のみと限られ、果物の出来にあわせて内容が変わるため、訪れる前に公式サイトやSNSで当月のメニューを確かめたい。</div>
+<div class="sig"><b>一皿:</b>シャインマスカットと旬のぶどうのパフェ</div>
+<table class="info">
+<tr><th>営業時間</th><td>金・土・日 11:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火・水・木曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市蓬沢１丁目１５−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:07091172756">☎ 070-9117-2756</a> ／ <a href="https://casafrutta.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが古谷葡萄園による直営であることと月ごとのパフェの入れ替えを自ら公開しており、山梨のフルーツパーラーのうち生産者と店が直結している例として紹介価値が高いため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=CASA%20FRUTTA%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E8%93%AC%E6%B2%A2%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://casafrutta.com/">CASA FRUTTA 公式サイト</a> / <a href="https://www.porta-y.jp/gourmet/156264">PORTA CASA FRUTTA</a></div>
+</div></div>
+<div class="card" id="c-sucre_yogashiten_iida">
+<img class="hero" src="img/kofu/sucre_yogashiten_iida.jpg" alt="シュクル洋菓子店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>シュクル洋菓子店<span class="yomi">しゅくるようがしてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">甲府市飯田の住宅街にある洋菓子店で、2017年10月に現在の場所へ移転した。「余計なものは使わないシンプルなケーキ」を方針に、紅茶のシフォンケーキ、モンブラン、なめらかプリンといった定番を丁寧に作る。生菓子だけでなく焼き菓子も常時数種類を揃え、贈り物用の詰め合わせにも対応する。派手な意匠で見せるタイプの店ではなく、素材と配合で味を決める方向のため、子どもから年配の客まで幅広く通う。店主が猫好きで、店内では猫をあしらった雑貨も並び、地元の人が普段の手土産を買いに寄る町の洋菓子店として定着している。</div>
+<div class="sig"><b>一皿:</b>紅茶のシフォンケーキ／なめらかプリン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 10:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山梨県甲府市飯田５丁目１６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0552699035">☎ 055-269-9035</a> ／ <a href="http://sucreygt.wixsite.com/sucrekofu">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山梨の地域メディアPORTAが移転時期と作りの方針まで含めて紹介しており、甲府市内で観光向けでない「地元の洋菓子店」を1軒挙げるならここが適切なため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%A5%E3%82%AF%E3%83%AB%E6%B4%8B%E8%8F%93%E5%AD%90%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E9%A3%AF%E7%94%B0%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.porta-y.jp/gourmet/13365">PORTA シュクル洋菓子店</a></div>
+</div></div>
+<div class="card" id="c-nariya_kakigori_chuo">
+<img class="hero" src="img/kofu/nariya_kakigori_chuo.jpg" alt="天然かき氷カフェ なりや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>天然かき氷カフェ なりや<span class="yomi">てんねんかきごおりかふぇ なりや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">「かき氷文化を山梨に根付かせたい」という考えで2023年に甲府中心街のペルメ桜町に開いたかき氷専門のカフェ。富士山の天然氷の蔵元「不二」の氷を使い、専用に調整した刃で削ることで、きめの細かい雪のような口当たりに仕上げる。ソースは季節の果物を厳選して注文が入ってから手作りするため、夏のイチゴとマンゴーのハーフ＆ハーフ、ほうじ茶の生クリーム＆キャラメルなど、時期と組み合わせで表情が変わる。朝7時からのモーニング、昼カフェ、金・土のみの夜カフェと三部制で、甲府の街なかで長い時間開いている点も使いやすい。</div>
+<div class="sig"><b>一皿:</b>富士山天然氷のかき氷（季節の果物ソース）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・日 12:00〜19:30 ／ 金・土 12:00〜19:30, 21:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>山梨県甲府市中央４丁目８−１４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:07021580707">☎ 070-2158-0707</a> ／ <a href="https://www.instagram.com/fujikori_cafenariya?igsh=MWVwMWE1cmV4Y2Y2Zw==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山梨のテレビ局UTYの2025年6月放送の取材で、天然氷の蔵元名と削り方、季節ソースの手作りまで具体的に紹介されており、現在の営業と内容の両方が裏取りできるため。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E7%84%B6%E3%81%8B%E3%81%8D%E6%B0%B7%E3%82%AB%E3%83%95%E3%82%A7%20%E3%81%AA%E3%82%8A%E3%82%84%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E5%BA%9C%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.uty.co.jp/eats/info.php?no=6429">UTYテレビ山梨 Uワクイーツ 天然かき氷カフェなりや（2025年6月13日）</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
