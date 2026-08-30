@@ -65,12 +65,14 @@
 | 福井県 | 坂井市 | 46 | [japan/fukui/](japan/fukui/) |
 | 山梨県 | 甲府市 | 46 | [japan/yamanashi/](japan/yamanashi/) |
 | 山梨県 | 甲斐市 | 40 | [japan/yamanashi/](japan/yamanashi/) |
+| 長野県 | 長野市 | 49 | [japan/nagano/](japan/nagano/) |
+| 長野県 | 松本市 | 49 | [japan/nagano/](japan/nagano/) |
 | 大阪府 | 大阪市 | 72 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 吹田市 | 49 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 藤井寺市 | 45 | [japan/osaka/](japan/osaka/) |
 | 京都府 | 京都市 | 71 | [japan/kyoto/](japan/kyoto/) |
 
-小計 42冊 / 2358店
+小計 44冊 / 2456店
 
 ## 欧州
 
@@ -95,7 +97,7 @@
 
 小計 1冊 / 63店
 
-**合計 51冊 / 2712店**（2026-08-27 時点）
+**合計 53冊 / 2810店**（2026-08-31 時点）
 
 ## 進行中の発注
 

@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>松本美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / NAGANO・長野県 🇯🇵</div>
+  <h1>松本美食ガイド</h1>
+  <div class="sub">国宝松本城の城下町、北アルプスを望む旧町人地に蔵造りの商家が残る。鶏の骨なし肉をにんにく醤油だれで揚げる山賊焼、女鳥羽川沿いのそば、湧水で淹れる珈琲の喫茶文化、そして中町通りとナワテ通りの土蔵の店まで厳選49スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年8月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/matsumoto/_map.png" alt="全域マップ">
+<a href="#c-kawasho_asamaonsen" style="left:92.8%;top:30.43%;width:3.48%;height:2.68%;"></a>
+<a href="#c-usagiya_matsumoto" style="left:86.79%;top:38.03%;width:3.48%;height:2.68%;"></a>
+<a href="#c-kikuzo_matsumoto" style="left:89.3%;top:37.0%;width:3.48%;height:2.68%;"></a>
+<a href="#c-ippo_matsumoto" style="left:88.84%;top:36.77%;width:3.48%;height:2.68%;"></a>
+<a href="#c-ganso_sanzoku_shiojiri" style="left:82.65%;top:72.18%;width:3.48%;height:2.68%;"></a>
+<a href="#c-shinmiyoshi_matsumoto" style="left:87.78%;top:38.27%;width:3.48%;height:2.68%;"></a>
+<a href="#c-shiduka_matsumoto" style="left:88.98%;top:36.69%;width:3.48%;height:2.68%;"></a>
+<a href="#c-asada_matsumoto" style="left:89.94%;top:38.55%;width:3.48%;height:2.68%;"></a>
+<a href="#c-nomugi_matsumoto" style="left:88.43%;top:37.63%;width:3.48%;height:2.68%;"></a>
+<a href="#c-kobayashi_yohashira" style="left:88.23%;top:37.23%;width:3.48%;height:2.68%;"></a>
+<a href="#c-soba_club_sasaki" style="left:88.84%;top:37.01%;width:3.48%;height:2.68%;"></a>
+<a href="#c-miyota_matsumoto" style="left:87.92%;top:38.15%;width:3.48%;height:2.68%;"></a>
+<a href="#c-senraku_nagawa" style="left:7.2%;top:92.86%;width:3.48%;height:2.68%;"></a>
+<a href="#c-ishii_miso_matsumoto" style="left:90.16%;top:39.06%;width:3.48%;height:2.68%;"></a>
+<a href="#c-metoba_soba_nakamachi" style="left:89.2%;top:37.39%;width:3.48%;height:2.68%;"></a>
+<a href="#c-daio_wasabi_azumino" style="left:69.87%;top:7.17%;width:3.48%;height:2.68%;"></a>
+<a href="#c-matsumotokan_marunouchi" style="left:89.02%;top:36.59%;width:3.48%;height:2.68%;"></a>
+<a href="#c-unagi_matsuka_chuo" style="left:88.79%;top:37.94%;width:3.48%;height:2.68%;"></a>
+<a href="#c-yamasei_unagi_ote" style="left:89.5%;top:36.85%;width:3.48%;height:2.68%;"></a>
+<a href="#c-sushi_inukai_shimauchi" style="left:80.51%;top:35.03%;width:3.48%;height:2.68%;"></a>
+<a href="#c-hikariya_higashi_ote" style="left:89.36%;top:37.11%;width:3.48%;height:2.68%;"></a>
+<a href="#c-tempura_hamashin_ote" style="left:87.64%;top:36.91%;width:3.48%;height:2.68%;"></a>
+<a href="#c-sennone_tempura_ote" style="left:89.05%;top:38.96%;width:3.48%;height:2.68%;"></a>
+<a href="#c-mensho_sazo_chuo" style="left:87.61%;top:37.73%;width:3.48%;height:2.68%;"></a>
+<a href="#c-zunpachi_sohonten_tsukama" style="left:92.59%;top:39.84%;width:3.48%;height:2.68%;"></a>
+<a href="#c-ryoga_idea_takamiya" style="left:84.39%;top:44.49%;width:3.48%;height:2.68%;"></a>
+<a href="#c-komugisoba_ike_chuo" style="left:86.69%;top:37.59%;width:3.48%;height:2.68%;"></a>
+<a href="#c-udon_shori_ote" style="left:88.67%;top:37.13%;width:3.48%;height:2.68%;"></a>
+<a href="#c-takeshiya_nishibori" style="left:87.28%;top:36.78%;width:3.48%;height:2.68%;"></a>
+<a href="#c-maruki_shoten_fukashi" style="left:87.76%;top:38.37%;width:3.48%;height:2.68%;"></a>
+<a href="#c-kuriya_jubei_ote" style="left:88.82%;top:37.08%;width:3.48%;height:2.68%;"></a>
+<a href="#c-shuraku_matsumotohan_chuo" style="left:87.09%;top:38.17%;width:3.48%;height:2.68%;"></a>
+<a href="#c-standing_8oz_ote" style="left:89.03%;top:36.83%;width:3.48%;height:2.68%;"></a>
+<a href="#c-itton_yakitori_fukashi" style="left:87.46%;top:38.57%;width:3.48%;height:2.68%;"></a>
+<a href="#c-kuranomukou_chuo" style="left:86.87%;top:38.12%;width:3.48%;height:2.68%;"></a>
+<a href="#c-pinopinot_wine_chuo" style="left:88.08%;top:37.53%;width:3.48%;height:2.68%;"></a>
+<a href="#c-furinkazan_matsumoto_honten" style="left:87.02%;top:38.27%;width:3.48%;height:2.68%;"></a>
+<a href="#c-okinado_yoshoku_nakamachi" style="left:88.37%;top:37.45%;width:3.48%;height:2.68%;"></a>
+<a href="#c-restaurant_taiman_ote" style="left:88.57%;top:37.09%;width:3.48%;height:2.68%;"></a>
+<a href="#c-moriyoshi_byonion_fukashi" style="left:87.64%;top:38.52%;width:3.48%;height:2.68%;"></a>
+<a href="#c-matsumoto_maeyao_ekimae" style="left:87.51%;top:38.96%;width:3.48%;height:2.68%;"></a>
+<a href="#c-hyakurotei_honten_ote" style="left:87.91%;top:37.23%;width:3.48%;height:2.68%;"></a>
+<a href="#c-coffee_marumo_nakamachi" style="left:88.96%;top:37.4%;width:3.48%;height:2.68%;"></a>
+<a href="#c-coffee_bigaku_abe_fukashi" style="left:87.42%;top:38.38%;width:3.48%;height:2.68%;"></a>
+<a href="#c-okinado_ekimae_kissa" style="left:87.17%;top:38.37%;width:3.48%;height:2.68%;"></a>
+<a href="#c-kaiundo_honten_chuo" style="left:87.93%;top:37.92%;width:3.48%;height:2.68%;"></a>
+<a href="#c-sweet_nawate_honten" style="left:88.48%;top:37.32%;width:3.48%;height:2.68%;"></a>
+<a href="#c-yamaya_oamedokoro_ote" style="left:86.82%;top:37.3%;width:3.48%;height:2.68%;"></a>
+<a href="#c-sioribi_fukashi" style="left:89.37%;top:38.35%;width:3.48%;height:2.68%;"></a>
+</div>
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(松本駅〜松本城・中町通り)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/matsumoto/_map2.png" alt="中心部拡大(松本駅〜松本城・中町通り)">
+<a href="#c-usagiya_matsumoto" style="left:33.88%;top:68.87%;width:2.4%;height:2.52%;"></a>
+<a href="#c-kikuzo_matsumoto" style="left:61.66%;top:53.32%;width:2.4%;height:2.52%;"></a>
+<a href="#c-ippo_matsumoto" style="left:56.59%;top:49.95%;width:2.4%;height:2.52%;"></a>
+<a href="#c-shinmiyoshi_matsumoto" style="left:44.9%;top:72.42%;width:2.4%;height:2.52%;"></a>
+<a href="#c-shiduka_matsumoto" style="left:58.15%;top:48.67%;width:2.4%;height:2.52%;"></a>
+<a href="#c-asada_matsumoto" style="left:68.83%;top:76.71%;width:2.4%;height:2.52%;"></a>
+<a href="#c-nomugi_matsumoto" style="left:52.04%;top:62.82%;width:2.4%;height:2.52%;"></a>
+<a href="#c-kobayashi_yohashira" style="left:49.84%;top:56.88%;width:2.4%;height:2.52%;"></a>
+<a href="#c-soba_club_sasaki" style="left:56.56%;top:53.51%;width:2.4%;height:2.52%;"></a>
+<a href="#c-miyota_matsumoto" style="left:46.42%;top:70.63%;width:2.4%;height:2.52%;"></a>
+<a href="#c-ishii_miso_matsumoto" style="left:71.2%;top:84.35%;width:2.4%;height:2.52%;"></a>
+<a href="#c-metoba_soba_nakamachi" style="left:60.58%;top:59.16%;width:2.4%;height:2.52%;"></a>
+<a href="#c-matsumotokan_marunouchi" style="left:58.56%;top:47.13%;width:2.4%;height:2.52%;"></a>
+<a href="#c-unagi_matsuka_chuo" style="left:56.1%;top:67.47%;width:2.4%;height:2.52%;"></a>
+<a href="#c-yamasei_unagi_ote" style="left:63.95%;top:51.1%;width:2.4%;height:2.52%;"></a>
+<a href="#c-hikariya_higashi_ote" style="left:62.37%;top:54.97%;width:2.4%;height:2.52%;"></a>
+<a href="#c-tempura_hamashin_ote" style="left:43.33%;top:51.98%;width:2.4%;height:2.52%;"></a>
+<a href="#c-sennone_tempura_ote" style="left:58.95%;top:82.85%;width:2.4%;height:2.52%;"></a>
+<a href="#c-mensho_sazo_chuo" style="left:42.98%;top:64.29%;width:2.4%;height:2.52%;"></a>
+<a href="#c-zunpachi_sohonten_tsukama" style="left:97.82%;top:96.13%;width:2.4%;height:2.52%;"></a>
+<a href="#c-komugisoba_ike_chuo" style="left:32.73%;top:62.26%;width:2.4%;height:2.52%;"></a>
+<a href="#c-udon_shori_ote" style="left:54.72%;top:55.3%;width:2.4%;height:2.52%;"></a>
+<a href="#c-takeshiya_nishibori" style="left:39.28%;top:50.04%;width:2.4%;height:2.52%;"></a>
+<a href="#c-maruki_shoten_fukashi" style="left:44.68%;top:74.0%;width:2.4%;height:2.52%;"></a>
+<a href="#c-kuriya_jubei_ote" style="left:56.37%;top:54.6%;width:2.4%;height:2.52%;"></a>
+<a href="#c-shuraku_matsumotohan_chuo" style="left:37.21%;top:71.01%;width:2.4%;height:2.52%;"></a>
+<a href="#c-standing_8oz_ote" style="left:58.69%;top:50.71%;width:2.4%;height:2.52%;"></a>
+<a href="#c-itton_yakitori_fukashi" style="left:41.36%;top:76.95%;width:2.4%;height:2.52%;"></a>
+<a href="#c-kuranomukou_chuo" style="left:34.8%;top:70.17%;width:2.4%;height:2.52%;"></a>
+<a href="#c-pinopinot_wine_chuo" style="left:48.17%;top:61.27%;width:2.4%;height:2.52%;"></a>
+<a href="#c-furinkazan_matsumoto_honten" style="left:36.38%;top:72.5%;width:2.4%;height:2.52%;"></a>
+<a href="#c-okinado_yoshoku_nakamachi" style="left:51.37%;top:60.19%;width:2.4%;height:2.52%;"></a>
+<a href="#c-restaurant_taiman_ote" style="left:53.59%;top:54.65%;width:2.4%;height:2.52%;"></a>
+<a href="#c-moriyoshi_byonion_fukashi" style="left:43.26%;top:76.33%;width:2.4%;height:2.52%;"></a>
+<a href="#c-matsumoto_maeyao_ekimae" style="left:41.9%;top:82.82%;width:2.4%;height:2.52%;"></a>
+<a href="#c-hyakurotei_honten_ote" style="left:46.35%;top:56.77%;width:2.4%;height:2.52%;"></a>
+<a href="#c-coffee_marumo_nakamachi" style="left:57.94%;top:59.42%;width:2.4%;height:2.52%;"></a>
+<a href="#c-coffee_bigaku_abe_fukashi" style="left:40.87%;top:74.21%;width:2.4%;height:2.52%;"></a>
+<a href="#c-okinado_ekimae_kissa" style="left:38.08%;top:73.97%;width:2.4%;height:2.52%;"></a>
+<a href="#c-kaiundo_honten_chuo" style="left:46.56%;top:67.25%;width:2.4%;height:2.52%;"></a>
+<a href="#c-sweet_nawate_honten" style="left:52.59%;top:58.2%;width:2.4%;height:2.52%;"></a>
+<a href="#c-yamaya_oamedokoro_ote" style="left:34.23%;top:57.92%;width:2.4%;height:2.52%;"></a>
+<a href="#c-sioribi_fukashi" style="left:62.49%;top:73.7%;width:2.4%;height:2.52%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+
+<div class="toc">
+<div class="th">目次</div>
+<div class="sec red">松本のご当地(山賊焼・信州そば・城下町の味)</div>
+<div class="links">
+<a href="#c-kawasho_asamaonsen"><span class="tn" style="background:#e34948;">1</span>浅間温泉に構える山賊焼発祥の店の一つ</a>
+<a href="#c-usagiya_matsumoto"><span class="tn" style="background:#e34948;">2</span>百名店選出、駅前の郷土肴居酒屋</a>
+<a href="#c-kikuzo_matsumoto"><span class="tn" style="background:#e34948;">3</span>東小路の割烹居酒屋、百名店常連</a>
+<a href="#c-ippo_matsumoto"><span class="tn" style="background:#e34948;">4</span>生姜香る山賊焼と地酒の居酒屋</a>
+<a href="#c-ganso_sanzoku_shiojiri"><span class="tn" style="background:#e34948;">5</span>料理名の由来となった山賊焼の元祖</a>
+<a href="#c-shinmiyoshi_matsumoto"><span class="tn" style="background:#e34948;">6</span>明治32年創業の馬肉料理専門店</a>
+<a href="#c-shiduka_matsumoto"><span class="tn" style="background:#e34948;">7</span>民芸家具の店内で郷土料理と一杯</a>
+<a href="#c-asada_matsumoto"><span class="tn" style="background:#e34948;">8</span>メニュー3品のみ、百名店の十割そば</a>
+<a href="#c-nomugi_matsumoto"><span class="tn" style="background:#e34948;">9</span>極細の九一そば、売り切れ仕舞いの名店</a>
+<a href="#c-kobayashi_yohashira"><span class="tn" style="background:#e34948;">10</span>四柱神社境内に建つ明治期創業の老舗</a>
+<a href="#c-soba_club_sasaki"><span class="tn" style="background:#e34948;">11</span>低温熟成そばと夜のそば前が評判</a>
+<a href="#c-miyota_matsumoto"><span class="tn" style="background:#e34948;">12</span>市街地でとうじそばを味わえる代表店</a>
+<a href="#c-senraku_nagawa"><span class="tn" style="background:#e34948;">13</span>とうじそば発祥の地・奈川の名店</a>
+<a href="#c-ishii_miso_matsumoto"><span class="tn" style="background:#e34948;">14</span>慶応4年創業の味噌蔵で蔵元ランチ</a>
+<a href="#c-metoba_soba_nakamachi"><span class="tn" style="background:#e34948;">15</span>女鳥羽川沿いの蔵造り、三色そばの店</a>
+<a href="#c-daio_wasabi_azumino"><span class="tn" style="background:#e34948;">16</span>わさび田直営、本わさび丼と信州サーモン</a>
+<a href="#c-matsumotokan_marunouchi"><span class="tn" style="background:#e34948;">17</span>登録有形文化財の料亭で信州会席</a>
+</div>
+<div class="sec blue">寿司・和食・郷土料理</div>
+<div class="links">
+<a href="#c-unagi_matsuka_chuo"><span class="tn" style="background:#2a78d6;">18</span>開店前に売り切れる老舗うなぎ</a>
+<a href="#c-yamasei_unagi_ote"><span class="tn" style="background:#2a78d6;">19</span>うなぎとすっぽんの割烹的名店</a>
+<a href="#c-sushi_inukai_shimauchi"><span class="tn" style="background:#2a78d6;">20</span>百名店選出・松本随一の鮨</a>
+<a href="#c-hikariya_higashi_ote"><span class="tn" style="background:#2a78d6;">21</span>明治の商家で味わう信州会席</a>
+<a href="#c-tempura_hamashin_ote"><span class="tn" style="background:#2a78d6;">22</span>創業約55年・予約制の天ぷら店</a>
+<a href="#c-sennone_tempura_ote"><span class="tn" style="background:#2a78d6;">23</span>若き職人のカウンター天ぷら</a>
+</div>
+<div class="sec aqua">ラーメン・うどん・町中華</div>
+<div class="links">
+<a href="#c-mensho_sazo_chuo"><span class="tn" style="background:#1baf7a;">24</span>蔵造りの店で味わう信州味噌ラーメン</a>
+<a href="#c-zunpachi_sohonten_tsukama"><span class="tn" style="background:#1baf7a;">25</span>朝ラー営業もある松本の人気豚骨醤油</a>
+<a href="#c-ryoga_idea_takamiya"><span class="tn" style="background:#1baf7a;">26</span>松本発・煮干醤油ラーメンの旗艦店</a>
+<a href="#c-komugisoba_ike_chuo"><span class="tn" style="background:#1baf7a;">27</span>百名店選出、鶏と魚介の淡麗系</a>
+<a href="#c-udon_shori_ote"><span class="tn" style="background:#1baf7a;">28</span>昭和25年創業、三代続く手作りうどん</a>
+<a href="#c-takeshiya_nishibori"><span class="tn" style="background:#1baf7a;">29</span>1955年創業、松本のソウルフード焼きそば</a>
+<a href="#c-maruki_shoten_fukashi"><span class="tn" style="background:#1baf7a;">30</span>深夜まで営業、名物「松本ブラック」</a>
+</div>
+<div class="sec beer">居酒屋・信州の地酒とワイン</div>
+<div class="links">
+<a href="#c-kuriya_jubei_ote"><span class="tn" style="background:#0d366b;">31</span>日本酒好きのための硬派な酒場</a>
+<a href="#c-shuraku_matsumotohan_chuo"><span class="tn" style="background:#0d366b;">32</span>駅前2分・信州地酒と馬刺しの店</a>
+<a href="#c-standing_8oz_ote"><span class="tn" style="background:#0d366b;">33</span>明治創業の酒屋がやる立ち飲み</a>
+<a href="#c-itton_yakitori_fukashi"><span class="tn" style="background:#0d366b;">34</span>信州福味鶏を備長炭で焼く</a>
+<a href="#c-kuranomukou_chuo"><span class="tn" style="background:#0d366b;">35</span>蔵造りの空間で馬刺しと地酒</a>
+<a href="#c-pinopinot_wine_chuo"><span class="tn" style="background:#0d366b;">36</span>松本初と言われるワインバー</a>
+<a href="#c-furinkazan_matsumoto_honten"><span class="tn" style="background:#0d366b;">37</span>信州地酒と名物ホル天の酒場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-okinado_yoshoku_nakamachi"><span class="tn" style="background:#4a3aa7;">38</span>昭和8年創業、中町の老舗洋食店</a>
+<a href="#c-restaurant_taiman_ote"><span class="tn" style="background:#4a3aa7;">39</span>1950年創業、松本随一の格式フレンチ</a>
+<a href="#c-moriyoshi_byonion_fukashi"><span class="tn" style="background:#4a3aa7;">40</span>閉店から復活した民芸調の洋食店</a>
+<a href="#c-matsumoto_maeyao_ekimae"><span class="tn" style="background:#4a3aa7;">41</span>1991年創業、松本エスニックカレーの草分け</a>
+<a href="#c-hyakurotei_honten_ote"><span class="tn" style="background:#4a3aa7;">42</span>30年超続く広東料理と名物餃子の店</a>
+</div>
+<div class="sec yellow">喫茶・和菓子・パン</div>
+<div class="links">
+<a href="#c-coffee_marumo_nakamachi"><span class="tn" style="background:#eda100;">43</span>柳宗悦も讃えた民藝喫茶の代表格</a>
+<a href="#c-coffee_bigaku_abe_fukashi"><span class="tn" style="background:#eda100;">44</span>1957年創業、モカパフェ発祥の純喫茶</a>
+<a href="#c-okinado_ekimae_kissa"><span class="tn" style="background:#eda100;">45</span>明治44年創業、タヌキケーキの昭和喫茶</a>
+<a href="#c-kaiundo_honten_chuo"><span class="tn" style="background:#eda100;">46</span>明治17年創業、銘菓「真味糖」の和菓子店</a>
+<a href="#c-sweet_nawate_honten"><span class="tn" style="background:#eda100;">47</span>1924年から縄手で焼く100年ベーカリー</a>
+<a href="#c-yamaya_oamedokoro_ote"><span class="tn" style="background:#eda100;">48</span>1672年創業、松本最古の飴屋</a>
+<a href="#c-sioribi_fukashi"><span class="tn" style="background:#eda100;">49</span>朝7時から開くブックカフェ、銭湯も継承</a>
+</div>
+</div>
+
+<div class="note"><b>回り方のコツ:</b>店は松本駅のお城口から松本城へ延びる大名町通り、蔵造りの中町通り、女鳥羽川沿いのナワテ通りに集まり、歩いて回れる。市内には湧水が多く、そば屋と喫茶が水を看板にする。山賊焼は「揚げるのに山賊(取り上げる)」の洒落が由来とされる松本平の味。そばの名店は昼のみが多い。夜の飲み屋は駅前と裏町。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-matsumoto" class="c-red">松本のご当地(山賊焼・信州そば・城下町の味)</h2>
+<div class="card" id="c-kawasho_asamaonsen">
+<img class="hero" src="img/matsumoto/kawasho_asamaonsen.jpg" alt="山賊焼 河昌 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>山賊焼 河昌<span class="yomi">さんぞくやき かわしょう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">昭和37年（1962年）に先代が松本駅前で創業し、のちに浅間温泉へ移って約40年続く山賊焼の店。松本における山賊焼発祥の店の一つとされ、鶏肉をにんにく醤油だれに漬け込み、片栗粉をまぶして豪快に揚げる一枚肉のスタイルを守る。定食はもも肉と胸肉から選べ、揚げたてに刻みキャベツを添えて供される。営業は昼のみの約2時間で、温泉街の小さな店構えに地元客と観光客が並ぶ。「山賊は物を取り上げる、だから鶏を揚げる」という料理名の由来譚とともに、松本の名物料理の系譜を語る上で欠かせない存在である。</div>
+<div class="sig"><b>一皿:</b>山賊焼定食（もも肉・胸肉が選べる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 11:30〜13:30 ／ 土・日 11:30〜13:30, 17:30〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>長野県松本市浅間温泉１丁目１７−３２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263465550">☎ 0263-46-5550</a> ／ <a href="http://www17.plala.or.jp/kawasho/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2025年8月更新のご当地グルメ紹介記事が発祥店の一つとして現地取材で紹介しており、2025年5月の訪問ブログも確認できる現役の名店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E8%B3%8A%E7%84%BC%20%E6%B2%B3%E6%98%8C%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B5%85%E9%96%93%E6%B8%A9%E6%B3%89%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%93%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://mp-mappin.com/local-food-14/">迂回地図（2025年8月更新の紹介記事）</a> / <a href="https://humdrum.hatenablog.com/entry/2025/05/22/053143">訪問ブログ（2025年5月）</a></div>
+</div></div>
+<div class="card" id="c-usagiya_matsumoto">
+<img class="hero" src="img/matsumoto/usagiya_matsumoto.jpg" alt="のみくい処 卯屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>のみくい処 卯屋<span class="yomi">のみくいどころ うさぎや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">松本駅から徒歩約3分の高嶋ビル1階にある居酒屋で、食べログの「居酒屋 百名店」EAST 2025に2年連続で選出された地元の人気店。馬刺しや馬もつ煮といった松本の馬肉文化を映す肴と、外は香ばしく中はジューシーに揚げた山賊焼を、信州の地酒とともに手頃な価格で出す。山賊焼680円、馬刺し1200円、馬もつ煮400円と名物の値付けが良心的で、店内は地元の常連と旅行者で早い時間から埋まる。松本のご当地つまみを一晩で横断できる店として、旅行系のレビューでも一貫して評価が高い。</div>
+<div class="sig"><b>一皿:</b>山賊焼と馬刺しの盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 17:30〜21:30 ／ 金・土 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央１丁目２−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263362544">☎ 0263-36-2544</a> ／ <a href="http://www.appale.ne.jp/~usagiya/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「居酒屋 百名店」EAST 2025に2年連続選出。ホットペッパーグルメ掲載の現行営業情報（営業時間・定休日）を確認済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AE%E3%81%BF%E3%81%8F%E3%81%84%E5%87%A6%20%E5%8D%AF%E5%B1%8B%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000360231/">ホットペッパーグルメ 卯屋</a></div>
+</div></div>
+<div class="card" id="c-kikuzo_matsumoto">
+<img class="hero" src="img/matsumoto/kikuzo_matsumoto.jpg" alt="味処 きく蔵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>味処 きく蔵<span class="yomi">あじどころ きくぞう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1970年創業、松本城にほど近い飲み屋小路「東小路」に構える割烹居酒屋。食べログ百名店に2021・2023・2025年と複数回選ばれた実力店で、松本名物の山賊焼は鶏もも肉を一枚に開いて出汁の効いたたれに漬け、丸ごと豪快に揚げるボリュームのある一皿として知られる。看板には極上の馬刺し、自家製の鮎の一夜干し、さつま揚げなどが並び、旬の山の幸・海の幸を丁寧に仕立てた酒肴と信州の地酒を落ち着いた店内で楽しめる。個室も備え、地元の会食にも観光客のひとり飲みにも使われる城下町の名店である。</div>
+<div class="sig"><b>一皿:</b>山賊焼と極上馬刺し</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目７−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263363728">☎ 0263-36-3728</a> ／ <a href="https://tabelog.com/nagano/A2002/A200201/20000774/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで1970年創業と現行の営業情報を確認。食べログ百名店（2021・2023・2025）への複数回選出が検索結果で確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%87%A6%20%E3%81%8D%E3%81%8F%E8%94%B5%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.matsumoto-kikuzou.com/">味処きく蔵 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-ippo_matsumoto">
+<img class="hero" src="img/matsumoto/ippo_matsumoto.jpg" alt="居酒屋 一歩 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>居酒屋 一歩<span class="yomi">いざかや いっぽ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">松本城近くの大手にある、山賊焼と日本酒を看板に掲げる居酒屋。同店の山賊焼は生姜をたっぷり効かせ、にんにくは控えめにしたさっぱりとした味わいが特徴で、味噌醤油ベースのたれが染み込んだジューシーな揚げ上がりに仕上げる。松本市の山賊焼を盛り上げる「松本山賊焼応援団」の加盟店としても名を連ね、昼は山賊焼定食やそばとのセットを出すランチ営業も行う。馬刺しや焼き鳥など信州の肴と地酒・ワインの品揃えも厚く、2025年4月には長野県のテレビ番組の飲食店紹介コーナーでも取り上げられた。</div>
+<div class="sig"><b>一皿:</b>生姜の効いた松本山賊焼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜14:00, 17:30〜22:00 ／ 土 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目１０−１７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263368484">☎ 0263-36-8484</a> ／ <a href="http://www.matsumoto-ippo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで住所・営業時間・定休日を確認。テレビ信州の番組サイトに2025年4月20日放送で紹介された記録があり、現在の営業が裏付けられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E4%B8%80%E6%AD%A9%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.matsumoto-ippo.com/shop.html">居酒屋一歩 公式サイト 店舗情報</a> / <a href="https://www.tsb.jp/oishisa/2025/04/post-5666">テレビ信州 2025年4月20日放送回</a></div>
+</div></div>
+<div class="card" id="c-ganso_sanzoku_shiojiri">
+<img class="hero" src="img/matsumoto/ganso_sanzoku_shiojiri.jpg" alt="元祖山賊 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>元祖山賊<span class="yomi">がんそさんぞく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip neighbor">隣接市</span></div>
+<div class="desc">塩尻駅近くで「愛され続けて80年」を掲げる鶏料理店。屋号の「山賊」がそのまま料理名になったと伝わる、山賊焼の元祖を名乗る店で、塩尻市観光協会も元祖として紹介している。鶏肉をにんにくの効いたたれに漬けて豪快に揚げる山賊焼は、松本市と塩尻市がともに発祥を称する松本平のソウルフードであり、その源流を確かめられる場所として県内外から客が訪れる。夜は居酒屋として営業し、月・火曜は昼の定食営業も行う。2025年8月には塩尻駅前で「塩尻山賊サミット2025」が開かれるなど、地域を挙げた名物の中心にある。</div>
+<div class="sig"><b>一皿:</b>元祖の山賊焼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火 11:30〜14:00, 17:00〜23:00 ／ 木・金・土・日 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県塩尻市大門七番町１０−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263520743">☎ 0263-52-0743</a> ／ <a href="https://gansosanzoku.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで営業時間・定休日を確認。地元メディアWeb-Komachiが2025年8月の塩尻山賊サミット関連記事で紹介しており、現役営業が裏付けられる。松本市外のため隣接市タグを付す。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%E5%B1%B1%E8%B3%8A%20%E9%95%B7%E9%87%8E%E7%9C%8C%E5%A1%A9%E5%B0%BB%E5%B8%82%E5%A4%A7%E9%96%80%E4%B8%83%E7%95%AA%E7%94%BA%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gansosanzoku.com/">元祖山賊 公式サイト</a> / <a href="https://www.web-komachi.com/?p=233786">Web-Komachi 塩尻山賊サミット2025記事</a></div>
+</div></div>
+<div class="card" id="c-shinmiyoshi_matsumoto">
+<img class="hero" src="img/matsumoto/shinmiyoshi_matsumoto.jpg" alt="馬肉バル 新三よし 松本本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>馬肉バル 新三よし 松本本店<span class="yomi">ばにくばる しんみよし</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治32年（1899年）、伊藤良之助が「味よし・酒よし・気分よし」を掲げて開いた料亭「三吉」を源流とし、大火や戦争を越えて創業100年の平成11年に「新三よし」と改名した馬肉料理の専門店。海のない信州で古くから育まれた馬肉食文化を一筋に受け継ぎ、馬刺しの盛り合わせ、味噌仕立てのさくら鍋、馬肉の串焼きから創作料理まで、部位ごとの味わいを幅広く出す。低カロリーで高たんぱくという馬肉（さくら肉）の持ち味も売りで、ランチのさくら丼から夜の宴会まで、松本の馬肉文化の入口として地元と観光客の双方に使われている。</div>
+<div class="sig"><b>一皿:</b>馬刺し盛り合わせとさくら鍋</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市中央１丁目７−１７ 毛利ビル</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263390141">☎ 0263-39-0141</a> ／ <a href="http://sinmiyoshi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが明治32年創業からの沿革を詳述。ホットペッパーグルメの現行掲載で営業時間・住所を確認でき、公式Xも2025年に稼働している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A6%AC%E8%82%89%E3%83%90%E3%83%AB%20%E6%96%B0%E4%B8%89%E3%82%88%E3%81%97%20%E6%9D%BE%E6%9C%AC%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%97%20%E6%AF%9B%E5%88%A9%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://sinmiyoshi.com/">新三よし 公式サイト</a> / <a href="https://www.hotpepper.jp/strJ000974106/">ホットペッパーグルメ 新三よし</a></div>
+</div></div>
+<div class="card" id="c-shiduka_matsumoto">
+<img class="hero" src="img/matsumoto/shiduka_matsumoto.jpg" alt="松本 しづか 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>松本 しづか<span class="yomi">まつもと しづか</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和20年（1945年）創業と伝わる、松本城下の大手に構える郷土料理の居酒屋。松本民芸家具でまとめられた重厚で温かな店内が知られ、昼の日替定食から夜の一杯まで通しで営業する使い勝手のよさで、地元客と観光客の双方に長く愛されてきた。名物は出汁の染みたおでんとやきとりで、馬刺しのほか、岩魚や鯉、山菜といった信州の山の幸を組み込んだ郷土料理のコースも用意する。国産鶏の仕入れ事情で昼の山賊焼定食を休止するといった知らせを公式サイトで丁寧に告知しており、素材への姿勢がうかがえる店である。</div>
+<div class="sig"><b>一皿:</b>おでんとやきとり、馬刺し</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 12:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目１０−８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263320547">☎ 0263-32-0547</a> ／ <a href="http://www.shiduka.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで住所・営業時間・定休日と2025年11月付の告知を確認。松本民芸家具の店として食べログ等のレビューでも定評がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E6%9C%AC%20%E3%81%97%E3%81%A5%E3%81%8B%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.shiduka.co.jp/">松本しづか 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-asada_matsumoto">
+<img class="hero" src="img/matsumoto/asada_matsumoto.jpg" alt="そば処 浅田 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>そば処 浅田<span class="yomi">そばどころ あさだ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">松本駅にほど近い深志の住宅街に構える手打ちそばの専門店で、食べログ「そば 百名店」2025に選出された全国区の名店。メニューはざるそば、十割そば、温かいきのこそばの3種のみという潔い構成で、時期ごとに全国から選んだ玄そばを自家製粉し、その日の分だけを打つ。とりわけ十割そばは香りの立ち方に定評があり、昼過ぎには売り切れることが多いため早めの来店が勧められる。薬味に伊那の辛味大根を添える供し方も信州らしく、行列覚悟でも訪れる価値があると評される、松本のそばを代表する一軒である。</div>
+<div class="sig"><b>一皿:</b>十割そば（辛味大根添え）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜15:30</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市深志３丁目１０−１１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263330826">☎ 0263-33-0826</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「そば 百名店」2025選出。そば専門ブログや旅行記事が自家製粉・3品構成の内容を詳しく伝えており、現行の営業情報も掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E6%B5%85%E7%94%B0%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://soba-aqua.com/matsumoto-asada/">水と蕎麦研究図鑑（訪問記事）</a> / <a href="https://www.jalan.net/gourmet/grm_guide000000152726/">じゃらん そば処浅田</a></div>
+</div></div>
+<div class="card" id="c-nomugi_matsumoto">
+<img class="hero" src="img/matsumoto/nomugi_matsumoto.jpg" alt="御そば打処 野麦 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>御そば打処 野麦<span class="yomi">おそばうちどころ のむぎ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">城下町の風情が残る中町通りにほど近い小さな手打ちそば店で、食べログ「そば 百名店」2025に選出された松本を代表する一軒。辰野町小野地区の契約農家から仕入れた玄そばを石臼で挽き、つなぎを1割だけ加えた九一そばを、職人が驚くほど細く切り出すのが身上である。極細ながらしっかりとした腰と香りを両立させたざるそばを目当てに開店前から行列ができ、打った分がなくなり次第閉店する。品書きを絞り込み、毎日打てる分だけを出すという姿勢を長年守り続けており、地元客と遠来のそば好きの双方から支持が厚い。</div>
+<div class="sig"><b>一皿:</b>極細の九一ざるそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金 11:30〜14:00 ／ 土・日 11:30〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央２丁目９−１１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263363753">☎ 0263-36-3753</a> ／ <a href="http://nomugi.o.oo7.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「そば 百名店」2025選出。松本市公式観光サイトと地元情報サイトE-CUREが契約農家の玄そば・九割そばの内容を紹介している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E3%81%9D%E3%81%B0%E6%89%93%E5%87%A6%20%E9%87%8E%E9%BA%A6%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://visitmatsumoto.com/gourmet/detail_4040.html">松本市公式観光サイト 御そば打処 野麦</a> / <a href="https://www.i-turn.jp/soba-matsumoto-nomugi.html">E-CURE 野麦紹介記事</a></div>
+</div></div>
+<div class="card" id="c-kobayashi_yohashira">
+<img class="hero" src="img/matsumoto/kobayashi_yohashira.jpg" alt="信州松本 手打ちそば こばやし 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>信州松本 手打ちそば こばやし 本店<span class="yomi">しんしゅうまつもと てうちそば こばやし</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治期創業と伝わる松本の老舗そば店で、現在は縄手通りに面した四柱神社の参集殿内に本店を構える。女鳥羽川沿いの城下町の中心という立地で、参拝や街歩きとあわせて立ち寄れるそば処として観光客に親しまれる一方、100年を超えて伝統の製法を守る手打ちそばの店として地元の信頼も厚い。国産のそば粉を使い、打ったその日のそばを出すことにこだわり、天ぷらを添えた天ざるが人気の定番となっている。手打ちそばの通信販売も手がけ、打ち立てを当日発送する体制を公式サイトで案内している。</div>
+<div class="sig"><b>一皿:</b>天ざるそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・日 11:00〜16:00 ／ 金・土 11:00〜16:00, 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手３丁目３−２０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263321298">☎ 0263-32-1298</a> ／ <a href="http://www.kobayashi-soba.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで伝統製法と現行の事業内容を確認。ホットペッパーグルメ掲載情報で四柱神社参集殿内の所在と営業時間・定休日を確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BF%A1%E5%B7%9E%E6%9D%BE%E6%9C%AC%20%E6%89%8B%E6%89%93%E3%81%A1%E3%81%9D%E3%81%B0%20%E3%81%93%E3%81%B0%E3%82%84%E3%81%97%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kobayashi-soba.co.jp/">信州松本 手打ちそば こばやし 公式サイト</a> / <a href="https://www.hotpepper.jp/strJ000359752/">ホットペッパーグルメ こばやし本店</a></div>
+</div></div>
+<div class="card" id="c-soba_club_sasaki">
+<img class="hero" src="img/matsumoto/soba_club_sasaki.jpg" alt="蕎麦倶楽部 佐々木 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>蕎麦倶楽部 佐々木<span class="yomi">そばくらぶ ささき</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">松本城近くの大手に店を構える手打ちそば店。そば粉を低温でじっくり熟成させてから打つという工程を踏むことで、香りと甘みを引き出したそばが看板で、地元メディアの信州そば特集で「松本の人気そば店」として紹介されている。昼はそば中心の献立、夜は信州の地酒に合わせた肴とそばで締める「そば前」のスタイルで営業しており、城下町の夜にそば屋酒を楽しめる貴重な一軒でもある。店主が一人で切り盛りする小さな店のため席数は限られ、月曜と奇数週の火曜を休みとする営業をあらかじめ確かめて訪れたい。</div>
+<div class="sig"><b>一皿:</b>低温熟成そばのせいろ</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・日 11:30〜14:00 ／ 金・土 11:30〜14:00, 18:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目８−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263504387">☎ 0263-50-4387</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメメディアWeb-Komachiが2025年の信州そば特集記事で低温熟成そばと夜営業の内容を現地取材で紹介している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%E5%80%B6%E6%A5%BD%E9%83%A8%20%E4%BD%90%E3%80%85%E6%9C%A8%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.web-komachi.com/?p=266350">Web-Komachi 蕎麦倶楽部佐々木 紹介記事</a></div>
+</div></div>
+<div class="card" id="c-miyota_matsumoto">
+<img class="hero" src="img/matsumoto/miyota_matsumoto.jpg" alt="そばきり みよ田 松本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>そばきり みよ田 松本店<span class="yomi">そばきり みよた</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">松本駅から徒歩圏の本町・中央の商業ビル1階にある、奈川の郷土そば「とうじそば（投汁そば）」を市街地で味わえる代表的な店。竹で編んだ「とうじかご」に一口分のそばを入れ、きのこや鶏肉、季節の野菜の旨みが溶け込んだ熱々のつゆにくぐらせて食べる、旧奈川村伝来の鍋仕立ての郷土食を通年で提供する。そばは信州木曽産のそば粉を使った手打ちで、昼はざるや定食、夜はそば居酒屋としてとうじそばのコースも組める。運営は長野県の飲食企業・王滝グループで、県外資本の全国チェーンではなく地元発の直営店である。</div>
+<div class="sig"><b>一皿:</b>とうじそば（投汁そば）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土 11:30〜15:00, 17:00〜20:30 ／ 日 11:30〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央２丁目１−２４ 五幸本町ビル 1Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263371434">☎ 0263-37-1434</a> ／ <a href="https://www.ohtaki-gp.jp/brand/brand14/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式店舗ページで住所・営業時間・とうじそばの内容を確認。奈川まで行かずに郷土そばを体験できる店として食べログ・旅行サイトでも定番的に紹介される。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E3%81%8D%E3%82%8A%20%E3%81%BF%E3%82%88%E7%94%B0%20%E6%9D%BE%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%94%20%E4%BA%94%E5%B9%B8%E6%9C%AC%E7%94%BA%E3%83%93%E3%83%AB%201%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://n534606.gorp.jp/">そばきり みよ田 松本店 公式ページ</a> / <a href="https://www.ohtaki-gp.jp/brand/brand14/">王滝グループ ブランド紹介</a></div>
+</div></div>
+<div class="card" id="c-senraku_nagawa">
+<img class="hero" src="img/matsumoto/senraku_nagawa.jpg" alt="仙洛 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">13</span>仙洛<span class="yomi">せんらく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">とうじそば発祥の地とされる旧奈川村（現・松本市奈川）にある手打ちそばの店。標高1000メートル級の高地で育つ奈川のそばを使い、竹かごに入れたそばを、きのこや山菜、鶏肉などが入った囲炉裏の鍋つゆにくぐらせて温めて食べる伝統の食べ方を、本場の集落で体験できる。冬には雉肉を使った「雉とうじそば」を出す奈川地区恒例の「雉とうじそばまつり」の参加店としても知られ、2025年2月の開催でも名を連ねた。山あいのため営業時間や休みが変わることがあり、訪問前の電話確認が勧められる。</div>
+<div class="sig"><b>一皿:</b>囲炉裏端のとうじそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>長野県松本市奈川１０４４−１２４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263792277">☎ 0263-79-2277</a> ／ <a href="https://www.go.tvm.ne.jp/~senraku/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元メディアWeb-Komachiのとうじそば特集が営業情報つきで紹介し、2025年2月の雉とうじそばまつり開催情報でも奈川の現役店として確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BB%99%E6%B4%9B%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A5%88%E5%B7%9D%EF%BC%91%EF%BC%90%EF%BC%94%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.web-komachi.com/?p=250747">Web-Komachi とうじそば特集</a></div>
+</div></div>
+<div class="card" id="c-ishii_miso_matsumoto">
+<img class="hero" src="img/matsumoto/ishii_miso_matsumoto.jpg" alt="石井味噌 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">14</span>石井味噌<span class="yomi">いしいみそ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">慶応4年（1868年）創業と伝わる信州味噌の蔵元。高さ2メートルを超える杉の木桶を並べ、天然醸造で三年かけて熟成させる「三年味噌」で知られ、桶の林立する蔵の見学を予約なしで受け入れている。名物は蔵に併設した食事処の「蔵元のランチ」で、三年味噌をたっぷり使った豚汁やみそ焼きおにぎり、味噌ぎょうざ、味噌ソフトクリームを当日注文でき、信州豚ロースの味噌生姜漬御膳（要2日前予約）も用意する。日本語と英語のガイドツアーを毎日定時に行っており、城下町の醸造文化を食と見学の両面から体験できる貴重な場所である。</div>
+<div class="sig"><b>一皿:</b>三年味噌の豚汁と蔵元ランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市埋橋１丁目８−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263320534">☎ 0263-32-0534</a> ／ <a href="https://ishiimiso.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの見学・ランチ案内ページで提供時間・メニュー・予約条件を確認。松本市公式観光サイトにも掲載される現役の観光スポットである。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%9F%B3%E4%BA%95%E5%91%B3%E5%99%8C%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%9F%8B%E6%A9%8B%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ishiimiso.com/">石井味噌 公式サイト</a> / <a href="https://ishiimiso.com/kengaku/generalvisitor">石井味噌 蔵元のランチ案内</a></div>
+</div></div>
+<div class="card" id="c-metoba_soba_nakamachi">
+<img class="hero" src="img/matsumoto/metoba_soba_nakamachi.jpg" alt="信州そば処 女鳥羽そば 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">15</span>信州そば処 女鳥羽そば<span class="yomi">しんしゅうそばどころ めとばそば</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和27年（1952年）、女鳥羽川沿いの中町に創業した老舗そば店。なまこ壁の蔵造りが残る商店街の一角で、松本民芸家具で統一された落ち着いた店内が知られ、川面を眺めながらそばをたぐれる城下町らしい立地が観光客に人気を集めてきた。そばは松本産のそば粉100パーセント・完全自家製粉へとこだわりを深めており、看板は海苔・とろろ・抹茶の三つの味を一度に楽しめる三色そば。乾麺とそばつゆの土産販売や通信販売も手がける。売り切れ次第閉店となるほか、暑さで営業時間を短縮する時期もあり、公式サイトの告知を見て訪れたい。</div>
+<div class="sig"><b>一皿:</b>三色そば（海苔・とろろ・抹茶）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央３丁目４−８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263358502">☎ 0263-35-8502</a> ／ <a href="https://www.instagram.com/metobasoba">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの店舗紹介で住所・営業時間・定休日を確認。松本市公式観光サイトが民芸家具の老舗そば店として紹介し、2025年の口コミも確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BF%A1%E5%B7%9E%E3%81%9D%E3%81%B0%E5%87%A6%20%E5%A5%B3%E9%B3%A5%E7%BE%BD%E3%81%9D%E3%81%B0%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.metobasoba.com/about/">女鳥羽そば 公式サイト 店舗紹介</a> / <a href="https://www.metobasoba.com/news/">女鳥羽そば お知らせ</a></div>
+</div></div>
+<div class="card" id="c-daio_wasabi_azumino">
+<img class="hero" src="img/matsumoto/daio_wasabi_azumino.jpg" alt="大王わさび農場 レストラン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">16</span>大王わさび農場 レストラン<span class="yomi">だいおうわさびのうじょう れすとらん</span></div>
+<div class="chips"><span class="chip neighbor">隣接市</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大正時代に開かれた日本最大級のわさび田「大王わさび農場」の直営レストラン。北アルプスの雪解け水が湧く広大なわさび田を無料で見学でき、食事処では農場で育てた本わさびをその場ですりおろして食べる「本わさび丼」と、長野県水産試験場が開発した養殖魚・信州サーモンの丼が名物である。わさびの茎の漬物を乗せた丼、わさびカレー、わさびを練り込んだオリジナルそば、わさびソフトクリームまで、わさび尽くしの品揃えが徹底している。松本の隣、安曇野市の店だが、松本平の水と川魚の食文化を体感できる代表格として足を延ばす価値がある。</div>
+<div class="sig"><b>一皿:</b>本わさび丼と信州サーモン丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県安曇野市穂高３６４０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263822118">☎ 0263-82-2118</a> ／ <a href="https://www.daiowasabi.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで通年提供のメニューを確認。じゃらん等の観光サイトにも現行施設として掲載され、安曇野観光の定番であるため隣接市タグつきで採用。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E7%8E%8B%E3%82%8F%E3%81%95%E3%81%B3%E8%BE%B2%E5%A0%B4%20%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E9%95%B7%E9%87%8E%E7%9C%8C%E5%AE%89%E6%9B%87%E9%87%8E%E5%B8%82%E7%A9%82%E9%AB%98%EF%BC%93%EF%BC%96%EF%BC%94%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.daiowasabi.co.jp/">大王わさび農場 公式サイト</a> / <a href="https://www.jalan.net/gourmet/grm_alikejpB001132687/">じゃらん 大王わさび農場 レストラン</a></div>
+</div></div>
+<div class="card" id="c-matsumotokan_marunouchi">
+<img class="hero" src="img/matsumoto/matsumotokan_marunouchi.jpg" alt="割烹 松本館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">17</span>割烹 松本館<span class="yomi">かっぽう まつもとかん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">明治23年（1890年）創業、松本城のすぐ足元の丸の内で続く老舗料亭。国の登録有形文化財に登録された建物が最大の見どころで、豪華な格天井や欄間を備えた大広間、囲炉裏を切った個室座敷など、城下町の社交の場として使われてきた空間で食事ができる。料理は季節の会席を軸に、馬刺しや川魚、山菜といった信州・松本の食材を織り込んだ郷土色のある献立を仕立て、地酒や県産ワインも揃える。昼は入店13時までの昼会席、夜は本格的な会席や鍋のコースで、松本の歴史的な建築と食文化を一度に味わえる特別な一軒である。</div>
+<div class="sig"><b>一皿:</b>信州食材の季節会席</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:30, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市丸の内７−３９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263328000">☎ 0263-32-8000</a> ／ <a href="https://matsumotokan.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで明治23年創業、登録有形文化財の建物、現行の営業時間を確認。2025年6月の利用者レビューも確認でき、現役で営業している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E6%9D%BE%E6%9C%AC%E9%A4%A8%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%97%E2%88%92%EF%BC%93%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://matsumotokan.co.jp/">割烹松本館 公式サイト</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・郷土料理</h2>
+<div class="card" id="c-unagi_matsuka_chuo">
+<img class="hero" src="img/matsumoto/unagi_matsuka_chuo.jpg" alt="うなぎのまつ嘉 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>うなぎのまつ嘉<span class="yomi">うなぎのまつか</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">松本の中心部・中央3丁目に暖簾を掲げる、江戸期から続くと伝わるうなぎの老舗。予約は受けず、11時ごろの開店から売り切れ次第終了という商いを貫いており、土日は開店前の行列で締め切られることも珍しくない。座敷のみ59席という昔ながらの構えで、うな丼とともに肝焼きを目当てに通う常連が多い。食べログのうなぎ百名店に2018年から繰り返し選出され、Tabelog Award では2025年・2026年と連続でブロンズを受賞。松本平のうなぎ文化を象徴する存在として県外からも客を集める。</div>
+<div class="sig"><b>一皿:</b>うな丼と肝焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00ごろ～売り切れ次第終了</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜・木曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央３丁目２−２９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263320747">☎ 0263-32-0747</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログうなぎ百名店の常連でTabelog Award 2025・2026ブロンズ受賞。2026年7月訪問の口コミでも開店直後に売り切れる人気が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E3%81%AE%E3%81%BE%E3%81%A4%E5%98%89%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/nagano/A2002/A200201/20000103/">食べログ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-yamasei_unagi_ote">
+<img class="hero" src="img/matsumoto/yamasei_unagi_ote.jpg" alt="山勢 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>山勢<span class="yomi">やませい</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">松本駅にほど近い大手にある、うなぎとすっぽんを軸にした専門店。昼はうな重（5,800円前後）や白焼御飯、夜はうなぎコース、うなぎとすっぽんを組み合わせたコースを提供し、信州の旬の野菜を織り込んだ構成で「うなぎ料理店」の枠を超えた評価を得ている。海のない長野県にあって、県内屈指の鰻の評価を受ける店として知られ、食べログのうなぎ百名店2024に選出、Tabelog Award 2025ではブロンズを受賞した。カウンター中心の落ち着いた店構えで、遠方から予約して訪れる客も多い。</div>
+<div class="sig"><b>一皿:</b>うなぎすっぽんコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 12:00〜14:00, 18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目６−１０−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05035958818">☎ 050-3595-8818</a> ／ <a href="http://yamasei-unagi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログうなぎ百名店2024選出・Tabelog Award 2025ブロンズ受賞と、グルメメディアの評価が突出している。ヒトサラでネット予約を受け付けており現在の営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E5%8B%A2%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031625473/">ヒトサラ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-sushi_inukai_shimauchi">
+<img class="hero" src="img/matsumoto/sushi_inukai_shimauchi.jpg" alt="鮨 いぬかい 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>鮨 いぬかい<span class="yomi">すし いぬかい</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">店主・犬飼将文氏が、父の営んだ「たんぼ鮨」の代替わりを機に約100メートル東へ移転し、店名を改めて2015年に開いた鮨店。カウンターには師匠から受け継いだ木曽ヒノキの一枚板を据え、壁は土壁で仕上げるなど空間づくりにもこだわる。魚は全国各地から独自ルートで仕入れ、刺身と握りに特化したおまかせを供する。海から遠い松本にありながら、食べログ「寿司 EAST 百名店 2025」に松本市で唯一選出され、県内外の食通が予約して訪れる。昼は8貫のおまかせランチコースも用意する。</div>
+<div class="sig"><b>一皿:</b>おまかせ握りコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・木・金・土 12:00〜13:30, 17:30〜20:00 ／ 水 11:30〜13:30, 17:30〜20:00 ／ 日 12:00〜13:30, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>長野県松本市島内４２５２−７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263557457">☎ 0263-55-7457</a> ／ <a href="https://www.instagram.com/sushi_inukai/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「寿司 EAST 百名店 2025」に松本市から唯一選出。松本経済新聞が代替わり・移転の経緯を報じた実在の名店で、寿司枠の筆頭として掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E3%81%84%E3%81%AC%E3%81%8B%E3%81%84%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%B3%B6%E5%86%85%EF%BC%94%EF%BC%92%EF%BC%95%EF%BC%92%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://award.tabelog.com/hyakumeiten/sushi_east/2025">食べログ 寿司 EAST 百名店 2025</a> / <a href="https://matsumoto.keizai.biz/headline/1887/">松本経済新聞（移転・代替わりの記事）</a></div>
+</div></div>
+<div class="card" id="c-hikariya_higashi_ote">
+<img class="hero" src="img/matsumoto/hikariya_higashi_ote.jpg" alt="ヒカリヤ ヒガシ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>ヒカリヤ ヒガシ<span class="yomi">ひかりや ひがし</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治期に建てられた名門商家「光屋」の母屋と土蔵（築139年・国登録有形文化財）を改修したレストラン施設の和食部門。日本庭園を眺める座敷で、信州の旬の食材を使った会席料理を供する。地産地消を徹底しており、松本市街を見下ろす山辺地区に自家の田を持ち、そこで育てた米を店で炊くほか、信州和牛や自家製の十割そばも織り込む。食べログ「日本料理 EAST 百名店 2025」に選出されており、記念日や接待など特別な日の和食として、市内でも第一に名前が挙がる存在になっている。</div>
+<div class="sig"><b>一皿:</b>信州食材の会席コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜14:30, 18:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目７−１４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054622331">☎ 050-5462-2331</a> ／ <a href="https://hikariya-higashi.foodre.jp/?utm_source=gbp&amp;utm_medium=organic&amp;utm_contents=website_link">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「日本料理 EAST 百名店 2025」選出店。2026年7月訪問の口コミがあり営業を確認。文化財建築と地産地消の組み合わせが松本らしくガイド向き。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%92%E3%82%AB%E3%83%AA%E3%83%A4%20%E3%83%92%E3%82%AC%E3%82%B7%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/nagano/A2002/A200201/20001756/">食べログ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-tempura_hamashin_ote">
+<img class="hero" src="img/matsumoto/tempura_hamashin_ote.jpg" alt="天ぷら浜新 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>天ぷら浜新<span class="yomi">てんぷらはましん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">松本城近くの住宅街で創業から約55年続く天ぷらの専門店。現在は予約客の分だけ食材を仕込む完全予約制で営業しており、カウンター6席を主体に、店主が目の前で一品ずつ揚げてくれる。衣は薄めでカリッとした昔ながらの仕上がりで、丼のタレは創業以来継ぎ足してきたもの。看板は大ぶりの海老をのせた大海老天丼と天ぷら定食で、掘りごたつ席では10名までの小さな集まりにも対応する。観光地化した城周辺にあって、地元の人が家族の節目に使い続ける隠れ家的な存在。</div>
+<div class="sig"><b>一皿:</b>大海老天丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 18:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手３丁目６−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263326789">☎ 0263-32-6789</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメで2025年4月時点の営業情報とネット予約が確認できる、創業約55年の専門店。市内で貴重な老舗天ぷら店として掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%E6%B5%9C%E6%96%B0%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000359832/">ホットペッパーグルメ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-sennone_tempura_ote">
+<img class="hero" src="img/matsumoto/sennone_tempura_ote.jpg" alt="千の音 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>千の音<span class="yomi">せんのね</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">高校3年で天ぷら職人を志して上京し、修行を経てアメリカ大使館での調理経験も積んだ店主・藤原卓矢氏が、20代で松本市大手に開いたカウンター7席・約8坪の天ぷら専門店。店名はラヴェルのピアノ曲「オンディーヌ」の水のイメージに、雨音と天ぷらを揚げる音を掛けて名付けた。昼は上2,000円から、夜は上4,980円からのコース制で、目の前で一品ずつ揚げる高級店のスタイルを手の届く価格で提供する。仕入れにこだわり、客が食材を選べることもあるなど、若い店ならではの柔軟さも持ち味。</div>
+<div class="sig"><b>一皿:</b>夜のおまかせ天ぷらコース（上）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・土・日 12:00〜14:00, 18:00〜22:00 ／ 金 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>長野県松本市深志３丁目６−１３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263556305">☎ 0263-55-6305</a> ／ <a href="https://tempura-sennone.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松本の子育て情報サイト「はぐまつ」が食レポで紹介し、記事は2025年8月に更新されている。城下町に増えつつある新世代の専門店として掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%83%E3%81%AE%E9%9F%B3%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hug-matsu.jp/?p=37396">はぐまつ（食レポ記事）</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・うどん・町中華</h2>
+<div class="card" id="c-mensho_sazo_chuo">
+<img class="hero" src="img/matsumoto/mensho_sazo_chuo.jpg" alt="麺匠 佐蔵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>麺匠 佐蔵<span class="yomi">めんしょうさぞう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">松本駅前の一角、蔵をそのまま生かした店構えの味噌ラーメン専門店。佐久の老舗蔵元の「安養寺味噌」を使った看板の「佐蔵味噌らぅめん」は、信州味噌の香ばしさを生かしたとろりとクリーミーなスープに太麺を合わせた一杯で、魚介出汁を効かせた魚介味噌も人気がある。1階はカウンター、2階にテーブル席を備え、昼時には行列ができる松本の人気店。信州味噌ラーメンの代表格として県外からの観光客も多く、松本駅からすぐという立地もあって旅の最初の一杯にも選ばれやすい。</div>
+<div class="sig"><b>一皿:</b>佐蔵味噌らぅめん（安養寺味噌の濃厚スープ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:30, 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市中央１丁目２０−２６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263341050">☎ 0263-34-1050</a> ／ <a href="https://ramen-sakura.com/pages/page">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ラーメン系YouTuber SUSURUの運営メディアが2025年1月の松本特集で「安養寺味噌を使用した濃厚味噌ラーメン」の代表店として選出。旅行サイトでも松本駅周辺の定番店として紹介が続く。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%8C%A0%20%E4%BD%90%E8%94%B5%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.susurulab.co.jp/nagano-matumoto/">SUSURU WEB. 松本おすすめラーメン9選（2025年1月）</a> / <a href="https://4travel.jp/dm_shisetsu/10722519">フォートラベル 麺匠佐蔵 松本店</a></div>
+</div></div>
+<div class="card" id="c-zunpachi_sohonten_tsukama">
+<img class="hero" src="img/matsumoto/zunpachi_sohonten_tsukama.jpg" alt="らあめん寸八 総本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">25</span>らあめん寸八 総本店<span class="yomi">らあめんずんぱち そうほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">松本市筑摩に総本店を構える豚骨醤油ラーメンの人気店。キャベツをのせた横浜家系スタイルの「豚骨醤油らあめん」が看板で、濃厚なようでくどくない味わいと評される。金～日曜は朝7時から「朝ラー」メニューを提供する珍しい営業形態で、週末は朝から行列ができる。2025年4月には美ヶ原温泉のホテル翔峰内に新店を出すなど地元で店舗を広げ、2025年9月開催の「信州ラーメン博2025」にも長野県代表格として出店した。</div>
+<div class="sig"><b>一皿:</b>豚骨醤油らあめん（キャベツのせ・並730円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 11:00〜0:00 ／ 金・土・日 7:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市筑摩４丁目３−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263287744">☎ 0263-28-7744</a> ／ <a href="https://zunpachi.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地域情報誌Web-Komachiが2025年4月に美ヶ原温泉店オープンを報道し「人気家系ラーメン店」と紹介。信州ラーメン博2025の出店店舗にも選ばれており、地元での支持が裏付けられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%82%E3%82%81%E3%82%93%E5%AF%B8%E5%85%AB%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E7%AD%91%E6%91%A9%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000734162/">ホットペッパーグルメ らーめん寸八 総本店</a> / <a href="https://www.web-komachi.com/?p=237713">Web-Komachi 寸八 美ヶ原温泉店オープン記事（2025年4月）</a> / <a href="https://shinshu-ramenhaku.com/p2-5/">信州ラーメン博2025 出店店舗</a></div>
+</div></div>
+<div class="card" id="c-ryoga_idea_takamiya">
+<img class="hero" src="img/matsumoto/ryoga_idea_takamiya.jpg" alt="凌駕IDEA 松本本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">26</span>凌駕IDEA 松本本店<span class="yomi">りょうがいであ まつもとほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">松本市・塩尻市・安曇野市など中信地域を中心に展開する地元発ラーメングループ「凌駕」の旗艦店。看板は煮干をしっかり効かせた「煮干醤油ラーメン」で、一口目から煮干の香りと風味が立つ醤油スープが特徴。煮干100％スープの苦味とえぐみまで生かしたコッテリ系「ニボガッツ」など、本店限定・季節限定の意欲的なメニューを次々に出すことで知られる。カフェのような明るい内装で、年中無休・通し営業という使い勝手の良さも地元客に支持される。</div>
+<div class="sig"><b>一皿:</b>煮干醤油ラーメン（煮干がしっかり効いた看板商品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市高宮南６−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263286300">☎ 0263-28-6300</a> ／ <a href="https://ryo-ga.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松本を中心とした長野県内限定展開の地元グループで、公式サイトが本店を旗艦店と位置付ける。ラーメンデータベースには2025年の実食レビューが継続して投稿されており現役の人気を確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%87%8C%E9%A7%95IDEA%20%E6%9D%BE%E6%9C%AC%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E9%AB%98%E5%AE%AE%E5%8D%97%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ryo-ga.com/shop/ryoga_idea_matsumoto/">凌駕 公式サイト 凌駕IDEA松本本店</a> / <a href="https://ramendb.supleks.jp/s/103732/review?order=score">ラーメンデータベース 凌駕IDEA レビュー</a></div>
+</div></div>
+<div class="card" id="c-komugisoba_ike_chuo">
+<img class="hero" src="img/matsumoto/komugisoba_ike_chuo.jpg" alt="小麦そば 池 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">27</span>小麦そば 池<span class="yomi">こむぎそば いけ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2022年開店ながら瞬く間に松本を代表する一杯となった淡麗系ラーメン店。鶏と魚介のWスープに小麦の風味を生かした自家製麺を合わせた「小麦そば」を看板とし、食べログの「ラーメン百名店EAST 2024」に長野県から選出された実力店。松本城下の中心市街地・中央のビル1階にあり、席数が少ないため昼時は行列が常態化している。駐車場はなく支払いは現金のみという硬派な営業ながら、県外から食べに来るファンも多い。</div>
+<div class="sig"><b>一皿:</b>小麦そば（鶏と魚介のWスープ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:00, 18:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市中央１丁目２５−１ 犬飼ビル D</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://www.instagram.com/komugi_ike/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「ラーメン百名店EAST 2024」選出店。トリップアドバイザーに2026年の口コミが投稿されており現在の営業と評価の高さを確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E9%BA%A6%E3%81%9D%E3%81%B0%20%E6%B1%A0%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%95%E2%88%92%EF%BC%91%20%E7%8A%AC%E9%A3%BC%E3%83%93%E3%83%AB%20D">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ramendb.supleks.jp/s/145184.html">ラーメンデータベース 小麦そば 池</a> / <a href="https://www.tripadvisor.jp/Restaurant_Review-g298118-d25204904-Reviews-Komugi_Soba_Ike-Matsumoto_Nagano_Prefecture_Koshinetsu_Chubu.html">トリップアドバイザー 小麦そば 池（2026年口コミ）</a></div>
+</div></div>
+<div class="card" id="c-udon_shori_ote">
+<img class="hero" src="img/matsumoto/udon_shori_ote.jpg" alt="うどん 勝利 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">28</span>うどん 勝利<span class="yomi">うどん しょうり</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和25年（1950年）創業、松本城にほど近い大手で三代にわたり暖簾を守るうどん店。数種の素材と地元の醤油を合わせた自家製出汁、手作りの麺という昔ながらの製法を貫き、きつねうどんやかき揚げうどんといった定番に加え、辛口のもつ煮うどんや牛たんうどんなど独自メニューも出す。2017年からは三代目が店を継ぎ、夜営業では「うどん酒場」として一杯やった後の締めにうどんをすする使い方も定着。地元客に長く愛される松本のうどんの代表格。</div>
+<div class="sig"><b>一皿:</b>きつねうどん・かき揚げうどん（自家製出汁）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目２−９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263328543">☎ 0263-32-8543</a> ／ <a href="https://www.instagram.com/udon_syouri?igsh=NmViMjQ1MzM3YXZj">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松本市公式観光サイト「松本旅のしらべ」が昭和25年創業・三代続く店として掲載し、食べログ等のグルメサイトでも現役営業を確認。市内では希少な老舗うどん専門店として掲載価値が高い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%20%E5%8B%9D%E5%88%A9%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://visitmatsumoto.com/gourmet/detail_5081.html">松本市公式観光サイト うどん勝利</a> / <a href="https://tabelog.com/en/nagano/A2002/A200201/20003959/">食べログ Udon Shori</a></div>
+</div></div>
+<div class="card" id="c-takeshiya_nishibori">
+<img class="hero" src="img/matsumoto/takeshiya_nishibori.jpg" alt="たけしや 西堀店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">29</span>たけしや 西堀店<span class="yomi">たけしや にしぼりてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1955年（昭和30年）創業、代々受け継がれてきた松本のソース焼きそば専門店。自店で蒸し上げる特注の極太麺を自家製の特製ソースで一度煮込み、それを焼き上げるという独特の製法で、もっちりと味の染みた唯一無二の焼きそばに仕上げる。普通盛りでも約450gというボリュームで、地元民のソウルフードとして世代を超えて通う客が絶えない。市内には寿小赤に南店もあり、昔ながらの店構えとともに松本の麺食文化を今に伝える存在。</div>
+<div class="sig"><b>一皿:</b>ソース焼きそば（煮込んでから焼く特注太麺・普通盛り約450g）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:30, 17:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手２丁目９−２１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263325173">☎ 0263-32-5173</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメメディア「ヤミツキマツモト」が「松本と言えばココの焼きそば」「地元民のソウルフード」と紹介。2025年7月・2026年5月付の地元ブログ訪問記でも営業を確認できる老舗。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%91%E3%81%97%E3%82%84%20%E8%A5%BF%E5%A0%80%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/en/nagano/A2002/A200201/20001590/">食べログ たけしや 西堀店</a> / <a href="https://yami2ki.com/takeshiya/">ヤミツキマツモト たけしや紹介記事</a> / <a href="https://www.mcci.or.jp/www/takeshiya/">焼きそば屋 たけしや南店（松本商工会議所内ページ）</a></div>
+</div></div>
+<div class="card" id="c-maruki_shoten_fukashi">
+<img class="hero" src="img/matsumoto/maruki_shoten_fukashi.jpg" alt="中華そばマルキ商店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">30</span>中華そばマルキ商店<span class="yomi">ちゅうかそばまるきしょうてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">松本駅前大通り沿い、長野県内で店舗展開する「きまはち」系列の中華そば店。看板は真っ黒な醤油スープに刻みネギとチャーシューをたっぷりのせた「松本ブラック」で、見た目の濃さに反してキレのある味わいがくせになると評判。昼営業のほか深夜まで通しで開けており、松本の繁華街で飲んだ後の締めの一杯として定着している。駅から近い立地もあって、観光客が松本ならではのご当地ブラックラーメンを試す入口としても使いやすい。</div>
+<div class="sig"><b>一皿:</b>松本ブラック（黒い醤油スープの中華そば・940円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 18:00〜1:00 ／ 火・水・木 11:30〜14:00, 18:00〜1:00 ／ 金 11:30〜14:00, 18:00〜2:00 ／ 土 18:00〜2:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市深志２丁目１−５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263360838">☎ 0263-36-0838</a> ／ <a href="https://www.instagram.com/explore/locations/287127106/zhong-huasoba-maruki-shang-dian/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松本経済新聞が開店を報じた駅前の実力店で、SUSURU WEB.の2025年1月松本特集でも「松本ブラックで有名」と選出。深夜営業の締めラーメンとして地元の口コミが厚い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E3%83%9E%E3%83%AB%E3%82%AD%E5%95%86%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.susurulab.co.jp/nagano-matumoto/">SUSURU WEB. 松本おすすめラーメン9選（2025年1月）</a> / <a href="https://matsumoto.keizai.biz/headline/1661/">松本経済新聞 マルキ商店開店記事</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・信州の地酒とワイン</h2>
+<div class="card" id="c-kuriya_jubei_ote">
+<img class="hero" src="img/matsumoto/kuriya_jubei_ote.jpg" alt="厨 十兵衛 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>厨 十兵衛<span class="yomi">くりや じゅうべえ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">松本市大手にある日本酒専門の居酒屋。飲み物はほぼ日本酒だけという徹底ぶりで、「日本酒を3合以上飲めない方はお断り」の掲示でも知られる、酒を静かに味わうための店。全国の銘酒と信州の地酒を店主が選び抜いて揃え、極厚に切り付けた刺身をはじめ、酒に寄り添う肴を出す。松本を舞台にした小説『神様のカルテ』で主人公が通う居酒屋のモデルになったといわれ、日本酒ファンが松本に来たら必ず寄る店として全国区の知名度を持つ。カウンター主体の店内は全席禁煙。</div>
+<div class="sig"><b>一皿:</b>厚切りの刺身と日本酒</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目８−２１ 十兵衡</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263379100">☎ 0263-37-9100</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ・Rettyで日本酒専門店として突出した評価（Retty高評価・食べログでも高得点）を受け、ホットペッパー掲載で現在の営業を確認。日本酒カテゴリの代表として掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8E%A8%20%E5%8D%81%E5%85%B5%E8%A1%9B%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%92%EF%BC%91%20%E5%8D%81%E5%85%B5%E8%A1%A1">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/nagano/A2002/A200201/20000077/">食べログ 店舗ページ</a> / <a href="https://www.hotpepper.jp/strJ000360365/">ホットペッパーグルメ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-shuraku_matsumotohan_chuo">
+<img class="hero" src="img/matsumoto/shuraku_matsumotohan_chuo.jpg" alt="松本藩酒場 酒楽 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>松本藩酒場 酒楽<span class="yomi">まつもとはんさかば しゅらく</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">松本駅お城口から徒歩2分という立地で、信州松本の食文化を「食べて知る」を掲げる郷土料理居酒屋。馬は純国産にこだわった道産子馬を1頭買いし、新鮮な馬刺しを看板に据えるほか、信州高原野菜、ジビエ、そばと、信州の山の幸を一通り揃える。飲み物は大信州など信州の地酒と地焼酎が中心で、旅行者が松本の酒と肴を一晩で概観できる構成になっている。松本市と長野市の駅前に5店舗を展開する県内ローカルのグループで、遅い時間まで開いているのも使いやすい。</div>
+<div class="sig"><b>一皿:</b>1頭買いの馬刺し</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜0:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央１丁目３−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263393447">☎ 0263-39-3447</a> ／ <a href="https://r.goope.jp/syuraku/free/matsumotohan-syuraku">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前で信州地酒・馬刺し・ジビエを揃える郷土居酒屋として公式サイトが営業情報を公開しており、ネット予約も稼働中。駅近で地酒を飲みたい旅行者向けの実用枠。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E6%9C%AC%E8%97%A9%E9%85%92%E5%A0%B4%20%E9%85%92%E6%A5%BD%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://r.goope.jp/syuraku/free/matsumotohan-syuraku">酒楽 公式ページ（グーペ）</a></div>
+</div></div>
+<div class="card" id="c-standing_8oz_ote">
+<img class="hero" src="img/matsumoto/standing_8oz_ote.jpg" alt="スタンディング 8オンス 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>スタンディング 8オンス<span class="yomi">すたんでぃんぐ えいとおんす</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1887年（明治20年）創業の酒販店「平出酒店」が、夕方から店の一角で開く立ち飲みコーナー。スタンディングテーブル3台とカウンター数人分だけの小さな空間で、日本酒・焼酎・ワイン・カクテルまで酒屋ならではの品揃えを良心的な価格で飲める。千円札を握りしめて寄る常連が多く回転が速い、昔ながらの角打ち文化を残す店で、レトロな店構えを目当てに訪れるファンもいる。ビール券で支払えるという酒屋直営らしい仕組みも面白い。松本の夜のはしご酒の起点として覚えておきたい一軒。</div>
+<div class="sig"><b>一皿:</b>酒屋価格の日本酒とワイン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 16:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目１０−１３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="http://www.hiraide.biz/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログで2026年6月訪問の口コミがあり営業を確認。明治創業の酒店による角打ちという希少な業態で、立ち飲み枠の代表として掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%82%BF%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%208%E3%82%AA%E3%83%B3%E3%82%B9%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/nagano/A2002/A200201/20009581/">食べログ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-itton_yakitori_fukashi">
+<img class="hero" src="img/matsumoto/itton_yakitori_fukashi.jpg" alt="炭火焼鳥 いっとん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>炭火焼鳥 いっとん<span class="yomi">すみびやきとり いっとん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">松本駅お城口から徒歩3分のビル2階にある炭火焼鳥店。信州の銘柄鶏「福味鶏」を仕入れ、毎日一本ずつ手で串打ちし、備長炭でふっくらジューシーに焼き上げるのが売り。串焼きは1本108円からと手頃で、モツ煮込みや信州名物の馬刺しなど酒場らしい肴も揃え、約80種のドリンクを含む飲み放題コースも用意する。和モダンな木目調の店内は駅前ながら落ち着いた雰囲気で、地元の宴会から一人飲みまで幅広く使われている。地元の鶏にこだわる焼き鳥店として駅前エリアで存在感のある一軒。</div>
+<div class="sig"><b>一皿:</b>福味鶏の炭火串焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜0:00 ／ 日 17:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市深志１丁目２−１５ ＣＥＮＴＵＲＹＭＡＸＩＭビル 2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263315922">☎ 0263-31-5922</a> ／ <a href="https://instagram.com/charcoal.grilled.and.bar_1t?igshid=MzMyNGUyNmU2YQ==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>信州銘柄鶏・福味鶏と備長炭を看板にする地元密着の焼き鳥店で、ホットペッパーでネット予約が稼働しており営業を確認。焼き鳥枠として掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E9%B3%A5%20%E3%81%84%E3%81%A3%E3%81%A8%E3%82%93%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%95%20%EF%BC%A3%EF%BC%A5%EF%BC%AE%EF%BC%B4%EF%BC%B5%EF%BC%B2%EF%BC%B9%EF%BC%AD%EF%BC%A1%EF%BC%B8%EF%BC%A9%EF%BC%AD%E3%83%93%E3%83%AB%202F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ004067881/">ホットペッパーグルメ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-kuranomukou_chuo">
+<img class="hero" src="img/matsumoto/kuranomukou_chuo.jpg" alt="蔵のむこう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>蔵のむこう<span class="yomi">くらのむこう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">松本駅近くの中央1丁目にある、純日本建築・蔵造りの空間が印象的な郷土料理居酒屋。信州名物の馬刺し、安曇野産のそば粉を使った手打ちそばなど信州の定番を一通り揃え、地酒と合わせて昼から通しに近い時間帯で楽しめる。最大50名の宴会に対応する広さがありながら、QRコードのオーダー制を導入するなど運営は今風で、観光客が松本の郷土食を初日にまとめて体験する店として使い勝手がよい。食べログでは保存数2万件を超え、市内居酒屋ランキングの常連になっている。</div>
+<div class="sig"><b>一皿:</b>馬刺しと信州の地酒</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 17:00〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央１丁目２−２１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263367880">☎ 0263-36-7880</a> ／ <a href="https://r.goope.jp/syuraku/free/kuranomukou">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ評価3.49・口コミ479件・保存2万件超と口コミ人気が突出し、2026年8月訪問の口コミで営業を確認。蔵の街・松本らしい空間もガイド向き。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%94%B5%E3%81%AE%E3%82%80%E3%81%93%E3%81%86%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/nagano/A2002/A200201/20002167/">食べログ 店舗ページ</a></div>
+</div></div>
+<div class="card" id="c-pinopinot_wine_chuo">
+<img class="hero" src="img/matsumoto/pinopinot_wine_chuo.jpg" alt="ピノピノ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">36</span>ピノピノ<span class="yomi">ぴのぴの</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">松本市中央2丁目のビル2階にある小さなワインバーで、「松本初のワインバー」として紹介されてきた古参格。カウンター8席とテーブル2卓の落ち着いた空間で、世界各国のワインに日本酒やカクテルも交えつつ、パスタや酒肴をつまみに一杯ずつ楽しめる。昼はラーメンを出し、夜はワインバーに切り替わるという二つの顔を持つのもユニークで、夜は予約しての利用が確実。城下町の裏通りでしっぽり飲みたい大人のための店として、地元の口コミで支持が続いている。</div>
+<div class="sig"><b>一皿:</b>グラスワインと酒肴の一皿</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・金 11:30〜15:00 ／ 土・日 11:30〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">月・木曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央２丁目４−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263553164">☎ 0263-55-3164</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログに2025年8月訪問の口コミがあり営業継続を確認。松本のワインバー文化の草分けとして紹介されてきた店で、ワイン枠として掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%94%E3%83%8E%E3%83%94%E3%83%8E%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/nagano/A2002/A200201/20002139/dtlrvwlst/?type=0">食べログ 口コミ一覧</a></div>
+</div></div>
+<div class="card" id="c-furinkazan_matsumoto_honten">
+<img class="hero" src="img/matsumoto/furinkazan_matsumoto_honten.jpg" alt="風林火山 松本本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">37</span>風林火山 松本本店<span class="yomi">ふうりんかざん まつもとほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">松本駅前の中央1丁目に本店を構える大衆料理居酒屋。店主が自ら県内の蔵元を巡って選んだ信州地酒を揃え、新鮮な馬刺しや、ホルモンを天ぷらに仕立てたオリジナルの名物「ホル天」を看板に据える。旬の素材を使った信州料理を大衆酒場の価格帯で出す構成で、地元の飲み会にも旅行者の「信州の酒と肴を一度に」というニーズにも応える。展開は松本本店と長野市の1店のみという県内ローカルの店で、公式サイトで店休日をこまめに告知しながら営業している。席は2時間制。</div>
+<div class="sig"><b>一皿:</b>名物ホル天と馬刺し</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木 17:00〜22:30 ／ 金 17:00〜23:30 ／ 土 16:30〜23:30 ／ 日 16:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央１丁目３−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263357872">☎ 0263-35-7872</a> ／ <a href="https://furinkazan-shinshu.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに2025年4月11日付のお知らせがあり営業を確認。信州地酒と郷土料理を掲げる駅前の地元店として、大衆酒場枠で掲載する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A2%A8%E6%9E%97%E7%81%AB%E5%B1%B1%20%E6%9D%BE%E6%9C%AC%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://furinkazan-shinshu.jp/">風林火山 公式サイト</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-okinado_yoshoku_nakamachi">
+<img class="hero" src="img/matsumoto/okinado_yoshoku_nakamachi.jpg" alt="時代遅れの洋食屋 おきな堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>時代遅れの洋食屋 おきな堂<span class="yomi">じだいおくれのようしょくや おきなどう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和8年（1933年）創業、城下町・中町通りに店を構える松本を代表する老舗洋食店。「時代遅れの洋食屋」を名乗り、骨付き鶏でとるチキンカレーにチキンカツをのせた「バンカラカツカレー」や、厚切りポークソテーなど、創業以来の製法を守った洋食を出し続ける。自家農園の無肥料・無農薬野菜を料理に使い、レトロな店内には長年通う常連から観光客まで幅広い客が集う。「変わり続ける、変わらない味」を掲げる姿勢が松本の洋食文化を象徴している。</div>
+<div class="sig"><b>一皿:</b>バンカラカツカレー（骨付き鶏のカレーにチキンカツ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜15:00, 17:30〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市中央２丁目４−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263882354">☎ 0263-88-2354</a> ／ <a href="https://okinado1933.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>中町商店街公式サイトが昭和8年創業の老舗として掲載し、食べログ・トリップアドバイザーでもバンカラカツカレーへの口コミが厚い。松本の洋食を語る上で外せない一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%99%82%E4%BB%A3%E9%81%85%E3%82%8C%E3%81%AE%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E3%81%8A%E3%81%8D%E3%81%AA%E5%A0%82%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nakamachi.org/shopmember/okinadou">中町商店街 時代遅れの洋食屋おきな堂</a> / <a href="https://www.hotpepper.jp/strJ000106473/">ホットペッパーグルメ おきな堂</a></div>
+</div></div>
+<div class="card" id="c-restaurant_taiman_ote">
+<img class="hero" src="img/matsumoto/restaurant_taiman_ote.jpg" alt="レストラン鯛萬 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>レストラン鯛萬<span class="yomi">れすとらんたいまん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1950年創業、国宝松本城の近くに建つフランス・アルザス風の洋館で営む老舗フランス料理店。白壁につたが絡まる建物と松本民藝家具をしつらえた重厚な内装で知られ、信州の新鮮な食材とフランスから直接取り寄せた素材を使ったクラシックなフランス料理を供する。記念日や接待の店として松本市民に代々使われてきた、市内随一の格式を持つレストラン。収容約100名・個室ありで、ランチ・ディナーともコースが中心。季節ごとの花々に彩られた外観そのものも名物といえる。</div>
+<div class="sig"><b>一皿:</b>信州食材とフランス直輸入素材のフルコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目２−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263320882">☎ 0263-32-0882</a> ／ <a href="http://www.taiman.co.jp/index.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ことりっぷが「民藝の空間が美しい松本のレストラン」として特集し、一休.comレストランで現在も予約を受け付ける現役の名店。1950年創業の歴史と民藝空間はガイドの洋食の柱になる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%AF%9B%E8%90%AC%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://restaurant.ikyu.com/149468">一休.comレストラン レストラン鯛萬</a> / <a href="https://co-trip.jp/article/626886">ことりっぷ レストラン鯛萬特集</a></div>
+</div></div>
+<div class="card" id="c-moriyoshi_byonion_fukashi">
+<img class="hero" src="img/matsumoto/moriyoshi_byonion_fukashi.jpg" alt="民芸レストラン盛よし by onion 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>民芸レストラン盛よし by onion<span class="yomi">みんげいれすとらんもりよし ばい おにおん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">松本駅近くで約40年親しまれた民芸調の洋食店「盛よし」が、2023年3月の閉店後にオニオン新聞社が事業を引き継ぎ「民芸レストラン盛よし by onion」として復活した店。三代目とともに、とんかつやオムライス、エビフライといったボリュームたっぷりの昔ながらの洋食メニューと民芸家具の落ち着いた空間を守っている。復活は松本経済新聞などで報じられ話題を呼び、2025年9月には松本市筑摩に「初代民芸レストラン盛よし」が開店するなど広がりも見せる。</div>
+<div class="sig"><b>一皿:</b>オムライス・エビフライなどボリューム系の昔ながらの洋食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜14:30, 17:30〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>長野県松本市深志２丁目１−２１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263757042">☎ 0263-75-7042</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松本経済新聞が「松本の老舗洋食店『盛よし』復活」と事業継承を報道し、号外NET松本が2025年9月の新店開店を報じるなど、地元メディアが継続的に取り上げる復活劇の店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B0%91%E8%8A%B8%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E7%9B%9B%E3%82%88%E3%81%97%20by%20onion%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://matsumoto.keizai.biz/headline/3875/">松本経済新聞 盛よし復活記事</a> / <a href="https://matsumoto.goguynet.jp/2025/09/04/moriyosi-tukama-open/">号外NET松本 筑摩新店記事（2025年9月）</a></div>
+</div></div>
+<div class="card" id="c-matsumoto_maeyao_ekimae">
+<img class="hero" src="img/matsumoto/matsumoto_maeyao_ekimae.jpg" alt="松本メーヤウ 駅前店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>松本メーヤウ 駅前店<span class="yomi">まつもとめーやう えきまえてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1991年創業、松本のエスニックカレー文化の草分けとされる名物店。信州大学前の店で学生たちに愛された辛くて旨いカレーが原点で、スパイシーな黒いルーの「インド風カシミールカリー」や出汁と醤油を効かせた「日本風出汁グリーンカリー」など、タイとインドを独自に融合した味を守る。駅前店は2024年11月にリニューアルし、昼はカツを合わせたカツカレー業態、夜はカレーとスパイス料理の居酒屋として営業。市内に桐店・信大前店もある。</div>
+<div class="sig"><b>一皿:</b>インド風カシミールカリー（スパイシーな黒いカレー）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 11:30〜14:30, 17:00〜22:30 ／ 火・水・木・金・土・日 11:30〜15:00, 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市深志１丁目４−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263310419">☎ 0263-31-0419</a> ／ <a href="https://home.tsuku2.jp/storeDetail.php?scd=0000286236">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地域情報誌Web-Komachiが「松本を代表するカレー店」として駅前店リニューアルを詳報。2025年2月の松本カレーイベントにも参加しており、地元での存在感が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E6%9C%AC%E3%83%A1%E3%83%BC%E3%83%A4%E3%82%A6%20%E9%A7%85%E5%89%8D%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.web-komachi.com/?p=193812">Web-Komachi 松本メーヤウ駅前店記事</a> / <a href="https://www.gurutto-matsumoto.com/gourmet/maeyo-ekimae/">ぐるっと松本 松本メーヤウ駅前店</a></div>
+</div></div>
+<div class="card" id="c-hyakurotei_honten_ote">
+<img class="hero" src="img/matsumoto/hyakurotei_honten_ote.jpg" alt="中国料理 百老亭 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>中国料理 百老亭 本店<span class="yomi">ちゅうごくりょうり ひゃくろうてい ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">松本市大手で30年以上営業を続ける広東料理ベースの中国料理店。日本人の口に合うよう仕立てた広東料理を軸に、鶏ガラベースのあっさりした中華そば、手作り餃子、そして松本名物の山賊焼を具にした「山賊焼チャーハン」のようなご当地メニューまで揃える。地下1階の広い店内は宴会にも使われ、家族連れから会社員まで地元客の日常使いの中華として定着。松本で「本格中華といえばここ」と名前が挙がる古参の一軒で、昼は近隣の勤め人のランチ処としても賑わう。</div>
+<div class="sig"><b>一皿:</b>手作り餃子と山賊焼チャーハン</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜13:30, 17:30〜20:30 ／ 日 11:30〜13:30, 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手２丁目３−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0263324220">☎ 0263-32-4220</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>SUSURU WEB.の2025年1月松本特集に「鶏ガラベースのあっさりスープ」の店として選出され、Web-Komachiも山賊焼チャーハンを名物として紹介。地元での知名度が高い老舗中華。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E7%99%BE%E8%80%81%E4%BA%AD%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/en/nagano/A2002/A200201/20000870/">食べログ 百老亭 本店</a> / <a href="https://www.web-komachi.com/?p=35250">Web-Komachi 百老亭紹介記事</a> / <a href="https://www.susurulab.co.jp/nagano-matumoto/">SUSURU WEB. 松本おすすめラーメン9選（2025年1月）</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・和菓子・パン</h2>
+<div class="card" id="c-coffee_marumo_nakamachi">
+<img class="hero" src="img/matsumoto/coffee_marumo_nakamachi.jpg" alt="珈琲まるも 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>珈琲まるも<span class="yomi">こーひーまるも</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">幕末の1868年創業の「まるも旅館」に併設され、昭和31年（1956年）に開店した松本を代表する老舗喫茶店。松本民芸家具の創立者・池田三四郎が設計し、テーブルも椅子も調度品もすべて松本民芸家具で統一された空間は、民藝運動の柳宗悦が開店時に讃えたと伝わる。明治の松本大火後に建てられた白壁の蔵造りの建物で、クラシック音楽が流れる店内は「松本の喫茶文化」を象徴する場所として今も朝から地元客と旅行者で賑わう。</div>
+<div class="sig"><b>一皿:</b>ブレンドコーヒーと自家製ケーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 9:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>長野県松本市中央３丁目３−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263320115">☎ 0263-32-0115</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>中川政七商店の読みものやHanako（2025年5月）など全国メディアが松本の民藝喫茶の筆頭として繰り返し特集。松本の喫茶文化を紹介するガイドの軸になる一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E3%81%BE%E3%82%8B%E3%82%82%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://story.nakagawa-masashichi.jp/79738">中川政七商店の読みもの 珈琲まるも特集</a> / <a href="https://hanako.tokyo/travel/473879/">Hanako Web 松本喫茶店特集（2025年5月）</a> / <a href="https://nakamachi.org/shopmember/marumo">中町商店街 珈琲まるも・まるも旅館</a></div>
+</div></div>
+<div class="card" id="c-coffee_bigaku_abe_fukashi">
+<img class="hero" src="img/matsumoto/coffee_bigaku_abe_fukashi.jpg" alt="珈琲美学アベ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>珈琲美学アベ<span class="yomi">こーひーびがくあべ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1957年（昭和32年）創業、松本駅前通りで営業を続ける老舗純喫茶。初代店主は日本で初めてモカパフェとモカクリームオーレを考案した人物として知られ、そびえ立つモカアイスの中にほろ苦いコーヒーゼリーを仕込んだ「モカパフェ」は今も一番の名物。朝7時から開き、ドリンクにサイドオーダーを自由に組み合わせるモーニングも人気で、アンティーク調の店内には出勤前の常連が通う。松本の「喫茶の町」の朝を支え続ける存在。</div>
+<div class="sig"><b>一皿:</b>モカパフェ（初代考案の元祖）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 7:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>長野県松本市深志１丁目２−８ NOVAビル</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263320174">☎ 0263-32-0174</a> ／ <a href="https://www.novabuild.info/new-cover-page">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松本駅前通り商店街の公式サイトが老舗として掲載し、旅行ブログ・グルメメディアがモカパフェ目当ての訪問記を多数発信。松本の喫茶文化を語る際に必ず名が挙がる店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E7%BE%8E%E5%AD%A6%E3%82%A2%E3%83%99%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%98%20NOVA%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.matsumotoekimaest.info/abe-coffee">松本駅前通り商店街 珈琲美学アベ</a> / <a href="https://www.yamaonsen.com/entry/coffee_abe">山と温泉のきろく 珈琲美学アベ訪問記</a></div>
+</div></div>
+<div class="card" id="c-okinado_ekimae_kissa">
+<img class="hero" src="img/matsumoto/okinado_ekimae_kissa.jpg" alt="翁堂 駅前店 喫茶室 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>翁堂 駅前店 喫茶室<span class="yomi">おきなどう えきまえてん きっさしつ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">明治44年（1911年）創業の菓子店「翁堂」の駅前店。1階が洋菓子・和菓子の売店、2階が喫茶室になっており、ラム酒と杏ジャムを使ったバタークリームの「タヌキケーキ」は昭和の姿のまま作り続けられる名物。喫茶室では30年変わらぬ手作りナポリタンや自家製ケーキを使ったパフェなど、昭和レトロそのもののメニューと空間が楽しめる。市内に本店・あがたの森店もあり、100年以上にわたり松本のおやつ文化を支えてきた老舗菓子店である。</div>
+<div class="sig"><b>一皿:</b>タヌキケーキとナポリタン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 9:30〜16:45</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市深志１丁目２−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263354192">☎ 0263-35-4192</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>るるぶ&amp;more.が「昭和レトロなショップ＆カフェ」として特集し、Hanako（2025年5月）の松本喫茶特集にも登場。レトロ喫茶ブームで再評価が進む明治創業の老舗。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%BF%81%E5%A0%82%20%E9%A7%85%E5%89%8D%E5%BA%97%20%E5%96%AB%E8%8C%B6%E5%AE%A4%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://rurubu.jp/andmore/article/24124">るるぶ&amp;more. 翁堂駅前店特集</a> / <a href="https://hanako.tokyo/travel/473879/">Hanako Web 松本喫茶店特集（2025年5月）</a></div>
+</div></div>
+<div class="card" id="c-kaiundo_honten_chuo">
+<img class="hero" src="img/matsumoto/kaiundo_honten_chuo.jpg" alt="御菓子司 開運堂 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>御菓子司 開運堂 本店<span class="yomi">おんかしつかさ かいうんどう ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治17年（1884年）創業、松本の本町通りに本店を構える老舗菓子店。看板銘菓の「真味糖」は大正中期に考案された鬼胡桃と蜂蜜の和風ヌガーで、昭和初期の茶会で裏千家淡々斎宗匠から命名されたという由緒を持つ。「開運老松」などの銘菓のほか、りんごどら焼きなど信州素材の菓子も揃え、本店には喫茶コーナーと日替わりの味を提供するソフトクリームロボットまで備える。松本土産の定番として市民の贈答文化に根付いた店。</div>
+<div class="sig"><b>一皿:</b>真味糖（鬼胡桃と蜂蜜の和風ヌガー）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>長野県松本市中央２丁目２−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263320506">☎ 0263-32-0506</a> ／ <a href="http://www.kaiundo.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松本市公式観光サイトが市を代表する御菓子司として掲載し、キナリノなど全国メディアも銘菓を特集。松本の和菓子文化を代表する一軒としてガイドに必須。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E9%96%8B%E9%81%8B%E5%A0%82%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://visitmatsumoto.com/spot/detail_1222.html">松本市公式観光サイト 御菓子司 開運堂 本店</a> / <a href="https://www.kaiundo.co.jp/Form/Product/ProductDetail.aspx?shop=0&amp;pid=108">開運堂オンラインショップ 真味糖</a></div>
+</div></div>
+<div class="card" id="c-sweet_nawate_honten">
+<img class="hero" src="img/matsumoto/sweet_nawate_honten.jpg" alt="SWEET（スヰト）縄手本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>SWEET（スヰト）縄手本店<span class="yomi">すいーと なわてほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1913年にアメリカ・シアトルで創業し、1924年（大正13年）に松本・縄手通りに「開運スヰト」として開店した、100年以上の歴史を持つ松本のベーカリー。以来、手作りのパンを地域に届け続け、現在は松本・安曇野・塩尻に店舗とカフェを展開する。縄手本店では塩バターパンやカンパーニュのクロックムッシュなど毎日のパンから惣菜パンまで焼きたてを並べ、土日祝は朝8時から開店。松本市民の暮らしに最も長く寄り添ってきたパン屋といえる。</div>
+<div class="sig"><b>一皿:</b>塩バターパンとスヰトカンパーニュ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 9:00〜18:00 ／ 土・日 8:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手４丁目１−１３ スヰト １F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263325300">☎ 0263-32-5300</a> ／ <a href="https://www.sweet-bakery.co.jp/nawate">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで100年以上の歴史と現在の営業を確認できる松本発の老舗ベーカリー。地元発祥で市外にも展開する「松本のパン文化」の代表としてガイドに適する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SWEET%EF%BC%88%E3%82%B9%E3%83%B0%E3%83%88%EF%BC%89%E7%B8%84%E6%89%8B%E6%9C%AC%E5%BA%97%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%93%20%E3%82%B9%E3%83%B0%E3%83%88%20%EF%BC%91F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sweet-bakery.co.jp/">SWEET 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-yamaya_oamedokoro_ote">
+<img class="hero" src="img/matsumoto/yamaya_oamedokoro_ote.jpg" alt="山屋御飴所 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>山屋御飴所<span class="yomi">やまやおんあめどころ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">寛文12年（1672年）創業、350年以上の歴史を持つ松本最古の飴屋。砂糖を使わず米と大麦だけで作る伝統の米飴が原点で、米飴にピーナッツを練り込み薄く延ばしたパリパリ食感の「板あめ」は2023年ジャパン・フード・セレクション金賞を受賞した名物。米の中心部だけを贅沢に使った水飴「吟のしずく」など、職人技を今に伝える商品が並ぶ。松本に江戸期から続く「飴市」の文化を担う一軒で、週末には古民家の趣を残す店で飴作り体験も行う。</div>
+<div class="sig"><b>一皿:</b>板あめ（米飴とピーナッツの薄焼き飴）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 9:30〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市大手２丁目１−５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263324848">☎ 0263-32-4848</a> ／ <a href="https://www.yamaya-candy.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松本市公式観光サイトが市の飴文化を伝える老舗として掲載し、ファッション誌FUDGEも「長野松本最古の飴屋」として板あめを推薦。毎年1月の松本あめ市でも中心的存在。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E5%B1%8B%E5%BE%A1%E9%A3%B4%E6%89%80%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E5%A4%A7%E6%89%8B%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://visitmatsumoto.com/spot/detail_1252.html">松本市公式観光サイト 山屋御飴所</a> / <a href="https://fudge.jp/culture_life/column-culture_life/313936/">FUDGE.jp 山屋御飴所「板あめ」コラム</a></div>
+</div></div>
+<div class="card" id="c-sioribi_fukashi">
+<img class="hero" src="img/matsumoto/sioribi_fukashi.jpg" alt="栞日 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>栞日<span class="yomi">しおりび</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">あがたの森通り沿いのビルをリノベーションしたブックカフェで、店主・菊地徹さんが選んだリトルプレスや独立系出版物を中心に約1500冊が並ぶ。朝7時から開き、厚切りトーストのモーニングを目当てに旅行者と地元客が集う。2階は中長期滞在向けの宿「栞日INN」、蔵を改装したギャラリー「栞日分室」も運営し、向かいの老舗銭湯「菊の湯」の経営も引き継ぐなど、本と喫茶を起点に松本の街の文化をつなぐ拠点になっている。</div>
+<div class="sig"><b>一皿:</b>モーニングの厚切りトーストとハンドドリップコーヒー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 7:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>長野県松本市深志３丁目７−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0263505967">☎ 0263-50-5967</a> ／ <a href="https://sioribi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ことりっぷが「松本の朝は栞日のモーニングから」と特集し、2025年5月の県内メディア記事でも松本を代表するブックカフェとして紹介。新しい世代の松本喫茶文化を示す一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A0%9E%E6%97%A5%20%E9%95%B7%E9%87%8E%E7%9C%8C%E6%9D%BE%E6%9C%AC%E5%B8%82%E6%B7%B1%E5%BF%97%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://co-trip.jp/article/524036">ことりっぷ 栞日モーニング特集</a> / <a href="https://matsumoto.keizai.biz/headline/3188/">松本経済新聞 栞日の銭湯「菊の湯」継承記事</a> / <a href="https://youth-g.com/bookcafe-matsumoto/">長野の食と暮らし手帖 松本ブックカフェ特集（2025年5月）</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
