@@ -1,0 +1,62 @@
+name: Notion 本文化（写真つき）
+
+# 毎晩 02:00 JST に走らせ、未処理のガイドを進める。
+# 途中まで済んでいれば続きから。全部終わっていれば何もせず終わる。
+on:
+  schedule:
+    - cron: "43 17 * * *"      # 17:43 UTC = 翌 02:43 JST
+  workflow_dispatch:
+    inputs:
+      limit_images:
+        description: "1回で上げる画像の上限（0＝無制限で最後までやる）"
+        required: false
+        default: "0"
+      dry_run:
+        description: "1 なら Notion に書き込まず検証だけ"
+        required: false
+        default: "0"
+
+concurrency:
+  group: notion-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 依存を入れる
+        run: pip install --quiet requests
+
+      - name: 本文Markdownを作り直す（HTMLが正・差分があれば反映）
+        run: python notion/build_md.py
+
+      - name: Notion へ同期
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID: ${{ vars.NOTION_DB_ID }}
+          LIMIT_IMAGES: ${{ github.event.inputs.limit_images || '0' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+        run: python notion/sync.py
+
+      - name: 進捗をコミットして戻す
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add notion/state/upload_state.json notion/map.tsv notion/guides_md notion/img_manifest.json
+          if git diff --cached --quiet; then
+            echo "変更なし"
+          else
+            git commit -m "notion-sync: 進捗を更新 [skip ci]"
+            git push
+          fi
