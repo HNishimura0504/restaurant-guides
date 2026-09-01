@@ -32,7 +32,7 @@ MAP_TSV = os.path.join(ROOT, "notion", "map.tsv")
 STATE = os.path.join(ROOT, "notion", "state", "upload_state.json")
 
 TOKEN = os.environ.get("NOTION_TOKEN", "").strip()
-DB_ID = os.environ.get("NOTION_DB_ID", "47b9d644-0415-472c-9bcb-8be35daf5cb0").strip()
+DB_ID = (os.environ.get("NOTION_DB_ID") or "47b9d644-0415-472c-9bcb-8be35daf5cb0").strip()
 LIMIT_IMAGES = int(os.environ.get("LIMIT_IMAGES", "0") or 0)
 DRY_RUN = os.environ.get("DRY_RUN", "") == "1"
 API = "https://api.notion.com/v1"
@@ -306,8 +306,14 @@ def main():
 
         pid = pages.get(base)
         if not pid:
-            pid = create_page(titles.get(base, base), None)
+            try:
+                pid = create_page(titles.get(base, base), None)
+            except Exception as e:
+                print("   ! ページ作成に失敗したのでこのガイドは飛ばす:", str(e)[:200])
+                continue
             pages[base] = pid
+            state["pages"] = pages
+            save_json(STATE, state)
             print("   + created page", pid)
 
         first = part.endswith(".part01.md")
