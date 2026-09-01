@@ -38,8 +38,9 @@ DRY_RUN = os.environ.get("DRY_RUN", "") == "1"
 API = "https://api.notion.com/v1"
 VER = os.environ.get("NOTION_VERSION", "2022-06-28")
 
-# 既存の店舗DBビューを持つページは全置換できない（子DBを消してしまう）
-APPEND_ONLY = {"europe_belgium_leuven"}
+# clear_page が子DB/子ページを残すようになったので、全置換の除外は不要。
+# 特別扱いが要るページが出たらここに base 名を足す。
+APPEND_ONLY = set()
 
 S = requests.Session()
 S.headers.update({"Authorization": "Bearer " + TOKEN, "Notion-Version": VER})
@@ -154,16 +155,23 @@ def md_to_blocks(md, uploads):
 
 # ---------------------------------------------------------------- ページ操作
 
+KEEP_TYPES = {"child_database", "child_page"}
+
+
 def clear_page(page_id):
-    """ページ本文を空にする（子DBがあるページには使わないこと）。"""
+    """ページ本文を空にする。ただし子データベース／子ページは消さない
+    （ルーベンのように店舗DBのビューが埋まっているページを壊さないため）。"""
     while True:
         res = api("GET", "/blocks/%s/children?page_size=100" % page_id)
         kids = res.get("results", [])
-        if not kids:
+        targets = [b for b in kids if b.get("type") not in KEEP_TYPES]
+        if not targets:
             return
-        for b in kids:
+        for b in targets:
             api("DELETE", "/blocks/" + b["id"])
-        if not res.get("has_more"):
+        if not res.get("has_more") and len(targets) == len(kids):
+            return
+        if not res.get("has_more") and not targets:
             return
 
 
