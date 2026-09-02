@@ -12,7 +12,21 @@ JAPAN / NIIGATA・新潟県 🇯🇵
 - `地元密着` — 観光客より地元客に愛される店
 - `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。元PDFの店舗マップ画像は取り込んでいません。位置は各店の「地図」リンクから。
+> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+
+@@TOC@@
+
+## 🗾 店舗マップ
+
+**全域マップ**
+
+@@IMG:japan/niigata/img/nagaoka/_map.png@@
+
+**中心部拡大(長岡駅〜大手通・殿町)**
+
+@@IMG:japan/niigata/img/nagaoka/_map2.png@@
+
+> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors Notion版では地図のピンをタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
@@ -310,20 +324,3 @@ JAPAN / NIIGATA・新潟県 🇯🇵
 - **選定理由**: グルメメディアfavyの長岡そば5選と、ぐるなび・Komachi Web(新潟の情報誌)の店舗情報で、住所・営業時間・定休日と囲炉裏のある造りを確認した。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%AD%A6%E8%94%B5%E9%87%8E%E3%81%9D%E3%81%B0%E5%87%A6%20%E6%96%B0%E6%BD%9F%E7%9C%8C%E9%95%B7%E5%B2%A1%E5%B8%82%E8%84%87%E9%87%8E%E7%94%BA%EF%BC%98%EF%BC%94%EF%BC%95%E2%88%92%EF%BC%93)
 - **参照元**: [favy 長岡のお蕎麦屋さん5選](https://www.favy.jp/topics/6830) / [ぐるなび 武蔵野そば処](https://r.gnavi.co.jp/pd3zw97n0000/) / [Komachi Web 街ニュース](https://www.week.co.jp/postpic/59702/)
-
-### 18. 手打ち蕎麦 六四篭（てうちそば ろくしろう）
-
-@@IMG:japan/niigata/img/nagaoka/teuchi_soba_rokushiro.jpg@@
-
-`地元密着` `veg`
-
-天下島にある手打ち蕎麦の専門店。のど越しの良いそばと、自家製の削り節を使って引いたそば汁が持ち味で、鰹の香りとそばの香りが重なる。平日限定のランチセットが人気で、昼はまとまった客が入る。夜は予約制で、静かにそばと一品を楽しめる構成。派手な看板はないが、長岡市内でそばの質を語るときによく名前が挙がる一軒。
-
-- **一皿**: せいろそば(自家製削り節のそば汁で手繰るのど越しの良い手打ちそば)
-- **営業時間**: 火・水・木・金・土・日 11:00〜14:00
-- **定休日**: 月曜
-- **住所**: 新潟県長岡市天下島１丁目３−１１
-- **予約**: 可 — ☎ 0258-53-5481 ／ [公式サイト](http://www6.plala.or.jp/rokushiro/rokushirou/Welcome.html)
-- **選定理由**: グルメメディアfavyの長岡そば5選と、新潟の情報誌Komachi Webおよびぐるなびの店舗情報で、住所・営業時間・定休日と自家製削り節の特徴を確認した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20%E5%85%AD%E5%9B%9B%E7%AF%AD%20%E6%96%B0%E6%BD%9F%E7%9C%8C%E9%95%B7%E5%B2%A1%E5%B8%82%E5%A4%A9%E4%B8%8B%E5%B3%B6%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%91)
-- **参照元**: [favy 長岡のお蕎麦屋さん5選](https://www.favy.jp/topics/6830) / [Komachi Web 手打ち蕎麦 六四篭](https://www.week.co.jp/gourmet/128020/)
