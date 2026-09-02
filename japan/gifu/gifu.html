@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>岐阜美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / GIFU・岐阜県 🇯🇵</div>
+  <h1>岐阜美食ガイド</h1>
+  <div class="sub">長良川の鵜飼が千三百年続く城下の県都。清流で育つ鮎の塩焼きと鮎菓子、川原町の町家に灯る料亭、飛騨牛の炙り、朴葉味噌の香り、柳ケ瀬と玉宮の路地に息づく名酒場まで厳選50スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年8月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/gifu/_map.png" alt="全域マップ">
+<a href="#c-kawaramachi_izumiya" style="left:65.74%;top:16.63%;width:2.28%;height:2.54%;"></a>
+<a href="#c-usho_no_ie_sugiyama" style="left:71.99%;top:11.46%;width:2.28%;height:2.54%;"></a>
+<a href="#c-hidagyu_grill_bakuro" style="left:62.95%;top:23.63%;width:2.28%;height:2.54%;"></a>
+<a href="#c-tamaiya_honpo" style="left:67.69%;top:14.72%;width:2.28%;height:2.54%;"></a>
+<a href="#c-bunkaya" style="left:65.09%;top:16.16%;width:2.28%;height:2.54%;"></a>
+<a href="#c-marudebu_sohonten" style="left:55.27%;top:35.07%;width:2.28%;height:2.54%;"></a>
+<a href="#c-sarashina_honten" style="left:55.52%;top:28.45%;width:2.28%;height:2.54%;"></a>
+<a href="#c-korakuso" style="left:64.32%;top:21.2%;width:2.28%;height:2.54%;"></a>
+<a href="#c-kawaramachiya" style="left:66.88%;top:15.62%;width:2.28%;height:2.54%;"></a>
+<a href="#c-juhachiro" style="left:67.66%;top:14.49%;width:2.28%;height:2.54%;"></a>
+<a href="#c-takada_hassho" style="left:57.22%;top:31.44%;width:2.28%;height:2.54%;"></a>
+<a href="#c-nimonjiya" style="left:58.0%;top:50.29%;width:2.28%;height:2.54%;"></a>
+<a href="#c-kamon" style="left:71.32%;top:39.95%;width:2.28%;height:2.54%;"></a>
+<a href="#c-kitagawa_unagi" style="left:50.42%;top:90.06%;width:2.28%;height:2.54%;"></a>
+<a href="#c-sennarizushi_honten" style="left:55.42%;top:42.03%;width:2.28%;height:2.54%;"></a>
+<a href="#c-amimotonosato_kagashima" style="left:29.71%;top:43.12%;width:2.28%;height:2.54%;"></a>
+<a href="#c-kisshouan" style="left:62.76%;top:23.26%;width:2.28%;height:2.54%;"></a>
+<a href="#c-gifu_hatsuzushi_yanagase" style="left:56.22%;top:35.27%;width:2.28%;height:2.54%;"></a>
+<a href="#c-rikido" style="left:45.63%;top:20.49%;width:2.28%;height:2.54%;"></a>
+<a href="#c-gifu_tanmen_gifu_honten" style="left:91.08%;top:65.45%;width:2.28%;height:2.54%;"></a>
+<a href="#c-menshoku_koraku" style="left:16.66%;top:14.03%;width:2.28%;height:2.54%;"></a>
+<a href="#c-kochoan_semba" style="left:45.4%;top:18.77%;width:2.28%;height:2.54%;"></a>
+<a href="#c-daifukuya_rengadori" style="left:56.81%;top:36.02%;width:2.28%;height:2.54%;"></a>
+<a href="#c-tagoto_rokujo" style="left:41.29%;top:59.56%;width:2.28%;height:2.54%;"></a>
+<a href="#c-yasuki_hanemachi" style="left:56.96%;top:41.44%;width:2.28%;height:2.54%;"></a>
+<a href="#c-mizutani_honten" style="left:55.98%;top:42.1%;width:2.28%;height:2.54%;"></a>
+<a href="#c-new_tamamiya" style="left:56.42%;top:40.67%;width:2.28%;height:2.54%;"></a>
+<a href="#c-marudai_ekimae_center" style="left:56.17%;top:40.38%;width:2.28%;height:2.54%;"></a>
+<a href="#c-homerun_kanda" style="left:56.91%;top:43.08%;width:2.28%;height:2.54%;"></a>
+<a href="#c-terada_kappo" style="left:55.08%;top:34.98%;width:2.28%;height:2.54%;"></a>
+<a href="#c-yakitori_mizuki" style="left:58.21%;top:34.78%;width:2.28%;height:2.54%;"></a>
+<a href="#c-enso_kado" style="left:55.9%;top:43.33%;width:2.28%;height:2.54%;"></a>
+<a href="#c-ariiza_winebar" style="left:56.77%;top:41.0%;width:2.28%;height:2.54%;"></a>
+<a href="#c-tanmamiya_teppan" style="left:56.03%;top:41.84%;width:2.28%;height:2.54%;"></a>
+<a href="#c-ajirotei" style="left:63.08%;top:24.6%;width:2.28%;height:2.54%;"></a>
+<a href="#c-kamata" style="left:57.89%;top:37.35%;width:2.28%;height:2.54%;"></a>
+<a href="#c-caravanserai" style="left:80.33%;top:9.95%;width:2.28%;height:2.54%;"></a>
+<a href="#c-home_bound" style="left:51.87%;top:56.95%;width:2.28%;height:2.54%;"></a>
+<a href="#c-restaurant_buffet" style="left:57.82%;top:11.06%;width:2.28%;height:2.54%;"></a>
+<a href="#c-da_achiu" style="left:57.43%;top:40.89%;width:2.28%;height:2.54%;"></a>
+<a href="#c-spada" style="left:8.92%;top:40.6%;width:2.28%;height:2.54%;"></a>
+<a href="#c-la_pesca" style="left:57.05%;top:38.85%;width:2.28%;height:2.54%;"></a>
+<a href="#c-keijison_keiraku" style="left:45.25%;top:74.73%;width:2.28%;height:2.54%;"></a>
+<a href="#c-naraya_honten" style="left:59.33%;top:27.96%;width:2.28%;height:2.54%;"></a>
+<a href="#c-new_paloma" style="left:55.99%;top:34.81%;width:2.28%;height:2.54%;"></a>
+<a href="#c-minato_coffee" style="left:24.62%;top:42.49%;width:2.28%;height:2.54%;"></a>
+<a href="#c-saezuri" style="left:63.97%;top:45.63%;width:2.28%;height:2.54%;"></a>
+<a href="#c-kumano_bakery" style="left:84.85%;top:39.56%;width:2.28%;height:2.54%;"></a>
+<a href="#c-le_point_rouge" style="left:30.12%;top:73.73%;width:2.28%;height:2.54%;"></a>
+<a href="#c-hidamari_cafe" style="left:41.86%;top:74.29%;width:2.28%;height:2.54%;"></a>
+</div>
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(岐阜駅〜柳ケ瀬〜川原町)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/gifu/_map2.png" alt="中心部拡大(岐阜駅〜柳ケ瀬〜川原町)">
+<a href="#c-hidagyu_grill_bakuro" style="left:70.43%;top:8.22%;width:2.26%;height:1.96%;"></a>
+<a href="#c-marudebu_sohonten" style="left:40.15%;top:43.39%;width:2.26%;height:1.96%;"></a>
+<a href="#c-sarashina_honten" style="left:41.15%;top:23.06%;width:2.26%;height:1.96%;"></a>
+<a href="#c-korakuso" style="left:75.81%;top:1.9%;width:2.26%;height:1.96%;"></a>
+<a href="#c-takada_hassho" style="left:47.84%;top:32.24%;width:2.26%;height:1.96%;"></a>
+<a href="#c-nimonjiya" style="left:50.91%;top:90.19%;width:2.26%;height:1.96%;"></a>
+<a href="#c-sennarizushi_honten" style="left:40.74%;top:64.78%;width:2.26%;height:1.96%;"></a>
+<a href="#c-kisshouan" style="left:69.66%;top:7.1%;width:2.26%;height:1.96%;"></a>
+<a href="#c-gifu_hatsuzushi_yanagase" style="left:43.9%;top:44.02%;width:2.26%;height:1.96%;"></a>
+<a href="#c-daifukuya_rengadori" style="left:46.22%;top:46.33%;width:2.26%;height:1.96%;"></a>
+<a href="#c-yasuki_hanemachi" style="left:46.81%;top:62.98%;width:2.26%;height:1.96%;"></a>
+<a href="#c-mizutani_honten" style="left:42.93%;top:65.03%;width:2.26%;height:1.96%;"></a>
+<a href="#c-new_tamamiya" style="left:44.67%;top:60.63%;width:2.26%;height:1.96%;"></a>
+<a href="#c-marudai_ekimae_center" style="left:43.7%;top:59.73%;width:2.26%;height:1.96%;"></a>
+<a href="#c-homerun_kanda" style="left:46.63%;top:68.02%;width:2.26%;height:1.96%;"></a>
+<a href="#c-terada_kappo" style="left:39.38%;top:43.11%;width:2.26%;height:1.96%;"></a>
+<a href="#c-yakitori_mizuki" style="left:51.72%;top:42.52%;width:2.26%;height:1.96%;"></a>
+<a href="#c-enso_kado" style="left:42.62%;top:68.79%;width:2.26%;height:1.96%;"></a>
+<a href="#c-ariiza_winebar" style="left:46.07%;top:61.62%;width:2.26%;height:1.96%;"></a>
+<a href="#c-tanmamiya_teppan" style="left:43.13%;top:64.22%;width:2.26%;height:1.96%;"></a>
+<a href="#c-ajirotei" style="left:70.94%;top:11.23%;width:2.26%;height:1.96%;"></a>
+<a href="#c-kamata" style="left:50.47%;top:50.43%;width:2.26%;height:1.96%;"></a>
+<a href="#c-da_achiu" style="left:48.67%;top:61.29%;width:2.26%;height:1.96%;"></a>
+<a href="#c-la_pesca" style="left:47.17%;top:55.04%;width:2.26%;height:1.96%;"></a>
+<a href="#c-naraya_honten" style="left:56.16%;top:21.56%;width:2.26%;height:1.96%;"></a>
+<a href="#c-new_paloma" style="left:42.97%;top:42.61%;width:2.26%;height:1.96%;"></a>
+<a href="#c-saezuri" style="left:74.44%;top:75.88%;width:2.26%;height:1.96%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+
+<div class="toc">
+<div class="th">目次</div>
+<div class="sec red">岐阜のご当地(鮎・飛騨牛・川原町の味)</div>
+<div class="links">
+<a href="#c-kawaramachi_izumiya"><span class="tn" style="background:#e34948;">1</span>鮎尽くしの川原町の専門店</a>
+<a href="#c-usho_no_ie_sugiyama"><span class="tn" style="background:#e34948;">2</span>鵜飼観覧と鮎会席の宿</a>
+<a href="#c-hidagyu_grill_bakuro"><span class="tn" style="background:#e34948;">3</span>町家で味わう飛騨牛ステーキ</a>
+<a href="#c-tamaiya_honpo"><span class="tn" style="background:#e34948;">4</span>鮎菓子元祖の老舗和菓子店</a>
+<a href="#c-bunkaya"><span class="tn" style="background:#e34948;">5</span>川原町の古民家創作会席</a>
+<a href="#c-marudebu_sohonten"><span class="tn" style="background:#e34948;">6</span>大正6年創業の中華そば</a>
+<a href="#c-sarashina_honten"><span class="tn" style="background:#e34948;">7</span>冷やしたぬき発祥の老舗</a>
+<a href="#c-korakuso"><span class="tn" style="background:#e34948;">8</span>岐阜町の町家老舗料亭</a>
+<a href="#c-kawaramachiya"><span class="tn" style="background:#e34948;">9</span>築130年余の町家和カフェ</a>
+<a href="#c-juhachiro"><span class="tn" style="background:#e34948;">10</span>川原町の芭蕉ゆかりの老舗宿</a>
+</div>
+<div class="sec blue">寿司・和食・うなぎ</div>
+<div class="links">
+<a href="#c-takada_hassho"><span class="tn" style="background:#2a78d6;">11</span>岐阜を代表する日本料理店</a>
+<a href="#c-nimonjiya"><span class="tn" style="background:#2a78d6;">12</span>1620年創業のうなぎ老舗</a>
+<a href="#c-kamon"><span class="tn" style="background:#2a78d6;">13</span>関西風地焼きうなぎの店</a>
+<a href="#c-kitagawa_unagi"><span class="tn" style="background:#2a78d6;">14</span>行列必至の炭焼きうなぎ</a>
+<a href="#c-sennarizushi_honten"><span class="tn" style="background:#2a78d6;">15</span>ジャンボネタの町の寿司店</a>
+<a href="#c-amimotonosato_kagashima"><span class="tn" style="background:#2a78d6;">16</span>大ネタ自慢の地元回転寿司</a>
+<a href="#c-kisshouan"><span class="tn" style="background:#2a78d6;">17</span>長良川伏流水の十割そば</a>
+<a href="#c-gifu_hatsuzushi_yanagase"><span class="tn" style="background:#2a78d6;">18</span>柳ケ瀬発祥の老舗寿司</a>
+</div>
+<div class="sec aqua">ラーメン・そば・町中華</div>
+<div class="links">
+<a href="#c-rikido"><span class="tn" style="background:#1baf7a;">19</span>岐阜屈指の行列つけ麺</a>
+<a href="#c-gifu_tanmen_gifu_honten"><span class="tn" style="background:#1baf7a;">20</span>行列必至のご当地タンメン</a>
+<a href="#c-menshoku_koraku"><span class="tn" style="background:#1baf7a;">21</span>岐阜のソウルフード・ベトコン</a>
+<a href="#c-kochoan_semba"><span class="tn" style="background:#1baf7a;">22</span>石臼挽き手打そばの百名店</a>
+<a href="#c-daifukuya_rengadori"><span class="tn" style="background:#1baf7a;">23</span>名物・天ぷら中華の大衆食堂</a>
+<a href="#c-tagoto_rokujo"><span class="tn" style="background:#1baf7a;">24</span>行列の手打うどん・味噌煮込み</a>
+<a href="#c-yasuki_hanemachi"><span class="tn" style="background:#1baf7a;">25</span>玉宮の本格四川・担担麺</a>
+</div>
+<div class="sec beer">居酒屋・バー(玉宮・柳ケ瀬)</div>
+<div class="links">
+<a href="#c-mizutani_honten"><span class="tn" style="background:#0d366b;">26</span>昼から満席の超老舗酒場</a>
+<a href="#c-new_tamamiya"><span class="tn" style="background:#0d366b;">27</span>玉宮の顔役・串カツ酒場</a>
+<a href="#c-marudai_ekimae_center"><span class="tn" style="background:#0d366b;">28</span>しゅうまい名物の中華酒場</a>
+<a href="#c-homerun_kanda"><span class="tn" style="background:#0d366b;">29</span>駅前・昼飲みできるホルモン酒場</a>
+<a href="#c-terada_kappo"><span class="tn" style="background:#0d366b;">30</span>百名店の駅近おまかせ割烹</a>
+<a href="#c-yakitori_mizuki"><span class="tn" style="background:#0d366b;">31</span>百名店の淡海地鶏焼鳥</a>
+<a href="#c-enso_kado"><span class="tn" style="background:#0d366b;">32</span>揚げたて天ぷら×岐阜の地酒</a>
+<a href="#c-ariiza_winebar"><span class="tn" style="background:#0d366b;">33</span>赤い扉のイタリアワイン専門店</a>
+<a href="#c-tanmamiya_teppan"><span class="tn" style="background:#0d366b;">34</span>昼から飲める鉄板餃子酒場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-ajirotei"><span class="tn" style="background:#4a3aa7;">35</span>明治40年創業の欧風料理店</a>
+<a href="#c-kamata"><span class="tn" style="background:#4a3aa7;">36</span>昭和23年創業の洋食喫茶</a>
+<a href="#c-caravanserai"><span class="tn" style="background:#4a3aa7;">37</span>長良川近くの老舗洋食レストラン</a>
+<a href="#c-home_bound"><span class="tn" style="background:#4a3aa7;">38</span>とろふわオムレツライスの洋食店</a>
+<a href="#c-restaurant_buffet"><span class="tn" style="background:#4a3aa7;">39</span>50年以上続く昭和レトロ洋食</a>
+<a href="#c-da_achiu"><span class="tn" style="background:#4a3aa7;">40</span>百名店選出のナポリピッツァ</a>
+<a href="#c-spada"><span class="tn" style="background:#4a3aa7;">41</span>世界2位の職人が焼くピッツァ</a>
+<a href="#c-la_pesca"><span class="tn" style="background:#4a3aa7;">42</span>牡蠣が名物のイタリアンバル</a>
+<a href="#c-keijison_keiraku"><span class="tn" style="background:#4a3aa7;">43</span>鉄板ナポリタンの昭和レトロ店</a>
+</div>
+<div class="sec yellow">カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-naraya_honten"><span class="tn" style="background:#eda100;">44</span>天保元年創業の和菓子老舗</a>
+<a href="#c-new_paloma"><span class="tn" style="background:#eda100;">45</span>おでん付きモーニングの純喫茶</a>
+<a href="#c-minato_coffee"><span class="tn" style="background:#eda100;">46</span>大正築の古民家で団子モーニング</a>
+<a href="#c-saezuri"><span class="tn" style="background:#eda100;">47</span>ハツシモのおかゆモーニング</a>
+<a href="#c-kumano_bakery"><span class="tn" style="background:#eda100;">48</span>くまパン付きモーニングの店</a>
+<a href="#c-le_point_rouge"><span class="tn" style="background:#eda100;">49</span>テラスで楽しむスコーンモーニング</a>
+<a href="#c-hidamari_cafe"><span class="tn" style="background:#eda100;">50</span>庭と池を望む癒やしのモーニング</a>
+</div>
+</div>
+
+<div class="note"><b>回り方のコツ:</b>店は岐阜駅前(玉宮の飲み屋街)と柳ケ瀬アーケード、長良橋たもとの川原町かいわいに集まる。鵜飼は5月11日〜10月15日、鮎料理はこの時期が本番で、川原町の料亭は予約が無難。鮎菓子(登り鮎)は通年。飛騨牛は市内でも一級の店が多い。冷やしたぬきそばや、どて煮・味噌かつなど味噌の食文化も根強い。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-gifu" class="c-red">岐阜のご当地(鮎・飛騨牛・川原町の味)</h2>
+<div class="card" id="c-kawaramachi_izumiya">
+<img class="hero" src="img/gifu/kawaramachi_izumiya.jpg" alt="川原町泉屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>川原町泉屋<span class="yomi">かわらまちいずみや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治20年（1888年）創業の川魚問屋・泉屋物産を前身とする鮎料理専門店。格子戸の町家が並ぶ川原町の一角にあり、鵜飼観覧船のりばからも近い。養殖・天然を選べる鮎フルコースのほか、店主が鮎の一夜干しを炭火で焼き上げて載せる名物「鮎ラーメン」、鮎の旨みが染みた鮎雑炊など、ここでしか食べられない鮎料理が揃う。鮎の熟れ寿司やうるかなど伝統食の製造販売も手がけ、通販でも知られる。観光の昼食にも夜の会食にも使いやすい。</div>
+<div class="sig"><b>一皿:</b>鮎ラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜13:30, 17:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市元浜町２０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582636788">☎ 058-263-6788</a> ／ <a href="http://www.nagaragawa.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「日本料理EAST百名店2025」に選出された岐阜の鮎料理の代表格。岐阜県観光公式サイトや岐阜市「鮎を食べよう！」キャンペーンの掲載店で、2025年の口コミも継続して投稿されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E5%8E%9F%E7%94%BA%E6%B3%89%E5%B1%8B%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%85%83%E6%B5%9C%E7%94%BA%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kankou-gifu.jp/gourmet/detail_3526.html">岐阜県観光公式サイト</a> / <a href="https://giahs-ayu.jp/ayutabe/tenpo/1018">岐阜「鮎を食べよう！」キャンペーン</a></div>
+</div></div>
+<div class="card" id="c-usho_no_ie_sugiyama">
+<img class="hero" src="img/gifu/usho_no_ie_sugiyama.jpg" alt="鵜匠の家 すぎ山 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>鵜匠の家 すぎ山<span class="yomi">うしょうのいえすぎやま</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">長良川河畔に立つ長良川温泉の旅館で、屋号の通り鵜匠の家に由来する。宿泊だけでなくレストラン「かわせみ」の日帰り昼食プランが充実しており、天然鮎をふんだんに使った鮎膳や旬の素材の昼会席を、長良川と金華山を眺めながら味わえる。食事利用者は温泉入浴が無料になるのも嬉しい。鵜飼シーズン（毎年5月11日〜10月15日）には夕食と鵜飼観覧船乗船を組み合わせたプランがあり、1300余年の歴史を誇る長良川鵜飼を間近で楽しめる。</div>
+<div class="sig"><b>一皿:</b>鮎膳（天然鮎づくし）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼食11:30〜14:00（LO13:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市長良７３−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582310161">☎ 058-231-0161</a> ／ <a href="https://www.gifu-sugiyama.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県観光公式サイト掲載の鵜飼観覧の定番宿で、公式サイトに2025年以降も日帰り昼食・鵜飼観覧プランの案内が掲載されている。鵜飼と鮎料理を一度に体験できる岐阜らしさで選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B5%9C%E5%8C%A0%E3%81%AE%E5%AE%B6%20%E3%81%99%E3%81%8E%E5%B1%B1%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E9%95%B7%E8%89%AF%EF%BC%97%EF%BC%93%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.gifu-sugiyama.com/dayplan/">鵜匠の家すぎ山 公式サイト</a> / <a href="https://www.kankou-gifu.jp/reserve/detail_7.html">岐阜県観光公式サイト</a></div>
+</div></div>
+<div class="card" id="c-hidagyu_grill_bakuro">
+<img class="hero" src="img/gifu/hidagyu_grill_bakuro.jpg" alt="飛騨牛グリルばくろ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>飛騨牛グリルばくろ<span class="yomi">ひだぎゅうぐりるばくろ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">100年を超える木造建築が残る岐阜町の米屋町に店を構える飛騨牛ステーキ専門店。飛騨牛本来の旨みを引き出すことをコンセプトに、真空低温熟成の飛騨牛ステーキを落ち着いた和の空間で提供する。昼は季節のランチコース、夜は部位を選べるステーキコースが中心で、記念日や接待にも使いやすい。飛騨牛ステーキと自家製しぐれ煮の弁当のテイクアウトもあり、川原町・岐阜公園観光と組み合わせやすい立地も魅力。</div>
+<div class="sig"><b>一皿:</b>飛騨牛真空低温熟成ステーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 11:30〜15:00, 17:30〜22:00 ／ 土・日 11:00〜15:30, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市米屋町９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582148960">☎ 058-214-8960</a> ／ <a href="http://grill.bakuroichidai.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>一休.comレストランやヒトサラでネット予約を受け付けており、2025年時点で営業中であることが確認できる。城下町の古い町並みで飛騨牛を味わえる岐阜らしい一軒として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A3%9B%E9%A8%A8%E7%89%9B%E3%82%B0%E3%83%AA%E3%83%AB%E3%81%B0%E3%81%8F%E3%82%8D%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%B1%B3%E5%B1%8B%E7%94%BA%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://grill.bakuroichidai.co.jp/">飛騨牛グリルばくろ 公式サイト</a> / <a href="https://restaurant.ikyu.com/118035">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-tamaiya_honpo">
+<img class="hero" src="img/gifu/tamaiya_honpo.jpg" alt="御菓子司 玉井屋本舗 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>御菓子司 玉井屋本舗<span class="yomi">たまいやほんぽ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治41年（1908年）創業、川原町の町並みに本店を構える老舗和菓子店。岐阜銘菓・鮎菓子のルーツとされる「登り鮎」の元祖で、上質なカステラ生地で求肥を包んだ姿は長良川を遡る鮎そのもの。昭和29年の全国菓子大博覧会での受賞歴もあり、岐阜土産の定番として愛され続けている。季節の上生菓子も揃い、川原町散策や鵜飼観覧の手土産探しに立ち寄りたい。2024年にはJR岐阜駅のASTY岐阜に新業態店を出すなど、今も進化を続ける。</div>
+<div class="sig"><b>一皿:</b>登り鮎</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 8:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市湊町４２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0120601276">☎ 0120-601-276</a> ／ <a href="https://tamaiya-honpo.co/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鮎菓子の元祖として観光ガイドや土産情報サイトで繰り返し紹介される岐阜らしさの象徴。2024年にASTY岐阜へ新店舗を出店したプレスリリースがあり、営業継続と地元人気が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E7%8E%89%E4%BA%95%E5%B1%8B%E6%9C%AC%E8%88%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%B9%8A%E7%94%BA%EF%BC%94%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.tamaiyahonpo.com/">玉井屋本舗 公式サイト</a> / <a href="https://prtimes.jp/main/html/rd/p/000000012.000051143.html">PR TIMES（ASTY岐阜新店舗）</a></div>
+</div></div>
+<div class="card" id="c-bunkaya">
+<img class="hero" src="img/gifu/bunkaya.jpg" alt="文化屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>文化屋<span class="yomi">ぶんかや</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">かつて長良川の川湊として栄えた川原町で、古民家を活かして営む創作会席の店。重厚な梁や土間が残る建物から清流長良川を一望でき、全席テーブル席で足も楽。月替わりのメイン1品を含むコースは昼夜共通3600円からと、料亭の趣を手頃に楽しめる価格設定が支持されている。岐阜の食材を取り入れた品々が季節ごとに替わるため、地元のハレの日使いとリピーターが多い。川原町散策や鵜飼観覧前後の食事に組み込みやすい。</div>
+<div class="sig"><b>一皿:</b>月替わりの創作会席コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:30, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市元浜町３５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582120132">☎ 058-212-0132</a> ／ <a href="http://bunka-ya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Retty・食べログの川原町エリアで人気上位の古民家和食で、予約サイトHAMONIや公式サイトで2025年時点の営業情報（不定休・営業時間）が確認できる。川原町らしい空間の魅力で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%87%E5%8C%96%E5%B1%8B%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%85%83%E6%B5%9C%E7%94%BA%EF%BC%93%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://bunka-ya.com/about.html">文化屋 公式サイト</a> / <a href="https://retty.me/area/PRE21/ARE81/SUB8101/100000198885/">Retty</a></div>
+</div></div>
+<div class="card" id="c-marudebu_sohonten">
+<img class="hero" src="img/gifu/marudebu_sohonten.jpg" alt="丸デブ総本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>丸デブ総本店<span class="yomi">まるでぶそうほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正6年（1917年）創業、現存する日本最古クラスのラーメン店として知られる岐阜のソウルフード。メニューは中華そばとワンタンの2品のみで、ひやむぎのような細いストレート麺に、魚介の出汁と醤油ダレのパンチが効いた懐かしいスープを合わせる。丼から麺があふれんばかりのボリュームで600円という価格も長年変わらず、昼時には行列ができる。飾らない店構えと相席文化も含めて岐阜の食文化そのもので、観光客にも地元民にも愛される一杯。</div>
+<div class="sig"><b>一皿:</b>中華そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜18:00 ／ 土・日 11:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市日ノ出町３丁目１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582629573">☎ 058-262-9573</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜のローカルメディアさかだちブックスや食べログで「岐阜のソウルフード」として紹介される名物店。2025年投稿の食べログ口コミで「昔も今も変わらず600円」と営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%B8%E3%83%87%E3%83%96%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%97%A5%E3%83%8E%E5%87%BA%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sakadachibooks.com/marudebu/">さかだちブックス</a> / <a href="https://tabelog.com/gifu/A2101/A210101/21006119/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-sarashina_honten">
+<img class="hero" src="img/gifu/sarashina_honten.jpg" alt="更科 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>更科<span class="yomi">さらしな</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1928年（昭和3年）創業のうどん・そばの老舗で、岐阜名物「冷やしたぬき」を生んだ店として知られる。「揚げと天かすを一緒に楽しみたい」という客の声から生まれた冷やしたぬきは、天かすに甘辛い油揚げを合わせたコクのある味わいで、「岐阜といえば冷やしたぬき、冷やしたぬきといえば更科」と言われるほど市民に浸透。冬の味噌煮込みも人気が高い。通し営業で昼を外しても使いやすく、岐阜の食文化を一杯で体験できる。</div>
+<div class="sig"><b>一皿:</b>冷やしたぬき</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 10:30〜16:45</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市京町３丁目４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582659594">☎ 058-265-9594</a> ／ <a href="https://www.tanuki-soba.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>東海テレビが「岐阜のソウルフード冷やしたぬきの元祖」として特集した老舗で、公式サイトで現行の営業時間・通販を案内しており営業継続が確認できる。岐阜独自の麺文化の代表として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9B%B4%E7%A7%91%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E4%BA%AC%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.tanuki-soba.com/">更科 公式サイト</a> / <a href="https://www.tokai-tv.com/tokainews/feature/article_20220110_14924">東海テレビNEWS</a></div>
+</div></div>
+<div class="card" id="c-korakuso">
+<img class="hero" src="img/gifu/korakuso.jpg" alt="日本料理 後楽荘 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>日本料理 後楽荘<span class="yomi">こうらくそう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">金華山のふもと、古い町割りが残る本町に構える老舗の日本料理店。風情ある町家造りの店内に個室の座敷が並び、季節の会席・懐石を落ち着いて味わえる。夜は完全予約制で、慶事や顔合わせ、接待などあらたまった席に使われる一方、昼は手頃な価格帯の昼会席があり、老舗の味を気軽に体験できるのが魅力。岐阜公園や川原町、伊奈波神社からも近く、城下町散策と合わせた昼食処としても重宝する。</div>
+<div class="sig"><b>一皿:</b>季節の会席料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市本町１丁目１−３１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582640027">☎ 058-264-0027</a> ／ <a href="http://www.kouraku.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県料理組合に加盟する岐阜市の代表的な日本料理店で、食べログ・ぐるなび・Rettyに現行の営業情報が掲載されている。町家の趣と個室会席という岐阜らしい使い勝手で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E5%BE%8C%E6%A5%BD%E8%8D%98%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%9C%AC%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%93%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gifu-ryouri.com/introduce/%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E5%BE%8C%E6%A5%BD%E8%8D%98/">岐阜県料理組合</a> / <a href="https://tabelog.com/gifu/A2101/A210101/21007803/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-kawaramachiya">
+<img class="hero" src="img/gifu/kawaramachiya.jpg" alt="川原町屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>川原町屋<span class="yomi">かわらまちや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">明治時代に和紙問屋だった築130年余の町家を利用した和カフェ＆ギャラリー。母屋から離れ、蔵へと続く空間はレトロな趣にあふれ、岐阜市の重要指定文化財に指定された建物そのものが見どころ。自家焙煎の川原町屋珈琲や季節限定のオリジナルケーキ、鮎のお粥などの軽食が楽しめ、美濃和紙を使った和雑貨の販売や季節の展示も行う。川原町散策や鵜飼観覧の合間の休憩に最適で、岐阜の川湊文化を肌で感じられる一軒。</div>
+<div class="sig"><b>一皿:</b>川原町屋珈琲と季節のケーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金 11:00〜16:00 ／ 土・日 11:00〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市玉井町２８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582665144">☎ 058-266-5144</a> ／ <a href="http://kawaramachiya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>まっぷるなど観光メディアの川原町特集で定番として紹介され、公式サイトに現行の営業時間・定休日が掲載されている。町家文化と長良川観光を体感できる岐阜らしさで選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E5%8E%9F%E7%94%BA%E5%B1%8B%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%8E%89%E4%BA%95%E7%94%BA%EF%BC%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kawaramachiya.jp/">川原町屋 公式サイト</a> / <a href="https://www.mapple.net/article/92600/">まっぷるウェブ</a></div>
+</div></div>
+<div class="card" id="c-juhachiro">
+<img class="hero" src="img/gifu/juhachiro.jpg" alt="十八楼 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>十八楼<span class="yomi">じゅうはちろう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">万延元年（1860年）創業、松尾芭蕉が「十八楼ノ記」で名付けたと伝わる川原町の老舗料亭旅館。長良川温泉を代表する宿で、館内から河川敷へ直接通じ、鵜飼観覧船のりばは目と鼻の先。長良川の鮎や飛騨牛など岐阜の食材を使った会席が評判で、鵜飼シーズン（毎年5月11日〜10月15日）には夕食と鵜飼観覧を組み合わせたパックプランが名物。宿泊しなくても日帰り入浴（大人1000円・受付14:00〜20:00）が利用でき、川原町散策の拠点になる。</div>
+<div class="sig"><b>一皿:</b>鵜飼観覧付き会席プラン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市湊町１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582651551">☎ 058-265-1551</a> ／ <a href="http://www.18rou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県観光公式サイト・長良川温泉公式が掲載する川原町の代表格で、JTB等の予約サイトで2025年以降の食事付きプランが販売されており営業が確認できる。芭蕉ゆかりの歴史と鵜飼との一体感で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%81%E5%85%AB%E6%A5%BC%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%B9%8A%E7%94%BA%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kankou-gifu.jp/reserve/detail_8.html">岐阜県観光公式サイト</a> / <a href="https://nagaragawa.org/ukai02">長良川温泉（鵜飼パックプラン）</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・うなぎ</h2>
+<div class="card" id="c-takada_hassho">
+<img class="hero" src="img/gifu/takada_hassho.jpg" alt="日本料理 たか田八祥 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>日本料理 たか田八祥<span class="yomi">たかだはっしょう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1989年創業、ミシュランガイド2019で一つ星を獲得した岐阜を代表する日本料理店。全国から料理人が学びに来る名店として知られ、端正な仕事の会席が季節ごとの岐阜の食材を引き立てる。カウンターと個室があり、接待や記念日などあらたまった席にふさわしい。県内外の食通が特別な日に訪れる店で、弟子たちが県内外で店を開くなど岐阜の和食文化の中心的存在。人気店のため、訪問前の予約が必須。</div>
+<div class="sig"><b>一皿:</b>季節の会席コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市杉山町１７−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582621750">☎ 058-262-1750</a> ／ <a href="http://www.takadahassho.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「日本料理EAST百名店2025」に選出され、2025年時点の営業が確認できる。ミシュラン一つ星の実績を持つ岐阜市の和食の最高峰として各グルメメディアが挙げる定番。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%9F%E3%81%8B%E7%94%B0%E5%85%AB%E7%A5%A5%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%9D%89%E5%B1%B1%E7%94%BA%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/en/gifu/A2101/A210101/21000267/">食べログ</a> / <a href="https://r.gnavi.co.jp/jx480vpt0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-nimonjiya">
+<img class="hero" src="img/gifu/nimonjiya.jpg" alt="二文字屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>二文字屋<span class="yomi">にもんじや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">元和6年（1620年）、初代・上野長七郎が岐阜城下から移り住み、中山道加納宿で飛脚の宿として料理を始めたのが起源という約400年の歴史を持つ老舗。パリッと香ばしい皮とふわりとした身のうなぎが名物で、うな丼やひつまぶしのほか、うなぎ尽くしの「土用懐石」など会席仕立ても揃う。婚礼や法事、接待など地元のハレの席に代々使われてきた格式ある店。夏の土用の時期はうな重等を休みにして仕込みを守るこだわりも老舗らしい。</div>
+<div class="sig"><b>一皿:</b>うな丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市加納本町２丁目17番地</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582717843">☎ 058-271-7843</a> ／ <a href="http://www7a.biglobe.ne.jp/~nimonziya/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1620年創業と岐阜市屈指の歴史を持ち、ぐるなび・Retty・レッツぎふに現行の営業情報が掲載されている。中山道加納宿の歴史とともに語られる老舗として観光・地元双方の媒体が紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%8C%E6%96%87%E5%AD%97%E5%B1%8B%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%8A%A0%E7%B4%8D%E6%9C%AC%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE17%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://r.gnavi.co.jp/p6um8v900000/">楽天ぐるなび</a> / <a href="https://www.lets-gifu.com/g/shop-889/">レッツぎふ</a></div>
+</div></div>
+<div class="card" id="c-kamon">
+<img class="hero" src="img/gifu/kamon.jpg" alt="華紋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>華紋<span class="yomi">かもん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">岐阜市東栄町のうなぎ店で、愛知県産のうなぎを蒸さずに直火で焼き上げる関西風の地焼きが身上。パリッと香ばしい皮とふっくらした身の対比が楽しめ、タレの染みたご飯とともに満足感が高い。「座敷わらしに会える店」としてメディアに取り上げられたユニークな逸話でも知られ、遠方から訪れるファンも多い。昼夜とも営業時間が短く売り切れ仕舞いもあるため、早めの訪問か電話確認が確実。地元で長く愛される実力店。</div>
+<div class="sig"><b>一皿:</b>地焼きのうな丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜13:30, 17:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市東栄町３丁目２９−２ 炭焼きうなぎ華紋</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582460844">☎ 058-246-0844</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ORICON NEWSやトラベルjpが「岐阜の老舗うなぎ店」として紹介し、Retty・ぐるなびに現行の営業情報が掲載されている。関西風地焼きという岐阜市内では個性の立つ焼き方で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8F%AF%E7%B4%8B%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%9D%B1%E6%A0%84%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%99%E2%88%92%EF%BC%92%20%E7%82%AD%E7%84%BC%E3%81%8D%E3%81%86%E3%81%AA%E3%81%8E%E8%8F%AF%E7%B4%8B">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.oricon.co.jp/article/1132837/">ORICON NEWS</a> / <a href="https://r.gnavi.co.jp/ax2fcty10000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-kitagawa_unagi">
+<img class="hero" src="img/gifu/kitagawa_unagi.jpg" alt="炭焼きうなぎ 喜多川 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>炭焼きうなぎ 喜多川<span class="yomi">すみやきうなぎきたがわ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">岐阜市南部の柳津町にある炭焼きうなぎの人気店。備長炭で香ばしく焼き上げたうなぎは並・上・特とご飯の量とともに選べ、肝吸い付きで満足度が高い。テーブルと座敷合わせて48席、駐車場30台と使い勝手が良い一方、人気ゆえに売り切れ次第終了となる日も多く、開店直後の訪問が定石。市中心部から少し離れるが、わざわざ車を走らせる価値があると地元で評判の一軒で、岐阜市のうなぎランキングでも常に上位に挙がる。</div>
+<div class="sig"><b>一皿:</b>炭焼きうな丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜14:00, 17:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市柳津町東塚３丁目２５−２５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0583882892">☎ 058-388-2892</a> ／ <a href="https://kitagawaunagi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ岐阜市うなぎ部門で上位常連の人気店で、公式サイトとヒトサラ・ぐるなびで現行の営業情報が確認できる。中心部の老舗2軒と焼き方・立地のバランスを取る実力店として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%8D%E3%81%86%E3%81%AA%E3%81%8E%20%E5%96%9C%E5%A4%9A%E5%B7%9D%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%9F%B3%E6%B4%A5%E7%94%BA%E6%9D%B1%E5%A1%9A%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kitagawaunagi.jp/">炭焼きうなぎ喜多川 公式サイト</a> / <a href="https://tabelog.com/gifu/A2101/A210101/21001289/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-sennarizushi_honten">
+<img class="hero" src="img/gifu/sennarizushi_honten.jpg" alt="千成寿司 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>千成寿司 本店<span class="yomi">せんなりずしほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">岐阜駅近くの長住町で長く営む寿司店。シャリが見えないほど大きな「ジャンボネタ」が名物で、通常の倍以上あるネタの迫力とコストパフォーマンスで岐阜市民に愛されてきた。特に脂ののった大きな穴子は千成名物として名高い。カウンターと座敷があり、家族の祝い事から一人の贅沢まで幅広く使える町寿司の雰囲気も魅力。海のない岐阜県で「わざわざ食べに行きたい寿司」として県観光公式サイトが推す、地元密着の実力店。</div>
+<div class="sig"><b>一皿:</b>ジャンボネタの穴子</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市長住町４丁目５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582648491">☎ 058-264-8491</a> ／ <a href="https://sennarizushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県観光公式サイトの特集「海なし県のお寿司屋さん5選」で岐阜市から選ばれた一軒。公式サイト・ホットペッパー等で現行の営業情報が確認でき、地元口コミでの人気も厚い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%83%E6%88%90%E5%AF%BF%E5%8F%B8%20%E6%9C%AC%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E9%95%B7%E4%BD%8F%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kankou-gifu.jp/article/detail_324.html">岐阜県観光公式サイト</a> / <a href="https://sennarizushi.com/">千成寿司 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-amimotonosato_kagashima">
+<img class="hero" src="img/gifu/amimotonosato_kagashima.jpg" alt="廻転すし あみもとの里 かがしま 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>廻転すし あみもとの里 かがしま<span class="yomi">あみもとのさとかがしま</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">岐阜市西部の街道沿いにある地元発の回転寿司店。どのネタも大ぶりで良心的な価格設定が身上で、週末は家族連れで賑わう岐阜市民の定番。回転寿司ながら注文ごとに握ってくれるスタイルで、旬の魚や一品料理も充実しており、寿司店の敷居は高いが良い魚を腹一杯食べたいという時に頼りになる。通し営業で時間を選ばず使えるのも便利。全国チェーンとは一線を画す、地の利を活かした地元密着型の一軒として挙げたい。</div>
+<div class="sig"><b>一皿:</b>大ネタの握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市鏡島精華１丁目７−２ あみもとの里</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582511115">☎ 058-251-1115</a> ／ <a href="http://irukagroup-kitamuraya.com/amimoto/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんの岐阜市寿司ランキングや食べログ・Rettyで口コミ人気が高い地元回転寿司で、各グルメサイトに現行の営業情報が掲載されている。全国チェーンでない地元店として気軽枠で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BB%BB%E8%BB%A2%E3%81%99%E3%81%97%20%E3%81%82%E3%81%BF%E3%82%82%E3%81%A8%E3%81%AE%E9%87%8C%20%E3%81%8B%E3%81%8C%E3%81%97%E3%81%BE%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E9%8F%A1%E5%B3%B6%E7%B2%BE%E8%8F%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%92%20%E3%81%82%E3%81%BF%E3%82%82%E3%81%A8%E3%81%AE%E9%87%8C">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jalan.net/gourmet/cit_212010000/g2_3g042/">じゃらんnet</a> / <a href="https://tabelog.com/gifu/A2101/A210101/21000159/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-kisshouan">
+<img class="hero" src="img/gifu/kisshouan.jpg" alt="伝承美濃そば 吉照庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>伝承美濃そば 吉照庵<span class="yomi">きっしょうあん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">古い町並みが残る米屋町にある十割そばの名店。つなぎの小麦粉を一切使わず、福井産の玄そばを石臼で挽き、長良川の伏流水で打ち上げる。ジャズが流れる落ち着いた店内で、喉ごしと香りの立つ十割そばを味わえ、そばがきや天ぷらの評価も高い。定番はそばと天ぷらを一度に楽しめる海老天せいろ二段。土日祝は夜も営業しており、川原町・岐阜公園観光の後の食事にも使える。岐阜市で本格そばと言えば真っ先に名が挙がる一軒。</div>
+<div class="sig"><b>一皿:</b>海老天せいろ（二段）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 11:00〜15:00 ／ 土・日 11:00〜15:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市米屋町２５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582653608">☎ 058-265-3608</a> ／ <a href="http://kisshouan-gifu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログで岐阜市そば部門の上位常連（口コミ128件超）で、公式サイトに現行の営業時間・定休日が掲載され営業継続が確認できる。うどん文化の岐阜で本格十割そばを担う存在として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BC%9D%E6%89%BF%E7%BE%8E%E6%BF%83%E3%81%9D%E3%81%B0%20%E5%90%89%E7%85%A7%E5%BA%B5%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%B1%B3%E5%B1%8B%E7%94%BA%EF%BC%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kisshouan-gifu.com/">吉照庵 公式サイト</a> / <a href="https://tabelog.com/gifu/A2101/A210101/21000014/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-gifu_hatsuzushi_yanagase">
+<img class="hero" src="img/gifu/gifu_hatsuzushi_yanagase.jpg" alt="ぎふ初寿司 柳ヶ瀬総本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>ぎふ初寿司 柳ヶ瀬総本店<span class="yomi">ぎふはつずしやながせそうほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1957年（昭和32年）に創業者・森賢二氏が岐阜・柳ケ瀬で「元祖10円寿司」として始めた、岐阜生まれの寿司店。高級食だった寿司を気軽に食べられる店として市民に浸透し、60年余りにわたり愛され続けている。発祥の地・柳ケ瀬に構える総本店では、日替わり6貫に細巻き・唐揚げ・具沢山味噌汁が付く「はなまる寿司ランチ」（1300円）や、階段状の寿司下駄で供される名物「階段ランチ」が人気。目利きの鮪や職人が煮上げる焼穴子など仕事も確かで、昼夜とも使いやすい。</div>
+<div class="sig"><b>一皿:</b>階段ランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:15, 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市日ノ出町２丁目１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582644871">☎ 058-264-4871</a> ／ <a href="https://www.hatsuzushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜発祥のローカルチェーンのため、規定に従い発祥の地・柳ケ瀬の総本店1店のみ掲載。地元メディアさかだちブックスが特集し、公式サイト・ホットペッパーに現行店舗として掲載されており営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8E%E3%81%B5%E5%88%9D%E5%AF%BF%E5%8F%B8%20%E6%9F%B3%E3%83%B6%E7%80%AC%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%97%A5%E3%83%8E%E5%87%BA%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hatsuzushi.com/">ぎふ初寿司 公式サイト</a> / <a href="https://sakadachibooks.com/hatsuzushi-yanagase/">さかだちブックス</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・そば・町中華</h2>
+<div class="card" id="c-rikido">
+<img class="hero" src="img/gifu/rikido.jpg" alt="らぁめん りきどう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>らぁめん りきどう<span class="yomi">らぁめんりきどう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">忠節橋を北へ渡った早田エリアにある、岐阜市内でもトップクラスの人気を誇るラーメン・つけ麺店。保存料や化学調味料に頼らず当日製麺の自家製麺にこだわり、細麺・平打ち・太麺に加え、きしめんを思わせる名物「凄平麺」まで麺の太さを選べるのが最大の特徴。分厚く煮込まれたドデカチャーシューも名物で、平日でも開店前から行列ができる。駐車場は店舗前後と第二駐車場あり。</div>
+<div class="sig"><b>一皿:</b>つけ麺（凄平麺）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:15／17:30〜21:15</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市島栄町２丁目５３ コーポ栄</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://ja-jp.facebook.com/RaamenRikidou/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログ「いとログ」が『岐阜でトップクラスの人気を誇るつけ麺』と紹介し、2025年のブログ記事でも開店前からの行列が報告されている。食べログ岐阜県内で最上位クラスの評価と紹介する媒体が複数ある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%81%E3%82%81%E3%82%93%20%E3%82%8A%E3%81%8D%E3%81%A9%E3%81%86%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%B3%B6%E6%A0%84%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%EF%BC%93%20%E3%82%B3%E3%83%BC%E3%83%9D%E6%A0%84">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://webdesign-gourmet.com/gifu-02">いとログ</a> / <a href="https://ramendb.supleks.jp/s/65171.html">ラーメンデータベース</a></div>
+</div></div>
+<div class="card" id="c-gifu_tanmen_gifu_honten">
+<img class="hero" src="img/gifu/gifu_tanmen_gifu_honten.jpg" alt="岐阜タンメン 岐阜本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>岐阜タンメン 岐阜本店<span class="yomi">ぎふたんめん ぎふほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">東海地方で社会現象的な行列を生むローカルチェーン「岐阜タンメン」の原点となる店。野菜と豚肉、にんにくの旨味を塩ベースのスープに抽出し、歯切れのよい細打ち平麺を合わせる。卓上の辛味あんと酢もやしで自分好みに味を調整するのが流儀。深夜まで通し営業しており、飲んだ後の締めにも使える。駐車場完備。チェーン名は『岐阜が全国から注目されるきっかけになれば』との思いから。</div>
+<div class="sig"><b>一皿:</b>岐阜タンメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜3:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市手力町３８−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0583385609">☎ 058-338-5609</a> ／ <a href="https://gifu-tanmen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>屋台としての発祥は2009年の愛知県稲沢市だが、2010年にこの地に最初の常設店「元祖タンメン屋」を開いたのがチェーンの原点であり、規定に従い本店1店のみを掲載。公式サイトが稼働し、まっぷる等の観光媒体でも現役の人気店として掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B2%90%E9%98%9C%E3%82%BF%E3%83%B3%E3%83%A1%E3%83%B3%20%E5%B2%90%E9%98%9C%E6%9C%AC%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%89%8B%E5%8A%9B%E7%94%BA%EF%BC%93%EF%BC%98%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gifu-tanmen.com/">岐阜タンメン公式</a> / <a href="https://www.mapple.net/spot/21012839/">まっぷるウェブ</a></div>
+</div></div>
+<div class="card" id="c-menshoku_koraku">
+<img class="hero" src="img/gifu/menshoku_koraku.jpg" alt="麺食 香楽 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>麺食 香楽<span class="yomi">めんしょく こうらく</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">岐阜市民のソウルフードと呼ばれる「ベトコンラーメン」の人気店。ゴロゴロと入った丸ごとのにんにくとたっぷりの炒め野菜、ピリ辛スープが一体となったスタミナ麺で、食べ終わる頃には汗が吹き出す元気の出る一杯。昼夜とも営業時間が短く、地元客で埋まる正真正銘の地元密着店。にんにく好きなら岐阜麺文化の体験として外せない。市街地からは離れるため車での訪問が現実的。</div>
+<div class="sig"><b>一皿:</b>ベトコンラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜13:30, 17:00〜19:45</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市川部２丁目６４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582393612">☎ 058-239-3612</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元情報誌系メディア岐阜咲楽の「2025-26 岐阜近郊で人気のラーメン24選」に『岐阜市のソウルフード』として掲載されており、2025年時点の営業実態が確認できる。東海地方独特のベトコンラーメン文化を岐阜市内で味わえる代表格として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E9%A3%9F%20%E9%A6%99%E6%A5%BD%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%B7%9D%E9%83%A8%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gifu.mediajapan.jp/newentry-noodles-digest/">岐阜咲楽（SAKURA MediaJapan）</a></div>
+</div></div>
+<div class="card" id="c-kochoan_semba">
+<img class="hero" src="img/gifu/kochoan_semba.jpg" alt="胡蝶庵 仙波 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>胡蝶庵 仙波<span class="yomi">こちょうあん せんば</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">古民家風の趣ある佇まいで迎える手打そばの名店。店主が石臼で自家製粉した粗挽きのそば粉を使い、香り高い蕎麦を打つ。看板はシンプルにそばの実力が伝わるせいろそば。落ち着いた静かな店内で、昼のみの営業・売り切れ仕舞いのため早めの訪問が確実。岐阜市中心部の喧騒から少し離れ、丁寧な蕎麦と向き合える一軒として蕎麦好きの評価が高い。</div>
+<div class="sig"><b>一皿:</b>せいろそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市日光町３丁目２６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582326776">☎ 058-232-6776</a> ／ <a href="https://instagram.com/kochoan_semba?igshid=YmMyMTA2M2Y=">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「そば百名店」に2025年も選出された岐阜市を代表する蕎麦店。ヒトサラ等のグルメ媒体にも現役店として掲載され営業情報が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%83%A1%E8%9D%B6%E5%BA%B5%20%E4%BB%99%E6%B3%A2%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%97%A5%E5%85%89%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0032009265/">ヒトサラ</a> / <a href="https://sobanoyokozuki.com/sobaya-gifu/05.html">そばの横好き</a></div>
+</div></div>
+<div class="card" id="c-daifukuya_rengadori">
+<img class="hero" src="img/gifu/daifukuya_rengadori.jpg" alt="大福屋 レンガ通り店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>大福屋 レンガ通り店<span class="yomi">だいふくや れんがどおりてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">柳ケ瀬レンガ通りにある1960年（昭和35年）創業の昔ながらの大衆食堂。名物は中華そばに海老天をのせる岐阜独特のB級グルメ「天ぷら中華」で、半世紀にわたり裏メニュー的存在ながら根強い人気を誇る。少し大きめのサクサク天かすが特徴の冷やしたぬきも、うどん・そばから選べて評判。丼物や定食も揃い、一品ずつ丁寧に手作りするため待ち時間も味のうち。柳ケ瀬散策の昼食に最適。</div>
+<div class="sig"><b>一皿:</b>天ぷら中華そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:30〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市神室町１丁目12−１ 福井ビル 1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582656818">☎ 058-265-6818</a> ／ <a href="https://daifukuya1960.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>CBCマガジンが『半世紀も裏メニューなのに根強い人気』と特集し、岐阜県観光公式サイトの冷やしたぬき5選にも掲載。2025年8月の口コミ投稿もあり営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E7%A6%8F%E5%B1%8B%20%E3%83%AC%E3%83%B3%E3%82%AC%E9%80%9A%E3%82%8A%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%A5%9E%E5%AE%A4%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE12%E2%88%92%EF%BC%91%20%E7%A6%8F%E4%BA%95%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hicbc.com/magazine/article/?id=aisarefood-column-24032101">CBCマガジン</a> / <a href="https://www.kankou-gifu.jp/blog/detail_346.html">岐阜県観光公式サイト 旅のコラム</a></div>
+</div></div>
+<div class="card" id="c-tagoto_rokujo">
+<img class="hero" src="img/gifu/tagoto_rokujo.jpg" alt="手打ちうどん そば 田毎 六条店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>手打ちうどん そば 田毎 六条店<span class="yomi">たごと ろくじょうてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">岐阜市南部で愛される手打うどんの人気店。もっちりした食感と手打ならではのコシのある麺が身上で、名物は熱々の味噌煮込みうどん。昼のゴールデンタイムには行列ができるほどの地元人気を誇り、家族連れから仕事途中の一人客まで幅広く使える。市内に六条店と日置江店の2店舗を構え、冷凍煮込みうどんの通販や年越しそばなど季節商品も手掛ける。岐阜駅周辺からは車でのアクセスが便利。</div>
+<div class="sig"><b>一皿:</b>味噌煮込みうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜15:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市六条南２丁目９−１３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582739272">☎ 058-273-9272</a> ／ <a href="http://tagoto.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜新聞社系メディアZYAO22の岐阜市うどん特集で『ゴールデンタイムは行列』の人気店として紹介。公式サイトが稼働しており営業時間・店舗情報・季節商品が公開されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%86%E3%81%A9%E3%82%93%20%E3%81%9D%E3%81%B0%20%E7%94%B0%E6%AF%8E%20%E5%85%AD%E6%9D%A1%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%85%AD%E6%9D%A1%E5%8D%97%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tagoto.jp/">田毎公式サイト</a> / <a href="https://zyao22.gifu-np.co.jp/gifu-life/gourmet/5650">ZYAO22（岐阜新聞社）</a></div>
+</div></div>
+<div class="card" id="c-yasuki_hanemachi">
+<img class="hero" src="img/gifu/yasuki_hanemachi.jpg" alt="中国料理 酒房 泰城 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">25</span>中国料理 酒房 泰城<span class="yomi">ちゅうごくりょうりしゅぼう やすき</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">岐阜駅から徒歩3分、繁華街・玉宮エリアにある四川中華の実力店。四川中華の名店で腕を振るったオーナーが作る料理はどれも本格派で、ランチの担担麺と山椒がビリッと痺れる麻婆豆腐が二枚看板。辛さの中に旨味がしっかりあり、辛い物が苦手な人向けの料理も豊富。カウンターで一人麺をすするランチ使いから、飲み放題付きコースでの宴会まで幅広く対応する、町中華と本格中華の良さを併せ持つ店。</div>
+<div class="sig"><b>一皿:</b>担担麺</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:30〜14:00, 17:30〜22:30 ／ 日 17:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市羽根町１２−９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582010553">☎ 058-201-0553</a> ／ <a href="https://yasuki.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらん岐阜市四川料理ランキング1位で、ホットペッパーには2026年6月の口コミ投稿もあり営業実態が確認できる。岐阜駅前で麺ランチと夜の中華飲みを兼ねられる使い勝手を評価して選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E9%85%92%E6%88%BF%20%E6%B3%B0%E5%9F%8E%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%BE%BD%E6%A0%B9%E7%94%BA%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://yasuki.owst.jp/">泰城公式（owst）</a> / <a href="https://www.hotpepper.jp/strJ001192956/">ホットペッパーグルメ</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・バー(玉宮・柳ケ瀬)</h2>
+<div class="card" id="c-mizutani_honten">
+<img class="hero" src="img/gifu/mizutani_honten.jpg" alt="水谷本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>水谷本店<span class="yomi">みずたにほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">名鉄岐阜駅から徒歩2分、創業60年を超える岐阜が誇る大衆酒場の横綱。昼過ぎの開店直後からいつも満席で、名物は1本130〜150円ほどの焼き串と肝焼き、味の染みたどて煮。大鍋から自分で好きなネタを取るおでんも楽しい。瓶ビール片手に地元の常連に混じって飲む時間はまさに岐阜の酒場文化そのもの。売り切れ仕舞いのため早い時間の訪問が鉄則。はしご酒のスタート地点に最適。</div>
+<div class="sig"><b>一皿:</b>焼き串（肝焼き）とどて煮</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 14:00〜20:00 ／ 土 12:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市長住町４丁目２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582649368">☎ 058-264-9368</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県観光公式サイトの「せんべろ居酒屋5選」や岐阜市公式観光メディアに掲載される定番中の定番で、2025年5月の口コミ投稿も確認でき営業実態がある。60年以上続く老舗酒場として歴史枠でも筆頭。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B0%B4%E8%B0%B7%E6%9C%AC%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E9%95%B7%E4%BD%8F%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kankou-gifu.jp/blog/detail_93.html">岐阜県観光公式サイト 旅のコラム</a> / <a href="https://cool-gifucity.jp/spot/eat/p4128/">エエトコタント岐阜市（岐阜市公式）</a></div>
+</div></div>
+<div class="card" id="c-new_tamamiya">
+<img class="hero" src="img/gifu/new_tamamiya.jpg" alt="ニュータマミヤ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>ニュータマミヤ<span class="yomi">にゅーたまみや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">居酒屋300店超がひしめく玉宮エリアで、幅広い層の客でにぎわう大衆酒場の代表格。良質なラードでサクッと揚げた串カツ・どてカツ・とんやきは1本100円と破格で、手作りのおばんざいや刺身、おでんもリーズナブル。養老の地ウイスキーのソーダ割りなど地元の酒が置いてあるのも憎い。どこか懐かしい店内は一人でふらっと入っても、仲間とわいわいでも居心地がよく、玉宮はしご酒の起点に最適。</div>
+<div class="sig"><b>一皿:</b>串カツ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・日 17:00〜23:00 ／ 金・土 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市玉宮町１丁目６−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582633444">☎ 058-263-3444</a> ／ <a href="https://japoncompany.business/gifu/544346-new-tamamiya">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜市公式観光メディア「エエトコタント岐阜市」と岐阜県観光公式サイトの双方に掲載される玉宮の看板店。2025年公開の県観光サイトのちょい飲み記事群でも玉宮の定番として扱われている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%BF%E3%83%9E%E3%83%9F%E3%83%A4%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%8E%89%E5%AE%AE%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://cool-gifucity.jp/spot/eat/p4047/">エエトコタント岐阜市（岐阜市公式）</a> / <a href="https://www.kankou-gifu.jp/blog/detail_93.html">岐阜県観光公式サイト 旅のコラム</a></div>
+</div></div>
+<div class="card" id="c-marudai_ekimae_center">
+<img class="hero" src="img/gifu/marudai_ekimae_center.jpg" alt="丸大駅前センター 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>丸大駅前センター<span class="yomi">まるだいえきまえせんたー</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">玉宮エリアで中華と海鮮を両方つまめるユニークな大衆酒場。名物は1個からで注文できる肉厚ジューシーな「丸大しゅうまい」で、茹でほたるいかの酢味噌や月見つくね、本格的な四川麻婆豆腐まで酒が進む肴が安く揃う。昭和の駅前食堂を思わせるレトロな店名と雰囲気も酒場好きの心をくすぐる。土曜は15時から開いており昼飲みにも対応。玉宮はしご酒の中継地点として重宝する一軒。</div>
+<div class="sig"><b>一皿:</b>丸大しゅうまい</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金 17:00〜22:00 ／ 土・日 15:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市玉宮町１丁目１３−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582628844">☎ 058-262-8844</a> ／ <a href="https://akr0695844413.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県観光公式サイトの「せんべろ居酒屋5選」に掲載され、公式予約サイトで現行の営業時間が公開されている。中華×海鮮×大衆酒場という玉宮でも個性の際立つ業態を評価して選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%B8%E5%A4%A7%E9%A7%85%E5%89%8D%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%8E%89%E5%AE%AE%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://akr0695844413.owst.jp/">丸大駅前センター公式（owst）</a> / <a href="https://www.kankou-gifu.jp/blog/detail_93.html">岐阜県観光公式サイト 旅のコラム</a></div>
+</div></div>
+<div class="card" id="c-homerun_kanda">
+<img class="hero" src="img/gifu/homerun_kanda.jpg" alt="ホームラン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>ホームラン<span class="yomi">ほーむらん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">名鉄岐阜駅の目の前という抜群の立地で、昼から深夜まで通しで飲めるホルモン酒場。直送にこだわった新鮮なホルモン串は1本140円からで、にんにくの効いたもつ煮込みと〆のもつ鍋が二大名物。昔ながらの大衆居酒屋をコンセプトにした店内はテラス席や掘りごたつ個室もあり、一人昼飲みから30名までの宴会まで懐が深い。電車待ちの一杯にも、岐阜駅前はしご酒の締めにも使える万能選手。</div>
+<div class="sig"><b>一皿:</b>ホルモン串ともつ煮込み</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 13:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市神田町９丁目１８ 新岐阜駅前第一ビル 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054851616">☎ 050-5485-1616</a> ／ <a href="https://home-run.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県観光公式サイトのせんべろ特集で駅前の昼飲み店として紹介され、ヒトサラで現行の営業時間・メニューが公開されている。駅前で昼から深夜まで通し営業という使い勝手を評価して選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9B%E3%83%BC%E3%83%A0%E3%83%A9%E3%83%B3%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%A5%9E%E7%94%B0%E7%94%BA%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%20%E6%96%B0%E5%B2%90%E9%98%9C%E9%A7%85%E5%89%8D%E7%AC%AC%E4%B8%80%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031249108/">ヒトサラ</a> / <a href="https://www.kankou-gifu.jp/blog/detail_93.html">岐阜県観光公式サイト 旅のコラム</a></div>
+</div></div>
+<div class="card" id="c-terada_kappo">
+<img class="hero" src="img/gifu/terada_kappo.jpg" alt="手酌割烹 てら田 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>手酌割烹 てら田<span class="yomi">てじゃくかっぽう てらだ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">JR岐阜駅から徒歩2分、『居酒屋以上高級割烹未満』を掲げる人気割烹。経験30年超の板長が旬の魚と厳選食材で組み立てるおまかせコースが名物で、刺身盛りから揚げ物、焼き物、鮨まで流れるように供される。コースを2人で1つシェアできる珍しいスタイルなので、割烹初心者やちょい飲み派にも敷居が低い。岐阜の地酒も充実し、ライブ感あるカウンターと個室を完備。特別な夜にも普段使いにも効く一軒。</div>
+<div class="sig"><b>一皿:</b>板長おまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜23:00（金・土〜24:00、月曜のみランチ11:30〜14:00あり）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市日ノ出町３丁目４ 慕陶ビル 1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582655377">☎ 058-265-5377</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「日本料理EAST百名店2025」選出、ミシュランガイドのビブグルマン掲載歴も持つ岐阜駅前の実力店。ホットペッパー等で現行の営業情報・予約が公開されており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E9%85%8C%E5%89%B2%E7%83%B9%20%E3%81%A6%E3%82%89%E7%94%B0%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%97%A5%E3%83%8E%E5%87%BA%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%20%E6%85%95%E9%99%B6%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ001122026/">ホットペッパーグルメ</a> / <a href="https://hitosara.com/0031235863/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-yakitori_mizuki">
+<img class="hero" src="img/gifu/yakitori_mizuki.jpg" alt="焼鳥 みずき 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>焼鳥 みずき<span class="yomi">やきとり みずき</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">神田町のビル2階に構える、岐阜の焼鳥シーンを代表する名店。滋賀・大津の「かしわの川中」から朝引きの淡海地鶏を仕入れ、紀州備長炭で一本一本丁寧に焼き上げる。鮮度の良さが際立つ串は部位ごとの火入れが絶妙で、焼鳥をコースでじっくり味わうスタイル。落ち着いたカウンターで焼き手の仕事を眺めながら杯を重ねる、大人の焼鳥体験ができる。予約して訪れたい特別感のある一軒。</div>
+<div class="sig"><b>一皿:</b>淡海地鶏の焼鳥コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 17:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市神田町３丁目９ 岐阜屋本店ビル 2階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582640715">☎ 058-264-0715</a> ／ <a href="https://tabelog.com/gifu/A2101/A210101/21012245/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「焼き鳥EAST百名店2025」に選出された岐阜市の焼鳥の筆頭格で、地元ブログでも岐阜の焼鳥の名店として紹介されている。一休・オートリザーブ等で現在も予約を受け付けており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%BF%E3%81%9A%E3%81%8D%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%A5%9E%E7%94%B0%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%99%20%E5%B2%90%E9%98%9C%E5%B1%8B%E6%9C%AC%E5%BA%97%E3%83%93%E3%83%AB%202%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hobogifu.com/yakitori-mizuki/">ほぼ岐阜（地元ブログ）</a> / <a href="https://restaurant.ikyu.com/123450">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-enso_kado">
+<img class="hero" src="img/gifu/enso_kado.jpg" alt="天ぷらと岐阜の酒 円相カド 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>天ぷらと岐阜の酒 円相カド<span class="yomi">えんそうかど</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">玉宮エリアの住田町にある、揚げたての天ぷらと岐阜の地酒を看板に掲げる居酒屋。日本酒は70mlと150mlの2サイズから量を選べるため、少しずつ何種類も飲み比べながら自分好みの一本を探せるのが楽しい。名物はレア感が絶妙と評判の赤海老の天ぷらで、カウンター限定コースなら目の前で揚がる天ぷらを最良の状態で味わえる。昼は天ぷらランチも営業しており、岐阜の酒文化への入り口として使い勝手がよい。</div>
+<div class="sig"><b>一皿:</b>赤海老の天ぷらと岐阜の地酒飲み比べ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:30, 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市住田町２丁目１３−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582132678">☎ 058-213-2678</a> ／ <a href="https://enso.ne.jp/ensokado/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県観光公式サイトが2025年3月公開の玉宮ちょい飲み特集で地酒が豊富な店として紹介しており、営業実態と現行の営業時間が確認できる。岐阜の地酒を軸にした居酒屋枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%E3%81%A8%E5%B2%90%E9%98%9C%E3%81%AE%E9%85%92%20%E5%86%86%E7%9B%B8%E3%82%AB%E3%83%89%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E4%BD%8F%E7%94%B0%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kankou-gifu.jp/blog/detail_422.html">岐阜県観光公式サイト 旅のコラム（2025年3月）</a></div>
+</div></div>
+<div class="card" id="c-ariiza_winebar">
+<img class="hero" src="img/gifu/ariiza_winebar.jpg" alt="イタリアンワイン専門バー アリーザ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>イタリアンワイン専門バー アリーザ<span class="yomi">いたりあんわいんせんもんばー ありーざ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">玉宮エリア・羽根町の赤い外観が目印のイタリアンワイン専門バー。ソムリエが厳選に厳選を重ねたイタリアワインがずらりと並び、グラスを傾けながら本場のつまみを楽しめる。名物は青のり香る小さな揚げピザ「ゼッポリーニ」で、ワインとの相性は抜群。壁一面のワイングラスが作る雰囲気も心地よく、居酒屋続きの玉宮の夜を締めくくる2軒目・3軒目として最適。日曜も営業しているのがうれしい。</div>
+<div class="sig"><b>一皿:</b>ゼッポリーニとイタリアワイン</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 18:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市羽根町8番地１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582637477">☎ 058-263-7477</a> ／ <a href="https://www.daachiu.com/arisa/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜県観光公式サイトが2025年3月公開の玉宮ちょい飲み特集で紹介しており、営業実態と現行の営業時間が確認できる。大衆酒場中心になりがちな玉宮でバー・ワイン枠の幅を出すために選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E3%83%B3%E3%83%AF%E3%82%A4%E3%83%B3%E5%B0%82%E9%96%80%E3%83%90%E3%83%BC%20%E3%82%A2%E3%83%AA%E3%83%BC%E3%82%B6%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%BE%BD%E6%A0%B9%E7%94%BA8%E7%95%AA%E5%9C%B0%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kankou-gifu.jp/blog/detail_422.html">岐阜県観光公式サイト 旅のコラム（2025年3月）</a></div>
+</div></div>
+<div class="card" id="c-tanmamiya_teppan">
+<img class="hero" src="img/gifu/tanmamiya_teppan.jpg" alt="たんまみ屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>たんまみ屋<span class="yomi">たんまみや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">玉宮エリアの鉄板酒場。名物はパリッと焼き上げる焼き餃子で、目の前の鉄板から次々に出てくる鉄板焼き料理をアテにビールやサワーが進む。土日祝は昼12時から通しで開いており、玉宮では貴重な昼飲みスポットとしても重宝する。気取らない雰囲気で一人飲みからグループまで対応し、餃子×鉄板×酒という分かりやすい満足感で若い世代から酒場好きまで幅広く支持されている。</div>
+<div class="sig"><b>一皿:</b>鉄板焼き餃子</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 17:00〜23:00 ／ 土 12:00〜23:00 ／ 日 12:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市玉宮町２丁目１５−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582641310">☎ 058-264-1310</a> ／ <a href="http://www.ibs29.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元情報誌系メディア岐阜咲楽の「2025 岐阜玉宮特集」に掲載され、2025年時点の営業時間・定休日が確認できる。大衆酒場・割烹・バーと並べた際に餃子・鉄板系の幅を加える枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%82%93%E3%81%BE%E3%81%BF%E5%B1%8B%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%8E%89%E5%AE%AE%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gifu.mediajapan.jp/newentry-tamamiya-digest/">岐阜咲楽（SAKURA MediaJapan）2025玉宮特集</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-ajirotei">
+<img class="hero" src="img/gifu/ajirotei.jpg" alt="欧風料理 あじろ亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>欧風料理 あじろ亭<span class="yomi">あじろてい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">明治40年（1907年）創業、伊奈波神社の参道沿いに立つ岐阜屈指の老舗洋食店。一階がレンガ造り、二階が白壁の洋館という趣ある建物で、ルーから手仕込みするカレーや自家製ソースのハンバーグ、飛騨牛ステーキ、オムライスなど正統派の洋食を受け継ぐ。国産食材にこだわり、秋冬にはカキフライも登場。東海地方のごく限られた店でしか食べられない洋食「ミヤベヤ」を出す店としても知られる。現在はランチタイム中心の営業で、参道散歩とあわせて静かな時間を過ごせる一軒。</div>
+<div class="sig"><b>一皿:</b>ルーから手仕込みのカレーとハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・土・日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">木・金曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市伊奈波通１丁目６５−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582630325">☎ 058-263-0325</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>老舗食堂サイトや岐阜市シビックプライドプレイスのブログが紹介する明治創業の名店。予約サイトAutoReserveで営業中と表示され、2025年9月付の口コミも投稿されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%AC%A7%E9%A2%A8%E6%96%99%E7%90%86%20%E3%81%82%E3%81%98%E3%82%8D%E4%BA%AD%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E4%BC%8A%E5%A5%88%E6%B3%A2%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%EF%BC%95%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shinise.tv/ajirotei-gifu/">老舗食堂（しにせTV）</a> / <a href="https://autoreserve.com/ja/restaurants/LGvZx1C6JHpduNyv7pLZ">AutoReserve</a></div>
+</div></div>
+<div class="card" id="c-kamata">
+<img class="hero" src="img/gifu/kamata.jpg" alt="洋食喫茶かまた 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>洋食喫茶かまた<span class="yomi">ようしょくきっさかまた</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和23年（1948年）に柳ケ瀬で創業し、70年以上愛され続ける洋食喫茶。現在は神田町通り沿いに店を構え、3代目店主が先代の想いと味を継ぐ。赤いベルベットのソファとレトロなランプが歴史を感じさせる昭和の空間で、看板メニューは鉄板ナポリタンとオムライス。名物の厚焼き玉子サンドも人気が高い。学校帰りの高校生から近所のお年寄りまで気軽に立ち寄る、地元になくてはならない存在で、岐阜駅・柳ケ瀬散策の途中に昔ながらの洋食を味わうのにちょうどよい。</div>
+<div class="sig"><b>一皿:</b>オムライス</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市神田町６丁目16−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582624067">☎ 058-262-4067</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>旅行メディアGOTRIP!が2026年2月の記事で「岐阜が誇る1948年創業の老舗洋食レストラン」として紹介。岐阜咲楽の昔なつかし洋食屋特集にも掲載された地元の定番。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%96%AB%E8%8C%B6%E3%81%8B%E3%81%BE%E3%81%9F%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%A5%9E%E7%94%B0%E7%94%BA%EF%BC%96%E4%B8%81%E7%9B%AE16%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gotrip.jp/2026/02/151038/">GOTRIP!（2026年2月）</a> / <a href="https://sakadachibooks.com/kamata-renewal/">さかだちブックス</a></div>
+</div></div>
+<div class="card" id="c-caravanserai">
+<img class="hero" src="img/gifu/caravanserai.jpg" alt="キャラバンサライ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>キャラバンサライ<span class="yomi">きゃらばんさらい</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">岐阜市雄総桜町にある創業30年以上の老舗洋食店。緑に囲まれた「グリーンレストラン」を名乗るレトロな店構えで、朝8時からのモーニングはドリンク代のみの450円からパン3種×サイド3種を自由に組み合わせられる岐阜らしい大盤振る舞い。ランチはハンバーグとオムライスのコンビランチなど王道の洋食にスープ・サラダ・パン・ドリンク・デザートまで付き、看板の濃厚かにクリームコロッケも評判。老若男女でにぎわう地元密着の一軒で、長良川・岐阜公園観光の朝食や昼食にも使いやすい。</div>
+<div class="sig"><b>一皿:</b>濃厚かにクリームコロッケ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 8:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市雄総桜町４丁目２１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582311269">☎ 058-231-1269</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜市喫茶文化振興協議会のサイトに2025年6月20日付で掲載され、岐阜咲楽の昔なつかし洋食屋特集でも紹介。モーニングとランチ両方で支持される地元の人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%A3%E3%83%A9%E3%83%90%E3%83%B3%E3%82%B5%E3%83%A9%E3%82%A4%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E9%9B%84%E7%B7%8F%E6%A1%9C%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.gifucafe-cpc.com/posts/57033312/">岐阜市喫茶文化振興協議会</a> / <a href="https://gifu.mediajapan.jp/caravanserai1-retro-gourmet/">岐阜咲楽</a></div>
+</div></div>
+<div class="card" id="c-home_bound">
+<img class="hero" src="img/gifu/home_bound.jpg" alt="ビストロ ホームバウンド 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>ビストロ ホームバウンド<span class="yomi">びすとろほーむばうんど</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">岐阜駅南東の加納エリアにある、アットホームな雰囲気の洋食ビストロ。名物は特製オムレツライスで、とろふわの卵を野菜の甘みが溶け込んだ自家製デミグラスソースで覆う一皿は長年の技が光る。煮込みハンバーグも人気で、ランチには小鉢とデザート、食後のコーヒー・紅茶まで付く手厚さ。店内には店主が愛する浜田省吾の音楽と映像が流れ、常連との温かな空気が心地よい。中心部の喧騒から少し離れて、丁寧な洋食をゆっくり味わいたいときに頼りになる地元の名店。</div>
+<div class="sig"><b>一皿:</b>特製オムレツライス</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 11:30〜14:00, 18:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市加納奥平町２丁目４０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582733992">☎ 058-273-3992</a> ／ <a href="https://www.instagram.com/bistro_homebound/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>FM GIFUの番組ブログで2025年7月16日に「特製オムレツライス」が紹介されるなど地元メディアの露出が続く。岐阜咲楽の洋食特集でも自家製デミグラスソースが絶賛された。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%83%9B%E3%83%BC%E3%83%A0%E3%83%90%E3%82%A6%E3%83%B3%E3%83%89%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%8A%A0%E7%B4%8D%E5%A5%A5%E5%B9%B3%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.fmgifu.com/blog/detail_21271_0_56_0.html">FM GIFUブログ（2025年7月）</a> / <a href="https://www.gifucomi.net/shop/shop.shtml?s=896">ギフコミ！</a></div>
+</div></div>
+<div class="card" id="c-restaurant_buffet">
+<img class="hero" src="img/gifu/restaurant_buffet.jpg" alt="レストラン ビュッフェ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>レストラン ビュッフェ<span class="yomi">れすとらんびゅっふぇ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">長良川メモリアルセンター前の学園町で50年以上愛され続ける手作り洋食の店。出汁にこだわった自家製デミグラスソースが身上で、じっくり煮込んだソースをまとうハンバーグは世代を超えて支持される老舗の味。ひれかつなどの定食類も揃い、70席の広い店内は昭和レトロの空気に包まれる。家族連れの外食からスポーツ観戦帰りの食事まで幅広く使われてきた地元の台所的存在で、気取らない雰囲気と変わらない味を求めて通う常連が多い。昼夜通しで洋食が食べられるのも便利。</div>
+<div class="sig"><b>一皿:</b>自家製デミグラスソースのハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金 11:00〜14:00, 17:00〜19:30 ／ 土・日 11:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市学園町３丁目４３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582312711">☎ 058-231-2711</a> ／ <a href="https://sites.google.com/sars.biz/buffet/%E3%83%9B%E3%83%BC%E3%83%A0">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜咲楽の昔なつかし洋食屋特集で「50年以上愛される」店として紹介された学園町の老舗。エキテン等の店舗情報サイトに現行の営業時間が掲載され営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%93%E3%83%A5%E3%83%83%E3%83%95%E3%82%A7%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%AD%A6%E5%9C%92%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gifu.mediajapan.jp/buffet1-machiaruki-2/">岐阜咲楽</a> / <a href="https://www.ekiten.jp/shop_1442502/">エキテン</a></div>
+</div></div>
+<div class="card" id="c-da_achiu">
+<img class="hero" src="img/gifu/da_achiu.jpg" alt="PIZZERIA E TRATTORIA DA ACHIU（ダ・アチュ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>PIZZERIA E TRATTORIA DA ACHIU（ダ・アチュ）<span class="yomi">ぴっつぇりあえとらっとりあだあちゅ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">名鉄岐阜駅からすぐの神田町にある本格ナポリピッツァとイタリア郷土料理の店。真のナポリピッツァ協会の流れをくむ岐阜県における本格ナポリピッツァの先駆け的存在で、薪窯で一気に焼き上げるピッツァは耳がふっくら、生地は香ばしくもちもち。手打ちパスタでイタリア各地の郷土料理を再現し、自家製ドルチェやイタリアワインの品揃えにも定評がある。駅近の立地でランチからディナーまで使いやすく、岐阜でイタリアンといえばまず名前が挙がる実力店。</div>
+<div class="sig"><b>一皿:</b>薪窯焼きのナポリピッツァ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市神田町７丁目１７ 神田ビル １F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582661116">☎ 058-266-1116</a> ／ <a href="http://www.daachiu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「イタリアン EAST 百名店 2025」選出店で、口コミ評価も岐阜市トップクラス。公式サイトも稼働しており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=PIZZERIA%20E%20TRATTORIA%20DA%20ACHIU%EF%BC%88%E3%83%80%E3%83%BB%E3%82%A2%E3%83%81%E3%83%A5%EF%BC%89%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E7%A5%9E%E7%94%B0%E7%94%BA%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%20%E7%A5%9E%E7%94%B0%E3%83%93%E3%83%AB%20%EF%BC%91F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.daachiu.com/">公式サイト</a> / <a href="https://tabelog.com/gifu/A2101/A210101/21012908/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-spada">
+<img class="hero" src="img/gifu/spada.jpg" alt="SPADA（スパーダ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>SPADA（スパーダ）<span class="yomi">すぱーだ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">岐阜市西部・河渡にあるイタリア料理店。オーナー職人のKEN SHIRAKI氏は世界ピッツァ職人選手権で世界2位に輝いた実力者で、2022年にはイタリア最大級の大会カプートカップでオリジナルピッツァ「ソレンティーナ」が2位を受賞した。薪窯で焼く本場ナポリスタイルのピッツァを郊外の落ち着いた店構えで味わえるとあって、遠方から通うファンも多い。イタリアンレストラン品質認証（AQI）を受けた店でもあり、記念日のディナーから休日のランチまで、岐阜で世界レベルのピッツァを体験できる貴重な一軒。</div>
+<div class="sig"><b>一皿:</b>受賞ピッツァ「ソレンティーナ」</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市河渡４丁目８７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582149559">☎ 058-214-9559</a> ／ <a href="https://www.hotpepper.jp/strJ000031867/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「世界ピッツァ職人選手権世界2位」の実績が公式サイトや地元メディアぎふぐらむで紹介される実力店。公式サイトは2025年9月付のお知らせまで更新されており営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SPADA%EF%BC%88%E3%82%B9%E3%83%91%E3%83%BC%E3%83%80%EF%BC%89%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%B2%B3%E6%B8%A1%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%98%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://pizzeria-spada.com/">公式サイト</a> / <a href="https://gifugram.com/archives/6986">ぎふぐらむ</a></div>
+</div></div>
+<div class="card" id="c-la_pesca">
+<img class="hero" src="img/gifu/la_pesca.jpg" alt="La Pesca（ラペスカ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>La Pesca（ラペスカ）<span class="yomi">らぺすか</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">岐阜の夜の中心・玉宮エリアの路地裏に構えるオイスター＆イタリアンバル。季節ごとに旬の産地を選び抜いた新鮮な生牡蠣が看板で、カキフライやアヒージョなど牡蠣づくしの料理と、地元産野菜を使った前菜やパスタをワインとともに楽しめる。牡蠣に合うグラスワインやイタリア産ボトルワインの品揃えも厚い。金・土は深夜まで営業しており、仕事帰りの一杯から女子会、飲み会の二次会まで使い勝手がよい。駅から歩ける立地で、岐阜の夜を締めくくる海鮮イタリアンとして定着している。</div>
+<div class="sig"><b>一皿:</b>産地直送の生牡蠣</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市八幡町１４−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582158874">☎ 058-215-8874</a> ／ <a href="https://lapesca.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式ページや一休.comレストランに現行のコースプランが掲載され予約を受け付けており、営業実態が確認できる。玉宮エリアの牡蠣バルとして地元情報サイトでも紹介される人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=La%20Pesca%EF%BC%88%E3%83%A9%E3%83%9A%E3%82%B9%E3%82%AB%EF%BC%89%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%85%AB%E5%B9%A1%E7%94%BA%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://lapesca.owst.jp/">公式ページ</a> / <a href="https://restaurant.ikyu.com/108988">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-keijison_keiraku">
+<img class="hero" src="img/gifu/keijison_keiraku.jpg" alt="恵時尊 けいらく店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">43</span>恵時尊 けいらく店<span class="yomi">けいじそんけいらくてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">岐阜市南部・東鶉にある昭和レトロな雰囲気の洋食・喫茶店。名物は熱々の鉄板に卵を敷いて供される東海地方の定番・鉄板ナポリタンで、昔ながらの喫茶メニューとともに味わえる。ランチセットにはドリンクが付き、朝はモーニングも提供するなど、モーニング文化の街・岐阜らしい使い勝手のよさが魅力。柳津本店とけいらく店の2店舗で営業する地元密着の店で、近隣住民の日常使いから懐かしい喫茶洋食を求めて訪れる客まで幅広く親しまれている。</div>
+<div class="sig"><b>一皿:</b>鉄板ナポリタン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 6:30〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市東鶉３丁目１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582149222">☎ 058-214-9222</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜咲楽の2026年版「岐阜近郊モーニング18選」に柳津本店とともに掲載され、営業実態が確認できる。同誌の昔なつかし洋食屋特集でも鉄板ナポリタンが紹介された。市内2店舗の地元店（本店は柳津町）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%81%B5%E6%99%82%E5%B0%8A%20%E3%81%91%E3%81%84%E3%82%89%E3%81%8F%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%9D%B1%E9%B6%89%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gifu.mediajapan.jp/newentry-morning-digest/">岐阜咲楽 モーニング18選（2026年版）</a> / <a href="https://gifu.mediajapan.jp/newentry-retro-gourmet-digest/">岐阜咲楽 洋食特集</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・和菓子・パン</h2>
+<div class="card" id="c-naraya_honten">
+<img class="hero" src="img/gifu/naraya_honten.jpg" alt="奈良屋本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>奈良屋本店<span class="yomi">ならやほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">天保元年（1830年）創業、岐阜市今小町に暖簾を掲げる市内屈指の老舗和菓子店。「変わらないこと。守り続けること。」を信条に、明治19年発売の手しぼりメレンゲ菓子「雪たる満」と「都鳥」は精選した上砂糖と新鮮な卵白だけで作る伝統の味を守る。長良川の鮎を象った「かがり焼鮎」など岐阜らしい銘菓も揃い、贈答から自分用まで幅広く使える。昭憲皇太后が愛したと伝わる由緒も持ち、190年を超えて受け継がれる岐阜の和菓子文化を体感できる一軒。柳ケ瀬散策の途中に立ち寄りやすい。</div>
+<div class="sig"><b>一皿:</b>雪たる満</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市今小町１８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582620067">☎ 058-262-0067</a> ／ <a href="http://www.naraya-honten.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業天保元年と公式に掲げる老舗で、老舗食堂サイトなど複数媒体が歴史を紹介。公式サイトのお知らせが2026年2月まで更新されており営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A5%88%E8%89%AF%E5%B1%8B%E6%9C%AC%E5%BA%97%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E4%BB%8A%E5%B0%8F%E7%94%BA%EF%BC%91%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://naraya-honten.com/">公式サイト</a> / <a href="https://shinise.tv/narayahonten-gifu/">老舗食堂（しにせTV）</a></div>
+</div></div>
+<div class="card" id="c-new_paloma">
+<img class="hero" src="img/gifu/new_paloma.jpg" alt="ニューパロマ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>ニューパロマ<span class="yomi">にゅーぱろま</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">柳ケ瀬商店街の半地下に佇む、昭和の空気をそのまま残したレトロ喫茶。朝6時から開き、コーヒー1杯の代金でバター・ジャム・タマゴサラダの「3色トースト」に加えて手作りのおでんまで付いてくる名物モーニングは、自由すぎる岐阜モーニング文化の象徴として知られる。店内には漫画がずらりと並び、常連たちが思い思いに朝の時間を過ごす。観光で岐阜の喫茶文化を体験するなら真っ先に候補に挙がる一軒で、柳ケ瀬の昭和レトロな街歩きとの相性も抜群。午後は14時半までの営業なので朝〜昼の利用が基本。</div>
+<div class="sig"><b>一皿:</b>おでん付きモーニング</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 6:30〜14:30 ／ 日 6:30〜11:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市柳ケ瀬通３丁目２４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582622087">☎ 058-262-2087</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>純喫茶メディア「レトロ純喫茶と、街の風景」が紹介し記事は2026年7月にも更新されているほか、さかだちブックス等の地元メディアも掲載。岐阜モーニングの名物店として口コミでも支持が厚い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%8B%E3%83%A5%E3%83%BC%E3%83%91%E3%83%AD%E3%83%9E%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%9F%B3%E3%82%B1%E7%80%AC%E9%80%9A%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://juno.nagoya/junkissa/newpaloma/">レトロ純喫茶と、街の風景</a> / <a href="https://sakadachibooks.com/newpaloma/">さかだちブックス</a></div>
+</div></div>
+<div class="card" id="c-minato_coffee">
+<img class="hero" src="img/gifu/minato_coffee.jpg" alt="古民家カフェ 湊珈琲 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>古民家カフェ 湊珈琲<span class="yomi">こみんかかふぇみなとこーひー</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大正2年築の古民家をリノベーションした、岐阜市景観奨励賞受賞のカフェ。囲炉裏のある和室から現代的なテーブル席まで多彩な空間で、朝はドリンク代だけでトーストとゆで卵が付くモーニングを提供する。名物は18種類以上から2本選べるお団子のセットで、季節限定の桜餅風や五平餅風など和スイーツ好きにはたまらないラインアップ。庭を眺めながら過ごす時間はまさに岐阜の豊かな喫茶文化そのもの。市西部の鏡島にあり中心部の喧騒から離れてゆっくりできる、モーニング巡りの定番として名高い一軒。</div>
+<div class="sig"><b>一皿:</b>選べるお団子モーニング</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 9:00〜17:00 ／ 土・日 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市鏡島中２丁目２１−５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0583331123">☎ 058-333-1123</a> ／ <a href="http://minatocoffee.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんニュースの2025年2月公開「岐阜のモーニングおすすめ10選」と岐阜咲楽の2026年版モーニング18選の両方に掲載され、2025〜2026年の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8F%A4%E6%B0%91%E5%AE%B6%E3%82%AB%E3%83%95%E3%82%A7%20%E6%B9%8A%E7%8F%88%E7%90%B2%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E9%8F%A1%E5%B3%B6%E4%B8%AD%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jalan.net/news/article/362442/">じゃらんニュース（2025年2月）</a> / <a href="https://minatocoffee.com/menu">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-saezuri">
+<img class="hero" src="img/gifu/saezuri.jpg" alt="Cafe＆Dining 茶えずり 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>Cafe＆Dining 茶えずり<span class="yomi">かふぇあんどだいにんぐさえずり</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">岐阜市一松道の住宅街にあるナチュラルな雰囲気のカフェ。名物は岐阜県産ブランド米ハツシモを使った「おかゆあんかけモーニング」で、サラダと温泉卵が付いて体にやさしいと評判。トーストセットやサンドウィッチセットもドリンク代だけで選べる。自家製マヨネーズやちりめんじゃこ、小豆やジャムなどトッピングまで手作りにこだわり、岐阜県産食材を積極的に使う姿勢も地元で愛される理由。座敷席もあり子連れでも利用しやすい。パンだけではない「自由な岐阜モーニング」を体験したい人にすすめたい個性派。</div>
+<div class="sig"><b>一皿:</b>おかゆあんかけモーニング</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 9:00〜17:00 ／ 土 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市一松道１丁目４７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582401793">☎ 058-240-1793</a> ／ <a href="https://www.cafe-saezuri.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんニュース2025年2月の岐阜モーニング特集に選ばれ、テレビ（メ〜テレ・ロキポ）のモーニング企画でも紹介された。公式サイトも稼働しており営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Cafe%EF%BC%86Dining%20%E8%8C%B6%E3%81%88%E3%81%9A%E3%82%8A%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E4%B8%80%E6%9D%BE%E9%81%93%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jalan.net/news/article/362442/">じゃらんニュース（2025年2月）</a> / <a href="https://www.cafe-saezuri.com/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-kumano_bakery">
+<img class="hero" src="img/gifu/kumano_bakery.jpg" alt="くまのパン屋さん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>くまのパン屋さん<span class="yomi">くまのぱんやさん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">岐阜市北一色にあるカフェ併設のベーカリー。北海道産小麦と北海道産無塩バター、奄美諸島産の砂糖など素材を厳選した体にやさしいパンが評判で、種類も豊富に焼き上がる。名物は、くまちゃんをかたどった愛らしいパンが付いてくるモーニングセットで、子どもたちに大人気。朝のモーニングからランチ、午後のカフェタイムまでイートインでゆっくり過ごせる。かわいさと実直なパン作りを両立させた地元密着の店として、ファミリー層を中心に支持を集める市東部の人気ベーカリー。</div>
+<div class="sig"><b>一皿:</b>くまちゃんパン付きモーニングセット</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・土・日 9:00〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">月・火・金曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市北一色９丁目１０−４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0582139473">☎ 058-213-9473</a> ／ <a href="https://www.instagram.com/kumanopan.m">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>岐阜咲楽の2026年版モーニング18選とパン＆ドーナツ特集の両方に掲載され、営業実態が確認できる。素材にこだわるパンとかわいいくまパンで地元ファミリーに人気。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%BE%E3%81%AE%E3%83%91%E3%83%B3%E5%B1%8B%E3%81%95%E3%82%93%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E5%8C%97%E4%B8%80%E8%89%B2%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gifu.mediajapan.jp/newentry-morning-digest/">岐阜咲楽 モーニング18選（2026年版）</a> / <a href="https://gifu.mediajapan.jp/newentry-pan-digest/">岐阜咲楽 パン特集</a></div>
+</div></div>
+<div class="card" id="c-le_point_rouge">
+<img class="hero" src="img/gifu/le_point_rouge.jpg" alt="Le Point Rouge（ル・ポワン・ルージュ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>Le Point Rouge（ル・ポワン・ルージュ）<span class="yomi">るぽわんるーじゅ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">岐阜市南部・西鶉にある広々としたカフェ。朝はドリンク代だけで、もちもち食感の自家製スコーンに選べるトッピングとサラダが付く「スコーンセット」のモーニングが楽しめる。開放的な店内に加えてテラス席を併設し、ペット同伴で利用できるのも大きな特徴で、犬連れの朝カフェスポットとしても知られる。平日は9時、土日祝は8時オープンで、休日の朝をゆったり過ごすのにぴったり。パンとゆで卵だけではない、岐阜モーニングの新しい定番を体験できる郊外型の人気カフェ。</div>
+<div class="sig"><b>一皿:</b>スコーンセットのモーニング</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 9:00〜16:00 ／ 土・日 8:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市西鶉１丁目７８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0582777007">☎ 058-277-7007</a> ／ <a href="https://lepointrouge.co/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんニュースが2025年2月公開の「岐阜のモーニングおすすめ10選」で紹介しており、2025年の営業実態が確認できる。ペット同伴可のテラスが差別化ポイント。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Le%20Point%20Rouge%EF%BC%88%E3%83%AB%E3%83%BB%E3%83%9D%E3%83%AF%E3%83%B3%E3%83%BB%E3%83%AB%E3%83%BC%E3%82%B8%E3%83%A5%EF%BC%89%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E8%A5%BF%E9%B6%89%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jalan.net/news/article/362442/">じゃらんニュース（2025年2月）</a></div>
+</div></div>
+<div class="card" id="c-hidamari_cafe">
+<img class="hero" src="img/gifu/hidamari_cafe.jpg" alt="Hidamaricafe（ひだまりカフェ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>Hidamaricafe（ひだまりカフェ）<span class="yomi">ひだまりかふぇ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">岐阜市南部・東鶉にある、木の家を専門とする工務店が手がけるカフェ。木のぬくもりを活かした自然をイメージする空間設計で、庭と池を眺められるテラス席が心地よい。コーヒーはオーガニック豆を一杯ずつ丁寧にハンドドリップ。朝9時からのモーニングは5種類から選べ、一番人気は卵と牛乳をたっぷりしみ込ませたふわふわの「フレンチトースト＆メープルシロップ」（ドリンク代＋580円）で、化学調味料を控えた自家製スープが付くのもうれしい。休日の朝をゆったり過ごせる、岐阜モーニング巡りで注目の一軒。</div>
+<div class="sig"><b>一皿:</b>フレンチトースト＆メープルシロップのモーニング</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜16:00 ／ 土・日 9:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>岐阜県岐阜市東鶉３丁目５９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:08037005177">☎ 080-3700-5177</a> ／ <a href="https://hidamari-village.jp/hidamaricafe/?utm_source=google&amp;utm_medium=maps&amp;utm_campaign=googlemap">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらんニュースが2025年2月公開の「岐阜のモーニングおすすめ10選」で紹介し、岐阜咲楽の2026年版モーニング18選にも掲載されており、2025〜2026年の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Hidamaricafe%EF%BC%88%E3%81%B2%E3%81%A0%E3%81%BE%E3%82%8A%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%89%20%E5%B2%90%E9%98%9C%E7%9C%8C%E5%B2%90%E9%98%9C%E5%B8%82%E6%9D%B1%E9%B6%89%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%95%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jalan.net/news/article/362442/">じゃらんニュース（2025年2月）</a> / <a href="https://gifu.mediajapan.jp/newentry-morning-digest/">岐阜咲楽 モーニング18選（2026年版）</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
