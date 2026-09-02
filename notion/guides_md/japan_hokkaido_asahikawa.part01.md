@@ -26,7 +26,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 
 @@IMG:japan/hokkaido/img/asahikawa/_map2.png@@
 
-> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors Notion版では地図のピンをタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ Notion版では地図のピンをタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
@@ -356,20 +356,3 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **選定理由**: 食べログ ラーメンHOKKAIDO百名店選出のローカル名物店で、ロケットニュース24やcolocal等メディアでも紹介。旭橋・常盤エリアの分散枠。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%94%9F%E5%A7%9C%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E3%81%BF%E3%81%A5%E3%81%AE%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE)
 - **参照元**: [食べログ](https://tabelog.com/hokkaido/A0104/A010401/1003673/) / [colocal(マガジンハウス)](https://colocal.jp/odekake/62259.html)
-
-### 9. 幌加内伝承手打ち蕎麦 せい一（ほろかないでんしょうてうちそば せいいち）
-
-@@IMG:japan/hokkaido/img/asahikawa/seiichi.jpg@@
-
-`地元密着` `ブログ推薦`
-
-そば産地・幌加内町で人気を博し旭川へ移った手打ちそば店。幌加内産そば粉を使った香り高い蕎麦はミシュランガイド北海道2017ビブグルマン選出。丼からそびえ立つ「ミニ鳥天丼」(名ばかりミニの鶏天丼)も名物。
-
-- **一皿**: もりそば+ミニ鳥天丼(幌加内産そば粉の手打ちそばと巨大鶏天丼のセット)
-- **営業時間**: 月・火・水・木・金・土・日 9:00〜15:00
-- **定休日**: なし(要最終確認)
-- **住所**: 北海道旭川市末広７条２丁目１−１
-- **予約**: 要確認 — ☎ 0166-85-6868 ／ [公式サイト](https://www.facebook.com/profile.php?id=100063862200705)
-- **選定理由**: ミシュラン北海道掲載の実力に加え、号外NETや在住者ブログで移転後(末広)の営業を確認。末広エリアの分散枠として選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%B9%8C%E5%8A%A0%E5%86%85%E4%BC%9D%E6%89%BF%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20%E3%81%9B%E3%81%84%E4%B8%80%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%9C%AB%E5%BA%83%EF%BC%97%E6%9D%A1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91)
-- **参照元**: [せい一 公式サイト](https://r.goope.jp/seiichi/) / [号外NET 旭川(移転記事)](https://asahikawa.goguynet.jp/2024/08/22/seiichitoyooka-iten/)

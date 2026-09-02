@@ -26,7 +26,7 @@ JAPAN / MORIOKA・岩手県 🇯🇵
 
 @@IMG:japan/iwate/img/morioka/_map2.png@@
 
-> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors Notion版では地図のピンをタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ Notion版では地図のピンをタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
