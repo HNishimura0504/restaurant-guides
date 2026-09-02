@@ -1,3 +1,20 @@
+### 34. トラネトラ食堂（とらねとらしょくどう）
+
+@@IMG:japan/fukui/img/sakai/toranetora_shokudo_mikuni.jpg@@
+
+`地元密着` `ブログ推薦`
+
+あわら温泉の屋台村「湯けむり横丁」で営んでいた店が、三国湊の町なかの古民家に移って開いた食堂。自家製リコッタチーズの前菜や、平打ち麺とミートソース、チーズを何層にも重ねた手打ちラザニアが看板で、層ごとの食感と香りを楽しませる。ポルペッタや麦のサラダなど、福井の豚や野菜を使った皿も並ぶ。自然派ワインを軸にした品揃えで、昼から一杯やれる気安さがある。北前船の面影が残る通りに面し、引き戸を開けると木の質感を残した落ち着いた空間が広がる。夜はアラカルト中心。
+
+- **一皿**: 手打ちラザニア
+- **営業時間**: 月・火・金・土・日 11:00〜13:30, 17:30〜20:00
+- **定休日**: 水・木曜
+- **住所**: 福井県坂井市三国町 南本町４丁目１２−２０
+- **予約**: 可 — ☎ 0776-97-6302 ／ [公式サイト](https://www.google.com/url?q=https://r.goope.jp/toranetora&sa=U&sqi=2&ved=2ahUKEwj165m9heCJAxUnhq8BHcV8OCsQFnoECF0QAQ&usg=AOvVaw1iFu4Q8PkteOMcpSbOCvOF)
+- **選定理由**: 地域情報サイト「あわら・さかい暮らし図鑑」が2024年に取材記事を掲載し、食べログにも2025年9月・2026年8月訪問の口コミがあり営業継続を確認できる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%88%E3%83%A9%E3%83%8D%E3%83%88%E3%83%A9%E9%A3%9F%E5%A0%82%20%E7%A6%8F%E4%BA%95%E7%9C%8C%E5%9D%82%E4%BA%95%E5%B8%82%E4%B8%89%E5%9B%BD%E7%94%BA%20%E5%8D%97%E6%9C%AC%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%90)
+- **参照元**: [あわら・さかい暮らし図鑑 トラネトラ食堂](https://www.sakaikurashi.com/all/gourmet/westernfood/5730/) / [食べログ トラネトラ食堂 口コミ](https://tabelog.com/fukui/A1801/A180102/18009306/dtlrvwlst/)
+
 ### 35. おやじのキッチン てつ（おやじのきっちん てつ）
 
 @@IMG:japan/fukui/img/sakai/oyaji_kitchen_tetsu_mikuni.jpg@@

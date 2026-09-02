@@ -1,3 +1,20 @@
+### 18. 手打ち蕎麦 六四篭（てうちそば ろくしろう）
+
+@@IMG:japan/niigata/img/nagaoka/teuchi_soba_rokushiro.jpg@@
+
+`地元密着` `veg`
+
+天下島にある手打ち蕎麦の専門店。のど越しの良いそばと、自家製の削り節を使って引いたそば汁が持ち味で、鰹の香りとそばの香りが重なる。平日限定のランチセットが人気で、昼はまとまった客が入る。夜は予約制で、静かにそばと一品を楽しめる構成。派手な看板はないが、長岡市内でそばの質を語るときによく名前が挙がる一軒。
+
+- **一皿**: せいろそば(自家製削り節のそば汁で手繰るのど越しの良い手打ちそば)
+- **営業時間**: 火・水・木・金・土・日 11:00〜14:00
+- **定休日**: 月曜
+- **住所**: 新潟県長岡市天下島１丁目３−１１
+- **予約**: 可 — ☎ 0258-53-5481 ／ [公式サイト](http://www6.plala.or.jp/rokushiro/rokushirou/Welcome.html)
+- **選定理由**: グルメメディアfavyの長岡そば5選と、新潟の情報誌Komachi Webおよびぐるなびの店舗情報で、住所・営業時間・定休日と自家製削り節の特徴を確認した。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20%E5%85%AD%E5%9B%9B%E7%AF%AD%20%E6%96%B0%E6%BD%9F%E7%9C%8C%E9%95%B7%E5%B2%A1%E5%B8%82%E5%A4%A9%E4%B8%8B%E5%B3%B6%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%91)
+- **参照元**: [favy 長岡のお蕎麦屋さん5選](https://www.favy.jp/topics/6830) / [Komachi Web 手打ち蕎麦 六四篭](https://www.week.co.jp/gourmet/128020/)
+
 ### 19. そば小屋（そばごや）
 
 @@IMG:japan/niigata/img/nagaoka/sobagoya_takara.jpg@@
@@ -290,20 +307,3 @@
 - **選定理由**: TJ新潟（Komachi系）が複数年にわたり取材した記事と、長岡市の発酵ポータル「発酵・醸造のまち、長岡。」の摂田屋店舗紹介で、発酵食材の使い方と営業情報を確認した。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=BUKUBUKU%20%E6%96%B0%E6%BD%9F%E7%9C%8C%E9%95%B7%E5%B2%A1%E5%B8%82%E5%AE%AE%E5%86%85%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%93%EF%BC%96)
 - **参照元**: [TJ新潟(Komachi)](https://tjniigata.jp/gourmet/202305bukubuku/) / [発酵・醸造のまち、長岡。(長岡市)](https://hakko.na-nagaoka.jp/settaya-arukou/)
-
-### 36. イタリア食堂 amico（いたりあしょくどう あみこ）
-
-@@IMG:japan/niigata/img/nagaoka/italia_shokudo_amico.jpg@@
-
-`地元密着`
-
-栃尾の商店街にあるイタリア料理店。自家製のトマトソースを軸に、生ハムとルッコラを載せた「プロシュート」などのピッツァと、種類の多いパスタを出す。イタリアと日本の季節の食材を組み合わせるのが持ち味で、平日には割安なランチセットもある。市街地から離れた栃尾で本格的な粉と窯の仕事が食べられる、地元に根づいた一軒。
-
-- **一皿**: ピッツァ プロシュート(自家製トマトソースに生ハムとルッコラを合わせる看板)
-- **営業時間**: 月・火・土 11:30〜14:00, 17:30〜21:00 ／ 日 11:00〜15:00, 17:30〜21:00
-- **定休日**: 水・木・金曜
-- **住所**: 新潟県長岡市栃尾大町２−５
-- **予約**: 可 — ☎ 0258-52-1323 ／ [公式サイト](http://www.amico-j.com/)
-- **選定理由**: TJ新潟（Komachi系）の実食取材記事と、地域情報サイト『ガタチラ』の紹介記事の二媒体で、看板メニュー・住所・営業時間を確認した。駅から離れた栃尾エリアの枠として選定した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E9%A3%9F%E5%A0%82%20amico%20%E6%96%B0%E6%BD%9F%E7%9C%8C%E9%95%B7%E5%B2%A1%E5%B8%82%E6%A0%83%E5%B0%BE%E5%A4%A7%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%95)
-- **参照元**: [TJ新潟(Komachi)](https://tjniigata.jp/gourmet/202402italiasyokudouamico/) / [ガタチラ](https://gatachira.com/local/92236/)

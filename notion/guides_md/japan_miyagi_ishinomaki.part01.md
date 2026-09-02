@@ -12,7 +12,21 @@ JAPAN / ISHINOMAKI・宮城県 🇯🇵
 - `地元密着` — 観光客より地元客に愛される店
 - `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。元PDFの店舗マップ画像は取り込んでいません。位置は各店の「地図」リンクから。
+> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+
+@@TOC@@
+
+## 🗾 店舗マップ
+
+**全域マップ**
+
+@@IMG:japan/miyagi/img/ishinomaki/_map.png@@
+
+**中心部拡大(石巻駅〜立町・中央)**
+
+@@IMG:japan/miyagi/img/ishinomaki/_map2.png@@
+
+> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors Notion版では地図のピンをタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
