@@ -19,7 +19,6 @@ import sys
 import json
 import time
 import hashlib
-import threading
 import tempfile
 import mimetypes
 
@@ -47,24 +46,15 @@ VER = os.environ.get("NOTION_VERSION", "2022-06-28")
 # 特別扱いが要るページが出たらここに base 名を足す。
 APPEND_ONLY = set()
 
-# スレッドごとに Session を分ける（requests.Session はスレッド安全ではない）。
-_local = threading.local()
-
-
-def S():
-    s = getattr(_local, "sess", None)
-    if s is None:
-        s = requests.Session()
-        s.headers.update({"Authorization": "Bearer " + TOKEN, "Notion-Version": VER})
-        _local.sess = s
-    return s
+S = requests.Session()
+S.headers.update({"Authorization": "Bearer " + TOKEN, "Notion-Version": VER})
 
 
 # ---------------------------------------------------------------- 低レベル
 
 def api(method, path, **kw):
     for attempt in range(6):
-        r = S().request(method, API + path, timeout=120, **kw)
+        r = S.request(method, API + path, timeout=120, **kw)
         if r.status_code == 429:
             time.sleep(float(r.headers.get("Retry-After", 2)))
             continue
@@ -134,7 +124,7 @@ def _upload(path):
     up = api("POST", "/file_uploads", json={"filename": fn, "content_type": ctype})
     fid = up["id"]
     with open(path, "rb") as fh:
-        r = S().post(up["upload_url"], files={"file": (fn, fh, ctype)}, timeout=300)
+        r = S.post(up["upload_url"], files={"file": (fn, fh, ctype)}, timeout=300)
     if r.status_code >= 400:
         raise RuntimeError("upload failed %s: %s %s" % (fn, r.status_code, r.text[:300]))
     if r.json().get("status") != "uploaded":
@@ -226,27 +216,19 @@ def md_to_blocks(md, uploads):
 # ---------------------------------------------------------------- ページ操作
 
 KEEP_TYPES = {"child_database", "child_page"}
-DELETE_WORKERS = 8
 
 
 def clear_page(page_id):
     """ページ本文を空にする。ただし子データベース／子ページは消さない
-    （ルーベンのように店舗DBのビューが埋まっているページを壊さないため）。
-
-    Notion には一括削除が無く1ブロック1リクエストなので、ここが同期全体の律速になる
-    （1冊は600ブロック前後ある）。直列だと往復待ちで毎秒1件も出ないため、
-    数本のスレッドに分けて Notion のレート上限（毎秒3件前後）まで詰める。
-    429 は api() が Retry-After に従って待ち直す。
-    """
-    from concurrent.futures import ThreadPoolExecutor
+    （ルーベンのように店舗DBのビューが埋まっているページを壊さないため）。"""
     while True:
         res = api("GET", "/blocks/%s/children?page_size=100" % page_id)
         kids = res.get("results", [])
         targets = [b for b in kids if b.get("type") not in KEEP_TYPES]
         if not targets:
             return
-        with ThreadPoolExecutor(max_workers=DELETE_WORKERS) as ex:
-            list(ex.map(lambda b: api("DELETE", "/blocks/" + b["id"]), targets))
+        for b in targets:
+            api("DELETE", "/blocks/" + b["id"])
         if not res.get("has_more") and len(targets) == len(kids):
             return
         if not res.get("has_more") and not targets:
