@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>静岡美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / SHIZUOKA・静岡県 🇯🇵</div>
+  <h1>静岡美食ガイド</h1>
+  <div class="sub">駿府城下の県都は、黒はんぺんと牛すじが煮える静岡おでんの街。青葉横丁の湯気、清水港に揚がる本まぐろと桜えび、日本一の茶処の甘味、駅前の名酒場まで厳選72スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年8月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/shizuoka/_map.png" alt="全域マップ">
+<a href="#c-shizuoka_oden_ogawa" style="left:22.35%;top:65.95%;width:2.16%;height:2.14%;"></a>
+<a href="#c-mikawaya_aoba" style="left:23.75%;top:69.05%;width:2.16%;height:2.14%;"></a>
+<a href="#c-ooyakiimo" style="left:25.35%;top:63.66%;width:2.16%;height:2.14%;"></a>
+<a href="#c-umibouzu_honten" style="left:26.65%;top:70.19%;width:2.16%;height:2.14%;"></a>
+<a href="#c-totosuke" style="left:64.38%;top:46.96%;width:2.16%;height:2.14%;"></a>
+<a href="#c-uoichiba_shokudo" style="left:64.35%;top:46.92%;width:2.16%;height:2.14%;"></a>
+<a href="#c-izutsuya_yui" style="left:92.55%;top:7.74%;width:2.16%;height:2.14%;"></a>
+<a href="#c-donburi_house_mochimune" style="left:18.67%;top:90.48%;width:2.16%;height:2.14%;"></a>
+<a href="#c-sekibeya_abekawamochi" style="left:19.32%;top:73.69%;width:2.16%;height:2.14%;"></a>
+<a href="#c-chojiya_tororo" style="left:7.45%;top:79.05%;width:2.16%;height:2.14%;"></a>
+<a href="#c-chamachi_kinzaburo" style="left:20.8%;top:66.35%;width:2.16%;height:2.14%;"></a>
+<a href="#c-kinnoji_honten" style="left:63.58%;top:46.18%;width:2.16%;height:2.14%;"></a>
+<a href="#c-suehiro_sushi" style="left:62.1%;top:46.4%;width:2.16%;height:2.14%;"></a>
+<a href="#c-irifune_sushi_ryogaecho" style="left:24.52%;top:68.81%;width:2.16%;height:2.14%;"></a>
+<a href="#c-tempura_naruse" style="left:21.64%;top:63.27%;width:2.16%;height:2.14%;"></a>
+<a href="#c-unagi_harakawa" style="left:24.7%;top:68.06%;width:2.16%;height:2.14%;"></a>
+<a href="#c-nihonryori_fuji" style="left:27.45%;top:67.93%;width:2.16%;height:2.14%;"></a>
+<a href="#c-tenbun_honten" style="left:23.13%;top:69.08%;width:2.16%;height:2.14%;"></a>
+<a href="#c-tenmine" style="left:22.92%;top:69.56%;width:2.16%;height:2.14%;"></a>
+<a href="#c-shimizuko_minami" style="left:27.38%;top:69.23%;width:2.16%;height:2.14%;"></a>
+<a href="#c-suiendosai_honten" style="left:27.21%;top:66.35%;width:2.16%;height:2.14%;"></a>
+<a href="#c-tonkatsu_unno" style="left:37.62%;top:77.27%;width:2.16%;height:2.14%;"></a>
+<a href="#c-gorouju" style="left:74.59%;top:55.14%;width:2.16%;height:2.14%;"></a>
+<a href="#c-kuwaya_shokudo" style="left:24.17%;top:70.34%;width:2.16%;height:2.14%;"></a>
+<a href="#c-fumita_shoten" style="left:36.45%;top:75.03%;width:2.16%;height:2.14%;"></a>
+<a href="#c-yakitoriya_hinode" style="left:26.61%;top:67.65%;width:2.16%;height:2.14%;"></a>
+<a href="#c-san_ramen" style="left:19.53%;top:55.33%;width:2.16%;height:2.14%;"></a>
+<a href="#c-okuni_ramen" style="left:19.22%;top:70.58%;width:2.16%;height:2.14%;"></a>
+<a href="#c-abes_ramen" style="left:35.75%;top:59.12%;width:2.16%;height:2.14%;"></a>
+<a href="#c-limeken" style="left:29.94%;top:76.54%;width:2.16%;height:2.14%;"></a>
+<a href="#c-ariga_ramen" style="left:60.07%;top:51.02%;width:2.16%;height:2.14%;"></a>
+<a href="#c-tagata_soba" style="left:23.64%;top:70.02%;width:2.16%;height:2.14%;"></a>
+<a href="#c-togakushi_soba" style="left:22.2%;top:72.59%;width:2.16%;height:2.14%;"></a>
+<a href="#c-pyonkichi_udon" style="left:24.96%;top:68.8%;width:2.16%;height:2.14%;"></a>
+<a href="#c-koran_chuka" style="left:26.93%;top:66.59%;width:2.16%;height:2.14%;"></a>
+<a href="#c-tonko_chuka" style="left:33.43%;top:56.04%;width:2.16%;height:2.14%;"></a>
+<a href="#c-takano" style="left:25.04%;top:68.96%;width:2.16%;height:2.14%;"></a>
+<a href="#c-omura_bar" style="left:22.93%;top:68.79%;width:2.16%;height:2.14%;"></a>
+<a href="#c-kashimaya" style="left:22.54%;top:68.6%;width:2.16%;height:2.14%;"></a>
+<a href="#c-yachiyo_yakitori" style="left:23.91%;top:68.18%;width:2.16%;height:2.14%;"></a>
+<a href="#c-houtoku" style="left:23.83%;top:68.14%;width:2.16%;height:2.14%;"></a>
+<a href="#c-hyoutanya" style="left:24.52%;top:68.14%;width:2.16%;height:2.14%;"></a>
+<a href="#c-akafukurou" style="left:23.91%;top:69.15%;width:2.16%;height:2.14%;"></a>
+<a href="#c-gofukucho_taproom" style="left:24.48%;top:68.09%;width:2.16%;height:2.14%;"></a>
+<a href="#c-shinseimaru" style="left:63.27%;top:49.79%;width:2.16%;height:2.14%;"></a>
+<a href="#c-mabo_takahashi" style="left:24.5%;top:68.56%;width:2.16%;height:2.14%;"></a>
+<a href="#c-kintoki_ikeda" style="left:39.72%;top:62.19%;width:2.16%;height:2.14%;"></a>
+<a href="#c-takumi_yoshoku" style="left:18.47%;top:69.84%;width:2.16%;height:2.14%;"></a>
+<a href="#c-onion_mabuchi" style="left:25.81%;top:71.85%;width:2.16%;height:2.14%;"></a>
+<a href="#c-unjour" style="left:22.89%;top:68.77%;width:2.16%;height:2.14%;"></a>
+<a href="#c-demiguratei" style="left:31.38%;top:60.31%;width:2.16%;height:2.14%;"></a>
+<a href="#c-epicurien" style="left:25.64%;top:67.04%;width:2.16%;height:2.14%;"></a>
+<a href="#c-okamura_bistro" style="left:25.83%;top:66.99%;width:2.16%;height:2.14%;"></a>
+<a href="#c-il_castagno" style="left:16.32%;top:92.27%;width:2.16%;height:2.14%;"></a>
+<a href="#c-pizzeria_lape" style="left:52.78%;top:38.45%;width:2.16%;height:2.14%;"></a>
+<a href="#c-el_osamucho" style="left:53.99%;top:52.13%;width:2.16%;height:2.14%;"></a>
+<a href="#c-chagama" style="left:26.65%;top:66.33%;width:2.16%;height:2.14%;"></a>
+<a href="#c-kissa_poplar" style="left:24.39%;top:68.37%;width:2.16%;height:2.14%;"></a>
+<a href="#c-hitoyado" style="left:22.85%;top:69.26%;width:2.16%;height:2.14%;"></a>
+<a href="#c-shiroi_yane" style="left:8.9%;top:65.25%;width:2.16%;height:2.14%;"></a>
+<a href="#c-ravia_honten" style="left:63.6%;top:46.21%;width:2.16%;height:2.14%;"></a>
+<a href="#c-kissa_noi" style="left:22.29%;top:70.71%;width:2.16%;height:2.14%;"></a>
+<a href="#c-good_timing_tea" style="left:26.65%;top:67.13%;width:2.16%;height:2.14%;"></a>
+<a href="#c-oiwake_yokan" style="left:57.44%;top:49.92%;width:2.16%;height:2.14%;"></a>
+<a href="#c-shohakudo_honten" style="left:25.98%;top:65.77%;width:2.16%;height:2.14%;"></a>
+<a href="#c-aoisenbei_honke" style="left:22.55%;top:66.32%;width:2.16%;height:2.14%;"></a>
+<a href="#c-essen_brot" style="left:34.36%;top:78.81%;width:2.16%;height:2.14%;"></a>
+<a href="#c-sandwich_sunrise" style="left:49.08%;top:54.03%;width:2.16%;height:2.14%;"></a>
+<a href="#c-chez_hiro" style="left:58.18%;top:48.37%;width:2.16%;height:2.14%;"></a>
+<a href="#c-misakaya_honten" style="left:24.34%;top:57.23%;width:2.16%;height:2.14%;"></a>
+<a href="#c-kashidokoro_shirokiya" style="left:22.65%;top:62.56%;width:2.16%;height:2.14%;"></a>
+<a href="#c-apricot_bakery" style="left:29.95%;top:56.83%;width:2.16%;height:2.14%;"></a>
+</div>
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(静岡駅〜呉服町・青葉横丁)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/shizuoka/_map2.png" alt="中心部拡大(静岡駅〜呉服町・青葉横丁)">
+<a href="#c-shizuoka_oden_ogawa" style="left:9.47%;top:26.79%;width:3.28%;height:2.68%;"></a>
+<a href="#c-mikawaya_aoba" style="left:26.52%;top:57.74%;width:3.28%;height:2.68%;"></a>
+<a href="#c-ooyakiimo" style="left:46.0%;top:3.84%;width:3.28%;height:2.68%;"></a>
+<a href="#c-umibouzu_honten" style="left:61.81%;top:69.17%;width:3.28%;height:2.68%;"></a>
+<a href="#c-irifune_sushi_ryogaecho" style="left:35.83%;top:55.38%;width:3.28%;height:2.68%;"></a>
+<a href="#c-unagi_harakawa" style="left:38.08%;top:47.9%;width:3.28%;height:2.68%;"></a>
+<a href="#c-nihonryori_fuji" style="left:71.57%;top:46.57%;width:3.28%;height:2.68%;"></a>
+<a href="#c-tenbun_honten" style="left:18.96%;top:58.04%;width:3.28%;height:2.68%;"></a>
+<a href="#c-tenmine" style="left:16.36%;top:62.9%;width:3.28%;height:2.68%;"></a>
+<a href="#c-shimizuko_minami" style="left:70.69%;top:59.6%;width:3.28%;height:2.68%;"></a>
+<a href="#c-suiendosai_honten" style="left:68.66%;top:30.77%;width:3.28%;height:2.68%;"></a>
+<a href="#c-kuwaya_shokudo" style="left:31.66%;top:70.67%;width:3.28%;height:2.68%;"></a>
+<a href="#c-yakitoriya_hinode" style="left:61.34%;top:43.76%;width:3.28%;height:2.68%;"></a>
+<a href="#c-tagata_soba" style="left:25.19%;top:67.46%;width:3.28%;height:2.68%;"></a>
+<a href="#c-togakushi_soba" style="left:7.65%;top:93.15%;width:3.28%;height:2.68%;"></a>
+<a href="#c-pyonkichi_udon" style="left:41.3%;top:55.31%;width:3.28%;height:2.68%;"></a>
+<a href="#c-koran_chuka" style="left:65.27%;top:33.21%;width:3.28%;height:2.68%;"></a>
+<a href="#c-takano" style="left:42.21%;top:56.85%;width:3.28%;height:2.68%;"></a>
+<a href="#c-omura_bar" style="left:16.48%;top:55.15%;width:3.28%;height:2.68%;"></a>
+<a href="#c-kashimaya" style="left:11.72%;top:53.31%;width:3.28%;height:2.68%;"></a>
+<a href="#c-yachiyo_yakitori" style="left:28.45%;top:49.1%;width:3.28%;height:2.68%;"></a>
+<a href="#c-houtoku" style="left:27.53%;top:48.64%;width:3.28%;height:2.68%;"></a>
+<a href="#c-hyoutanya" style="left:35.84%;top:48.64%;width:3.28%;height:2.68%;"></a>
+<a href="#c-akafukurou" style="left:28.47%;top:58.74%;width:3.28%;height:2.68%;"></a>
+<a href="#c-gofukucho_taproom" style="left:35.37%;top:48.14%;width:3.28%;height:2.68%;"></a>
+<a href="#c-mabo_takahashi" style="left:35.59%;top:52.87%;width:3.28%;height:2.68%;"></a>
+<a href="#c-onion_mabuchi" style="left:51.55%;top:85.75%;width:3.28%;height:2.68%;"></a>
+<a href="#c-unjour" style="left:16.01%;top:54.97%;width:3.28%;height:2.68%;"></a>
+<a href="#c-epicurien" style="left:49.51%;top:37.65%;width:3.28%;height:2.68%;"></a>
+<a href="#c-okamura_bistro" style="left:51.89%;top:37.19%;width:3.28%;height:2.68%;"></a>
+<a href="#c-chagama" style="left:61.88%;top:30.51%;width:3.28%;height:2.68%;"></a>
+<a href="#c-kissa_poplar" style="left:34.3%;top:50.97%;width:3.28%;height:2.68%;"></a>
+<a href="#c-hitoyado" style="left:15.59%;top:59.92%;width:3.28%;height:2.68%;"></a>
+<a href="#c-kissa_noi" style="left:8.66%;top:74.38%;width:3.28%;height:2.68%;"></a>
+<a href="#c-good_timing_tea" style="left:61.8%;top:38.55%;width:3.28%;height:2.68%;"></a>
+<a href="#c-shohakudo_honten" style="left:53.66%;top:24.98%;width:3.28%;height:2.68%;"></a>
+<a href="#c-aoisenbei_honke" style="left:11.91%;top:30.41%;width:3.28%;height:2.68%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+
+<div class="toc">
+<div class="th">目次</div>
+<div class="sec red">静岡のご当地(おでん・まぐろ・桜えび・お茶)</div>
+<div class="links">
+<a href="#c-shizuoka_oden_ogawa"><span class="tn" style="background:#e34948;">1</span>「静岡おでん」命名の店</a>
+<a href="#c-mikawaya_aoba"><span class="tn" style="background:#e34948;">2</span>青葉横丁の老舗おでん</a>
+<a href="#c-ooyakiimo"><span class="tn" style="background:#e34948;">3</span>100年続く駄菓子屋おでん</a>
+<a href="#c-umibouzu_honten"><span class="tn" style="background:#e34948;">4</span>駅南の静岡おでん居酒屋</a>
+<a href="#c-totosuke"><span class="tn" style="background:#e34948;">5</span>まぐろカマ揚げの名物店</a>
+<a href="#c-uoichiba_shokudo"><span class="tn" style="background:#e34948;">6</span>まぐろ「かけ放題」の丼</a>
+<a href="#c-izutsuya_yui"><span class="tn" style="background:#e34948;">7</span>由比宿の桜えび料理老舗</a>
+<a href="#c-donburi_house_mochimune"><span class="tn" style="background:#e34948;">8</span>用宗港の生しらす丼</a>
+<a href="#c-sekibeya_abekawamochi"><span class="tn" style="background:#e34948;">9</span>安倍川もち元祖の甘味処</a>
+<a href="#c-chojiya_tororo"><span class="tn" style="background:#e34948;">10</span>創業1596年のとろろ汁</a>
+<a href="#c-chamachi_kinzaburo"><span class="tn" style="background:#e34948;">11</span>茶問屋街の日本茶カフェ</a>
+<a href="#c-kinnoji_honten"><span class="tn" style="background:#e34948;">12</span>清水もつカレー発祥の店</a>
+</div>
+<div class="sec blue">寿司・海鮮・和食・うなぎ</div>
+<div class="links">
+<a href="#c-suehiro_sushi"><span class="tn" style="background:#2a78d6;">13</span>清水が誇るまぐろ鮨の雄</a>
+<a href="#c-irifune_sushi_ryogaecho"><span class="tn" style="background:#2a78d6;">14</span>創業110年余の静岡寿司</a>
+<a href="#c-tempura_naruse"><span class="tn" style="background:#2a78d6;">15</span>全国区の天ぷらの聖地</a>
+<a href="#c-unagi_harakawa"><span class="tn" style="background:#2a78d6;">16</span>呉服町の百名店うなぎ</a>
+<a href="#c-nihonryori_fuji"><span class="tn" style="background:#2a78d6;">17</span>静岡素材の実力派日本料理</a>
+<a href="#c-tenbun_honten"><span class="tn" style="background:#2a78d6;">18</span>明治12年創業の天婦羅店</a>
+<a href="#c-tenmine"><span class="tn" style="background:#2a78d6;">19</span>うなぎと天ぷらの老舗</a>
+<a href="#c-shimizuko_minami"><span class="tn" style="background:#2a78d6;">20</span>行列必至のまぐろ丼専門</a>
+<a href="#c-suiendosai_honten"><span class="tn" style="background:#2a78d6;">21</span>百名店選出の老舗とんかつ</a>
+<a href="#c-tonkatsu_unno"><span class="tn" style="background:#2a78d6;">22</span>1976年創業の郊外とんかつ店</a>
+<a href="#c-gorouju"><span class="tn" style="background:#2a78d6;">23</span>三保のガツ盛りとんかつ食堂</a>
+<a href="#c-kuwaya_shokudo"><span class="tn" style="background:#2a78d6;">24</span>昭和21年創業・三代続く食堂</a>
+<a href="#c-fumita_shoten"><span class="tn" style="background:#2a78d6;">25</span>三代続く七輪炭火焼肉の名店</a>
+<a href="#c-yakitoriya_hinode"><span class="tn" style="background:#2a78d6;">26</span>鶏肉店由来の老舗焼き鳥店</a>
+</div>
+<div class="sec aqua">ラーメン・そば・町中華</div>
+<div class="links">
+<a href="#c-san_ramen"><span class="tn" style="background:#1baf7a;">27</span>出汁を極めた自然派中華そば</a>
+<a href="#c-okuni_ramen"><span class="tn" style="background:#1baf7a;">28</span>焼きあご出汁の行列店</a>
+<a href="#c-abes_ramen"><span class="tn" style="background:#1baf7a;">29</span>静岡無化調ラーメンの先駆け</a>
+<a href="#c-limeken"><span class="tn" style="background:#1baf7a;">30</span>フレンチ出身店主のつけ麺</a>
+<a href="#c-ariga_ramen"><span class="tn" style="background:#1baf7a;">31</span>清水の定番「リピ塩」の店</a>
+<a href="#c-tagata_soba"><span class="tn" style="background:#1baf7a;">32</span>在来種を育てる百名店の蕎麦</a>
+<a href="#c-togakushi_soba"><span class="tn" style="background:#1baf7a;">33</span>静岡名物「磯おろし」発祥</a>
+<a href="#c-pyonkichi_udon"><span class="tn" style="background:#1baf7a;">34</span>深夜まで営業のカレーうどん専門</a>
+<a href="#c-koran_chuka"><span class="tn" style="background:#1baf7a;">35</span>鷹匠の愛され老舗町中華</a>
+<a href="#c-tonko_chuka"><span class="tn" style="background:#1baf7a;">36</span>昭和58年創業の昭和町中華</a>
+</div>
+<div class="sec beer">居酒屋・バー(青葉横丁・両替町)</div>
+<div class="links">
+<a href="#c-takano"><span class="tn" style="background:#0d366b;">37</span>大正12年創業・静岡三大居酒屋</a>
+<a href="#c-omura_bar"><span class="tn" style="background:#0d366b;">38</span>大正5年創業・静岡最古級の酒場</a>
+<a href="#c-kashimaya"><span class="tn" style="background:#0d366b;">39</span>昭和3年創業・カツオの老舗酒場</a>
+<a href="#c-yachiyo_yakitori"><span class="tn" style="background:#0d366b;">40</span>呉服町の創業約70年やきとり酒場</a>
+<a href="#c-houtoku"><span class="tn" style="background:#0d366b;">41</span>県庁前の昭和39年創業大衆酒場</a>
+<a href="#c-hyoutanya"><span class="tn" style="background:#0d366b;">42</span>静岡グルメ総覧の深夜居酒屋</a>
+<a href="#c-akafukurou"><span class="tn" style="background:#0d366b;">43</span>静岡全蔵の地酒が飲める酒場</a>
+<a href="#c-gofukucho_taproom"><span class="tn" style="background:#0d366b;">44</span>樽生15種超のクラフトビアパブ</a>
+<a href="#c-shinseimaru"><span class="tn" style="background:#0d366b;">45</span>漁師直営・清水の海鮮酒場</a>
+<a href="#c-mabo_takahashi"><span class="tn" style="background:#0d366b;">46</span>両替町の深夜シビカラ中華酒場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-kintoki_ikeda"><span class="tn" style="background:#4a3aa7;">47</span>昭和44年創業の肉洋食の老舗</a>
+<a href="#c-takumi_yoshoku"><span class="tn" style="background:#4a3aa7;">48</span>老舗仕込みの「まちの洋食食堂」</a>
+<a href="#c-onion_mabuchi"><span class="tn" style="background:#4a3aa7;">49</span>オムバーグが名物の家庭洋食</a>
+<a href="#c-unjour"><span class="tn" style="background:#4a3aa7;">50</span>人宿町の30年続く洋食店</a>
+<a href="#c-demiguratei"><span class="tn" style="background:#4a3aa7;">51</span>たいめいけん仕込みのデミグラス</a>
+<a href="#c-epicurien"><span class="tn" style="background:#4a3aa7;">52</span>鷹匠の完全予約制モダンフレンチ</a>
+<a href="#c-okamura_bistro"><span class="tn" style="background:#4a3aa7;">53</span>古民家で味わう魚介フレンチ</a>
+<a href="#c-il_castagno"><span class="tn" style="background:#4a3aa7;">54</span>用宗の古民家イタリア郷土料理</a>
+<a href="#c-pizzeria_lape"><span class="tn" style="background:#4a3aa7;">55</span>県内初の真のナポリピッツァ認定店</a>
+<a href="#c-el_osamucho"><span class="tn" style="background:#4a3aa7;">56</span>草薙の本格スペインバル</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・和菓子・パン</div>
+<div class="links">
+<a href="#c-chagama"><span class="tn" style="background:#eda100;">57</span>100種の茶葉が並ぶ日本茶専門店</a>
+<a href="#c-kissa_poplar"><span class="tn" style="background:#eda100;">58</span>ジャズが流れる創業約50年の純喫茶</a>
+<a href="#c-hitoyado"><span class="tn" style="background:#eda100;">59</span>人宿町の泊まれる純喫茶</a>
+<a href="#c-shiroi_yane"><span class="tn" style="background:#eda100;">60</span>銅板ホットケーキの老舗喫茶</a>
+<a href="#c-ravia_honten"><span class="tn" style="background:#eda100;">61</span>清水駅前50年のフルーツタワー喫茶</a>
+<a href="#c-kissa_noi"><span class="tn" style="background:#eda100;">62</span>純喫茶リーベを受け継ぐレトロ喫茶</a>
+<a href="#c-good_timing_tea"><span class="tn" style="background:#eda100;">63</span>鷹匠の朝から夜まで開く日本茶カフェ</a>
+<a href="#c-oiwake_yokan"><span class="tn" style="background:#eda100;">64</span>元禄8年創業・竹皮包み羊かん</a>
+<a href="#c-shohakudo_honten"><span class="tn" style="background:#eda100;">65</span>慶応3年創業・みつだんごの老舗</a>
+<a href="#c-aoisenbei_honke"><span class="tn" style="background:#eda100;">66</span>明治2年創業の煎餅一筋の店</a>
+<a href="#c-essen_brot"><span class="tn" style="background:#eda100;">67</span>1983年開業の実力派パン店</a>
+<a href="#c-sandwich_sunrise"><span class="tn" style="background:#eda100;">68</span>草薙のフルーツサンド専門店</a>
+<a href="#c-chez_hiro"><span class="tn" style="background:#eda100;">69</span>清水の定番洋菓子店</a>
+<a href="#c-misakaya_honten"><span class="tn" style="background:#eda100;">70</span>昭和33年創業・銘菓美恵夢の店</a>
+<a href="#c-kashidokoro_shirokiya"><span class="tn" style="background:#eda100;">71</span>昭和10年創業・あわ大福の名店</a>
+<a href="#c-apricot_bakery"><span class="tn" style="background:#eda100;">72</span>竜南の格安焼きたてパン店</a>
+</div>
+</div>
+
+<div class="note"><b>回り方のコツ:</b>店は静岡駅北口の呉服町・両替町・青葉横丁/青葉おでん街かいわいに集まる。静岡おでんは黒はんぺん・牛すじ・だし粉が流儀で、昼の駄菓子屋系と夜の横丁系で趣が違う。清水区へは静鉄とJRで約20分、清水港のまぐろ・桜えび(春秋の漁期)は河岸の市が便利。お茶は本山茶・川根茶の産地直販が市内に多い。安倍川もちとわさび漬けは土産の定番。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-shizuoka" class="c-red">静岡のご当地(おでん・まぐろ・桜えび・お茶)</h2>
+<div class="card" id="c-shizuoka_oden_ogawa">
+<img class="hero" src="img/shizuoka/shizuoka_oden_ogawa.jpg" alt="静岡おでん おがわ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>静岡おでん おがわ<span class="yomi">しずおかおでんおがわ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和23年創業の駄菓子屋系おでん店で、公式サイトに「『静岡おでん』を命名し静岡の地で営業しております」と掲げる元祖格。真っ黒なだし汁で煮込んだ牛すじ・黒はんぺんの串を、だし粉と青のりをかけて食べる静岡流をそのまま体験できる。営業は10時〜18時30分の昼型で、おでんが無くなり次第終了することもある人気ぶり。浅間通り商店街のそばにあり、静岡浅間神社参拝とあわせた食べ歩きにも使いやすい。おでん宅配便の通販も行っており、遠方のファンにも知られた存在。</div>
+<div class="sig"><b>一皿:</b>黒はんぺんの串おでん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区馬場町３８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542522548">☎ 054-252-2548</a> ／ <a href="https://j-gourmet.jp/ogawa/ogawamenu.html#hpb-container">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡市観光公式サイト「駿府静岡市」掲載店で、ことりっぷ等の静岡おでん特集でも駄菓子屋系の代表として紹介される。公式サイトで2025〜2026年の年末年始営業案内が出ており営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9D%99%E5%B2%A1%E3%81%8A%E3%81%A7%E3%82%93%20%E3%81%8A%E3%81%8C%E3%82%8F%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%A6%AC%E5%A0%B4%E7%94%BA%EF%BC%93%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://j-gourmet.jp/ogawa/">公式サイト</a> / <a href="https://www.visit-shizuoka.com/spots/detail.php?kanko=78">静岡市観光公式</a></div>
+</div></div>
+<div class="card" id="c-mikawaya_aoba">
+<img class="hero" src="img/shizuoka/mikawaya_aoba.jpg" alt="三河屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>三河屋<span class="yomi">みかわや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和23年創業、静岡おでんの小店が軒を連ねる「青葉横丁」を代表する老舗。カウンター13席の小さな店で、黒いつゆの静岡おでんに加え、黒はんぺんフライや串カツ、レバーやナスの炭火焼きなど酒に合う一品も揃う。基本は予約なしの回転制で、17時・18時45分・20時20分ごろの入店が狙い目と公式が案内するほどの人気店。県外からの観光客と地元の常連が肩を並べる、横丁飲み文化の入門にうってつけの一軒。</div>
+<div class="sig"><b>一皿:</b>静岡おでん盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区常磐町１丁目８−７ 青葉横丁</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542533836">☎ 054-253-3836</a> ／ <a href="http://www.oden-mikawaya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡市観光公式サイトが青葉横丁の代表店として掲載し、じゃらんニュース2025年の静岡おでん特集でも紹介。公式サイトで2025年末〜2026年始の休業案内が出ており現役営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E6%B2%B3%E5%B1%8B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%B8%B8%E7%A3%90%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%97%20%E9%9D%92%E8%91%89%E6%A8%AA%E4%B8%81">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.oden-mikawaya.com/">公式サイト</a> / <a href="https://www.jalan.net/news/article/543169/">じゃらんニュース</a></div>
+</div></div>
+<div class="card" id="c-ooyakiimo">
+<img class="hero" src="img/shizuoka/ooyakiimo.jpg" alt="大やきいも 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>大やきいも<span class="yomi">おおやきいも</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">創業100年を超える駄菓子屋系軽食店で、静岡っ子が学校帰りに通った「日常の静岡おでん」を今に伝える店。鍋から自分で串を取るセルフ形式で、牛すじ100円・その他60円という駄菓子屋価格。20年以上継ぎ足された醤油ベースの真っ黒なつゆは見た目に反してまろやかで、だし粉をかけて食べる。屋号どおり、壺で焼く昔ながらの焼きいもやかき氷も名物。昼の10時30分から夕方までの営業で、観光の合間に地元の空気ごと味わえる。</div>
+<div class="sig"><b>一皿:</b>牛すじの静岡おでん</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 10:30〜16:30</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区東草深町５−１２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542458862">☎ 054-245-8862</a> ／ <a href="http://shizuoka.mytabi.net/shizuoka/archives/ooyakiimo.php">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ことりっぷが「100年続く焼きいもと静岡おでんの店」として特集し、Yahoo!ニュース地域記事でも地元民が通う駄菓子屋系の代表として紹介。旅行記・ブログで直近の訪問記録が続いており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E3%82%84%E3%81%8D%E3%81%84%E3%82%82%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E6%9D%B1%E8%8D%89%E6%B7%B1%E7%94%BA%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://co-trip.jp/article/130702">ことりっぷ</a> / <a href="https://r.gnavi.co.jp/jjhafrau0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-umibouzu_honten">
+<img class="hero" src="img/shizuoka/umibouzu_honten.jpg" alt="海ぼうず 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>海ぼうず 本店<span class="yomi">うみぼうずほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">赤い提灯が目印の静岡おでん居酒屋。黒いつゆの静岡おでんを夜にしっかり楽しめる店として観光客の受け皿になっており、静岡おでん食べ放題＋飲み放題のコースも用意。黒はんぺんや桜えびなどの静岡ご当地つまみ、静岡茶や三ヶ日みかんを使った酒類まで「静岡づくし」で揃うのが強み。タッチパネル注文で一人客でも使いやすく、席数も多いので横丁の小店に入れなかったときの選択肢としても優秀。駅近で新幹線前の一杯にも便利。</div>
+<div class="sig"><b>一皿:</b>静岡おでん食べ放題コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 15:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区南町６−１１ １F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542848282">☎ 054-284-8282</a> ／ <a href="https://shouetsu.co.jp/umibouzu_honten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログや静岡県信用金庫協会の地域メディアが静岡おでん居酒屋の定番として紹介。2025年9月時点で予約満席との口コミがあり、盛業中であることを確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E3%81%BC%E3%81%86%E3%81%9A%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E5%8D%97%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%91%20%EF%BC%91F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000428004/">ホットペッパーグルメ</a> / <a href="https://shouetsu.co.jp/umibouzu_honten.html">公式（正悦グループ）</a></div>
+</div></div>
+<div class="card" id="c-totosuke">
+<img class="hero" src="img/shizuoka/totosuke.jpg" alt="清水港 ととすけ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>清水港 ととすけ<span class="yomi">しみずこうととすけ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">冷凍まぐろ水揚げ日本一の清水港、その岸壁にある「河岸の市」まぐろ館2階の人気店。名物は稀少部位のまぐろのカマを揚げ、先代から継ぎ足す甘辛ダレをからめた「元祖ととすけあげ」で、ここでしか食べられない一品として知られる。脂の乗ったまぐろと当日仕入れの地魚など約10種を桶に盛る「ととすけ丼・ととすけ定食」、部位の食べ比べができる「まぐろトロ三味定食」も看板。市場見学や買い物とセットで楽しめ、土日は行列必至の清水観光の定番。</div>
+<div class="sig"><b>一皿:</b>元祖ととすけあげ（まぐろカマ揚げ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 11:00〜15:00, 17:30〜20:00 ／ 水 11:00〜15:00 ／ 土 11:00〜15:00, 17:00〜20:00 ／ 日 10:30〜15:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区島崎町１４９ まぐろ館 ２ 階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543687364">☎ 054-368-7364</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>河岸の市公式サイト掲載店で、地域メディアwe love 静岡やくふうロコの2025年清水ランチ特集でも紹介される看板店。河岸の市いちば館が2025年4月にリニューアルした際の記事でも営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B8%85%E6%B0%B4%E6%B8%AF%20%E3%81%A8%E3%81%A8%E3%81%99%E3%81%91%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E5%B3%B6%E5%B4%8E%E7%94%BA%EF%BC%91%EF%BC%94%EF%BC%99%20%E3%81%BE%E3%81%90%E3%82%8D%E9%A4%A8%20%EF%BC%92%20%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kashinoichi.com/maguro02_content/page03/">河岸の市公式</a> / <a href="https://loco.kufu.jp/shizuoka/articles/original/4427">くふうロコしずおか</a></div>
+</div></div>
+<div class="card" id="c-uoichiba_shokudo">
+<img class="hero" src="img/shizuoka/uoichiba_shokudo.jpg" alt="魚市場食堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>魚市場食堂<span class="yomi">うおいちばしょくどう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">清水魚市場「河岸の市」まぐろ館2階にある食堂で、名物は「ストップ」と言うまで店員が漬けまぐろを丼に盛り続けてくれる「漬けマグロいっぱい丼」。味噌汁・小鉢付きで1500円という市場ならではの価格と、目の前で山盛りになっていく演出が受けて、テレビや旅行メディアで繰り返し取り上げられている。数量限定のため早めの来店が安全。市場の食堂らしい気取らない雰囲気で、清水港のまぐろ文化を最も分かりやすく体感できる一軒。</div>
+<div class="sig"><b>一皿:</b>漬けマグロいっぱい丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 10:30〜14:00 ／ 土・日 10:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区島崎町１４９ 清水魚市場 河岸の市 まぐろ館 2階</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0543517113">☎ 054-351-7113</a> ／ <a href="http://kashinoichi.com/maguro02_content/page05/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスや河岸の市公式サイトが掲載する名物食堂で、2025年12月の訪問ブログでも「かけ放題」の提供を確認。くふうロコの2025年清水ランチ特集でも人気店として紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E5%B8%82%E5%A0%B4%E9%A3%9F%E5%A0%82%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E5%B3%B6%E5%B4%8E%E7%94%BA%EF%BC%91%EF%BC%94%EF%BC%99%20%E6%B8%85%E6%B0%B4%E9%AD%9A%E5%B8%82%E5%A0%B4%20%E6%B2%B3%E5%B2%B8%E3%81%AE%E5%B8%82%20%E3%81%BE%E3%81%90%E3%82%8D%E9%A4%A8%202%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kashinoichi.com/maguro02_content/page05/">河岸の市公式</a> / <a href="https://www.at-s.com/gourmet/article/126990">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-izutsuya_yui">
+<img class="hero" src="img/shizuoka/izutsuya_yui.jpg" alt="井筒屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>井筒屋<span class="yomi">いつつや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">日本で唯一桜えびが水揚げされる駿河湾、その本場・由比の旧東海道由比宿にある大正5年（1916年）創業の桜えび料理専門店。生桜えび、かき揚げ、釜揚げなどを組み合わせた「由比定食」をはじめ、桜えびづくしの膳が名物で、宿場町の風情ある店構えも魅力。桜えびは春漁（3〜6月）と秋漁（10〜12月）があり、漁期には鮮度の高い生桜えびに出会える。東海道さった峠のハイキングや由比の街歩きと組み合わせたい、静岡らしさの濃い一軒。</div>
+<div class="sig"><b>一皿:</b>桜えびのかき揚げ（由比定食）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:00, 17:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区由比３１４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543752039">☎ 054-375-2039</a> ／ <a href="http://sakuraebi-itutuya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>じゃらん・るるぶ等の観光メディアが由比の桜えび料理の代表格として掲載する創業100年超の老舗。由比港漁協直営「浜のかきあげや」が2025年に建て替え閉店した後も通年営業の受け皿として案内されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%95%E7%AD%92%E5%B1%8B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E7%94%B1%E6%AF%94%EF%BC%93%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://sakuraebi-itutuya.com/">公式サイト</a> / <a href="https://rurubu.jp/andmore/spot/80133720">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-donburi_house_mochimune">
+<img class="hero" src="img/shizuoka/donburi_house_mochimune.jpg" alt="漁協直営 どんぶりハウス 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>漁協直営 どんぶりハウス<span class="yomi">ぎょきょうちょくえいどんぶりはうす</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">しらすの一大産地・用宗漁港の岸壁にある清水漁協用宗支所の直営食堂。とれたてを港で食べさせる店で、釜揚げしらす丼、生しらす丼、両方を欲張れる用宗丼などが看板。ぷちっとした歯ごたえの生しらすは、しらす漁期（2025年は3月21日〜2026年1月14日）の漁があった日だけ提供される一期一会のメニューで、それ自体が旅の目的になる。青空の下、潮風を感じながら食べるロケーションも含めて用宗の名物。昼のみ・雨天休業なので天気の良い日に。</div>
+<div class="sig"><b>一皿:</b>生しらす丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区用宗２丁目１８−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542566077">☎ 054-256-6077</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県公式サイトが漁協直営店として掲載し、静岡市のプレスリリースで2025年3月21日のしらす漁解禁と生しらす丼販売が告知されている。県観光ガイドの漁協直営食堂特集でも定番。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%BC%81%E5%8D%94%E7%9B%B4%E5%96%B6%20%E3%81%A9%E3%82%93%E3%81%B6%E3%82%8A%E3%83%8F%E3%82%A6%E3%82%B9%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E7%94%A8%E5%AE%97%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.pref.shizuoka.jp/sangyoshigoto/suisan/suisangyo/uocching/1003397/1043926/1028099.html">静岡県公式</a> / <a href="https://prtimes.jp/main/html/rd/p/000000023.000145322.html">静岡市プレスリリース</a></div>
+</div></div>
+<div class="card" id="c-sekibeya_abekawamochi">
+<img class="hero" src="img/shizuoka/sekibeya_abekawamochi.jpg" alt="石部屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>石部屋<span class="yomi">せきべや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">文化年間（1800年代初頭）創業と伝わる、静岡名物・安倍川もちの元祖格の老舗甘味処。安倍川橋のたもとという「本場の場所」で、注文ごとにつきたての餅をこしあんときな粉で仕立てる出来たての安倍川もちが味わえる。わさび醤油でつるりと食べる「からみもち」も通好みの名物。土産物の箱詰めとは別物のやわらかさで、東海道の茶屋文化を今に伝える貴重な店。売り切れ次第終了なので午前〜昼の訪問が確実。徳川家康ゆかりの逸話も残る、歴史散歩向きの一軒。</div>
+<div class="sig"><b>一皿:</b>つきたての安倍川もち</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 9:00〜16:30</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区弥勒２丁目５−２４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542525698">☎ 054-252-5698</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡市観光公式サイトと静岡新聞アットエスが掲載する200年級の老舗で、2025年10月の地元グルメブログ記事でも営業中として紹介。安倍川もちを現地で食べられる数少ない店として観光媒体の定番。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%9F%B3%E9%83%A8%E5%B1%8B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%BC%A5%E5%8B%92%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.visit-shizuoka.com/spots/detail.php?kanko=82">静岡市観光公式</a> / <a href="https://www.at-s.com/gourmet/article/127191">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-chojiya_tororo">
+<img class="hero" src="img/shizuoka/chojiya_tororo.jpg" alt="元祖 丁子屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>元祖 丁子屋<span class="yomi">がんそちょうじや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">慶長元年（1596年）創業、旧東海道の丸子宿で430年近くとろろ汁を出し続ける静岡最古級の食事処。歌川広重の浮世絵「東海道五十三次・丸子」に描かれた店そのもので、茅葺きの建物は国の登録有形文化財。自然薯をすりおろし、自家製味噌の汁でのばしたとろろ汁を麦飯にかけて食べるスタイルは、松尾芭蕉や十返舎一九の作品にも登場する伝統の味。現在は14代目が暖簾を守る。大型駐車場を備え、家族連れの週末ランチから観光まで幅広く使える。</div>
+<div class="sig"><b>一皿:</b>自然薯のとろろ汁（麦飯付き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金 11:00〜14:00 ／ 土・日 11:00〜15:00, 16:30〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区丸子７丁目１０−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542581066">☎ 054-258-1066</a> ／ <a href="https://chojiya.info/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県公式の食情報センターや静岡市観光公式が郷土料理の代表として掲載する日本遺産構成文化財の店。公式サイトで最新の営業案内が更新されており、2025年以降のメディア紹介も継続している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%20%E4%B8%81%E5%AD%90%E5%B1%8B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E4%B8%B8%E5%AD%90%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://chojiya.info/">公式サイト</a> / <a href="https://fujinokuni.shokunomiyako-shizuoka.pref.shizuoka.jp/restaurant/info/2383">静岡県しずおか食の情報センター</a></div>
+</div></div>
+<div class="card" id="c-chamachi_kinzaburo">
+<img class="hero" src="img/shizuoka/chamachi_kinzaburo.jpg" alt="茶町KINZABURO 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>茶町KINZABURO<span class="yomi">ちゃまちきんざぶろう</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">お茶の集散地として栄えた静岡市の茶問屋街「茶町」にある、1915年創業の茶商・前田金三郎商店直営の日本茶専門店。名物は本山・岡部・川根など静岡県内産地別の抹茶クリームを挟んだワッフル「茶っふる」で、産地ごとの味の違いを食べ比べられる。店内では約10種類のお茶の無料試飲ができ、2階の畳のイートインで淹れたての静岡茶と甘味を楽しめる。「お茶のまち静岡市」を舌で理解できる店として、お茶好きの観光客に定評がある。</div>
+<div class="sig"><b>一皿:</b>茶っふる（産地別抹茶ワッフル）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 9:30〜18:00 ／ 日 10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区土太夫町２７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542522098">☎ 054-252-2098</a> ／ <a href="http://kinzaburo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡市の公式プロジェクト「お茶のまち静岡市」や静岡県「ふじのくに魅力ある個店」に掲載される茶町の代表店。公式サイトのNEWSが継続更新されており2025年以降も営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E7%94%BAKINZABURO%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%9C%9F%E5%A4%AA%E5%A4%AB%E7%94%BA%EF%BC%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.ochanomachi-shizuokashi.jp/recommend/11293/">お茶のまち静岡市</a> / <a href="https://kinzaburo.com/category/news/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-kinnoji_honten">
+<img class="hero" src="img/shizuoka/kinnoji_honten.jpg" alt="金の字 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>金の字 本店<span class="yomi">きんのじほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和25年（1950年）創業、清水のソウルフード「清水もつカレー」発祥の居酒屋。初代・杉本金重氏が満州仕込みのカレーと名古屋のどて煮から着想し、串に刺した豚もつをカレーで煮込む独特の一品を生み出した。以来この味は清水中の居酒屋に広がり、ご当地グルメとして定着。本店のもつカレーは数に限りがあり、開店から1時間ほどで売り切れることもある。1本から頼めるもつ焼きなどの串も評判で、清水駅前で港町の飲み文化を味わうならまずここ。</div>
+<div class="sig"><b>一皿:</b>元祖もつカレー煮込み</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">水・日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区真砂町１−１４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543641203">☎ 054-364-1203</a> ／ <a href="https://www.instagram.com/kinnoji_1950/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡市観光公式サイトと静岡新聞アットエスが「清水もつカレー発祥の店」として掲載する三代続く老舗。地元メディアの紹介記事が近年も続いており、発祥店として唯一無二の存在。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%87%91%E3%81%AE%E5%AD%97%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E7%9C%9F%E7%A0%82%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1599915.html">静岡新聞アットエス</a> / <a href="https://www.visit-shizuoka.com/spot/detail_421.html?kanko=567">静岡市観光公式</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・海鮮・和食・うなぎ</h2>
+<div class="card" id="c-suehiro_sushi">
+<img class="hero" src="img/shizuoka/suehiro_sushi.jpg" alt="末廣鮨 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>末廣鮨<span class="yomi">すえひろすし</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">まぐろの町・清水を代表する寿司の名店。豊洲に上がる前のミナミマグロを一本買いする買い付け力で知られ、赤身から大トロ、稀少部位の「はがし」まで最高級のまぐろを余すことなく握りで味わえる。地元駿河湾の旬の地魚を使ったつまみも充実し、食後に供される名物のメロンまで含めて「清水でまぐろを食べるならここ」と県内外から客を集める。老舗らしい丁寧な接客で、ハレの日の会食から観光のごちそうまで安心して使える一軒。</div>
+<div class="sig"><b>一皿:</b>ミナミマグロの握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区江尻東２丁目５−２８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543666083">☎ 054-366-6083</a> ／ <a href="https://restaurant.ikyu.com/122963/?ikgo=2">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「寿司 EAST 百名店 2025」選出店で、トリップアドバイザー等でも「数々の伝説をもつ有名寿司店」と評される。百名店2025選出が直近の営業と評価の証左。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%AB%E5%BB%A3%E9%AE%A8%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E6%B1%9F%E5%B0%BB%E6%9D%B1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/shizuoka/A2201/A220102/22000057/">食べログ</a> / <a href="https://restaurant.ikyu.com/122963">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-irifune_sushi_ryogaecho">
+<img class="hero" src="img/shizuoka/irifune_sushi_ryogaecho.jpg" alt="入船鮨 両替町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>入船鮨 両替町店<span class="yomi">いりふねずしりょうがえちょうてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正元年（1912年）、初代・川澄勇吉がこの両替町の地で「入船寿司」として創業した、静岡市を代表する老舗寿司店の発祥店。毎朝駿河湾で揚がる地魚を仕入れ、清水のまぐろや桜えび・しらすといった静岡らしいネタを昔ながらの仕事で握る。市内に本店・南店・葵タワー店などを展開する地域密着の暖簾だが、その原点がこの両替町店。個室も備え、家族の集まりや接待から観光まで幅広く使える、静岡の「町の寿司文化」の生き証人といえる存在。</div>
+<div class="sig"><b>一皿:</b>駿河湾の地魚握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:00, 17:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区両替町２丁目７−１０ 両替町ビル</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054861543">☎ 050-5486-1543</a> ／ <a href="https://irifunezushi-ryougaechoten.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業1912年・110年余り続く静岡発祥の老舗で、静岡市観光公式サイトにも掲載。静岡発祥ローカルチェーンのため規定に従い発祥地の両替町店1店のみを選定。予約サイト・公式サイトで現在も営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%A5%E8%88%B9%E9%AE%A8%20%E4%B8%A1%E6%9B%BF%E7%94%BA%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%B8%A1%E6%9B%BF%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%90%20%E4%B8%A1%E6%9B%BF%E7%94%BA%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://irifunesushi.net/">公式サイト</a> / <a href="https://www.at-s.com/gourmet/article/125197">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-tempura_naruse">
+<img class="hero" src="img/shizuoka/tempura_naruse.jpg" alt="てんぷら 成生 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>てんぷら 成生<span class="yomi">てんぷらなるせ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">「世界が食べに来る天ぷら店」と評される、静岡が全国に誇る天ぷらの名店。静岡の名人漁師や農家から届く魚と野菜を、素材ごとに火入れを変える独自の揚げで仕立てるおまかせ一本のスタイル。2021年に静岡浅間神社近くの庭園を備えた元料亭の建物へ移転し、料理と空間の両方で静岡の風土を表現している。予約は極めて困難だが、静岡でしか食べられない体験としてガイド上は外せない存在。遠方から静岡を訪れる食通の目的地になっている。</div>
+<div class="sig"><b>一皿:</b>おまかせ天ぷらコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・日 12:00〜14:30, 18:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">土曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区丸山町１２−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542957791">☎ 054-295-7791</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログアワード2026 Gold受賞・天ぷら百名店2025選出という直近の評価があり、Discover Japan等の全国メディアも特集。静岡市を食の目的地に押し上げた代表店として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A6%E3%82%93%E3%81%B7%E3%82%89%20%E6%88%90%E7%94%9F%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%B8%B8%E5%B1%B1%E7%94%BA%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/shizuoka/A2201/A220101/22037788/">食べログ</a> / <a href="https://discoverjapan-web.com/article/82485">Discover Japan</a></div>
+</div></div>
+<div class="card" id="c-unagi_harakawa">
+<img class="hero" src="img/shizuoka/unagi_harakawa.jpg" alt="うなぎのはら川 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>うなぎのはら川<span class="yomi">うなぎのはらかわ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">静岡市中心街・呉服町で活鰻にこだわる鰻専門店。店内の仕込み場で捌いた国産うなぎを注文ごとに焼き上げ、香ばしくふっくらとした蒲焼に仕上げる。人気拡大を受けて2025年3月、旧店舗斜め前のオーテシティビル1階へ拡張移転し、旧店舗は活鰻の仕込み場として活用するという気合いの入れよう。静岡の特産品を組み合わせた独創的なメニューも話題で、昼は行列も珍しくない。市役所・駿府城公園にも近く、街歩きランチの本命として使える。</div>
+<div class="sig"><b>一皿:</b>うな重</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜15:00, 16:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区追手町１−２１ オーテシティービル 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542545977">☎ 054-254-5977</a> ／ <a href="https://sites.google.com/site/unaginoharakawa">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「うなぎ百名店2024」選出店で、2026年アワードGold受賞の評価も報じられる静岡市随一の鰻店。2025年3月の拡張移転オープンが地元不動産ニュースで報じられており営業実態は明確。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E3%81%AE%E3%81%AF%E3%82%89%E5%B7%9D%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E8%BF%BD%E6%89%8B%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%91%20%E3%82%AA%E3%83%BC%E3%83%86%E3%82%B7%E3%83%86%E3%82%A3%E3%83%BC%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.ochiai.co.jp/open-news/open20250313/">移転オープン情報</a> / <a href="https://tabelog.com/shizuoka/A2201/A220101/22000361/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-nihonryori_fuji">
+<img class="hero" src="img/shizuoka/nihonryori_fuji.jpg" alt="日本料理FUJI 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>日本料理FUJI<span class="yomi">にほんりょうりふじ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">京料理「いそべ」や東京「分とく山」で修業した藤岡氏が営む、静岡市中心部のカウンター日本料理店。駿河湾の魚介や静岡の野菜など地元素材を軸に、椀物から飯蒸しまで丁寧な仕事のコース一本で勝負する。フランス発のレストランガイド「ゴ・エ・ミヨ」掲載歴もあり、静岡の日本料理シーンを牽引する存在として県外の食通も足を運ぶ。カウンター7席と個室中心の落ち着いた空間で、記念日や大切な会食に静岡の旬を任せられる一軒。</div>
+<div class="sig"><b>一皿:</b>季節の会席コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 12:00〜14:30, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区栄町３−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542605166">☎ 054-260-5166</a> ／ <a href="https://nihonryourifuji.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「日本料理 EAST 百名店 2025」選出、食べログアワード2026 Silver受賞と直近の評価が高い。静岡新聞アットエスなど地元媒体も掲載しており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86FUJI%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E6%A0%84%E7%94%BA%EF%BC%93%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nihonryourifuji.com/">公式サイト</a> / <a href="https://tabelog.com/shizuoka/A2201/A220101/22027669/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-tenbun_honten">
+<img class="hero" src="img/shizuoka/tenbun_honten.jpg" alt="天文本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>天文本店<span class="yomi">てんぶんほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治12年（1879年）創業、静岡の繁華街・七間町で140年以上続く天婦羅・うなぎ専門店。桜えびのかき揚げ丼やしらす・山葵など静岡食材の天ぷらを、老舗ながらランチは1100円からという手頃さで出すのが身上。2018年に再開発に伴いリニューアルし、現在は新しいビルの1階で暖簾を守る。ごま油の香る江戸前流の天ぷらと、うな丼などの鰻メニューを一度に楽しめる使い勝手のよさで、地元の日常使いと観光ランチの両方を受け止める。</div>
+<div class="sig"><b>一皿:</b>桜えびかき揚げ丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜14:30, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区七間町１４−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054874411">☎ 050-5487-4411</a> ／ <a href="https://nbj6801.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県「ふじのくに魅力ある個店」認定店で、静岡新聞アットエスが「創業140年超えの老舗天ぷら店」として紹介。地元グルメブログの実食記事も近年続いており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E6%96%87%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%B8%83%E9%96%93%E7%94%BA%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1668782.html">静岡新聞アットエス</a> / <a href="http://tenbun-shizuoka.com/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-tenmine">
+<img class="hero" src="img/shizuoka/tenmine.jpg" alt="天峰 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>天峰<span class="yomi">てんみね</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治37年（1904年）創業、120年余り続くうなぎ・天ぷらの専門店。毎日仕込む国産の活鰻を、何十年も継ぎ足してきた甘めのタレで香ばしく焼き上げる蒲焼が看板で、ひつまぶしや肝焼きも揃う。天ぷら定食は1500円と老舗らしからぬ良心価格で、鰻と天ぷらを一軒で楽しめるのが強み。2014年に建て替えた店舗は最大28名の座敷個室を備え、法事や家族の集まりにも対応。駿府城公園観光の後の食事処としても収まりがよい。</div>
+<div class="sig"><b>一皿:</b>うな重（継ぎ足しダレの蒲焼）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:00〜14:00, 16:30〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区駿河町６−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542550131">☎ 054-255-0131</a> ／ <a href="https://tenmine.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで創業120余年を掲げる老舗で、地元グルメブログ等がお値打ち天丼ランチの店として紹介。公式サイトの営業案内が現行で維持されており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E5%B3%B0%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%A7%BF%E6%B2%B3%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tenmine.com/">公式サイト</a> / <a href="https://www.sakuyaoi.com/entry/tenmine">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-shimizuko_minami">
+<img class="hero" src="img/shizuoka/shimizuko_minami.jpg" alt="清水港 みなみ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>清水港 みなみ<span class="yomi">しみずこうみなみ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">まぐろ卸直営の「まぐろのみなみ」1号店で、静岡駅南口近くにありながら清水港仕込みの天然南まぐろを驚きの価格で出す超人気まぐろ丼専門店。昼は1000円前後からの丼が名物で、赤身・中トロ・頭肉・へそなど部位の食べ比べができる特選丼まで揃い、連日行列ができる。東京の半値近い価格感と評され、県外からの遠征客も多い。夜はまぐろ料理と酒の店に変わり、希少部位のつまみでゆっくり飲める。静岡駅周辺で海鮮を狙うならまず候補に挙がる一軒。</div>
+<div class="sig"><b>一皿:</b>天然南まぐろ丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜14:00, 17:30〜21:30 ／ 日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区森下町１−４１ タイヨウビル ２階</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542880232">☎ 054-288-0232</a> ／ <a href="https://maguro-minami.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスやYahoo!ニュース専門家記事が「都内の半値で極上まぐろ」と紹介する行列店。2025年5月時点の営業時間情報が確認でき、直近の口コミも活発で営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B8%85%E6%B0%B4%E6%B8%AF%20%E3%81%BF%E3%81%AA%E3%81%BF%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E6%A3%AE%E4%B8%8B%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%94%EF%BC%91%20%E3%82%BF%E3%82%A4%E3%83%A8%E3%82%A6%E3%83%93%E3%83%AB%20%EF%BC%92%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/124029">静岡新聞アットエス</a> / <a href="https://news.yahoo.co.jp/expert/articles/dd817afcee8dcf7a3e3157a2ee7f814ec498afc1">Yahoo!ニュース</a></div>
+</div></div>
+<div class="card" id="c-suiendosai_honten">
+<img class="hero" src="img/shizuoka/suiendosai_honten.jpg" alt="水塩土菜 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>水塩土菜 本店<span class="yomi">すいえんどさい ほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1969年創業の静岡を代表するとんかつ専門店。何百年と続いた造り酒屋から譲り受けた酒樽を内装にあしらった趣ある店内で、サクッと軽い衣とジューシーな肉のロースかつを味わえる。食べログ「とんかつ百名店」に選ばれた実力店で、地元民から「静岡でとんかつといえばここ」と名前が挙がる存在。昼はかつ定食目当ての行列ができることも多く、市街中心部からも歩ける立地で観光の食事にも使いやすい。</div>
+<div class="sig"><b>一皿:</b>ロースかつ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:30〜14:30, 17:00〜20:30 ／ 火 11:30〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区相生町６−２２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542464884">☎ 054-246-4884</a> ／ <a href="https://www.suiendosai.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「とんかつ百名店」に選出され、地元グルメブログでも2024〜2025年に実食レポが続く定番店。公式サイトも稼働中で営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B0%B4%E5%A1%A9%E5%9C%9F%E8%8F%9C%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E7%9B%B8%E7%94%9F%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.suiendosai.jp/">公式サイト</a> / <a href="https://tabelog.com/tonkatsu/shizuoka/A2201/rank/">食べログ（静岡市とんかつランキング）</a></div>
+</div></div>
+<div class="card" id="c-tonkatsu_unno">
+<img class="hero" src="img/shizuoka/tonkatsu_unno.jpg" alt="とんかつ うんの 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>とんかつ うんの<span class="yomi">とんかつ うんの</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1976年創業。駿河区高松で半世紀近く続くとんかつ専門店で、地元客はもちろん遠方からも通う人がいる人気店。袋井産の麦豚を使い、外はサクサク・中はジューシーな揚げ上がりが身上。無休営業（臨時休業あり）で駐車場も広く、家族での食事に使いやすい郊外型の名店。県公式「しずおか食の情報センター」にも掲載され、静岡食材へのこだわりが紹介されている。</div>
+<div class="sig"><b>一皿:</b>ロースとんかつ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜14:00, 17:00〜20:30 ／ 日 11:00〜14:00, 16:30〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区高松２丁目１−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542374518">☎ 054-237-4518</a> ／ <a href="http://tonkatsuunno.com/about">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県公式「しずおか食の情報センター」や静岡県信用金庫協会のWebマガジンが紹介する老舗。2025年のとんかつ特集記事群でも静岡市の定番店として名が挙がる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E3%81%8B%E3%81%A4%20%E3%81%86%E3%82%93%E3%81%AE%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E9%AB%98%E6%9D%BE%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://fujinokuni.shokunomiyako-shizuoka.pref.shizuoka.jp/restaurant/info/2304">しずおか食の情報センター（静岡県公式）</a> / <a href="https://www.at-s.com/gourmet/article/127021">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-gorouju">
+<img class="hero" src="img/shizuoka/gorouju.jpg" alt="とんかつ 五郎十 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>とんかつ 五郎十<span class="yomi">とんかつ ごろうじゅう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">清水区三保で長く地元民に愛される、清水屈指の「ガツ盛り」とんかつ定食店。豚ロース・ヒレのとんかつと生姜焼きを軸に、ハンバーグとつくねの中間のようなオリジナル「ミンチ」も名物。肉自体の重さが300gを超える品もあるとされる大盛り食堂で、大食い自慢でも満足できると評判。三保松原観光と組み合わせやすく、食事どきは混み合う人気ぶり。脂っこすぎない味付けでボリュームの割に食べやすい。</div>
+<div class="sig"><b>一皿:</b>ミンチ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・日 11:00〜14:00, 17:00〜20:00 ／ 土 11:00〜13:30, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区三保９４３−７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543354966">☎ 054-335-4966</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログ「みなと町でも桜は咲くら」等が清水屈指のガツ盛り店として紹介し、2025年のブログ訪問記も確認できる。Rettyなど大手サイトにも現役掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E3%81%8B%E3%81%A4%20%E4%BA%94%E9%83%8E%E5%8D%81%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E4%B8%89%E4%BF%9D%EF%BC%99%EF%BC%94%EF%BC%93%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sakuyaoi.com/entry/gorouju">みなと町でも桜は咲くら</a> / <a href="https://retty.me/area/PRE22/ARE330/SUB33002/100000766179/">Retty</a></div>
+</div></div>
+<div class="card" id="c-kuwaya_shokudo">
+<img class="hero" src="img/shizuoka/kuwaya_shokudo.jpg" alt="クワヤ食堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>クワヤ食堂<span class="yomi">くわやしょくどう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和21年（1946年）創業、親子三代続く静岡市の老舗大衆食堂。定番の生姜焼きは、ニンニクと生姜を効かせた醤油ベースの自家製ダレで豚肉を焼き上げる看板料理で、白飯が進む昔ながらの味。飾らない店構えと家庭的な雰囲気で、近隣の常連客が昼夜通う。夜は材料がなくなり次第終了という昔気質の営業スタイルも健在。静岡の「町の食堂」文化を今に伝える貴重な一軒。</div>
+<div class="sig"><b>一皿:</b>生姜焼き定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 11:00〜13:30, 18:00〜21:00 ／ 水・土 11:00〜13:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区西門町２−４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542535034">☎ 054-253-5034</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが「昭和21年創業・親子三代続く老舗食堂」として特集。2025年4月にはテレビ静岡「静岡発そこ知り」のコスパ最強食堂特集でも紹介され、営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AF%E3%83%AF%E3%83%A4%E9%A3%9F%E5%A0%82%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E8%A5%BF%E9%96%80%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1456398.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-fumita_shoten">
+<img class="hero" src="img/shizuoka/fumita_shoten.jpg" alt="文田商店 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>文田商店 本店<span class="yomi">ふみたしょうてん ほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">駿河区登呂で親・子・孫と三代・約60年続く焼肉の老舗。A5等級の静岡県産和牛を注文が入ってからカット・味付けし、七輪の炭火でじっくり焼き上げる正統派スタイルが身上。肉質と本格的な韓国家庭料理の両方で地元の支持が厚く、テレビで幾度も紹介されてきた。登呂の本店のほか息子さんが営む谷田店、焼津の大井川店があるが、原点はこの本店。「地方の名店」として焼肉専門メディアも高く評価する。</div>
+<div class="sig"><b>一皿:</b>七輪炭火の和牛焼肉</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区登呂２丁目１８−１３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542826419">☎ 054-282-6419</a> ／ <a href="https://www.fumitashoten.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>焼肉専門ブログ「焼肉図鑑」が屈指の実力を誇る地方の名店と評し、ホットペッパー等の予約サイトにも現役掲載で営業実態が確認できる。三代60年の歴史も複数媒体が紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%87%E7%94%B0%E5%95%86%E5%BA%97%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E7%99%BB%E5%91%82%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.yakiniku-zukan.com/entry/fumitasyoten-shizuoka-shizuoka">焼肉図鑑</a> / <a href="https://www.hotpepper.jp/strJ000428011/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-yakitoriya_hinode">
+<img class="hero" src="img/shizuoka/yakitoriya_hinode.jpg" alt="焼鳥家 日乃出 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>焼鳥家 日乃出<span class="yomi">やきとりや ひので</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">伝馬町東交差点で営業する昭和レトロな焼き鳥店。50年以上鳥肉専門の精肉店を営んだのち焼き鳥屋に転じて20年以上という経歴の持ち主で、鶏を知り尽くした目利きが強み。約20種類の焼き鳥をリーズナブルに提供し、串焼きメニューの豊富さはこの界隈でも随一。常連が多いアットホームな雰囲気ながら、カウンターなら一人でも入りやすい。開店前から並ぶ客がいるほどの人気で、新静岡駅から近く使い勝手も良い。</div>
+<div class="sig"><b>一皿:</b>焼き鳥盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区伝馬町９−１４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542531253">☎ 054-253-1253</a> ／ <a href="https://www.instagram.com/yakitorihinode?igsh=Y25kaG8zaDB0NWhu">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ねとらぼリサーチの「静岡県の焼き鳥の名店」で1位に選ばれた実績があり、2025年1月・3月の訪問口コミが食べログ等で確認できる現役の人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E5%AE%B6%20%E6%97%A5%E4%B9%83%E5%87%BA%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%BC%9D%E9%A6%AC%E7%94%BA%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nlab.itmedia.co.jp/research/articles/947592/">ねとらぼリサーチ</a> / <a href="https://tabelog.com/shizuoka/A2201/A220101/22004273/dtlrvwlst/?type=0">食べログ</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・そば・町中華</h2>
+<div class="card" id="c-san_ramen">
+<img class="hero" src="img/shizuoka/san_ramen.jpg" alt="らぁめん燦 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">27</span>らぁめん燦<span class="yomi">らぁめんさん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">葵区昭府の住宅街に構える自然派ラーメン店。蜆やあさりなどの貝出汁を軸に、素材の旨みを丁寧に引き出したスープが持ち味で、プリッとした食感の太ちぢれ麺を合わせる「手揉み中華そば」が看板。土日祝は朝8時から営業しており、静岡で定着しつつある「朝ラー」文化を市街地近くで体験できる貴重な一軒でもある。夏には出汁の技を活かした冷やし麺も登場し、静岡朝日テレビのグルメ媒体などローカルメディアがたびたび取り上げる。行列必至だが回転は良く、家族連れでも入りやすい雰囲気。</div>
+<div class="sig"><b>一皿:</b>手揉み中華そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 10:30〜14:30 ／ 金・土・日 10:30〜14:30, 18:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区昭府２丁目１５−２２ ショウブベースハクガ 102</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://www.instagram.com/ramen.3san3/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元媒体くふうロコしずおかの「静岡市・本当に美味いラーメン店13選【2025最新】」に選出され、静岡朝日テレビLOOKも2025年以降に夏季限定麺を紹介しており営業実態が確認できる。無化調・出汁重視の実力派として地元評価が高い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%81%E3%82%81%E3%82%93%E7%87%A6%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E6%98%AD%E5%BA%9C%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%92%20%E3%82%B7%E3%83%A7%E3%82%A6%E3%83%96%E3%83%99%E3%83%BC%E3%82%B9%E3%83%8F%E3%82%AF%E3%82%AC%20102">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://loco.kufu.jp/shizuoka/articles/original/1039">くふうロコしずおか</a> / <a href="https://look.satv.co.jp/content_column/gourmet/65004">LOOK（静岡朝日テレビ）</a> / <a href="https://www.sakuyaoi.com/entry/ramensan">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-okuni_ramen">
+<img class="hero" src="img/shizuoka/okuni_ramen.jpg" alt="おくに/らーめん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">28</span>おくに/らーめん<span class="yomi">おくにらーめん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">葵区新富町、安倍川の近くにある出汁の旨みを追求したラーメン店。看板の「焼きあご背脂中華そば」は、香ばしい焼きあごの出汁に背脂のコクを重ねた一杯で、自然素材ベースの優しくも奥行きある味わいが身上。日曜は朝7時から営業する朝ラー対応もうれしい。地元グルメメディアが「行くたびに美味しくなってる」と評するほど進化を続けており、市内でも指折りの行列店となっている。店頭駐車場に加え第2駐車場も備え、車での訪問もしやすい。</div>
+<div class="sig"><b>一皿:</b>焼きあご背脂中華そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・土・日 7:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">木・金曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区新富町６丁目１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542722315">☎ 054-272-2315</a> ／ <a href="https://okuni-ramen.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>くふうロコしずおかの2025年最新版「本当に美味いラーメン店13選」に選出されており、公式サイト・食べログでも営業情報が更新されている。あご出汁一本で行列を作る地元屈指の人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%8F%E3%81%AB/%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E6%96%B0%E5%AF%8C%E7%94%BA%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://loco.kufu.jp/shizuoka/articles/original/594">くふうロコしずおか</a> / <a href="https://okuniramen.wixsite.com/hello">公式サイト</a> / <a href="https://www.at-s.com/gourmet/article/571201">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-abes_ramen">
+<img class="hero" src="img/shizuoka/abes_ramen.jpg" alt="ラーメンABE's 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">29</span>ラーメンABE's<span class="yomi">らーめんあべず</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">静岡市の無化調ラーメンの先駆けとして知られる人気店。化学調味料に頼らず、自家製スープと麺で構成する一杯は、昼の「背脂煮干し」から夜限定の濃厚「鶏白湯ラーメン」まで幅広く、いずれも後味の良さが際立つ。葵区千代田で人気を博したのち沓谷へ移転し、姉妹店の餃子専門「GYOUZAYA」と並んで営業。スープがなくなり次第終了になるほどの人気ぶりで、市外からもファンが通う。静岡新聞アットエスや地元ブログでも定番として紹介され続けている。</div>
+<div class="sig"><b>一皿:</b>鶏白湯ラーメン（夜限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木 11:00〜14:30 ／ 金 11:00〜14:30, 17:30〜20:00 ／ 土・日 10:30〜14:30, 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区沓谷１３５４−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542956881">☎ 054-295-6881</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>くふうロコしずおかの2025年最新版ラーメン13選に選出され、同媒体が夜限定鶏白湯の単独記事も掲載。静岡新聞アットエスにも店舗情報が掲載されており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3ABE%27s%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E6%B2%93%E8%B0%B7%EF%BC%91%EF%BC%93%EF%BC%95%EF%BC%94%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://loco.kufu.jp/shizuoka/articles/original/690">くふうロコしずおか</a> / <a href="https://www.at-s.com/gourmet/article/asian/ramen/125315.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-limeken">
+<img class="hero" src="img/shizuoka/limeken.jpg" alt="ライム軒 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">30</span>ライム軒<span class="yomi">らいむけん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2018年開業、フレンチから転身し東京「麺屋武蔵」で修業した店主が営むラーメン・つけ麺専門店。駿河区中田本町の店は開店前から行列ができる市内屈指の人気店で、看板の「ライムつけ麺」はライムの爽やかな酸味を効かせた独創的な一杯。柚子や大根おろしを使った季節限定メニューも次々に登場し、限定目当てのリピーターが絶えない。フレンチ仕込みの丁寧な仕事による洗練されたスープと、肉料理のクオリティの高さも評判。昼夜ともスープがなくなり次第終了する。</div>
+<div class="sig"><b>一皿:</b>ライムつけ麺</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜14:30, 18:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区中田本町６２−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542873311">☎ 054-287-3311</a> ／ <a href="https://www.instagram.com/raimu_ken?igsh=azc4Z21ibG50MzJn">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>くふうロコしずおかの2025年最新版ラーメン13選に選出され、同媒体が季節限定つけ麺の記事も随時掲載していて営業実態が確認できる。「静岡市を代表する大行列必至の人気店」と地元ブログも評する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%82%A4%E3%83%A0%E8%BB%92%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E4%B8%AD%E7%94%B0%E6%9C%AC%E7%94%BA%EF%BC%96%EF%BC%92%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://loco.kufu.jp/shizuoka/articles/original/635">くふうロコしずおか</a> / <a href="https://www.at-s.com/gourmet/article/480527">静岡新聞アットエス</a> / <a href="https://jyanigori.com/?p=3027">ジャニごり日記</a></div>
+</div></div>
+<div class="card" id="c-ariga_ramen">
+<img class="hero" src="img/shizuoka/ariga_ramen.jpg" alt="麺屋ARIGA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">31</span>麺屋ARIGA<span class="yomi">めんやありが</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">清水区を代表する人気ラーメン店。鶏・豚・魚介を合わせた独創的なトリプルスープが持ち味で、「何度でもリピートしたくなる」の意を込めた看板メニュー「リピ塩」は、澄んだ塩スープに旨みが幾重にも重なる完成度の高い一杯。2023年3月に鳥坂から入江岡町へ移転リニューアルし、カフェのようなおしゃれな店内で席数も増えた。チャーシュー丼とのセットや週替わりの限定メニューも人気で、清水エリアでラーメンといえばまず名前が挙がる存在になっている。</div>
+<div class="sig"><b>一皿:</b>リピ塩ラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜13:45, 17:00〜19:45</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区入江岡町１５−２６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0546897200">☎ 054-689-7200</a> ／ <a href="https://www.instagram.com/menya_ariga?igsh=MTk2ZDJjMW42aGZqOQ==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>くふうロコしずおかが2025年最新版ラーメン13選と単独記事の両方で紹介する清水区の代表格。2023年の移転後も口コミ・地元ブログの投稿が続いており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8BARIGA%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E5%85%A5%E6%B1%9F%E5%B2%A1%E7%94%BA%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://loco.kufu.jp/shizuoka/articles/original/864">くふうロコしずおか</a> / <a href="https://www.sakuyaoi.com/entry/ariga">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-tagata_soba">
+<img class="hero" src="img/shizuoka/tagata_soba.jpg" alt="手打ち蕎麦 たがた 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">32</span>手打ち蕎麦 たがた<span class="yomi">てうちそば たがた</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">静岡駅から徒歩10分ほど、葵区常磐町にある自家製粉手打ち蕎麦の名店。店主は静岡在来そばブランド化推進協議会の代表を務め、井川地区などでの焼き畑栽培から製粉・麺打ちまで自ら手がけるという、全国でも稀な「栽培から一貫」の蕎麦屋。香り高い在来種の蕎麦を、凛とした美しい店内と丁寧な接客で味わえる。1日12食限定で小天丼とお新香が付く平日ランチは特に人気が高い。食べログ「そばEAST百名店」に2017年・2022年・2025年と繰り返し選出されている静岡蕎麦界の看板店。</div>
+<div class="sig"><b>一皿:</b>在来種の手打ちせいろ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜14:00, 17:30〜21:00 ／ 日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区常磐町２丁目６−７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542508555">☎ 054-250-8555</a> ／ <a href="https://sobatagata.official.ec/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「そばEAST百名店2025」選出で、2025年時点の高評価と営業実態が確認できる。静岡県公式の食の情報センターや日本蕎麦保存会も紹介する、市内で最も評価の高い蕎麦店のひとつ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20%E3%81%9F%E3%81%8C%E3%81%9F%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%B8%B8%E7%A3%90%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/shizuoka/A2201/A220101/22002324/">食べログ</a> / <a href="https://fujinokuni.shokunomiyako-shizuoka.pref.shizuoka.jp/restaurant/info/2302">しずおか食の情報センター（静岡県公式）</a> / <a href="https://nihon-soba.jp/tabearuki/chubu/shizuoka/2019/10/22/5525/">日本蕎麦保存会</a></div>
+</div></div>
+<div class="card" id="c-togakushi_soba">
+<img class="hero" src="img/shizuoka/togakushi_soba.jpg" alt="磯おろし 戸隠そば 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">33</span>磯おろし 戸隠そば 本店<span class="yomi">いそおろし とがくしそば ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和31年創業の大衆食堂を前身とし、長野・戸隠村から蕎麦粉を仕入れたことから「戸隠そば」を名乗る静岡の老舗そば処。冷たいそばに大根おろしと海苔などをのせて冷たいつゆをかける名物「磯おろし」はこの店で生まれ、商標登録もされた静岡市民のソウルフード。揚げたて小エビ天がのる「磯天おろし」も看板メニューで、通し営業かつ無休、広い駐車場を備えた使い勝手の良さも魅力。市内に呉服町店・JR静岡駅店を展開する静岡発祥のローカルチェーンで、清閑町の本店が発祥の味を守る。</div>
+<div class="sig"><b>一皿:</b>磯おろし（磯天おろし）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜19:45</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区清閑町１２−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542529470">☎ 054-252-9470</a> ／ <a href="http://togakushisoba.jp/about-01.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡発祥ローカルチェーンの本店として選定（選定基準の「発祥店・本店に限り1店」に該当）。静岡新聞アットエスが名物磯おろし誕生秘話を特集し、公式サイト・公式Instagramの更新も続いており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%A3%AF%E3%81%8A%E3%82%8D%E3%81%97%20%E6%88%B8%E9%9A%A0%E3%81%9D%E3%81%B0%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E6%B8%85%E9%96%91%E7%94%BA%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://togakushisoba.jp/">公式サイト</a> / <a href="https://www.at-s.com/life/article/ats/1273993.html">静岡新聞アットエス</a> / <a href="https://www.at-s.com/gourmet/article/washoku/soba/125195.html">静岡新聞アットエス（清閑町本店）</a></div>
+</div></div>
+<div class="card" id="c-pyonkichi_udon">
+<img class="hero" src="img/shizuoka/pyonkichi_udon.jpg" alt="CURRY UDON PyonKichi 静岡店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">34</span>CURRY UDON PyonKichi 静岡店<span class="yomi">かれーうどん ぴょんきち しずおかてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">清水のダイニングバーの裏メニューから生まれた、市内でも珍しいカレーうどん専門店。数種類のスパイスを重ねたポタージュのようにクリーミーで濃厚なカレースープに、もちもちの麺がよく絡む。麺を食べ終えたら白米を入れてリゾット風に締めるのが定番の楽しみ方。2019年に紺屋町へ出店した静岡店は静岡駅から徒歩圏で、平日も深夜まで営業しているため、ランチから飲み会帰りの締めまで幅広く使える。女性一人でも入りやすいカフェ風の店構えも人気の理由。</div>
+<div class="sig"><b>一皿:</b>クリーミーカレーうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区紺屋町４−２７ 1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542553566">☎ 054-255-3566</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスや複数の地元グルメブログが紹介し、地元ブログの2026年2月更新のうどん専門店まとめにも現役店として掲載されている。公式Instagramの更新も続く駅近の人気専門店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=CURRY%20UDON%20PyonKichi%20%E9%9D%99%E5%B2%A1%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E7%B4%BA%E5%B1%8B%E7%94%BA%EF%BC%94%E2%88%92%EF%BC%92%EF%BC%97%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/washoku/udon/743591.html">静岡新聞アットエス</a> / <a href="https://www.sakuyaoi.com/entry/udon_shizuoka">みなと町でも桜は咲くら（2026年2月更新まとめ）</a> / <a href="https://www.instagram.com/pyonkichi_szok/">公式Instagram</a></div>
+</div></div>
+<div class="card" id="c-koran_chuka">
+<img class="hero" src="img/shizuoka/koran_chuka.jpg" alt="香蘭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">35</span>香蘭<span class="yomi">こうらん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">新静岡駅にほど近い鷹匠で長年愛される老舗の町中華。麺類・炒飯・オムライス・一品料理と、昔ながらの中華飯店らしいメニューがずらりと並び、「働く大人のための気軽な食堂」として昼時はサラリーマンや常連客で賑わう。名物は町中華では提供店が少なくなったオムライスで、香ばしく炒めたチキンライスを薄焼き玉子で包んだ懐かしい味。2024年11月にリニューアルし、レトロな雰囲気はそのままに店内が快適になった。チャーハンや中華そばなど、何を頼んでも外さない定番力が身上。</div>
+<div class="sig"><b>一皿:</b>オムライス</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜15:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区鷹匠２丁目１１−９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542520961">☎ 054-252-0961</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2024年11月のリニューアル後、2025年10月公開の地元有力グルメブログが訪問記を掲載しており営業実態が確認できる。鷹匠エリアの町中華として地元メディアで定番的に取り上げられる存在。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A6%99%E8%98%AD%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%B7%B9%E5%8C%A0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sakuyaoi.com/entry/koran_takajo">みなと町でも桜は咲くら（2025年10月）</a> / <a href="https://eshizuokastaffoishii.eshizuoka.jp/e2228001.html">eしずおかブログ</a></div>
+</div></div>
+<div class="card" id="c-tonko_chuka">
+<img class="hero" src="img/shizuoka/tonko_chuka.jpg" alt="中国料理 豚香 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">36</span>中国料理 豚香<span class="yomi">ちゅうごくりょうり とんこう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1983年（昭和58年）創業、「昭和の町中華」を掲げる葵区東千代田の老舗中国料理店。ラーメン・炒飯・餃子といった町中華の定番から本場風の一品料理まで揃い、40年以上にわたり地域の食卓を支えてきた。常連に人気なのは、とろりとした餡とともに大ぶりの角煮がのる「角煮チャーハン」で、肉肉しい食べ応えが評判。16台分の無料駐車場を備え、家族連れでも気軽に使える郊外型の使い勝手の良さも魅力。昼夜とも通いやすい、地元密着の名店である。</div>
+<div class="sig"><b>一皿:</b>角煮チャーハン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜14:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区東千代田２丁目１−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542624740">☎ 054-262-4740</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元有力グルメブログが2025年4月に公開（同年10月更新）した記事で現役の老舗として紹介し、静岡新聞アットエスにも店舗情報が掲載されている。創業40年超の地元密着町中華として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E8%B1%9A%E9%A6%99%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E6%9D%B1%E5%8D%83%E4%BB%A3%E7%94%B0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sakuyaoi.com/entry/tonkou">みなと町でも桜は咲くら（2025年4月）</a> / <a href="https://www.at-s.com/gourmet/article/asian/chinese/126093.html">静岡新聞アットエス</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・バー(青葉横丁・両替町)</h2>
+<div class="card" id="c-takano">
+<img class="hero" src="img/shizuoka/takano.jpg" alt="大衆酒場 多可能 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">37</span>大衆酒場 多可能<span class="yomi">たいしゅうさかば たかの</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大正12年（1923年）創業、100年を超える歴史を持つ静岡を代表する大衆酒場。「静岡三大居酒屋」の筆頭格としてテレビ東京「アド街ック天国」でも紹介された。趣深い外観と店内で、鮮魚店から仕入れる刺身、静岡おでん、マグロのすき身、駿河湾の巻貝「ながらみ」など地の肴が手頃な価格で並ぶ。焼酎の緑茶割り「静岡割り」発祥の地・静岡らしい一杯とともに楽しみたい。仕事帰りのサラリーマンから旅行者まで幅広く受け入れる懐の深さで、「サラリーマンの聖地」とも呼ばれる。現金のみ、日祝休み。</div>
+<div class="sig"><b>一皿:</b>静岡おでんと静岡割り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 16:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区紺屋町５−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542510131">☎ 054-251-0131</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>アド街ック天国が「静岡三大居酒屋」として紹介した老舗で、2026年7月公開の地元メディアの実食レビューがあり営業実態が確認できる。老舗大衆酒場枠の最有力として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%20%E5%A4%9A%E5%8F%AF%E8%83%BD%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E7%B4%BA%E5%B1%8B%E7%94%BA%EF%BC%95%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shizuoka-map.com/2026/07/shizuoka-takano/">しずおかマップ（2026年7月実食レビュー）</a> / <a href="https://www.tv-tokyo.co.jp/adomachi/backnumber/20210821/142015.html">テレビ東京 アド街ック天国</a> / <a href="https://www.at-s.com/gourmet/article/127060">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-omura_bar">
+<img class="hero" src="img/shizuoka/omura_bar.jpg" alt="大村バー 人宿町本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">38</span>大村バー 人宿町本店<span class="yomi">おおむらばー ひとやどちょうほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大正5年（1916年）創業と伝わる、静岡最古級の歴史を持つ老舗酒場。「バー」の名を掲げながら中身は正統派の大衆酒場で、「静岡三大居酒屋」の一角としてアド街ック天国にも登場した。名物は創業当時から変わらぬ「湯豆腐」。醤油あんに海苔と生姜をあしらった素朴な一品で、これを目当てに通う常連が絶えない。刺身や串、アツアツのフライなど酒場メニューも充実し、良心的な価格で満足度が高い。吉田類の酒場放浪記でも訪れられた、昭和どころか大正の空気を今に伝える一軒。土日は開店直後から満席になることも多い。</div>
+<div class="sig"><b>一皿:</b>湯豆腐</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土 16:30〜21:30 ／ 日 15:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区人宿町１丁目５−８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542522311">☎ 054-252-2311</a> ／ <a href="http://ohmura-bar.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡三大居酒屋の一つとしてアド街ック天国で紹介された老舗で、2025年3月・6月訪問の口コミ投稿が確認でき営業実態がある。100年超の歴史を持つ酒場として老舗枠で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E6%9D%91%E3%83%90%E3%83%BC%20%E4%BA%BA%E5%AE%BF%E7%94%BA%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%BA%BA%E5%AE%BF%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.tv-tokyo.co.jp/adomachi/backnumber/20210821/142015.html">テレビ東京 アド街ック天国</a> / <a href="https://www.hotpepper.jp/strJ000062749/">ホットペッパーグルメ</a> / <a href="https://note.com/evidencenasihiro/n/n0fdce9c59a6e">note（訪問記）</a></div>
+</div></div>
+<div class="card" id="c-kashimaya">
+<img class="hero" src="img/shizuoka/kashimaya.jpg" alt="鹿島屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">39</span>鹿島屋<span class="yomi">かしまや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和3年（1928年）創業、親子3代にわたり昭和通りで暖簾を守る老舗居酒屋。「静岡三大居酒屋」の一つに数えられ、名物は鮮度抜群の厚切りカツオの刺身。焼津や清水から揚がる旬の魚介に加え、静岡名物の生シラスや桜エビなど駿河湾の幸を、ちょっとずつリーズナブルに味わえるのが身上だ。使い込まれた店内には昭和の酒場の空気が色濃く残り、地酒との相性も抜群。旅行メディアが「静岡の美味しいものをちょっとずつ味わえる最高の居酒屋」と紹介するなど、県外の酒場ファンからの支持も厚い。</div>
+<div class="sig"><b>一皿:</b>カツオの刺身</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区上石町７−１５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542523989">☎ 054-252-3989</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡三大居酒屋としてアド街ック天国が紹介した老舗で、旅行メディアGOTRIP!が2025年4月に紹介記事を公開しており営業実態が確認できる。駿河湾の魚で飲める老舗枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B9%BF%E5%B3%B6%E5%B1%8B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%B8%8A%E7%9F%B3%E7%94%BA%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gotrip.jp/2025/04/137669/">GOTRIP!（2025年4月）</a> / <a href="https://tanoshiiosake.jp/2281">たのしいお酒.jp</a> / <a href="https://www.at-s.com/gourmet/article/126138">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-yachiyo_yakitori">
+<img class="hero" src="img/shizuoka/yachiyo_yakitori.jpg" alt="八千代やきとり酒場 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">40</span>八千代やきとり酒場<span class="yomi">やちよやきとりさかば</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">呉服町で創業約70年、静岡の飲兵衛に長く愛されてきた老舗やきとり酒場。名物は店名を冠した「八千代焼」で、やきとりやフライとともに、気取らない酒場の味を安く楽しめる。夕方5時の開店と同時に常連で席が埋まり、閉店は21時と早じまい。昔ながらの「早く来て、さっと飲んで帰る」健全な酒場文化が今も息づいている。2階席は宴会に対応し、世代を超えた静岡の社交場となってきた。日祝休み・予約は平日のみと商売っ気のなさも老舗の風格。</div>
+<div class="sig"><b>一皿:</b>八千代焼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区呉服町２丁目２−１７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542520678">☎ 054-252-0678</a> ／ <a href="https://www.instagram.com/yachiyo529cho">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログや静岡新聞アットエスが老舗やきとり酒場として紹介し、公式Instagramでメニュー更新が続いており営業実態が確認できる。呉服町の焼き鳥老舗枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%AB%E5%8D%83%E4%BB%A3%E3%82%84%E3%81%8D%E3%81%A8%E3%82%8A%E9%85%92%E5%A0%B4%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%91%89%E6%9C%8D%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/nomiya/washoku/127221.html">静岡新聞アットエス</a> / <a href="https://www.instagram.com/yachiyo529cho/">公式Instagram</a> / <a href="https://jyanigori.com/?p=3106">ジャニごり日記</a></div>
+</div></div>
+<div class="card" id="c-houtoku">
+<img class="hero" src="img/shizuoka/houtoku.jpg" alt="大衆酒場 ほうとく酒蔵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">41</span>大衆酒場 ほうとく酒蔵<span class="yomi">たいしゅうさかば ほうとくさかぐら</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和39年（1964年）創業、県庁・市役所にほど近い呉服町の老舗大衆酒場。アットホームな雰囲気で気軽に飲めるのが身上で、350円からの小鉢や旬魚の刺身など、酒場らしい手頃な肴が揃う。特筆すべきは静岡地酒の充実ぶりで、磯自慢・喜久酔・臥龍梅・英君・正雪・七ツ峰・木枯の森など県内銘柄をずらりと揃え、地酒入門にも通好みにも応えてくれる。昼は日替わり定食のランチ営業も行い、役所勤めの常連の食堂としても機能。老舗ながら敷居は低く、一人飲みから使える呉服町の頼れる酒蔵だ。</div>
+<div class="sig"><b>一皿:</b>静岡地酒の飲み比べ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・土 17:00〜22:30 ／ 火・水・木・金 11:30〜13:30, 17:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区呉服町２丁目２−７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542550280">☎ 054-255-0280</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが静岡地酒の飲める老舗大衆酒場として紹介し、地元グルメブログのランチ訪問記もあり営業実態が確認できる。地酒の揃う大衆酒場枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%20%E3%81%BB%E3%81%86%E3%81%A8%E3%81%8F%E9%85%92%E8%94%B5%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%91%89%E6%9C%8D%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/nomiya/washoku/123098.html">静岡新聞アットエス</a> / <a href="https://www.sakuyaoi.com/entry/houtoku">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-hyoutanya">
+<img class="hero" src="img/shizuoka/hyoutanya.jpg" alt="静岡居酒屋 ひょうたんや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">42</span>静岡居酒屋 ひょうたんや<span class="yomi">しずおかいざかや ひょうたんや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">呉服町の中心部で深夜3時まで営業する、静岡ご当地グルメの総合居酒屋。天井から無数のひょうたんが下がる懐かしくアットホームな店内で、しぞーかおでん、駿河湾の桜エビと葱だけで揚げるかき揚げ、黒はんぺんなど静岡名物を一度に味わえる。静岡のご当地グルメを網羅した「家康コース」は出張客や旅行者の静岡入門に最適。座敷は最大68名、総席数120席と宴会対応力も高く、年中無休・深夜営業で「もう一軒」の受け皿にもなる。地元客と観光客の双方に使い勝手の良い、街なかの定番店。</div>
+<div class="sig"><b>一皿:</b>桜えびのかき揚げ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜3:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区呉服町２丁目５−２１ リブロビル呉服町 ２階</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542513267">☎ 054-251-3267</a> ／ <a href="https://hyoutanya.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイト・ホットペッパーで年中無休の営業と予約受付が確認でき、ヒトサラ等の予約サイトにも現役掲載されている。静岡名物を深夜まで出す街なか居酒屋として利便性で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9D%99%E5%B2%A1%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%B2%E3%82%87%E3%81%86%E3%81%9F%E3%82%93%E3%82%84%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%91%89%E6%9C%8D%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%91%20%E3%83%AA%E3%83%96%E3%83%AD%E3%83%93%E3%83%AB%E5%91%89%E6%9C%8D%E7%94%BA%20%EF%BC%92%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hyoutanya.owst.jp/">公式サイト</a> / <a href="https://www.hotpepper.jp/strJ000024457/">ホットペッパーグルメ</a> / <a href="https://hitosara.com/0031022437/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-akafukurou">
+<img class="hero" src="img/shizuoka/akafukurou.jpg" alt="常磐酒郭 あかふくろう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">43</span>常磐酒郭 あかふくろう<span class="yomi">ときわしゅかく あかふくろう</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">静岡県内全蔵の地酒を揃えることを掲げる、常磐町の個性派居酒屋。磯自慢から小さな蔵の銘柄まで静岡地酒が1杯550円均一で楽しめ、約27種からの飲み比べや地酒飲み放題も用意されており、静岡の酒を横断的に味わいたい日本酒好きには格好の一軒。肴は上海風焼きそばや四川麻婆豆腐など鉄板で仕上げる中華が主力という異色の組み合わせで、これが地酒と意外なほど合う。15時開店で早飲みにも対応し、無休で使い勝手も良い。地酒バーと大衆酒場の中間のような、静岡ならではの存在だ。</div>
+<div class="sig"><b>一皿:</b>静岡地酒の飲み比べ（1杯550円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 15:00〜23:30 ／ 日 15:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区常磐町１丁目７−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:09077018386">☎ 090-7701-8386</a> ／ <a href="https://nbzn200.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元企業スズヨシ商事のWEBマガジンが「静岡全蔵の地酒が飲める店」として特集し、ホットペッパーのネット予約受付・求人サイトへの掲載が続いており営業実態が確認できる。日本酒バー枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B8%B8%E7%A3%90%E9%85%92%E9%83%AD%20%E3%81%82%E3%81%8B%E3%81%B5%E3%81%8F%E3%82%8D%E3%81%86%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%B8%B8%E7%A3%90%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.suzuyoshoji.co.jp/withsmile/detail/126.html">ウィズスマイル（スズヨシ商事）</a> / <a href="https://www.hotpepper.jp/strJ001201590/">ホットペッパーグルメ</a> / <a href="https://www.at-s.com/gourmet/article/nomiya/washoku/942071.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-gofukucho_taproom">
+<img class="hero" src="img/shizuoka/gofukucho_taproom.jpg" alt="ベアードビール 呉服町タップルーム 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">44</span>ベアードビール 呉服町タップルーム<span class="yomi">べあーどびーる ごふくちょうたっぷるーむ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">呉服町の老舗ビアパブ「ビールのヨコタ」を前身とする本格クラフトビアバー。静岡県ゆかりのブルワリー、ベアードブルーイングの看板を掲げ、常時15種類以上の樽生クラフトビールと40種類以上のボトルビールを提供する。ビルの2階に上がると、タップがずらりと並ぶカウンターと落ち着いた空間が広がり、一人でもグラス片手にゆっくり過ごせる。土日祝は昼12時から通しで開いているため、昼飲みや静岡駅前での乗り換え時間の一杯にも重宝。居酒屋がひしめく呉服町にあって、ビール党の受け皿となる貴重な存在だ。</div>
+<div class="sig"><b>一皿:</b>樽生クラフトビールの飲み比べ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 14:00〜22:30 ／ 土 12:00〜22:00 ／ 日 12:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区呉服町２丁目５−２２ ソシアル カドデ ２F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542553683">☎ 054-255-3683</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスに店舗情報が掲載され、2025年公開の静岡駅周辺クラフトビール飲み歩き記事でも現役店として紹介されており営業実態が確認できる。居酒屋カテゴリの幅を出すビアバー枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%99%E3%82%A2%E3%83%BC%E3%83%89%E3%83%93%E3%83%BC%E3%83%AB%20%E5%91%89%E6%9C%8D%E7%94%BA%E3%82%BF%E3%83%83%E3%83%97%E3%83%AB%E3%83%BC%E3%83%A0%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%91%89%E6%9C%8D%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%92%20%E3%82%BD%E3%82%B7%E3%82%A2%E3%83%AB%20%E3%82%AB%E3%83%89%E3%83%87%20%EF%BC%92F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/nomiya/bar/186082.html">静岡新聞アットエス</a> / <a href="https://ameblo.jp/barwildz/entry-12883660154.html">BEER BAR WILDZ（2025年飲み歩き記事）</a> / <a href="https://www.hotpepper.jp/strJ001269582/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-shinseimaru">
+<img class="hero" src="img/shizuoka/shinseimaru.jpg" alt="新生丸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">45</span>新生丸<span class="yomi">しんせいまる</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">自ら漁船を持つ漁師が営む、清水区巴町の海鮮特化型居酒屋。朝獲れたての魚介がそのまま店に届くため、大ぶりに切られた刺身の鮮度と豪快さは折り紙付きで、太刀魚のフライや黒ムツの焼き魚、桜えびのかき揚げ、名物の新生丸巻き寿司など、肉料理を置かず魚だけで勝負する潔い品揃え。酒場メディアsyupoが「漁師直営の老舗居酒屋」として特集したほか、食べログでは日本酒バーにも分類されるほど地酒との相性も良い。清水随一のコスパと評判で、平日でも満席、週末は17時の開店と同時に埋まることも多い。桜えび漁の期間中は漁優先で不定休になるのも漁師の店ならでは。</div>
+<div class="sig"><b>一皿:</b>朝獲れ刺身の盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区巴町９−２３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543523851">☎ 054-352-3851</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>酒場専門メディアsyupoが特集した漁師直営の実力店で、2025年3月訪問の口コミが食べログに投稿されており営業実態が確認できる。既選定と重ならない清水区の海鮮×地酒枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%B0%E7%94%9F%E4%B8%B8%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E5%B7%B4%E7%94%BA%EF%BC%99%E2%88%92%EF%BC%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://syupo.com/archives/93119">syupo（2023年11月特集）</a> / <a href="https://hanagex.com/shizuoka-chubu-gourmet/shinseimaru">はらぺこリズム</a> / <a href="https://tabelog.com/shizuoka/A2201/A220102/22031891/">食べログ</a> / <a href="https://www.shimizu-port.com/entry/shinseimaru">清水港観光情報サイト</a></div>
+</div></div>
+<div class="card" id="c-mabo_takahashi">
+<img class="hero" src="img/shizuoka/mabo_takahashi.jpg" alt="マーボタカハシ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">46</span>マーボタカハシ<span class="yomi">まーぼたかはし</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2023年6月、両替町通りと呉服町通りの間のビル2階にオープンした麻婆豆腐が看板の中華居酒屋。四川ブレンドスパイスを効かせた麻婆豆腐は肉の旨みと花椒のシビれる辛さが本格派で、麻婆茄子・麻婆春雨のほか、カレー風味や白子入りといった変わり種の麻婆、激辛版まで麻婆づくしのラインナップが揃う。ニラ玉や春巻きなどの中華つまみで飲んで、締めに麻婆豆腐ご飯という使い方が王道。ディナーは深夜まで営業しており、繁華街・両替町での飲みの二軒目や締め使いにも重宝する。お洒落さとレトロさが同居する店内で、2024年7月からは平日ランチも始まり昼の麻婆飯・担々麺も人気。</div>
+<div class="sig"><b>一皿:</b>麻婆豆腐</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・日 17:00〜0:00 ／ 水 0:00〜2:00, 17:00〜2:00 ／ 木・金・土 17:00〜2:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区両替町２丁目5−８ 新加茂川ビル ２階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542738603">☎ 054-273-8603</a> ／ <a href="https://www.instagram.com/ma_bo_takahashi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元有力グルメブログが2024年10月公開・2025年10月更新の記事で紹介し、地元メディアの静岡市居酒屋ランキング記事でも「注目の新店舗」として掲載されており営業実態が確認できる。両替町の新世代酒場枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%83%BC%E3%83%9C%E3%82%BF%E3%82%AB%E3%83%8F%E3%82%B7%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%B8%A1%E6%9B%BF%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE5%E2%88%92%EF%BC%98%20%E6%96%B0%E5%8A%A0%E8%8C%82%E5%B7%9D%E3%83%93%E3%83%AB%20%EF%BC%92%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sakuyaoi.com/entry/mabotakahashi">みなと町でも桜は咲くら（2025年10月更新）</a> / <a href="https://kureba.co.jp/shizuoka/56">静岡市のおすすめ集めました（kureba）</a> / <a href="https://jyanigori.com/?p=16633">ジャニごり日記</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-kintoki_ikeda">
+<img class="hero" src="img/shizuoka/kintoki_ikeda.jpg" alt="金とき 池田店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">47</span>金とき 池田店<span class="yomi">きんとき いけだてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和44年（1969年）に葵区新伝馬で創業し、サラリーマンから子供まで愛された洋食食堂の流れをくむ静岡市民熱愛の老舗。道路拡張のため2017年に本店をいったん閉じたが、現在は池田店・テイクアウト店・ステーキゴールドの3店舗体制で復活し、創業当時のカツカレーも本店の味として受け継がれている。名物はアメリカ産ハラミを秘伝のたれで焼き上げる「特テキライス」で、煮込みハンバーグなど昔ながらの洋食メニューも揃う。気取らない雰囲気でがっつり肉を食べたいときに使いやすい。</div>
+<div class="sig"><b>一皿:</b>特テキライス</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土 11:00〜14:15, 17:00〜20:30 ／ 日 11:00〜14:15, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区聖一色８６−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542708636">☎ 054-270-8636</a> ／ <a href="http://kintoki.cc/ik/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスやテレしずWasabeeが「静岡が誇る洋食の老舗」として紹介し、くふうロコしずおかも「静岡市民熱愛グルメ」と評する定番店。公式サイトで3店舗の営業情報が公開されており、地元メディアの紹介記事が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%87%91%E3%81%A8%E3%81%8D%20%E6%B1%A0%E7%94%B0%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E8%81%96%E4%B8%80%E8%89%B2%EF%BC%98%EF%BC%96%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kintoki.cc/ik/">金とき公式サイト</a> / <a href="https://www.at-s.com/life/article/ats/1466359.html">静岡新聞アットエス</a> / <a href="https://wasabee.media/articles/7974783/">テレしずWasabee</a></div>
+</div></div>
+<div class="card" id="c-takumi_yoshoku">
+<img class="hero" src="img/shizuoka/takumi_yoshoku.jpg" alt="洋食食堂 たくみ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">48</span>洋食食堂 たくみ<span class="yomi">ようしょくしょくどう たくみ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">静岡市の老舗洋食店で16年修業した料理人が独立して開いた、肉料理中心の「まちの洋食食堂」。ハンバーグやカツなど王道の洋食を、修業で身につけた丁寧な仕事で手頃な価格に落とし込んでいるのが持ち味で、ワンコイン500円の「田町弁当」がYahoo!ニュースの地域記事で話題になるなど、地元の日常使いの店として支持を広げている。昼は定食、夜は一品料理と洋食の両方が楽しめ、家族連れでも一人でも入りやすい気さくな雰囲気。</div>
+<div class="sig"><b>一皿:</b>田町弁当（ワンコイン洋食弁当）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜14:30, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区田町４丁目33ｰ2</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542703627">☎ 054-270-3627</a> ／ <a href="https://yoshokushokudo-takumi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスがオープン時に「老舗仕込みの肉料理を中心とした洋食が絶品」と紹介し、Yahoo!ニュースエキスパートの地域ライターも2025年時点で田町弁当を推薦。公式サイトで営業情報を公開している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E9%A3%9F%E5%A0%82%20%E3%81%9F%E3%81%8F%E3%81%BF%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E7%94%B0%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE33%EF%BD%B02">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://yoshokushokudo-takumi.com/">公式サイト</a> / <a href="https://www.at-s.com/life/article/ats/1519719.html">静岡新聞アットエス</a> / <a href="https://news.yahoo.co.jp/expert/articles/946b6c22d6bfc0ec00f0830c5d1ba4d8998ebf79">Yahoo!ニュース エキスパート</a></div>
+</div></div>
+<div class="card" id="c-onion_mabuchi">
+<img class="hero" src="img/shizuoka/onion_mabuchi.jpg" alt="洋食 おにおん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">49</span>洋食 おにおん<span class="yomi">ようしょく おにおん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">駿河区馬渕の住宅街にあるアットホームな洋食店。名物はとろとろ卵のオムライスの上にハンバーグをのせた「オムバーグ」で、洋食の二大人気メニューを一皿で味わえるボリューム満点の構成が評判。昔ながらのケチャップライスとデミグラスの組み合わせで、地元客の普段使いのランチ・ディナーに親しまれている。駐車場があり予約も可能で、静岡駅南側で家庭的な洋食を食べたいときに重宝する一軒。</div>
+<div class="sig"><b>一皿:</b>オムバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜13:30, 18:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区馬渕２丁目７−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542842003">☎ 054-284-2003</a> ／ <a href="https://www.instagram.com/onion_mabuchi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが「オムライスとハンバーグを同時に楽しめる」と特集記事で紹介し、地元グルメブログ『みなと町でも桜は咲くら』もランチ記事で推薦する地元密着店。アットエスの紹介記事や口コミで近年の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%20%E3%81%8A%E3%81%AB%E3%81%8A%E3%82%93%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E9%A6%AC%E6%B8%95%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1489772.html">静岡新聞アットエス</a> / <a href="https://www.sakuyaoi.com/entry/onion_omu">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-unjour">
+<img class="hero" src="img/shizuoka/unjour.jpg" alt="レストラン アンジュール 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">50</span>レストラン アンジュール<span class="yomi">れすとらん あんじゅーる</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1996年創業、葵区人宿町の昭和通り沿いで約30年変わらぬ味を守る洋食店。名物は洋食の夢の2トップを一皿に盛った「オムライス＆ハンバーグ」で、長年通う常連客の"ある一日"を支える店として地元テレビ局にもたびたび取り上げられている。再開発でにぎわう人宿町エリアにあって、昔ながらの洋食の良さを丁寧に残しているのが魅力。夜は洋食をつまみに一杯という使い方もでき、世代を問わず利用しやすい。</div>
+<div class="sig"><b>一皿:</b>オムライス＆ハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜13:30／18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区人宿町１丁目５−７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542540595">☎ 054-254-0595</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡朝日テレビ「LOOK」やテレしずWasabeeが「30年変わらぬ味の老舗洋食」として特集し、2026年2月には静岡朝日テレビ「とびっきり食堂」でも放送されており、2026年時点の営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%A2%E3%83%B3%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%BA%BA%E5%AE%BF%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.satv.co.jp/0300program/0010tobikkiri/0004syokudo/202602/tobishoku_theme_20260202/2026-0202-01.html">静岡朝日テレビ とびっきり食堂</a> / <a href="https://wasabee.media/articles/18620279/">テレしずWasabee</a></div>
+</div></div>
+<div class="card" id="c-demiguratei">
+<img class="hero" src="img/shizuoka/demiguratei.jpg" alt="でみぐら亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">51</span>でみぐら亭<span class="yomi">でみぐらてい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1995年オープン、葵区沓谷にある洋食店。店主は東京・日本橋の老舗洋食店「たいめいけん」で腕を磨いた人物で、店名の由来でもある濃厚なデミグラスソースと、とろけるオムライスが看板。煮込み料理にも定評があり、幅広い世代の地元客に30年近く愛され続けている。街中から少し離れた立地ながらわざわざ通うファンが多く、本格的な洋食をカジュアルな価格で味わえるのが強み。ランチ・ディナーとも営業し、家族での利用にも向く。</div>
+<div class="sig"><b>一皿:</b>オムライス（デミグラスソース）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金 11:00〜15:00, 18:00〜22:00 ／ 土・日 11:00〜15:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区沓谷３丁目１−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542478851">☎ 054-247-8851</a> ／ <a href="http://www3.tokai.or.jp/demi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが「とろけるオムライスと濃厚デミグラスソースが人気の洋食店」として近年特集し、地元ブログ『みなと町でも桜は咲くら』も人気洋食店として紹介。1995年から続く営業歴と最近の紹介記事で実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A7%E3%81%BF%E3%81%90%E3%82%89%E4%BA%AD%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E6%B2%93%E8%B0%B7%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1644207.html">静岡新聞アットエス</a> / <a href="https://www.sakuyaoi.com/entry/demiguratei">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-epicurien">
+<img class="hero" src="img/shizuoka/epicurien.jpg" alt="エピキュリアン（ÉPICURIEN） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">52</span>エピキュリアン（ÉPICURIEN）<span class="yomi">えぴきゅりあん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">新静岡駅から徒歩2分、おしゃれな店が集まる鷹匠エリアにある完全予約制のモダンフレンチレストラン。旬の食材を使ったコース料理を、記念日や誕生日などハレの日の食事にふさわしい落ち着いた空間で提供する。静岡の街中で本格フレンチのコースを楽しめる店として予約サイトやグルメメディアでの評価が高く、大切な人との会食や接待にも使いやすい。ランチ・ディナーとも営業しており、静鉄電車でのアクセスが良いのも利点。</div>
+<div class="sig"><b>一皿:</b>季節のコース料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:30, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区鷹匠１丁目３−５ メゾンフィール鷹匠 1階 エピキュリアン</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0542046888">☎ 054-204-6888</a> ／ <a href="https://tak-epi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトを持ち、ヒトサラ・静岡新聞アットエスなど複数のグルメメディアが鷹匠のモダンフレンチとして掲載。2025年のフレンチ検索でも葵区の人気店として上位に挙がり、公式サイト・予約サイトで現在の営業情報が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A8%E3%83%94%E3%82%AD%E3%83%A5%E3%83%AA%E3%82%A2%E3%83%B3%EF%BC%88%C3%89PICURIEN%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%B7%B9%E5%8C%A0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%95%20%E3%83%A1%E3%82%BE%E3%83%B3%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB%E9%B7%B9%E5%8C%A0%201%E9%9A%8E%20%E3%82%A8%E3%83%94%E3%82%AD%E3%83%A5%E3%83%AA%E3%82%A2%E3%83%B3">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tak-epi.com/">公式サイト</a> / <a href="https://www.at-s.com/gourmet/article/yoshoku/french/372180.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-okamura_bistro">
+<img class="hero" src="img/shizuoka/okamura_bistro.jpg" alt="海のビストロ おかむら 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">53</span>海のビストロ おかむら<span class="yomi">うみのびすとろ おかむら</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">静岡駅から徒歩9分、住宅街の裏路地に佇む元お茶屋の木造一軒家を使った魚介中心のビストロ。シェフ自ら市場へ足を運び、その日仕入れた魚介でメニューを組み立てる日替わりスタイルで、定番の名物は魚介の旨味が詰まった石焼の「ブイヤベース」。2階は船底天井など凝った建具が残る風情ある空間で、趣の異なる4つの個室は接待や記念日、デートに好適。静岡の海の幸をフレンチで味わうという土地らしさが光る一軒。</div>
+<div class="sig"><b>一皿:</b>石焼ブイヤベース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:30〜14:30, 17:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区鷹匠１丁目５−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05058718048">☎ 050-5871-8048</a> ／ <a href="https://hitosara.com/0006049943/?cid=gm_hp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログレストランセレクションやヒトサラなど主要グルメメディアが静岡の魚介フレンチの名店として掲載し、予約サイトで現在も予約を受け付けている。地元産魚介への強いこだわりが各媒体で評価されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E3%81%AE%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%81%8A%E3%81%8B%E3%82%80%E3%82%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%B7%B9%E5%8C%A0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://selection.tabelog.com/shizuoka/A2201/A220101/22020239/">食べログ レストランセレクション</a> / <a href="https://hitosara.com/0006049943/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-il_castagno">
+<img class="hero" src="img/shizuoka/il_castagno.jpg" alt="オステリア イル カスターニョ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">54</span>オステリア イル カスターニョ<span class="yomi">おすてりあ いる かすたーにょ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">しらすの港町・用宗の駅から徒歩2分、大正時代の民家をリノベーションした店舗で営むイタリア料理店。2020年8月に葵区巴町から移転した。メニューは昼夜とも約25種のアラカルトのみで、農家から届く朝採れ野菜や用宗港のしらす、全国から届く鮮魚やブランド肉を使い、前菜からパスタ、魚・肉料理まで内容が毎日変わる。イタリアの郷土料理を土地の食材で表現するスタイルが評判で、海辺の町歩きと合わせて訪れたい一軒。</div>
+<div class="sig"><b>一皿:</b>用宗しらすと朝採れ野菜のアラカルト</div>
+<table class="info">
+<tr><th>営業時間</th><td>火 18:00〜21:45 ／ 水・木・金・土 11:30〜14:30, 18:00〜21:45</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区用宗４丁目８−２４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0546592557">☎ 054-659-2557</a> ／ <a href="https://www.instagram.com/osteria_il_castagno/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが用宗の注目イタリアンとして紹介し、地元グルメブログでも古民家イタリアンとして人気。予約サイトAutoReserveで現在も予約を受け付けており、営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AA%E3%82%B9%E3%83%86%E3%83%AA%E3%82%A2%20%E3%82%A4%E3%83%AB%20%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%BC%E3%83%8B%E3%83%A7%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E7%94%A8%E5%AE%97%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/yoshoku/italian/124609.html">静岡新聞アットエス</a> / <a href="https://autoreserve.com/ja/restaurants/gLsXdQ8HqmhVULZsdR7m">AutoReserve</a></div>
+</div></div>
+<div class="card" id="c-pizzeria_lape">
+<img class="hero" src="img/shizuoka/pizzeria_lape.jpg" alt="Pizzeria L'APE（ラアペ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">55</span>Pizzeria L'APE（ラアペ）<span class="yomi">ぴっつぇりあ らあぺ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">清水区蜂ヶ谷にある、ナポリに本部を置く『真のナポリピッツァ協会』の静岡県内初の認定店（世界330番目、2010年認定）。協会の規定に則って焼き上げる本場仕込みのナポリピッツァが看板で、売れ筋トップのマルゲリータのほか、14ヶ月熟成サンダニエーレ産生ハムのサラダなど前菜も人気。パスタや洋食アラカルトも豊富に揃い、郊外ながら本格ピッツァを目当てに通う客でにぎわう。金・土はディナーが22時までと夜も使いやすい。</div>
+<div class="sig"><b>一皿:</b>マルゲリータ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水 11:30〜15:00, 17:30〜21:00 ／ 金・土・日 11:30〜15:00, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区蜂ヶ谷２９１−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543677271">☎ 054-367-7271</a> ／ <a href="https://pizzeria-lape.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>真のナポリピッツァ協会の県内唯一の認定という客観的な看板を持ち、地元グルメブログ『みなと町でも桜は咲くら』も清水の本格ナポリピザ店として紹介。公式サイトとInstagramで最新の営業情報を発信している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Pizzeria%20L%27APE%EF%BC%88%E3%83%A9%E3%82%A2%E3%83%9A%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E8%9C%82%E3%83%B6%E8%B0%B7%EF%BC%92%EF%BC%99%EF%BC%91%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://pizzeria-lape.gorp.jp/">公式サイト</a> / <a href="https://www.sakuyaoi.com/entry/pizzeria-lape">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-el_osamucho">
+<img class="hero" src="img/shizuoka/el_osamucho.jpg" alt="エル・オサムーチョ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">56</span>エル・オサムーチョ<span class="yomi">える・おさむーちょ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">清水区の草薙エリアで本格スペイン料理を気軽に楽しめるスペインバル。2024年9月に有東坂交差点近くの現店舗へ移転リニューアルした。昼は日替わり4種から2品選べるデリランチが名物で、サフランライスまたはパンにドリンク飲み放題が付く充実の内容。海老のカダイフ巻きなど個性的な皿が並び、夜はパエリアやタパスとワインでバル使いができる。静岡市で各国料理を味わうなら外せない一軒として地元ブログが強く推す。</div>
+<div class="sig"><b>一皿:</b>選べるデリランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 18:00〜22:00 ／ 火・水・木・金・土 11:30〜14:30, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区平川地１０−２４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543301680">☎ 054-330-1680</a> ／ <a href="https://www.instagram.com/elosamucho">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログ『みなと町でも桜は咲くら』が「2025年必食の静岡市最強ランチ10選」に選出。2024年9月の移転リニューアルが各媒体で報じられており、直近の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A8%E3%83%AB%E3%83%BB%E3%82%AA%E3%82%B5%E3%83%A0%E3%83%BC%E3%83%81%E3%83%A7%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E5%B9%B3%E5%B7%9D%E5%9C%B0%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sakuyaoi.com/entry/elosamucho">みなと町でも桜は咲くら</a> / <a href="https://www.at-s.com/gourmet/article/yoshoku/all/991039.html">静岡新聞アットエス</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・喫茶・和菓子・パン</h2>
+<div class="card" id="c-chagama">
+<img class="hero" src="img/shizuoka/chagama.jpg" alt="chagama（チャガマ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">57</span>chagama（チャガマ）<span class="yomi">ちゃがま</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1877年（明治10年）創業の老舗製茶問屋マルモ森商店が2014年に開いた直営の日本茶専門店。鷹匠のパサージュ鷹匠1階にあり、常時100種類以上の茶葉が並び、すべて試飲できるのが最大の特徴。品揃えは静岡市で唯一の「日本茶鑑定士」が選定したもので、店内ではエスプレッソマシンで抽出するオリジナルの「煎茶エスプレッソ」など、新しいスタイルの日本茶ドリンクも楽しめる。お茶好きへの土産選びと一服が同時にかなう、お茶どころ静岡らしい店。</div>
+<div class="sig"><b>一皿:</b>煎茶エスプレッソ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 10:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区鷹匠２丁目１０−７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542604775">☎ 054-260-4775</a> ／ <a href="http://www.ochanet.com/chagama/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>日本茶生活が「静岡市内のおすすめ日本茶カフェ」として紹介し、静岡市公式「お茶のまち静岡市」サイトにも掲載。創業140年超の茶問屋直営という背景と、近年の紹介記事で営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=chagama%EF%BC%88%E3%83%81%E3%83%A3%E3%82%AC%E3%83%9E%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%B7%B9%E5%8C%A0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nihonchaseikatsu.com/introduce/chagama/">日本茶生活</a> / <a href="https://www.ochanomachi-shizuokashi.jp/recommend/8109/">お茶のまち静岡市</a></div>
+</div></div>
+<div class="card" id="c-kissa_poplar">
+<img class="hero" src="img/shizuoka/kissa_poplar.jpg" alt="喫茶ポプラ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">58</span>喫茶ポプラ<span class="yomi">きっさ ぽぷら</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">静岡駅から徒歩6分、呉服町のビル2階で約50年続く老舗のジャズ喫茶。大きなスピーカーからジャズが流れる昔ながらのレトロな空間で、コーヒーとともにナポリタンなどの喫茶メニューを楽しめる。まちなかの喧騒から階段ひとつで切り離される隠れ家のような立地が魅力で、買い物途中の休憩や一人の読書時間にちょうどよい。現金決済のみという昔気質の営業スタイルも含めて、昭和の喫茶文化を今に伝える静岡市街の貴重な一軒。</div>
+<div class="sig"><b>一皿:</b>ブレンドコーヒー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区呉服町２丁目４−５ 三島屋ビル 2F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542510252">☎ 054-251-0252</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログ『みなと町でも桜は咲くら』が「静岡のレトロに落ち着くジャズ喫茶」として営業再開後の様子を紹介し、静岡新聞アットエスのレトロ喫茶特集系記事でも定番として挙がる。Rettyや地図サービスで現在の営業情報が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%83%9D%E3%83%97%E3%83%A9%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%91%89%E6%9C%8D%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%95%20%E4%B8%89%E5%B3%B6%E5%B1%8B%E3%83%93%E3%83%AB%202F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sakuyaoi.com/entry/populus">みなと町でも桜は咲くら</a> / <a href="https://retty.me/area/PRE22/ARE78/SUB7801/100000043636/">Retty</a></div>
+</div></div>
+<div class="card" id="c-hitoyado">
+<img class="hero" src="img/shizuoka/hitoyado.jpg" alt="泊まれる純喫茶 ヒトヤ堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">59</span>泊まれる純喫茶 ヒトヤ堂<span class="yomi">とまれるじゅんきっさ ひとやどう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">築50年のビルをリノベーションし、2018年6月に開業した「泊まれる純喫茶」。1階は昭和の趣を残すレトロな喫茶店、上階はゲストハウスという珍しい複合施設で、再開発でにぎわう人宿町エリアの顔的存在になっている。喫茶は朝7時30分から営業し、バタートーストなど8種から選べるモーニングや、サイフォンで淹れるコーヒー、クラシックなクリームソーダが人気。旅行者と地元客が入り交じる空気感が心地よく、朝活にも街歩きの休憩にも使える。</div>
+<div class="sig"><b>一皿:</b>サイフォンコーヒーとクリームソーダ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 7:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区七間町１６−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0546878458">☎ 054-687-8458</a> ／ <a href="http://hitoyado.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>日本茶生活・たびよみ・静岡新聞アットエスなど多数の媒体が「泊まれる純喫茶」として紹介し、Booking.comでは2026年の宿泊料金が掲載されるなど現在の営業が確認できる。地元ブログもモーニングを推薦している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B3%8A%E3%81%BE%E3%82%8C%E3%82%8B%E7%B4%94%E5%96%AB%E8%8C%B6%20%E3%83%92%E3%83%88%E3%83%A4%E5%A0%82%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E4%B8%83%E9%96%93%E7%94%BA%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitoyado.com/">公式サイト</a> / <a href="https://www.sakuyaoi.com/entry/hitoyado_morning">みなと町でも桜は咲くら</a> / <a href="https://tabiyomi.yomiuri-ryokou.co.jp/article/002773.html">たびよみ</a></div>
+</div></div>
+<div class="card" id="c-shiroi_yane">
+<img class="hero" src="img/shizuoka/shiroi_yane.jpg" alt="白い屋根 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">60</span>白い屋根<span class="yomi">しろいやね</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">葵区羽鳥にある「ホットケーキの店」の別名で知られる老舗喫茶店。昭和中期に静岡市七間町にあった老舗洋菓子店「扇屋」の職人がレシピを受け継ぎ、銅板でじっくり焼き上げるホットケーキは外はカリカリ、中はフワフワの懐かしい味わい。朝9時から営業しており、モーニングやおやつの時間に地元客が絶えない。550円という価格も良心的で、失われた名店の味が郊外の喫茶店に生き続けているという物語も含めて、静岡の喫茶文化を語るうえで外せない一軒。</div>
+<div class="sig"><b>一皿:</b>銅板焼きホットケーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・日 11:00〜18:00 ／ 土 10:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区羽鳥４丁目４−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542789074">☎ 054-278-9074</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが「銅板ホットケーキが美味しすぎる」とコラムで特集し、地元グルメブログ『みなと町でも桜は咲くら』も老舗カフェとして紹介。ホットペッパーや地図サービスで現在の店舗情報が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E3%81%84%E5%B1%8B%E6%A0%B9%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E7%BE%BD%E9%B3%A5%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/featured/column/21061801.html">静岡新聞アットエス</a> / <a href="https://www.sakuyaoi.com/entry/shiroiyane">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-ravia_honten">
+<img class="hero" src="img/shizuoka/ravia_honten.jpg" alt="羅比亜 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">61</span>羅比亜 本店<span class="yomi">らびあ ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">JR清水駅西口から徒歩1分のグルメ通りで約50年続く昭和レトロ喫茶。名物は高さ35cmの豪華パフェ「フルーツタワー」で、森町のジェラートと季節のフルーツを積み上げた見た目のインパクトが評判を呼び、近年は韓国からの観光客にも人気となっている。静岡県産食材にこだわったモーニングやランチも充実し、朝8時30分から営業。赤いソファにレンガ調の内装という王道の純喫茶空間で、清水観光の起点としても使い勝手がよい。</div>
+<div class="sig"><b>一皿:</b>フルーツタワー</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 9:00〜17:00 ／ 土 8:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区真砂町１−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0543648181">☎ 054-364-8181</a> ／ <a href="https://www.instagram.com/rabia_shimizu?igsh=MTd4Y28wMWlzYnhwNA==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが「昭和レトロ感あふれる居心地最強の喫茶店」「韓国人観光客に大人気」と近年相次いで特集し、地元ブログ『みなと町でも桜は咲くら』も進化したフルーツタワーをレポートしており、直近の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%BE%85%E6%AF%94%E4%BA%9C%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E7%9C%9F%E7%A0%82%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1712826.html">静岡新聞アットエス</a> / <a href="https://www.sakuyaoi.com/entry/ravia-honten">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-kissa_noi">
+<img class="hero" src="img/shizuoka/kissa_noi.jpg" alt="純喫茶 のい 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">62</span>純喫茶 のい<span class="yomi">じゅんきっさ のい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">40年間営業した「純喫茶リーベ」の店舗をそのまま受け継ぎ、2017年にオープンした駒形通りの純喫茶。昭和の面影が残るレトロで落ち着いた空間はそのままに、朝9時の開店から13時まで注文できるモーニングが名物で、好みのドリンクに200円追加するだけで食べ応えのあるハムエッグトーストが付く高コスパぶりが評判。クリームソーダやチョコレートパフェなど王道の喫茶メニューも揃い、昭和レトロ好きの若い世代から昔ながらの常連まで幅広く親しまれている。</div>
+<div class="sig"><b>一皿:</b>モーニングセット（ハムエッグトースト）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 9:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区駒形通２丁目７−２０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542752100">☎ 054-275-2100</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログ『みなと町でも桜は咲くら』が2度にわたり紹介し、昭和レトロ研究所やしずおかハピスポなど地域メディアの掲載も多い。予約・店舗情報サイトや地図サービスで現在の営業情報が確認でき、40年続いた純喫茶の空間を継承する店として貴重。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E5%96%AB%E8%8C%B6%20%E3%81%AE%E3%81%84%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%A7%92%E5%BD%A2%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sakuyaoi.com/entry/kissa_noi">みなと町でも桜は咲くら</a> / <a href="https://sho-waretorokennkyuujyo.com/sizuokacityretrocafenoi/">昭和レトロ研究所</a> / <a href="https://shizuokahappy.com/eat/cafe/21965/">しずおかハピスポ</a></div>
+</div></div>
+<div class="card" id="c-good_timing_tea">
+<img class="hero" src="img/shizuoka/good_timing_tea.jpg" alt="GOOD TIMING TEA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">63</span>GOOD TIMING TEA<span class="yomi">ぐっど たいみんぐ てぃー</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">「日本茶の素晴らしさを、もっと気軽に知ることができる場所」をコンセプトに、日本茶業界で7年の経験を積んだオーナーが2023年11月に鷹匠へ開いた日本茶カフェ。和モダンな店構えで、厳選した緑茶・釜炒り茶・ほうじ茶・和紅茶からスペシャルティコーヒー、軽食まで揃う。朝8時から夜21時まで通しで開いており、出勤前の一服から仕事帰りまで使えるのがお茶どころ静岡でも珍しい強み。人気を受けて2026年1月には駿河区南町に2号店「GOOD TIMING TEA 南」もオープンした。</div>
+<div class="sig"><b>一皿:</b>和三蜜抹茶ラテ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区鷹匠２丁目１７−３ 望月ビル 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0543749360">☎ 054-374-9360</a> ／ <a href="https://goodtimingtea.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡市公式「お茶のまち静岡市」サイトやWOMOが鷹匠の日本茶カフェとして紹介し、地元ブログ『みなと町でも桜は咲くら』も推薦。2026年1月に2号店開店が号外NETで報じられており、2026年時点の営業と人気が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=GOOD%20TIMING%20TEA%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%B7%B9%E5%8C%A0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%93%20%E6%9C%9B%E6%9C%88%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.ochanomachi-shizuokashi.jp/recommend/16179/">お茶のまち静岡市</a> / <a href="https://aoi.goguynet.jp/2026/02/11/good-timing-tea-3/">号外NET 静岡市葵区（2026年2月）</a> / <a href="https://www.sakuyaoi.com/entry/goodtimingtea">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-oiwake_yokan">
+<img class="hero" src="img/shizuoka/oiwake_yokan.jpg" alt="追分羊かん 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">64</span>追分羊かん 本店<span class="yomi">おいわけようかん ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">元禄8年（1695年）創業、330年にわたり東海道名物として親しまれてきた羊かんの老舗。東海道江尻宿のはずれ、久能道との分岐（追分）に本店を構える。名物の追分羊かんは竹皮に包んでから蒸し上げる製法で、竹皮の香りがほのかに移った素朴で静かな風味が身上。ずっしり甘い煉羊かんとは一線を画す蒸し羊かんの味わいは、お茶どころ静岡の茶請けにぴったり。清水観光の手土産の定番として今も愛される。</div>
+<div class="sig"><b>一皿:</b>追分羊かん（竹皮包み）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 9:30〜15:30</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区追分２丁目１３−２１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0543663257">☎ 054-366-3257</a> ／ <a href="http://www.oiwakeyokan.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>るるぶや旅マガジン等の観光媒体が現役で紹介する清水の代表銘菓で、公式サイトも稼働中。1695年創業という静岡市屈指の歴史が複数媒体で確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%BF%BD%E5%88%86%E7%BE%8A%E3%81%8B%E3%82%93%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E8%BF%BD%E5%88%86%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://oiwakeyokan.com/">公式サイト</a> / <a href="https://rurubu.jp/andmore/spot/80021679">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-shohakudo_honten">
+<img class="hero" src="img/shizuoka/shohakudo_honten.jpg" alt="六代目の和菓子 松柏堂本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">65</span>六代目の和菓子 松柏堂本店<span class="yomi">ろくだいめのわがし しょうはくどうほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">慶応3年（1867年）創業、当代六代目が暖簾を守る静岡市の老舗和菓子店。本店は鷹匠にあり、六代目こだわりの「みつだんご」や焼きたてどら焼き、季節の上生菓子を求めて地元客が通う。静岡駅パルシェ食彩館にも出店しており、帰省土産や手土産にも調達しやすい。150年以上にわたり静岡の茶の間の甘味を支えてきた店で、伝統を守りながら生クリームどらやきのような新作も出す柔軟さが長寿の秘訣。</div>
+<div class="sig"><b>一皿:</b>みつだんご</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・金・土・日 10:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火・木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区鷹匠２丁目３−７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542520095">☎ 054-252-0095</a> ／ <a href="https://m.facebook.com/pages/category/Wagashi-Restaurant/%E5%85%AD%E4%BB%A3%E7%9B%AE%E3%81%AE%E5%92%8C%E8%8F%93%E5%AD%90-%E6%9D%BE%E6%9F%8F%E5%A0%82%E6%9C%AC%E5%BA%97-1707279149399104/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスや市の観光サイトが「慶応三年創業の老舗」として紹介し、オンラインショップや駅ビル出店も現役で営業実態が明確。地元の手土産定番として推す媒体が多い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E4%BB%A3%E7%9B%AE%E3%81%AE%E5%92%8C%E8%8F%93%E5%AD%90%20%E6%9D%BE%E6%9F%8F%E5%A0%82%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%B7%B9%E5%8C%A0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.visit-shizuoka.com/spots/detail.php?kanko=127">駿府静岡市公式観光サイト</a> / <a href="https://www.at-s.com/gourmet/article/takeout/wagashi/124819.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-aoisenbei_honke">
+<img class="hero" src="img/shizuoka/aoisenbei_honke.jpg" alt="葵煎餅本家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">66</span>葵煎餅本家<span class="yomi">あおいせんべいほんけ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治2年（1869年）創業、静岡浅間神社参道の浅間通りで150年以上煎餅を焼き続ける老舗。上質な小麦粉に厳選素材を練り込んで焼く小麦せんべいが看板で、大判の味噌煎餅「葵大丸」は静岡市が推薦する「しずおか葵プレミアム」に認定された伝統の味。素朴で懐かしい甘みは茶どころ静岡の茶請けとして地元に根付いており、浅間神社参拝のついでに立ち寄れるのも良い。年中無休で買い物しやすい。</div>
+<div class="sig"><b>一皿:</b>葵大丸（味噌煎餅）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 9:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区馬場町２０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542526260">☎ 054-252-6260</a> ／ <a href="https://www.aoisenbei.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県の「ふじのくに魅力ある個店」や市公式観光サイトに掲載される現役の老舗で、公式サイトも稼働中。「しずおか葵プレミアム」認定が品質の裏付け。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%91%B5%E7%85%8E%E9%A4%85%E6%9C%AC%E5%AE%B6%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E9%A6%AC%E5%A0%B4%E7%94%BA%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.aoisenbei.jp/">公式サイト</a> / <a href="https://f-koten.pref.shizuoka.jp/shop/details/1177">ふじのくに魅力ある個店（静岡県）</a></div>
+</div></div>
+<div class="card" id="c-essen_brot">
+<img class="hero" src="img/shizuoka/essen_brot.jpg" alt="エッセンブロート 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">67</span>エッセンブロート<span class="yomi">えっせんぶろーと</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">昭和58年（1983年）開業、静岡駅南口から石田街道を南下した場所にある実力派ベーカリー。時代のブームに流されず「食べておいしいこと」を追求する味本位の店で、伊豆大島産の海水塩を使ったフランスパンをはじめハード系に定評がある。食パンや調理パンなど約50種が並び、確かな品質と手頃な価格で県内全域の幅広い層から支持を得る。売り切れ次第閉店の朝型営業なので早めの訪問がおすすめ。</div>
+<div class="sig"><b>一皿:</b>大島産海水塩のフランスパン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 8:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市駿河区敷地１丁目６−７ ＥｓｓｅｎＢｒｏｔ</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542377365">☎ 054-237-7365</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスのパン特集が「味本位の実力派」として紹介する老舗で、2025年のブログ実食記事も確認できる。40年以上続く地元定番のパン屋。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A8%E3%83%83%E3%82%BB%E3%83%B3%E3%83%96%E3%83%AD%E3%83%BC%E3%83%88%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E9%A7%BF%E6%B2%B3%E5%8C%BA%E6%95%B7%E5%9C%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%97%20%EF%BC%A5%EF%BD%93%EF%BD%93%EF%BD%85%EF%BD%8E%EF%BC%A2%EF%BD%92%EF%BD%8F%EF%BD%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/124380">静岡新聞アットエス</a> / <a href="https://rurubu.jp/andmore/spot/80021659">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-sandwich_sunrise">
+<img class="hero" src="img/shizuoka/sandwich_sunrise.jpg" alt="sandwich SUNRISE 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">68</span>sandwich SUNRISE<span class="yomi">さんどいっち さんらいず</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">清水区草薙のフルーツサンド専門店。ふわふわのパンに旬の果物と生クリームをたっぷり挟んだサンドが常時10種類以上並び、彩り豊かな「フルーツミックス」が一番人気。焼き芋を挟んだ変わり種など遊び心あるメニューも話題で、正午過ぎには売り切れることもある人気ぶり。2024年6月に改装リニューアルし、朝7時開店で通勤前に買える使い勝手も良い。手土産や差し入れに喜ばれる清水の注目株。</div>
+<div class="sig"><b>一皿:</b>フルーツミックスサンド</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 7:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区草薙一里山２２−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:05088839335">☎ 050-8883-9335</a> ／ <a href="https://www.instagram.com/sandwich_sunrise?igsh=eHV1MnFtaXhxbHEz">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスの2025年パン屋アクセスランキングで静岡市9位に入り、テレしずWasabeeも特集。公式Instagramが現在も更新中で営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=sandwich%20SUNRISE%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E8%8D%89%E8%96%99%E4%B8%80%E9%87%8C%E5%B1%B1%EF%BC%92%EF%BC%92%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1901442.html">静岡新聞アットエス</a> / <a href="https://wasabee.media/articles/14576817/">テレしずWasabee</a></div>
+</div></div>
+<div class="card" id="c-chez_hiro">
+<img class="hero" src="img/shizuoka/chez_hiro.jpg" alt="シェ・ヒロ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">69</span>シェ・ヒロ<span class="yomi">しぇ・ひろ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">清水区鶴舞町、国道1号大曲交差点の北側に建つキノコのような外観が目印の洋菓子店。看板商品はアーモンドを散らしたパリパリの皮に、バニラビーンズ入りカスタードをたっぷり詰めたシュークリームで、地元では手土産の定番。プリンロールなどの生菓子や焼き菓子も揃い、誕生日ケーキから日常のおやつまで幅広く頼れる。無料駐車場が計17台分あり車でも寄りやすい、清水の暮らしに根付いた一軒。</div>
+<div class="sig"><b>一皿:</b>シュークリーム</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市清水区鶴舞町１−２３ ｃｈｅｚＨｉｒｏ</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0543719101">☎ 054-371-9101</a> ／ <a href="https://instagram.com/__chezhiro__?igshid=typjc570kghq">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが清水区の定番ケーキ店として掲載し、地元グルメブログも「清水の定番洋菓子店」と紹介。現行の営業情報が複数サイトで確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%82%A7%E3%83%BB%E3%83%92%E3%83%AD%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E6%B8%85%E6%B0%B4%E5%8C%BA%E9%B6%B4%E8%88%9E%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%93%20%EF%BD%83%EF%BD%88%EF%BD%85%EF%BD%9A%EF%BC%A8%EF%BD%89%EF%BD%92%EF%BD%8F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/takeout/cake/123871.html">静岡新聞アットエス</a> / <a href="https://www.sakuyaoi.com/entry/chezhiro">みなと町でも桜は咲くら</a></div>
+</div></div>
+<div class="card" id="c-misakaya_honten">
+<img class="hero" src="img/shizuoka/misakaya_honten.jpg" alt="蔵好三坂屋 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">70</span>蔵好三坂屋 本店<span class="yomi">くらよしみさかや ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和33年（1958年）11月創業、静岡市内に3店舗を構える和菓子の老舗。代表銘菓「美恵夢（びえむ）」は1個200円（税別）で、贈答品としても好評の看板商品。本店は葵区北安東にあり、朝8時半から開くので朝のうちに手土産を調達できるのがありがたい。季節の和菓子も揃え、地域の慶弔や茶席を長年支えてきた地元密着の菓子処。県の「ふじのくに魅力ある個店」にも選ばれている。</div>
+<div class="sig"><b>一皿:</b>美恵夢（びえむ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 8:30〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区北安東３丁目１０−１０番４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542457831">☎ 054-245-7831</a> ／ <a href="http://www.biemu.com/store_detail.php">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県「ふじのくに魅力ある個店」掲載の老舗で、静岡新聞アットエスも本店・北店を現役紹介。公式サイトで商品・店舗情報が確認でき、営業実態が明確。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%94%B5%E5%A5%BD%E4%B8%89%E5%9D%82%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%8C%97%E5%AE%89%E6%9D%B1%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%90%E7%95%AA%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://f-koten.pref.shizuoka.jp/shop/details/1271">ふじのくに魅力ある個店（静岡県）</a> / <a href="http://www.biemu.com/store_detail.php">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-kashidokoro_shirokiya">
+<img class="hero" src="img/shizuoka/kashidokoro_shirokiya.jpg" alt="菓子処 白木屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">71</span>菓子処 白木屋<span class="yomi">かしどころ しろきや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和10年（1935年）創業、葵区大岩本町の住宅街に静かに佇む和菓子店。現在は三代目が伝統の味を受け継ぎつつ、代々人気の新作を出し続けているのが持ち味。二代目考案の「あわ大福」はお菓子の博覧会で大賞を受賞した代表銘菓で、創業当時からの製法を守る手作りの「開運どら焼き」も名物。三代目考案のコーヒー味のわらび餅など遊び心ある品も並ぶ。朝8時半から開いており、地元客が日常の甘味や手土産に通う。</div>
+<div class="sig"><b>一皿:</b>あわ大福</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 8:30〜19:00 ／ 日 8:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区大岩本町２１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542455986">☎ 054-245-5986</a> ／ <a href="http://sirokiya.crayonsite.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが「昭和10年創業の老舗ながら新作を出し続ける和菓子屋」として近年特集した現役店。博覧会大賞受賞のあわ大福を持つ地元密着の名店で、営業情報が複数サイトで確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8F%93%E5%AD%90%E5%87%A6%20%E7%99%BD%E6%9C%A8%E5%B1%8B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E5%A4%A7%E5%B2%A9%E6%9C%AC%E7%94%BA%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1712644.html">静岡新聞アットエス</a> / <a href="https://sirokiya.crayonsite.com/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-apricot_bakery">
+<img class="hero" src="img/shizuoka/apricot_bakery.jpg" alt="焼きたてパンの店 アプリコット 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">72</span>焼きたてパンの店 アプリコット<span class="yomi">やきたてぱんのみせ あぷりこっと</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">葵区竜南の住宅街で愛されるアットホームなベーカリー。日に何度も窯出しする「焼きたて」が自慢で、素材にこだわり手間をかけて焼き上げるパンが80〜100種類も並ぶ。多くのパンが200円以下という驚きの価格設定で「毎日通いたくなる店」とテレビ局の地域メディアも特集。朝8時開店なので通勤前の朝食調達にも便利で、店前と近隣に駐車場もあり車でも寄りやすい。種類の多さ・安さ・焼きたての三拍子が揃った地元の頼れる一軒。</div>
+<div class="sig"><b>一皿:</b>焼きたての惣菜パン各種</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 8:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>静岡県静岡市葵区竜南１丁目１６−１９−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0542472490">☎ 054-247-2490</a> ／ <a href="https://apricotshizuoka.wixsite.com/apricot">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスの2025年パン屋年間アクセスランキングで静岡市7位に入った現役の人気店。テレしずWasabeeも「200円以下の格安パン」で特集しており、地元での支持が裏付けられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E3%81%8D%E3%81%9F%E3%81%A6%E3%83%91%E3%83%B3%E3%81%AE%E5%BA%97%20%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B3%E3%83%83%E3%83%88%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E9%9D%99%E5%B2%A1%E5%B8%82%E8%91%B5%E5%8C%BA%E7%AB%9C%E5%8D%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%99%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1901442.html">静岡新聞アットエス（2025年ランキング）</a> / <a href="https://wasabee.media/articles/3334099/">テレしずWasabee</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>

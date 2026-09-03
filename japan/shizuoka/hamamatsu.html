@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>浜松美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / HAMAMATSU・静岡県 🇯🇵</div>
+  <h1>浜松美食ガイド</h1>
+  <div class="sub">楽器とバイクの街は餃子とうなぎの二大聖地。円盤に並べてもやしを添える浜松餃子、浜名湖育ちの香ばしい鰻の白焼きと蒲焼、遠州灘のしらすとふぐ、駅前有楽街の名酒場まで厳選73スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年8月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/hamamatsu/_map.png" alt="全域マップ">
+<a href="#c-mutsugiku" style="left:56.78%;top:86.33%;width:3.04%;height:2.88%;"></a>
+<a href="#c-ishimatsu_honten" style="left:64.5%;top:56.0%;width:3.04%;height:2.88%;"></a>
+<a href="#c-fukumitsu" style="left:59.53%;top:82.85%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kibori" style="left:44.66%;top:90.38%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yaotoku_honten" style="left:56.64%;top:84.93%;width:3.04%;height:2.88%;"></a>
+<a href="#c-atsumi" style="left:55.67%;top:85.55%;width:3.04%;height:2.88%;"></a>
+<a href="#c-unagi_fujita" style="left:56.61%;top:86.05%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kantaro_shijimizuka" style="left:50.2%;top:83.95%;width:3.04%;height:2.88%;"></a>
+<a href="#c-shimizuya_kiga" style="left:35.77%;top:54.16%;width:3.04%;height:2.88%;"></a>
+<a href="#c-uoara" style="left:23.38%;top:91.66%;width:3.04%;height:2.88%;"></a>
+<a href="#c-hamanabo" style="left:22.78%;top:88.72%;width:3.04%;height:2.88%;"></a>
+<a href="#c-maisaka_maruma" style="left:27.42%;top:90.08%;width:3.04%;height:2.88%;"></a>
+<a href="#c-seirin" style="left:55.11%;top:84.23%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kitanose" style="left:55.98%;top:84.12%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kuzushi_nosuke" style="left:55.47%;top:85.46%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yamaguchiya_godaime" style="left:55.2%;top:84.8%;width:3.04%;height:2.88%;"></a>
+<a href="#c-suehiro_sushi" style="left:56.63%;top:86.44%;width:3.04%;height:2.88%;"></a>
+<a href="#c-chitose_kikuichi" style="left:55.43%;top:85.56%;width:3.04%;height:2.88%;"></a>
+<a href="#c-hamazushi_kanzanji" style="left:24.7%;top:67.0%;width:3.04%;height:2.88%;"></a>
+<a href="#c-totoichi" style="left:55.25%;top:84.99%;width:3.04%;height:2.88%;"></a>
+<a href="#c-tonhiro" style="left:61.5%;top:78.43%;width:3.04%;height:2.88%;"></a>
+<a href="#c-tonkaraten" style="left:56.59%;top:79.3%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yanase" style="left:55.46%;top:86.9%;width:3.04%;height:2.88%;"></a>
+<a href="#c-tenkin" style="left:55.62%;top:84.57%;width:3.04%;height:2.88%;"></a>
+<a href="#c-mimatsu" style="left:55.33%;top:85.86%;width:3.04%;height:2.88%;"></a>
+<a href="#c-toritoku" style="left:55.51%;top:85.7%;width:3.04%;height:2.88%;"></a>
+<a href="#c-tonkii" style="left:44.22%;top:54.48%;width:3.04%;height:2.88%;"></a>
+<a href="#c-hinokuni_nakada" style="left:62.16%;top:77.05%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kunma_kaasan" style="left:56.31%;top:7.22%;width:3.04%;height:2.88%;"></a>
+<a href="#c-toshimine" style="left:67.53%;top:80.22%;width:3.04%;height:2.88%;"></a>
+<a href="#c-menya_ryuju" style="left:65.84%;top:74.6%;width:3.04%;height:2.88%;"></a>
+<a href="#c-hamadayama" style="left:55.98%;top:79.19%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kouya_no_ramen" style="left:41.45%;top:64.75%;width:3.04%;height:2.88%;"></a>
+<a href="#c-naru_soba" style="left:56.4%;top:84.71%;width:3.04%;height:2.88%;"></a>
+<a href="#c-sugarian" style="left:92.93%;top:30.03%;width:3.04%;height:2.88%;"></a>
+<a href="#c-isohachi" style="left:49.54%;top:65.77%;width:3.04%;height:2.88%;"></a>
+<a href="#c-fukumasuya" style="left:17.01%;top:58.26%;width:3.04%;height:2.88%;"></a>
+<a href="#c-karaku" style="left:49.47%;top:92.81%;width:3.04%;height:2.88%;"></a>
+<a href="#c-hamamatsu_daio" style="left:55.53%;top:84.74%;width:3.04%;height:2.88%;"></a>
+<a href="#c-jinen" style="left:55.56%;top:84.64%;width:3.04%;height:2.88%;"></a>
+<a href="#c-gozaro" style="left:55.21%;top:84.9%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yakitori_daiju" style="left:56.03%;top:84.96%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kaki_center" style="left:55.44%;top:84.75%;width:3.04%;height:2.88%;"></a>
+<a href="#c-tanto_honten" style="left:55.88%;top:84.82%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kazune" style="left:55.24%;top:85.89%;width:3.04%;height:2.88%;"></a>
+<a href="#c-inasaku" style="left:55.97%;top:84.74%;width:3.04%;height:2.88%;"></a>
+<a href="#c-obanzai_en" style="left:55.72%;top:85.64%;width:3.04%;height:2.88%;"></a>
+<a href="#c-hyakuri" style="left:55.31%;top:85.03%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_tom" style="left:55.46%;top:85.67%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_misakubo" style="left:66.98%;top:79.71%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_papiotto" style="left:45.64%;top:85.45%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_quatre_saisons" style="left:55.3%;top:84.35%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_brasserie" style="left:56.77%;top:84.69%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_orta" style="left:57.02%;top:84.84%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_rustico" style="left:63.39%;top:65.48%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_mariposa" style="left:56.02%;top:86.72%;width:3.04%;height:2.88%;"></a>
+<a href="#c-yoshoku_choupana" style="left:41.19%;top:67.86%;width:3.04%;height:2.88%;"></a>
+<a href="#c-cafe_kondo" style="left:55.33%;top:85.79%;width:3.04%;height:2.88%;"></a>
+<a href="#c-cafe_tournez" style="left:56.74%;top:84.69%;width:3.04%;height:2.88%;"></a>
+<a href="#c-cafe_beni" style="left:55.15%;top:84.86%;width:3.04%;height:2.88%;"></a>
+<a href="#c-cafe_keyaki" style="left:69.19%;top:78.85%;width:3.04%;height:2.88%;"></a>
+<a href="#c-cafe_natsume" style="left:11.64%;top:57.37%;width:3.04%;height:2.88%;"></a>
+<a href="#c-cafe_bflat" style="left:58.5%;top:63.82%;width:3.04%;height:2.88%;"></a>
+<a href="#c-cafe_santos" style="left:56.52%;top:84.8%;width:3.04%;height:2.88%;"></a>
+<a href="#c-cafe_westgoat" style="left:55.77%;top:85.6%;width:3.04%;height:2.88%;"></a>
+<a href="#c-ganyudo" style="left:61.13%;top:81.59%;width:3.04%;height:2.88%;"></a>
+<a href="#c-kogiku" style="left:52.84%;top:90.19%;width:3.04%;height:2.88%;"></a>
+<a href="#c-irikawaya" style="left:7.07%;top:58.7%;width:3.04%;height:2.88%;"></a>
+<a href="#c-shunkado_honten" style="left:55.72%;top:85.09%;width:3.04%;height:2.88%;"></a>
+<a href="#c-marutaya_kanda" style="left:52.82%;top:89.4%;width:3.04%;height:2.88%;"></a>
+<a href="#c-jiichiro_ohiradai" style="left:42.88%;top:81.68%;width:3.04%;height:2.88%;"></a>
+<a href="#c-akoya_brogne" style="left:52.74%;top:83.49%;width:3.04%;height:2.88%;"></a>
+<a href="#c-b_sugiyama" style="left:59.07%;top:74.0%;width:3.04%;height:2.88%;"></a>
+</div>
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(浜松駅〜有楽街・肴町)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/hamamatsu/_map2.png" alt="中心部拡大(浜松駅〜有楽街・肴町)">
+<a href="#c-mutsugiku" style="left:60.8%;top:78.38%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yaotoku_honten" style="left:57.81%;top:52.73%;width:4.0%;height:3.3%;"></a>
+<a href="#c-atsumi" style="left:37.37%;top:64.11%;width:4.0%;height:3.3%;"></a>
+<a href="#c-unagi_fujita" style="left:57.1%;top:73.2%;width:4.0%;height:3.3%;"></a>
+<a href="#c-seirin" style="left:25.61%;top:39.89%;width:4.0%;height:3.3%;"></a>
+<a href="#c-kitanose" style="left:43.84%;top:37.96%;width:4.0%;height:3.3%;"></a>
+<a href="#c-kuzushi_nosuke" style="left:33.04%;top:62.46%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yamaguchiya_godaime" style="left:27.37%;top:50.32%;width:4.0%;height:3.3%;"></a>
+<a href="#c-suehiro_sushi" style="left:57.53%;top:80.43%;width:4.0%;height:3.3%;"></a>
+<a href="#c-chitose_kikuichi" style="left:32.36%;top:64.24%;width:4.0%;height:3.3%;"></a>
+<a href="#c-totoichi" style="left:28.52%;top:53.89%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yanase" style="left:32.95%;top:88.68%;width:4.0%;height:3.3%;"></a>
+<a href="#c-tenkin" style="left:36.16%;top:46.2%;width:4.0%;height:3.3%;"></a>
+<a href="#c-mimatsu" style="left:30.14%;top:69.7%;width:4.0%;height:3.3%;"></a>
+<a href="#c-toritoku" style="left:33.92%;top:66.77%;width:4.0%;height:3.3%;"></a>
+<a href="#c-naru_soba" style="left:52.6%;top:48.78%;width:4.0%;height:3.3%;"></a>
+<a href="#c-hamamatsu_daio" style="left:34.37%;top:49.19%;width:4.0%;height:3.3%;"></a>
+<a href="#c-jinen" style="left:35.04%;top:47.42%;width:4.0%;height:3.3%;"></a>
+<a href="#c-gozaro" style="left:27.57%;top:52.27%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yakitori_daiju" style="left:44.89%;top:53.26%;width:4.0%;height:3.3%;"></a>
+<a href="#c-kaki_center" style="left:32.44%;top:49.42%;width:4.0%;height:3.3%;"></a>
+<a href="#c-tanto_honten" style="left:41.82%;top:50.63%;width:4.0%;height:3.3%;"></a>
+<a href="#c-kazune" style="left:28.33%;top:70.28%;width:4.0%;height:3.3%;"></a>
+<a href="#c-inasaku" style="left:43.61%;top:49.3%;width:4.0%;height:3.3%;"></a>
+<a href="#c-obanzai_en" style="left:38.32%;top:65.65%;width:4.0%;height:3.3%;"></a>
+<a href="#c-hyakuri" style="left:29.75%;top:54.49%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yoshoku_tom" style="left:32.92%;top:66.34%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yoshoku_quatre_saisons" style="left:29.55%;top:42.05%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yoshoku_brasserie" style="left:60.53%;top:48.33%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yoshoku_orta" style="left:65.72%;top:50.99%;width:4.0%;height:3.3%;"></a>
+<a href="#c-yoshoku_mariposa" style="left:44.76%;top:85.49%;width:4.0%;height:3.3%;"></a>
+<a href="#c-cafe_kondo" style="left:30.23%;top:68.52%;width:4.0%;height:3.3%;"></a>
+<a href="#c-cafe_tournez" style="left:59.95%;top:48.29%;width:4.0%;height:3.3%;"></a>
+<a href="#c-cafe_beni" style="left:26.46%;top:51.39%;width:4.0%;height:3.3%;"></a>
+<a href="#c-cafe_santos" style="left:55.18%;top:50.43%;width:4.0%;height:3.3%;"></a>
+<a href="#c-cafe_westgoat" style="left:39.49%;top:64.99%;width:4.0%;height:3.3%;"></a>
+<a href="#c-shunkado_honten" style="left:38.4%;top:55.73%;width:4.0%;height:3.3%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+
+<div class="toc">
+<div class="th">目次</div>
+<div class="sec red">浜松のご当地(餃子・うなぎ・浜名湖の幸)</div>
+<div class="links">
+<a href="#c-mutsugiku"><span class="tn" style="background:#e34948;">1</span>駅前の行列必至な餃子の代名詞</a>
+<a href="#c-ishimatsu_honten"><span class="tn" style="background:#e34948;">2</span>元祖浜松餃子の発祥本店</a>
+<a href="#c-fukumitsu"><span class="tn" style="background:#e34948;">3</span>揚げ焼きの香ばしさで独走する専門店</a>
+<a href="#c-kibori"><span class="tn" style="background:#e34948;">4</span>地元民が推す南部の行列餃子店</a>
+<a href="#c-yaotoku_honten"><span class="tn" style="background:#e34948;">5</span>お櫃うなぎ茶漬けの明治老舗</a>
+<a href="#c-atsumi"><span class="tn" style="background:#e34948;">6</span>五代続く明治40年創業の名店</a>
+<a href="#c-unagi_fujita"><span class="tn" style="background:#e34948;">7</span>駅徒歩すぐの老舗ふっくら蒲焼</a>
+<a href="#c-kantaro_shijimizuka"><span class="tn" style="background:#e34948;">8</span>炭焼き一筋、地元支持の実力店</a>
+<a href="#c-shimizuya_kiga"><span class="tn" style="background:#e34948;">9</span>気賀の三代続く売切御免の炭焼</a>
+<a href="#c-uoara"><span class="tn" style="background:#e34948;">10</span>舞阪港直送、名物は活えび天丼</a>
+<a href="#c-hamanabo"><span class="tn" style="background:#e34948;">11</span>生しらす丼と牡蠣カバ丼の和食処</a>
+<a href="#c-maisaka_maruma"><span class="tn" style="background:#e34948;">12</span>通年営業の産直かき小屋</a>
+</div>
+<div class="sec blue">寿司・海鮮・和食</div>
+<div class="links">
+<a href="#c-seirin"><span class="tn" style="background:#2a78d6;">13</span>全国区の予約困難な日本料理</a>
+<a href="#c-kitanose"><span class="tn" style="background:#2a78d6;">14</span>百名店選出、食通が集う肴処</a>
+<a href="#c-kuzushi_nosuke"><span class="tn" style="background:#2a78d6;">15</span>深夜まで使える隠れ家くずし割烹</a>
+<a href="#c-yamaguchiya_godaime"><span class="tn" style="background:#2a78d6;">16</span>かまど炊きシャリの140年老舗鮨</a>
+<a href="#c-suehiro_sushi"><span class="tn" style="background:#2a78d6;">17</span>2025年に創業100年、駅前の町鮨</a>
+<a href="#c-chitose_kikuichi"><span class="tn" style="background:#2a78d6;">18</span>浜名湖うなぎも握る創作和食と鮨</a>
+<a href="#c-hamazushi_kanzanji"><span class="tn" style="background:#2a78d6;">19</span>舘山寺の海鮮丼と地魚寿司</a>
+<a href="#c-totoichi"><span class="tn" style="background:#2a78d6;">20</span>商標登録「うなぎの刺身」の魚専門店</a>
+<a href="#c-tonhiro"><span class="tn" style="background:#2a78d6;">21</span>三度揚げの行列とんかつ</a>
+<a href="#c-tonkaraten"><span class="tn" style="background:#2a78d6;">22</span>百名店の白いとんかつ</a>
+<a href="#c-yanase"><span class="tn" style="background:#2a78d6;">23</span>夫婦で営む昭和レトロかつ</a>
+<a href="#c-tenkin"><span class="tn" style="background:#2a78d6;">24</span>百名店の路地裏天丼</a>
+<a href="#c-mimatsu"><span class="tn" style="background:#2a78d6;">25</span>三代続く天ぷら割烹</a>
+<a href="#c-toritoku"><span class="tn" style="background:#2a78d6;">26</span>創業100余年の鳥料理店</a>
+<a href="#c-tonkii"><span class="tn" style="background:#2a78d6;">27</span>養豚場直営の豚料理店</a>
+<a href="#c-hinokuni_nakada"><span class="tn" style="background:#2a78d6;">28</span>精肉卸直営の焼肉本店</a>
+<a href="#c-kunma_kaasan"><span class="tn" style="background:#2a78d6;">29</span>山里のかあさんの手打ちそば</a>
+<a href="#c-toshimine"><span class="tn" style="background:#2a78d6;">30</span>出前もできる町の洋食定食</a>
+</div>
+<div class="sec aqua">ラーメン・そば・町中華</div>
+<div class="links">
+<a href="#c-menya_ryuju"><span class="tn" style="background:#1baf7a;">31</span>浜松ラーメンの頂点</a>
+<a href="#c-hamadayama"><span class="tn" style="background:#1baf7a;">32</span>魚介豚骨つけ麺の雄</a>
+<a href="#c-kouya_no_ramen"><span class="tn" style="background:#1baf7a;">33</span>ウエスタンな支那そば</a>
+<a href="#c-naru_soba"><span class="tn" style="background:#1baf7a;">34</span>街中の実力派手打ち蕎麦</a>
+<a href="#c-sugarian"><span class="tn" style="background:#1baf7a;">35</span>古民家で味わう十割蕎麦</a>
+<a href="#c-isohachi"><span class="tn" style="background:#1baf7a;">36</span>カルボナーラうどんの名物店</a>
+<a href="#c-fukumasuya"><span class="tn" style="background:#1baf7a;">37</span>大正7年創業の圧力釜うどん</a>
+<a href="#c-karaku"><span class="tn" style="background:#1baf7a;">38</span>昭和の風情の町中華</a>
+<a href="#c-hamamatsu_daio"><span class="tn" style="background:#1baf7a;">39</span>深夜まで開く街中の町中華</a>
+</div>
+<div class="sec beer">居酒屋・バー(有楽街・千歳町)</div>
+<div class="links">
+<a href="#c-jinen"><span class="tn" style="background:#0d366b;">40</span>地物尽くしの百名店居酒屋</a>
+<a href="#c-gozaro"><span class="tn" style="background:#0d366b;">41</span>浜松料理専門の個室居酒屋</a>
+<a href="#c-yakitori_daiju"><span class="tn" style="background:#0d366b;">42</span>赤提灯の焼き鳥名店</a>
+<a href="#c-kaki_center"><span class="tn" style="background:#0d366b;">43</span>街中のかき小屋風居酒屋</a>
+<a href="#c-tanto_honten"><span class="tn" style="background:#0d366b;">44</span>やらまいか精神の遠州酒場</a>
+<a href="#c-kazune"><span class="tn" style="background:#0d366b;">45</span>音楽の街の隠れ家酒場</a>
+<a href="#c-inasaku"><span class="tn" style="background:#0d366b;">46</span>昭和12年創業のおでん酒場</a>
+<a href="#c-obanzai_en"><span class="tn" style="background:#0d366b;">47</span>千歳町の地産地消おばんざい</a>
+<a href="#c-hyakuri"><span class="tn" style="background:#0d366b;">48</span>〆に蕎麦が待つ大箱居酒屋</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-yoshoku_tom"><span class="tn" style="background:#4a3aa7;">49</span>昭和28年創業の千歳町の老舗洋食</a>
+<a href="#c-yoshoku_misakubo"><span class="tn" style="background:#4a3aa7;">50</span>創業1983年、和田の本格ハンバーグ</a>
+<a href="#c-yoshoku_papiotto"><span class="tn" style="background:#4a3aa7;">51</span>昭和54年創業・元祖炭焼きハンバーグ</a>
+<a href="#c-yoshoku_quatre_saisons"><span class="tn" style="background:#4a3aa7;">52</span>星付き監修の和魂洋才フレンチ</a>
+<a href="#c-yoshoku_brasserie"><span class="tn" style="background:#4a3aa7;">53</span>板屋町の気軽な仏伊ブラッスリー</a>
+<a href="#c-yoshoku_orta"><span class="tn" style="background:#4a3aa7;">54</span>イタリア人シェフのピエモンテ料理</a>
+<a href="#c-yoshoku_rustico"><span class="tn" style="background:#4a3aa7;">55</span>西ケ崎の人気ピッツェリア</a>
+<a href="#c-yoshoku_mariposa"><span class="tn" style="background:#4a3aa7;">56</span>駅南の老舗創作フレンチ</a>
+<a href="#c-yoshoku_choupana"><span class="tn" style="background:#4a3aa7;">57</span>創業20周年のシュハスコ食べ放題</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・和菓子・パン</div>
+<div class="links">
+<a href="#c-cafe_kondo"><span class="tn" style="background:#eda100;">58</span>昭和26年から続くカウンター純喫茶</a>
+<a href="#c-cafe_tournez"><span class="tn" style="background:#eda100;">59</span>超弩級オーディオのジャズ喫茶</a>
+<a href="#c-cafe_beni"><span class="tn" style="background:#eda100;">60</span>肴町の昭和レトロ純喫茶</a>
+<a href="#c-cafe_keyaki"><span class="tn" style="background:#eda100;">61</span>1973年創業の昭和レトロ喫茶</a>
+<a href="#c-cafe_natsume"><span class="tn" style="background:#eda100;">62</span>三ヶ日の蔵で味わう自家焙煎珈琲</a>
+<a href="#c-cafe_bflat"><span class="tn" style="background:#eda100;">63</span>自家焙煎珈琲とジャズライブの店</a>
+<a href="#c-cafe_santos"><span class="tn" style="background:#eda100;">64</span>サイフォン珈琲と朝7時半モーニング</a>
+<a href="#c-cafe_westgoat"><span class="tn" style="background:#eda100;">65</span>駅近スペシャルティ珈琲の名店</a>
+<a href="#c-ganyudo"><span class="tn" style="background:#eda100;">66</span>明治4年創業の和菓子司</a>
+<a href="#c-kogiku"><span class="tn" style="background:#eda100;">67</span>明治20年創業・和モダン直売店</a>
+<a href="#c-irikawaya"><span class="tn" style="background:#eda100;">68</span>みかん最中の明治創業菓子司</a>
+<a href="#c-shunkado_honten"><span class="tn" style="background:#eda100;">69</span>うなぎパイの総本山</a>
+<a href="#c-marutaya_kanda"><span class="tn" style="background:#eda100;">70</span>あげ潮とチーズケーキの本店</a>
+<a href="#c-jiichiro_ohiradai"><span class="tn" style="background:#eda100;">71</span>しっとりバウムの旗艦店</a>
+<a href="#c-akoya_brogne"><span class="tn" style="background:#eda100;">72</span>昭和22年創業の町のパン屋</a>
+<a href="#c-b_sugiyama"><span class="tn" style="background:#eda100;">73</span>上島の行列ベーカリー</a>
+</div>
+</div>
+
+<div class="note"><b>回り方のコツ:</b>店は浜松駅北の有楽街・千歳町・肴町かいわいと、郊外の餃子・うなぎの名店に分かれる。浜松餃子は円盤焼き+もやしが流儀で、人気店は夕方売り切れも。うなぎは浜名湖西岸の舞阪・弁天島にも老舗が多い。遠州灘の天然とらふぐは秋冬、浜名湖の牡蠣は冬、しらすは春秋が旬。楽器の街らしいジャズ喫茶や老舗洋菓子も健在。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-hamamatsu" class="c-red">浜松のご当地(餃子・うなぎ・浜名湖の幸)</h2>
+<div class="card" id="c-mutsugiku">
+<img class="hero" src="img/hamamatsu/mutsugiku.jpg" alt="浜松餃子 むつぎく 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>浜松餃子 むつぎく<span class="yomi">むつぎく</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">昭和37年（1962年）創業、浜松餃子といえば真っ先に名前が挙がる駅前の老舗。キャベツと玉ねぎの甘みを生かした薄皮の餃子を鉄板で円形に焼き上げ、中央に茹でもやしを添える「円盤焼き＋もやし」という浜松スタイルの象徴的存在。平日から行列ができるが回転は早く、餃子とラーメンだけの潔いメニュー構成で観光客にも地元客にも愛される。浜松駅新幹線口から南へ徒歩3分と、出張や旅行の締めにも使いやすい立地。</div>
+<div class="sig"><b>一皿:</b>餃子（中）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土 11:30〜14:00, 17:00〜20:30 ／ 日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区砂山町３５６−５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534551700">☎ 053-455-1700</a> ／ <a href="http://mutsugiku.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松・浜名湖観光公式サイト「浜松・浜名湖だいすきネット」が編集部ピックアップで紹介し、2026年版の旅行者向け浜松餃子ランキングでも1位。じゃらんニュース等の2025年記事でも定番として掲載され営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E6%9D%BE%E9%A4%83%E5%AD%90%20%E3%82%80%E3%81%A4%E3%81%8E%E3%81%8F%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%A0%82%E5%B1%B1%E7%94%BA%EF%BC%93%EF%BC%95%EF%BC%96%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-daisuki.net/pickup/8759/">浜松・浜名湖だいすきネット</a> / <a href="https://4travel.jp/magazine/gourmet/00054">トラベルマガジン（4travel）</a></div>
+</div></div>
+<div class="card" id="c-ishimatsu_honten">
+<img class="hero" src="img/hamamatsu/ishimatsu_honten.jpg" alt="石松餃子 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>石松餃子 本店<span class="yomi">いしまつぎょうざ ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和28年（1953年）に浜松駅前で創業した「元祖浜松餃子」を名乗る老舗で、現在の本店は浜名区平口にある。3代にわたり受け継がれる秘伝のレシピで、キャベツの甘みと豚肉の旨みを引き出した餃子は数々の賞を受賞。年中無休で、土日は通し営業と使い勝手がよく、県外からの餃子目当ての客も多い。浜松駅構内など支店も展開するローカルチェーンだが、味の原点はこの本店にある。</div>
+<div class="sig"><b>一皿:</b>石松餃子</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜14:30, 17:00〜20:30 ／ 土・日 11:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市浜名区平口２５２−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535868522">☎ 053-586-8522</a> ／ <a href="https://1402.jp/shop/honten.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松発祥のローカルチェーンだが、浜松餃子発祥とされる昭和28年創業の本店として選定。観光公式「浜松・浜名湖だいすきネット」が紹介し、じゃらんニュース2025年記事にも掲載され営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%9F%B3%E6%9D%BE%E9%A4%83%E5%AD%90%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E6%B5%9C%E5%90%8D%E5%8C%BA%E5%B9%B3%E5%8F%A3%EF%BC%92%EF%BC%95%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-daisuki.net/pickup/7686/">浜松・浜名湖だいすきネット</a> / <a href="https://www.jalan.net/news/article/704537/">じゃらんニュース</a></div>
+</div></div>
+<div class="card" id="c-fukumitsu">
+<img class="hero" src="img/hamamatsu/fukumitsu.jpg" alt="餃子の店 福みつ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>餃子の店 福みつ<span class="yomi">ふくみつ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">浜松餃子ランキングで常に上位に入る佐藤町の餃子専門店。多めの油で揚げ焼きにした、きつね色でカリッと香ばしい皮が特徴で、むつぎくの蒸し焼き系とは対照的なスタイル。玉ねぎ主体の餡は軽く、10個・15個・20個と大量に頼む常連が多いのも名物風景。メニューは餃子定食が中心という専門店らしい潔さで、地元民のソウルフードとして半世紀にわたり支持されてきた。持ち帰りも人気。</div>
+<div class="sig"><b>一皿:</b>餃子定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜20:25</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区佐藤１丁目２５−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534616501">☎ 053-461-6501</a> ／ <a href="https://x.com/fukumitsugyouza?s=21&amp;t=Jh3yyBU_eU7bNjT2EtXjYA">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>旅行者向け浜松餃子ランキング（4travel・2026年版）で上位、静岡新聞アットエスにも掲載の定番店。2025年7月時点の営業時間情報が確認でき、営業継続の証拠がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A4%83%E5%AD%90%E3%81%AE%E5%BA%97%20%E7%A6%8F%E3%81%BF%E3%81%A4%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E4%BD%90%E8%97%A4%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%95%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/126187">静岡新聞アットエス</a> / <a href="https://4travel.jp/magazine/gourmet/00054">トラベルマガジン（4travel）</a></div>
+</div></div>
+<div class="card" id="c-kibori">
+<img class="hero" src="img/hamamatsu/kibori.jpg" alt="喜慕里 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>喜慕里<span class="yomi">きぼり</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和47年（1972年）創業、高塚駅近くの住宅街で平日から行列が絶えない浜松餃子の名店。ごま油の香る薄皮と、キャベツのやさしい甘みが立つ餡が持ち味で、小ぶりゆえに20個・30個と重ねられる。餃子と並ぶもう一つの看板があっさり醤油のラーメンで、「餃子＋ラーメン」の組み合わせが定番。観光客向けの駅前店とは一味違う、地元民の日常に根付いた店として「浜松餃子といえばここ」と挙げる市民も多い。</div>
+<div class="sig"><b>一皿:</b>餃子（20個）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:30〜14:30, 16:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区増楽町５６３−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534475737">☎ 053-447-5737</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>観光公式「浜松・浜名湖だいすきネット」が編集部ピックアップで紹介し、Yahoo!ニュース掲載の専門家記事やくふうロコしずおか等の地元メディアでも近年繰り返し取り上げられる人気店。平日でも大行列との2020年代のレポートが複数あり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%9C%E6%85%95%E9%87%8C%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A2%97%E6%A5%BD%E7%94%BA%EF%BC%95%EF%BC%96%EF%BC%93%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-daisuki.net/pickup/8719/">浜松・浜名湖だいすきネット</a> / <a href="https://loco.kufu.jp/shizuoka/articles/original/985">くふうロコしずおか</a></div>
+</div></div>
+<div class="card" id="c-yaotoku_honten">
+<img class="hero" src="img/hamamatsu/yaotoku_honten.jpg" alt="うなぎ 八百徳 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>うなぎ 八百徳 本店<span class="yomi">やおとく ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治42年（1909年）創業、浜松駅前で100年以上続くうなぎ専門の老舗。名物「お櫃うなぎ茶漬け」（4070円）は、お櫃に刻んだ蒲焼とご飯が入り、一杯目はうな丼として、二杯目は土瓶の出汁茶を注いで茶漬けとして味わう当店発祥の食べ方で、浜松のひつまぶし文化を代表する一品。継ぎ足しの秘伝ダレが香ばしく、団体バスも立ち寄る観光の定番でありながら、地元の慶事にも使われる格式を保つ。</div>
+<div class="sig"><b>一皿:</b>お櫃うなぎ茶漬け</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区板屋町６５５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534525687">☎ 053-452-5687</a> ／ <a href="https://www.unagiyaotoku.com/info.php#honten">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松まちなかにぎわい協議会や静岡新聞アットエスが紹介する駅前の代表的うなぎ店。老舗紹介サイトや観光媒体の近年の実食記事が複数あり、公式サイトでも営業情報が更新され継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%20%E5%85%AB%E7%99%BE%E5%BE%B3%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%9D%BF%E5%B1%8B%E7%94%BA%EF%BC%96%EF%BC%95%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-machinaka.jp/news/31159/">浜松まちなかにぎわい協議会</a> / <a href="https://www.unagiyaotoku.com/">うなぎ八百徳 公式</a></div>
+</div></div>
+<div class="card" id="c-atsumi">
+<img class="hero" src="img/hamamatsu/atsumi.jpg" alt="うなぎ料理 あつみ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>うなぎ料理 あつみ<span class="yomi">あつみ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治40年（1907年）創業、五代にわたり続く浜松屈指のうなぎ専門店。国産・浜名湖産にこだわったうなぎを国産備長炭で焼き上げ、代々受け継ぐ秘伝ダレの蒲焼と、うなぎ本来の旨みを味わう白焼きの両方が看板。昼夜とも短めの営業時間で、仕入れた分が終われば店じまいという職人気質の店ながら、県外から通う客が絶えない。浜松でうなぎの最高峰を挙げるときに必ず名が出る一軒。</div>
+<div class="sig"><b>一皿:</b>うな重</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:30〜13:30, 17:15〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町７０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534551460">☎ 053-455-1460</a> ／ <a href="http://unagi-atsumi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>All Aboutやるるぶ等の全国媒体が「浜松の老舗うなぎ料理店」として紹介する定番で、食べログの浜松うなぎまとめでも常連。公式サイトが稼働し予約困難な人気が続いていることが近年の口コミから確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E6%96%99%E7%90%86%20%E3%81%82%E3%81%A4%E3%81%BF%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%97%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://unagi-atsumi.com/">うなぎ料理あつみ 公式</a> / <a href="https://rurubu.jp/andmore/spot/80021790">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-unagi_fujita">
+<img class="hero" src="img/hamamatsu/unagi_fujita.jpg" alt="うなぎ藤田 浜松駅前店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>うなぎ藤田 浜松駅前店<span class="yomi">うなぎふじた はままつえきまえてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治25年（1892年）創業より四代続く浜松の鰻専門店で、駅前店はホテルソリッソ浜松2階にあり新幹線利用者に絶好の立地。じっくり蒸してから焼く関東風で、ふっくら柔らかい身に50年以上継ぎ足す秘伝ダレを合わせる。国産うなぎのみを使い、うな重のほか白焼きや肝焼きなど一品も充実。落ち着いた店内で、出張帰りに浜松うなぎを味わって新幹線に乗る、という使い方ができる貴重な一軒。</div>
+<div class="sig"><b>一皿:</b>うな重</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区砂山町３２２−７ 2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534523232">☎ 053-452-3232</a> ／ <a href="http://www.unagifujita.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスや浜松鰻料理専門店振興会のサイトに掲載される老舗で、ネット予約サービスが現在も稼働中。食べログの浜松うなぎまとめでも駅近の代表格として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E8%97%A4%E7%94%B0%20%E6%B5%9C%E6%9D%BE%E9%A7%85%E5%89%8D%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%A0%82%E5%B1%B1%E7%94%BA%EF%BC%93%EF%BC%92%EF%BC%92%E2%88%92%EF%BC%97%202F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/177236">静岡新聞アットエス</a> / <a href="https://www.unagifujita.com/">うなぎ藤田 公式</a></div>
+</div></div>
+<div class="card" id="c-kantaro_shijimizuka">
+<img class="hero" src="img/hamamatsu/kantaro_shijimizuka.jpg" alt="うなぎのかんたろう 蜆塚店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>うなぎのかんたろう 蜆塚店<span class="yomi">うなぎのかんたろう しじみづかてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">住宅街の蜆塚で炭焼うなぎ一筋に営む専門店で、地元客の支持が厚い実力店。備長炭で丁寧に焼き上げた蒲焼は香ばしさとふっくら感のバランスがよく、観光地価格になりがちな浜松うなぎの中で満足度が高いと評判。自家製ダレをブレンドした豆乳ベースの「うなぎアイス」というユニークな名物も持つ。昼時は地元の家族連れで席が埋まるため、開店直後の来店が確実。</div>
+<div class="sig"><b>一皿:</b>うな重</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区蜆塚２丁目２−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534558823">☎ 053-455-8823</a> ／ <a href="http://kantarow.p-kit.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県観光公式ハローナビしずおかや静岡新聞アットエスに掲載され、食べログの浜松うなぎまとめ（エリア別おすすめ10選）でも紹介される定番店。じゃらんニュース等の近年記事でオリジナルメニューも取り上げられている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E3%81%AE%E3%81%8B%E3%82%93%E3%81%9F%E3%82%8D%E3%81%86%20%E8%9C%86%E5%A1%9A%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%9C%86%E5%A1%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hellonavi.jp/detail/page/detail/54575">ハローナビしずおか</a> / <a href="https://tabelog.com/matome/17575/">食べログまとめ</a></div>
+</div></div>
+<div class="card" id="c-shimizuya_kiga">
+<img class="hero" src="img/hamamatsu/shimizuya_kiga.jpg" alt="うなぎ・炭焼 清水家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>うなぎ・炭焼 清水家<span class="yomi">しみずや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治44年（1911年）創業、浜名湖北岸の気賀で三代続くうなぎ専門店。創業以来うなぎのみを扱い、備長炭の炭火でふっくら焼き上げる関東風の蒲焼が身上。昼のみの営業で、その日の分が売り切れ次第閉店するため、遠方から訪れるなら電話確認が必須の人気ぶり。浜名湖畔の風情ある街・気賀の散策と合わせて訪れたい、浜松のうなぎ文化の奥深さを感じられる一軒。</div>
+<div class="sig"><b>一皿:</b>うな重</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市浜名区細江町気賀２３８−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535220063">☎ 053-522-0063</a> ／ <a href="http://shimizuya-unagi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスや旅色など複数媒体が「三代続く老舗」として紹介し、公式サイトも稼働中。るるぶ等の現行観光情報にも掲載され、売切必至の営業が続いていることが確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E3%83%BB%E7%82%AD%E7%84%BC%20%E6%B8%85%E6%B0%B4%E5%AE%B6%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E6%B5%9C%E5%90%8D%E5%8C%BA%E7%B4%B0%E6%B1%9F%E7%94%BA%E6%B0%97%E8%B3%80%EF%BC%92%EF%BC%93%EF%BC%98%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabiiro.jp/gourmet/s/302001-hamamatsu-shimizuya-unagi/">旅色</a> / <a href="https://shimizuya-unagi.com/">清水家 公式</a></div>
+</div></div>
+<div class="card" id="c-uoara">
+<img class="hero" src="img/hamamatsu/uoara.jpg" alt="浜名湖 魚あら 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>浜名湖 魚あら<span class="yomi">うおあら</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">遠州灘と浜名湖が出会う港町・舞阪で100年以上続く活魚料理の老舗。生け簀の活車えびをその場で揚げる名物「活天丼」は、身が跳ねるほどの鮮度で衣の中の甘みが際立つ逸品。目の前の舞阪港から仕入れる生しらす（4〜10月頃）や、冬の遠州灘天然とらふぐ、浜名湖うなぎまで、浜松の海の幸を一軒で網羅できる。浜名湖を見晴らす座敷でゆったり味わえ、観光にも法事にも使われる地域の看板店。</div>
+<div class="sig"><b>一皿:</b>活天丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:00, 16:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区舞阪町舞阪２１１９−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0535920041">☎ 053-592-0041</a> ／ <a href="http://www.uoara.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県信用金庫協会の地域メディア「しずおか！ぷらっと散歩」が「浜名湖の料理番」として特集し、公式サイトで季節の生しらす等の提供情報を発信中。舞阪の海鮮を代表する店として観光媒体でも定番的に紹介される。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E5%90%8D%E6%B9%96%20%E9%AD%9A%E3%81%82%E3%82%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%88%9E%E9%98%AA%E7%94%BA%E8%88%9E%E9%98%AA%EF%BC%92%EF%BC%91%EF%BC%91%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shizup.jp/uoara/">しずおか！ぷらっと散歩</a> / <a href="https://www.uoara.com/restaurant.html">魚あら 公式</a></div>
+</div></div>
+<div class="card" id="c-hamanabo">
+<img class="hero" src="img/hamamatsu/hamanabo.jpg" alt="浜菜坊 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>浜菜坊<span class="yomi">はまなぼう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">弁天島に暖簾を掲げる和食店で、地元・舞阪漁港で当日水揚げされた魚介だけを使う鮮度が身上。看板の生しらす丼（1250円）は、透き通ったしらすの甘みが際立つ港町ならではの一杯。冬は浜名湖名物のご当地丼「牡蠣カバ丼」（1650円）——浜名湖産カキと遠州産玉ねぎを蒲焼のタレで仕立てた丼——が登場し、ふぐや浜名湖うなぎも揃う。座敷やテーブル席があり、浜名湖観光の食事処として家族連れでも使いやすい。</div>
+<div class="sig"><b>一皿:</b>生しらす丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜14:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区舞阪町弁天島３１０１</td></tr>
+<tr><th>予約</th><td>可 — <a href="https://www.hamanabo.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>るるぶや地元グルメメディア「ココハマ」等が生しらす丼の名店として紹介し、公式サイトでメニュー・営業情報を発信中。浜名湖ご当地グルメ「牡蠣カバ丼」の提供店として観光媒体にも掲載される。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E8%8F%9C%E5%9D%8A%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%88%9E%E9%98%AA%E7%94%BA%E5%BC%81%E5%A4%A9%E5%B3%B6%EF%BC%93%EF%BC%91%EF%BC%90%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hamanabo.co.jp/">浜菜坊 公式</a> / <a href="https://murakichi.net/hamanabo">ココハマ</a></div>
+</div></div>
+<div class="card" id="c-maisaka_maruma">
+<img class="hero" src="img/hamamatsu/maisaka_maruma.jpg" alt="牡蠣小屋 舞阪マルマ幸福丸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>牡蠣小屋 舞阪マルマ幸福丸<span class="yomi">まいさかまるまこうふくまる</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">舞阪港のそばで漁師が営む産直かき小屋。浜名湖産をはじめ、季節に応じて岩手・北海道・宮城・三重など各地の牡蠣を仕入れ、通年で焼き牡蠣や蒸し牡蠣が楽しめるのが最大の特徴。鉄板でその場で焼く豪快なスタイルで、イカやえびなど魚介の浜焼き、うなぎを使った丼もある。土曜は夜まで営業しており、潮風の中で殻付き牡蠣を頬張る漁港町らしい体験ができる。冬の浜名湖牡蠣シーズンは特に賑わう。</div>
+<div class="sig"><b>一皿:</b>焼き牡蠣</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・日 10:00〜16:00 ／ 土 10:00〜16:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区舞阪町舞阪２６２１−１１４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535922340">☎ 053-592-2340</a> ／ <a href="https://www.instagram.com/koufukumaru?igsh=MWZ4Z21weW1kZnMxNA==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスや静岡県観光公式ハローナビしずおかに掲載され、iN HAMAMATSU.COM（浜松観光の英語圏向け公式媒体）の牡蠣小屋特集でも紹介。公式ブログとグルメ予約サイトが現在も稼働しており営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%89%A1%E8%A0%A3%E5%B0%8F%E5%B1%8B%20%E8%88%9E%E9%98%AA%E3%83%9E%E3%83%AB%E3%83%9E%E5%B9%B8%E7%A6%8F%E4%B8%B8%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%88%9E%E9%98%AA%E7%94%BA%E8%88%9E%E9%98%AA%EF%BC%92%EF%BC%96%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/172344">静岡新聞アットエス</a> / <a href="https://www.inhamamatsu.com/japanese/recommend/Oyster-shacks.php">iN HAMAMATSU.COM</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・海鮮・和食</h2>
+<div class="card" id="c-seirin">
+<img class="hero" src="img/hamamatsu/seirin.jpg" alt="日本料理 勢麟 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>日本料理 勢麟<span class="yomi">せいりん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">浜松が全国に誇る日本料理店で、食べログの「日本料理 EAST 百名店」に選出され、The Tabelog Award 2024ではGoldを受賞した予約困難店。遠州灘・浜名湖の魚介や地物野菜など地元の食材を軸に、出汁の力を尽くしたおまかせコース一本で勝負する。名物の鰻懐石をはじめ、季節ごとに構成が変わる料理は県外から通う食通を惹きつけてやまない。2025年4月には同グループの新店「富喜麟」を浜松まちなかに開くなど勢いも続く。</div>
+<div class="sig"><b>一皿:</b>おまかせコース（鰻懐石）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区元城町２２２−２５</td></tr>
+<tr><th>予約</th><td>可 — <a href="https://www.instagram.com/seirin.2018/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ日本料理百名店選出・The Tabelog Award 2024 Gold受賞という全国区の評価。2025年4月にグループ新店「富喜麟」開店が地元メディアで報じられており、営業・活動の継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E5%8B%A2%E9%BA%9F%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%85%83%E5%9F%8E%E7%94%BA%EF%BC%92%EF%BC%92%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-machinaka.jp/news/51998/">浜松まちなかにぎわい協議会</a> / <a href="https://hitosara.com/0031406740/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-kitanose">
+<img class="hero" src="img/hamamatsu/kitanose.jpg" alt="旬肴 貴田乃瀬 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>旬肴 貴田乃瀬<span class="yomi">きたのせ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">田町の静かな一角に構える一軒家の割烹で、食べログ「居酒屋 EAST 百名店」に2025年選出された、全国から食通が集う店。経験50年を超える主人が遠州の旬魚と季節の食材を丁寧に仕立て、和の技を土台にしながら「牛タンの柔らか煮 ゴルゴンゾーラソース」のような自由な名物も繰り出す。女将はシニアソムリエで、和食×ワインの提案も魅力。カウンター・テーブル・座敷を備え、浜松の夜を格上げしてくれる一軒。</div>
+<div class="sig"><b>一皿:</b>牛タンの柔らか煮 ゴルゴンゾーラソース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区田町２３１−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534552832">☎ 053-455-2832</a> ／ <a href="http://blog.kitanose.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ居酒屋百名店（EAST）2025年選出で、2025年の営業実態が明確。ヒトサラや大手グルメサイトでネット予約が稼働しており、地元の会食・接待需要にも応える名店として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E8%82%B4%20%E8%B2%B4%E7%94%B0%E4%B9%83%E7%80%AC%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%94%B0%E7%94%BA%EF%BC%92%EF%BC%93%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0006087864/">ヒトサラ</a> / <a href="https://tabelog.com/shizuoka/A2202/A220201/22000035/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-kuzushi_nosuke">
+<img class="hero" src="img/hamamatsu/kuzushi_nosuke.jpg" alt="くずし 之助 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>くずし 之助<span class="yomi">くずしのすけ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">千歳町の飲食街に潜む隠れ家的なくずし割烹。素材の魅力を引き出した日本料理をカウンター・個室・座敷で気取らず楽しめ、深夜0時まで営業しているため会食後の二軒目や遅い時間の食事にも重宝する。冬には漁獲量全国屈指の舞阪港に揚がる遠州灘天然とらふぐのコースを扱うことでも知られ、てっさ・てっちり・唐揚げと地物ふぐを尽くせる浜松市街では貴重な存在。地酒の品揃えもよく、大人の浜松の夜にふさわしい。</div>
+<div class="sig"><b>一皿:</b>遠州灘天然とらふぐコース（冬季）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町３９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534884939">☎ 053-488-4939</a> ／ <a href="http://www.chilldiner.com/kuzushinosuke.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>一休.comレストランやヒトサラ等でネット予約が稼働する現役の人気店で、グルメブログでも遠州灘天然とらふぐのフルコースが「浜松きっての隠れ家名店」として紹介されている。静岡新聞アットエスにも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%9A%E3%81%97%20%E4%B9%8B%E5%8A%A9%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%93%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://restaurant.ikyu.com/115177">一休.comレストラン</a> / <a href="https://www.ttcbn.net/gourmet/shizuoka_gourmet/71574">No Second Life（グルメブログ）</a></div>
+</div></div>
+<div class="card" id="c-yamaguchiya_godaime">
+<img class="hero" src="img/hamamatsu/yamaguchiya_godaime.jpg" alt="鮨処 五代目 山口屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>鮨処 五代目 山口屋<span class="yomi">すしどころ ごだいめ やまぐちや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">肴町で140年余り、五代にわたり暖簾を守る浜松屈指の老舗鮨店。初代から受け継ぐ「かまど炊きのシャリ」が最大の特徴で、ふっくら粒立ちのよい酢飯が遠州灘や各地の旬魚の味を引き立てる。カウンターでの一人飲みから個室でのコースまで使い方の幅が広く、老舗ながら価格は良心的でコストパフォーマンスの高さでも知られる。浜松の繁華街で「間違いのない鮨」を求めるならまず名前が挙がる一軒。</div>
+<div class="sig"><b>一皿:</b>かまど炊きシャリの握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・日 12:00〜14:30, 17:00〜23:00 ／ 金・土 12:00〜14:30, 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区肴町３１６−４４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534521768">☎ 053-452-1768</a> ／ <a href="http://www.sushi-yamaguchiya5th.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスや2025年の地元まとめ記事で「創業140年余の老舗中の老舗」として筆頭紹介される。公式サイトで最新の営業時間が公開され、ネット予約も稼働しており営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E5%87%A6%20%E4%BA%94%E4%BB%A3%E7%9B%AE%20%E5%B1%B1%E5%8F%A3%E5%B1%8B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%82%B4%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%94%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sushi-yamaguchiya5th.com/">鮨処五代目山口屋 公式</a> / <a href="https://www.at-s.com/gourmet/article/washoku/sushi/124123.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-suehiro_sushi">
+<img class="hero" src="img/hamamatsu/suehiro_sushi.jpg" alt="末広鮨 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>末広鮨<span class="yomi">すえひろずし</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">2025年11月に創業100周年を迎えた、浜松駅新幹線口すぐの老舗町鮨。三代目の女性職人が握るカウンターは温かみがあり、漁師も集うという気さくな雰囲気が身上。名物はワンコインを少し超えるだけの550円ランチで、老舗の仕事を驚くほど気軽に味わえると地元テレビ局のメディアでも話題に。誕生日などに供される華やかな「寿司ケーキ」というユニークな名物もある。新幹線待ちの一杯にも使える貴重な駅前老舗。</div>
+<div class="sig"><b>一皿:</b>550円寿司ランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・土・日 11:30〜13:15, 17:30〜21:00 ／ 金 11:30〜13:00, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区砂山町３６０−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534526288">☎ 053-452-6288</a> ／ <a href="https://www.suehiro-sushi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松まちなかにぎわい協議会が「約100年続く老舗鮨店」として紹介し、テレしずWasabeeが550円ランチを特集。2025年11月に創業100周年を迎える旨が報じられており、営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%AB%E5%BA%83%E9%AE%A8%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%A0%82%E5%B1%B1%E7%94%BA%EF%BC%93%EF%BC%96%EF%BC%90%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-machinaka.jp/news/47458/">浜松まちなかにぎわい協議会</a> / <a href="https://wasabee.media/articles/4673060/">テレしずWasabee</a></div>
+</div></div>
+<div class="card" id="c-chitose_kikuichi">
+<img class="hero" src="img/hamamatsu/chitose_kikuichi.jpg" alt="千歳 きくいち 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>千歳 きくいち<span class="yomi">ちとせ きくいち</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和30年創業、千歳町の飲食街で本格握りと創作和食を出す老舗。伝統の江戸前仕事に加え、浜名湖のブランドうなぎ「でしこ」を使った新作料理を打ち出すなど、地元食材との掛け算に意欲的。夜は深夜1時まで営業しており、飲んだ後の締めの握りから接待・宴会まで幅広く対応できる懐の深さが繁華街で長く愛される理由。40席の店内はカウンターから宴会席まで揃い、浜松の夜の食文化を体現する一軒。</div>
+<div class="sig"><b>一皿:</b>本格握り寿司</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜1:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町３５ 千歳きくいち</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534525666">☎ 053-452-5666</a> ／ <a href="https://n146001.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2025年で創業70年になる老舗として地元まとめ記事で紹介され、浜松まちなかにぎわい協議会が浜名湖うなぎ「でしこ」新作料理の登場を近年報じており営業継続を確認。ぐるなび等で予約も稼働中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%83%E6%AD%B3%20%E3%81%8D%E3%81%8F%E3%81%84%E3%81%A1%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%93%EF%BC%95%20%E5%8D%83%E6%AD%B3%E3%81%8D%E3%81%8F%E3%81%84%E3%81%A1">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-machinaka.jp/news/56430/">浜松まちなかにぎわい協議会</a> / <a href="https://r.gnavi.co.jp/n146001/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-hamazushi_kanzanji">
+<img class="hero" src="img/hamamatsu/hamazushi_kanzanji.jpg" alt="浜寿し 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>浜寿し<span class="yomi">はまずし</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">浜名湖畔の舘山寺温泉門前通りにある寿司・海鮮の店。浜名湖で獲れた魚や地場産野菜を中心に、季節の旬魚介をふんだんに使った海鮮丼と地魚の握りが看板で、冬季には浜名湖産カキを蒲焼き仕立てにしたご当地丼「牡蠣カバ丼」も味わえる。10時から21時まで通しで営業しており、温泉街の昼食にも湯上がりの夕食にも使える柔軟さが観光客にありがたい。浜名湖パルパルや遊覧船と合わせた舘山寺観光の食の定番。</div>
+<div class="sig"><b>一皿:</b>海鮮丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 10:00〜21:00 ／ 火 10:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区舘山寺町２２８２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534871534">☎ 053-487-1534</a> ／ <a href="http://www.hamazushi.info/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜名湖かんざんじ温泉観光協会の公式サイトと舘山寺門前通り公式サイトの両方が現行の飲食店として掲載し、静岡県観光公式ハローナビしずおかにも情報がある。温泉街の代表的な食事処として観光媒体で継続的に紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E5%AF%BF%E3%81%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%88%98%E5%B1%B1%E5%AF%BA%E7%94%BA%EF%BC%92%EF%BC%92%EF%BC%98%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kanzanji.gr.jp/gourmet/hamazushi">浜名湖かんざんじ温泉観光協会</a> / <a href="https://www.hamazushi.info/">浜寿し 公式</a></div>
+</div></div>
+<div class="card" id="c-totoichi">
+<img class="hero" src="img/hamamatsu/totoichi.jpg" alt="魚料理専門 魚魚一 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>魚料理専門 魚魚一<span class="yomi">とといち</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">肴町のビル3階に構える地魚料理の専門店で、全国でもここでしか味わえない商標登録の名物「浜名湖うなぎの刺身」で知られる。血に毒を持つうなぎを刺身にする独自技術で実現した一品は、弾力ある歯ごたえと甘い脂を自家製熟成ポン酢で味わう。遠州灘・浜名湖・天竜川の魚介を軸に、幻の高級蟹「どうまん蟹」など浜松ならではの食材も登場。昼は予約制コースのみ、夜は23時まで営業し、浜松の食の底力を体感できる。</div>
+<div class="sig"><b>一皿:</b>浜名湖うなぎの刺身</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区肴町３１８−２８ ペッシェビル ３Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534586343">☎ 053-458-6343</a> ／ <a href="https://www.hotpepper.jp/strJ000107237/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>icottoや大人の週末など多数の媒体が「浜松の新名物・うなぎの刺身」の店として紹介し、一休.comレストランやホットペッパーで2025年もプラン予約が稼働中。公式サイトでも商標登録の名物として発信している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E6%96%99%E7%90%86%E5%B0%82%E9%96%80%20%E9%AD%9A%E9%AD%9A%E4%B8%80%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%82%B4%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%92%EF%BC%98%20%E3%83%9A%E3%83%83%E3%82%B7%E3%82%A7%E3%83%93%E3%83%AB%20%EF%BC%93%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.totoichi.com/">魚魚一 公式</a> / <a href="https://icotto.jp/presses/4104">icotto</a></div>
+</div></div>
+<div class="card" id="c-tonhiro">
+<img class="hero" src="img/hamamatsu/tonhiro.jpg" alt="トンカツ専門店 とんひろ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>トンカツ専門店 とんひろ<span class="yomi">とんひろ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">浜松市中央区上新屋町の住宅街に構えるとんかつ専門店。温度の違う3つの鍋で「3度揚げ」する職人技が身上で、厚切りの豚肉を衣サクサク・中はしっとりジューシーに仕上げる。平日でも開店前から行列ができ、昼のピークには待合席が埋まるほどの人気。地元グルメランキングでは浜松市内のとんかつ部門で常に上位に挙げられる実力店で、ボリュームがありながら脂のくどさを感じさせない揚げ加減が評判。遠方から通うファンも多い、浜松とんかつ激戦区の筆頭格。</div>
+<div class="sig"><b>一皿:</b>厚切りロースカツ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区上新屋町２３１−５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534647845">☎ 053-464-7845</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>RETRIPの2025年最新版・浜松とんかつランキングや地元メディア「ジモエル」のとんかつ特集で市内トップ格として紹介される行列店。静岡新聞アットエス等の現行グルメデータベースにも掲載され、営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%88%E3%83%B3%E3%82%AB%E3%83%84%E5%B0%82%E9%96%80%E5%BA%97%20%E3%81%A8%E3%82%93%E3%81%B2%E3%82%8D%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E4%B8%8A%E6%96%B0%E5%B1%8B%E7%94%BA%EF%BC%92%EF%BC%93%EF%BC%91%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://jimoto-yell.com/special/hamamastu-tonkatu/">ジモエル 浜松のとんかつ特集</a> / <a href="https://www.at-s.com/gourmet/article/washoku/tonkatsu/124600.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-tonkaraten">
+<img class="hero" src="img/hamamatsu/tonkaraten.jpg" alt="とん唐てん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>とん唐てん<span class="yomi">とんからてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">遠州鉄道助信駅近くの高林にあるとんかつ店。超低温の油でじっくり揚げる独自製法による、衣が白っぽい「白いとんかつ」で全国に知られる。低温調理ならではのしっとり柔らかな肉質と軽い口当たりが特徴で、食べログの「とんかつ百名店」に複数回選出された浜松を代表する実力店。住宅街の店ながら県外からも客が訪れる。定食はご飯・味噌汁付きで価格も良心的、昼時は行列必至なので開店直後が狙い目。</div>
+<div class="sig"><b>一皿:</b>白い低温揚げのとんかつ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 11:30〜14:00, 17:30〜21:00 ／ 日 11:30〜14:30, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区高林２丁目８−３０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534743335">☎ 053-474-3335</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「とんかつ百名店2026」選出店で、2026年時点の営業実態と全国区の評価が確認できる。助信の住宅街に構える単独店で、地元口コミサイトでも浜松とんかつの双璧として挙げられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E5%94%90%E3%81%A6%E3%82%93%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%AB%98%E6%9E%97%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%93%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/shizuoka/A2202/A220201/22028186/">食べログ</a> / <a href="https://map.yahoo.co.jp/v3/place/-IpFGP-uHoE">Yahoo!マップ</a></div>
+</div></div>
+<div class="card" id="c-yanase">
+<img class="hero" src="img/hamamatsu/yanase.jpg" alt="とんかつ やなせ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>とんかつ やなせ<span class="yomi">とんかつやなせ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">浜松駅の西、海老塚の一角で老夫婦が営む昔ながらのとんかつ店。油絵が飾られた小さな美術館のような店内は昭和レトロの趣で、粗めのパン粉のザクザクとした衣と、分厚く柔らかい肉のコントラストが身上。松ロース定食などの定食類は、少し酸味のあるドレッシングがかかったキャベツとともに供され、揚げたてを目の前で味わえる。派手さはないが地元客に長く愛される、まちなかの隠れた名店。</div>
+<div class="sig"><b>一皿:</b>松ロース定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 11:30〜14:00, 17:30〜20:20</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区海老塚１丁目８−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534553656">☎ 053-455-3656</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松まちなかにぎわい協議会のまちなかNEWSや2025年2月集計の静岡県とんかつランキング記事で紹介され、直近の営業と評価が確認できる。地元特集「ジモエル」でも老舗店として選出。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E3%81%8B%E3%81%A4%20%E3%82%84%E3%81%AA%E3%81%9B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B5%B7%E8%80%81%E5%A1%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-machinaka.jp/news/47751/">浜松まちなかNEWS</a> / <a href="https://jimoto-yell.com/special/hamamastu-tonkatu/">ジモエル 浜松のとんかつ特集</a></div>
+</div></div>
+<div class="card" id="c-tenkin">
+<img class="hero" src="img/hamamatsu/tenkin.jpg" alt="有楽 天錦 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>有楽 天錦<span class="yomi">てんきん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">浜松駅近くの路地裏に佇む、L字カウンター約10席だけの天ぷら店。昼は天丼一本勝負で、海老3尾に白身魚、半熟玉子、紫蘇、海苔がのった丼は甘辛いタレと揚げたての香ばしさでファンを掴んで離さない。レトロな外観と、目の前で揚がる音を聞きながら待つ時間も含めて「浜松の天丼といえばここ」と語られる存在。食べログの天ぷら百名店に選出される全国区の評価を持ちながら、価格は町場の天ぷら屋のままという良心も魅力。支払いは現金のみ。</div>
+<div class="sig"><b>一皿:</b>天丼（昼限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 11:00〜13:30, 17:00〜19:30 ／ 木 11:00〜13:00, 17:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区田町３２５−２９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534529528">☎ 053-452-9528</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「天ぷら百名店2025」選出店で、2025年の営業実態と評価が担保されている。地元特集「ジモエル」の浜松天ぷらガイドでも筆頭で紹介される老舗人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%89%E6%A5%BD%20%E5%A4%A9%E9%8C%A6%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%94%B0%E7%94%BA%EF%BC%93%EF%BC%92%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/shizuoka/A2202/A220201/22002164/">食べログ</a> / <a href="https://jimoto-yell.com/special/hamamatsu-tempura/">ジモエル 浜松天ぷら完全ガイド</a></div>
+</div></div>
+<div class="card" id="c-mimatsu">
+<img class="hero" src="img/hamamatsu/mimatsu.jpg" alt="美松 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>美松<span class="yomi">みまつ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">浜松の歓楽街・千歳町で三代にわたって続く天ぷらの老舗。料亭のような落ち着いた和の空間で、新鮮な魚介と野菜を薄衣でカリッと軽く揚げる上品な天ぷらを、カウンター越しに一品ずつ味わえる。揚げたてを少しずつ供するスタイルは接待や記念日にも向き、浜松のまちなかで本格天ぷらを楽しむなら真っ先に名前が挙がる店。夜のみの営業で席数も限られるため予約が確実。</div>
+<div class="sig"><b>一皿:</b>おまかせの揚げたて天ぷら</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町１１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534522228">☎ 053-452-2228</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ジモエルの浜松天ぷら特集で「3代目が継ぐ老舗」として紹介され、予約サイトで2025年の予約受付・営業が確認できる。ヒトサラ・ぐるなび等の現行データベースにも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E6%9D%BE%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031149359/">ヒトサラ</a> / <a href="https://jimoto-yell.com/special/hamamatsu-tempura/">ジモエル 浜松天ぷら完全ガイド</a></div>
+</div></div>
+<div class="card" id="c-toritoku">
+<img class="hero" src="img/hamamatsu/toritoku.jpg" alt="鳥徳 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>鳥徳<span class="yomi">とりとく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">浜松の歓楽街・千歳町で創業100余年を数える鳥料理の老舗。上品で趣のある店内で、焼き鳥や鳥鍋、水炊きなど鶏尽くしの料理に加え、旬の魚や野菜の料理も揃う。名物は水・木・金曜だけ提供される昼の親子丼で、「浜松駅周辺で親子丼といえばまずここ」と呼ばれる看板メニュー。岡崎の八丁味噌を使った鶏味噌の丼など、老舗ならではのひねりの効いた昼メニューも月替わりで楽しめる。夜は落ち着いて鶏料理と酒を楽しむ使い方が定番。</div>
+<div class="sig"><b>一皿:</b>親子丼（昼・水〜金限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・土 17:00〜22:00 ／ 水・木・金 11:30〜13:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町５６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534532203">☎ 053-453-2203</a> ／ <a href="https://cf407302.cloudfree.jp/top.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松まちなかにぎわい協議会のまちなかNEWSが「創業100余年の鳥料理店」としてランチを紹介しており、浜松料理協同組合の加盟店ページでも現行の営業情報が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E5%BE%B3%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%95%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-machinaka.jp/news/54115/">浜松まちなかNEWS</a> / <a href="https://washoku-hamamatsu.jp/shops/toritoku/">浜松料理協同組合</a></div>
+</div></div>
+<div class="card" id="c-tonkii">
+<img class="hero" src="img/hamamatsu/tonkii.jpg" alt="ミートレストラン とんきい 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">27</span>ミートレストラン とんきい<span class="yomi">みーとれすとらん とんきい</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1968年に母豚5頭から養豚を始めた三和畜産が営む直営レストラン。自家農場で育てたブランド豚「浜名湖そだち」や黒豚「プレミアム金華」を、とんかつ・定食・焼肉・しゃぶしゃぶで味わえる。定食には自家製ソーセージや豚汁が付き、鮮度の良い豚肉ならではの甘い脂と柔らかさが身上。併設の直売所では精肉やハム・ソーセージも買えるため、食事と買い物を兼ねて奥浜名湖ドライブの目的地にする家族連れが多い。駐車場50台と使い勝手も良い。</div>
+<div class="sig"><b>一皿:</b>浜名湖そだちのとんかつ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜15:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市浜名区細江町中川１１９０−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0535222969">☎ 053-522-2969</a> ／ <a href="http://www.tonkii.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松・浜名湖観光公式サイト「浜松・浜名湖だいすきネット」の編集部ピックアップで直営レストランとして紹介され、サーラクラブblog等2025年時点の記事でも営業が確認できる。養豚直営という唯一性で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9F%E3%83%BC%E3%83%88%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%A8%E3%82%93%E3%81%8D%E3%81%84%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E6%B5%9C%E5%90%8D%E5%8C%BA%E7%B4%B0%E6%B1%9F%E7%94%BA%E4%B8%AD%E5%B7%9D%EF%BC%91%EF%BC%91%EF%BC%99%EF%BC%90%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-daisuki.net/pickup/6094/">浜松・浜名湖だいすきネット</a> / <a href="https://www.tonkii.com/restaurant/">とんきい公式サイト</a></div>
+</div></div>
+<div class="card" id="c-hinokuni_nakada">
+<img class="hero" src="img/hamamatsu/hinokuni_nakada.jpg" alt="焼肉 火の国 浜松中田本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">28</span>焼肉 火の国 浜松中田本店<span class="yomi">やきにく ひのくに はままつなかだほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">「良いものを安く美味しく」をモットーに掲げる、浜松発祥・精肉卸直営の焼肉店の本店。創業から18年、職人の目利きで仕入れる和牛は鮮度が高く、希少部位を含む豊富なラインナップを卸直営ならではの手頃な価格で提供する。和牛盛り合わせが看板で、土曜・祝日は昼から通し営業に近い形で使えるのも便利。焼肉弁当や家庭用BBQセットのテイクアウトにも対応し、地元の家族連れのハレの日需要をしっかり掴んでいる。</div>
+<div class="sig"><b>一皿:</b>和牛盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 17:00〜23:00 ／ 土・日 11:30〜14:30, 16:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区中田町８５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534601129">☎ 053-460-1129</a> ／ <a href="https://hamamatsu-hinokuni.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松発祥のローカル焼肉チェーンのため規定に従い本店1店のみ選定。公式サイトに2026年6月の価格改定など直近のお知らせが継続的に掲載されており、現在の営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E7%81%AB%E3%81%AE%E5%9B%BD%20%E6%B5%9C%E6%9D%BE%E4%B8%AD%E7%94%B0%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E4%B8%AD%E7%94%B0%E7%94%BA%EF%BC%98%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-hinokuni.com/">火の国 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-kunma_kaasan">
+<img class="hero" src="img/hamamatsu/kunma_kaasan.jpg" alt="くんま水車の里 かあさんの店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">29</span>くんま水車の里 かあさんの店<span class="yomi">くんますいしゃのさと かあさんのみせ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">天竜区の山あい、道の駅「くんま水車の里」の食事処。地元のお母さんたちが毎朝打つ手打ちそばと、舞茸や山の野菜の天ぷら、五平餅など山里の味を水車の回る風景とともに味わえる。1986年頃から続く農村女性の起業の草分けとして知られ、施設は2025年春に道の駅30周年を迎えた。そば打ちや餅つきの体験工房、物産館も併設され、浜松市街から天竜のドライブがてら訪れる家族連れやライダーで週末は賑わう。営業は昼のみなので時間に注意。</div>
+<div class="sig"><b>一皿:</b>手打ちそばと舞茸天ぷら</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市天竜区熊１９７６−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0539290623">☎ 053-929-0623</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松・浜名湖観光公式サイトが2025年に体験レポート記事を掲載し、施設の道の駅30周年（2025年春）も報じられており営業実態が明確。天竜区の地元食堂として媒体横断で推される定番。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%82%93%E3%81%BE%E6%B0%B4%E8%BB%8A%E3%81%AE%E9%87%8C%20%E3%81%8B%E3%81%82%E3%81%95%E3%82%93%E3%81%AE%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E5%A4%A9%E7%AB%9C%E5%8C%BA%E7%86%8A%EF%BC%91%EF%BC%99%EF%BC%97%EF%BC%96%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-daisuki.net/pickup/6409/">浜松・浜名湖だいすきネット</a> / <a href="https://kunma.jp/">道の駅くんま水車の里 公式</a></div>
+</div></div>
+<div class="card" id="c-toshimine">
+<img class="hero" src="img/hamamatsu/toshimine.jpg" alt="とんかつ とし峰 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">30</span>とんかつ とし峰<span class="yomi">とんかつ としみね</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">旧東区の篠ヶ瀬町で40年以上続く、とんかつと洋食の町の食堂。サクサクで脂っこさのない揚げ加減のとんかつは、定番のソースのほかデミグラスやおろしポン酢などバラエティ豊かな味付けが選べる。創業以来の手作りハンバーグにかける、4日半かけて煮込むデミグラスソースも名物。庶民的な雰囲気で家族連れや近隣の常連が集い、出前にも対応する地域密着ぶりが持ち味。まちなかの行列店とはひと味違う、普段使いの安心感で選ばれ続けている。</div>
+<div class="sig"><b>一皿:</b>手作りハンバーグとデミグラスソース</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 11:30〜14:00, 17:00〜21:00 ／ 土・日 11:30〜14:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区篠ケ瀬町１３４０−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534605375">☎ 053-460-5375</a> ／ <a href="http://toshimine.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで現行のメニューと営業案内が確認でき、食べログ・Retty等の現行データベースにも掲載されている。創業43年超の地元定食店として2025年のとんかつ紹介記事でも言及。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E3%81%8B%E3%81%A4%20%E3%81%A8%E3%81%97%E5%B3%B0%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%AF%A0%E3%82%B1%E7%80%AC%E7%94%BA%EF%BC%91%EF%BC%93%EF%BC%94%EF%BC%90%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://toshimine.jp/">とし峰 公式サイト</a> / <a href="https://tabelog.com/shizuoka/A2202/A220201/22008617/">食べログ</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・そば・町中華</h2>
+<div class="card" id="c-menya_ryuju">
+<img class="hero" src="img/hamamatsu/menya_ryuju.jpg" alt="麺屋 龍壽 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">31</span>麺屋 龍壽<span class="yomi">めんやりゅうじゅ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">東京の名店「麺屋一燈」で修業した店主が地元浜松で開いた、県内屈指の実力店。鶏・昆布・貝などから丁寧に出汁を引いた黄金色のスープに、鶏油とポルチーニ茸・乾燥ホタテ・牡蠣煮干しの旨味を重ねた「芳醇中華そば」が看板。食べログのラーメン百名店に選出された実績を持ち、県外からも行列ができる。営業は昼のみで売り切れ次第終了、予約不可のため開店前に並ぶのが確実。浜松でラーメンを一杯だけ選ぶならまずここ、と地元メディアが口を揃える存在。</div>
+<div class="sig"><b>一皿:</b>芳醇中華そば（塩）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区天王町１４０７−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535895607">☎ 053-589-5607</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ百名店選出店で、宅麺.comの2025年版浜松ラーメン特集とkurebaの2025年最新ランキングでともに筆頭格として紹介。閉業情報はなく現役の行列店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E9%BE%8D%E5%A3%BD%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%8E%8B%E7%94%BA%EF%BC%91%EF%BC%94%EF%BC%90%EF%BC%97%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.takumen.com/magazines/hamamatsu-must-eat-ramen">宅麺.com 2025年版浜松ラーメン特集</a> / <a href="https://kureba.co.jp/hamamatsu/80">kureba 浜松ラーメンランキング2025</a></div>
+</div></div>
+<div class="card" id="c-hamadayama">
+<img class="hero" src="img/hamamatsu/hamadayama.jpg" alt="浜田山 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">32</span>浜田山<span class="yomi">はまだやま</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">2013年2月開店。池袋「大勝軒」の系譜と高田馬場「渡なべ」の味を受け継ぐ店主が、カウンター越しの会話を大切にしながら一杯ずつ仕上げる。豚骨・鶏ガラに煮干しや鯵、昆布を合わせた濃厚な魚介豚骨スープが看板で、つけ麺には自家製の極太ストレート麺、醤油・塩には細麺と、メニューごとに4種の自家製麺を使い分ける本格派。浜松の激戦区で10年以上支持され続け、地元ラーメンブログでも定点観測的に取り上げられる定番中の定番。</div>
+<div class="sig"><b>一皿:</b>魚介豚骨らーめん</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金 11:00〜14:30 ／ 土・日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区高林１丁目８−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535238393">☎ 053-523-8393</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>kurebaの2025年浜松ラーメンランキングで2位に選出。地元ブログ「ただのラーメン好きブログ」に2025年4月の実食記事があり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E7%94%B0%E5%B1%B1%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%AB%98%E6%9E%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tadanoramenzukiblog.com/20250417hamadayama/">ただのラーメン好きブログ（2025年4月実食）</a> / <a href="https://kureba.co.jp/hamamatsu/80">kureba 浜松ラーメンランキング2025</a></div>
+</div></div>
+<div class="card" id="c-kouya_no_ramen">
+<img class="hero" src="img/hamamatsu/kouya_no_ramen.jpg" alt="荒野のラーメン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">33</span>荒野のラーメン<span class="yomi">こうやのらーめん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">2013年4月開店。西部劇に出てきそうなウエスタン調の外観が目印のユニークな一軒で、国産小麦とかん水だけで打つ自家製麺が自慢。チャーシューの煮汁を活かした醤油ダレのスープは一見塩辛そうに見えてみりんの甘みでまろやかにまとまり、看板の「支那そば」は昔ながらの佇まいと完成度の高さを両立する。つけ麺用の太麺と支那そば用の細麺を使い分け、餃子やハラミ丼などサイドも充実。小上がり席があり家族連れでも使いやすい。</div>
+<div class="sig"><b>一皿:</b>支那そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区大山町２７９６−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:09042665553">☎ 090-4266-5553</a> ／ <a href="https://www.instagram.com/kouyanoramen?igsh=OWptcHRoYnZweDky">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>kurebaの2025年浜松ラーメンランキングで「浜松ブラック」系の個性派として5位に紹介。地元ブログに2025年11月の実食記事があり営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8D%92%E9%87%8E%E3%81%AE%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E5%B1%B1%E7%94%BA%EF%BC%92%EF%BC%97%EF%BC%99%EF%BC%96%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tadanoramenzukiblog.com/20251109kouya/">ただのラーメン好きブログ（2025年11月実食）</a> / <a href="https://kureba.co.jp/hamamatsu/80">kureba 浜松ラーメンランキング2025</a></div>
+</div></div>
+<div class="card" id="c-naru_soba">
+<img class="hero" src="img/hamamatsu/naru_soba.jpg" alt="自家製粉 手打ち蕎麦 naru 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">34</span>自家製粉 手打ち蕎麦 naru<span class="yomi">てうちそばなる</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2008年開業。浜松駅近くの第一通り沿い、階段を上がった2階にある自家製粉・手打ちの蕎麦店。石臼で挽いた粉から打つ蕎麦は香り高く、名物は濃厚な「くるみだれせいろ」。泡立てた豆乳をソイラテのように載せる「豆乳そば」やトマトだれなど創作系も評判で、夜は季節の肴と日本酒・自然派ワインで蕎麦前が楽しめる。おしゃれで落ち着いた店内は女性一人でも入りやすく、昔ながらの蕎麦屋とは一線を画すモダンな使い勝手が魅力。蕎麦がなくなり次第終了。</div>
+<div class="sig"><b>一皿:</b>くるみだれせいろ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜14:00, 18:00〜21:00 ／ 日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区板屋町１０２−１２ 2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534537707">☎ 053-453-7707</a> ／ <a href="https://www.narusoba.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスやテレビ静岡「くさデカ」など地元媒体が繰り返し紹介する浜松蕎麦の代表格で、kurebaの2025年蕎麦・うどん名店10選にも選出。公式サイトが2024年末以降も更新されており営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E8%A3%BD%E7%B2%89%20%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20naru%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%9D%BF%E5%B1%8B%E7%94%BA%EF%BC%91%EF%BC%90%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%92%202F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.narusoba.com/">手打ち蕎麦naru 公式サイト</a> / <a href="https://kureba.co.jp/hamamatsu/99">kureba 浜松の蕎麦・うどん名店10選（2025）</a></div>
+</div></div>
+<div class="card" id="c-sugarian">
+<img class="hero" src="img/hamamatsu/sugarian.jpg" alt="百古里庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">35</span>百古里庵<span class="yomi">すがりあん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">天竜の山あい・百古里（すがり）地区の明治期の古民家を店舗にした蕎麦処。囲炉裏のある座敷で、石臼挽きの粉をつなぎを使わず打つ十割の田舎蕎麦がいただける。名物の「十割そばせいろ」のほか八割の田舎そばもあり、地元で採れた山菜の小鉢や胡麻豆腐が蕎麦を引き立てる。夏は徒歩1分の隣接園でブルーベリー狩りも楽しめ、ドライブがてらの昼食に最適。営業は昼のみで蕎麦がなくなり次第終了のため、週末は早めの到着が安心。</div>
+<div class="sig"><b>一皿:</b>十割そばせいろ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 11:00〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市天竜区横川１６０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0539240088">☎ 053-924-0088</a> ／ <a href="http://sugarian.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>kurebaの2025年浜松蕎麦・うどん名店10選の筆頭に挙げられ、静岡新聞アットエスやるるぶ等の観光媒体にも掲載が続く天竜の名物店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%BE%E5%8F%A4%E9%87%8C%E5%BA%B5%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E5%A4%A9%E7%AB%9C%E5%8C%BA%E6%A8%AA%E5%B7%9D%EF%BC%91%EF%BC%96%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/99">kureba 浜松の蕎麦・うどん名店10選（2025）</a> / <a href="https://www.at-s.com/gourmet/article/washoku/soba/125507.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-isohachi">
+<img class="hero" src="img/hamamatsu/isohachi.jpg" alt="絹腰うどん 五十八 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">36</span>絹腰うどん 五十八<span class="yomi">きぬごしうどんいそはち</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">店主が58歳で開業したことが店名の由来という、住宅街の小さな手打ちうどん店。名物の「絹腰うどん」は柔らかいのに腰が強く、絹のように滑らかな舌触りが特徴の独自麺。人気No.1は濃厚クリームソースを絡めた「カルボナーラうどん」で、「パスタより美味しい」と評判を呼ぶ。カモネギカレーうどんや担々麺鍋焼きうどんなど創作メニューが豊富で、6種のキノコをたっぷり使ったあんかけ鍋焼きなど季節ものも登場する。カウンター中心の14席の小体な店で、地元客に長く愛される。</div>
+<div class="sig"><b>一皿:</b>カルボナーラうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・金・土 11:00〜14:00, 17:30〜20:30 ／ 日 11:00〜14:00, 18:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火・木曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区葵西３丁目１６−７８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534399170">☎ 053-439-9170</a> ／ <a href="https://isohachi.hamazo.tv/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>テレしずWasabeeが名物「絹腰うどん」の店として紹介し、kurebaの2025年蕎麦・うどん名店10選にも選出。地元ブログ・メディアでの露出が続く現役の人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B5%B9%E8%85%B0%E3%81%86%E3%81%A9%E3%82%93%20%E4%BA%94%E5%8D%81%E5%85%AB%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%91%B5%E8%A5%BF%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%97%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://wasabee.media/articles/17936730/">テレしずWasabee</a> / <a href="https://murakichi.net/isohachi">ココハマ</a></div>
+</div></div>
+<div class="card" id="c-fukumasuya">
+<img class="hero" src="img/hamamatsu/fukumasuya.jpg" alt="圧力釜もっちりうどん 福桝屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">37</span>圧力釜もっちりうどん 福桝屋<span class="yomi">ふくますや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正7年（1918年）創業、三ヶ日で100年以上続く老舗を5代目が「圧力釜うどん専門店」として再生した一軒。国産小麦100%に全粒粉をブレンドした生地を圧力釜で茹で上げることで、他では味わえないもっちり食感を実現。焼津の鰹節など8種の素材から引く天然出汁のつゆが麺を包み、「食べたことのない新食感」と静岡新聞アットエスも絶賛する。浜名湖奥の三ヶ日観光やみかん狩りと組み合わせたい、わざわざ行く価値のあるうどんだ。通販でも麺を販売。</div>
+<div class="sig"><b>一皿:</b>圧力釜もっちりうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土 10:45〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">火・水・日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市浜名区三ヶ日町都筑１１７０−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535261020">☎ 053-526-1020</a> ／ <a href="https://udonfukumas.thebase.in/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが新食感の圧力釜うどんとして特集し、地元企業ブログにも2026年1月の実食記事があり営業継続を確認。大正7年創業の歴史はkurebaの2025年名店選でも紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%A7%E5%8A%9B%E9%87%9C%E3%82%82%E3%81%A3%E3%81%A1%E3%82%8A%E3%81%86%E3%81%A9%E3%82%93%20%E7%A6%8F%E6%A1%9D%E5%B1%8B%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E6%B5%9C%E5%90%8D%E5%8C%BA%E4%B8%89%E3%83%B6%E6%97%A5%E7%94%BA%E9%83%BD%E7%AD%91%EF%BC%91%EF%BC%91%EF%BC%97%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1897953.html">静岡新聞アットエス</a> / <a href="https://blog.enegene.co.jp/gurume/20260109-2/">enegeneブログ（2026年1月実食）</a></div>
+</div></div>
+<div class="card" id="c-karaku">
+<img class="hero" src="img/hamamatsu/karaku.jpg" alt="中華料理 華楽 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">38</span>中華料理 華楽<span class="yomi">からく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">25年以上地元に愛されてきた昔ながらの町中華。個性的な外観と昭和の空気が残る店内で、麺類だけで20種近いメニューを揃える。看板は揚げた排骨をのせた「パイコー麺」で、とろみあんの上海ラーメンも人気。しっかり濃いめの味付けとボリュームたっぷりの盛りで、半チャーハンセットや餃子と合わせる常連が多い。カウンターと小上がり座敷があり子連れでも入りやすく、価格も良心的。派手さはないが「またあの味が食べたくなる」と通わせる力のある一軒。</div>
+<div class="sig"><b>一皿:</b>パイコー麺</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜14:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区新橋町１４９５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534471946">☎ 053-447-1946</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>kurebaの2025年浜松ラーメンランキングで「昭和の雰囲気の町中華」として選出。Retty・ホットペッパー等のグルメサイトでも現役店として情報が維持されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E8%8F%AF%E6%A5%BD%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%96%B0%E6%A9%8B%E7%94%BA%EF%BC%91%EF%BC%94%EF%BC%99%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/80">kureba 浜松ラーメンランキング2025</a> / <a href="https://retty.me/area/PRE22/ARE79/SUB33303/100000534874/">Retty</a></div>
+</div></div>
+<div class="card" id="c-hamamatsu_daio">
+<img class="hero" src="img/hamamatsu/hamamatsu_daio.jpg" alt="濱松大王 有楽街店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">39</span>濱松大王 有楽街店<span class="yomi">はままつだいおう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">有楽街の一角で創業約30年、飲み屋街の胃袋を支え続ける町中華。カウンター越しに中華鍋を振る料理人のパフォーマンスが見え、名物のきくらげ炒めや浜松餃子、マヨトンラーメン、チャーハンなど「間違いのない味」が揃う。ランチ営業に加えて夜は深夜2時半（金土は3時半）まで開いており、飲んだ後の〆ラーメンの受け皿としても貴重な存在。ザザシティ中央館にも姉妹店を構える。安くて速くてうまい、町中華の美点を今の繁華街で体現する一軒。</div>
+<div class="sig"><b>一皿:</b>マヨトンラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 11:30〜15:00, 18:00〜2:30 ／ 金・土 11:30〜15:00, 18:00〜3:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区田町３２３−１２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535228812">☎ 053-522-8812</a> ／ <a href="https://hamamatsudaio.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ローカログの浜松町中華特集で創業30年の老舗として筆頭紹介され、公式Instagramも更新が続く。深夜営業の街中中華として地元ブログ・ココハマも推す。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%BF%B1%E6%9D%BE%E5%A4%A7%E7%8E%8B%20%E6%9C%89%E6%A5%BD%E8%A1%97%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%94%B0%E7%94%BA%EF%BC%93%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://local-media.heteml.net/archives/47449">ローカログ 浜松の町中華特集</a> / <a href="https://murakichi.net/daio">ココハマ</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・バー(有楽街・千歳町)</h2>
+<div class="card" id="c-jinen">
+<img class="hero" src="img/hamamatsu/jinen.jpg" alt="酒肴遊善 じねん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">40</span>酒肴遊善 じねん<span class="yomi">しゅこうゆうぜんじねん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">遠州灘・駿河湾の獲れたての魚、浜名湖のうなぎやすっぽんなど、浜松ならではの食材を存分に味わえる人気居酒屋。地酒の揃えも良く、県外からの出張客が「浜松らしい店」を求めて訪れる定番でもある。食べログ居酒屋百名店に2022年から選ばれ続け、2025年のEAST百名店にも選出。予約が取れないときは隣の姉妹店「座房」へ、という声が出るほどの盛況ぶりで、娯座樓などを展開する地元グループの旗艦店として浜松の食文化を牽引する。</div>
+<div class="sig"><b>一皿:</b>遠州灘の地魚刺身</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 18:00〜23:00 ／ 金・土 18:00〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区田町３２３−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534567025">☎ 053-456-7025</a> ／ <a href="http://www.jinen-g.jp/jinen/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「居酒屋 百名店 EAST 2025」選出。2022年の百名店にも選ばれた常連で、予約困難な人気が口コミで続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%82%B4%E9%81%8A%E5%96%84%20%E3%81%98%E3%81%AD%E3%82%93%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%94%B0%E7%94%BA%EF%BC%93%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/shizuoka/A2202/A220201/22000724/">食べログ</a> / <a href="http://www.jinen-g.jp/jinen/">じねんグループ公式</a></div>
+</div></div>
+<div class="card" id="c-gozaro">
+<img class="hero" src="img/hamamatsu/gozaro.jpg" alt="浜松料理 娯座樓 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">41</span>浜松料理 娯座樓<span class="yomi">ござろう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">「浜松料理」を掲げる地産地消の専門店。舞阪港や浜名湖の魚介、引佐の峯野牛、地場野菜など浜松の食材で献立を組み、店内には天竜材をふんだんに使うという徹底ぶり。2名から32名まで対応する個室を備え、接待や会食、県外客をもてなす場として地元で厚い信頼を得る。うなぎの白焼きや金目鯛など「静岡に来たら食べたいもの」が一通り揃うのも使いやすい。改装に伴い仮店舗（田町324-1）で営業する時期がある旨の情報があるため、訪問前に公式情報の確認を。</div>
+<div class="sig"><b>一皿:</b>うなぎの白焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区肴町３１７−１５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534567028">☎ 053-456-7028</a> ／ <a href="http://www.jinen-g.jp/gozaro/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>kurebaの2025年浜松居酒屋ランキングで3位に選出され、静岡新聞アットエスなど地元媒体の掲載も続く。じねんと同グループの浜松料理専門店として定評がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E6%9D%BE%E6%96%99%E7%90%86%20%E5%A8%AF%E5%BA%A7%E6%A8%93%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%82%B4%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/76">kureba 浜松居酒屋ランキング2025</a> / <a href="http://www.jinen-g.jp/gozaro/">娯座樓 公式</a></div>
+</div></div>
+<div class="card" id="c-yakitori_daiju">
+<img class="hero" src="img/hamamatsu/yakitori_daiju.jpg" alt="やきとり 大樹 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">42</span>やきとり 大樹<span class="yomi">やきとりだいじゅ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">ビルの谷間に赤提灯がひっそり灯る、隠れ家的な焼き鳥の名店。大将の職人技で焼き上げる串はジューシーな鶏と味わい深い豚が揃い、常連が口を揃えて推すのが鳥のなんこつ。ピーマン肉詰めなど巻き系・変わり種の串も評判で、カウンター12席とテーブル14席の店内は仕事帰りの一人客から少人数の飲み会まで心地よく収まる。支払いは現金のみ。昔ながらの焼き鳥屋の空気を残しつつ味は確か、という浜松の夜の良心のような一軒。</div>
+<div class="sig"><b>一皿:</b>鳥のなんこつ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区田町３３１−９ マルケンビル</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534523501">☎ 053-452-3501</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>kurebaの2025年浜松居酒屋ランキングで「焼き鳥の名店」として6位に選出。静岡新聞アットエスや地元ブログでも紹介が続く現役の人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%8D%E3%81%A8%E3%82%8A%20%E5%A4%A7%E6%A8%B9%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%94%B0%E7%94%BA%EF%BC%93%EF%BC%93%EF%BC%91%E2%88%92%EF%BC%99%20%E3%83%9E%E3%83%AB%E3%82%B1%E3%83%B3%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/76">kureba 浜松居酒屋ランキング2025</a> / <a href="https://www.at-s.com/gourmet/article/124847">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-kaki_center">
+<img class="hero" src="img/hamamatsu/kaki_center.jpg" alt="浜松かきセンター 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">43</span>浜松かきセンター<span class="yomi">はままつかきせんたー</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">浜松の繁華街・有楽街にある、かき小屋の雰囲気をそのまま持ち込んだ牡蠣専門の海鮮居酒屋。各席に鉄板が据えられ、水を使わず蒸し上げて旨味を凝縮した名物の蒸し牡蠣（1kg 2,200円・大粒7〜8個）を豪快に楽しめる。カキフライと蒸し牡蠣が食べ放題になる2時間飲み放題付きコース（5,500円）はグループ利用の定番。小上がり座敷やテラス席を含む40席で、冬場はもちろん通年で牡蠣が味わえるのが強み。牡蠣好きを連れて行けばまず外さない。</div>
+<div class="sig"><b>一皿:</b>蒸し牡蠣</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 16:00〜23:00 ／ 金 16:00〜0:00 ／ 土 12:00〜0:00 ／ 日 12:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区肴町３１６−３６ 1Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534829510">☎ 053-482-9510</a> ／ <a href="https://hamamatsu-oystercenter.owst.jp/?ROUTE_KBN=11&amp;cst_id=000000000005988&amp;msg_id=0000000000000000000000833906&amp;deli_date=20251109">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスの浜松駅周辺居酒屋人気ランキングで上位に入る名物店で、ホットペッパー等でネット予約も稼働中。かき小屋業態を街中で通年楽しめる希少な存在。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E6%9D%BE%E3%81%8B%E3%81%8D%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%82%B4%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%93%EF%BC%96%201%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/ranking/genre50-area_st57/">静岡新聞アットエス ランキング</a> / <a href="https://www.hotpepper.jp/strJ001153079/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-tanto_honten">
+<img class="hero" src="img/hamamatsu/tanto_honten.jpg" alt="遠州男唄 濱松たんと 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">44</span>遠州男唄 濱松たんと 本店<span class="yomi">えんしゅうおとこうたはままつたんとほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">遠州弁の「やらまいか」（やってやろうじゃないか）精神を掲げる、活気あふれる浜松ご当地グルメ居酒屋の本店。名物は職人が毎日手作りし2cm厚の鉄板でパリッと焼き上げる浜松餃子で、7個から35個まで7個刻みという豪快な注文方式が名物。遠州焼き（たくあん入りのお好み焼き）やホルモン、地酒など遠州の食文化をまとめて体験でき、県外客の「浜松の夜の一軒目」に最適。浜松で生まれ市内に複数店を展開するローカルチェーンで、その発祥の本店にあたる。</div>
+<div class="sig"><b>一皿:</b>浜松餃子</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 15:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区田町330‐1 マビーセブン １階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05057950544">☎ 050-5795-0544</a> ／ <a href="https://tanto-honten.com/?utm_source=google&amp;utm_medium=meo">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松発祥のローカルチェーンの本店であるため選定（規定の1店枠）。kurebaの2025年浜松居酒屋ランキングで5位に選出され、公式サイト・予約サイトも稼働中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%81%A0%E5%B7%9E%E7%94%B7%E5%94%84%20%E6%BF%B1%E6%9D%BE%E3%81%9F%E3%82%93%E3%81%A8%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%94%B0%E7%94%BA330%E2%80%901%20%E3%83%9E%E3%83%93%E3%83%BC%E3%82%BB%E3%83%96%E3%83%B3%20%EF%BC%91%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tanto-honten.com/">濱松たんと本店 公式</a> / <a href="https://kureba.co.jp/hamamatsu/76">kureba 浜松居酒屋ランキング2025</a></div>
+</div></div>
+<div class="card" id="c-kazune">
+<img class="hero" src="img/hamamatsu/kazune.jpg" alt="食と酒と音を結ぶ和 和音 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">45</span>食と酒と音を結ぶ和 和音<span class="yomi">かずね</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">2015年10月開業。楽器の街・浜松らしく「食と酒と音」をテーマにした隠れ家居酒屋。明治〜大正期のアンティークピアノが置かれた昭和レトロな店内にはオーボエやサックス、ホルンなどの楽器が飾られ、実際に演奏できることも。女将が腕をふるう手作りのおばんざいと家庭料理を肴に、しっとり飲める大人の空間で、ライブイベントが開かれる夜もある。kurebaの2025年浜松居酒屋ランキングでは1位に推され、音楽好きなら一度は訪れたい浜松ならではの一軒。</div>
+<div class="sig"><b>一皿:</b>女将の手作りおばんざい</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 17:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町１２３ ハナサキビル 2階</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535257677">☎ 053-525-7677</a> ／ <a href="https://m.facebook.com/kazuneakari/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>kurebaの2025年版浜松居酒屋ランキングで1位に選出。静岡新聞アットエスやホットペッパーでも現役店として掲載が続く。音楽都市・浜松の個性を体現する店として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E3%81%A8%E9%85%92%E3%81%A8%E9%9F%B3%E3%82%92%E7%B5%90%E3%81%B6%E5%92%8C%20%E5%92%8C%E9%9F%B3%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%91%EF%BC%92%EF%BC%93%20%E3%83%8F%E3%83%8A%E3%82%B5%E3%82%AD%E3%83%93%E3%83%AB%202%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/76">kureba 浜松居酒屋ランキング2025</a> / <a href="https://www.at-s.com/gourmet/article/washoku/164015.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-inasaku">
+<img class="hero" src="img/hamamatsu/inasaku.jpg" alt="味処 稲作 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">46</span>味処 稲作<span class="yomi">いなさく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和12年（1937年）、初代・耕作さんがおでんと茶めしの店として創業。戦争で一度店を閉じたが昭和24年に再開し、以来80年以上にわたり浜松の飲み手を迎え続ける老舗大衆酒場。醤油と鰹出汁の香りが染みついたカウンターで、じっくり煮込まれたおでんと名物の茶めしをつつきながら飲む時間は、ものづくりの街・浜松の夜の原風景そのもの。おでん専門メディア「オデンガク」（紀文）や酒場媒体syupoも取り上げた、歴史と現役感を兼ね備える名店。</div>
+<div class="sig"><b>一皿:</b>おでんと茶めし</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 17:40〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区田町３２９−９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534551739">☎ 053-455-1739</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>紀文のおでん専門メディア「オデンガク」が昭和12年創業の名店として特集し、酒場メディアsyupoも紹介。ホットペッパー等で営業情報が維持されており現役。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%87%A6%20%E7%A8%B2%E4%BD%9C%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%94%B0%E7%94%BA%EF%BC%93%EF%BC%92%EF%BC%99%E2%88%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://oden.kibun.co.jp/kitto/82/">オデンガク（紀文）</a> / <a href="https://www.hotpepper.jp/strJ000375529/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-obanzai_en">
+<img class="hero" src="img/hamamatsu/obanzai_en.jpg" alt="おばんざい えん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">47</span>おばんざい えん<span class="yomi">おばんざいえん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">浜松きっての飲み屋街・千歳町にあって、食育指導士の店主が地元食材で作るおばんざいを看板にする心温まる路面店。食材や調味料、地酒はもちろん、食器や店内装飾まで地産地消にこだわり、カウンターに並ぶ日替わりの家庭料理をあれこれ選びながら静かに飲める。平日はランチ営業もあり、夜は仕事帰りの一人飲みや女性同士の利用にちょうどいい。ネオン輝く千歳町の中で「ちゃんとした手作りの味」でほっとできる、地元で貴重な存在。</div>
+<div class="sig"><b>一皿:</b>日替わりおばんざい盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木 17:00〜22:00 ／ 金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中区千歳町１０２ クラシキビル 1階</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534567370">☎ 053-456-7370</a> ／ <a href="https://obanzai-en.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松経済新聞が食育指導士による地産地消の店として開店から報じ、静岡新聞アットエスの浜松駅周辺居酒屋人気ランキングにも千歳町の店として登場。公式サイト・予約サイトが稼働中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%B0%E3%82%93%E3%81%96%E3%81%84%20%E3%81%88%E3%82%93%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%91%EF%BC%90%EF%BC%92%20%E3%82%AF%E3%83%A9%E3%82%B7%E3%82%AD%E3%83%93%E3%83%AB%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu.keizai.biz/headline/1701/">浜松経済新聞</a> / <a href="https://obanzai-en.com/">おばんざい えん 公式</a></div>
+</div></div>
+<div class="card" id="c-hyakuri">
+<img class="hero" src="img/hamamatsu/hyakuri.jpg" alt="酒と肴と手打ちそば 百里 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">48</span>酒と肴と手打ちそば 百里<span class="yomi">ひゃくり</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昼は蕎麦処、夜は居酒屋として営業する肴町の大箱そば居酒屋。刺身・天ぷらなど手仕事の肴と地酒で飲んだあと、店内で打つ手打ち蕎麦で〆られるのが最大の魅力で、蕎麦付きコース（3,780円〜）は宴会の定番。130席と規模が大きく、最大80名まで入る個室・宴会場を備えるため、会社宴会から家族の集まりまで幅広く対応できる。昼の蕎麦ランチ使いと夜の酒場使いの二毛作で、浜松駅徒歩圏の「困ったときの頼れる一軒」として重宝される。</div>
+<div class="sig"><b>一皿:</b>〆の手打ちそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜13:45, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区肴町３１８−２４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534522021">☎ 053-452-2021</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>kurebaの2025年浜松居酒屋ランキングで9位に選出され、ぐるなび・静岡新聞アットエス等で営業情報が維持されている。昼蕎麦・夜居酒屋の二毛作業態が特徴的で使い勝手が良い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E3%81%A8%E8%82%B4%E3%81%A8%E6%89%8B%E6%89%93%E3%81%A1%E3%81%9D%E3%81%B0%20%E7%99%BE%E9%87%8C%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%82%B4%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/76">kureba 浜松居酒屋ランキング2025</a> / <a href="https://r.gnavi.co.jp/n052100/">楽天ぐるなび</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-yoshoku_tom">
+<img class="hero" src="img/hamamatsu/yoshoku_tom.jpg" alt="洋食 TOM（キッチン トム） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">49</span>洋食 TOM（キッチン トム）<span class="yomi">ようしょく とむ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和28年（1953年）創業、浜松の繁華街・千歳町の飲み屋街に佇む老舗洋食店。1階はカウンター6席、2階にテーブルとカウンターを備えた計18席ほどの小さな店で、ランチはハンバーグやビーフタンシチューなどのメインにエビフライ・カニクリームコロッケ等の揚げ物を選んで1皿に盛るボリューム満点のワンプレート方式が名物。細挽き肉のハンバーグに濃厚なデミグラスソースがよく合うと評判で、レトロな店構えごと愛され続けている。ワインセラーも備え、夜は洋食で一杯楽しめる。</div>
+<div class="sig"><b>一皿:</b>ハンバーグとフライのワンプレートランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町５７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534520886">☎ 053-452-0886</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>くふうロコしずおか「地元民が絶賛！おすすめハンバーグの店」やRettyの浜松洋食人気店特集で昭和28年創業の老舗として紹介され、食べログの浜松洋食ランキングでも上位常連。各グルメサイトに現行店舗として掲載され口コミ投稿が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%20TOM%EF%BC%88%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%20%E3%83%88%E3%83%A0%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%95%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://loco.kufu.jp/shizuoka/articles/original/883">くふうロコしずおか</a> / <a href="https://r.gnavi.co.jp/gjn3z8np0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-yoshoku_misakubo">
+<img class="hero" src="img/hamamatsu/yoshoku_misakubo.jpg" alt="洋食屋 みさくぼ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">50</span>洋食屋 みさくぼ<span class="yomi">ようしょくや みさくぼ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1983年創業、和田の自動車街にある昔ながらの洋食屋。創業以来の看板であるハンバーグは厳選した国産牛・国産豚を使い、国産タマネギを飴色になるまで炒めてコクを加え、こだわりのデミグラスソースで供する。地元メディアの「ハンバーグ総選挙」で1位に挙げられたこともある実力店で、家族連れから年配客まで幅広く支持される。店舗前と第2駐車場を完備し、郊外らしく車で立ち寄りやすいのも使い勝手が良い。</div>
+<div class="sig"><b>一皿:</b>王道の手ごねハンバーグ（デミグラスソース）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金 11:00〜14:00, 18:00〜20:30 ／ 土 11:00〜14:00, 17:00〜20:30 ／ 日 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区篠ケ瀬町１０３８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534631231">☎ 053-463-1231</a> ／ <a href="http://y-misakubo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが「驚きと感動が味わえる！創業1983年、老舗洋食店のハンバーグ」として特集し、we love浜松でも「ハンバーグ総選挙1位」と紹介。公式サイトが営業情報を継続更新しており現在も営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E3%81%BF%E3%81%95%E3%81%8F%E3%81%BC%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%AF%A0%E3%82%B1%E7%80%AC%E7%94%BA%EF%BC%91%EF%BC%90%EF%BC%93%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/life/article/ats/1576988.html">静岡新聞アットエス</a> / <a href="https://www.y-misakubo.com/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-yoshoku_papiotto">
+<img class="hero" src="img/hamamatsu/yoshoku_papiotto.jpg" alt="パピオット 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">51</span>パピオット<span class="yomi">ぱぴおっと</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和54年（1979年）創業、地元で「元祖炭焼きハンバーグ」として知られる佐鳴台の洋食店。3世代にわたり受け継がれてきた味で、14日間かけて煮込むデミグラスソースが創業以来の人気を支える。炭火でじっくり焼き上げるハンバーグは香ばしく肉の旨みが濃く、静岡新聞の「昭和100年愛されごはん」企画でも取り上げられた浜松ハンバーグ文化の源流の一つ。住宅街の店ながら県外からも訪れるファンがいる。</div>
+<div class="sig"><b>一皿:</b>元祖炭焼きハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・土・日 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月・金曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区佐鳴台２丁目３０−１７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534491800">☎ 053-449-1800</a> ／ <a href="https://papiotto.hamazo.tv/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが2025年の連載「昭和100年愛されごはん」で『地元で“元祖”として知られる炭焼きハンバーグ、3世代でつなぐ味』として特集しており、2025年の営業実態が確認できる。浜松のハンバーグ紹介記事でも定番として挙がる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%94%E3%82%AA%E3%83%83%E3%83%88%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E4%BD%90%E9%B3%B4%E5%8F%B0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/snews/article/ats/1715548.html">静岡新聞アットエス</a> / <a href="https://rurubu.jp/andmore/spot/80021749">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-yoshoku_quatre_saisons">
+<img class="hero" src="img/hamamatsu/yoshoku_quatre_saisons.jpg" alt="キャトルセゾン浜松 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">52</span>キャトルセゾン浜松<span class="yomi">きゃとるせぞんはままつ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">浜松駅から徒歩5分、田町のビオラ田町1・2階にある創作フレンチレストラン。京都祇園「レストラン よねむら」のオーナーシェフ・米村昌泰氏が監修し、ミシュランガイド星付き店のノウハウによる「和魂洋才」のフレンチを提供する。浜名湖畔で40年続くオーベルジュ系列で培ったクラシカルなフレンチをイノベーティブにアレンジしたコースが柱で、記念日や接待に使える洗練された空間。2025年11月にはレストランのリニューアルも予告されている。</div>
+<div class="sig"><b>一皿:</b>米村昌泰監修の創作フレンチコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜19:00 ／ 土・日 9:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区田町２２３−２１ １・２F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534130880">☎ 053-413-0880</a> ／ <a href="https://l-qsh.com/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが2025年のお知らせ（11月のリニューアル告知・年末年始休業案内）を掲出しており営業継続が確認できる。浜松のフレンチ紹介記事でも駅近の実力店として定番的に挙げられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%A3%E3%83%88%E3%83%AB%E3%82%BB%E3%82%BE%E3%83%B3%E6%B5%9C%E6%9D%BE%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%94%B0%E7%94%BA%EF%BC%92%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%91%20%EF%BC%91%E3%83%BB%EF%BC%92F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://l-qsh.com/restaurant/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-yoshoku_brasserie">
+<img class="hero" src="img/hamamatsu/yoshoku_brasserie.jpg" alt="THE BRASSERIE（ザ・ブラッセリー） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">53</span>THE BRASSERIE（ザ・ブラッセリー）<span class="yomi">ざ ぶらっせりー</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">浜松駅にほど近い板屋町のビル2階にあるブラッスリー。かしこまりすぎないフレンチ・イタリアンを標榜し、ランチからディナーまで通しやすい使い勝手で街中のごほうびランチや女子会、記念日ディナーまで幅広く対応する。コース料理とアラカルトの両方を揃え、ネット予約にも対応。浜松のフレンチ紹介で「人気のフレンチ」として名前が挙がる定番店で、街中で洋食系のきちんとした食事をしたいときに頼りになる一軒。</div>
+<div class="sig"><b>一皿:</b>ブラッスリースタイルのコース料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜15:00, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区板屋町６２６ ２Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534560125">☎ 053-456-0125</a> ／ <a href="http://www.the-brasserie.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松のフレンチを紹介する検索上位記事群で人気店として挙げられ、ホットペッパーグルメ等の予約サイトに現行の営業時間・コース情報が掲載されネット予約を受け付けている（＝現在も営業中）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=THE%20BRASSERIE%EF%BC%88%E3%82%B6%E3%83%BB%E3%83%96%E3%83%A9%E3%83%83%E3%82%BB%E3%83%AA%E3%83%BC%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%9D%BF%E5%B1%8B%E7%94%BA%EF%BC%96%EF%BC%92%EF%BC%96%20%EF%BC%92%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ001225019/">ホットペッパーグルメ</a> / <a href="http://www.the-brasserie.net/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-yoshoku_orta">
+<img class="hero" src="img/hamamatsu/yoshoku_orta.jpg" alt="Orta Ristorante（オルタ リストランテ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">54</span>Orta Ristorante（オルタ リストランテ）<span class="yomi">おるた りすとらんて</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">板屋町の第2ハマエイビル2階にある本格リストランテ。イタリア人シェフが腕を振るい、北イタリア・ピエモンテ州の伝統料理をベースにしたコースを提供する。手打ちパスタや季節の食材を使った皿を、現地の空気感そのままに楽しめるのが持ち味で、浜松の街中で「本場のイタリアン」を体験できる貴重な存在。ランチ・ディナーともコース主体で、デートや記念日、イタリアワインとともにじっくり食事をしたい夜に向く。</div>
+<div class="sig"><b>一皿:</b>ピエモンテ伝統料理のコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜15:00, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区板屋町６７５ 第２ハマエイビル ２Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534550321">☎ 053-455-0321</a> ／ <a href="http://www.ortaristorante.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「浜松のおすすめ集めました」の2025年版浜松イタリアンおすすめランキングで筆頭格として紹介され、静岡新聞アットエスにも店舗記事が掲載されている。予約サイトで現在も予約を受け付けており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Orta%20Ristorante%EF%BC%88%E3%82%AA%E3%83%AB%E3%82%BF%20%E3%83%AA%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%86%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%9D%BF%E5%B1%8B%E7%94%BA%EF%BC%96%EF%BC%97%EF%BC%95%20%E7%AC%AC%EF%BC%92%E3%83%8F%E3%83%9E%E3%82%A8%E3%82%A4%E3%83%93%E3%83%AB%20%EF%BC%92%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/92">浜松のおすすめ集めました</a> / <a href="https://www.at-s.com/gourmet/article/yoshoku/italian/125578.html">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-yoshoku_rustico">
+<img class="hero" src="img/hamamatsu/yoshoku_rustico.jpg" alt="RUSTICO（ルスティコ）浜松 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">55</span>RUSTICO（ルスティコ）浜松<span class="yomi">るすてぃこ はままつ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">浜松市中央区西ケ崎町（旧東区）にあるイタリアン。ピッツァを看板に、パスタ、肉料理、魚料理までそろえ、ランチからディナーのコースまで郊外店らしくゆったり使える。地元のイタリアン人気ランキングで常に上位に名前が挙がる実力店で、家族の食事会から女子会、記念日まで対応する使い勝手の良さも支持の理由。昼夜とも通し営業ではないが週末も営業しており、浜松インター方面のイタリアンの定番として定着している。</div>
+<div class="sig"><b>一皿:</b>窯焼きスタイルのピッツァ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜15:00, 18:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区西ケ崎町１７９３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0535819034">☎ 053-581-9034</a> ／ <a href="https://rusticohamamatsu.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「浜松のおすすめ集めました」2025年版イタリアンランキングやくふうトリップの浜松イタリアン口コミランキングで上位に紹介される。ホットペッパーグルメ公式ページで現行の営業時間掲載・ネット予約受付中で営業中と確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=RUSTICO%EF%BC%88%E3%83%AB%E3%82%B9%E3%83%86%E3%82%A3%E3%82%B3%EF%BC%89%E6%B5%9C%E6%9D%BE%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%A5%BF%E3%82%B1%E5%B4%8E%E7%94%BA%EF%BC%91%EF%BC%97%EF%BC%99%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/92">浜松のおすすめ集めました</a> / <a href="https://www.hotpepper.jp/strJ001042506/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-yoshoku_mariposa">
+<img class="hero" src="img/hamamatsu/yoshoku_mariposa.jpg" alt="創作フレンチ・マリポーサ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">56</span>創作フレンチ・マリポーサ<span class="yomi">そうさくふれんち まりぽーさ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">浜松駅南口エリアのホテル1階で長く営業を続ける、地元で「フランス料理の老舗」と紹介される創作フレンチ。野菜は料理長が地元の契約農家から直接仕入れ、魚介は毎日市場から直接仕入れるという食材主義で、地元産食材にフレンチの技法を重ねた皿を、ビストロを思わせるアットホームな空間で楽しめる。日替わりランチが看板で、かしこまりすぎない値段で本格フレンチを味わえるのが強み。現在はランチ営業が中心（ディナーは休止中の案内あり）。</div>
+<div class="sig"><b>一皿:</b>地元食材の日替わりランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木 11:30〜14:30 ／ 金・土・日 11:30〜14:30, 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区海老塚２丁目３−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534563229">☎ 053-456-3229</a> ／ <a href="https://www.3535.co.jp/mariposa/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで「浜松市でフランス料理の老舗」として現行のメニュー・営業案内を掲載しており、静岡新聞アットエスにも店舗ページがある。浜松のフレンチ老舗を紹介する記事群でも名前が挙がる定番店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E3%83%95%E3%83%AC%E3%83%B3%E3%83%81%E3%83%BB%E3%83%9E%E3%83%AA%E3%83%9D%E3%83%BC%E3%82%B5%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B5%B7%E8%80%81%E5%A1%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.3535.co.jp/mariposa/">公式サイト</a> / <a href="https://www.at-s.com/gourmet/article/124559">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-yoshoku_choupana">
+<img class="hero" src="img/hamamatsu/yoshoku_choupana.jpg" alt="Choupana Garden（ショウパーナ ガーデン） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">57</span>Choupana Garden（ショウパーナ ガーデン）<span class="yomi">しょうぱーな がーでん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">ブラジル人コミュニティが根付く浜松らしい、ブラジル式炭火焼肉「シュハスコ」の専門店。2025年に創業20周年を迎え、2024年10月に住吉から浜松西インター近くの湖東町へ移転した。串刺しの塊肉を目の前でそぎ落とすパフォーマンスとともに、イチボや牛カルビ、ブラジルソーセージ、鶏手羽、焼きチーズ、焼きパイナップルが食べ放題。サラダやブラジル家庭料理、デザートのビュッフェも付き、週末に家族や仲間とにぎやかに楽しむのに向く。</div>
+<div class="sig"><b>一皿:</b>シュハスコ（ブラジル式炭火焼肉）食べ放題</div>
+<table class="info">
+<tr><th>営業時間</th><td>金 18:00〜23:00 ／ 土 11:30〜23:00 ／ 日 11:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火・水・木曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区湖東町１９４４−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534860134">☎ 053-486-0134</a> ／ <a href="https://www.choupana.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスが移転後の新店舗を記事で紹介し、2025年で創業20周年・営業中と確認できる。公式サイト・ホットペッパーにも現行の営業情報が掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Choupana%20Garden%EF%BC%88%E3%82%B7%E3%83%A7%E3%82%A6%E3%83%91%E3%83%BC%E3%83%8A%20%E3%82%AC%E3%83%BC%E3%83%87%E3%83%B3%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B9%96%E6%9D%B1%E7%94%BA%EF%BC%91%EF%BC%99%EF%BC%94%EF%BC%94%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/126568">静岡新聞アットエス</a> / <a href="https://www.choupana.jp/top/%E3%81%8A%E5%BA%97%E7%B4%B9%E4%BB%8B/">公式サイト</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・喫茶・和菓子・パン</h2>
+<div class="card" id="c-cafe_kondo">
+<img class="hero" src="img/hamamatsu/cafe_kondo.jpg" alt="こんどうコーヒー 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">58</span>こんどうコーヒー<span class="yomi">こんどうこーひー</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和26年（1951年）から浜松の街で暖簾を守る、カウンターのみのノスタルジックな純喫茶。dancyuや中川政七商店「愛しの純喫茶」など全国メディアにもたびたび取り上げられた、浜松の喫茶文化を象徴する一軒。マスターが一杯ずつ丁寧に淹れるコーヒーと、時間の止まったような店内、常連と旅人が肩を並べる距離の近さが魅力で、朝から夜まで通しで開いているのも街の喫茶店らしい。浜松駅から徒歩5分と立ち寄りやすい。</div>
+<div class="sig"><b>一皿:</b>一杯ずつ淹れるブレンドコーヒー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・日 12:00〜20:00 ／ 水・金・土 12:00〜21:00 ／ 木 12:00〜16:00, 16:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町１４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534551936">☎ 053-455-1936</a> ／ <a href="https://kondocoffee.hamazo.tv/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>dancyuや中川政七商店の読みものなど全国媒体が「浜松の純喫茶」の代表格として紹介。ヒトサラ・ホットペッパー等に現行の営業時間（8:00〜21:00）が掲載され、営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%82%93%E3%81%A9%E3%81%86%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://story.nakagawa-masashichi.jp/23961">中川政七商店の読みもの</a> / <a href="https://hitosara.com/0031022456/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-cafe_tournez">
+<img class="hero" src="img/hamamatsu/cafe_tournez.jpg" alt="トゥルネラパージュ（Tournez La Page） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">59</span>トゥルネラパージュ（Tournez La Page）<span class="yomi">とぅるねらぱーじゅ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">浜松駅から徒歩5分、板屋町のビル1階にある「音楽の街・浜松」を体現するジャズ喫茶。ドイツ・アバンギャルド・アコースティック社の最高機種を含む超弩級のオーディオシステムを半地下のリスニングスペースに据え、レコードの音に浸りながらコーヒーを味わえる。地下100mから汲み上げた地下水で淹れるコーヒーと紅茶の専門店でもあり、従来のジャズ喫茶像を覆すモダンで洗練された空間は県外のオーディオ・ジャズファンの巡礼地にもなっている。</div>
+<div class="sig"><b>一皿:</b>アバンギャルドのスピーカーで聴くジャズとコーヒー</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・日 13:00〜19:30 ／ 金・土 13:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区板屋町６２８ Ｇ．Ｇワオン浜松 2階</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534557100">☎ 053-455-7100</a> ／ <a href="http://www.tournezlapage.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>読売旅行「たびよみ」やジャズ喫茶ファンのブログ多数が浜松の名物ジャズ喫茶として紹介。公式サイトに2025〜2026年の年末年始休業案内（12/26〜1/7休、1/8通常営業）が掲出され、営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%88%E3%82%A5%E3%83%AB%E3%83%8D%E3%83%A9%E3%83%91%E3%83%BC%E3%82%B8%E3%83%A5%EF%BC%88Tournez%20La%20Page%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%9D%BF%E5%B1%8B%E7%94%BA%EF%BC%96%EF%BC%92%EF%BC%98%20%EF%BC%A7%EF%BC%8E%EF%BC%A7%E3%83%AF%E3%82%AA%E3%83%B3%E6%B5%9C%E6%9D%BE%202%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabiyomi.yomiuri-ryokou.co.jp/article/002552.html">たびよみ（読売旅行）</a> / <a href="http://www.tournezlapage.jp/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-cafe_beni">
+<img class="hero" src="img/hamamatsu/cafe_beni.jpg" alt="珈琲BENI（ベニ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">60</span>珈琲BENI（ベニ）<span class="yomi">こーひー べに</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">浜松街中・肴町の路地にある昭和レトロな純喫茶。カーペンターズなどが静かに流れる店内は、ついつい長居したくなる居心地の良さで知られ、丁寧に淹れたコーヒーとともに、固めの自家製プリン、クリームソーダ、昔ながらのオムライスといった王道の喫茶メニューが楽しめる。プリンとドリンクのセットは800円。現金のみ・駐車場なしという昔気質の営業スタイルも含めて「まちなかの純喫茶」の空気を色濃く残す貴重な一軒。</div>
+<div class="sig"><b>一皿:</b>自家製プリンのセット</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区肴町３１３−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534539015">☎ 053-453-9015</a> ／ <a href="https://www.instagram.com/beni_sakanamachi">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松まちなかにぎわい協議会の「まちなかNEWS」が現行店として紹介し、地元ブログ・ココハマやInstagramなどSNSでの発信も続いている。レトロ喫茶特集の定番として複数媒体に登場する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2BENI%EF%BC%88%E3%83%99%E3%83%8B%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%82%B4%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-machinaka.jp/news/44771/">浜松まちなかにぎわい協議会</a> / <a href="https://www.murakichi.net/coffee-beni">ココハマ</a></div>
+</div></div>
+<div class="card" id="c-cafe_keyaki">
+<img class="hero" src="img/hamamatsu/cafe_keyaki.jpg" alt="けやき 北島店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">61</span>けやき 北島店<span class="yomi">けやき きたじまてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1973年創業、半世紀にわたり地元に愛される喫茶レストラン。革張りのゆったりしたソファ席が並ぶ店内は昭和ノスタルジー全開で、9時からのモーニングに始まり、昼は700〜800円台の喫茶店洋食ランチが揃う。ごはん・味噌汁・ドリンクのおかわり自由という気前の良さと圧倒的なボリュームが名物で、常連客がひっきりなしに訪れる。浜松郊外に残る「昔ながらの喫茶店文化」を体感できる代表格として、レトロ喫茶好きの間でも人気が高い。</div>
+<div class="sig"><b>一皿:</b>おかわり自由の喫茶店ランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 10:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区北島町７６７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534214691">☎ 053-421-4691</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元メディア・ココハマが「昭和ノスタルジー全開の純喫茶」として特集し、食べログには2025年3月投稿の口コミがあり営業継続が確認できる。Yahoo!マップでも高評価（4点台）を維持している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%91%E3%82%84%E3%81%8D%20%E5%8C%97%E5%B3%B6%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8C%97%E5%B3%B6%E7%94%BA%EF%BC%97%EF%BC%96%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://murakichi.net/keyaki">ココハマ</a> / <a href="https://tabelog.com/shizuoka/A2202/A220201/22002104/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-cafe_natsume">
+<img class="hero" src="img/hamamatsu/cafe_natsume.jpg" alt="自家焙煎 蔵茶房なつめ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">62</span>自家焙煎 蔵茶房なつめ<span class="yomi">じかばいせん くらさぼう なつめ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">浜名湖の奥座敷・三ヶ日にある蔵を生かした茶房。コーヒーのおいしさを最大限引き出すため焙煎から抽出まで一杯ずつ丁寧に行い、奥三河の天然水を使ってサイフォンで淹れるのがこだわり。自家焙煎コーヒーのほか中国茶・沖縄茶も揃え、季節ごとの自家製パンサンドや米粉を使ったオリジナルスイーツが人気。器は陶芸家・鈴木史子さんのものを使うなど細部まで趣があり、浜名湖ドライブの立ち寄り先として定番になっている。</div>
+<div class="sig"><b>一皿:</b>奥三河の天然水でサイフォン抽出する自家焙煎珈琲</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市浜名区三ヶ日町津々崎３４２−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535242525">☎ 053-524-2525</a> ／ <a href="http://kura-natsume.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスやるるぶ等の観光媒体が浜名区の自家焙煎カフェとして紹介し、公式サイトとInstagramで発信が続いており営業中と確認できる。浜名湖観光の立ち寄りスポットとしても定番。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%20%E8%94%B5%E8%8C%B6%E6%88%BF%E3%81%AA%E3%81%A4%E3%82%81%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E6%B5%9C%E5%90%8D%E5%8C%BA%E4%B8%89%E3%83%B6%E6%97%A5%E7%94%BA%E6%B4%A5%E3%80%85%E5%B4%8E%EF%BC%93%EF%BC%94%EF%BC%92%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kura-natsume.jp/">公式サイト</a> / <a href="https://www.at-s.com/gourmet/article/124590">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-cafe_bflat">
+<img class="hero" src="img/hamamatsu/cafe_bflat.jpg" alt="Jazz In B♭（ジャズ イン ビーフラット） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">63</span>Jazz In B♭（ジャズ イン ビーフラット）<span class="yomi">じゃず いん びーふらっと</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">半田山にある、自家焙煎珈琲・紅茶専門店とライブハウス、音楽教室を兼ねたジャズの店。普段は自家焙煎のコーヒーや紅茶をゆっくり楽しめる喫茶として使え、週末を中心にジャズを軸とした生演奏の公演が開かれる。「楽器の街・浜松」らしく、プロの公演から音楽教室の発表まで音楽と生活が地続きになった場所で、コーヒー片手に生の音に浸れるのが最大の魅力。ハママツ・ジャズ・ウィークの街のジャズ文化を日常で支える存在でもある。</div>
+<div class="sig"><b>一皿:</b>自家焙煎珈琲とジャズの生演奏</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 11:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市東区, 半田山５丁目１６−１７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0534355644">☎ 053-435-5644</a> ／ <a href="http://b-flat.cafe.coocan.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスに店舗記事があり、公式サイトでは2025年9月のレッスン受付や10月公演の告知が掲出されていて営業継続が確認できる。浜松のジャズスポット紹介でも名前が挙がる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Jazz%20In%20B%E2%99%AD%EF%BC%88%E3%82%B8%E3%83%A3%E3%82%BA%20%E3%82%A4%E3%83%B3%20%E3%83%93%E3%83%BC%E3%83%95%E3%83%A9%E3%83%83%E3%83%88%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E6%9D%B1%E5%8C%BA%2C%20%E5%8D%8A%E7%94%B0%E5%B1%B1%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://b-flat.cafe.coocan.jp/">公式サイト</a> / <a href="https://www.at-s.com/gourmet/article/126907">静岡新聞アットエス</a></div>
+</div></div>
+<div class="card" id="c-cafe_santos">
+<img class="hero" src="img/hamamatsu/cafe_santos.jpg" alt="カフェ サントス 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">64</span>カフェ サントス<span class="yomi">かふぇ さんとす</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">浜松街中・板屋町のビル1階にある、どこか懐かしい雰囲気の喫茶店。朝7時30分からモーニングを提供しており、サイフォンで淹れたコーヒーに、トースト・サラダ・スクランブルエッグやウインナーが付く昔ながらの朝食セットが名物。街中への出勤前や朝活のひとときに常連が集う「街の朝の喫茶店」で、観光で浜松に泊まった翌朝の喫茶モーニング体験にも向く。長らく地元の人々に愛されてきた、飾らない使い勝手の良さが持ち味。</div>
+<div class="sig"><b>一皿:</b>サイフォン珈琲付きのモーニングセット</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 7:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区板屋町１０３−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534827739">☎ 053-482-7739</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松まちなかにぎわい協議会「まちなかNEWS」が『モーニングもやってます!!どこか懐かしい喫茶店』として現行店を紹介し、地元ブログ・ココハマの浜松駅周辺モーニング特集にも掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%20%E3%82%B5%E3%83%B3%E3%83%88%E3%82%B9%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%9D%BF%E5%B1%8B%E7%94%BA%EF%BC%91%EF%BC%90%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-machinaka.jp/news/49440/">浜松まちなかにぎわい協議会</a> / <a href="https://murakichi.net/santos">ココハマ</a></div>
+</div></div>
+<div class="card" id="c-cafe_westgoat">
+<img class="hero" src="img/hamamatsu/cafe_westgoat.jpg" alt="West Goat Coffee（ウエストゴートコーヒー） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">65</span>West Goat Coffee（ウエストゴートコーヒー）<span class="yomi">うえすとごーとこーひー</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">浜松駅から徒歩5分、千歳町にあるスペシャルティコーヒーの専門店。1階に14席、2階に10席を備え、イートインもテイクアウトも使える気軽さで、街中の「上質な一杯」の定番になっている。高品質なスペシャルティコーヒー豆を使ったハンドドリップやエスプレッソに、焼き菓子やスイーツを合わせてほっと一息つけるのが魅力。買い物や仕事の合間に立ち寄りやすい立地と、専門店らしい確かな味の両立で、地元情報メディアのコーヒー特集常連。</div>
+<div class="sig"><b>一皿:</b>スペシャルティコーヒーのハンドドリップ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜20:00 ／ 水 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区千歳町１０４−２ 1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://westgoatcoffee.wixsite.com/wgcs">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡新聞アットエスやwe love浜松など地元メディアのコーヒー特集で駅近の人気店として紹介され、Instagramでの発信が続いている。食べログ等にも現行店舗として掲載され口コミが継続。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=West%20Goat%20Coffee%EF%BC%88%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%82%B4%E3%83%BC%E3%83%88%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8D%83%E6%AD%B3%E7%94%BA%EF%BC%91%EF%BC%90%EF%BC%94%E2%88%92%EF%BC%92%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/cafe/coffee/507497.html">静岡新聞アットエス</a> / <a href="https://enjoy-hamamatsu.shizuoka.jp/gourmet/cafe/34601/">we love浜松</a></div>
+</div></div>
+<div class="card" id="c-ganyudo">
+<img class="hero" src="img/hamamatsu/ganyudo.jpg" alt="巌邑堂 袖紫ヶ森本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">66</span>巌邑堂 袖紫ヶ森本店<span class="yomi">がんゆうどう そでむらがもりほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治4年（1871年）創業、150年以上の歴史を持つ浜松を代表する和菓子の老舗。四季を映す上生菓子の細工の美しさに定評があり、春は桜菓子、秋は予約が殺到する栗蒸し羊羹と、季節ごとに店頭が華やぐ。マツコ・デラックスがテレビで絶賛したことでも知られ、県外からの取り寄せ客も多い。神立町の袖紫ヶ森本店は木の温もりのある現代的な店構えで、贈答から自宅用まで幅広く使える。高島屋のギフトカタログにも採用される、全国区の実力を持つ町の和菓子屋。</div>
+<div class="sig"><b>一皿:</b>栗蒸し羊羹（秋季限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区神立町字袖 紫ヶ森 136番10</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535453232">☎ 053-545-3232</a> ／ <a href="http://www.ganyuudou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元情報サイトが2025年9月開始の栗蒸し羊羹販売を報じ、公式オンラインショップも稼働中で営業実態が明確。サライなど全国誌でも紹介される浜松和菓子の筆頭格として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%8C%E9%82%91%E5%A0%82%20%E8%A2%96%E7%B4%AB%E3%83%B6%E6%A3%AE%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%A5%9E%E7%AB%8B%E7%94%BA%E5%AD%97%E8%A2%96%20%E7%B4%AB%E3%83%B6%E6%A3%AE%20136%E7%95%AA10">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ganyuudou.com/">巌邑堂 公式サイト</a> / <a href="https://jp-hamamatsu.com/ganyuudou-news/">浜松情報サイト（2025年栗蒸し羊羹）</a></div>
+</div></div>
+<div class="card" id="c-kogiku">
+<img class="hero" src="img/hamamatsu/kogiku.jpg" alt="御菓子司 こぎく 本社工場直売店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">67</span>御菓子司 こぎく 本社工場直売店<span class="yomi">おかしつかさ こぎく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治20年（1887年）創業、130年以上お菓子を作り続ける浜松の老舗和菓子店。明治・大正・昭和・平成それぞれの時代を彩ってきた銘菓を受け継ぎつつ、浜松産のお茶を使った「茶遊里」など時代に合わせた商品開発にも意欲的。神田町の本社工場直売店は「若い世代にも気軽に和菓子を」と和モダンな空間にリニューアルされ、ドライブスルー方式でも買える珍しいスタイルが話題。年中無休で使い勝手が良く、普段のおやつから手土産まで頼れる存在。</div>
+<div class="sig"><b>一皿:</b>茶遊里（浜松茶の菓子）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区神田町５５０−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534410550">☎ 053-441-0550</a> ／ <a href="http://www.goo-kogiku.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松・浜名湖観光公式サイトが「創業明治20年の老舗」として特集し、工場直売店のリニューアルも地元ニュースで報じられるなど近年の営業実態が確認できる。ジモエルの和菓子8選にも選出。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E3%81%93%E3%81%8E%E3%81%8F%20%E6%9C%AC%E7%A4%BE%E5%B7%A5%E5%A0%B4%E7%9B%B4%E5%A3%B2%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%A5%9E%E7%94%B0%E7%94%BA%EF%BC%95%EF%BC%95%EF%BC%90%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hamamatsu-daisuki.net/pickup/6080/">浜松・浜名湖だいすきネット</a> / <a href="https://www.goo-kogiku.com/">こぎく 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-irikawaya">
+<img class="hero" src="img/hamamatsu/irikawaya.jpg" alt="入河屋 三ヶ日本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">68</span>入河屋 三ヶ日本店<span class="yomi">いりかわや みっかびほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治18年（1885年）創業、姫街道の宿場町・三ヶ日で五代にわたり菓子を作り続ける和洋菓子司。看板の「みかん最中」は、みかんの断面をかたどった香ばしい最中皮に、無農薬栽培の三ヶ日みかんを使ったしっとり香り高いみかん餡を詰めた浜名湖銘菓で、皇室が三ヶ日を訪れた際のお茶菓子にも使われた逸品。三ヶ日みかんソフトクリームなど食べ歩きの楽しみもあり、奥浜名湖観光やみかん狩りとセットで立ち寄る客が絶えない。</div>
+<div class="sig"><b>一皿:</b>みかん最中</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 9:00〜18:00 ／ 火 9:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市浜名区三ヶ日町下尾奈８３−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0535250902">☎ 053-525-0902</a> ／ <a href="http://www.irikawaya.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>三ヶ日町観光協会や中部電力の和菓子紹介サイトが老舗として特集し、公式オンラインショップとInstagramの更新で現在の営業が確認できる。浜名区（旧三ヶ日町）の地元銘菓代表として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%A5%E6%B2%B3%E5%B1%8B%20%E4%B8%89%E3%83%B6%E6%97%A5%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E6%B5%9C%E5%90%8D%E5%8C%BA%E4%B8%89%E3%83%B6%E6%97%A5%E7%94%BA%E4%B8%8B%E5%B0%BE%E5%A5%88%EF%BC%98%EF%BC%93%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.irikawaya.co.jp/">入河屋 公式サイト</a> / <a href="https://mikkabi-tourism.com/experience/irikawaya-mikkabi_tabearuki.html">三ヶ日町観光協会</a></div>
+</div></div>
+<div class="card" id="c-shunkado_honten">
+<img class="hero" src="img/hamamatsu/shunkado_honten.jpg" alt="春華堂 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">69</span>春華堂 本店<span class="yomi">しゅんかどう ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治20年（1887年）創業、浜松銘菓「うなぎパイ」を生んだ菓子メーカーの本店。浜松駅北の鍛冶町通りに構え、うなぎパイ各種はもちろん、創業のルーツである郷土菓子「みそまん」など、ここでしか揃わない商品構成が魅力。夜のお菓子・真夜中のお菓子といったシリーズの揃い踏みは手土産選びに心強く、観光客だけでなく地元の進物需要も支え続けている。2025年には大阪・関西万博への出店も果たすなど、老舗ながら攻めの姿勢を崩さない浜松菓子業界の顔。</div>
+<div class="sig"><b>一皿:</b>うなぎパイ</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区鍛冶町３２１−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534537100">☎ 053-453-7100</a> ／ <a href="https://www.shunkado.co.jp/shop/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元発祥の菓子メーカーのため規定に従い本店1店のみ選定。2025年の大阪・関西万博出店が報じられ、公式サイト・オンラインショップも活発に更新されており営業実態は明確。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%98%A5%E8%8F%AF%E5%A0%82%20%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%8D%9B%E5%86%B6%E7%94%BA%EF%BC%93%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.shunkado.co.jp/">春華堂 公式サイト</a> / <a href="https://4travel.jp/dm_shisetsu/11073709">フォートラベル 春華堂本店</a></div>
+</div></div>
+<div class="card" id="c-marutaya_kanda">
+<img class="hero" src="img/hamamatsu/marutaya_kanda.jpg" alt="まるたや洋菓子店 神田本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">70</span>まるたや洋菓子店 神田本店<span class="yomi">まるたやようがしてん かんだほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1949年創業の浜松を代表する洋菓子店の工場直売本店。看板は、レーズン・くるみ・オレンジピール入りの生地にコーンフレークをまぶして焼いたザクザク食感のクッキー「あげ潮」。浜名湖に潮が満ちるように幸運が寄せるようにと名付けられた浜松銘菓で、手土産の定番として世代を超えて愛される。1964年の東京オリンピックの年に発売された「チーズボックス」も全国区の人気。本店は駐車場付きで品揃えも豊富、元日以外無休という使い勝手の良さも光る。</div>
+<div class="sig"><b>一皿:</b>あげ潮</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区神田町３６７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534419456">☎ 053-441-9456</a> ／ <a href="http://www.marutaya.net/about/shop_chokubai.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>オレンジページなど全国メディアが浜松銘菓として近年も紹介し、公式オンラインショップと各店舗の営業が続いていることが確認できる。浜松の洋菓子土産の代名詞として選定（本店のみ）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%82%8B%E3%81%9F%E3%82%84%E6%B4%8B%E8%8F%93%E5%AD%90%E5%BA%97%20%E7%A5%9E%E7%94%B0%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%A5%9E%E7%94%B0%E7%94%BA%EF%BC%93%EF%BC%96%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.marutaya.net/">まるたや洋菓子店 公式サイト</a> / <a href="https://www.orangepage.net/life-style/series-life-style/small-good-things/25127">オレンジページ あげ潮紹介</a></div>
+</div></div>
+<div class="card" id="c-jiichiro_ohiradai">
+<img class="hero" src="img/hamamatsu/jiichiro_ohiradai.jpg" alt="治一郎 大平台本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">71</span>治一郎 大平台本店<span class="yomi">じいちろう おおひらだいほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">浜松に本社を置くヤタローグループが展開する洋菓子ブランド「治一郎」の旗艦店。2009年開業の大平台本店は、しっとりと口の中でほどけるような看板のバウムクーヘンをはじめ、ロールケーキやプリンなどが揃い、カフェコーナーも併設。飲み物がいらないほど瑞々しい独特の食感で全国にファンを持つが、その原点は浜松のパン屋・ヤタロー（1933年創業）にある。無料駐車場15台を備え、浜松西部での手土産調達の定番スポットとして地元の需要も厚い。</div>
+<div class="sig"><b>一皿:</b>治一郎のバウムクーヘン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜18:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区大平台３丁目１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534854750">☎ 053-485-4750</a> ／ <a href="http://www.jiichiro.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>浜松発祥ブランドのため規定に従い本店1店のみ選定。静岡新聞アットエスやRetty等の現行データベースに掲載され、地元ブログ・旅行サイトの近年の訪問記録で営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B2%BB%E4%B8%80%E9%83%8E%20%E5%A4%A7%E5%B9%B3%E5%8F%B0%E6%9C%AC%E5%BA%97%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E5%B9%B3%E5%8F%B0%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.at-s.com/gourmet/article/127237">静岡新聞アットエス</a> / <a href="https://murakichi.net/jiichiro">ココハマ 治一郎大平台本店</a></div>
+</div></div>
+<div class="card" id="c-akoya_brogne">
+<img class="hero" src="img/hamamatsu/akoya_brogne.jpg" alt="阿古屋製パン（直売店ブローニュ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">72</span>阿古屋製パン（直売店ブローニュ）<span class="yomi">あこやせいぱん ぶろーにゅ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1947年（昭和22年）創業、浜松のパン文化を支えてきた老舗製パン所。広沢の静かな住宅街に工場を構え、向かいの直売店「ブローニュ」で焼きたてのパンを朝から販売する。市内の病院・学校・幼稚園にもパンを納め続けてきた地域の台所的存在で、1980年代から入院患者向けに作り続ける無塩パンなど、アレルギーや食事制限に寄り添うパン作りは他店にない持ち味。派手さはないが、静岡県の「ふじのくに魅力ある個店」にも選ばれた、浜松の暮らしに根差した一軒。</div>
+<div class="sig"><b>一皿:</b>無塩パン・昔ながらの食事パン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土 7:30〜13:00</td></tr>
+<tr><th>定休日</th><td class="off">木・日曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区広沢３丁目７−６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534530642">☎ 053-453-0642</a> ／ <a href="https://akoya1947.jimdofree.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>静岡県の「ふじのくに魅力ある個店」公式ページと自社ブログで営業が確認でき、地元情報サイトのkureba2025年記事でも浜松の老舗パン屋として紹介。創業78年の歴史と地域貢献で選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E5%8F%A4%E5%B1%8B%E8%A3%BD%E3%83%91%E3%83%B3%EF%BC%88%E7%9B%B4%E5%A3%B2%E5%BA%97%E3%83%96%E3%83%AD%E3%83%BC%E3%83%8B%E3%83%A5%EF%BC%89%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%BA%83%E6%B2%A2%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://f-koten.pref.shizuoka.jp/shop/details/771">ふじのくに魅力ある個店</a> / <a href="https://hamamatsu-lab.jp/gourmet/1589.html">ハマラボ ブローニュ紹介</a></div>
+</div></div>
+<div class="card" id="c-b_sugiyama">
+<img class="hero" src="img/hamamatsu/b_sugiyama.jpg" alt="Boulangerie Sugiyama 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">73</span>Boulangerie Sugiyama<span class="yomi">ぶーらんじぇりーすぎやま</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">遠州鉄道上島駅からすぐの場所にある、浜松のパン好きが必ず名前を挙げるベーカリー。小さな店内にハード系から惣菜パン、菓子パンまでオリジナリティのあるパンがぎっしり並び、人気商品は予約してから買いに行く常連も多い。地元の人気投票やパン特集で常に上位に挙げられる実力店で、午後には棚が空くことも珍しくないため午前中の訪問が確実。店前と裏に駐車スペースがあり、車でも立ち寄りやすい。</div>
+<div class="sig"><b>一皿:</b>ハード系の自家製パン各種</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 7:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>静岡県浜松市中央区上島５丁目６−２８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0534760178">☎ 053-476-0178</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元情報サイトkurebaの2025年浜松パン屋ガイドで人気店として紹介され、Retty・食べログ等で直近の口コミ投稿が続いており営業実態が確認できる。上島エリアの地元密着ベーカリー代表として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Boulangerie%20Sugiyama%20%E9%9D%99%E5%B2%A1%E7%9C%8C%E6%B5%9C%E6%9D%BE%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E4%B8%8A%E5%B3%B6%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kureba.co.jp/hamamatsu/228">kureba 浜松のパン屋ガイド2025</a> / <a href="https://retty.me/area/PRE22/ARE79/SUB33304/100000750971/">Retty</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
