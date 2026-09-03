@@ -12,7 +12,21 @@ JAPAN / KYOTO 🇯🇵
 - `地元密着` — 観光客より地元客に愛される店
 - `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。元PDFの店舗マップ画像は取り込んでいません。位置は各店の「地図」リンクから。
+> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+
+@@TOC@@
+
+## 🗾 店舗マップ
+
+**全域マップ**
+
+@@IMG:japan/kyoto/img/kyoto/_map.png@@
+
+**中心部拡大(京都駅〜御所)**
+
+@@IMG:japan/kyoto/img/kyoto/_map2.png@@
+
+> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ Notion版では地図のピンをタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
@@ -355,20 +369,3 @@ JAPAN / KYOTO 🇯🇵
 - **選定理由**: 創業170年の京都を代表する料亭で公式サイト・一休等で営業を確認。糺の森周辺の特別な食事処として下鴨エリアを補強。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E9%B4%A8%E8%8C%B6%E5%AF%AE%20%E6%9C%AC%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%8B%E9%B4%A8%E5%AE%AE%E6%B2%B3%E7%94%BA%EF%BC%96%EF%BC%92)
 - **参照元**: [公式サイト](https://www.shimogamosaryo.co.jp/about/) / [一休レストラン](https://restaurant.ikyu.com/101853)
-
-### 47. 点邑（てんゆう）
-
-@@IMG:japan/kyoto/img/kyoto/tenyu.jpg@@
-
-`口コミ突出` `ブログ推薦`
-
-日本最古級の名旅館「俵屋」が手がける天ぷら専門店。ミシュラン一つ星の獲得歴があり、カウンターで揚げたての天ぷら(旬の京野菜や魚介を薄衣でさっくり揚げたもの)を一品ずつ味わえる。昼は天丼も人気。
-
-- **一皿**: 天丼(昼限定。揚げたての海老と野菜天に甘辛ダレをまとわせた丼)
-- **営業時間**: 月・水・木・金・土・日 11:30〜13:00, 17:30〜19:00
-- **定休日**: 火曜
-- **住所**: 京都府京都市中京区下白山町２９９
-- **予約**: 可 — ☎ 075-212-7778 ／ [公式サイト](https://www.ten-you.jp/)
-- **選定理由**: 俵屋プロデュースかつミシュラン掲載歴のある実力店で、キョウトピ・在住者ブログの双方で高評価。天周と別エリアの天ぷら枠として選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%82%B9%E9%82%91%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E4%B8%AD%E4%BA%AC%E5%8C%BA%E4%B8%8B%E7%99%BD%E5%B1%B1%E7%94%BA%EF%BC%92%EF%BC%99%EF%BC%99)
-- **参照元**: [公式サイト](https://www.ten-you.jp/) / [キョウトピ](https://kyotopi.jp/articles/JP8fq)

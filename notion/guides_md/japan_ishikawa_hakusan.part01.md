@@ -12,7 +12,29 @@ JAPAN / ISHIKAWA・石川県 🇯🇵
 - `地元密着` — 観光客より地元客に愛される店
 - `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。元PDFの店舗マップ画像は取り込んでいません。位置は各店の「地図」リンクから。
+> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+
+@@TOC@@
+
+## 🗾 店舗マップ
+
+**全域マップ**
+
+@@IMG:japan/ishikawa/img/hakusan/_map.png@@
+
+**中心部拡大1 松任(松任駅〜駅前・幸明町)**
+
+@@IMG:japan/ishikawa/img/hakusan/_map2.png@@
+
+**中心部拡大2 鶴来(白山比咩神社〜鶴来本町)**
+
+@@IMG:japan/ishikawa/img/hakusan/_map3.png@@
+
+**中心部拡大3 美川(美川駅〜漁港・北町)**
+
+@@IMG:japan/ishikawa/img/hakusan/_map4.png@@
+
+> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ Notion版では地図のピンをタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 

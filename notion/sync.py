@@ -18,6 +18,8 @@ import re
 import sys
 import json
 import time
+import hashlib
+import tempfile
 import mimetypes
 
 try:
@@ -35,6 +37,8 @@ TOKEN = os.environ.get("NOTION_TOKEN", "").strip()
 DB_ID = (os.environ.get("NOTION_DB_ID") or "47b9d644-0415-472c-9bcb-8be35daf5cb0").strip()
 LIMIT_IMAGES = int(os.environ.get("LIMIT_IMAGES", "0") or 0)
 DRY_RUN = os.environ.get("DRY_RUN", "") == "1"
+# 部分名を入れると、そのガイドだけを処理する（例: japan_osaka_suita）。空なら全部。
+ONLY = os.environ.get("ONLY", "").strip()
 API = "https://api.notion.com/v1"
 VER = os.environ.get("NOTION_VERSION", "2022-06-28")
 
@@ -63,8 +67,58 @@ def api(method, path, **kw):
     raise RuntimeError("retries exhausted: %s %s" % (method, path))
 
 
+MAP_MAX_PX = 1600
+MAP_SIZE_CAP = 4 * 1024 * 1024
+
+
+def shrink_map(path):
+    """店舗マップの画像を、長辺 MAP_MAX_PX・256色PNG に落としてから上げる。
+
+    元の PNG は最大5.25MB（japan/tokyo/img/tokyo23/_map2.png）あり、
+    Notion のファイルサイズ上限（無料プランは1ファイル5MB）に触れる。
+    地図は線と文字が主体なので、JPEG より 256色PNG のほうが文字が潰れない
+    （実測: 5.01MB → 256色PNG 1.82MB / JPEG品質85 1.02MB）。
+    256色PNG が MAP_SIZE_CAP を超えたときだけ JPEG に落とす。
+
+    戻り値は (実際に上げるパス, 後始末する一時ファイル or None)。
+    リポジトリ内の元PNGには手を触れない。
+    """
+    if not os.path.basename(path).startswith("_map"):
+        return path, None
+    try:
+        from PIL import Image
+    except ImportError:
+        print("   ! Pillow が無いので地図を縮小せずに上げる:", os.path.basename(path))
+        return path, None
+    im = Image.open(path).convert("RGB")
+    w, h = im.size
+    if max(w, h) > MAP_MAX_PX:
+        r = float(MAP_MAX_PX) / max(w, h)
+        im = im.resize((max(1, int(w * r)), max(1, int(h * r))), Image.LANCZOS)
+
+    stem = os.path.splitext(os.path.basename(path))[0]
+    fd, tmp = tempfile.mkstemp(suffix="_" + stem + ".png")
+    os.close(fd)
+    im.convert("P", palette=Image.ADAPTIVE, colors=256).save(tmp, "PNG", optimize=True)
+    if os.path.getsize(tmp) > MAP_SIZE_CAP:
+        os.remove(tmp)
+        fd, tmp = tempfile.mkstemp(suffix="_" + stem + ".jpg")
+        os.close(fd)
+        im.save(tmp, "JPEG", quality=85, optimize=True)
+    return tmp, tmp
+
+
 def upload_image(path):
     """Notion にファイルを上げて file_upload_id を返す。"""
+    path, tmp = shrink_map(path)
+    try:
+        return _upload(path)
+    finally:
+        if tmp and os.path.isfile(tmp):
+            os.remove(tmp)
+
+
+def _upload(path):
     fn = os.path.basename(path)
     ctype = mimetypes.guess_type(fn)[0] or "image/jpeg"
     up = api("POST", "/file_uploads", json={"filename": fn, "content_type": ctype})
@@ -122,6 +176,12 @@ def md_to_blocks(md, uploads):
     for raw in md.split("\n"):
         ln = raw.rstrip()
         if not ln.strip():
+            continue
+        if ln.strip() == "@@TOC@@":
+            blocks.append({"object": "block", "type": "toggle", "toggle": {
+                "rich_text": rich("📑 目次（タップで開く）"),
+                "children": [{"object": "block", "type": "table_of_contents",
+                              "table_of_contents": {"color": "gray"}}]}})
             continue
         m = re.match(r"^@@IMG:([^@]+)@@$", ln.strip())
         if m:
@@ -260,10 +320,41 @@ def main():
         by_part.setdefault(r["part"], []).append(r["path"])
 
     parts = sorted(f for f in os.listdir(MD_DIR) if f.endswith(".md"))
+    if ONLY:
+        parts = [p for p in parts if ONLY in p]
+        print("ONLY=%s のため %d パートだけを対象にする" % (ONLY, len(parts)))
     titles = {}
     for p in parts:
         base = p.split(".part")[0]
         titles.setdefault(base, base)
+
+    # 本文が変わったガイドは「そのガイドの全パート」を書き直す。
+    # part01 がページを消してから書く作りなので、途中のパートだけ差し替えることはできない。
+    # 初回はハッシュ台帳が空なので全ガイドが対象になる（＝目次・地図の反映が一度で行き渡る）。
+    hashes = state.setdefault("part_hash", {})
+    cur = {}
+    for p in parts:
+        h = hashlib.sha1(io.open(os.path.join(MD_DIR, p), encoding="utf-8").read().encode("utf-8"))
+        cur[p] = h.hexdigest()
+
+    by_base = {}
+    for p in parts:
+        by_base.setdefault(p.split(".part")[0], []).append(p)
+
+    dirty = set()
+    for base, ps in by_base.items():
+        known = sorted(q for q in hashes if q.split(".part")[0] == base)
+        if known != sorted(ps) or any(hashes.get(q) != cur[q] for q in ps):
+            dirty.add(base)
+
+    if not ONLY:
+        for q in list(hashes):
+            if q not in cur:
+                del hashes[q]
+        written = set(q for q in written if q in cur)
+    written = set(q for q in written if q.split(".part")[0] not in dirty)
+    if dirty:
+        print("本文が変わった（または未記録の）ガイド %d 冊を書き直す" % len(dirty))
 
     uploaded_now = 0
     written_now = []
@@ -293,7 +384,8 @@ def main():
             uploaded_now += 1
             if uploaded_now % 25 == 0:
                 print("   .. uploaded %d" % uploaded_now)
-                save_json(STATE, state)
+                if not DRY_RUN:
+                    save_json(STATE, state)
 
         md = io.open(os.path.join(MD_DIR, part), encoding="utf-8").read()
         blocks = md_to_blocks(md, uploads)
@@ -322,7 +414,9 @@ def main():
         append_blocks(pid, blocks)
         written.add(part)
         written_now.append(part)
+        hashes[part] = cur[part]
         state["written_parts"] = sorted(written)
+        state["part_hash"] = hashes
         state["pages"] = pages
         save_json(STATE, state)
         print("   -> wrote %d blocks to %s" % (len(blocks), pid))
@@ -334,9 +428,13 @@ def main():
 
     state["uploads"] = uploads
     state["written_parts"] = sorted(written)
+    state["part_hash"] = hashes
     state["pages"] = pages
-    save_json(STATE, state)
-    save_map(pages, titles)
+    if DRY_RUN:
+        print("[dry] 状態ファイルは更新しない")
+    else:
+        save_json(STATE, state)
+        save_map(pages, titles)
 
     total_imgs = len(manifest)
     print("---")

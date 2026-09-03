@@ -128,6 +128,37 @@ def render_card(c, imgdir):
     return "\n".join(L)
 
 
+def render_maps(body, imgdir):
+    """<div class="mapsec"> の店舗マップ画像を Notion 用の節にする。
+
+    Notion は画像内のリンク（HTML版のピン）を再現できないので、
+    見出しの「（ピンをタップで各店のページへ）」は落として注記に置き換える。
+    地図画像が無いガイド（欧州8冊）では空を返し、節そのものを出さない。
+    """
+    shots = []
+    for m in re.finditer(r'<div class="mapttl">(.*?)</div>(.*?)(?=<div class="mapttl">|\Z)', body, re.S):
+        ttl = strip_tags(m.group(1), False)
+        img = re.search(r'<img src="([^"]+)"', m.group(2))
+        if img:
+            shots.append((ttl, htmllib.unescape(img.group(1))))
+    if not shots:
+        return []
+
+    out = ["## 🗾 店舗マップ", ""]
+    for ttl, src in shots:
+        ttl = re.sub(r"[（(]ピンをタップ[^）)]*[）)]", "", ttl).strip()
+        ttl = re.sub(r"^🗾\s*店舗マップ\s*[—\-–]\s*", "", ttl).strip()
+        if ttl:
+            out += ["**%s**" % esc(ttl), ""]
+        out += ["@@IMG:%s@@" % os.path.join(imgdir, src).replace("\\", "/"), ""]
+
+    note = re.search(r'<div class="mapnote">(.*?)</div>', body, re.S)
+    tail = strip_tags(note.group(1)) if note else "地図: © OpenStreetMap contributors"
+    out += ["> %s ／ Notion版では地図のピンをタップできません。各店の位置は"
+            "カード内の「地図」リンク（Googleマップ）から開いてください。" % esc(tail), ""]
+    return out
+
+
 def convert(path, imgdir):
     s = io.open(path, encoding="utf-8").read()
     body = s.split("<body>", 1)[1].rsplit("</body>", 1)[0]
@@ -153,8 +184,10 @@ def convert(path, imgdir):
                 out.append("- `%s` — %s" % (esc(strip_tags(label, False)),
                                             esc(re.sub(r"\s+", " ", htmllib.unescape(desc)).strip())))
             out.append("")
-    out += ["> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。"
-            "元PDFの店舗マップ画像は取り込んでいません。位置は各店の「地図」リンクから。", "", "---", ""]
+    out += ["> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。", ""]
+    out += ["@@TOC@@", ""]
+    out += render_maps(body, imgdir)
+    out += ["---", ""]
 
     total = 0
     parts = re.split(r"<h2\b[^>]*>(.*?)</h2>", body, flags=re.S)
