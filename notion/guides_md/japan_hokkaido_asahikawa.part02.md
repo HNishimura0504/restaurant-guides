@@ -1,3 +1,20 @@
+### 9. 幌加内伝承手打ち蕎麦 せい一（ほろかないでんしょうてうちそば せいいち）
+
+@@IMG:japan/hokkaido/img/asahikawa/seiichi.jpg@@
+
+`地元密着` `ブログ推薦`
+
+そば産地・幌加内町で人気を博し旭川へ移った手打ちそば店。幌加内産そば粉を使った香り高い蕎麦はミシュランガイド北海道2017ビブグルマン選出。丼からそびえ立つ「ミニ鳥天丼」(名ばかりミニの鶏天丼)も名物。
+
+- **一皿**: もりそば+ミニ鳥天丼(幌加内産そば粉の手打ちそばと巨大鶏天丼のセット)
+- **営業時間**: 月・火・水・木・金・土・日 9:00〜15:00
+- **定休日**: なし(要最終確認)
+- **住所**: 北海道旭川市末広７条２丁目１−１
+- **予約**: 要確認 — ☎ 0166-85-6868 ／ [公式サイト](https://www.facebook.com/profile.php?id=100063862200705)
+- **選定理由**: ミシュラン北海道掲載の実力に加え、号外NETや在住者ブログで移転後(末広)の営業を確認。末広エリアの分散枠として選定。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%B9%8C%E5%8A%A0%E5%86%85%E4%BC%9D%E6%89%BF%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20%E3%81%9B%E3%81%84%E4%B8%80%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%9C%AB%E5%BA%83%EF%BC%97%E6%9D%A1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91)
+- **参照元**: [せい一 公式サイト](https://r.goope.jp/seiichi/) / [号外NET 旭川(移転記事)](https://asahikawa.goguynet.jp/2024/08/22/seiichitoyooka-iten/)
+
 ### 10. 手作りうどん 杉（てづくりうどん すぎ）
 
 @@IMG:japan/hokkaido/img/asahikawa/udonsugi.jpg@@
@@ -326,20 +343,3 @@
 - **選定理由**: 歴史的建造物を活かした旭川発祥カフェとして道民ブログやローカル誌slowびよりで紹介。公式サイトで営業情報を確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%90%89%E3%82%AB%E3%83%95%E3%82%A7%20%E6%97%AD%E6%A9%8B%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%99%EF%BC%97%EF%BC%90%E2%88%92%EF%BC%91)
 - **参照元**: [福吉カフェ公式サイト](https://www.fukuyoshicafe.com/) / [slowびより](https://slowbiyori.com/article-fukuyoshicafe/) / [もぐトリップ(道民ブログ)](https://akj.mogtrip.jp/asahikawa-cafe/)
-
-### 40. 壺屋 き花の杜（つぼや きばなのもり）
-
-@@IMG:japan/hokkaido/img/asahikawa/tsuboya-kibananomori.jpg@@
-
-`老舗・歴史` `地元密着` `口コミ突出`
-
-旭川銘菓「き花」で知られる壺屋総本店のコンセプトショップ。レンガと木の建物に約1000坪のガーデンが広がり、工場見学窓や限定菓子売場のほか、本を読みながら過ごせる「CAFE文欒」を併設。き花は霧氷をイメージした、アーモンドガレットでホワイトチョコを挟んだ銘菓。
-
-- **一皿**: き花(アーモンドガレットにホワイトチョコを挟んだ旭川銘菓。カフェでは特製ケーキも)
-- **営業時間**: 月・火・水・木・金・土・日 9:30〜18:00
-- **定休日**: なし(要最終確認)
-- **住所**: 北海道旭川市南６条通１９丁目２１８−２−１０３
-- **予約**: 要確認 — ☎ 0166-39-1600 ／ [公式サイト](http://www.tsuboya.net/kibananomori/)
-- **選定理由**: 旭川を代表する菓子メーカーの直営旗艦店で、たびらい等の観光メディアでも定番紹介。公式サイトで営業情報を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%A3%BA%E5%B1%8B%20%E3%81%8D%E8%8A%B1%E3%81%AE%E6%9D%9C%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%8D%97%EF%BC%96%E6%9D%A1%E9%80%9A%EF%BC%91%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%90%EF%BC%93)
-- **参照元**: [壺屋総本店公式サイト](https://tsuboya.net/pages/shop-kibana) / [たびらい観光情報](https://www.tabirai.net/localinfo/article/article-45848/)

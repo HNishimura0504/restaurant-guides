@@ -1,3 +1,20 @@
+### 19. UMAMI SOUP Noodles 虹ソラ（うまみすーぷぬーどるす にじそら）
+
+@@IMG:japan/iwate/img/ichinoseki/nijisora.jpg@@
+
+`ブログ推薦` `口コミ突出`
+
+開店前から行列ができる一関随一の人気ラーメン店です。鶏・魚介・野菜の旨味を重ねたスープが看板で、土産用の商品が道の駅やスーパー、観光物産館でも売られるほど地元に定着しています。スープがなくなり次第終了します。
+
+- **一皿**: 醤油そば(鶏と魚介の旨味を重ねた澄んだスープの一杯)
+- **営業時間**: 月・火・水・木・土・日 11:30〜15:00, 17:30〜21:00
+- **定休日**: 金曜
+- **住所**: 岩手県一関市三関神田１７５−１
+- **予約**: 要確認 — ☎ 0191-23-2727 ／ [公式サイト](https://www.instagram.com/nijisora_umamisoupnoodles_/)
+- **選定理由**: ラーメン専門ブログ・食べログ等で一関トップクラスの評価。土産商品が地元流通に乗るほど浸透している点を評価して選定。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=UMAMI%20SOUP%20Noodles%20%E8%99%B9%E3%82%BD%E3%83%A9%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E4%B8%89%E9%96%A2%E7%A5%9E%E7%94%B0%EF%BC%91%EF%BC%97%EF%BC%95%E2%88%92%EF%BC%91)
+- **参照元**: [食べログ UMAMI SOUP Noodles 虹ソラ](https://tabelog.com/iwate/A0303/A030301/3009172/) / [ホットペッパーグルメ 虹ソラ](https://www.hotpepper.jp/strJ004116025/)
+
 ### 20. 鶏だしらーめん 零SEN（とりだしらーめん ぜろせん）
 
 @@IMG:japan/iwate/img/ichinoseki/zerosen.jpg@@

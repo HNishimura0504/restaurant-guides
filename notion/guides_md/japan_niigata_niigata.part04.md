@@ -1,3 +1,20 @@
+### 53. cafe&bistro SAKURAYA（かふぇあんどびすとろ さくらや）
+
+@@IMG:japan/niigata/img/niigata/cafe_bistro_sakuraya.jpg@@
+
+`buzz` `地元密着`
+
+キッチンカー「陽のあたる場所」から実店舗化した洋食ビストロで、西区で人気を集めたのち2026年2月に江南区嘉木へ移転オープンした。看板の「さくらやオムライス」はデミグラス・ラグーミート・チキンクリームの三種からソースを選べる。1日5食の特製煮込みハンバーグは、仔牛の骨でひいたフォンドヴォーでじっくり煮込む。もちもちの生パスタも人気。
+
+- **一皿**: さくらやオムライス(卵の焼き加減にこだわり3種のソースから選べる看板オムライス)
+- **営業時間**: 月・木・金・土・日 11:00〜14:00, 17:00〜20:00
+- **定休日**: 火・水曜
+- **住所**: 新潟県新潟市江南区嘉木４−３
+- **予約**: 可 — ☎ 050-8892-8800 ／ [公式サイト](https://www.instagram.com/hino.atarubasyo/)
+- **選定理由**: 「ガタチラ」の移転告知記事と移転オープン後の実食取材記事の2本で新住所・営業時間を確認し、ローカルWebマガジン「Things」の取材記事でも裏取りした。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=cafe%26bistro%20SAKURAYA%20%E6%96%B0%E6%BD%9F%E7%9C%8C%E6%96%B0%E6%BD%9F%E5%B8%82%E6%B1%9F%E5%8D%97%E5%8C%BA%E5%98%89%E6%9C%A8%EF%BC%94%E2%88%92%EF%BC%93)
+- **参照元**: [ガタチラ（移転オープン取材）](https://gatachira.com/local/188606/) / [ガタチラ（移転告知）](https://gatachira.com/local/168150/) / [Things（新潟のローカルWebマガジン）](https://things-niigata.jp/other/cafe-bistro-sakuraya/)
+
 ### 54. レストラン ムッシュ（れすとらん むっしゅ）
 
 @@IMG:japan/niigata/img/niigata/restaurant_monsieur.jpg@@
