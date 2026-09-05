@@ -154,7 +154,10 @@ def render_maps(body, imgdir):
 
     note = re.search(r'<div class="mapnote">(.*?)</div>', body, re.S)
     tail = strip_tags(note.group(1)) if note else "地図: © OpenStreetMap contributors"
-    out += ["> %s ／ Notion版では地図のピンをタップできません。各店の位置は"
+    # 「Notion版ではピンをタップできない」と書いていたが、それは製品全体の話ではなく
+    # 「この画像の中では」という話だった（Notion のデータベースの地図ビューならタップできる）。
+    # 主語を実装まで狭める（B-333）。
+    out += ["> %s ／ この画像のピンはタップできません。各店の位置は"
             "カード内の「地図」リンク（Googleマップ）から開いてください。" % esc(tail), ""]
     return out
 
