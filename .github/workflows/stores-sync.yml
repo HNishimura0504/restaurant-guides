@@ -1,0 +1,59 @@
+name: 店舗DBへ投入
+
+# notion/stores.json の店を Notion の店舗DBへ入れる（作成または更新）。
+# 店舗DBがインテグレーション restaurant-guides-sync に接続されている必要がある。
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "1回で処理する件数の上限（0＝全部）"
+        required: false
+        default: "0"
+      dry_run:
+        description: "1 なら書き込まず、組み立てだけ検証する"
+        required: false
+        default: "0"
+
+concurrency:
+  group: stores-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet requests
+
+      - name: 店舗データを作り直す（HTMLが正）
+        run: python notion/stores_extract.py
+
+      - name: 座標の妥当性を検査する
+        run: python notion/locations_check.py
+
+      - name: 店舗DBへ投入
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          LIMIT: ${{ github.event.inputs.limit || '0' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+        run: python notion/stores_sync.py
+
+      - name: 進捗をコミットして戻す
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add notion/state/stores_state.json notion/stores.json
+          if git diff --cached --quiet; then
+            echo "変更なし"
+          else
+            git commit -m "stores-sync: 進捗を更新 [skip ci]"
+            git push
+          fi
