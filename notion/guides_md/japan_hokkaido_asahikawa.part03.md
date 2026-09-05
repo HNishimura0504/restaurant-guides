@@ -1,20 +1,3 @@
-### 40. 壺屋 き花の杜（つぼや きばなのもり）
-
-@@IMG:japan/hokkaido/img/asahikawa/tsuboya-kibananomori.jpg@@
-
-`老舗・歴史` `地元密着` `口コミ突出`
-
-旭川銘菓「き花」で知られる壺屋総本店のコンセプトショップ。レンガと木の建物に約1000坪のガーデンが広がり、工場見学窓や限定菓子売場のほか、本を読みながら過ごせる「CAFE文欒」を併設。き花は霧氷をイメージした、アーモンドガレットでホワイトチョコを挟んだ銘菓。
-
-- **一皿**: き花(アーモンドガレットにホワイトチョコを挟んだ旭川銘菓。カフェでは特製ケーキも)
-- **営業時間**: 月・火・水・木・金・土・日 9:30〜18:00
-- **定休日**: なし(要最終確認)
-- **住所**: 北海道旭川市南６条通１９丁目２１８−２−１０３
-- **予約**: 要確認 — ☎ 0166-39-1600 ／ [公式サイト](http://www.tsuboya.net/kibananomori/)
-- **選定理由**: 旭川を代表する菓子メーカーの直営旗艦店で、たびらい等の観光メディアでも定番紹介。公式サイトで営業情報を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%A3%BA%E5%B1%8B%20%E3%81%8D%E8%8A%B1%E3%81%AE%E6%9D%9C%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%8D%97%EF%BC%96%E6%9D%A1%E9%80%9A%EF%BC%91%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%90%EF%BC%93)
-- **参照元**: [壺屋総本店公式サイト](https://tsuboya.net/pages/shop-kibana) / [たびらい観光情報](https://www.tabirai.net/localinfo/article/article-45848/)
-
 ### 41. The Sun 蔵人 本店（ざ・さん くらんど ほんてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/thesun-kurando.jpg@@
