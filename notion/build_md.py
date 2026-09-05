@@ -61,6 +61,8 @@ def parse_cards(block):
         if not m:
             continue
         card = {}
+        sid = re.search(r'<div class="card"[^>]*\bid="c-([^"]+)"', c)
+        card["sid"] = sid.group(1) if sid else ""
         nm = m.group(1)
         pin = re.search(r'class="pinno"[^>]*>(\d+)</span>', nm)
         card["no"] = pin.group(1) if pin else ""
@@ -128,29 +130,40 @@ def render_card(c, imgdir):
     return "\n".join(L)
 
 
-def render_maps(body, imgdir):
+def render_maps(body, imgdir, sid_no=None):
     """<div class="mapsec"> の店舗マップ画像を Notion 用の節にする。
 
     Notion は画像内のリンク（HTML版のピン）を再現できないので、
     見出しの「（ピンをタップで各店のページへ）」は落として注記に置き換える。
     地図画像が無いガイド（欧州8冊）では空を返し、節そのものを出さない。
+
+    【2026-09-05 ユーザー要望「地図の下にリンク付きの目次がほしい。もちろん地図上の番号付きで」】
+    各地図画像の直下に @@MAPTOC:<番号,番号,…>@@ を置く。番号は HTML の地図オーバレイ
+    （<a href="#c-<店ID>" style="left:…"> ＝ピン1つにつき1本）から拾い、sid_no（店ID→掲載番号）で
+    番号に直す。sync.py がこの行を「番号＋店名（各店の見出しへのリンク）」の一覧に展開する。
     """
     shots = []
     for m in re.finditer(r'<div class="mapttl">(.*?)</div>(.*?)(?=<div class="mapttl">|\Z)', body, re.S):
         ttl = strip_tags(m.group(1), False)
-        img = re.search(r'<img src="([^"]+)"', m.group(2))
+        seg = m.group(2)
+        img = re.search(r'<img src="([^"]+)"', seg)
         if img:
-            shots.append((ttl, htmllib.unescape(img.group(1))))
+            # ピンのアンカーだけ（目次のリンクは style="left:" を持たないので混ざらない）
+            pins = re.findall(r'<a href="#c-([^"]+)" style="left:', seg)
+            nos = [sid_no[sid] for sid in pins if sid_no and sid in sid_no]
+            shots.append((ttl, htmllib.unescape(img.group(1)), nos))
     if not shots:
         return []
 
     out = ["## 🗾 店舗マップ", ""]
-    for ttl, src in shots:
+    for ttl, src, nos in shots:
         ttl = re.sub(r"[（(]ピンをタップ[^）)]*[）)]", "", ttl).strip()
         ttl = re.sub(r"^🗾\s*店舗マップ\s*[—\-–]\s*", "", ttl).strip()
         if ttl:
             out += ["**%s**" % esc(ttl), ""]
         out += ["@@IMG:%s@@" % os.path.join(imgdir, src).replace("\\", "/"), ""]
+        if nos:
+            out += ["@@MAPTOC:%s@@" % ",".join(nos), ""]
 
     note = re.search(r'<div class="mapnote">(.*?)</div>', body, re.S)
     tail = strip_tags(note.group(1)) if note else "地図: © OpenStreetMap contributors"
@@ -189,7 +202,8 @@ def convert(path, imgdir):
             out.append("")
     out += ["> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。", ""]
     out += ["@@TOC@@", ""]
-    out += render_maps(body, imgdir)
+    sid_no = {c["sid"]: c["no"] for c in parse_cards(body) if c.get("sid") and c.get("no")}
+    out += render_maps(body, imgdir, sid_no)
     out += ["---", ""]
 
     total = 0
