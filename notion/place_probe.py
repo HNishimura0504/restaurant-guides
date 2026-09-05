@@ -42,12 +42,12 @@ else:
 
 print("== 2. 書き込みを試す（3通りの形） ==")
 shapes = {
-    "place{name,address,latitude,longitude}": {
-        "place": {"name": "Wurst", "address": "Margarethaplein 1, 3000 Leuven",
-                  "latitude": 50.8784, "longitude": 4.7006}},
-    "place{address のみ}": {"place": {"address": "Margarethaplein 1, 3000 Leuven"}},
-    "type つき": {"type": "place",
-                 "place": {"name": "Wurst", "latitude": 50.8784, "longitude": 4.7006}},
+    "lat/lng": {"place": {"lat": 50.8784, "lng": 4.7006,
+                          "name": "Wurst", "address": "Margarethaplein 1, 3000 Leuven"}},
+    "lat/long": {"place": {"lat": 50.8784, "long": 4.7006, "name": "Wurst"}},
+    "lat/lon": {"place": {"lat": 50.8784, "lon": 4.7006, "name": "Wurst"}},
+    "lat/longitude": {"place": {"lat": 50.8784, "longitude": 4.7006, "name": "Wurst"}},
+    "lat のみ": {"place": {"lat": 50.8784}},
 }
 for label, value in shapes.items():
     r = S.patch("%s/pages/%s" % (API, PAGE), json={"properties": {PROP: value}}, timeout=60)
