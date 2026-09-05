@@ -61,8 +61,20 @@ def api(method, path, **kw):
     raise RuntimeError("retries exhausted: %s %s" % (method, path))
 
 
+MD_LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)]+)\)")
+
+
+def flatten_links(v):
+    """[公式サイト](http://…) → 公式サイト http://…
+
+    抽出元がガイド本文のMarkdownなので、リンクが記法のまま入っている。
+    Notion のテキスト欄では記法が解釈されず、括弧と角括弧がそのまま見えて読みにくい。
+    """
+    return MD_LINK.sub(lambda m: "%s %s" % (m.group(1), m.group(2)), v or "")
+
+
 def txt(v):
-    return {"rich_text": [{"type": "text", "text": {"content": (v or "")[:2000]}}]}
+    return {"rich_text": [{"type": "text", "text": {"content": flatten_links(v)[:2000]}}]}
 
 
 def url_or_none(v):
