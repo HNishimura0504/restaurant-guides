@@ -177,6 +177,13 @@ def md_to_blocks(md, uploads):
         ln = raw.rstrip()
         if not ln.strip():
             continue
+        m = re.match(r"^@@MAPTOC:([\d,]+)@@$", ln.strip())
+        if m:
+            # 地図の直下の目次。店の見出しブロックの ID は本文を書き終えるまで分からないので、
+            # ここでは目印の段落を置き、finalize_maptoc() が後から一覧に差し替える。
+            blocks.append({"object": "block", "type": "paragraph",
+                           "paragraph": {"rich_text": rich(ln.strip())}})
+            continue
         if ln.strip() == "@@TOC@@":
             blocks.append({"object": "block", "type": "toggle", "toggle": {
                 "rich_text": rich("📑 目次（タップで開く）"),
@@ -236,8 +243,72 @@ def clear_page(page_id):
 
 
 def append_blocks(page_id, blocks):
+    """末尾に追記し、作られたブロック（ID 付き）を順番どおりに返す。"""
+    created = []
     for i in range(0, len(blocks), 100):
-        api("PATCH", "/blocks/%s/children" % page_id, json={"children": blocks[i:i + 100]})
+        res = api("PATCH", "/blocks/%s/children" % page_id, json={"children": blocks[i:i + 100]})
+        created += res.get("results", [])
+    return created
+
+
+def _plain(rt):
+    return "".join(t.get("plain_text") or t.get("text", {}).get("content", "") for t in rt)
+
+
+def collect_toc_refs(created, pending):
+    """append_blocks の戻りから、目次の目印（@@MAPTOC@@）と各店の見出し（「12. 店名」）の
+    ブロック ID を拾って pending に溜める。カテゴリ見出し（heading_2）も店ごとに控える。"""
+    cur_cat = pending.get("_cat", "")
+    for b in created:
+        t = b.get("type")
+        if t == "heading_2":
+            cur_cat = _plain(b["heading_2"]["rich_text"])
+        elif t == "heading_3":
+            m = re.match(r"^(\d+)\.\s*(.+)$", _plain(b["heading_3"]["rich_text"]))
+            if m:
+                pending.setdefault("headings", {})[m.group(1)] = {
+                    "id": b["id"], "name": m.group(2).strip(), "cat": cur_cat}
+        elif t == "paragraph":
+            m = re.match(r"^@@MAPTOC:([\d,]+)@@$", _plain(b["paragraph"]["rich_text"]).strip())
+            if m:
+                pending.setdefault("placeholders", []).append(
+                    {"id": b["id"], "nos": m.group(1).split(",")})
+    pending["_cat"] = cur_cat
+
+
+def finalize_maptoc(page_id, pending):
+    """地図の直下の目印を「番号＋店名（見出しへのリンク）」の一覧に差し替える。
+    リンクは https://www.notion.so/<page>#<block> 形式のページ内アンカー。
+    【2026-09-05 ユーザー要望「地図の下にリンク付きの目次がほしい。もちろん地図上の番号付きで」】"""
+    heads = pending.get("headings", {})
+    pg = page_id.replace("-", "")
+    for ph in pending.get("placeholders", []):
+        nos = [n for n in ph["nos"] if n in heads]
+        if not nos:
+            continue
+        blocks, seen = [], []
+        for n in nos:
+            cat = heads[n]["cat"]
+            if cat not in seen:
+                seen.append(cat)
+                blocks.append({"object": "block", "type": "paragraph", "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": cat or "店"},
+                                   "annotations": {"bold": True}}]}})
+            url = "https://www.notion.so/%s#%s" % (pg, heads[n]["id"].replace("-", ""))
+            blocks.append({"object": "block", "type": "bulleted_list_item", "bulleted_list_item": {
+                "rich_text": [
+                    {"type": "text", "text": {"content": "%s " % n},
+                     "annotations": {"bold": True, "color": "blue"}},
+                    {"type": "text", "text": {"content": heads[n]["name"], "link": {"url": url}}}]}})
+        after = ph["id"]
+        for i in range(0, len(blocks), 100):
+            res = api("PATCH", "/blocks/%s/children" % page_id,
+                      json={"children": blocks[i:i + 100], "after": after})
+            made = res.get("results", [])
+            if made:
+                after = made[-1]["id"]
+        api("DELETE", "/blocks/" + ph["id"])
+    pending.clear()
 
 
 def clear_dead_links(page_id):
@@ -313,6 +384,7 @@ def main():
     uploads = state.setdefault("uploads", {})
     written = set(state.setdefault("written_parts", []))
     pages = state.setdefault("pages", {})
+    toc_pending = state.setdefault("toc_pending", {})  # 地図の下の目次（仕上げ待ち）
     pages.update(load_map())
 
     by_part = {}
@@ -411,7 +483,10 @@ def main():
         first = part.endswith(".part01.md")
         if first and base not in APPEND_ONLY:
             clear_page(pid)
-        append_blocks(pid, blocks)
+            toc_pending[base] = {}
+        created = append_blocks(pid, blocks)
+        collect_toc_refs(created, toc_pending.setdefault(base, {}))
+        state["toc_pending"] = toc_pending
         written.add(part)
         written_now.append(part)
         hashes[part] = cur[part]
@@ -425,6 +500,16 @@ def main():
         guide_parts = [q for q in parts if q.split(".part")[0] == base]
         if all(q in written for q in guide_parts):
             clear_dead_links(pid)
+            # 全 part が揃った＝全店の見出し ID が揃ったので、地図の下の目次を仕上げる
+            if toc_pending.get(base):
+                try:
+                    finalize_maptoc(pid, toc_pending[base])
+                    print("   -> map TOC done")
+                except Exception as e:
+                    print("   ! map TOC failed:", str(e)[:200])
+                toc_pending.pop(base, None)
+                state["toc_pending"] = toc_pending
+                save_json(STATE, state)
 
     state["uploads"] = uploads
     state["written_parts"] = sorted(written)
