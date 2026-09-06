@@ -1,6 +1,27 @@
+### 46. 下鴨茶寮 本店（しもがもさりょう）
+
+@@IMG:japan/kyoto/img/kyoto/shimogamosaryo.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/shimogamosaryo_exterior.jpg@@
+
+`老舗・歴史` `口コミ突出`
+
+安政3年(1856年)創業、世界遺産・下鴨神社のほとりに立つ料亭。茶道の作法に基づく茶懐石(一汁三菜を基本に季節の料理を順に供する正式な会席)の伝統を守り、料理旅館の風情ある座敷で京料理を味わえる。
+
+- **一皿**: 茶懐石コース(下鴨神社ゆかりの地で味わう季節の懐石料理)
+- **営業時間**: 月・水・木・金・土・日 11:30〜15:00, 17:00〜21:00
+- **定休日**: 火曜
+- **住所**: 京都府京都市左京区下鴨宮河町６２
+- **予約**: 可 — ☎ 075-701-5185 ／ [公式サイト](http://www.shimogamosaryo.co.jp/)
+- **選定理由**: 創業170年の京都を代表する料亭で公式サイト・一休等で営業を確認。糺の森周辺の特別な食事処として下鴨エリアを補強。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E9%B4%A8%E8%8C%B6%E5%AF%AE%20%E6%9C%AC%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%8B%E9%B4%A8%E5%AE%AE%E6%B2%B3%E7%94%BA%EF%BC%96%EF%BC%92)
+- **参照元**: [公式サイト](https://www.shimogamosaryo.co.jp/about/) / [一休レストラン](https://restaurant.ikyu.com/101853)
+
 ### 47. 点邑（てんゆう）
 
 @@IMG:japan/kyoto/img/kyoto/tenyu.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/tenyu_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -19,6 +40,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/seigenin.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/seigenin_exterior.jpg@@
+
 `地元密着` `老舗・歴史`
 
 石庭で名高い世界遺産・龍安寺の境内塔頭で営む湯豆腐処。鏡容池を望む日本庭園を眺めながら、名物の七草湯豆腐(湯葉や麩、季節の七草を加えた具だくさんの湯豆腐)と精進料理を味わえる。
@@ -35,6 +58,8 @@
 ### 50. 熟成豚かわむら（じゅくせいぶた かわむら）
 
 @@IMG:japan/kyoto/img/kyoto/kawamura.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/kawamura_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -70,6 +95,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/daitokujiikkyu.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/daitokujiikkyu_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 文明年間(15世紀)より大本山大徳寺の料理方を務めて五百年余、一子相伝で大徳寺精進料理を守り続ける老舗。屋号は一休禅師から賜ったと伝わる。胡麻豆腐や麩、季節の野菜を使った精進料理(肉魚を使わない禅寺伝来の料理)を完全予約制で供する。
@@ -89,6 +116,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/matsuba.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/matsuba_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 文久元年（1861年）創業。明治15年に考案された「にしんそば」（甘辛く炊いた身欠きニシンの甘露煮をのせた温かいそば）の元祖で、京都の冬の代表的な味。海から遠い京都でニシンが貴重なタンパク源だった歴史を今に伝える一杯。
@@ -105,6 +134,8 @@
 ### 7. 山元麺蔵（やまもとめんぞう）
 
 @@IMG:japan/kyoto/img/kyoto/menzo.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/menzo_exterior.jpg@@
 
 `口コミ突出`
 
@@ -123,6 +154,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/okakita.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/okakita_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦`
 
 1940年創業、3世代が厨房に立つ家族経営の老舗。利尻昆布・うるめ・めじか・鯖節でひく黄金色の出汁で味わう「出汁で食す」京うどんの正統。名物「天とじうどん」（海老天を玉子でとじた熱々のうどん）はふわとろの玉子と出汁の一体感が絶品。
@@ -139,6 +172,8 @@
 ### 9. 権太呂 本店（ごんたろ ほんてん）
 
 @@IMG:japan/kyoto/img/kyoto/gontaro.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/gontaro_exterior.jpg@@
 
 `老舗・歴史`
 
@@ -157,6 +192,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/yoshimura.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/yoshimura_exterior.jpg@@
+
 `口コミ突出`
 
 渡月橋と桂川を見下ろす2階席が特等席の手打ちそば店。国産そば粉を石臼挽きし職人が毎日手打ちする香り高い細麺で、「渡月膳」（ざるそば・天ぷら・そば飯などのセット）が人気。嵐山の景観を食事ごと楽しめる。
@@ -173,6 +210,8 @@
 ### 41. 手打ちそば 花もも（てうちそば はなもも）
 
 @@IMG:japan/kyoto/img/kyoto/hanamomo.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/hanamomo_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -191,6 +230,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/nikora.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/nikora_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 西陣の京町家で営むミシュラン一つ星獲得歴のある蕎麦店。石臼で自家製粉し、つなぎを使わず毎朝手打ちする粗挽き十割蕎麦が看板。日本酒やワインに合う「そば前」の一品料理も充実する。
@@ -208,6 +249,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/sanshiki.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/sanshiki_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 五条大橋東詰近くのミシュラン掲載歴のあるうどん店。やや細めながら瑞々しい弾力の自家製麺と揚げたての天ぷらが評判で、清水寺への道すがら行列ができる。ぶっかけ(冷たい麺に濃いめの出汁をかけるスタイル)が看板。
@@ -224,6 +267,8 @@
 ### 52. 冨美家 錦店（ふみや にしきてん）
 
 @@IMG:japan/kyoto/img/kyoto/fumiya.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/fumiya_exterior.jpg@@
 
 `地元密着` `口コミ突出`
 
@@ -244,6 +289,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/shinpuku.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/shinpuku_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 1938年屋台創業の京都ラーメン最古参格。真っ黒な醤油スープの「中華そば」は見た目に反してあっさり優しい味わい。ラーメンダレで炒めた黒い「ヤキメシ」も必食。隣の第一旭と並ぶ「たかばし」は京都ラーメンの聖地。
@@ -260,6 +307,8 @@
 ### 12. 本家第一旭 たかばし本店（ほんけだいいちあさひ たかばしほんてん）
 
 @@IMG:japan/kyoto/img/kyoto/daiichiasahi.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/daiichiasahi_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出` `地元密着`
 
@@ -295,6 +344,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/mrgyoza.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/mrgyoza_exterior.jpg@@
+
 `口コミ突出` `地元密着`
 
 京都餃子の代表格として食べログ「餃子百名店」に選出される行列店。薄皮でパリッと焼き上げた一口サイズの餃子（豚肉とキャベツ中心の京都らしいあっさり餡）が名物で、売り切れ次第閉店。テレビ・雑誌掲載多数の地元密着の名店。
@@ -312,6 +363,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/gokkei.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/gokkei_exterior.jpg@@
+
 `口コミ突出`
 
 「ラーメン激戦区」一乗寺を代表する超行列店。名物「鶏だく」はスープというより"鶏の濃厚ポタージュ"と呼ぶべきドロドロの鶏白湯で、箸が立つほどの濃度が唯一無二。赤だく（辛味）、黒だく（マー油）など派生も人気で、スープがなくなり次第終了。
@@ -324,37 +377,3 @@
 - **選定理由**: ラーメン激戦区・一乗寺を代表する超行列店。公式・ラーメンデータベースで確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E6%A5%B5%E9%B6%8F%20%E4%B8%80%E4%B9%97%E5%AF%BA%E6%9C%AC%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%80%E4%B9%97%E5%AF%BA%E8%A5%BF%E9%96%89%E5%B7%9D%E5%8E%9F%E7%94%BA%EF%BC%92%EF%BC%99%E2%88%92%EF%BC%97)
 - **参照元**: [公式サイト](https://gokkei.amebaownd.com/) / [ラーメンデータベース](https://ramendb.supleks.jp/s/33888.html)
-
-### 54. 中華そば 高安（ちゅうかそば たかやす）
-
-@@IMG:japan/kyoto/img/kyoto/takayasu.jpg@@
-
-`口コミ突出` `地元密着`
-
-ラーメン激戦区・一乗寺を代表する行列店。豚骨と鶏ガラを長時間炊いたクリーミーでまろやかな白濁スープの中華そばが看板。拳大のカレー風味唐揚げとのセットが定番の食べ方。
-
-- **一皿**: 中華そば(まろやかな白濁豚骨鶏ガラスープ)+名物の大きな唐揚げ
-- **営業時間**: 月・火・水・木・金・土・日 11:30〜2:00
-- **定休日**: なし(要最終確認)
-- **住所**: 京都府京都市左京区一乗寺高槻町１０
-- **予約**: 要確認 — ☎ 075-721-4878 ／ [公式サイト](http://takayasuramen.com/)
-- **選定理由**: 一乗寺ラーメン街道の代表格としてキョウトピや地元メディアで繰り返し紹介される行列店。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E9%AB%98%E5%AE%89%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%80%E4%B9%97%E5%AF%BA%E9%AB%98%E6%A7%BB%E7%94%BA%EF%BC%91%EF%BC%90)
-- **参照元**: [キョウトピ](https://kyotopi.jp/articles/5n50v) / [京都観光Navi](https://ja.kyoto.travel/tourism/single01.php?category_id=4&tourism_id=3122)
-
-### 55. 天天有 本店（てんてんゆう ほんてん）
-
-@@IMG:japan/kyoto/img/kyoto/tentenyu.jpg@@
-
-`老舗・歴史` `地元密着`
-
-1971年創業、一乗寺の老舗ラーメン店。鶏と野菜を長時間煮込んでポタージュ状にした鶏白湯スープが名物で、京都鶏がらラーメンの源流の一つ。全国に暖簾分け店があるが本店の味は別格と評される。
-
-- **一皿**: 中華そば(とろりと濃厚な鶏白湯スープの元祖級の一杯)
-- **営業時間**: 月・火・木・金・土・日 12:00〜22:00
-- **定休日**: 水曜
-- **住所**: 京都府京都市左京区一乗寺西杉ノ宮町４９
-- **予約**: 要確認 — ☎ 075-711-3255 ／ [公式サイト](http://twitter.com/tentenyuuhonten)
-- **選定理由**: 創業50年超の老舗かつ一乗寺の定番としてキョウトピ等ローカルメディアで紹介される名店。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E5%A4%A9%E6%9C%89%20%E6%9C%AC%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%80%E4%B9%97%E5%AF%BA%E8%A5%BF%E6%9D%89%E3%83%8E%E5%AE%AE%E7%94%BA%EF%BC%94%EF%BC%99)
-- **参照元**: [キョウトピ](https://kyotopi.jp/articles/uxpHT) / [在住者グルメブログ](https://gcjapan-kyoto.com/tentenyuu/)

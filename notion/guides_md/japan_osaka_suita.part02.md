@@ -1,3 +1,22 @@
+### 16. お好み焼き かず（おこのみやき かず）
+
+@@IMG:japan/osaka/img/suita/kazu.jpg@@
+
+@@IMG:japan/osaka/img/suita/kazu_exterior.jpg@@
+
+`ブログ推薦` `地元密着`
+
+「吹チャン！」で「シェアしたくなる大きなお好み焼き」として紹介された広島風お好み焼き（麺入りで層状に重ね焼きするスタイル）の店。ボリューム満点の一枚を鉄板で楽しめる地元の粉もん店。
+
+- **一皿**: 広島風お好み焼き（麺入りで層状に重ね焼きするスタイルの大判の一枚）
+- **営業時間**: 月・木・金・土・日 11:30〜14:00, 17:00〜21:00
+- **定休日**: 火・水曜
+- **住所**: 大阪府吹田市内本町３丁目２４−１７ 新和ビル
+- **予約**: 可 — ☎ 06-6381-3777
+- **選定理由**: 大阪の吹田で本格的な広島風を出す個性派として、ローカルメディア「吹チャン！」の紹介をもとに選定。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E3%81%8B%E3%81%9A%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E5%86%85%E6%9C%AC%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%97%20%E6%96%B0%E5%92%8C%E3%83%93%E3%83%AB)
+- **参照元**: [吹チャン！](https://suichan.jp/gourmet/2023/08/p=45134) / [ぐるなび](https://r.gnavi.co.jp/cr0mb9640000/)
+
 ### 17. 黒毛和牛 焼肉処 哲（くろげわぎゅう やきにくどころ てつ）
 
 @@IMG:japan/osaka/img/suita/tetsu.jpg@@
@@ -19,6 +38,8 @@
 
 @@IMG:japan/osaka/img/suita/kakashi.jpg@@
 
+@@IMG:japan/osaka/img/suita/kakashi_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 「吹田の名店」と称される炭火焼鳥店（現在は移転し朝日町の吹田本店で営業）。鮮度の良い朝挽き鶏を丁寧に焼く串が評判で、ここで修行した店主が2026年に独立店「焼鳥 辰」を開くなど、吹田の焼鳥文化の源流的存在。
@@ -36,6 +57,8 @@
 
 @@IMG:japan/osaka/img/suita/torajiro.jpg@@
 
+@@IMG:japan/osaka/img/suita/torajiro_exterior.jpg@@
+
 `ブログ推薦` `地元密着` `口コミ突出`
 
 昭和レトロなJR吹田駅前「地下のれん街」の人気立ち飲み。老舗酒場「寅一」の後継店で、本マグロの刺身が手頃な価格で楽しめるのが名物。昼12時から飲める使い勝手の良さで、2025年には近くに2号店ができるほどの人気。
@@ -52,6 +75,8 @@
 ### 38. 黒毛和牛 藤屋（くろげわぎゅう ふじや）
 
 @@IMG:japan/osaka/img/suita/fujiya.jpg@@
+
+@@IMG:japan/osaka/img/suita/fujiya_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -72,6 +97,8 @@
 
 @@IMG:japan/osaka/img/suita/keiho.jpg@@
 
+@@IMG:japan/osaka/img/suita/keiho_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 旭通り商店街の老舗町中華。「吹チャン！」が「ふらっと1人で一杯飲んで帰りたくなる」と紹介。パラッと香ばしいチャーハンや定番の中華メニューを肴に軽く飲める、商店街の暮らしに根付いた一軒。
@@ -88,6 +115,8 @@
 ### 21. 中国料理 聚楽 トナリエ南千里店（ちゅうごくりょうり じゅらく となりえみなみせんりてん）
 
 @@IMG:japan/osaka/img/suita/juraku.jpg@@
+
+@@IMG:japan/osaka/img/suita/juraku_exterior.jpg@@
 
 `ブログ推薦` `地元密着`
 
@@ -106,6 +135,8 @@
 
 @@IMG:japan/osaka/img/suita/sepata.jpg@@
 
+@@IMG:japan/osaka/img/suita/sepata_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 スタッフ・シェフ全員がタイ人の本場派で、吹田のタイ料理では屈指の人気店。ランチ人気No.1は「ガパオセット」（鶏ひき肉のバジル炒めごはん）、熱烈ファンが多いのは「ヤムウンセン」（春雨と魚介のピリ辛サラダ）。写真付きメニューで初心者も安心。現金のみ。
@@ -122,6 +153,8 @@
 ### 23. 韓国居酒屋 肝っ玉亭（かんこくいざかや きもったまてい）
 
 @@IMG:japan/osaka/img/suita/kimottama.jpg@@
+
+@@IMG:japan/osaka/img/suita/kimottama_exterior.jpg@@
 
 `口コミ突出`
 
@@ -157,6 +190,8 @@
 
 @@IMG:japan/osaka/img/suita/ikoihanten.jpg@@
 
+@@IMG:japan/osaka/img/suita/ikoihanten_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦` `地元密着`
 
 ディオス北千里で46年以上続く地元で大人気の町中華。チャーハンや餃子、ラーメンなど定番メニューが揃い、営業日ごとに何かの品が安くなる「毎日がサービスデー」でも親しまれる。一人での食べ飲み放題利用も可能。
@@ -173,6 +208,8 @@
 ### 40. 上海点心菜館 桃苑（しゃんはいてんしんさいかん とうえん）
 
 @@IMG:japan/osaka/img/suita/toen.jpg@@
+
+@@IMG:japan/osaka/img/suita/toen_exterior.jpg@@
 
 `ブログ推薦` `老舗・歴史`
 
@@ -193,6 +230,8 @@
 
 @@IMG:japan/osaka/img/suita/bocci.jpg@@
 
+@@IMG:japan/osaka/img/suita/bocci_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 気取らないスタイルの本格イタリアン。イタリアワイン、グラッパ（ブドウの搾りかすから造るイタリアの蒸留酒）、珍しいイタリア瓶ビールの品揃えが自慢。カウンター席もあり一人利用から使える。
@@ -209,6 +248,8 @@
 ### 26. カフェハウス キッシュ（かふぇはうす きっしゅ）
 
 @@IMG:japan/osaka/img/suita/kish.jpg@@
+
+@@IMG:japan/osaka/img/suita/kish_exterior.jpg@@
 
 `ブログ推薦` `地元密着`
 
@@ -261,6 +302,8 @@
 
 @@IMG:japan/osaka/img/suita/augarage.jpg@@
 
+@@IMG:japan/osaka/img/suita/augarage_exterior.jpg@@
+
 `ブログ推薦`
 
 ガレージ（レーシングピット）を思わせる遊び心ある空間で、車好きの店主が本格ビストロフレンチを提供するユニークな一軒。壁にレーシングスーツやタイヤが飾られた店内で、気軽にコース仕立てのフランス料理が楽しめる。
@@ -277,6 +320,8 @@
 ### 30. Nord wine store（のーど わいん すとあ）
 
 @@IMG:japan/osaka/img/suita/nordwine.jpg@@
+
+@@IMG:japan/osaka/img/suita/nordwine_exterior.jpg@@
 
 `ブログ推薦`
 
@@ -295,6 +340,8 @@
 
 @@IMG:japan/osaka/img/suita/pragati.jpg@@
 
+@@IMG:japan/osaka/img/suita/pragati_exterior.jpg@@
+
 `地元密着` `口コミ突出`
 
 阪急吹田駅近くのインド・ネパールカレー専門店。スパイス香る本場仕込みのカレーと、窯で焼き上げるふかふかの手作りナンが看板。テイクアウトやデリバリーにも対応し、地元使いしやすい一軒。
@@ -312,6 +359,8 @@
 
 @@IMG:japan/osaka/img/suita/calore.jpg@@
 
+@@IMG:japan/osaka/img/suita/calore_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 南千里駅から徒歩圏の本格薪窯ナポリピッツァ店で、吹田では老舗格のピッツェリア。高温の薪窯で一気に焼き上げるもちもちのピッツァが看板で、2階席もあり家族連れにも人気。週末は予約がおすすめ。
@@ -324,56 +373,3 @@
 - **選定理由**: グルメブログ「Mのランチ」で「本格薪窯のハイレベルなピザ」と絶賛された南千里の人気店。江坂以外のイタリアン・ピザ枠として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=PIZZERIA%20CALORE%EF%BC%88%E3%83%94%E3%83%83%E3%83%84%E3%82%A7%E3%83%AA%E3%82%A2%20%E3%82%AB%E3%83%AD%E3%83%BC%E3%83%AC%EF%BC%89%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E4%BD%90%E7%AB%B9%E5%8F%B0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%93)
 - **参照元**: [Mのランチ(DIIIG)](https://muche.diiig.net/lw/132622/outline/493988_detail.html) / [楽天ぐるなび](https://r.gnavi.co.jp/prshuw5f0000/)
-
-### 44. cuore ricco（クオーレ リッコ）（くおーれ りっこ）
-
-@@IMG:japan/osaka/img/suita/cuorericco.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-2024年開業の「令和の洋食屋」を掲げる一軒で、ハンバーグやパスタをワインとともに楽しめる。和牛ローストビーフ(1,890円)や作りたてを急いで味わう「賞味期限5分のカルボナーラ」などライブ感ある洋食が評判。
-
-- **一皿**: 賞味期限5分のカルボナーラ（出来たての乳化が命の名物パスタ）
-- **営業時間**: 火・日 11:30〜15:00 ／ 水・木・金・土 11:30〜15:00, 18:00〜22:00
-- **定休日**: 月曜
-- **住所**: 大阪府吹田市円山町６−３０
-- **予約**: 可 — ☎ 06-4977-7161 ／ [公式サイト](https://www.instagram.com/cuore_ricco57?igsh=MWZwcjF6MDhoNHFreA==)
-- **選定理由**: 吹チャン！が開店時から2026年6月まで繰り返し取材している注目店。手薄なハンバーグ・洋食ジャンルと関大前〜円山町エリアを補強。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=cuore%20ricco%EF%BC%88%E3%82%AF%E3%82%AA%E3%83%BC%E3%83%AC%20%E3%83%AA%E3%83%83%E3%82%B3%EF%BC%89%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E5%86%86%E5%B1%B1%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%93%EF%BC%90)
-- **参照元**: [吹チャン！](https://suichan.jp/gourmet/2026/06/p=106068) / [吹チャン！(開店時)](https://suichan.jp/open/2024/02/p=54347)
-
-### 45. Le Porc（ル ポルク）（る ぽるく）
-
-@@IMG:japan/osaka/img/suita/leporc.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-フランス修行経験のあるシェフが一人で切り盛りするカウンター8席の隠れ家イタリアン。アルデンテに仕上げるパスタが看板で、ランチは2種のパスタから選ぶスタイル。満席が多い千里丘の人気店。
-
-- **一皿**: イカとキャベツのペペロンチーノ（素材の旨みを活かした看板パスタ）
-- **営業時間**: 月・火・水・金・土・日 11:30〜13:30, 17:30〜21:00
-- **定休日**: 木曜
-- **住所**: 大阪府吹田市長野東１４−５
-- **予約**: 可 — ☎ 06-7220-6913 ／ [公式サイト](https://www.instagram.com/porc.le/?hl=ja)
-- **選定理由**: リビング北摂Webや北摂ランチブログ「プーさんの満腹日記」で紹介された千里丘の実力店。手薄な千里丘エリアの補強を兼ねる。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Porc%EF%BC%88%E3%83%AB%20%E3%83%9D%E3%83%AB%E3%82%AF%EF%BC%89%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E9%95%B7%E9%87%8E%E6%9D%B1%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%95)
-- **参照元**: [リビング北摂Web](https://mrs.living.jp/hokusetsu/town_gourmet/reporter/5179230) / [食べログ](https://tabelog.com/osaka/A2706/A270604/27124636/)
-
-## カフェ・パン・スイーツ
-
-### 31. 森カフェ（もりかふぇ）
-
-@@IMG:japan/osaka/img/suita/moricafe.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-野菜ソムリエの資格を持つオーナーが厳選野菜を使う「お野菜カフェ」として有名な親子経営の隠れ家カフェ。小鉢がいくつも並ぶ栄養バランス重視のワンプレートランチが名物で、満席が珍しくない人気ぶり（予約推奨）。
-
-- **一皿**: ワンプレートランチ（厳選野菜の小鉢がいくつも並ぶ栄養バランス重視の一皿）
-- **営業時間**: 火・水・木 11:30〜17:00 ／ 金・土 11:30〜18:00
-- **定休日**: 月・日曜
-- **住所**: 大阪府摂津市千里丘２丁目３−５
-- **予約**: 可 — ☎ 06-6386-8755 ／ [公式サイト](http://ameblo.jp/moricafe08/)
-- **選定理由**: 野菜ソムリエのオーナーによる隠れ家カフェとして、地元ブログ「北摂LABO」の推薦と満席続きの人気ぶりから選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E3%82%AB%E3%83%95%E3%82%A7%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E6%91%82%E6%B4%A5%E5%B8%82%E5%8D%83%E9%87%8C%E4%B8%98%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%95)
-- **参照元**: [北摂LABO](https://hokusetsu-labo.com/post-1149/) / [公式ブログ](https://ameblo.jp/moricafe08/)

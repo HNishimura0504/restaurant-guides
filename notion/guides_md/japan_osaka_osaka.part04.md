@@ -1,6 +1,65 @@
+### 65. グリル梵 本店（ぐりるぼん ほんてん）
+
+@@IMG:japan/osaka/img/osaka/grill-bon.jpg@@
+
+@@IMG:japan/osaka/img/osaka/grill-bon_exterior.jpg@@
+
+`老舗・歴史` `ブログ推薦`
+
+1961年創業、新世界の老舗洋食店。初代の味を三代目が守り続け、デミグラスソースを挟んだビーフヘレカツサンドは東京・銀座にも進出したほどの名物。
+
+- **一皿**: ヘレビーフカツサンド（柔らかいヘレカツに特製デミグラスを合わせた贅沢サンド）
+- **営業時間**: 月・火・水・木・金・土・日 12:00〜14:00, 17:00〜19:30
+- **定休日**: なし(要最終確認)
+- **住所**: 大阪府大阪市浪速区恵美須東１丁目１７−１７
+- **予約**: 要確認 — ☎ 06-6632-3765
+- **選定理由**: 新世界で60年以上続く老舗で、洋食ファンのブログや各メディアで定番として紹介される。ぐるなび・グルメブログで営業確認。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B0%E3%83%AA%E3%83%AB%E6%A2%B5%20%E6%9C%AC%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E6%B5%AA%E9%80%9F%E5%8C%BA%E6%81%B5%E7%BE%8E%E9%A0%88%E6%9D%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%97)
+- **参照元**: [ぐるなび](https://r.gnavi.co.jp/1azcazwm0000/) / [阪急阪神オーナーズクラブ 名店の系譜](https://hoc.8984.jp/enjoy/meiten/detail/index_07.html)
+
+### 66. 明治軒（めいじけん）
+
+@@IMG:japan/osaka/img/osaka/meijiken.jpg@@
+
+@@IMG:japan/osaka/img/osaka/meijiken_exterior.jpg@@
+
+`老舗・歴史` `ブログ推薦`
+
+1925(大正14〜昭和元)年創業、心斎橋で100年続くオムライスの老舗。一日煮込んだ牛肉と玉ねぎをワインでペースト状にした具の見えないオムライスが名物で、串カツとのセットが大阪流。
+
+- **一皿**: オムライス串カツセット（秘伝ソースのオムライスに甘辛串カツを添えた名物セット）
+- **営業時間**: 月 11:00〜15:00 ／ 火・木・金・土・日 11:00〜15:00, 17:00〜20:00
+- **定休日**: 水曜
+- **住所**: 大阪府大阪市中央区心斎橋筋１丁目５−３２
+- **予約**: 要確認 — ☎ 06-6271-6761 ／ [公式サイト](https://meijiken1925.tkc.best-hp.jp/)
+- **選定理由**: 創業約100年の大阪洋食を代表する老舗で、地元メディア・グルメブログ(Mのランチ等)で定番紹介。公式サイトで営業確認。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%98%8E%E6%B2%BB%E8%BB%92%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%BF%83%E6%96%8E%E6%A9%8B%E7%AD%8B%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%93%EF%BC%92)
+- **参照元**: [明治軒 公式サイト](https://meijiken1925.tkc.best-hp.jp/) / [Mのランチ](https://emunoranchi.com/17090)
+
+### 67. ポンテベッキオ 北浜本店（ぽんてべっきお きたはまほんてん）
+
+@@IMG:japan/osaka/img/osaka/ponte-vecchio.jpg@@
+
+@@IMG:japan/osaka/img/osaka/ponte-vecchio_exterior.jpg@@
+
+`老舗・歴史` `口コミ突出`
+
+1986年開業、山根大助シェフ率いる関西イタリアンの最高峰。大阪証券取引所ビルに構える本店では、瀬戸内の魚介など関西の食材を活かしたコース料理を提供する。
+
+- **一皿**: 雲丹のスパゲッティーニ（濃厚な雲丹をソースに絡めた名物パスタ）
+- **営業時間**: 月・火・水・木・金・土・日 11:30〜15:00, 18:00〜22:00
+- **定休日**: なし(要最終確認)
+- **住所**: 大阪府大阪市中央区北浜１丁目８−１６ 大阪証券取引所ビル 1F
+- **予約**: 可 — ☎ 06-6229-7770 ／ [公式サイト](http://www.ponte-vecchio.co.jp/)
+- **選定理由**: ミシュラン星獲得歴を持ち大阪イタリアンの草分けとして各メディアで紹介される殿堂的存在。公式サイトで営業確認。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%9D%E3%83%B3%E3%83%86%E3%83%99%E3%83%83%E3%82%AD%E3%82%AA%20%E5%8C%97%E6%B5%9C%E6%9C%AC%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8C%97%E6%B5%9C%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%96%20%E5%A4%A7%E9%98%AA%E8%A8%BC%E5%88%B8%E5%8F%96%E5%BC%95%E6%89%80%E3%83%93%E3%83%AB%201F)
+- **参照元**: [ポンテベッキオ 公式サイト](https://ponte-vecchio.co.jp/kitahama) / [ヒトサラ](https://hitosara.com/0006078388/)
+
 ### 68. ラ・トォルトゥーガ（ら・とぉるとぅーが）
 
 @@IMG:japan/osaka/img/osaka/la-tortuga.jpg@@
+
+@@IMG:japan/osaka/img/osaka/la-tortuga_exterior.jpg@@
 
 `口コミ突出`
 
@@ -20,6 +79,8 @@
 ### 30. 焼肉ホルモン 空 鶴橋本店（やきにくほるもん そら）
 
 @@IMG:japan/osaka/img/osaka/sora.jpg@@
+
+@@IMG:japan/osaka/img/osaka/sora_exterior.jpg@@
 
 `口コミ突出` `地元密着`
 
@@ -55,6 +116,8 @@
 
 @@IMG:japan/osaka/img/osaka/american.jpg@@
 
+@@IMG:japan/osaka/img/osaka/american_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 昭和21年創業、シャンデリア輝く豪華な内装で「大阪純喫茶の女王」と称される名店。名物は「ホットケーキ」（自家ブレンドの粉を厚い銅板でふんわり焼き、焼きたてにバターを塗って切り分けて提供する昔ながらのスタイル）とプリン。
@@ -71,6 +134,8 @@
 ### 33. 千成屋珈琲 本店（せんなりやこーひー）
 
 @@IMG:japan/osaka/img/osaka/sennariya.jpg@@
+
+@@IMG:japan/osaka/img/osaka/sennariya_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 
@@ -89,6 +154,8 @@
 
 @@IMG:japan/osaka/img/osaka/kintsuba.jpg@@
 
+@@IMG:japan/osaka/img/osaka/kintsuba_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 昭和5年（1930年）創業のきんつば専門の老舗。名物「きんつば」（粒あんを薄い小麦粉の衣で包み鉄板で一面ずつ焼き上げた和菓子。餡の炊き加減が絶妙で甘さ控えめ）は店内で焼きたても味わえる。夏はかき氷も人気。
@@ -105,6 +172,8 @@
 ### 35. 福壽堂秀信 帝塚山本店（ふくじゅどうひでのぶ）
 
 @@IMG:japan/osaka/img/osaka/fukujudo.jpg@@
+
+@@IMG:japan/osaka/img/osaka/fukujudo_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 
@@ -123,6 +192,8 @@
 
 @@IMG:japan/osaka/img/osaka/nakamuraya.jpg@@
 
+@@IMG:japan/osaka/img/osaka/nakamuraya_exterior.jpg@@
+
 `口コミ突出` `老舗・歴史` `地元密着`
 
 昭和30年（1955年）創業、日本一長い天神橋筋商店街の名物行列店。名物「コロッケ」（北海道産じゃがいもを使い、甘みのあるほくほくの揚げたてを1個約100円で提供。1日3000個売れる日もある）。テレビ番組で芸能人が紹介し全国区に。
@@ -139,6 +210,8 @@
 ### 69. 丸福珈琲店 千日前本店（まるふくこーひーてん せんにちまえほんてん）
 
 @@IMG:japan/osaka/img/osaka/marufuku-coffee.jpg@@
+
+@@IMG:japan/osaka/img/osaka/marufuku-coffee_exterior.jpg@@
 
 `老舗・歴史` `ブログ推薦`
 
@@ -174,6 +247,8 @@
 
 @@IMG:japan/osaka/img/osaka/painduce.jpg@@
 
+@@IMG:japan/osaka/img/osaka/painduce_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 大阪ベーカリー界を牽引する米山雅彦シェフの店。契約農家の野菜をたっぷりのせた惣菜パンや石窯ハード系が名物で、全国のパン好きが訪れるオフィス街の名店。
@@ -190,6 +265,8 @@
 ### 72. ポアール 帝塚山本店（ぽあーる てづかやまほんてん）
 
 @@IMG:japan/osaka/img/osaka/poire-tezukayama.jpg@@
+
+@@IMG:japan/osaka/img/osaka/poire-tezukayama_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 

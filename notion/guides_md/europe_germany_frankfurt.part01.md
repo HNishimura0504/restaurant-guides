@@ -11,7 +11,7 @@ GERMANY / FRANKFURT 🇩🇪
 - `老舗・歴史` — 地元に根ざした歴史ある店
 - `食の専門街・市場` — 食の専門街・市場の立地
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+> 📷 各店の写真は上が**料理**、下が**店構え**の実写です（Google の店舗写真 ©各投稿者/Google ／ 一部は Google Street View ©Google）。店構えが確認できなかった店は料理の1枚だけです。
 
 @@TOC@@
 
@@ -330,23 +330,3 @@ GERMANY / FRANKFURT 🇩🇪
 - **選定理由**: 公式サイトが80年以上の歴史と秘伝レシピのベートマンヒェン、フランクフルター・クランツ等の郷土菓子を明記。中心部ツァイル至近で立ち寄りやすい老舗として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Weidenweber%20%28Erste%20Frankfurter%20Zeilb%C3%A4ckerei%29%20Gro%C3%9Fe%20Friedberger%20Stra%C3%9Fe%2010%2C%2060313%20Frankfurt%20am%20Main)
 - **参照元**: [weidenweber.de](https://www.weidenweber.de/) / [gelbeseiten.de](https://www.gelbeseiten.de/gsbiz/17d7daab-af4f-45ad-8c92-1d44c96d4e17)
-
-### Bitter & Zart Chocolaterie（ビター・ウント・ツァルト）
-
-@@IMG:europe/germany/img/frankfurt/bitter-und-zart.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-旧市街ブラウバッハ通りのショコラトリー兼カフェ。「市内で最も美しいカフェ」と評される優雅な空間で、上質な板チョコ・プラリネの販売と自家製ケーキを楽しめる。
-
-- **一皿**: ホットチョコレートと自家製ケーゼクーヘン(濃厚な飲むチョコレートに、自家製のチーズケーキやマンゴートルテ、レモンヨーグルトケーキを合わせるのが定番)
-- **営業時間**: 月〜金 10:00〜18:00 / 土 10:00〜16:00
-- **定休日**: 日曜
-- **住所**: Braubachstraße 14, 60311 Frankfurt am Main
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 69 94942846 ／ [公式サイト](http://www.bitterundzart.de/)
-- **公式**: [公式サイト](http://www.bitterundzart.de/)
-- **選定理由**: TripAdvisorやローカル誌で「市内で最も美しいカフェ」と紹介される定番スイーツ店。美術館街と旧市街散策の動線上にあり、ガイドの甘味枠として最適。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bitter%20%26%20Zart%20Chocolaterie%20Braubachstra%C3%9Fe%2014%2C%2060311%20Frankfurt%20am%20Main)
-- **参照元**: [bitterundzart.de](https://www.bitterundzart.de/impressum/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d2691406-Reviews-Bitter_Zart-Frankfurt_Hesse.html)
-
-## アプフェルヴァイン・ワイン

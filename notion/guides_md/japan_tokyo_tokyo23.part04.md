@@ -1,6 +1,63 @@
+### 52. スパイスマジック カルカッタ 本店（すぱいすまじっくかるかったほんてん）
+
+@@IMG:japan/tokyo/img/tokyo23/spice_magic_calcutta.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/spice_magic_calcutta_exterior.jpg@@
+
+`地元密着` `veg`
+
+「リトルインディア」と呼ばれる西葛西で、インド料理店の草分けとなった店。化学調味料を使わず、コルカタ周辺のベンガル家庭料理と、南インドのドーサやミールスを手作りで出す。豆や野菜を使った菜食向けの品が多い。近隣に住むインド人家族の常連が多く、店の空気も家庭的。
+
+- **一皿**: ミールス／ドーサ(豆と野菜のカレーを添えた南インドの定食と米粉のクレープ)
+- **営業時間**: 月・火・水・木・金・土・日 11:00〜15:00, 17:00〜22:00
+- **定休日**: なし(要最終確認)
+- **住所**: 東京都江戸川区西葛西３丁目１３−３ マンションよしの
+- **予約**: 可 — ☎ 03-5667-3885
+- **選定理由**: 江戸川区の地域情報サイト「まいぷれ」と浦安の地域メディアの取材記事で草分け的存在・化学調味料不使用を確認。ヒトサラの店舗情報で番地までの住所と現行の営業時間を確認した。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%E3%83%9E%E3%82%B8%E3%83%83%E3%82%AF%20%E3%82%AB%E3%83%AB%E3%82%AB%E3%83%83%E3%82%BF%20%E6%9C%AC%E5%BA%97%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E6%B1%9F%E6%88%B8%E5%B7%9D%E5%8C%BA%E8%A5%BF%E8%91%9B%E8%A5%BF%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%93%20%E3%83%9E%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%88%E3%81%97%E3%81%AE)
+- **参照元**: [ヒトサラ](https://hitosara.com/0004037620/) / [まいぷれ江戸川区](https://edogawa.mypl.net/shop/00000380911/)
+
+### 53. ぐりる スズコウ（ぐりるすずこう）
+
+@@IMG:japan/tokyo/img/tokyo23/guriru_suzukou.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/guriru_suzukou_exterior.jpg@@
+
+`地元密着` `history`
+
+昭和39年(1964)創業、蒲田の街なかで代を重ねてきた町の洋食屋。名物は皿を覆うほどの大きさの特大生姜焼きで、近隣の工場や商店で働く常連が昼に列を作る。ハンバーグ、エビフライ、フライ類などの定番も揃い、盛りの良さと値ごろ感で知られる。土日祝は休みで、平日の昼と夜のみ営業する。
+
+- **一皿**: 特大生姜焼き(皿から溢れる大きさの豚生姜焼き定食)
+- **営業時間**: 月・火・水・木・金 11:30〜13:30, 17:00〜20:30
+- **定休日**: 土・日曜
+- **住所**: 東京都大田区蒲田５丁目１６−８
+- **予約**: 要確認 — ☎ 03-3731-5029 ／ [公式サイト](https://www.hotpepper.jp/strJ000135361/)
+- **選定理由**: 大田区商店街連合会の公式サイト「おーたふる」の洋食特集で1964年創業・名物・営業時間・定休日・住所を確認。じゃらんnetの店舗情報でも現行営業を確認した。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%90%E3%82%8A%E3%82%8B%20%E3%82%B9%E3%82%BA%E3%82%B3%E3%82%A6%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%A4%A7%E7%94%B0%E5%8C%BA%E8%92%B2%E7%94%B0%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%98)
+- **参照元**: [おーたふる 大田区商店街ナビ](https://otakushoren.com/feature/159489) / [じゃらんnet](https://www.jalan.net/gourmet/cit_131110000/g1_3G005/)
+
+### 54. スパイスカフェ（すぱいすかふぇ）
+
+@@IMG:japan/tokyo/img/tokyo23/spice_cafe_bunka.jpg@@
+
+`buzz` `veg`
+
+押上の裏手、文花の古民家を改装したスパイス料理店。昼はカレーを中心にした定食、夜はスパイスを軸に組んだコース仕立てで、日本の野菜や魚をインドや東南アジアの技法で扱う。庭に面した縁側のある造りが残り、住宅街の中で静かに食べられる。食べログのアジア・エスニック百名店に選ばれている。
+
+- **一皿**: スパイスカレーのランチプレート(数種のカレーと副菜を盛り合わせた昼の定食)
+- **営業時間**: 水・木・金・土・日 11:30〜14:00, 18:00〜20:30
+- **定休日**: 月・火曜
+- **住所**: 東京都墨田区文花１丁目６−１０
+- **予約**: 可 — ☎ 03-3613-4020 ／ [公式サイト](http://spicecafe.jp/)
+- **選定理由**: 食べログ アジア・エスニック百名店TOKYO選出をヒトサラと東京カレーディクショナリーで確認。ヒトサラの店舗情報で番地までの住所・営業時間・定休日を確認した。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%E3%82%AB%E3%83%95%E3%82%A7%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%A2%A8%E7%94%B0%E5%8C%BA%E6%96%87%E8%8A%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%90)
+- **参照元**: [ヒトサラ](https://hitosara.com/0032016603/) / [東京カレーディクショナリー](https://currydictionary.com/spice-cafe-39918/)
+
 ### 55. キッチンABC 西池袋店（きっちんえーびーしーにしいけぶくろてん）
 
 @@IMG:japan/tokyo/img/tokyo23/kitchen_abc_nishiikebukuro.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/kitchen_abc_nishiikebukuro_exterior.jpg@@
 
 `地元密着`
 
@@ -19,6 +76,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/grill_f_gotanda.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/grill_f_gotanda_exterior.jpg@@
+
 `history` `地元密着`
 
 昭和25年(1950)創業。五反田駅前の細い路地に建つ煉瓦造りの店で、外観も内装も創業当時の姿を残す。創業以来継ぎ足してきた漆黒のデミグラスソースが看板で、もともと常連にだけ出していたハヤシライスが今は最も注文される一皿。夜は一品ずつの洋食とワインで長く過ごせる。日祝休み。
@@ -36,6 +95,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/murugi_shibuya.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/murugi_shibuya_exterior.jpg@@
+
 `history` `地元密着`
 
 昭和26年(1951)創業。ビルマ戦線から戻った初代が現地で覚えた味を広めようと開いた店で、13種の香辛料で長く煮込むムルギーカリーを出す。ご飯を山の形に高く盛り、脇にゆで玉子を添える盛り付けが名物。スパイス以外は国産の材料を使う。カウンター中心の小さな店で、道玄坂の路地に70年以上続く。
@@ -52,6 +113,8 @@
 ### 58. とんかつ とんき 目黒本店（とんかつとんきめぐろほんてん）
 
 @@IMG:japan/tokyo/img/tokyo23/tonki_meguro.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/tonki_meguro_exterior.jpg@@
 
 `history`
 
@@ -72,6 +135,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/saboru_jimbocho.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/saboru_jimbocho_exterior.jpg@@
+
 `history` `地元密着`
 
 昭和30年(1955)創業、2025年に70年を迎えた神保町の喫茶店。丸太と落書きだらけの壁でできた山小屋のような店内が地下と上階に分かれる。ピザトーストやクリームソーダが定番で、隣の姉妹店「さぼうる2」では山盛りのナポリタンやミートソースが名物。古書店街の待ち合わせ場所として今も使われている。
@@ -88,6 +153,8 @@
 ### 60. 銀座ウエスト 銀座本店（ぎんざうえすとぎんざほんてん）
 
 @@IMG:japan/tokyo/img/tokyo23/ginza_west_honten.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/ginza_west_honten_exterior.jpg@@
 
 `history`
 
@@ -106,6 +173,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/umezono_asakusa.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/umezono_asakusa_exterior.jpg@@
+
 `history` `地元密着`
 
 安政元年(1854)に浅草寺の別院・梅園院の一角で茶屋として始まった甘味処。名物のあわぜんざいは、粟ではなく餅きびを半搗きにして練り上げ、その上にこし餡を乗せたもので、創業時と変わらぬ形で出し続けている。あんみつやくず餅も揃う。永井荷風が通った店としても知られる。
@@ -122,6 +191,8 @@
 ### 62. やきたてパン カトレア（やきたてぱんかとれあ）
 
 @@IMG:japan/tokyo/img/tokyo23/cattlea_morishita.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/cattlea_morishita_exterior.jpg@@
 
 `history` `地元密着`
 
@@ -140,6 +211,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/jiman_kusamochi.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/jiman_kusamochi_exterior.jpg@@
+
 `history` `地元密着`
 
 明治2年(1869)に隅田川の渡船場の横で茶店として始まった和菓子屋。四季を通じて香りの高い生の草(よもぎ)を使い、餡は北海道十勝産の小豆を吟味して用いる。あん入りと、きな粉と白蜜を添えるあん無しの2種があり、餅の中央のくぼみが手作りの跡を残す。売り切れ次第その日は閉店する。
@@ -156,6 +229,8 @@
 ### 64. たいやき わかば（たいやきわかば）
 
 @@IMG:japan/tokyo/img/tokyo23/taiyaki_wakaba.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/taiyaki_wakaba_exterior.jpg@@
 
 `history` `地元密着`
 
@@ -174,6 +249,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/takase_ikebukuro.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/takase_ikebukuro_exterior.jpg@@
+
 `history` `地元密着`
 
 大正9年(1920)創業の洋菓子店。1階でパンと洋菓子を売り、2階が喫茶室、3階がレストラン、9階がコーヒーラウンジという構成になっている。喫茶室では自社製のケーキやプリンアラモード、サンドイッチなどの軽食が頼める。喫茶室は近年内装を改めたが、価格帯は変わらず地元客の日常の場として続く。
@@ -190,6 +267,8 @@
 ### 66. 本郷三原堂（ほんごうみはらどう）
 
 @@IMG:japan/tokyo/img/tokyo23/hongo_miharado.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/hongo_miharado_exterior.jpg@@
 
 `history` `地元密着`
 
@@ -208,6 +287,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/levain_tomigaya.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/levain_tomigaya_exterior.jpg@@
+
 `history` `veg`
 
 1984年創業、日本の天然酵母パンの草分けとされる店。国産小麦と自家培養の酵母を使い、酸味のあるカンパーニュや全粒粉のパンを焼く。生地を長く発酵させるため、噛むほどに味が出る。併設のカフェではパンにスープやサラダを合わせてその場で食べられる。月曜と第2火曜が休み。
@@ -224,6 +305,8 @@
 ### 68. 珈琲亭 七つ森（こーひーていななつもり）
 
 @@IMG:japan/tokyo/img/tokyo23/nanatsumori_koenji.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/nanatsumori_koenji_exterior.jpg@@
 
 `地元密着` `history`
 
@@ -242,6 +325,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/habutae_dango.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/habutae_dango_exterior.jpg@@
+
 `history` `地元密着`
 
 文政2年(1819)に芋坂の茶屋として始まった団子屋。きめの細かい生地を絹の羽二重に例えたのが屋号の由来で、餡と焼き(醤油)の2種を並べて出す。夏目漱石や正岡子規の作品にも登場する。本店は建て替え後も店内に席を備え、茶と一緒にその場で食べられる。日暮里駅前にも店を構える。
@@ -254,24 +339,3 @@
 - **選定理由**: 荒川区の広報アーカイブ「荒川ゆうネット」の区の銘菓特集と公式サイトで文政2年創業を確認。さんたつの取材記事と店舗情報で番地までの住所・営業時間を確認した。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%BE%BD%E4%BA%8C%E9%87%8D%E5%9B%A3%E5%AD%90%20%E6%9C%AC%E5%BA%97%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E8%8D%92%E5%B7%9D%E5%8C%BA%E6%9D%B1%E6%97%A5%E6%9A%AE%E9%87%8C%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%95%EF%BC%94%E2%88%92%EF%BC%93)
 - **参照元**: [荒川ゆうネット(荒川区)](https://www.city.arakawa.tokyo.jp/unet/issue/0904/index.html) / [さんたつ by 散歩の達人](https://san-tatsu.jp/articles/216210/)
-
-### 70. 石鍋商店（いしなべしょうてん）
-
-@@IMG:japan/tokyo/img/tokyo23/ishinabe_shoten.jpg@@
-
-`history` `地元密着`
-
-明治20年(1887)創業、王子で130年以上続く久寿餅の店。小麦でんぷんを1年半から2年発酵させて作る久寿餅は、ぷりっとした弾力が特徴で、黒蜜ときな粉をかけて食べる。店内では久寿餅のほかクリームあんみつや酒まんじゅうも供する。久寿餅が売り切れ次第、早めに閉店することがある。
-
-- **一皿**: 久寿餅(小麦でんぷんを1年半以上発酵させた餅に黒蜜ときな粉)
-- **営業時間**: 月・火・水・木・金・土 10:00〜17:00
-- **定休日**: 日曜
-- **住所**: 東京都北区岸町１丁目５−１０
-- **予約**: 要確認 — ☎ 03-3908-3165 ／ [公式サイト](http://www.oji-ishinabe.co.jp/)
-- **選定理由**: るるぶ&more.といこーよとりっぷの店舗情報で明治20年創業・製法・番地までの住所・営業時間を確認。北区の地域メディア「赤羽マガジン」の取材記事で現在のメニューを確認した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%9F%B3%E9%8D%8B%E5%95%86%E5%BA%97%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8C%97%E5%8C%BA%E5%B2%B8%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%90)
-- **参照元**: [るるぶ&more.](https://rurubu.jp/andmore/spot/80012162) / [赤羽マガジン](https://akabane-shinbun.com/archives/8166)
-
----
-
-> 本ガイドは個人利用目的で作成。掲載情報は2026年8月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。

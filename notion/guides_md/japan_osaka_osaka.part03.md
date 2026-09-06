@@ -1,3 +1,41 @@
+### 21. 551蓬莱 本店（ごーごーいちほうらい）
+
+@@IMG:japan/osaka/img/osaka/horai551.jpg@@
+
+@@IMG:japan/osaka/img/osaka/horai551_exterior.jpg@@
+
+`口コミ突出` `老舗・歴史`
+
+「大阪土産＝551の豚まん」と言われる絶対的名物。「豚まん」（粗切り豚肉と玉ねぎを甘みのある厚手の生地で包み、店内で手包み・蒸したてを提供する中華まん）は1日17万個売れる日もある。本店1階はテイクアウト、2・3階は焼売や海老の天ぷらも食べられるレストラン。
+
+- **一皿**: 豚まん（粗切り豚肉と玉ねぎを厚手生地で手包みし蒸したてで提供する中華まん）
+- **営業時間**: 月・水・木・金・土・日 10:00〜21:30
+- **定休日**: 火曜
+- **住所**: 大阪府大阪市中央区難波３丁目６−３
+- **予約**: 可 — ☎ 06-6641-0551 ／ [公式サイト](https://www.551horai.co.jp/shop/list/13/)
+- **選定理由**: 1日17万個売れる日もある大阪の食文化の象徴として選定。公式サイトと食べログで裏付け。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=551%E8%93%AC%E8%8E%B1%20%E6%9C%AC%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%9B%A3%E6%B3%A2%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%93)
+- **参照元**: [公式サイト](https://www.551horai.co.jp/shop/list/13/) / [食べログ](https://tabelog.com/en/osaka/A2701/A270202/27001312/)
+
+### 22. 一芳亭 本店（いっぽうてい）
+
+@@IMG:japan/osaka/img/osaka/ippotei.jpg@@
+
+@@IMG:japan/osaka/img/osaka/ippotei_exterior.jpg@@
+
+`老舗・歴史` `地元密着`
+
+昭和8年（1933年）創業の華風料理店。名物「しゅうまい」は戦後の小麦皮不足を機に薄焼き卵を皮に使った黄色い焼売で、豚肉と海老のふんわり餡が特徴の1人前5個の唯一無二の味。ビール片手にしゅうまいをつまむ大阪の昼飲み文化も体験できる。
+
+- **一皿**: しゅうまい（薄焼き卵を皮に使った黄色い焼売。豚肉と海老のふんわり餡）
+- **営業時間**: 月・火・水・木・金・土 11:30〜20:00
+- **定休日**: 日曜
+- **住所**: 大阪府大阪市浪速区浪速区難波中２丁目６−２２
+- **予約**: 要確認 — ☎ 06-6641-8381 ／ [公式サイト](http://www.ippoutei.com/)
+- **選定理由**: 唯一無二の卵皮しゅうまいを90年以上守る老舗として選定。公式サイトと観光メディアで裏付け。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E8%8A%B3%E4%BA%AD%20%E6%9C%AC%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E6%B5%AA%E9%80%9F%E5%8C%BA%E6%B5%AA%E9%80%9F%E5%8C%BA%E9%9B%A3%E6%B3%A2%E4%B8%AD%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92%EF%BC%92)
+- **参照元**: [公式サイト](http://www.ippoutei.com/) / [るるぶ&more](https://rurubu.jp/andmore/spot/80027984)
+
 ### 23. 冷麺館 鶴橋店（れいめんかん）
 
 @@IMG:japan/osaka/img/osaka/reimenkan.jpg@@
@@ -36,6 +74,8 @@
 
 @@IMG:japan/osaka/img/osaka/kinguemon.jpg@@
 
+@@IMG:japan/osaka/img/osaka/kinguemon_exterior.jpg@@
+
 `口コミ突出` `地元密着`
 
 真っ黒な醤油スープ「大阪ブラック」で知られる醤油ラーメン専門店の本店。見た目に反してまろやかな飲み口の醤油スープが特徴で、昼のみの短い営業時間に行列ができる。
@@ -52,6 +92,8 @@
 ### 57. 中華そば うえまち（ちゅうかそば うえまち）
 
 @@IMG:japan/osaka/img/osaka/chukasoba-uemachi.jpg@@
+
+@@IMG:japan/osaka/img/osaka/chukasoba-uemachi_exterior.jpg@@
 
 `口コミ突出`
 
@@ -70,6 +112,8 @@
 
 @@IMG:japan/osaka/img/osaka/strike-ken.jpg@@
 
+@@IMG:japan/osaka/img/osaka/strike-ken_exterior.jpg@@
+
 `口コミ突出` `地元密着`
 
 野球をコンセプトにしたユニークなラーメン店で、天満のラーメン激戦区を代表する一軒。メニューは直球の醤油「ストレート」と変化球の鶏白湯塩「シンカー」の二枚看板。2025年6月に天満エリア内で移転リニューアルした。
@@ -86,6 +130,8 @@
 ### 59. 中国料理 大成閣（ちゅうごくりょうり たいせいかく）
 
 @@IMG:japan/osaka/img/osaka/taiseikaku.jpg@@
+
+@@IMG:japan/osaka/img/osaka/taiseikaku_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 
@@ -120,6 +166,8 @@
 ### 61. ダルバート食堂（だるばーとしょくどう）
 
 @@IMG:japan/osaka/img/osaka/dalbhat-shokudo.jpg@@
+
+@@IMG:japan/osaka/img/osaka/dalbhat-shokudo_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -157,6 +205,8 @@
 
 @@IMG:japan/osaka/img/osaka/jiyuken.jpg@@
 
+@@IMG:japan/osaka/img/osaka/jiyuken_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 明治43年（1910年）創業、大阪初の西洋料理店とされる老舗。名物「名物カレー」は、炊きたてご飯にあらかじめカレーを混ぜ込み中央に生玉子を落とした独特のスタイルで、織田作之助ら昭和の文豪にも愛された一皿。
@@ -173,6 +223,8 @@
 ### 25. 北極星 心斎橋本店（ほっきょくせい）
 
 @@IMG:japan/osaka/img/osaka/hokkyokusei.jpg@@
+
+@@IMG:japan/osaka/img/osaka/hokkyokusei_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -191,6 +243,8 @@
 
 @@IMG:japan/osaka/img/osaka/maruyoshi.jpg@@
 
+@@IMG:japan/osaka/img/osaka/maruyoshi_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 1946年（昭和21年）創業の阿倍野の老舗洋食店。名物は「特製ロールキャベツ」（大ぶりのキャベツで肉だねを包み、デミグラスソースでじっくり煮込んだ看板料理。煮込み時間が必要なため早い時間の来店推奨）。ハヤシライスやカツも人気。
@@ -207,6 +261,8 @@
 ### 27. ボタニカリー 本町本店（ぼたにかりー）
 
 @@IMG:japan/osaka/img/osaka/botanicurry.jpg@@
+
+@@IMG:japan/osaka/img/osaka/botanicurry_exterior.jpg@@
 
 `口コミ突出`
 
@@ -242,6 +298,8 @@
 
 @@IMG:japan/osaka/img/osaka/lacime.jpg@@
 
+@@IMG:japan/osaka/img/osaka/lacime_exterior.jpg@@
+
 `口コミ突出`
 
 ミシュラン二つ星、「アジアのベストレストラン50」上位常連の高田裕介シェフによる大阪フレンチの最高峰。名物は「ブーダンノワールのドーナツ」（豚の血のソーセージを揚げ生地で包んだスペシャリテ）など、フランス技法×日本・奄美の食材を融合したコース。
@@ -258,6 +316,8 @@
 ### 63. Columbia8 北浜本店（ころんびあえいと きたはまほんてん）
 
 @@IMG:japan/osaka/img/osaka/columbia8.jpg@@
+
+@@IMG:japan/osaka/img/osaka/columbia8_exterior.jpg@@
 
 `口コミ突出` `地元密着`
 
@@ -276,6 +336,8 @@
 
 @@IMG:japan/osaka/img/osaka/ghar.jpg@@
 
+@@IMG:japan/osaka/img/osaka/ghar_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 京町堀の路地に行列を生む昼のみ営業のスパイスカレー店。複雑に折り重なるスパイス使いのチキンカレーやキーマを合いがけで味わうスタイルが人気で、雑誌のカレーグランプリ受賞歴も持つ。
@@ -288,54 +350,3 @@
 - **選定理由**: 食べログカレー百名店選出、雑誌『究極のカレー』関西版グランプリ受賞店。公式サイト・カレー系ブログで営業確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=CURRY%E5%AE%B6%20Ghar%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%BA%AC%E7%94%BA%E5%A0%80%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%90)
 - **参照元**: [Ghar 公式サイト](https://ghar-curry.com/) / [食べログ](https://tabelog.com/osaka/A2701/A270102/27066220/)
-
-### 65. グリル梵 本店（ぐりるぼん ほんてん）
-
-@@IMG:japan/osaka/img/osaka/grill-bon.jpg@@
-
-`老舗・歴史` `ブログ推薦`
-
-1961年創業、新世界の老舗洋食店。初代の味を三代目が守り続け、デミグラスソースを挟んだビーフヘレカツサンドは東京・銀座にも進出したほどの名物。
-
-- **一皿**: ヘレビーフカツサンド（柔らかいヘレカツに特製デミグラスを合わせた贅沢サンド）
-- **営業時間**: 月・火・水・木・金・土・日 12:00〜14:00, 17:00〜19:30
-- **定休日**: なし(要最終確認)
-- **住所**: 大阪府大阪市浪速区恵美須東１丁目１７−１７
-- **予約**: 要確認 — ☎ 06-6632-3765
-- **選定理由**: 新世界で60年以上続く老舗で、洋食ファンのブログや各メディアで定番として紹介される。ぐるなび・グルメブログで営業確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B0%E3%83%AA%E3%83%AB%E6%A2%B5%20%E6%9C%AC%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E6%B5%AA%E9%80%9F%E5%8C%BA%E6%81%B5%E7%BE%8E%E9%A0%88%E6%9D%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%97)
-- **参照元**: [ぐるなび](https://r.gnavi.co.jp/1azcazwm0000/) / [阪急阪神オーナーズクラブ 名店の系譜](https://hoc.8984.jp/enjoy/meiten/detail/index_07.html)
-
-### 66. 明治軒（めいじけん）
-
-@@IMG:japan/osaka/img/osaka/meijiken.jpg@@
-
-`老舗・歴史` `ブログ推薦`
-
-1925(大正14〜昭和元)年創業、心斎橋で100年続くオムライスの老舗。一日煮込んだ牛肉と玉ねぎをワインでペースト状にした具の見えないオムライスが名物で、串カツとのセットが大阪流。
-
-- **一皿**: オムライス串カツセット（秘伝ソースのオムライスに甘辛串カツを添えた名物セット）
-- **営業時間**: 月 11:00〜15:00 ／ 火・木・金・土・日 11:00〜15:00, 17:00〜20:00
-- **定休日**: 水曜
-- **住所**: 大阪府大阪市中央区心斎橋筋１丁目５−３２
-- **予約**: 要確認 — ☎ 06-6271-6761 ／ [公式サイト](https://meijiken1925.tkc.best-hp.jp/)
-- **選定理由**: 創業約100年の大阪洋食を代表する老舗で、地元メディア・グルメブログ(Mのランチ等)で定番紹介。公式サイトで営業確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%98%8E%E6%B2%BB%E8%BB%92%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%BF%83%E6%96%8E%E6%A9%8B%E7%AD%8B%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%93%EF%BC%92)
-- **参照元**: [明治軒 公式サイト](https://meijiken1925.tkc.best-hp.jp/) / [Mのランチ](https://emunoranchi.com/17090)
-
-### 67. ポンテベッキオ 北浜本店（ぽんてべっきお きたはまほんてん）
-
-@@IMG:japan/osaka/img/osaka/ponte-vecchio.jpg@@
-
-`老舗・歴史` `口コミ突出`
-
-1986年開業、山根大助シェフ率いる関西イタリアンの最高峰。大阪証券取引所ビルに構える本店では、瀬戸内の魚介など関西の食材を活かしたコース料理を提供する。
-
-- **一皿**: 雲丹のスパゲッティーニ（濃厚な雲丹をソースに絡めた名物パスタ）
-- **営業時間**: 月・火・水・木・金・土・日 11:30〜15:00, 18:00〜22:00
-- **定休日**: なし(要最終確認)
-- **住所**: 大阪府大阪市中央区北浜１丁目８−１６ 大阪証券取引所ビル 1F
-- **予約**: 可 — ☎ 06-6229-7770 ／ [公式サイト](http://www.ponte-vecchio.co.jp/)
-- **選定理由**: ミシュラン星獲得歴を持ち大阪イタリアンの草分けとして各メディアで紹介される殿堂的存在。公式サイトで営業確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%9D%E3%83%B3%E3%83%86%E3%83%99%E3%83%83%E3%82%AD%E3%82%AA%20%E5%8C%97%E6%B5%9C%E6%9C%AC%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%8C%97%E6%B5%9C%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%96%20%E5%A4%A7%E9%98%AA%E8%A8%BC%E5%88%B8%E5%8F%96%E5%BC%95%E6%89%80%E3%83%93%E3%83%AB%201F)
-- **参照元**: [ポンテベッキオ 公式サイト](https://ponte-vecchio.co.jp/kitahama) / [ヒトサラ](https://hitosara.com/0006078388/)

@@ -1,3 +1,22 @@
+### 17. 神田まつや（かんだまつや）
+
+@@IMG:japan/tokyo/img/tokyo23/soba_kanda_matsuya.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/soba_kanda_matsuya_exterior.jpg@@
+
+`history` `地元密着` `veg`
+
+明治17年（1884年）創業、神田須田町で代を重ねる手打ちそばの店。関東大震災後に建てられた木造の店舗は東京都の歴史的建造物にも選ばれている。茨城や北海道の蕎麦を特注で挽き、外二で打った細めのそばを濃いめの江戸の汁で食べさせる。相席が当たり前の座敷とテーブルで、もりやかけに加え鴨南蛮や天もりも人気。開店前から行列ができる。
+
+- **一皿**: もりそば(外二で打つ細めのそばを濃い江戸の汁で食べる)
+- **営業時間**: 火・水・木・金 11:00〜20:30 ／ 土 11:00〜19:30
+- **定休日**: 月・日曜
+- **住所**: 東京都千代田区神田須田町１丁目１３
+- **予約**: 要確認 — ☎ 03-3251-1556 ／ [公式サイト](http://www.kanda-matsuya.jp/)
+- **選定理由**: 千代田区の観光公式サイトVisit Chiyodaと東京都の東京歴建PROJECTの記事で明治17年創業・営業時間・定休日を確認。江戸そばの本流で、行列が今も続く店として選んだ。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%A5%9E%E7%94%B0%E3%81%BE%E3%81%A4%E3%82%84%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA%E7%A5%9E%E7%94%B0%E9%A0%88%E7%94%B0%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93)
+- **参照元**: [Visit Chiyoda(千代田区観光公式)](https://visit-chiyoda.tokyo/app/spot/detail/359) / [東京都 東京歴建PROJECT](https://with-tokyorekiken.metro.tokyo.lg.jp/stories/552/)
+
 ### 18. かんだやぶそば（かんだやぶそば）
 
 @@IMG:japan/tokyo/img/tokyo23/soba_kanda_yabusoba.jpg@@
@@ -19,6 +38,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/torinabe_tamahide.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/torinabe_tamahide_exterior.jpg@@
+
 `history` `buzz`
 
 宝暦10年（1760年）創業の軍鶏料理店で、明治24年に軍鶏鍋の肉と割下を卵でとじて飯に載せた親子丼を出前で売り出した「元祖親子丼」の店として知られる。建て替えのため長く休業していたが、2025年11月に人形町の同じ場所で営業を再開した。昼は行列のできる親子丼、夜は軍鶏鍋を中心とした献立で、鶏の旨みを引き出す割下と半熟の卵が持ち味。
@@ -35,6 +56,8 @@
 ### 20. 本むら庵 荻窪本店（ほんむらあん おぎくぼほんてん）
 
 @@IMG:japan/tokyo/img/tokyo23/soba_honmuraan_ogikubo.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/soba_honmuraan_ogikubo_exterior.jpg@@
 
 `history` `veg`
 
@@ -53,6 +76,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/soba_hiroeya_yaguchi.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/soba_hiroeya_yaguchi_exterior.jpg@@
+
 `地元密着` `history` `veg`
 
 大正期創業、蓮沼駅のそばで三代続く町の蕎麦屋。大田区商店街ナビの蕎麦屋特集でも創業100年超の店として取り上げられている。常陸秋そばを使ったもりやかけを軸に、うどん、丼物、ラーメン、季節の定食まで百五十種ほどの品書きが壁を埋める。近所の職人や家族連れが昼夜通しで入る食堂で、値段の気安さが続いている。
@@ -70,6 +95,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/soba_kikutani_sugamo.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/soba_kikutani_sugamo_exterior.jpg@@
+
 `buzz` `veg`
 
 巣鴨の庚申塚近くにある手打ちそばの店で、食べログのそば百名店に六度選ばれている。産地を選んだ玄蕎麦を自家製粉し、二種類以上のそばを打ち分けて出すのが持ち味で、粗挽きと細打ちを食べ比べられる。昼は蕎麦を中心に、夜はそば前の一品と地酒を合わせられる。都電荒川線の庚申塚から徒歩三分、巣鴨地蔵通りの散歩と合わせて訪ねやすい。
@@ -86,6 +113,8 @@
 ### 23. 打心蕎庵（だしんそあん）
 
 @@IMG:japan/tokyo/img/tokyo23/soba_dashinsoan.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/soba_dashinsoan_exterior.jpg@@
 
 `buzz` `veg`
 
@@ -106,6 +135,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/chuka_soba_takano.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/chuka_soba_takano_exterior.jpg@@
+
 `地元密着` `buzz`
 
 東急池上線・荏原中延の商店街にある昼だけの店。注文ごとに小さな手鍋でスープを温め、仕上げに煮干しと鰹を追い足して香りを立てる「手鍋式」が名物で、醤油清湯は輪郭がはっきりしつつ後味が軽い。麺は細めのストレートでスープの香りを邪魔しない。カウンター主体の小体な構えで、店主が黙々と手鍋を振る。行列緩和のため受付システムを導入している。
@@ -122,6 +153,8 @@
 ### 25. Homemade Ramen 麦苗（ほーむめいどらーめんむぎなえ）
 
 @@IMG:japan/tokyo/img/tokyo23/homemade_ramen_muginae.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/homemade_ramen_muginae_exterior.jpg@@
 
 `buzz`
 
@@ -140,6 +173,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/nakiryu_otsuka.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/nakiryu_otsuka_exterior.jpg@@
+
 `buzz`
 
 2012年開店。国内外の店で腕を磨いた店主が「自分の食べたいものしか出さない」姿勢を貫き、担担麺でミシュランガイド東京の一つ星を得た。芝麻醤の甘みと辣油の辛みが層になり、山椒の刺激が後を追う。拉麺やつけ麺も自家製麺で、うま味の密度が高い。朝8時に店頭のタブレットで整理券を取る方式。大塚駅南口から歩いて数分の路面店。
@@ -156,6 +191,8 @@
 ### 27. 麺処 晴（めんどころはる）
 
 @@IMG:japan/tokyo/img/tokyo23/menodokoro_haru.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/menodokoro_haru_exterior.jpg@@
 
 `buzz` `地元密着`
 
@@ -174,6 +211,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/ramen_jiro_mita.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/ramen_jiro_mita_exterior.jpg@@
+
 `history` `地元密着` `buzz`
 
 1960年代に別の場所で始まり、慶応大学三田キャンパス前に移った二郎系の総本店。乳化した豚骨醤油に極太麺、厚い豚の塊が積まれ、食券を出したあとの「ニンニク入れますか」の掛け声でヤサイやアブラを足す。カウンター13席のみ、支払いは現金だけ。開店前から行列が伸び、朝から昼、夕方と二部で回る。全国の二郎系の原点にあたる店。
@@ -190,6 +229,8 @@
 ### 29. 中華蕎麦にし乃（ちゅうかそばにしの）
 
 @@IMG:japan/tokyo/img/tokyo23/chuka_soba_nishino.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/chuka_soba_nishino_exterior.jpg@@
 
 `buzz`
 
@@ -208,6 +249,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/teuchi_ren.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/teuchi_ren_exterior.jpg@@
+
 `buzz`
 
 森下と両国の間、住宅街の路地にある手打ち麺の店。製麺機を使わず、生地を寝かせて延ばし、切ったあとに手で揉んで縮れを付ける全工程手打ちが売り。もちのような弾力と、ふわりと唇に当たる食感が同時にあり、鶏と魚介の澄んだ醤油スープが絡む。昼夜二部制で麺切れ終了。カウンター数席の小さな構えで、店主が一人で打ち続ける。
@@ -224,6 +267,8 @@
 ### 31. はつね（はつね）
 
 @@IMG:japan/tokyo/img/tokyo23/hatsune_nishiogi.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/hatsune_nishiogi_exterior.jpg@@
 
 `history` `地元密着` `veg`
 
@@ -242,6 +287,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/chuka_soba_ibuki.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/chuka_soba_ibuki_exterior.jpg@@
+
 `buzz` `地元密着`
 
 志村坂上の住宅街にある煮干しラーメンの名店。大量の煮干しを使い、苦みと甘みが同時に来る濃厚な「ニボニボ」の一杯で知られ、卓上の薬味で表情が変わる。券売機とカウンター数席のみで、昼夜二部制、麺切れで終了。板橋区から食べログ百名店に選ばれた店の一つで、当日の営業や仕込みの状況は店主のXで告知される。行列は開店前から伸びる。
@@ -259,6 +306,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/menya_itto_shinkoiwa.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/menya_itto_shinkoiwa_exterior.jpg@@
+
 `buzz` `地元密着`
 
 新小岩駅北口の路地にある行列店。鶏と魚介を煮詰めたつけ汁に、低温調理の豚チャーシューを添える濃厚魚介つけ麺が看板で、あっさりした醤油らーめんも置く。つけ汁は粘度が高く、麺を持ち上げるとしっかり絡む。店の前に並んだ順で受け付け、周辺には系列の姉妹店が並ぶ。葛飾から東京のつけ麺を代表する店として名前が挙がる。
@@ -271,39 +320,3 @@
 - **選定理由**: 食べログ ラーメン TOKYO 百名店 2025 に選出。公式サイトで新小岩本店の住所と看板メニュー、第4水曜の営業時間変更告知を確認した。営業時間は変動するため要確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%E4%B8%80%E7%87%88%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E8%91%9B%E9%A3%BE%E5%8C%BA%E6%9D%B1%E6%96%B0%E5%B0%8F%E5%B2%A9%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%97)
 - **参照元**: [食べログ ラーメン TOKYO 百名店 2025](https://award.tabelog.com/hyakumeiten/ramen_tokyo/2025/) / [麺屋一燈 公式サイト](https://www.menya-itto.com/)
-
-### 34. らーめん飛粋（らーめんひすい）
-
-@@IMG:japan/tokyo/img/tokyo23/ramen_hisui_kamata.jpg@@
-
-`地元密着` `buzz`
-
-蒲田駅近くの家系ラーメン店。豚骨醤油の濃いスープに中太麺、ほうれん草と海苔を載せる横浜家系の型を守りつつ、豚の甘みを前に出した味に仕上げる。麺の硬さ・味の濃さ・脂の量を注文時に選べ、卓上の生姜やにんにくで追い込む楽しみもある。カウンター主体で回転が速く、昼と夜の二部制。蒲田で家系を選ぶならまずここ、と地元媒体でも挙がる。
-
-- **一皿**: らーめん(豚骨醤油の濃厚スープに中太麺、ほうれん草と海苔)
-- **営業時間**: 月・火・水・木・金 11:00〜16:00, 17:00〜21:00 ／ 土 11:00〜20:00
-- **定休日**: 日曜
-- **住所**: 東京都大田区蒲田５丁目２−５
-- **予約**: 要確認 — [公式サイト](https://hiiki.co.jp/)
-- **選定理由**: 食べログ ラーメン TOKYO 百名店 2025(蒲田駅)に選出。家系専門サイト「との丸家」の都内名店紹介で住所と営業時間・日曜定休、宅麺.comの蒲田特集で地元評価を確認した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E9%A3%9B%E7%B2%8B%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%A4%A7%E7%94%B0%E5%8C%BA%E8%92%B2%E7%94%B0%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%95)
-- **参照元**: [食べログ ラーメン TOKYO 百名店 2025](https://award.tabelog.com/hyakumeiten/ramen_tokyo/2025/) / [との丸家 都内の家系ラーメン店紹介](https://tonomaruya.jp/archives/984) / [宅麺.com 蒲田のラーメン10選](https://www.takumen.com/magazines/kamata-must-eat-ramen)
-
-### 35. 煮干そば 流。（にぼしそばる）
-
-@@IMG:japan/tokyo/img/tokyo23/niboshi_soba_ru.jpg@@
-
-`地元密着` `buzz`
-
-十条駅北口から歩いて2分、上十条の商店街にある煮干しそばの店。煮干しの香りを立てながら雑味を抑えた清湯で、あっさりと濃いめを選べる。副菜の肉メシが人気で、スープと合わせて頼む客が多い。全面禁煙のこぢんまりした店内はカウンター主体、スープが切れ次第閉店する。十条の街に根づき、北区から百名店に選ばれた店の一つ。
-
-- **一皿**: 煮干そば(煮干しの香りを立てた清湯醤油。あっさり／こいくちを選べる)
-- **営業時間**: 月・水・木・金 11:00〜15:00, 17:00〜21:00 ／ 土・日 11:00〜21:00
-- **定休日**: 火曜
-- **住所**: 東京都北区上十条１丁目１３−２
-- **予約**: 要確認 — ☎ 03-6454-3983 ／ [公式サイト](https://twitter.com/nibo_suke)
-- **選定理由**: 食べログ ラーメン TOKYO 百名店 2025(十条駅)に選出。公式サイトと地域メディア「赤羽マガジン」、おとなの週末の記事で住所・営業時間・火曜定休を確認した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%85%AE%E5%B9%B2%E3%81%9D%E3%81%B0%20%E6%B5%81%E3%80%82%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8C%97%E5%8C%BA%E4%B8%8A%E5%8D%81%E6%9D%A1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%92)
-- **参照元**: [食べログ ラーメン TOKYO 百名店 2025](https://award.tabelog.com/hyakumeiten/ramen_tokyo/2025/) / [煮干そば流。公式サイト](http://nibosisobaru.com/) / [赤羽マガジン](https://akabane-shinbun.com/archives/7320)
-
-## 居酒屋・もつ焼き・バー

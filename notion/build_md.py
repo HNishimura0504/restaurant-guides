@@ -18,7 +18,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "notion", "guides_md")
 MANIFEST = os.path.join(ROOT, "notion", "img_manifest.json")
 MAX_CHUNK = 19000
-SKIP_DIRS = {".git", ".github", "notion"}
+SKIP_DIRS = {".git", ".github", "notion", "site"}
 
 
 def _mklink(href, text):
@@ -105,6 +105,21 @@ def parse_cards(block):
     return out
 
 
+def exterior_of(c, imgdir):
+    """その店の外観写真（<slug>_exterior.jpg）があれば相対パスを返す。
+
+    外観は Google の店舗写真から選び、無い店は Street View で補い、
+    どちらでも店構えと確認できなかった店は用意していない（＝None を返す）。
+    経緯 = topics/restaurant-guides/notes/map_photos_requirements.md §5
+    """
+    if not c["img"]:
+        return ""
+    rel = re.sub(r"\.jpg$", "_exterior.jpg", c["img"])
+    if rel == c["img"]:
+        return ""
+    return rel if os.path.exists(os.path.join(ROOT, imgdir, rel)) else ""
+
+
 def render_card(c, imgdir):
     ttl = ("%s. %s" % (c["no"], c["name"])) if c["no"] else c["name"]
     if c["yomi"]:
@@ -112,6 +127,9 @@ def render_card(c, imgdir):
     L = ["### " + esc(ttl), ""]
     if c["img"]:
         L += ["@@IMG:%s@@" % os.path.join(imgdir, c["img"]).replace("\\", "/"), ""]
+        ext = exterior_of(c, imgdir)
+        if ext:
+            L += ["@@IMG:%s@@" % os.path.join(imgdir, ext).replace("\\", "/"), ""]
     if c["chips"]:
         L += [" ".join("`%s`" % t for t in c["chips"]), ""]
     if c["desc"]:
@@ -200,7 +218,9 @@ def convert(path, imgdir):
                 out.append("- `%s` — %s" % (esc(strip_tags(label, False)),
                                             esc(re.sub(r"\s+", " ", htmllib.unescape(desc)).strip())))
             out.append("")
-    out += ["> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。", ""]
+    out += ["> 📷 各店の写真は上が**料理**、下が**店構え**の実写です"
+            "（Google の店舗写真 ©各投稿者/Google ／ 一部は Google Street View ©Google）。"
+            "店構えが確認できなかった店は料理の1枚だけです。", ""]
     out += ["@@TOC@@", ""]
     sid_no = {c["sid"]: c["no"] for c in parse_cards(body) if c.get("sid") and c.get("no")}
     out += render_maps(body, imgdir, sid_no)

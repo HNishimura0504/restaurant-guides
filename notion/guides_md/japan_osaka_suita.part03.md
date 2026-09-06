@@ -1,3 +1,62 @@
+### 44. cuore ricco（クオーレ リッコ）（くおーれ りっこ）
+
+@@IMG:japan/osaka/img/suita/cuorericco.jpg@@
+
+@@IMG:japan/osaka/img/suita/cuorericco_exterior.jpg@@
+
+`ブログ推薦` `口コミ突出`
+
+2024年開業の「令和の洋食屋」を掲げる一軒で、ハンバーグやパスタをワインとともに楽しめる。和牛ローストビーフ(1,890円)や作りたてを急いで味わう「賞味期限5分のカルボナーラ」などライブ感ある洋食が評判。
+
+- **一皿**: 賞味期限5分のカルボナーラ（出来たての乳化が命の名物パスタ）
+- **営業時間**: 火・日 11:30〜15:00 ／ 水・木・金・土 11:30〜15:00, 18:00〜22:00
+- **定休日**: 月曜
+- **住所**: 大阪府吹田市円山町６−３０
+- **予約**: 可 — ☎ 06-4977-7161 ／ [公式サイト](https://www.instagram.com/cuore_ricco57?igsh=MWZwcjF6MDhoNHFreA==)
+- **選定理由**: 吹チャン！が開店時から2026年6月まで繰り返し取材している注目店。手薄なハンバーグ・洋食ジャンルと関大前〜円山町エリアを補強。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=cuore%20ricco%EF%BC%88%E3%82%AF%E3%82%AA%E3%83%BC%E3%83%AC%20%E3%83%AA%E3%83%83%E3%82%B3%EF%BC%89%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E5%86%86%E5%B1%B1%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%93%EF%BC%90)
+- **参照元**: [吹チャン！](https://suichan.jp/gourmet/2026/06/p=106068) / [吹チャン！(開店時)](https://suichan.jp/open/2024/02/p=54347)
+
+### 45. Le Porc（ル ポルク）（る ぽるく）
+
+@@IMG:japan/osaka/img/suita/leporc.jpg@@
+
+@@IMG:japan/osaka/img/suita/leporc_exterior.jpg@@
+
+`ブログ推薦` `口コミ突出`
+
+フランス修行経験のあるシェフが一人で切り盛りするカウンター8席の隠れ家イタリアン。アルデンテに仕上げるパスタが看板で、ランチは2種のパスタから選ぶスタイル。満席が多い千里丘の人気店。
+
+- **一皿**: イカとキャベツのペペロンチーノ（素材の旨みを活かした看板パスタ）
+- **営業時間**: 月・火・水・金・土・日 11:30〜13:30, 17:30〜21:00
+- **定休日**: 木曜
+- **住所**: 大阪府吹田市長野東１４−５
+- **予約**: 可 — ☎ 06-7220-6913 ／ [公式サイト](https://www.instagram.com/porc.le/?hl=ja)
+- **選定理由**: リビング北摂Webや北摂ランチブログ「プーさんの満腹日記」で紹介された千里丘の実力店。手薄な千里丘エリアの補強を兼ねる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Porc%EF%BC%88%E3%83%AB%20%E3%83%9D%E3%83%AB%E3%82%AF%EF%BC%89%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E9%95%B7%E9%87%8E%E6%9D%B1%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%95)
+- **参照元**: [リビング北摂Web](https://mrs.living.jp/hokusetsu/town_gourmet/reporter/5179230) / [食べログ](https://tabelog.com/osaka/A2706/A270604/27124636/)
+
+## カフェ・パン・スイーツ
+
+### 31. 森カフェ（もりかふぇ）
+
+@@IMG:japan/osaka/img/suita/moricafe.jpg@@
+
+@@IMG:japan/osaka/img/suita/moricafe_exterior.jpg@@
+
+`ブログ推薦` `口コミ突出`
+
+野菜ソムリエの資格を持つオーナーが厳選野菜を使う「お野菜カフェ」として有名な親子経営の隠れ家カフェ。小鉢がいくつも並ぶ栄養バランス重視のワンプレートランチが名物で、満席が珍しくない人気ぶり（予約推奨）。
+
+- **一皿**: ワンプレートランチ（厳選野菜の小鉢がいくつも並ぶ栄養バランス重視の一皿）
+- **営業時間**: 火・水・木 11:30〜17:00 ／ 金・土 11:30〜18:00
+- **定休日**: 月・日曜
+- **住所**: 大阪府摂津市千里丘２丁目３−５
+- **予約**: 可 — ☎ 06-6386-8755 ／ [公式サイト](http://ameblo.jp/moricafe08/)
+- **選定理由**: 野菜ソムリエのオーナーによる隠れ家カフェとして、地元ブログ「北摂LABO」の推薦と満席続きの人気ぶりから選定。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E3%82%AB%E3%83%95%E3%82%A7%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E6%91%82%E6%B4%A5%E5%B8%82%E5%8D%83%E9%87%8C%E4%B8%98%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%95)
+- **参照元**: [北摂LABO](https://hokusetsu-labo.com/post-1149/) / [公式ブログ](https://ameblo.jp/moricafe08/)
+
 ### 32. CAFE TRAIN ORIENT（かふぇ とれいん おりえんと）
 
 @@IMG:japan/osaka/img/suita/orient.jpg@@
@@ -19,6 +78,8 @@
 
 @@IMG:japan/osaka/img/suita/natsuro.jpg@@
 
+@@IMG:japan/osaka/img/suita/natsuro_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 桃山台駅前時代から吹田で長く愛される洋菓子店で、移転後も地元ブログが推薦。純生ロール（生クリームを巻いたロールケーキ）やショートケーキ、季節のタルト、抹茶チーズケーキが人気。地元の誕生日ケーキの定番店。
@@ -35,6 +96,8 @@
 ### 34. 松竹堂 吹田山田本店（しょうちくどう すいたやまだほんてん）
 
 @@IMG:japan/osaka/img/suita/shochikudo.jpg@@
+
+@@IMG:japan/osaka/img/suita/shochikudo_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出` `ブログ推薦`
 
@@ -53,6 +116,8 @@
 
 @@IMG:japan/osaka/img/suita/millevillage.jpg@@
 
+@@IMG:japan/osaka/img/suita/millevillage_exterior.jpg@@
+
 `口コミ突出`
 
 2002年パンのワールドカップ「クープ・デュ・モンド」で日本を初優勝に導いた職人・渡辺明生氏の店。朝7時半の開店直後から客が絶えず10時過ぎには売り切れる商品も。バゲットなどのハード系（皮が固く香ばしいフランスパン系）から地元野菜の惣菜パン、スイーツ系まで幅広い。
@@ -69,6 +134,8 @@
 ### 36. ル・シュクレクール 岸部（る・しゅくれくーる きしべ）
 
 @@IMG:japan/osaka/img/suita/sucrecoeur.jpg@@
+
+@@IMG:japan/osaka/img/suita/sucrecoeur_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -87,6 +154,8 @@
 
 @@IMG:japan/osaka/img/suita/angelique.jpg@@
 
+@@IMG:japan/osaka/img/suita/angelique_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 豊津駅近くで地元に愛される町のパン屋さん。サクッもちっとした食感のベーグルが看板で、クロワッサンや塩パンも手頃な価格で美味しいと評判。朝から夕方まで焼きたてが並ぶ。
@@ -103,6 +172,8 @@
 ### 48. 御菓子司 津村屋（おかしつかさ つむらや）
 
 @@IMG:japan/osaka/img/suita/tsumuraya.jpg@@
+
+@@IMG:japan/osaka/img/suita/tsumuraya_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 

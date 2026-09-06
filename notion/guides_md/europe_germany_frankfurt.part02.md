@@ -1,3 +1,23 @@
+### Bitter & Zart Chocolaterie（ビター・ウント・ツァルト）
+
+@@IMG:europe/germany/img/frankfurt/bitter-und-zart.jpg@@
+
+`ブログ推薦` `口コミ突出`
+
+旧市街ブラウバッハ通りのショコラトリー兼カフェ。「市内で最も美しいカフェ」と評される優雅な空間で、上質な板チョコ・プラリネの販売と自家製ケーキを楽しめる。
+
+- **一皿**: ホットチョコレートと自家製ケーゼクーヘン(濃厚な飲むチョコレートに、自家製のチーズケーキやマンゴートルテ、レモンヨーグルトケーキを合わせるのが定番)
+- **営業時間**: 月〜金 10:00〜18:00 / 土 10:00〜16:00
+- **定休日**: 日曜
+- **住所**: Braubachstraße 14, 60311 Frankfurt am Main
+- **予約**: 不要(店頭) — ☎ 電話で予約 +49 69 94942846 ／ [公式サイト](http://www.bitterundzart.de/)
+- **公式**: [公式サイト](http://www.bitterundzart.de/)
+- **選定理由**: TripAdvisorやローカル誌で「市内で最も美しいカフェ」と紹介される定番スイーツ店。美術館街と旧市街散策の動線上にあり、ガイドの甘味枠として最適。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bitter%20%26%20Zart%20Chocolaterie%20Braubachstra%C3%9Fe%2014%2C%2060311%20Frankfurt%20am%20Main)
+- **参照元**: [bitterundzart.de](https://www.bitterundzart.de/impressum/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d2691406-Reviews-Bitter_Zart-Frankfurt_Hesse.html)
+
+## アプフェルヴァイン・ワイン
+
 ### Kelterei Possmann（ケルタライ・ポスマン）
 
 `老舗・歴史`
@@ -325,27 +345,3 @@
 - **選定理由**: グルメガイドSchlemmer-Atlasや食ブログ(Schlingen mit Stil、haochibites等)が「フランクフルトの本格ペルー料理」として紹介。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Cevi%20Weberstra%C3%9Fe%2084%2C%2060318%20Frankfurt%20am%20Main)
 - **参照元**: [la-cevi.de](https://la-cevi.de/) / [schlemmer-atlas.de](https://www.schlemmer-atlas.de/restaurants/deutschland/frankfurt-am-main/la-cevi/)
-
-### La Sonora Taquería（ラ・ソノラ・タケリア）
-
-@@IMG:europe/germany/img/frankfurt/la-sonora-taqueria.jpg@@
-
-`口コミ突出`
-
-ノルトエント地区グラウブルク通りのタケリア(タコス専門店)。メキシコ人シェフ、フェデリコ・プロが手掛け、トルティーヤはすべて店内で手作り。北メキシコ・ソノラ流のカルネ・アサダからビリアまで本場の味を出し、マルガリータも揃う。
-
-- **一皿**: タコス(手作りトルティーヤ)(手作りのトウモロコシのトルティーヤに、炭火焼き牛肉のカルネ・アサダや煮込み肉のビリアなどをのせ、自家製サルサで食べるメキシコの国民食)
-- **営業時間**: 火〜金 12:00〜21:00、土 14:00〜21:00
-- **定休日**: 日曜・月曜
-- **住所**: Glauburgstraße 9, 60318 Frankfurt am Main
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 69 97769674 ／ [公式サイト](https://www.instagram.com/sonora.taqueria?igsh=azN3NnliY2poZDN6)
-- **公式**: [公式サイト](https://www.instagram.com/sonora.taqueria?igsh=azN3NnliY2poZDN6)
-- **選定理由**: 旧掲載のTacohausは公式サイトが消失しPlaces検索でも確認不能のため差し替え。本店は公式サイト(2026年表記)で営業時間を確認し、地元グルメ記事でも「手作りトルティーヤの本格タケリア」として高評価。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Sonora%20Taquer%C3%ADa%20Glauburgstra%C3%9Fe%209%2C%2060318%20Frankfurt%20am%20Main)
-- **参照元**: [lasonorataqueria.com](https://lasonorataqueria.com/)
-
-## 半日モデルルート
-
----
-
-> 選考基準: ①個人・公式ブログ/現地メディアでの名店言及 ②複数レビューサイトでの口コミ・行列の突出 ③創業年・代替わりのある老舗 ④食の専門街・市場立地 ⑤受賞歴・ガイド掲載。写真は各店の料理・店内の実写(Google Maps投稿写真、© Google)。予約は各カードの「予約」欄のリンク(電話/予約サイト)から。営業時間・定休日は2026年7月時点の各種サイト情報で、変更があり得ます。
