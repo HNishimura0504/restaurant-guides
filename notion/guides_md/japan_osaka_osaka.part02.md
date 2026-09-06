@@ -1,6 +1,27 @@
+### 53. 串かつ 知留久 法善寺店（くしかつ しるひさ ほうぜんじてん）
+
+@@IMG:japan/osaka/img/osaka/shiruhisa.jpg@@
+
+`老舗・歴史`
+
+昭和21年(1946)創業、カウンターで一本ずつ揚げたてを供する「上方串かつ」の草分け。約50種の材料を使う自家製ウスターソースや塩など5種の味付けで、新世界とは異なる割烹的串かつを楽しめる。
+
+- **一皿**: おまかせ串かつ(旬の山海の食材を一本ずつ揚げたてで)
+- **営業時間**: 月・火・水・金・土・日 17:00〜21:30
+- **定休日**: 木曜
+- **住所**: 大阪府大阪市中央区難波１丁目２−１０ 法善寺ＭＥＯＵＴＯビル 1F
+- **予約**: 可 — ☎ 06-6211-4673 ／ [公式サイト](https://shiruhisa.com/)
+- **選定理由**: 串カツの草分けとして予約サイト・グルメ媒体が創業年とともに紹介する老舗。営業情報を複数サイトで確認。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E3%81%8B%E3%81%A4%20%E7%9F%A5%E7%95%99%E4%B9%85%20%E6%B3%95%E5%96%84%E5%AF%BA%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%9B%A3%E6%B3%A2%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%90%20%E6%B3%95%E5%96%84%E5%AF%BA%EF%BC%AD%EF%BC%A5%EF%BC%AF%EF%BC%B5%EF%BC%B4%EF%BC%AF%E3%83%93%E3%83%AB%201F)
+- **参照元**: [一休.comレストラン](https://restaurant.ikyu.com/117912) / [サントリーグルメガイド](https://gourmet.suntory.co.jp/shop/0X00046924/)
+
+## うどん・肉吸い
+
 ### 10. 道頓堀 今井 本店（どうとんぼり いまい）
 
 @@IMG:japan/osaka/img/osaka/imai.jpg@@
+
+@@IMG:japan/osaka/img/osaka/imai_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -36,6 +57,8 @@
 
 @@IMG:japan/osaka/img/osaka/tku.jpg@@
 
+@@IMG:japan/osaka/img/osaka/tku_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 大阪うどん新世代を代表する店。名物は「肉かすうどん」（甘辛い牛肉と、油かす=牛ホルモンを揚げたコク深い大阪伝統食材をのせたうどん）や鶏天カレーうどん。強いコシの自家製麺と出汁の融合が高く評価される。
@@ -52,6 +75,8 @@
 ### 13. 千とせ 本店（ちとせ）
 
 @@IMG:japan/osaka/img/osaka/chitose.jpg@@
+
+@@IMG:japan/osaka/img/osaka/chitose_exterior.jpg@@
 
 `口コミ突出` `老舗・歴史` `地元密着`
 
@@ -70,6 +95,8 @@
 
 @@IMG:japan/osaka/img/osaka/mimiu.jpg@@
 
+@@IMG:japan/osaka/img/osaka/mimiu_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 堺の料理屋を前身に大正14年からうどん店として続く老舗で、「うどんすき」(海老・鱧・野菜とうどんを出汁で炊きながら食べる鍋)の発祥・商標を持つ。船場の商人文化を今に伝える本店。
@@ -86,6 +113,8 @@
 ### 39. そば切り 文目堂（そばきり あやめどう）
 
 @@IMG:japan/osaka/img/osaka/ayamedo.jpg@@
+
+@@IMG:japan/osaka/img/osaka/ayamedo_exterior.jpg@@
 
 `ブログ推薦` `地元密着`
 
@@ -104,6 +133,8 @@
 
 @@IMG:japan/osaka/img/osaka/naniwaokina.jpg@@
 
+@@IMG:japan/osaka/img/osaka/naniwaokina_exterior.jpg@@
+
 `口コミ突出`
 
 そば打ちの名人・高橋邦弘氏の「翁」の系譜を継ぐ大阪を代表する手打ちそば店。透明感のあるざるそばと丁寧な出汁のかけそばで、食べログ百名店・ビブグルマンの常連。
@@ -120,6 +151,8 @@
 ### 44. 讃岐うどん 白庵（さぬきうどん びゃくあん）
 
 @@IMG:japan/osaka/img/osaka/byakuan.jpg@@
+
+@@IMG:japan/osaka/img/osaka/byakuan_exterior.jpg@@
 
 `口コミ突出`
 
@@ -157,6 +190,8 @@
 
 @@IMG:japan/osaka/img/osaka/harukoma.jpg@@
 
+@@IMG:japan/osaka/img/osaka/harukoma_exterior.jpg@@
+
 `口コミ突出` `地元密着`
 
 寿司激戦区・天神橋筋商店街を代表する大行列店。シャリが隠れるほど分厚く新鮮なネタと抜群のコスパが評判で、地元客が並んででも食べる店。穴子・大トロ・サーモン腹身など季節のネタが人気。
@@ -173,6 +208,8 @@
 ### 15. 中央市場 ゑんどう寿司 市場本店（えんどうずし）
 
 @@IMG:japan/osaka/img/osaka/endosushi.jpg@@
+
+@@IMG:japan/osaka/img/osaka/endosushi_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 
@@ -208,6 +245,8 @@
 
 @@IMG:japan/osaka/img/osaka/koryu.jpg@@
 
+@@IMG:japan/osaka/img/osaka/koryu_exterior.jpg@@
+
 `口コミ突出`
 
 ミシュラン星付き割烹「北新地 弧柳」の跡地に2021年誕生した後継店。弧柳で8年料理長を務めた岩下寛季氏が、出汁を軸にした季節の会席と名物の炭火焼を受け継ぐ。ミシュランガイド大阪2024新掲載。(本家・弧柳は北浜・淡路町へ移転)
@@ -224,6 +263,8 @@
 ### 18. 居酒屋 とよ（いざかや とよ）
 
 @@IMG:japan/osaka/img/osaka/toyo.jpg@@
+
+@@IMG:japan/osaka/img/osaka/toyo_exterior.jpg@@
 
 `口コミ突出` `地元密着`
 
@@ -242,6 +283,8 @@
 
 @@IMG:japan/osaka/img/osaka/yoshinozushi.jpg@@
 
+@@IMG:japan/osaka/img/osaka/yoshinozushi_exterior.jpg@@
+
 `老舗・歴史`
 
 天保12年(1841)創業、大阪寿司の代名詞「箱寿司」(木枠に鯛・穴子・海老などを詰めて押した押し寿司)を完成させた船場の老舗。「二寸六分の懐石」と称される美しい仕事はミシュランにも掲載された。
@@ -259,6 +302,8 @@
 
 @@IMG:japan/osaka/img/osaka/futomasa.jpg@@
 
+@@IMG:japan/osaka/img/osaka/futomasa_exterior.jpg@@
+
 `老舗・歴史`
 
 昭和23年(1948)創業のふぐ料理の老舗。てっちり(とらふぐを昆布出汁で炊くふぐちり鍋)とてっさ、名物の白子焼きで、大阪の冬の味覚「ふぐ食文化」を代表する一軒。
@@ -275,6 +320,8 @@
 ### 54. すし政 中店（すしまさ なかみせ）
 
 @@IMG:japan/osaka/img/osaka/sushimasa.jpg@@
+
+@@IMG:japan/osaka/img/osaka/sushimasa_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出` `地元密着`
 
@@ -295,6 +342,8 @@
 
 @@IMG:japan/osaka/img/osaka/kadoya.jpg@@
 
+@@IMG:japan/osaka/img/osaka/kadoya_exterior.jpg@@
+
 `口コミ突出`
 
 大阪ラーメン界のレジェンド的存在。名古屋コーチン・鹿児島産黒豚・北海道産昆布など上質食材を使った動物系×魚介系の深いコクの醤油スープと自家製麺の「中華そば」が看板。
@@ -312,6 +361,8 @@
 
 @@IMG:japan/osaka/img/osaka/mensuke.jpg@@
 
+@@IMG:japan/osaka/img/osaka/mensuke_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 ラーメン激戦区・福島で行列が絶えない人気店。看板は「紀州鴨そば」（鴨だしをブレンドした深い醤油スープのラーメン）と「金色貝そば」（貝出汁が芳醇に香る塩ラーメン）。地鶏「天草大王」を出汁とトッピングに使う高級志向の一杯。
@@ -324,37 +375,3 @@
 - **選定理由**: 激戦区・福島で行列が絶えない実力店として選定。ぐるなびと地元グルメブログで裏付け。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%87%83%E3%81%88%E3%82%88%E9%BA%BA%E5%8A%A9%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E7%A6%8F%E5%B3%B6%E5%8C%BA%E7%A6%8F%E5%B3%B6%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%91)
 - **参照元**: [ぐるなび](https://r.gnavi.co.jp/fry3mg690000/) / [福島グルメブログ](https://mr392525.com/post-565/)
-
-### 21. 551蓬莱 本店（ごーごーいちほうらい）
-
-@@IMG:japan/osaka/img/osaka/horai551.jpg@@
-
-`口コミ突出` `老舗・歴史`
-
-「大阪土産＝551の豚まん」と言われる絶対的名物。「豚まん」（粗切り豚肉と玉ねぎを甘みのある厚手の生地で包み、店内で手包み・蒸したてを提供する中華まん）は1日17万個売れる日もある。本店1階はテイクアウト、2・3階は焼売や海老の天ぷらも食べられるレストラン。
-
-- **一皿**: 豚まん（粗切り豚肉と玉ねぎを厚手生地で手包みし蒸したてで提供する中華まん）
-- **営業時間**: 月・水・木・金・土・日 10:00〜21:30
-- **定休日**: 火曜
-- **住所**: 大阪府大阪市中央区難波３丁目６−３
-- **予約**: 可 — ☎ 06-6641-0551 ／ [公式サイト](https://www.551horai.co.jp/shop/list/13/)
-- **選定理由**: 1日17万個売れる日もある大阪の食文化の象徴として選定。公式サイトと食べログで裏付け。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=551%E8%93%AC%E8%8E%B1%20%E6%9C%AC%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%9B%A3%E6%B3%A2%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%93)
-- **参照元**: [公式サイト](https://www.551horai.co.jp/shop/list/13/) / [食べログ](https://tabelog.com/en/osaka/A2701/A270202/27001312/)
-
-### 22. 一芳亭 本店（いっぽうてい）
-
-@@IMG:japan/osaka/img/osaka/ippotei.jpg@@
-
-`老舗・歴史` `地元密着`
-
-昭和8年（1933年）創業の華風料理店。名物「しゅうまい」は戦後の小麦皮不足を機に薄焼き卵を皮に使った黄色い焼売で、豚肉と海老のふんわり餡が特徴の1人前5個の唯一無二の味。ビール片手にしゅうまいをつまむ大阪の昼飲み文化も体験できる。
-
-- **一皿**: しゅうまい（薄焼き卵を皮に使った黄色い焼売。豚肉と海老のふんわり餡）
-- **営業時間**: 月・火・水・木・金・土 11:30〜20:00
-- **定休日**: 日曜
-- **住所**: 大阪府大阪市浪速区浪速区難波中２丁目６−２２
-- **予約**: 要確認 — ☎ 06-6641-8381 ／ [公式サイト](http://www.ippoutei.com/)
-- **選定理由**: 唯一無二の卵皮しゅうまいを90年以上守る老舗として選定。公式サイトと観光メディアで裏付け。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E8%8A%B3%E4%BA%AD%20%E6%9C%AC%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E6%B5%AA%E9%80%9F%E5%8C%BA%E6%B5%AA%E9%80%9F%E5%8C%BA%E9%9B%A3%E6%B3%A2%E4%B8%AD%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92%EF%BC%92)
-- **参照元**: [公式サイト](http://www.ippoutei.com/) / [るるぶ&more](https://rurubu.jp/andmore/spot/80027984)

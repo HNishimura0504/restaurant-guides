@@ -12,7 +12,7 @@ JAPAN / OSAKA 🇯🇵
 - `地元密着` — 観光客より地元客に愛される店
 - `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+> 📷 各店の写真は上が**料理**、下が**店構え**の実写です（Google の店舗写真 ©各投稿者/Google ／ 一部は Google Street View ©Google）。店構えが確認できなかった店は料理の1枚だけです。
 
 @@TOC@@
 
@@ -40,6 +40,8 @@ JAPAN / OSAKA 🇯🇵
 
 @@IMG:japan/osaka/img/osaka/wanaka.jpg@@
 
+@@IMG:japan/osaka/img/osaka/wanaka_exterior.jpg@@
+
 `口コミ突出` `地元密着`
 
 銅板を使い高温で一気に焼き上げるたこ焼きは、外側の薄皮がカリッと中がトロッとした食感。カツオと昆布だしの効いた生地で、素焼き・特製ソース・塩・醤油・ピリ辛など味のバリエーションが豊富。約80席のイートインもある。
@@ -56,6 +58,8 @@ JAPAN / OSAKA 🇯🇵
 ### 2. あべのたこやき やまちゃん 本店（あべのたこやき やまちゃん）
 
 @@IMG:japan/osaka/img/osaka/yamachan.jpg@@
+
+@@IMG:japan/osaka/img/osaka/yamachan_exterior.jpg@@
 
 `口コミ突出` `地元密着`
 
@@ -74,6 +78,8 @@ JAPAN / OSAKA 🇯🇵
 
 @@IMG:japan/osaka/img/osaka/mizuno.jpg@@
 
+@@IMG:japan/osaka/img/osaka/mizuno_exterior.jpg@@
+
 `口コミ突出` `老舗・歴史`
 
 昭和20年（1945年）創業の道頓堀の老舗お好み焼き店。名物「山芋焼き」は小麦粉を使わず100%山芋だけの生地で焼く一枚で、通常のお好み焼きにないフワフワ食感が味わえる。昼の開店前から行列ができる。
@@ -90,6 +96,8 @@ JAPAN / OSAKA 🇯🇵
 ### 4. お好み焼 きじ 本店（おこのみやき きじ）
 
 @@IMG:japan/osaka/img/osaka/kiji.jpg@@
+
+@@IMG:japan/osaka/img/osaka/kiji_exterior.jpg@@
 
 `口コミ突出` `地元密着`
 
@@ -108,6 +116,8 @@ JAPAN / OSAKA 🇯🇵
 
 @@IMG:japan/osaka/img/osaka/daruma.jpg@@
 
+@@IMG:japan/osaka/img/osaka/daruma_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 昭和4年（1929年）創業、「串カツ発祥」とされる元祖店。細かいパン粉のサクサク衣とジューシーな牛肉の「元祖串かつ」が看板で、「ソース二度づけ禁止」文化の象徴的存在。
@@ -124,6 +134,8 @@ JAPAN / OSAKA 🇯🇵
 ### 6. 八重勝（やえかつ）
 
 @@IMG:japan/osaka/img/osaka/yaekatsu.jpg@@
+
+@@IMG:japan/osaka/img/osaka/yaekatsu_exterior.jpg@@
 
 `口コミ突出` `地元密着`
 
@@ -142,6 +154,8 @@ JAPAN / OSAKA 🇯🇵
 
 @@IMG:japan/osaka/img/osaka/negiyama.jpg@@
 
+@@IMG:japan/osaka/img/osaka/negiyama_exterior.jpg@@
+
 `口コミ突出` `老舗・歴史`
 
 「ねぎ焼き」（小麦粉生地にキャベツの代わりに大量の青ねぎを混ぜ込み、醤油とレモンで食べる大阪発祥の鉄板焼き）発祥の店。名物は牛すじとこんにゃくの甘辛煮を入れた「すじねぎ焼き」。十三の下町グルメを代表する行列店。
@@ -158,6 +172,8 @@ JAPAN / OSAKA 🇯🇵
 ### 8. 阪神名物 いか焼き（はんしんめいぶつ いかやき）
 
 @@IMG:japan/osaka/img/osaka/hanshinika.jpg@@
+
+@@IMG:japan/osaka/img/osaka/hanshinika_exterior.jpg@@
 
 `口コミ突出` `地元密着`
 
@@ -176,6 +192,8 @@ JAPAN / OSAKA 🇯🇵
 
 @@IMG:japan/osaka/img/osaka/matsubahonten.jpg@@
 
+@@IMG:japan/osaka/img/osaka/matsubahonten_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 昭和24年創業、新梅田食道街を代表する立ち食い串かつの老舗。カウンターに並ぶ揚げたての串かつ（牛肉や野菜に薄衣をつけてラードで揚げ、共用ソースに「二度漬け禁止」で浸す大阪流）を自分で取って立ち飲みするスタイル。
@@ -192,6 +210,8 @@ JAPAN / OSAKA 🇯🇵
 ### 41. 甲賀流 本店（こうがりゅう ほんてん）
 
 @@IMG:japan/osaka/img/osaka/kogaryu.jpg@@
+
+@@IMG:japan/osaka/img/osaka/kogaryu_exterior.jpg@@
 
 `口コミ突出`
 
@@ -210,6 +230,8 @@ JAPAN / OSAKA 🇯🇵
 
 @@IMG:japan/osaka/img/osaka/ginzaya.jpg@@
 
+@@IMG:japan/osaka/img/osaka/ginzaya_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しやビフカツ(牛肉の薄衣カツ)など立ち飲みとは思えない質の肴が数百円で並び、昼から常連と観光客で満員になる。
@@ -226,6 +248,8 @@ JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しや�
 ### 43. 立呑処 岡室酒店直売所（たちのみどころ おかむろさけてんちょくばいじょ）
 
 @@IMG:japan/osaka/img/osaka/okamuro.jpg@@
+
+@@IMG:japan/osaka/img/osaka/okamuro_exterior.jpg@@
 
 `ブログ推薦` `地元密着` `口コミ突出`
 
@@ -244,6 +268,8 @@ JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しや�
 
 @@IMG:japan/osaka/img/osaka/meijiya.jpg@@
 
+@@IMG:japan/osaka/img/osaka/meijiya_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 昭和11年(1936)創業、「酒場好きの聖地」と呼ばれる阿倍野の名酒場。再開発による移転時に古い店構えごと移築し、燗酒と土手焼き(牛すじの味噌煮込み)や湯どうふで昼から静かに飲める。
@@ -260,6 +286,8 @@ JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しや�
 ### 46. 会津屋 本店（あいづや ほんてん）
 
 @@IMG:japan/osaka/img/osaka/aizuya.jpg@@
+
+@@IMG:japan/osaka/img/osaka/aizuya_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -278,6 +306,8 @@ JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しや�
 
 @@IMG:japan/osaka/img/osaka/tsuruichi.jpg@@
 
+@@IMG:japan/osaka/img/osaka/tsuruichi_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 鶴橋焼肉街の始祖ともいわれる老舗で、焼いた肉を秘伝のつけダレにくぐらせて食べる「つけダレ焼肉」を広めた店。駅前の焼肉横丁の煙の中でも別格の存在感を放つ。
@@ -294,6 +324,8 @@ JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しや�
 ### 48. お好み焼 オモニ 本店（おこのみやき おもに ほんてん）
 
 @@IMG:japan/osaka/img/osaka/omoni.jpg@@
+
+@@IMG:japan/osaka/img/osaka/omoni_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出` `地元密着`
 
@@ -312,6 +344,8 @@ JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しや�
 
 @@IMG:japan/osaka/img/osaka/manryo.jpg@@
 
+@@IMG:japan/osaka/img/osaka/manryo_exterior.jpg@@
+
 `口コミ突出`
 
 大阪の焼肉好きが「予約が取れない」と口を揃える人気店の南森町店。上質な和牛をリーズナブルに出すことで知られ、2ヶ月前から予約が埋まる。下町の焼肉文化の現在形。
@@ -329,6 +363,8 @@ JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しや�
 
 @@IMG:japan/osaka/img/osaka/shirayukionsakaba.jpg@@
 
+@@IMG:japan/osaka/img/osaka/shirayukionsakaba_exterior.jpg@@
+
 `ブログ推薦` `老舗・歴史` `地元密着`
 
 下町・九条の路地に残る、銘柄「白雪」の燗酒を銅壺で温めて出す昔ながらの温酒場。カウンターだけの小さな店で、常連とともに大阪の古い酒場文化をそのまま体験できる。
@@ -341,22 +377,3 @@ JR天満駅前で朝10時から飲める老舗立ち飲み。まぐろ刺しや�
 - **選定理由**: 酒場巡りの在住者ブログが「九条の生きた昭和」として紹介する老舗酒場。食べログ・地図サービスで営業確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E9%9B%AA%E6%B8%A9%E9%85%92%E5%A0%B4%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%B9%9D%E6%9D%A1%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%92)
 - **参照元**: [しぃの酒場訪問記(ブログ)](https://siisakaba.com/kujyo-shirayukionsakaba/) / [Yahoo!マップ](https://map.yahoo.co.jp/v3/place/l7AhbhuzVtk)
-
-### 53. 串かつ 知留久 法善寺店（くしかつ しるひさ ほうぜんじてん）
-
-@@IMG:japan/osaka/img/osaka/shiruhisa.jpg@@
-
-`老舗・歴史`
-
-昭和21年(1946)創業、カウンターで一本ずつ揚げたてを供する「上方串かつ」の草分け。約50種の材料を使う自家製ウスターソースや塩など5種の味付けで、新世界とは異なる割烹的串かつを楽しめる。
-
-- **一皿**: おまかせ串かつ(旬の山海の食材を一本ずつ揚げたてで)
-- **営業時間**: 月・火・水・金・土・日 17:00〜21:30
-- **定休日**: 木曜
-- **住所**: 大阪府大阪市中央区難波１丁目２−１０ 法善寺ＭＥＯＵＴＯビル 1F
-- **予約**: 可 — ☎ 06-6211-4673 ／ [公式サイト](https://shiruhisa.com/)
-- **選定理由**: 串カツの草分けとして予約サイト・グルメ媒体が創業年とともに紹介する老舗。営業情報を複数サイトで確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E3%81%8B%E3%81%A4%20%E7%9F%A5%E7%95%99%E4%B9%85%20%E6%B3%95%E5%96%84%E5%AF%BA%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%A4%A7%E9%98%AA%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%9B%A3%E6%B3%A2%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%90%20%E6%B3%95%E5%96%84%E5%AF%BA%EF%BC%AD%EF%BC%A5%EF%BC%AF%EF%BC%B5%EF%BC%B4%EF%BC%AF%E3%83%93%E3%83%AB%201F)
-- **参照元**: [一休.comレストラン](https://restaurant.ikyu.com/117912) / [サントリーグルメガイド](https://gourmet.suntory.co.jp/shop/0X00046924/)
-
-## うどん・肉吸い

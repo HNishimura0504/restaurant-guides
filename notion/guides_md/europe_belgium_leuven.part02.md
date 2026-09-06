@@ -1,3 +1,23 @@
+### Restaurant d'Artagnan（ダルタニアン）
+
+@@IMG:europe/belgium/img/leuven/dartagnan.jpg@@
+
+`ミシュラン掲載`
+
+2000年から続く邸宅レストラン。地元・新鮮食材のフランス料理(ベルギー・フレンチ折衷)に国際的なアクセントを加える。庭のテラスが名物。
+
+- **一皿**: 季節のフレンチ・コース
+- **営業時間**: 木・金 昼12:00–13:30/夜18:30–20:30、土 夜18:30–20:30(他要確認)
+- **定休日**: 日〜水(要確認)
+- **住所**: Naamsestraat 72, 3000 Leuven
+- **予約**: 要(要予約) — ☎ 電話で予約 +32 16 29 26 26 ／ [公式サイト](https://www.restaurantdartagnan.be/)
+- **公式**: [公式サイト](https://www.restaurantdartagnan.be/)
+- **選定理由**: ミシュランガイド掲載・Gault&Millau掲載。ルーベンのグルメに長年愛される邸宅レストラン。※厳密にはベルギー・フレンチ折衷。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20d%27Artagnan%20Naamsestraat%2072%20Leuven)
+- **参照元**: [ミシュランガイド](https://guide.michelin.com/us/en/vlaams-brabant/leuven/restaurant/d-artagnan) / [Gault&Millau](https://www.gaultmillau.be/en/restaurants/dartagnan-leuven)
+
+## 中東料理
+
 ### Palmyra（パルミラ）
 
 @@IMG:europe/belgium/img/leuven/palmyra.jpg@@
@@ -19,6 +39,8 @@
 ### Habibi（ハビビ）
 
 @@IMG:europe/belgium/img/leuven/habibi.jpg@@
+
+@@IMG:europe/belgium/img/leuven/habibi_exterior.jpg@@
 
 `口コミ突出`
 
@@ -57,6 +79,8 @@
 ### Medina Leuven（メディナ）
 
 @@IMG:europe/belgium/img/leuven/medina.jpg@@
+
+@@IMG:europe/belgium/img/leuven/medina_exterior.jpg@@
 
 `ブログ推薦`
 
@@ -114,6 +138,8 @@
 
 @@IMG:europe/belgium/img/leuven/umamido.jpg@@
 
+@@IMG:europe/belgium/img/leuven/umamido_exterior.jpg@@
+
 `口コミ突出`
 
 本格ラーメン専門店。豚骨ラーメン(tonkotsu＝豚骨を煮出した白濁スープに自家製麺)。醤油豚骨・黒ニンニクなどのバリエーションも。
@@ -131,6 +157,8 @@
 ### Oh, My Kimchi!（オー・マイ・キムチ）
 
 @@IMG:europe/belgium/img/leuven/ohmykimchi.jpg@@
+
+@@IMG:europe/belgium/img/leuven/ohmykimchi_exterior.jpg@@
 
 `口コミ突出`
 
@@ -187,6 +215,8 @@
 ### New Mexico（ニューメキシコ）
 
 @@IMG:europe/belgium/img/leuven/newmexico.jpg@@
+
+@@IMG:europe/belgium/img/leuven/newmexico_exterior.jpg@@
 
 `食の専門街`
 

@@ -11,7 +11,7 @@ BELGIUM / LEUVEN 🇧🇪
 - `老舗・歴史` — 地元に根ざした歴史ある店
 - `食の専門街` — Mechelsestraat/Muntstraat 立地
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+> 📷 各店の写真は上が**料理**、下が**店構え**の実写です（Google の店舗写真 ©各投稿者/Google ／ 一部は Google Street View ©Google）。店構えが確認できなかった店は料理の1枚だけです。
 
 @@TOC@@
 
@@ -22,6 +22,8 @@ BELGIUM / LEUVEN 🇧🇪
 ### De Nachtuil（デ・ナフトゥイル）
 
 @@IMG:europe/belgium/img/leuven/nachtuil.jpg@@
+
+@@IMG:europe/belgium/img/leuven/nachtuil_exterior.jpg@@
 
 `ブログ推薦` `老舗・歴史`
 
@@ -41,6 +43,8 @@ BELGIUM / LEUVEN 🇧🇪
 
 @@IMG:europe/belgium/img/leuven/domus.jpg@@
 
+@@IMG:europe/belgium/img/leuven/domus_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦`
 
 1985年創業、ベネルクス初の自家醸造ブラッスリー。向かいの醸造所から銅パイプで直接タップにビールが届く。フランデレン家庭料理が大盛り。
@@ -59,6 +63,8 @@ BELGIUM / LEUVEN 🇧🇪
 
 @@IMG:europe/belgium/img/leuven/dewerf.jpg@@
 
+@@IMG:europe/belgium/img/leuven/dewerf_exterior.jpg@@
+
 `口コミ突出` `老舗・歴史`
 
 学生街の超定番「カルト的名店」。パスタ・チリコンカン・サラダが他店より圧倒的に安く、常に満席。デザートのチョコレートムースも名物。
@@ -76,6 +82,8 @@ BELGIUM / LEUVEN 🇧🇪
 ### Muntstraat（ムント通り(レストラン街)）
 
 @@IMG:europe/belgium/img/leuven/muntstraat.jpg@@
+
+@@IMG:europe/belgium/img/leuven/muntstraat_exterior.jpg@@
 
 `食の専門街` `ブログ推薦`
 
@@ -96,6 +104,8 @@ BELGIUM / LEUVEN 🇧🇪
 
 @@IMG:europe/belgium/img/leuven/wurst.jpg@@
 
+@@IMG:europe/belgium/img/leuven/wurst_exterior.jpg@@
+
 `ブログ推薦`
 
 Visit Leuven公式ブログ掲載のソーセージ専門店。看板はチリドッグ(ソーセージ+チリ+溶けチーズ+ワカモレ)。クラフトビールも揃う。
@@ -112,6 +122,8 @@ Visit Leuven公式ブログ掲載のソーセージ専門店。看板はチリ�
 ### Frituur Boem Patat（ブーム・パタット）
 
 @@IMG:europe/belgium/img/leuven/boempatat.jpg@@
+
+@@IMG:europe/belgium/img/leuven/boempatat_exterior.jpg@@
 
 `口コミ突出`
 
@@ -148,6 +160,8 @@ Margarethaplein の人気ワッフル＆ジェラート店。名物は焼きた�
 
 @@IMG:europe/belgium/img/leuven/frittoerist.jpg@@
 
+@@IMG:europe/belgium/img/leuven/frittoerist_exterior.jpg@@
+
 `口コミ突出`
 
 「ルーベン最優秀フリッツ」に選ばれたフリチュール(frituur＝フリッツ専門店)。二度揚げの本場フリッツに各種ソース。★4.3(449件)の高評価。
@@ -168,6 +182,8 @@ Margarethaplein の人気ワッフル＆ジェラート店。名物は焼きた�
 
 @@IMG:europe/belgium/img/leuven/elsen.jpg@@
 
+@@IMG:europe/belgium/img/leuven/elsen_exterior.jpg@@
+
 `老舗・歴史` `食の専門街` `ブログ推薦`
 
 1983年創業の家族経営アフィヌール(チーズ熟成職人)。街の最低地点にある店の地下セラーが天然熟成庫。政府公認の職人ラベル保持、現在は息子2人が2代目。
@@ -185,6 +201,8 @@ Margarethaplein の人気ワッフル＆ジェラート店。名物は焼きた�
 
 @@IMG:europe/belgium/img/leuven/desmidse.jpg@@
 
+@@IMG:europe/belgium/img/leuven/desmidse_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 Stella Artois醸造所の旧鍛冶場を改装した屋内市場(2017年開業、バルセロナのボケリア市場がモデル)。職人系食品店が集結。
@@ -201,6 +219,8 @@ Stella Artois醸造所の旧鍛冶場を改装した屋内市場(2017年開業�
 ### De Kapblok（デ・カップブロック(De Smidse内)）
 
 @@IMG:europe/belgium/img/leuven/kapblok.jpg@@
+
+@@IMG:europe/belgium/img/leuven/kapblok_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -234,6 +254,8 @@ De Smidse内の生パスタアトリエ。持ち帰りの生パスタ・ソー�
 ### Vrijdagmarkt（金曜の週市(青空市場)）
 
 @@IMG:europe/belgium/img/leuven/markt.jpg@@
+
+@@IMG:europe/belgium/img/leuven/markt_exterior.jpg@@
 
 `老舗・歴史`
 
@@ -270,6 +292,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 
 @@IMG:europe/belgium/img/leuven/bittersweet.jpg@@
 
+@@IMG:europe/belgium/img/leuven/bittersweet_exterior.jpg@@
+
 `ブログ推薦`
 
 中心部のショコラトリー。「ルーベンで最も創作的なプラリネ」と評され、Gault&Millauにも掲載。金・土はトッピング付きソフトクリームも。
@@ -287,6 +311,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 
 @@IMG:europe/belgium/img/leuven/galetje.jpg@@
 
+@@IMG:europe/belgium/img/leuven/galetje_exterior.jpg@@
+
 `口コミ突出` `老舗・歴史`
 
 2001年創業、毎日店内で作る自家製ジェラート&ソルベ。市中心近くに2店舗。「常に人だかり」の記述が複数ソースで一致。
@@ -303,6 +329,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 ### Tartufo（タルトゥーフォ）
 
 @@IMG:europe/belgium/img/leuven/tartufo.jpg@@
+
+@@IMG:europe/belgium/img/leuven/tartufo_exterior.jpg@@
 
 `ブログ推薦`
 
@@ -322,6 +350,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 ### Bakkerij Het Brood（ヘット・ブロート）
 
 @@IMG:europe/belgium/img/leuven/hetbrood.jpg@@
+
+@@IMG:europe/belgium/img/leuven/hetbrood_exterior.jpg@@
 
 `ブログ推薦`
 
@@ -358,6 +388,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 
 @@IMG:europe/belgium/img/leuven/stella.jpg@@
 
+@@IMG:europe/belgium/img/leuven/stella_exterior.jpg@@
+
 `老舗・歴史`
 
 ルーベンはStella Artois発祥の地。駅北側の醸造所は見学ツアーあり(要予約)。
@@ -375,6 +407,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 ### Oude Markt（アウデ・マルクト(旧市場広場)）
 
 @@IMG:europe/belgium/img/leuven/oudemarkt.jpg@@
+
+@@IMG:europe/belgium/img/leuven/oudemarkt_exterior.jpg@@
 
 `口コミ突出` `老舗・歴史`
 
@@ -394,6 +428,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 ### Ristorante Rossi（リストランテ・ロッシ）
 
 @@IMG:europe/belgium/img/leuven/rossi_rist.jpg@@
+
+@@IMG:europe/belgium/img/leuven/rossi_rist_exterior.jpg@@
 
 `権威評価`
 
@@ -431,6 +467,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 
 @@IMG:europe/belgium/img/leuven/laslanzas.jpg@@
 
+@@IMG:europe/belgium/img/leuven/laslanzas_exterior.jpg@@
+
 `老舗・歴史`
 
 約55年続く老舗スペイン料理店。パエリア(paella＝サフラン風味の米の炊き込み)やタパス(tapas＝小皿料理)。夏はSint-Pieterskerkそばの広場テラスが人気。
@@ -444,23 +482,3 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 - **選定理由**: マドリード出身シェフが創業し、地元に地中海料理を根付かせた草分け的存在。約55年の歴史を持つ本格スペイン料理店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Las%20Lanzas%20Mathieu%20de%20Layensplein%20Leuven)
 - **参照元**: [restaurantlaslanzas.be](https://www.restaurantlaslanzas.be/) / [openingsuren.vlaanderen](https://www.openingsuren.vlaanderen/las-lanzas/3000-leuven/mathieu-de-layensplein-3)
-
-### Restaurant d'Artagnan（ダルタニアン）
-
-@@IMG:europe/belgium/img/leuven/dartagnan.jpg@@
-
-`ミシュラン掲載`
-
-2000年から続く邸宅レストラン。地元・新鮮食材のフランス料理(ベルギー・フレンチ折衷)に国際的なアクセントを加える。庭のテラスが名物。
-
-- **一皿**: 季節のフレンチ・コース
-- **営業時間**: 木・金 昼12:00–13:30/夜18:30–20:30、土 夜18:30–20:30(他要確認)
-- **定休日**: 日〜水(要確認)
-- **住所**: Naamsestraat 72, 3000 Leuven
-- **予約**: 要(要予約) — ☎ 電話で予約 +32 16 29 26 26 ／ [公式サイト](https://www.restaurantdartagnan.be/)
-- **公式**: [公式サイト](https://www.restaurantdartagnan.be/)
-- **選定理由**: ミシュランガイド掲載・Gault&Millau掲載。ルーベンのグルメに長年愛される邸宅レストラン。※厳密にはベルギー・フレンチ折衷。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20d%27Artagnan%20Naamsestraat%2072%20Leuven)
-- **参照元**: [ミシュランガイド](https://guide.michelin.com/us/en/vlaams-brabant/leuven/restaurant/d-artagnan) / [Gault&Millau](https://www.gaultmillau.be/en/restaurants/dartagnan-leuven)
-
-## 中東料理

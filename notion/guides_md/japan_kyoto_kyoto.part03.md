@@ -1,6 +1,46 @@
+### 54. 中華そば 高安（ちゅうかそば たかやす）
+
+@@IMG:japan/kyoto/img/kyoto/takayasu.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/takayasu_exterior.jpg@@
+
+`口コミ突出` `地元密着`
+
+ラーメン激戦区・一乗寺を代表する行列店。豚骨と鶏ガラを長時間炊いたクリーミーでまろやかな白濁スープの中華そばが看板。拳大のカレー風味唐揚げとのセットが定番の食べ方。
+
+- **一皿**: 中華そば(まろやかな白濁豚骨鶏ガラスープ)+名物の大きな唐揚げ
+- **営業時間**: 月・火・水・木・金・土・日 11:30〜2:00
+- **定休日**: なし(要最終確認)
+- **住所**: 京都府京都市左京区一乗寺高槻町１０
+- **予約**: 要確認 — ☎ 075-721-4878 ／ [公式サイト](http://takayasuramen.com/)
+- **選定理由**: 一乗寺ラーメン街道の代表格としてキョウトピや地元メディアで繰り返し紹介される行列店。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E9%AB%98%E5%AE%89%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%80%E4%B9%97%E5%AF%BA%E9%AB%98%E6%A7%BB%E7%94%BA%EF%BC%91%EF%BC%90)
+- **参照元**: [キョウトピ](https://kyotopi.jp/articles/5n50v) / [京都観光Navi](https://ja.kyoto.travel/tourism/single01.php?category_id=4&tourism_id=3122)
+
+### 55. 天天有 本店（てんてんゆう ほんてん）
+
+@@IMG:japan/kyoto/img/kyoto/tentenyu.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/tentenyu_exterior.jpg@@
+
+`老舗・歴史` `地元密着`
+
+1971年創業、一乗寺の老舗ラーメン店。鶏と野菜を長時間煮込んでポタージュ状にした鶏白湯スープが名物で、京都鶏がらラーメンの源流の一つ。全国に暖簾分け店があるが本店の味は別格と評される。
+
+- **一皿**: 中華そば(とろりと濃厚な鶏白湯スープの元祖級の一杯)
+- **営業時間**: 月・火・木・金・土・日 12:00〜22:00
+- **定休日**: 水曜
+- **住所**: 京都府京都市左京区一乗寺西杉ノ宮町４９
+- **予約**: 要確認 — ☎ 075-711-3255 ／ [公式サイト](http://twitter.com/tentenyuuhonten)
+- **選定理由**: 創業50年超の老舗かつ一乗寺の定番としてキョウトピ等ローカルメディアで紹介される名店。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E5%A4%A9%E6%9C%89%20%E6%9C%AC%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%80%E4%B9%97%E5%AF%BA%E8%A5%BF%E6%9D%89%E3%83%8E%E5%AE%AE%E7%94%BA%EF%BC%94%EF%BC%99)
+- **参照元**: [キョウトピ](https://kyotopi.jp/articles/uxpHT) / [在住者グルメブログ](https://gcjapan-kyoto.com/tentenyuu/)
+
 ### 56. らぁ麺 とうひち（らぁめん とうひち）
 
 @@IMG:japan/kyoto/img/kyoto/touhichi.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/touhichi_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -18,6 +58,8 @@
 ### 57. 大黒ラーメン 本店（だいこくらーめん ほんてん）
 
 @@IMG:japan/kyoto/img/kyoto/daikoku-ramen.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/daikoku-ramen_exterior.jpg@@
 
 `地元密着` `口コミ突出`
 
@@ -53,6 +95,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/homairo.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/homairo_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦`
 
 花街文化と結びつき、にんにくや油を控えた上品な「京都中華」の伝説的名店・鳳舞の味を、修業した店主が受け継ぐ店。名物のからしそばは和芥子の効いた餡かけ麺で、にらまきあげ(ニラ入り揚げ春巻)も人気。
@@ -72,6 +116,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/toyotei.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/toyotei_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 明治30年（1897年）創業、京都初期の洋食店で「京乃百年洋食」を掲げる。名物「百年洋食ハンバーグステーキ」はアルミホイルに包まれ熱々で提供され、開けると肉汁とデミグラスソースが弾ける。丸ごとトマトサラダ・焼きたてパンとのセットが定番。
@@ -88,6 +134,8 @@
 ### 14. グリル小宝（ぐりるこだから）
 
 @@IMG:japan/kyoto/img/kyoto/kodakara.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/kodakara_exterior.jpg@@
 
 `老舗・歴史` `地元密着` `ブログ推薦`
 
@@ -106,6 +154,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/viyanto.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/viyanto_exterior.jpg@@
+
 `老舗・歴史` `地元密着` `ブログ推薦`
 
 1975年創業、カウンター約10席の小さな老舗カレー専門店。ターメリックライスにサラッと軽いのにスパイシーな欧風ルー、揚げたてサクサクのカツをのせた「カツカレー」が名物。京大生や医療関係者など世代を超えた地元の圧倒的ファンを持つ。
@@ -122,6 +172,8 @@
 ### 28. イル ギオットーネ 京都本店（いる ぎおっとーね きょうとほんてん）
 
 @@IMG:japan/kyoto/img/kyoto/ghiottone.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/ghiottone_exterior.jpg@@
 
 `口コミ突出`
 
@@ -140,6 +192,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/bouchon.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/bouchon_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 寺町二条で長年愛される本場仕込みのフレンチビストロ。京都在住フランス人が「ここは本当にフランスだ」と絶賛する店として知られ、パテ・ド・カンパーニュ（田舎風豚肉パテ）や鴨のコンフィ（鴨もも肉の低温油煮）など定番ビストロ料理を気取らない価格で提供する。
@@ -156,6 +210,8 @@
 ### 60. キッチンパパ（きっちんぱぱ）
 
 @@IMG:japan/kyoto/img/kyoto/kitchen-papa.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/kitchen-papa_exterior.jpg@@
 
 `地元密着` `口コミ突出`
 
@@ -174,6 +230,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/spice-chamber.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/spice-chamber_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 メニューはキーマカレーのみという四条烏丸の名物カレー店。大量の香辛料と野菜を煮込んだ辛さの奥に旨みが広がる一皿で、ミシュランガイドにも掲載歴あり。ビルの一角で行列が絶えない。
@@ -190,6 +248,8 @@
 ### 62. ピッツェリア ナポレターナ ダ ユウキ（ぴっつぇりあ なぽれたーな だ ゆうき）
 
 @@IMG:japan/kyoto/img/kyoto/da-yuki.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/da-yuki_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -210,6 +270,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/inoda.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/inoda_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 1940年創業、京都の喫茶文化を代表する老舗。町家造りの本店は吹き抜けと中庭が印象的。看板コーヒー「アラビアの真珠」（ミルク・砂糖入りが基本の深煎りブレンド）と、ハム・スクランブルエッグ等がワンプレートの「京の朝食」が名物。
@@ -226,6 +288,8 @@
 ### 17. 進々堂 京大北門前（しんしんどう きょうだいきたもんぜん）
 
 @@IMG:japan/kyoto/img/kyoto/shinshindo.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/shinshindo_exterior.jpg@@
 
 `老舗・歴史`
 
@@ -244,6 +308,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/rokuyosha.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/rokuyosha_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 1950年創業、京都喫茶文化を象徴する三代続く名喫茶。1階店と地下店で雰囲気とメニューが異なり、地下店の自家製ドーナツ（シナモンシュガーをまぶした素朴な揚げドーナツ）と自家焙煎コーヒーの組み合わせが名物。文化人が集った歴史あるカウンターも魅力。
@@ -260,6 +326,8 @@
 ### 31. まるき製パン所（まるきせいぱんじょ）
 
 @@IMG:japan/kyoto/img/kyoto/maruki.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/maruki_exterior.jpg@@
 
 `老舗・歴史` `地元密着` `ブログ推薦`
 
@@ -290,54 +358,3 @@
 - **選定理由**: 昭和23年創業の老舗純喫茶で、京都のレトロ喫茶ブームを牽引する象徴的存在として各メディアが紹介。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%BD%E3%83%AF%E3%83%AC%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E4%B8%8B%E4%BA%AC%E5%8C%BA%E8%A5%BF%E6%9C%A8%E5%B1%8B%E7%94%BA%E9%80%9A%E5%9B%9B%E6%9D%A1%E4%B8%8A%E3%82%8B%E7%9C%9F%E7%94%BA%EF%BC%99%EF%BC%95)
 - **参照元**: [公式サイト](https://www.soiree-kyoto.com/) / [グルメライターnote](https://note.com/ktaro1977/n/n68d49332c142)
-
-### 64. スマート珈琲店（すまーとこーひーてん）
-
-@@IMG:japan/kyoto/img/kyoto/smart-coffee.jpg@@
-
-`老舗・歴史` `口コミ突出`
-
-1932年創業、寺町通の老舗自家焙煎喫茶。一子相伝で受け継がれるこんがり焼き色のホットケーキと、ふわとろのフレンチトースト、自家焙煎コーヒーが三大名物。朝から行列ができるモーニングの定番。
-
-- **一皿**: ホットケーキ(銅板でじっくり焼く一子相伝の昔ながらの味)
-- **営業時間**: 月・火・水・木・金・土・日 8:00〜19:00
-- **定休日**: なし(要最終確認)
-- **住所**: 京都府京都市中京区天性寺前町５３７
-- **予約**: 要確認 — ☎ 075-231-6547 ／ [公式サイト](http://www.smartcoffee.jp/)
-- **選定理由**: 創業90年超、京都で現存する最古級の喫茶店の一つとしてキョウトピや在住者ブログで頻出。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%9E%E3%83%BC%E3%83%88%E7%8F%88%E7%90%B2%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E4%B8%AD%E4%BA%AC%E5%8C%BA%E5%A4%A9%E6%80%A7%E5%AF%BA%E5%89%8D%E7%94%BA%EF%BC%95%EF%BC%93%EF%BC%97)
-- **参照元**: [キョウトピ](https://kyotopi.jp/articles/ihQU0) / [在住者ブログ](https://www.kyotowalk-gourmet.com/entry/smartcoffee)
-
-### 65. 喫茶マドラグ（きっさまどらぐ）
-
-@@IMG:japan/kyoto/img/kyoto/madrague.jpg@@
-
-`口コミ突出` `老舗・歴史`
-
-閉店した昭和の名喫茶「セブン」の空間と、洋食店「コロナ」名物の玉子サンドを受け継ぐ喫茶店。厚さ数センチのだし巻きのようなふわふわ玉子を挟んだ「コロナの玉子サンド」を目当てに行列ができる。
-
-- **一皿**: コロナの玉子サンド(分厚いふわふわ玉子焼きを挟んだ伝説のサンド)
-- **営業時間**: 月・火・水・木・金・土・日 8:00〜18:00
-- **定休日**: なし(要最終確認)
-- **住所**: 京都府京都市中京区上松屋町７０６−５
-- **予約**: 可 — ☎ 075-744-0067 ／ [公式サイト](http://madrague.info/)
-- **選定理由**: 名店の味を継承するストーリーごと支持され「日本一有名な玉子サンド」としてキョウトピ等が紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%83%9E%E3%83%89%E3%83%A9%E3%82%B0%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E4%B8%AD%E4%BA%AC%E5%8C%BA%E4%B8%8A%E6%9D%BE%E5%B1%8B%E7%94%BA%EF%BC%97%EF%BC%90%EF%BC%96%E2%88%92%EF%BC%95)
-- **参照元**: [キョウトピ](https://kyotopi.jp/articles/6lAvf) / [ことりっぷ](https://co-trip.jp/article/684130)
-
-### 66. 志津屋 本店（しずや ほんてん）
-
-@@IMG:japan/kyoto/img/kyoto/shizuya.jpg@@
-
-`地元密着` `老舗・歴史`
-
-1948年創業、京都人の日常パンを代表する老舗ベーカリー。丸いフランスパンにハムと玉ねぎを挟んだだけの「カルネ」は1日約6000個売れる看板商品。本店は工場併設で限定商品やイートインも楽しめる。
-
-- **一皿**: カルネ(ハムとオニオンを挟んだ京都のソウルフード的フランスパンサンド)
-- **営業時間**: 月・火・水・木・金・土・日 7:00〜20:00
-- **定休日**: なし(要最終確認)
-- **住所**: 京都府京都市右京区山ノ内五反田町１０ カーサ御池
-- **予約**: 要確認 — ☎ 075-803-2550 ／ [公式サイト](http://www.sizuya.co.jp/shop/honten.html)
-- **選定理由**: 「パンの街・京都」を語る上で欠かせない地元銘店として、るるぶや京都暮らすなど地元メディアが紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%BF%97%E6%B4%A5%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%8F%B3%E4%BA%AC%E5%8C%BA%E5%B1%B1%E3%83%8E%E5%86%85%E4%BA%94%E5%8F%8D%E7%94%B0%E7%94%BA%EF%BC%91%EF%BC%90%20%E3%82%AB%E3%83%BC%E3%82%B5%E5%BE%A1%E6%B1%A0)
-- **参照元**: [公式サイト](https://www.sizuya.co.jp/shop/) / [るるぶ&more.](https://rurubu.jp/andmore/article/15919)

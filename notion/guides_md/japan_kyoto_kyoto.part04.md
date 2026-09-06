@@ -1,6 +1,65 @@
+### 64. スマート珈琲店（すまーとこーひーてん）
+
+@@IMG:japan/kyoto/img/kyoto/smart-coffee.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/smart-coffee_exterior.jpg@@
+
+`老舗・歴史` `口コミ突出`
+
+1932年創業、寺町通の老舗自家焙煎喫茶。一子相伝で受け継がれるこんがり焼き色のホットケーキと、ふわとろのフレンチトースト、自家焙煎コーヒーが三大名物。朝から行列ができるモーニングの定番。
+
+- **一皿**: ホットケーキ(銅板でじっくり焼く一子相伝の昔ながらの味)
+- **営業時間**: 月・火・水・木・金・土・日 8:00〜19:00
+- **定休日**: なし(要最終確認)
+- **住所**: 京都府京都市中京区天性寺前町５３７
+- **予約**: 要確認 — ☎ 075-231-6547 ／ [公式サイト](http://www.smartcoffee.jp/)
+- **選定理由**: 創業90年超、京都で現存する最古級の喫茶店の一つとしてキョウトピや在住者ブログで頻出。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%9E%E3%83%BC%E3%83%88%E7%8F%88%E7%90%B2%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E4%B8%AD%E4%BA%AC%E5%8C%BA%E5%A4%A9%E6%80%A7%E5%AF%BA%E5%89%8D%E7%94%BA%EF%BC%95%EF%BC%93%EF%BC%97)
+- **参照元**: [キョウトピ](https://kyotopi.jp/articles/ihQU0) / [在住者ブログ](https://www.kyotowalk-gourmet.com/entry/smartcoffee)
+
+### 65. 喫茶マドラグ（きっさまどらぐ）
+
+@@IMG:japan/kyoto/img/kyoto/madrague.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/madrague_exterior.jpg@@
+
+`口コミ突出` `老舗・歴史`
+
+閉店した昭和の名喫茶「セブン」の空間と、洋食店「コロナ」名物の玉子サンドを受け継ぐ喫茶店。厚さ数センチのだし巻きのようなふわふわ玉子を挟んだ「コロナの玉子サンド」を目当てに行列ができる。
+
+- **一皿**: コロナの玉子サンド(分厚いふわふわ玉子焼きを挟んだ伝説のサンド)
+- **営業時間**: 月・火・水・木・金・土・日 8:00〜18:00
+- **定休日**: なし(要最終確認)
+- **住所**: 京都府京都市中京区上松屋町７０６−５
+- **予約**: 可 — ☎ 075-744-0067 ／ [公式サイト](http://madrague.info/)
+- **選定理由**: 名店の味を継承するストーリーごと支持され「日本一有名な玉子サンド」としてキョウトピ等が紹介。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%83%9E%E3%83%89%E3%83%A9%E3%82%B0%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E4%B8%AD%E4%BA%AC%E5%8C%BA%E4%B8%8A%E6%9D%BE%E5%B1%8B%E7%94%BA%EF%BC%97%EF%BC%90%EF%BC%96%E2%88%92%EF%BC%95)
+- **参照元**: [キョウトピ](https://kyotopi.jp/articles/6lAvf) / [ことりっぷ](https://co-trip.jp/article/684130)
+
+### 66. 志津屋 本店（しずや ほんてん）
+
+@@IMG:japan/kyoto/img/kyoto/shizuya.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/shizuya_exterior.jpg@@
+
+`地元密着` `老舗・歴史`
+
+1948年創業、京都人の日常パンを代表する老舗ベーカリー。丸いフランスパンにハムと玉ねぎを挟んだだけの「カルネ」は1日約6000個売れる看板商品。本店は工場併設で限定商品やイートインも楽しめる。
+
+- **一皿**: カルネ(ハムとオニオンを挟んだ京都のソウルフード的フランスパンサンド)
+- **営業時間**: 月・火・水・木・金・土・日 7:00〜20:00
+- **定休日**: なし(要最終確認)
+- **住所**: 京都府京都市右京区山ノ内五反田町１０ カーサ御池
+- **予約**: 要確認 — ☎ 075-803-2550 ／ [公式サイト](http://www.sizuya.co.jp/shop/honten.html)
+- **選定理由**: 「パンの街・京都」を語る上で欠かせない地元銘店として、るるぶや京都暮らすなど地元メディアが紹介。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%BF%97%E6%B4%A5%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%8F%B3%E4%BA%AC%E5%8C%BA%E5%B1%B1%E3%83%8E%E5%86%85%E4%BA%94%E5%8F%8D%E7%94%B0%E7%94%BA%EF%BC%91%EF%BC%90%20%E3%82%AB%E3%83%BC%E3%82%B5%E5%BE%A1%E6%B1%A0)
+- **参照元**: [公式サイト](https://www.sizuya.co.jp/shop/) / [るるぶ&more.](https://rurubu.jp/andmore/article/15919)
+
 ### 67. ル・プチメック 今出川店（る・ぷちめっく いまでがわてん）
 
 @@IMG:japan/kyoto/img/kyoto/petit-mec.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/petit-mec_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -18,6 +77,8 @@
 ### 68. 大正製パン所（たいしょうせいぱんじょ）
 
 @@IMG:japan/kyoto/img/kyoto/taisho-seipan.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/taisho-seipan_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 
@@ -55,6 +116,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/sawaya.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/sawaya_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 天和2年（1682年）創業、13代続く北野天満宮の門前菓子の店。名物「粟餅」は注文を受けてからつきたての粟の餅をこし餡ときな粉で仕上げるもので、無添加ゆえ当日中に食べるのが身上。参拝帰りの地元客に300年以上愛される。
@@ -89,6 +152,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/seien.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/seien_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦` `地元密着`
 
 明治18年（1885年）創業の京菓子老舗「大極殿本舗」に併設された甘味処。名物「琥珀流し」（限界まで柔らかく仕上げたぷるぷるの寒天に、梅・抹茶・柚子など月替わりの蜜をかけた涼菓）は毎月味が変わり、通う楽しみがある。町家の風情ある空間も魅力。
@@ -105,6 +170,8 @@
 ### 36. 御菓子司 中村軒（おかしつかさ なかむらけん）
 
 @@IMG:japan/kyoto/img/kyoto/nakamuraken.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/nakamuraken_exterior.jpg@@
 
 `老舗・歴史` `地元密着` `ブログ推薦`
 
@@ -123,6 +190,8 @@
 
 @@IMG:japan/kyoto/img/kyoto/imanishiken.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/imanishiken_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 明治30年(1897年)創業のおはぎ専門の老舗。きなこ・こしあん・つぶあんの3種のみを毎朝手作りし、開店前から行列ができて午前中に完売する日も多い。やわらかな餅と上品な甘さの餡が身上。
@@ -139,6 +208,8 @@
 ### 70. 甘党茶屋 梅園 三条寺町店（あまとうぢゃや うめぞの さんじょうてらまちてん）
 
 @@IMG:japan/kyoto/img/kyoto/umezono.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/umezono_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 

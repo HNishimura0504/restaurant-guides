@@ -12,7 +12,7 @@ JAPAN / KYOTO 🇯🇵
 - `地元密着` — 観光客より地元客に愛される店
 - `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+> 📷 各店の写真は上が**料理**、下が**店構え**の実写です（Google の店舗写真 ©各投稿者/Google ／ 一部は Google Street View ©Google）。店構えが確認できなかった店は料理の1枚だけです。
 
 @@TOC@@
 
@@ -39,6 +39,8 @@ JAPAN / KYOTO 🇯🇵
 ### 1. 総本家ゆどうふ 奥丹清水（そうほんけゆどうふ おくたんきよみず）
 
 @@IMG:japan/kyoto/img/kyoto/okutan.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/okutan_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -74,6 +76,8 @@ JAPAN / KYOTO 🇯🇵
 
 @@IMG:japan/kyoto/img/kyoto/kaneyo.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/kaneyo_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 大正時代創業の「日本一の鰻」を掲げる老舗。名物「きんし丼」は、うな丼の上を覆い隠すほど大きなふわふわの京風だし巻き卵をのせた京都独特の鰻丼。レトロな建物も含め京都の食文化の象徴的存在。
@@ -90,6 +94,8 @@ JAPAN / KYOTO 🇯🇵
 ### 5. 御料理 めなみ（おりょうり めなみ）
 
 @@IMG:japan/kyoto/img/kyoto/menami.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/menami_exterior.jpg@@
 
 `ブログ推薦` `地元密着` `老舗・歴史`
 
@@ -108,6 +114,8 @@ JAPAN / KYOTO 🇯🇵
 
 @@IMG:japan/kyoto/img/kyoto/toriiwaro.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/toriiwaro_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦`
 
 西陣織の街の真ん中、築100年超の京町家で営む鶏料理の老舗。昼限定（12:00〜14:00のみ）の「親子丼」は、とろとろの玉子に山椒を効かせ中央に生玉子の黄身を落とした名物。夜は名物の水炊き（鶏を出汁で炊く鍋料理）。
@@ -124,6 +132,8 @@ JAPAN / KYOTO 🇯🇵
 ### 20. 先斗町 ますだ（ぽんとちょう ますだ）
 
 @@IMG:japan/kyoto/img/kyoto/masuda.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/masuda_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 
@@ -142,6 +152,8 @@ JAPAN / KYOTO 🇯🇵
 
 @@IMG:japan/kyoto/img/kyoto/toyouke.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/toyouke_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦` `口コミ突出`
 
 明治30年（1897年）創業の京豆腐店「とようけ屋山本」直営の食事処。名物「生ゆば丼」（豆乳を加熱してできる薄膜の湯葉をあんかけ状にしてご飯にのせた丼）や「湯豆腐膳」（にがり絹ごし豆腐使用）が人気で、昼時は行列必至。できたて豆腐の味を手頃な価格で楽しめる地元定番店。
@@ -159,6 +171,8 @@ JAPAN / KYOTO 🇯🇵
 
 @@IMG:japan/kyoto/img/kyoto/kamo.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/kamo_exterior.jpg@@
+
 `口コミ突出` `地元密着`
 
 京都産の朝採れ有機野菜「都野菜」を使ったバイキング形式の店。おばんざいや湯葉・湯豆腐、野菜の天ぷらなど約30種が食べ放題で、朝食550円という驚異的なコスパから早朝から行列ができる。京野菜を気軽にたっぷり味わえる店として在住者にも観光客にも人気。
@@ -175,6 +189,8 @@ JAPAN / KYOTO 🇯🇵
 ### 23. いづう（いづう）
 
 @@IMG:japan/kyoto/img/kyoto/izuu.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/izuu_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -207,6 +223,8 @@ JAPAN / KYOTO 🇯🇵
 ### 34. 祢ざめ家（ねざめや）
 
 @@IMG:japan/kyoto/img/kyoto/nezameya.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/nezameya_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -242,6 +260,8 @@ JAPAN / KYOTO 🇯🇵
 
 @@IMG:japan/kyoto/img/kyoto/uosaburo.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/uosaburo_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 明和元年(1764年)創業、伏見の京町通に構える京料理の老舗。玄関の格子戸には鳥羽伏見の戦いの弾痕が当時のまま残る。天然鮮魚と京野菜、伏見の名水を使った会席料理(季節の八寸・椀物・焼物などを順に供する京風コース料理)が味わえる。
@@ -276,6 +296,8 @@ JAPAN / KYOTO 🇯🇵
 
 @@IMG:japan/kyoto/img/kyoto/warajiya.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/warajiya_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 寛永元年(1624年)創業、豊臣秀吉が草鞋を脱いで休んだ逸話が屋号の由来という約400年続く鰻料理専門店。名物「うぞふすい」(輪切りの鰻と九条ねぎ入りの鍋「うなべ」の出汁に、ご飯・餅・白焼き鰻・卵を加えた雑炊)が看板。
@@ -292,6 +314,8 @@ JAPAN / KYOTO 🇯🇵
 ### 40. 京の鳥どころ 八起庵 丸太町本店（きょうのとりどころ はちきあん）
 
 @@IMG:japan/kyoto/img/kyoto/hachikian.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/hachikian_exterior.jpg@@
 
 `口コミ突出` `地元密着`
 
@@ -310,6 +334,8 @@ JAPAN / KYOTO 🇯🇵
 
 @@IMG:japan/kyoto/img/kyoto/kinobu.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/kinobu_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 昭和10年(1935年)創業、四条烏丸の新町通に構える京料理の名店。三代目主人は吉兆創業者・湯木貞一氏に師事し、伝統の会席料理(先付から水物まで季節の京料理を順に供するコース)にワインを合わせる新しい試みでも知られる。
@@ -326,6 +352,8 @@ JAPAN / KYOTO 🇯🇵
 ### 44. 京のすし処 末廣（きょうのすしどころ すえひろ）
 
 @@IMG:japan/kyoto/img/kyoto/suehiro.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/suehiro_exterior.jpg@@
 
 `老舗・歴史` `地元密着`
 
@@ -344,6 +372,8 @@ JAPAN / KYOTO 🇯🇵
 
 @@IMG:japan/kyoto/img/kyoto/hanaore.jpg@@
 
+@@IMG:japan/kyoto/img/kyoto/hanaore_exterior.jpg@@
+
 `老舗・歴史` `地元密着`
 
 大正2年(1913年)創業、若狭と京を結ぶ鯖街道・花折峠を屋号に持つ鯖寿司専門店。肉厚の塩鯖を酢で締めて昆布とともに棒状に押した「京鯖寿し」が看板で、店内では出来たてを味わえる。
@@ -356,20 +386,3 @@ JAPAN / KYOTO 🇯🇵
 - **選定理由**: 老舗紹介サイトや地元グルメ媒体で鯖街道ゆかりの名店として定評。既収録が薄い下鴨エリアかつ、いづうと異なる鯖街道系の鯖寿司として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%AF%96%E8%A1%97%E9%81%93%20%E8%8A%B1%E6%8A%98%20%E4%B8%8B%E9%B4%A8%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%8B%E9%B4%A8%E5%AE%AE%E5%B4%8E%E7%94%BA%EF%BC%91%EF%BC%92%EF%BC%91)
 - **参照元**: [公式サイト](https://hanaore.storeinfo.jp/) / [老舗食堂(shinise.tv)](https://shinise.tv/hanaore/)
-
-### 46. 下鴨茶寮 本店（しもがもさりょう）
-
-@@IMG:japan/kyoto/img/kyoto/shimogamosaryo.jpg@@
-
-`老舗・歴史` `口コミ突出`
-
-安政3年(1856年)創業、世界遺産・下鴨神社のほとりに立つ料亭。茶道の作法に基づく茶懐石(一汁三菜を基本に季節の料理を順に供する正式な会席)の伝統を守り、料理旅館の風情ある座敷で京料理を味わえる。
-
-- **一皿**: 茶懐石コース(下鴨神社ゆかりの地で味わう季節の懐石料理)
-- **営業時間**: 月・水・木・金・土・日 11:30〜15:00, 17:00〜21:00
-- **定休日**: 火曜
-- **住所**: 京都府京都市左京区下鴨宮河町６２
-- **予約**: 可 — ☎ 075-701-5185 ／ [公式サイト](http://www.shimogamosaryo.co.jp/)
-- **選定理由**: 創業170年の京都を代表する料亭で公式サイト・一休等で営業を確認。糺の森周辺の特別な食事処として下鴨エリアを補強。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E9%B4%A8%E8%8C%B6%E5%AF%AE%20%E6%9C%AC%E5%BA%97%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E5%B7%A6%E4%BA%AC%E5%8C%BA%E4%B8%8B%E9%B4%A8%E5%AE%AE%E6%B2%B3%E7%94%BA%EF%BC%96%EF%BC%92)
-- **参照元**: [公式サイト](https://www.shimogamosaryo.co.jp/about/) / [一休レストラン](https://restaurant.ikyu.com/101853)

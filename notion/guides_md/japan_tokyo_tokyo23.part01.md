@@ -12,7 +12,7 @@ JAPAN / TOKYO・東京都 🇯🇵
 - `地元密着` — 観光客より地元客に愛される店
 - `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+> 📷 各店の写真は上が**料理**、下が**店構え**の実写です（Google の店舗写真 ©各投稿者/Google ／ 一部は Google Street View ©Google）。店構えが確認できなかった店は料理の1枚だけです。
 
 @@TOC@@
 
@@ -40,6 +40,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/tempura_nakasei.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/tempura_nakasei_exterior.jpg@@
+
 `history`
 
 明治3年（1870年）創業、浅草寺の西側で代を重ねて江戸前天麩羅を続ける店。永井荷風や久保田万太郎ら文人が通った座敷は今も竹と庭を望む造りで、天麩羅会席と天丼を軸に供する。名物の雷神揚は海老のすり身を丸く揚げたもので、雷門の雷神が持つ太鼓に似ることから仏文学者辰野隆が名付けたと伝わる。胡麻油を含む合わせ油で香ばしく揚げるのが持ち味。
@@ -56,6 +58,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 ### 2. 駒形どぜう 本店（こまかたどぜう ほんてん）
 
 @@IMG:japan/tokyo/img/tokyo23/dozeu_komakata.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/dozeu_komakata_exterior.jpg@@
 
 `history` `地元密着`
 
@@ -74,6 +78,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/sushi_mitsugi_fukagawa.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/sushi_mitsugi_fukagawa_exterior.jpg@@
+
 `地元密着` `history`
 
 1970年創業、門前仲町の交差点近くで深川の客に握り続ける寿司店。握り寿司の始祖とされる華屋与兵衛の仕事を手本にした「正調江戸前にぎり」を掲げ、煮る・締める・漬けるといった仕込みを施したネタを江戸前の飯で握る。十七席の小体な店で、地元の常連と海外からの客が席を分け合う。江東区観光協会の深川めし取扱店にも名を連ねる。
@@ -90,6 +96,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 ### 4. 尾花（おばな）
 
 @@IMG:japan/tokyo/img/tokyo23/unagi_obana.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/unagi_obana_exterior.jpg@@
 
 `history` `buzz`
 
@@ -108,6 +116,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/unagi_kawachiya.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/unagi_kawachiya_exterior.jpg@@
+
 `history` `地元密着`
 
 安永7年（1778年）創業と伝わる柴又帝釈天参道の川魚料理店で、現在は十代目。江戸川の漁師から鰻や鯉を仕入れてきた歴史を持ち、いまも注文後に割いて備長炭で焼き上げる。名物のうな重に加え、鯉のあらいや鯉こく、川魚の甘露煮など下町の川魚料理が並ぶ。参道の風情を残す二階の広間からは門前の賑わいが見え、寅さんの街を訪ねる客が絶えない。
@@ -124,6 +134,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 ### 6. 鯉とうなぎのまるます家 総本店（こいとうなぎのまるますや そうほんてん）
 
 @@IMG:japan/tokyo/img/tokyo23/marumasuya_akabane.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/marumasuya_akabane_exterior.jpg@@
 
 `地元密着` `history`
 
@@ -142,6 +154,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/unagi_ishibashi.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/unagi_ishibashi_exterior.jpg@@
+
 `history` `buzz`
 
 明治43年（1910年）に神田川（旧江戸川）のほとりで創業した鰻専門店で、現在は四代目。ミシュランガイド東京で星を重ねてきた。生きた鰻を注文後に割き、備長炭で焼き上げる間に、百年以上継いだ糠床の香の物や吸い物が出る。庭を望む静かな座敷と椅子席があり、昼はうな重、夜は白焼きや八幡巻きを含む献立でゆっくり過ごせる。
@@ -159,6 +173,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/tempura_kagurazaka_tenko.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/tempura_kagurazaka_tenko_exterior.jpg@@
+
 `buzz` `veg`
 
 昭和52年（1977年）創業、神楽坂の路地奥にある座敷天婦羅の店。食べログの天ぷら百名店に選ばれ続けている。四季の素材を軸に、独自に配合した油で一品ずつ揚げ、カウンターと個室、一階の座敷で供する。海老や穴子といった江戸前の種に加え、野菜や旬の魚を組み込んだおまかせが中心で、締めは天丼か天茶を選べる。夜は完全予約制。
@@ -175,6 +191,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 ### 9. 三代目 むら上 大井町店（さんだいめ むらかみ おおいまちてん）
 
 @@IMG:japan/tokyo/img/tokyo23/unagi_murakami_oimachi.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/unagi_murakami_oimachi_exterior.jpg@@
 
 `地元密着` `history`
 
@@ -227,6 +245,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/sushi_matsumoto_itabashi.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/sushi_matsumoto_itabashi_exterior.jpg@@
+
 `buzz` `地元密着`
 
 新板橋の住宅街にある完全予約制の鮨店で、食べログの寿司百名店に選出されている。カウンターだけの小さな店で、店主が握りとつまみを織り交ぜたおまかせを組む。煮物やヅケといった江戸前らしい仕込みを土台にしながら、都心の名店より抑えた価格でコースを出すことで知られ、地元の常連と遠方からの客が席を分け合う。夜のみの営業。
@@ -246,6 +266,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/sukiyaki_asakusa_imahan.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/sukiyaki_asakusa_imahan_exterior.jpg@@
+
 `history`
 
 明治28年（1895年）創業のすき焼き店の本店。黒毛和牛の雌牛だけを使い、秘伝の割下で煮るというより焼くように仕上げる「浅草今半流」で知られる。国際通りに面した建物に個室と広間を備え、仲居がつきっきりで鍋を扱う。昼はすき焼き重やしゃぶしゃぶ膳など手頃な献立があり、夜はコースで肉の甘みを味わえる。年中無休で観光の合間にも使いやすい。
@@ -262,6 +284,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 ### 14. 江戸蕎麦 ほそ川（えどそば ほそかわ）
 
 @@IMG:japan/tokyo/img/tokyo23/soba_edosoba_hosokawa.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/soba_edosoba_hosokawa_exterior.jpg@@
 
 `buzz` `veg`
 
@@ -280,6 +304,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/nabe_momonjiya.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/nabe_momonjiya_exterior.jpg@@
+
 `history`
 
 享保3年（1718年）創業と伝わる両国の獣肉料理店。江戸では四つ足を「ももんじ」と呼び、薬食いとして猪や鹿を食べた歴史を今に伝える。名物の猪鍋は肉の色から「ぼたん鍋」と呼ばれ、割下で野菜とともに煮る。鹿の刺身や竜田揚げ、熊汁を組んだコースもある。回向院や国技館の近くで、大相撲の東京場所中は日曜も暖簾を出す。
@@ -297,6 +323,8 @@ JAPAN / TOKYO・東京都 🇯🇵
 
 @@IMG:japan/tokyo/img/tokyo23/fukagawa_juku.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/fukagawa_juku_exterior.jpg@@
+
 `地元密着` `history`
 
 昭和62年（1987年）、初代が地元の漁師や古老から聞き取って深川めしを復活させた店。江東区三好の深川資料館通りに面し、あさりを味噌で煮た「ぶっかけ」と炊き込みの「浜松風」を一膳で食べ比べられる献立が名物。郷土料理百選や日本五大銘飯として紹介されることも多い。二階には座敷があり、深川の歴史を伝える調度が置かれている。
@@ -309,20 +337,3 @@ JAPAN / TOKYO・東京都 🇯🇵
 - **選定理由**: 店の公式サイトと江東区観光協会の深川めし紹介、深川資料館通り商店街の案内で1987年開業・営業時間・定休日を確認。江戸の漁師飯を復活させた点で江東区を代表させた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%B7%B1%E5%B7%9D%E5%AE%BF%20%E6%9C%AC%E5%BA%97%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E6%B1%9F%E6%9D%B1%E5%8C%BA%E4%B8%89%E5%A5%BD%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%97)
 - **参照元**: [深川宿 公式サイト](https://www.fukagawajuku.com/index.html) / [江東おでかけ情報局(江東区観光協会)](https://koto-kanko.jp/fukagawameshi/introduction/) / [深川資料館通り商店街協同組合](https://fukagawashiryoukandoori.tokyo/2021/02/06/%E6%B7%B1%E5%B7%9D%E5%AE%BF%E6%9C%AC%E5%BA%97/)
-
-### 17. 神田まつや（かんだまつや）
-
-@@IMG:japan/tokyo/img/tokyo23/soba_kanda_matsuya.jpg@@
-
-`history` `地元密着` `veg`
-
-明治17年（1884年）創業、神田須田町で代を重ねる手打ちそばの店。関東大震災後に建てられた木造の店舗は東京都の歴史的建造物にも選ばれている。茨城や北海道の蕎麦を特注で挽き、外二で打った細めのそばを濃いめの江戸の汁で食べさせる。相席が当たり前の座敷とテーブルで、もりやかけに加え鴨南蛮や天もりも人気。開店前から行列ができる。
-
-- **一皿**: もりそば(外二で打つ細めのそばを濃い江戸の汁で食べる)
-- **営業時間**: 火・水・木・金 11:00〜20:30 ／ 土 11:00〜19:30
-- **定休日**: 月・日曜
-- **住所**: 東京都千代田区神田須田町１丁目１３
-- **予約**: 要確認 — ☎ 03-3251-1556 ／ [公式サイト](http://www.kanda-matsuya.jp/)
-- **選定理由**: 千代田区の観光公式サイトVisit Chiyodaと東京都の東京歴建PROJECTの記事で明治17年創業・営業時間・定休日を確認。江戸そばの本流で、行列が今も続く店として選んだ。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%A5%9E%E7%94%B0%E3%81%BE%E3%81%A4%E3%82%84%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA%E7%A5%9E%E7%94%B0%E9%A0%88%E7%94%B0%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93)
-- **参照元**: [Visit Chiyoda(千代田区観光公式)](https://visit-chiyoda.tokyo/app/spot/detail/359) / [東京都 東京歴建PROJECT](https://with-tokyorekiken.metro.tokyo.lg.jp/stories/552/)

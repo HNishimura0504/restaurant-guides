@@ -12,7 +12,7 @@ JAPAN / SUITA・北摂 🇯🇵
 - `地元密着` — 観光客より地元客に愛される店
 - `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
 
-> 📷 写真は各店の料理・店内の実写（Google Maps投稿写真 ©各投稿者/Google）。
+> 📷 各店の写真は上が**料理**、下が**店構え**の実写です（Google の店舗写真 ©各投稿者/Google ／ 一部は Google Street View ©Google）。店構えが確認できなかった店は料理の1枚だけです。
 
 @@TOC@@
 
@@ -33,6 +33,8 @@ JAPAN / SUITA・北摂 🇯🇵
 ### 1. 柏屋 大阪千里山（かしわや おおさかせんりやま）
 
 @@IMG:japan/osaka/img/suita/kashiwaya.jpg@@
+
+@@IMG:japan/osaka/img/suita/kashiwaya_exterior.jpg@@
 
 `口コミ突出`
 
@@ -66,6 +68,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/konishi.jpg@@
 
+@@IMG:japan/osaka/img/suita/konishi_exterior.jpg@@
+
 `ブログ推薦` `地元密着` `口コミ突出`
 
 旭通り商店街で25周年を迎えた地元密着の人気寿司店。新鮮なネタの握りと破格のランチ（海鮮丼1,000円）が名物で、予約が埋まりがちな人気ぶり。
@@ -82,6 +86,8 @@ JAPAN / SUITA・北摂 🇯🇵
 ### 4. ごますりとんかつ専門店 さんき（ごますりとんかつせんもんてん さんき）
 
 @@IMG:japan/osaka/img/suita/sanki.jpg@@
+
+@@IMG:japan/osaka/img/suita/sanki_exterior.jpg@@
 
 `地元密着` `ブログ推薦`
 
@@ -100,6 +106,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/guerrilla.jpg@@
 
+@@IMG:japan/osaka/img/suita/guerrilla_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 関大生に代々愛される老舗の「カフェとは名ばかりのご飯屋さん」。一番人気は「Wメンチカツ定食」（ジューシーなメンチカツが2枚のる大ボリューム定食）で、からあげや煮込みハンバーグなど昭和の洋定食が揃う。地域の宴会や弁当の大量注文にも対応する地元密着店。
@@ -116,6 +124,8 @@ JAPAN / SUITA・北摂 🇯🇵
 ### 6. ななまる食堂（ななまるしょくどう）
 
 @@IMG:japan/osaka/img/suita/nanamaru.jpg@@
+
+@@IMG:japan/osaka/img/suita/nanamaru_exterior.jpg@@
 
 `ブログ推薦` `地元密着`
 
@@ -134,6 +144,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/horaisuita.jpg@@
 
+@@IMG:japan/osaka/img/suita/horaisuita_exterior.jpg@@
+
 `老舗・歴史` `地元密着` `ブログ推薦`
 
 1966年創業、学生に愛され続ける安くて旨いデカ盛りの大衆食堂。名物は「KO（ケイオー＝カツオムライス。オムライスの上にとんかつをのせた一皿）」など個性的な略称メニュー。ラーメン・うどんから定食までガッツリ揃う。
@@ -150,6 +162,8 @@ JAPAN / SUITA・北摂 🇯🇵
 ### 37. すし智（すしとも）
 
 @@IMG:japan/osaka/img/suita/sushitomo.jpg@@
+
+@@IMG:japan/osaka/img/suita/sushitomo_exterior.jpg@@
 
 `地元密着` `口コミ突出`
 
@@ -168,6 +182,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/tsuchiya.jpg@@
 
+@@IMG:japan/osaka/img/suita/tsuchiya_exterior.jpg@@
+
 `口コミ突出` `老舗・歴史`
 
 豊津町の閑静な住宅街に佇む古民家リノベーションの天ぷら店で、ミシュランガイドにも掲載される名店。四季の素材を使った天ぷら会席が柱で、甲殻類を香ばしさの限界まで攻めて揚げる技巧派の天ぷらが味わえる。
@@ -184,6 +200,8 @@ JAPAN / SUITA・北摂 🇯🇵
 ### 49. 浪花食堂（なにわしょくどう）
 
 @@IMG:japan/osaka/img/suita/naniwashokudo.jpg@@
+
+@@IMG:japan/osaka/img/suita/naniwashokudo_exterior.jpg@@
 
 `地元密着` `老舗・歴史`
 
@@ -204,6 +222,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/isato.jpg@@
 
+@@IMG:japan/osaka/img/suita/isato_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 2年連続「食べログ ラーメンOSAKA百名店」選出の実力店。豊中の名店「麺哲」出身の店主が独立開業。名物「枯鯖塩（かればしお）」は鯖出汁ベースの塩スープに柑橘の酸味を効かせたサッパリ系の一杯で、透き通るスープと喉ごしの良い平打ち麺が評判。
@@ -220,6 +240,8 @@ JAPAN / SUITA・北摂 🇯🇵
 ### 9. らーめん これこれ（らーめん これこれ）
 
 @@IMG:japan/osaka/img/suita/corecore.jpg@@
+
+@@IMG:japan/osaka/img/suita/corecore_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -238,6 +260,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/harenochi.jpg@@
 
+@@IMG:japan/osaka/img/suita/harenochi_exterior.jpg@@
+
 `口コミ突出` `地元密着`
 
 大行列店の系譜を引く鶏白湯（鶏ガラを長時間炊いた濃厚白濁スープ）の人気店。濃厚ながらまろやかな口当たりで味変トッピングも多彩。5歳以下のお子様ラーメン無料・学生向け定食など地元ファミリー・学生に優しいサービスで支持される。
@@ -254,6 +278,8 @@ JAPAN / SUITA・北摂 🇯🇵
 ### 11. 手打ちうどん 紅葉庵（てうちうどん もみじあん）
 
 @@IMG:japan/osaka/img/suita/momijian.jpg@@
+
+@@IMG:japan/osaka/img/suita/momijian_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -272,6 +298,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/harenichi.jpg@@
 
+@@IMG:japan/osaka/img/suita/harenichi_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 北海道産石臼挽きそば粉を使った十割蕎麦（つなぎを使わずそば粉100%で打つ蕎麦）を手頃な価格で提供。「十割ながらつるっと食べやすい」と口コミ評価が高く、しらす丼付きのお得セットが地元メディア推薦。ガラス張りの明るい店内で一人でも入りやすい。
@@ -288,6 +316,8 @@ JAPAN / SUITA・北摂 🇯🇵
 ### 13. 天に昇る udon dining 江坂本店（てんにのぼる うどんだいにんぐ えさかほんてん）
 
 @@IMG:japan/osaka/img/suita/tenninoboru.jpg@@
+
+@@IMG:japan/osaka/img/suita/tenninoboru_exterior.jpg@@
 
 `ブログ推薦`
 
@@ -325,6 +355,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/mitsubaya.jpg@@
 
+@@IMG:japan/osaka/img/suita/mitsubaya_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦` `地元密着`
 
 昭和33年（1958年）創業の老舗粉もん店。名物「いか焼き」（小麦粉の生地にイカを入れて鉄板でプレスして焼く大阪名物の粉もん）はモチモチ生地で1枚120円という驚きの安さ。昭和レトロな店内と家族経営のアットホームさが愛される吹田の名物店。
@@ -342,6 +374,8 @@ JAPAN / SUITA・北摂 🇯🇵
 
 @@IMG:japan/osaka/img/suita/kobushi.jpg@@
 
+@@IMG:japan/osaka/img/suita/kobushi_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 地元メディア「吹チャン！」が「吹田で愛され続けるたこ焼き屋」として紹介。鰹出汁の効いた生地を店主が一つずつ丁寧に焼く昔ながらのたこ焼きで、王道ソースのほか店主おすすめトッピングも。岸部本店（イートインあり・14年目）を構える地元密着店。
@@ -354,20 +388,3 @@ JAPAN / SUITA・北摂 🇯🇵
 - **選定理由**: 商店街で愛され続ける地元密着のたこ焼き店として、ローカルメディア「吹チャン！」の紹介をもとに選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%93%E7%84%BC%20%E7%B2%89%E6%AD%A6%E5%A3%AB%20%E6%97%AD%E7%94%BA%E5%BA%97%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E5%86%85%E6%9C%AC%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91)
 - **参照元**: [吹チャン！](https://suichan.jp/gourmet/2026/01/p=98183)
-
-### 16. お好み焼き かず（おこのみやき かず）
-
-@@IMG:japan/osaka/img/suita/kazu.jpg@@
-
-`ブログ推薦` `地元密着`
-
-「吹チャン！」で「シェアしたくなる大きなお好み焼き」として紹介された広島風お好み焼き（麺入りで層状に重ね焼きするスタイル）の店。ボリューム満点の一枚を鉄板で楽しめる地元の粉もん店。
-
-- **一皿**: 広島風お好み焼き（麺入りで層状に重ね焼きするスタイルの大判の一枚）
-- **営業時間**: 月・木・金・土・日 11:30〜14:00, 17:00〜21:00
-- **定休日**: 火・水曜
-- **住所**: 大阪府吹田市内本町３丁目２４−１７ 新和ビル
-- **予約**: 可 — ☎ 06-6381-3777
-- **選定理由**: 大阪の吹田で本格的な広島風を出す個性派として、ローカルメディア「吹チャン！」の紹介をもとに選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E3%81%8B%E3%81%9A%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E5%86%85%E6%9C%AC%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%97%20%E6%96%B0%E5%92%8C%E3%83%93%E3%83%AB)
-- **参照元**: [吹チャン！](https://suichan.jp/gourmet/2023/08/p=45134) / [ぐるなび](https://r.gnavi.co.jp/cr0mb9640000/)

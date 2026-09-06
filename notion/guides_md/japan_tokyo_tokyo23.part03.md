@@ -1,6 +1,48 @@
+### 34. らーめん飛粋（らーめんひすい）
+
+@@IMG:japan/tokyo/img/tokyo23/ramen_hisui_kamata.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/ramen_hisui_kamata_exterior.jpg@@
+
+`地元密着` `buzz`
+
+蒲田駅近くの家系ラーメン店。豚骨醤油の濃いスープに中太麺、ほうれん草と海苔を載せる横浜家系の型を守りつつ、豚の甘みを前に出した味に仕上げる。麺の硬さ・味の濃さ・脂の量を注文時に選べ、卓上の生姜やにんにくで追い込む楽しみもある。カウンター主体で回転が速く、昼と夜の二部制。蒲田で家系を選ぶならまずここ、と地元媒体でも挙がる。
+
+- **一皿**: らーめん(豚骨醤油の濃厚スープに中太麺、ほうれん草と海苔)
+- **営業時間**: 月・火・水・木・金 11:00〜16:00, 17:00〜21:00 ／ 土 11:00〜20:00
+- **定休日**: 日曜
+- **住所**: 東京都大田区蒲田５丁目２−５
+- **予約**: 要確認 — [公式サイト](https://hiiki.co.jp/)
+- **選定理由**: 食べログ ラーメン TOKYO 百名店 2025(蒲田駅)に選出。家系専門サイト「との丸家」の都内名店紹介で住所と営業時間・日曜定休、宅麺.comの蒲田特集で地元評価を確認した。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E9%A3%9B%E7%B2%8B%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%A4%A7%E7%94%B0%E5%8C%BA%E8%92%B2%E7%94%B0%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%95)
+- **参照元**: [食べログ ラーメン TOKYO 百名店 2025](https://award.tabelog.com/hyakumeiten/ramen_tokyo/2025/) / [との丸家 都内の家系ラーメン店紹介](https://tonomaruya.jp/archives/984) / [宅麺.com 蒲田のラーメン10選](https://www.takumen.com/magazines/kamata-must-eat-ramen)
+
+### 35. 煮干そば 流。（にぼしそばる）
+
+@@IMG:japan/tokyo/img/tokyo23/niboshi_soba_ru.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/niboshi_soba_ru_exterior.jpg@@
+
+`地元密着` `buzz`
+
+十条駅北口から歩いて2分、上十条の商店街にある煮干しそばの店。煮干しの香りを立てながら雑味を抑えた清湯で、あっさりと濃いめを選べる。副菜の肉メシが人気で、スープと合わせて頼む客が多い。全面禁煙のこぢんまりした店内はカウンター主体、スープが切れ次第閉店する。十条の街に根づき、北区から百名店に選ばれた店の一つ。
+
+- **一皿**: 煮干そば(煮干しの香りを立てた清湯醤油。あっさり／こいくちを選べる)
+- **営業時間**: 月・水・木・金 11:00〜15:00, 17:00〜21:00 ／ 土・日 11:00〜21:00
+- **定休日**: 火曜
+- **住所**: 東京都北区上十条１丁目１３−２
+- **予約**: 要確認 — ☎ 03-6454-3983 ／ [公式サイト](https://twitter.com/nibo_suke)
+- **選定理由**: 食べログ ラーメン TOKYO 百名店 2025(十条駅)に選出。公式サイトと地域メディア「赤羽マガジン」、おとなの週末の記事で住所・営業時間・火曜定休を確認した。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%85%AE%E5%B9%B2%E3%81%9D%E3%81%B0%20%E6%B5%81%E3%80%82%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8C%97%E5%8C%BA%E4%B8%8A%E5%8D%81%E6%9D%A1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%92)
+- **参照元**: [食べログ ラーメン TOKYO 百名店 2025](https://award.tabelog.com/hyakumeiten/ramen_tokyo/2025/) / [煮干そば流。公式サイト](http://nibosisobaru.com/) / [赤羽マガジン](https://akabane-shinbun.com/archives/7320)
+
+## 居酒屋・もつ焼き・バー
+
 ### 36. 宇ち多゛（うちだ）
 
 @@IMG:japan/tokyo/img/tokyo23/uchida_tateishi.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/uchida_tateishi_exterior.jpg@@
 
 `history` `地元密着`
 
@@ -19,6 +61,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/torifusa_tateishi.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/torifusa_tateishi_exterior.jpg@@
+
 `history` `地元密着` `buzz`
 
 立石の名物、若鶏の半身を丸ごと揚げる唐揚げの店。京成立石駅北口の再開発で一度閉店したが、2025年7月30日に立石七丁目の新店舗で復活した。注文は基本的に若鶏唐揚げ一本で、揚げたてを店員がハサミで切り分けてくれる。皮はぱりぱり、身には肉汁が残る。持ち帰りもでき、下町の飲み屋街らしい賑わいが戻っている。
@@ -35,6 +79,8 @@
 ### 38. 大はし（おおはし）
 
 @@IMG:japan/tokyo/img/tokyo23/ohashi_kitasenju.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/ohashi_kitasenju_exterior.jpg@@
 
 `history` `地元密着`
 
@@ -53,6 +99,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/kishidaya_tsukishima.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/kishidaya_tsukishima_exterior.jpg@@
+
 `history` `地元密着`
 
 月島もんじゃストリート沿いに立つ大衆酒場。牛肉と内臓をじっくり炊いた煮込みが看板で、グルメ漫画に取り上げられた濃い味が今も続く。コの字カウンターを女将たちが仕切り、煮込み・肉豆腐・冷奴といった定番を手際よく出す。開店前から列ができるため、17時前に並ぶ客が多い。月曜と日祝は休み。東京三大煮込みの一軒として名が挙がる。
@@ -69,6 +117,8 @@
 ### 40. 鍵屋（かぎや）
 
 @@IMG:japan/tokyo/img/tokyo23/kagiya_negishi.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/kagiya_negishi_exterior.jpg@@
 
 `history`
 
@@ -87,6 +137,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/yamariki_morishita.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/yamariki_morishita_exterior.jpg@@
+
 `history` `地元密着`
 
 1925年(大正14年)創業、森下のもつ焼き・煮込みの老舗。継ぎ足しの大鍋で炊く煮込みに赤ワインとフレンチの技を隠し味として加え、ガーリックトーストを添える独自の形をつくった。東京三大煮込みの一軒に挙げられ、串焼きに合わせる日本酒とワインの品揃えも広い。本館は一階がカウンター、二階が座敷。日曜と祝日は休み。
@@ -103,6 +155,8 @@
 ### 42. 秋元屋（あきもとや）
 
 @@IMG:japan/tokyo/img/tokyo23/akimotoya_nogata.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/akimotoya_nogata_exterior.jpg@@
 
 `地元密着` `buzz`
 
@@ -121,6 +175,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/sanyu_sakaba_yahiro.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/sanyu_sakaba_yahiro_exterior.jpg@@
+
 `history` `地元密着`
 
 元祖・焼酎ハイボールのルーツを継ぐ大衆酒場。昭和2年に曳舟で始まった本店が駅前再開発で閉じた後、1966年開業の八広店がレシピと看板を引き継いだ。琥珀色の酎ハイは甘さを抑えた独特の割り方で、煮込みや揚げ物とよく合う。カウンターと小上がりの昭和のままの店内で、地元客が夜遅くまで腰を据える。土曜は15時から開ける。
@@ -137,6 +193,8 @@
 ### 44. 中村屋丸康酒店（なかむらやまるやすさけてん）
 
 @@IMG:japan/tokyo/img/tokyo23/nakamuraya_maruyasu.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/nakamuraya_maruyasu_exterior.jpg@@
 
 `地元密着`
 
@@ -171,6 +229,8 @@
 ### 46. 鳥万 本店（とりまんほんてん）
 
 @@IMG:japan/tokyo/img/tokyo23/toriman_kamata.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/toriman_kamata_exterior.jpg@@
 
 `history` `地元密着`
 
@@ -207,6 +267,8 @@
 ### 48. 煉瓦亭（れんがてい）
 
 @@IMG:japan/tokyo/img/tokyo23/rengatei_ginza.jpg@@
+
+@@IMG:japan/tokyo/img/tokyo23/rengatei_ginza_exterior.jpg@@
 
 `history`
 
@@ -259,6 +321,8 @@
 
 @@IMG:japan/tokyo/img/tokyo23/shiva_curry_wara.jpg@@
 
+@@IMG:japan/tokyo/img/tokyo23/shiva_curry_wara_exterior.jpg@@
+
 `buzz` `veg`
 
 三軒茶屋の路地裏にある10席ほどの小さなインド料理店。銀座のスパイス料理店で修業した日本人店主とインド人料理人が組み、頻繁に内容が替わる2種・3種盛りのカレープレートを出す。ココナッツとカレーリーフを効かせた南インド・ケララ風の煮込みが看板。平日の昼でも行列ができる。
@@ -271,54 +335,3 @@
 - **選定理由**: 食べログ百名店(カレー)選出をヒトサラの店舗情報と複数のカレー専門媒体で確認。ホットペッパー「メシ通」の取材記事で店の成り立ちと座席数、住所・営業時間を確認した。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%90%E3%82%AB%E3%83%AA%E3%83%BC%E3%83%AF%E3%83%A9%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E4%B8%96%E7%94%B0%E8%B0%B7%E5%8C%BA%E5%A4%AA%E5%AD%90%E5%A0%82%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%98%E2%88%92%EF%BC%96)
 - **参照元**: [ヒトサラ](https://hitosara.com/0032025030/) / [メシ通(ホットペッパーグルメ)](https://www.hotpepper.jp/mesitsu/entry/gon-yukichame/16-00009)
-
-### 52. スパイスマジック カルカッタ 本店（すぱいすまじっくかるかったほんてん）
-
-@@IMG:japan/tokyo/img/tokyo23/spice_magic_calcutta.jpg@@
-
-`地元密着` `veg`
-
-「リトルインディア」と呼ばれる西葛西で、インド料理店の草分けとなった店。化学調味料を使わず、コルカタ周辺のベンガル家庭料理と、南インドのドーサやミールスを手作りで出す。豆や野菜を使った菜食向けの品が多い。近隣に住むインド人家族の常連が多く、店の空気も家庭的。
-
-- **一皿**: ミールス／ドーサ(豆と野菜のカレーを添えた南インドの定食と米粉のクレープ)
-- **営業時間**: 月・火・水・木・金・土・日 11:00〜15:00, 17:00〜22:00
-- **定休日**: なし(要最終確認)
-- **住所**: 東京都江戸川区西葛西３丁目１３−３ マンションよしの
-- **予約**: 可 — ☎ 03-5667-3885
-- **選定理由**: 江戸川区の地域情報サイト「まいぷれ」と浦安の地域メディアの取材記事で草分け的存在・化学調味料不使用を確認。ヒトサラの店舗情報で番地までの住所と現行の営業時間を確認した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%E3%83%9E%E3%82%B8%E3%83%83%E3%82%AF%20%E3%82%AB%E3%83%AB%E3%82%AB%E3%83%83%E3%82%BF%20%E6%9C%AC%E5%BA%97%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E6%B1%9F%E6%88%B8%E5%B7%9D%E5%8C%BA%E8%A5%BF%E8%91%9B%E8%A5%BF%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%93%20%E3%83%9E%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%88%E3%81%97%E3%81%AE)
-- **参照元**: [ヒトサラ](https://hitosara.com/0004037620/) / [まいぷれ江戸川区](https://edogawa.mypl.net/shop/00000380911/)
-
-### 53. ぐりる スズコウ（ぐりるすずこう）
-
-@@IMG:japan/tokyo/img/tokyo23/guriru_suzukou.jpg@@
-
-`地元密着` `history`
-
-昭和39年(1964)創業、蒲田の街なかで代を重ねてきた町の洋食屋。名物は皿を覆うほどの大きさの特大生姜焼きで、近隣の工場や商店で働く常連が昼に列を作る。ハンバーグ、エビフライ、フライ類などの定番も揃い、盛りの良さと値ごろ感で知られる。土日祝は休みで、平日の昼と夜のみ営業する。
-
-- **一皿**: 特大生姜焼き(皿から溢れる大きさの豚生姜焼き定食)
-- **営業時間**: 月・火・水・木・金 11:30〜13:30, 17:00〜20:30
-- **定休日**: 土・日曜
-- **住所**: 東京都大田区蒲田５丁目１６−８
-- **予約**: 要確認 — ☎ 03-3731-5029 ／ [公式サイト](https://www.hotpepper.jp/strJ000135361/)
-- **選定理由**: 大田区商店街連合会の公式サイト「おーたふる」の洋食特集で1964年創業・名物・営業時間・定休日・住所を確認。じゃらんnetの店舗情報でも現行営業を確認した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%90%E3%82%8A%E3%82%8B%20%E3%82%B9%E3%82%BA%E3%82%B3%E3%82%A6%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%A4%A7%E7%94%B0%E5%8C%BA%E8%92%B2%E7%94%B0%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%98)
-- **参照元**: [おーたふる 大田区商店街ナビ](https://otakushoren.com/feature/159489) / [じゃらんnet](https://www.jalan.net/gourmet/cit_131110000/g1_3G005/)
-
-### 54. スパイスカフェ（すぱいすかふぇ）
-
-@@IMG:japan/tokyo/img/tokyo23/spice_cafe_bunka.jpg@@
-
-`buzz` `veg`
-
-押上の裏手、文花の古民家を改装したスパイス料理店。昼はカレーを中心にした定食、夜はスパイスを軸に組んだコース仕立てで、日本の野菜や魚をインドや東南アジアの技法で扱う。庭に面した縁側のある造りが残り、住宅街の中で静かに食べられる。食べログのアジア・エスニック百名店に選ばれている。
-
-- **一皿**: スパイスカレーのランチプレート(数種のカレーと副菜を盛り合わせた昼の定食)
-- **営業時間**: 水・木・金・土・日 11:30〜14:00, 18:00〜20:30
-- **定休日**: 月・火曜
-- **住所**: 東京都墨田区文花１丁目６−１０
-- **予約**: 可 — ☎ 03-3613-4020 ／ [公式サイト](http://spicecafe.jp/)
-- **選定理由**: 食べログ アジア・エスニック百名店TOKYO選出をヒトサラと東京カレーディクショナリーで確認。ヒトサラの店舗情報で番地までの住所・営業時間・定休日を確認した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%E3%82%AB%E3%83%95%E3%82%A7%20%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%A2%A8%E7%94%B0%E5%8C%BA%E6%96%87%E8%8A%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%90)
-- **参照元**: [ヒトサラ](https://hitosara.com/0032016603/) / [東京カレーディクショナリー](https://currydictionary.com/spice-cafe-39918/)
