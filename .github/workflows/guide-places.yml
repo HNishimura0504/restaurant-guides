@@ -1,0 +1,32 @@
+name: 成果物DBへ都市の座標を入れる
+
+# 各ガイド行の「場所」に、その都市の全店の座標の中央値を入れる。
+# 成果物DB に地図ビュー（57都市の索引地図）を作るための前提。
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "1 なら書き込まず、組み立てだけ検証する"
+        required: false
+        default: "0"
+
+concurrency:
+  group: guide-places
+  cancel-in-progress: false
+
+jobs:
+  places:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet requests
+
+      - name: 成果物DBへ都市の座標を入れる
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+        run: python notion/guide_places.py
