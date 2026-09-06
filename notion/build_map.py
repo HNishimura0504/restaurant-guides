@@ -15,7 +15,8 @@
   ＝**識別は色だけに依存しない**（凡例・吹き出しにもカテゴリ名を出す）。
   地図の背景は常に明るいタイルなので、配色は明るい面用の1組に決め打ちする。
 
-出力: site/index.html, site/<slug>.html, site/img/*.jpg
+出力: map/index.html, map/<slug>.html（写真はリポジトリ内の既存パスを相対参照する。
+      複製しないので容量が増えず、GitHub Pages でも raw.githack でもそのまま出る）
 """
 import json
 import os
@@ -25,7 +26,7 @@ from html import escape
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STORES = os.path.join(ROOT, "notion", "stores.json")
-SITE = os.path.join(ROOT, "site")
+SITE = os.path.join(ROOT, "map")
 
 CITIES = [c for c in os.environ.get(
     "CITIES", "大阪,京都,吹田,東京23区,ルーベン").split(",") if c]
@@ -57,12 +58,13 @@ CITY_SLUG = {"大阪": "osaka", "京都": "kyoto", "吹田": "suita",
 
 
 def img_paths(s):
+    """(料理, 外観) を (リポジトリ相対パス or None) で返す。"""
     p = s["guide"].split("_")
-    d = os.path.join(ROOT, p[0], p[1], "img", p[2])
-    food = os.path.join(d, s["slug"] + ".jpg")
-    ext = os.path.join(d, s["slug"] + "_exterior.jpg")
-    return (food if os.path.exists(food) else None,
-            ext if os.path.exists(ext) else None)
+    rel = "%s/%s/img/%s" % (p[0], p[1], p[2])
+    food = "%s/%s.jpg" % (rel, s["slug"])
+    ext = "%s/%s_exterior.jpg" % (rel, s["slug"])
+    return (food if os.path.exists(os.path.join(ROOT, food)) else None,
+            ext if os.path.exists(os.path.join(ROOT, ext)) else None)
 
 
 HEAD = """<!doctype html>
@@ -116,8 +118,8 @@ def city_page(city, stores):
             "lat": s["lat"], "lng": s["lng"],
             "d": s.get("一皿") or "", "a": s.get("住所") or "",
             "m": s.get("Googleマップ") or "",
-            "food": os.path.basename(food) if food else "",
-            "ext": os.path.basename(ext) if ext else "",
+            "food": ("../" + food) if food else "",
+            "ext": ("../" + ext) if ext else "",
         }
         data.append(rec)
     legend = "".join(
@@ -153,8 +155,8 @@ for(const r of DATA){
   if(r.d) html+=`<p class="dish">${esc(r.d)}</p>`;
   if(r.food||r.ext){
     html+='<div class="imgs">';
-    if(r.food) html+=`<figure><img loading="lazy" src="img/${r.food}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
-    if(r.ext) html+=`<figure><img loading="lazy" src="img/${r.ext}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    if(r.food) html+=`<figure><img loading="lazy" src="${r.food}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) html+=`<figure><img loading="lazy" src="${r.ext}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
     html+='</div>';
   }
   html+=`<p class="links">${r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:''}</p></div>`;
@@ -176,7 +178,7 @@ def main():
     stores = json.load(open(STORES, encoding="utf-8"))
     if os.path.isdir(SITE):
         shutil.rmtree(SITE)
-    os.makedirs(os.path.join(SITE, "img"), exist_ok=True)
+    os.makedirs(SITE, exist_ok=True)
     # Leaflet は同梱する。外部CDNに依存させない（読めない環境で地図が真っ白になるため）
     shutil.copytree(os.path.join(ROOT, "notion", "vendor"),
                     os.path.join(SITE, "vendor"))
@@ -187,15 +189,8 @@ def main():
             print("該当なし:", city)
             continue
         slug = CITY_SLUG.get(city, city)
-        nfood = next_ext = 0
-        for s in sub:
-            food, ext = img_paths(s)
-            if food:
-                shutil.copyfile(food, os.path.join(SITE, "img", os.path.basename(food)))
-                nfood += 1
-            if ext:
-                shutil.copyfile(ext, os.path.join(SITE, "img", os.path.basename(ext)))
-                next_ext += 1
+        nfood = sum(1 for s in sub if img_paths(s)[0])
+        next_ext = sum(1 for s in sub if img_paths(s)[1])
         open(os.path.join(SITE, slug + ".html"), "w", encoding="utf-8").write(
             city_page(city, sub))
         links.append((city, slug, len(sub), nfood, next_ext))
@@ -214,6 +209,30 @@ def main():
               % (sl, escape(c), n, f, e) for c, sl, n, f, e in links)
     open(os.path.join(SITE, "index.html"), "w", encoding="utf-8").write(idx)
     print("→", SITE)
+
+    if os.environ.get("ASSEMBLE") == "1":
+        # GitHub Pages へ上げる分だけを _site に組む。
+        # リポジトリ全体（全57都市の写真）は重すぎるので、地図が参照する5都市ぶんだけ運ぶ。
+        # 相対パスは map/*.html がリポジトリ内で使うものと同じ形にする。
+        dest = os.path.join(ROOT, "_site")
+        if os.path.isdir(dest):
+            shutil.rmtree(dest)
+        shutil.copytree(SITE, os.path.join(dest, "map"))
+        n = 0
+        for city in CITIES:
+            for st in [x for x in stores if x.get("都市") == city]:
+                for rel in img_paths(st):
+                    if not rel:
+                        continue
+                    dst = os.path.join(dest, rel)
+                    os.makedirs(os.path.dirname(dst), exist_ok=True)
+                    shutil.copyfile(os.path.join(ROOT, rel), dst)
+                    n += 1
+        open(os.path.join(dest, "index.html"), "w", encoding="utf-8").write(
+            '<!doctype html><meta charset="utf-8">'
+            '<meta http-equiv="refresh" content="0; url=map/index.html">'
+            '<a href="map/index.html">地図へ</a>')
+        print("→ %s（写真 %d 枚）" % (dest, n))
     return 0
 
 
