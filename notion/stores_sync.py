@@ -34,6 +34,9 @@ TOKEN = os.environ.get("NOTION_TOKEN", "").strip()
 DB_ID = (os.environ.get("STORES_DB_ID") or "7ef49bd2-f83d-4b45-9df2-726ebec1fe77").strip()
 LIMIT = int(os.environ.get("LIMIT", "0") or 0)
 DRY_RUN = os.environ.get("DRY_RUN", "") == "1"
+# 1 なら「stores.json から消えた店を Notion 側でアーカイブする」だけを行い、
+# 追加・更新はしない。閉業した店をガイドから外したときに使う。
+ARCHIVE_ONLY = os.environ.get("ARCHIVE_ONLY", "") == "1"
 API = "https://api.notion.com/v1"
 VER = os.environ.get("NOTION_VERSION", "2022-06-28")
 
@@ -169,6 +172,26 @@ def main():
         by_key.update({k: v for k, v in state.items() if k not in by_key})
         print("既存 %d 行（キーあり %d）" % (len(by_name), len(by_key)))
 
+    # ガイドから消えた店は Notion 側でアーカイブする（閉業・掲載取りやめ）。
+    # Notion に「削除」は無く、archived=true がゴミ箱に入れる操作にあたる。
+    live = {"%s/%s" % (r["guide"], r["slug"]) for r in recs}
+    gone = [k for k in by_key if k not in live]
+    archived = 0
+    for k in sorted(gone):
+        if DRY_RUN:
+            print("[dry] アーカイブ対象: %s" % k)
+            continue
+        api("PATCH", "/pages/" + by_key[k], json={"archived": True})
+        print("アーカイブ: %s" % k)
+        del by_key[k]
+        archived += 1
+    if gone and not DRY_RUN:
+        save_state(by_key)
+    if ARCHIVE_ONLY:
+        print("---")
+        print("アーカイブ %d 件（ARCHIVE_ONLY のため追加・更新はしていない）" % archived)
+        return
+
     todo = recs[:LIMIT] if LIMIT else recs
     created = updated = skipped = 0
     no_guide = set()
@@ -201,7 +224,8 @@ def main():
     if not DRY_RUN:
         save_state(by_key)
     print("---")
-    print("作成 %d / 更新 %d / 対象 %d" % (created, updated, len(todo)))
+    print("作成 %d / 更新 %d / アーカイブ %d / 対象 %d"
+          % (created, updated, archived, len(todo)))
     if DRY_RUN:
         print("[dry] 書き込みはしていない（%d 件を組み立てただけ）" % skipped)
     if no_guide:
