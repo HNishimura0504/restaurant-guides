@@ -18,7 +18,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "notion", "guides_md")
 MANIFEST = os.path.join(ROOT, "notion", "img_manifest.json")
 MAX_CHUNK = 19000
-SKIP_DIRS = {".git", ".github", "notion", "site"}
+SKIP_DIRS = {".git", ".github", "notion", "site", "map"}
 
 
 def _mklink(href, text):

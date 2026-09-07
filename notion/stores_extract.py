@@ -18,7 +18,7 @@ from build_md import parse_cards, strip_tags   # noqa: E402  カード解析は�
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "notion", "stores.json")
-SKIP_DIRS = {".git", ".github", "notion"}
+SKIP_DIRS = {".git", ".github", "notion", "map"}
 
 # 店舗DBの「カテゴリ」は11種類。ガイドの見出しは181種類あるので、語で畳む。
 # 上から順に当てて、最初に当たったものを採る（順序に意味がある）。
