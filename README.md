@@ -72,12 +72,14 @@
 | 岐阜県 | 大垣市 | 47 | [japan/gifu/](japan/gifu/) |
 | 静岡県 | 静岡市 | 72 | [japan/shizuoka/](japan/shizuoka/) |
 | 静岡県 | 浜松市 | 73 | [japan/shizuoka/](japan/shizuoka/) |
+| 愛知県 | 名古屋市 | 72 | [japan/aichi/](japan/aichi/) |
+| 愛知県 | 豊田市 | 53 | [japan/aichi/](japan/aichi/) |
 | 大阪府 | 大阪市 | 72 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 吹田市 | 49 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 藤井寺市 | 45 | [japan/osaka/](japan/osaka/) |
 | 京都府 | 京都市 | 71 | [japan/kyoto/](japan/kyoto/) |
 
-小計 48冊 / 2698店
+小計 50冊 / 2823店
 
 ## 欧州
 
@@ -112,7 +114,7 @@
 
 小計 3冊 / 141店
 
-**合計 60冊 / 3193店**（2026-09-05 時点）
+**合計 62冊 / 3318店**（2026-09-12 時点）
 
 ## 進行中の発注
 
