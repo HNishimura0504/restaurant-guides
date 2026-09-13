@@ -74,12 +74,14 @@
 | 静岡県 | 浜松市 | 73 | [japan/shizuoka/](japan/shizuoka/) |
 | 愛知県 | 名古屋市 | 72 | [japan/aichi/](japan/aichi/) |
 | 愛知県 | 豊田市 | 53 | [japan/aichi/](japan/aichi/) |
+| 三重県 | 津市 | 51 | [japan/mie/](japan/mie/) |
+| 三重県 | 四日市市 | 53 | [japan/mie/](japan/mie/) |
 | 大阪府 | 大阪市 | 72 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 吹田市 | 49 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 藤井寺市 | 45 | [japan/osaka/](japan/osaka/) |
 | 京都府 | 京都市 | 71 | [japan/kyoto/](japan/kyoto/) |
 
-小計 50冊 / 2823店
+小計 52冊 / 2927店
 
 ## 欧州
 
@@ -114,7 +116,7 @@
 
 小計 3冊 / 141店
 
-**合計 62冊 / 3318店**（2026-09-12 時点）
+**合計 64冊 / 3422店**（2026-09-14 時点）
 
 ## 進行中の発注
 

@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>津美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / TSU・三重県 🇯🇵</div>
+  <h1>津美食ガイド</h1>
+  <div class="sub">日本一短い名の県都は、うなぎ消費量日本一を誇る鰻の街。パリパリ衣の揚げたて津ぎょうざ、老舗鰻店の関西風地焼き、伊勢湾の海の幸、天むす発祥の系譜、大門の名酒場まで厳選51スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年9月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tsu/_map.png" alt="全域マップ">
+<a href="#c-hashiya" style="left:81.99%;top:58.22%;width:5.3%;height:3.02%;"></a>
+<a href="#c-shintamatei" style="left:74.53%;top:56.76%;width:5.3%;height:3.02%;"></a>
+<a href="#c-daikantei_sakaemachi" style="left:80.73%;top:49.71%;width:5.3%;height:3.02%;"></a>
+<a href="#c-unafuji" style="left:41.18%;top:14.26%;width:5.3%;height:3.02%;"></a>
+<a href="#c-itaro" style="left:75.1%;top:60.43%;width:5.3%;height:3.02%;"></a>
+<a href="#c-kinnabe" style="left:71.31%;top:60.24%;width:5.3%;height:3.02%;"></a>
+<a href="#c-mugiittouhei" style="left:80.19%;top:49.03%;width:5.3%;height:3.02%;"></a>
+<a href="#c-senju" style="left:80.74%;top:57.49%;width:5.3%;height:3.02%;"></a>
+<a href="#c-hachimitsuman" style="left:80.01%;top:57.53%;width:5.3%;height:3.02%;"></a>
+<a href="#c-toyoken" style="left:78.21%;top:58.81%;width:5.3%;height:3.02%;"></a>
+<a href="#c-okuno" style="left:46.34%;top:87.83%;width:5.3%;height:3.02%;"></a>
+<a href="#c-yamayuki" style="left:85.76%;top:91.64%;width:5.3%;height:3.02%;"></a>
+<a href="#c-zabouan" style="left:82.18%;top:59.57%;width:5.3%;height:3.02%;"></a>
+<a href="#c-sushimoto" style="left:79.09%;top:48.7%;width:5.3%;height:3.02%;"></a>
+<a href="#c-amazushi" style="left:78.96%;top:48.39%;width:5.3%;height:3.02%;"></a>
+<a href="#c-uoku" style="left:81.3%;top:57.84%;width:5.3%;height:3.02%;"></a>
+<a href="#c-zuiun" style="left:80.25%;top:49.15%;width:5.3%;height:3.02%;"></a>
+<a href="#c-akirakaze" style="left:80.32%;top:57.25%;width:5.3%;height:3.02%;"></a>
+<a href="#c-men_the_kuro" style="left:75.9%;top:52.5%;width:5.3%;height:3.02%;"></a>
+<a href="#c-men_toriko" style="left:87.36%;top:42.74%;width:5.3%;height:3.02%;"></a>
+<a href="#c-men_nari" style="left:9.36%;top:83.37%;width:5.3%;height:3.02%;"></a>
+<a href="#c-men_kagen" style="left:75.49%;top:67.71%;width:5.3%;height:3.02%;"></a>
+<a href="#c-men_onishi" style="left:31.22%;top:76.54%;width:5.3%;height:3.02%;"></a>
+<a href="#c-men_kousuke" style="left:80.94%;top:58.18%;width:5.3%;height:3.02%;"></a>
+<a href="#c-men_kinosaki" style="left:49.7%;top:19.98%;width:5.3%;height:3.02%;"></a>
+<a href="#c-men_jinhou" style="left:61.15%;top:56.4%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_syun" style="left:82.59%;top:57.74%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_kitashou" style="left:84.52%;top:57.02%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_pige" style="left:81.41%;top:57.11%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_takosou" style="left:82.96%;top:57.17%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_torisawa" style="left:80.71%;top:47.94%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_kamakura" style="left:80.77%;top:49.6%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_shizuku" style="left:80.46%;top:49.03%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_zakkuri" style="left:71.61%;top:59.39%;width:5.3%;height:3.02%;"></a>
+<a href="#c-iza_awayokuba" style="left:89.33%;top:39.35%;width:5.3%;height:3.02%;"></a>
+<a href="#c-nakatsuken" style="left:79.07%;top:57.41%;width:5.3%;height:3.02%;"></a>
+<a href="#c-cattleya_misokatsu" style="left:80.05%;top:65.96%;width:5.3%;height:3.02%;"></a>
+<a href="#c-lansen" style="left:35.39%;top:38.17%;width:5.3%;height:3.02%;"></a>
+<a href="#c-konkichiya" style="left:61.98%;top:56.58%;width:5.3%;height:3.02%;"></a>
+<a href="#c-ristorante_prego" style="left:87.85%;top:59.7%;width:5.3%;height:3.02%;"></a>
+<a href="#c-albero" style="left:71.95%;top:59.43%;width:5.3%;height:3.02%;"></a>
+<a href="#c-pizzaya_westgate" style="left:90.64%;top:41.33%;width:5.3%;height:3.02%;"></a>
+<a href="#c-chateau_la_palme_dor" style="left:75.88%;top:10.54%;width:5.3%;height:3.02%;"></a>
+<a href="#c-heiji_senbei_honten" style="left:80.61%;top:57.19%;width:5.3%;height:3.02%;"></a>
+<a href="#c-toraya_honke" style="left:81.19%;top:58.27%;width:5.3%;height:3.02%;"></a>
+<a href="#c-kayama_coffee" style="left:79.29%;top:57.75%;width:5.3%;height:3.02%;"></a>
+<a href="#c-nemunoki_coffee" style="left:80.48%;top:48.88%;width:5.3%;height:3.02%;"></a>
+<a href="#c-suzumushi_coffee" style="left:75.03%;top:52.04%;width:5.3%;height:3.02%;"></a>
+<a href="#c-nikki_coffee_space" style="left:56.39%;top:42.5%;width:5.3%;height:3.02%;"></a>
+<a href="#c-covopain" style="left:73.43%;top:45.14%;width:5.3%;height:3.02%;"></a>
+<a href="#c-tsukawage_kyushoku_morning" style="left:86.1%;top:8.38%;width:5.3%;height:3.02%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（51店・番号はピンと同じ）</div>
+<div class="sec red">津のご当地(うなぎ・津ぎょうざ・天むす)</div>
+<div class="links">
+<a href="#c-hashiya"><span class="tn" style="background:#e34948;">1</span>行列必至の備長炭地焼きうなぎ</a>
+<a href="#c-shintamatei"><span class="tn" style="background:#e34948;">2</span>明治23年創業の大盛りうなぎ</a>
+<a href="#c-daikantei_sakaemachi"><span class="tn" style="background:#e34948;">3</span>津駅近くの昭和22年創業うなぎ</a>
+<a href="#c-unafuji"><span class="tn" style="background:#e34948;">4</span>2時間行列のコスパ最強うなぎ丼</a>
+<a href="#c-itaro"><span class="tn" style="background:#e34948;">5</span>津ぎょうざ知名度No.1の一軒</a>
+<a href="#c-kinnabe"><span class="tn" style="background:#e34948;">6</span>ちゃんこと津ぎょうざの相撲料理店</a>
+<a href="#c-mugiittouhei"><span class="tn" style="background:#e34948;">7</span>津駅前・深夜まで津ぎょうざ</a>
+<a href="#c-senju"><span class="tn" style="background:#e34948;">8</span>天むす発祥の店</a>
+<a href="#c-hachimitsuman"><span class="tn" style="background:#e34948;">9</span>1個70円・津のソウルフード</a>
+<a href="#c-toyoken"><span class="tn" style="background:#e34948;">10</span>松阪牛ブラックカレーの老舗洋食</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮</div>
+<div class="links">
+<a href="#c-okuno"><span class="tn" style="background:#2a78d6;">11</span>久居の実力派寿司割烹</a>
+<a href="#c-yamayuki"><span class="tn" style="background:#2a78d6;">12</span>熊野灘・伊勢湾の幸を握る</a>
+<a href="#c-zabouan"><span class="tn" style="background:#2a78d6;">13</span>ミシュラン掲載の京風懐石</a>
+<a href="#c-sushimoto"><span class="tn" style="background:#2a78d6;">14</span>津駅徒歩1分・目利きの鮨と地酒</a>
+<a href="#c-amazushi"><span class="tn" style="background:#2a78d6;">15</span>津駅西口すぐの本格握り</a>
+<a href="#c-uoku"><span class="tn" style="background:#2a78d6;">16</span>刺身食べ比べが評判の海鮮和食</a>
+<a href="#c-zuiun"><span class="tn" style="background:#2a78d6;">17</span>駅前の1,000円ランチが名物の鮨処</a>
+<a href="#c-akirakaze"><span class="tn" style="background:#2a78d6;">18</span>元魚屋の目利きが光る海鮮酒房</a>
+</div>
+<div class="sec aqua">ラーメン・そば・うどん・町中華</div>
+<div class="links">
+<a href="#c-men_the_kuro"><span class="tn" style="background:#1baf7a;">19</span>濃厚鶏SOBAの実力店</a>
+<a href="#c-men_toriko"><span class="tn" style="background:#1baf7a;">20</span>澄んだ鶏塩らぁ麺</a>
+<a href="#c-men_nari"><span class="tn" style="background:#1baf7a;">21</span>行列必至のミシュラン掲載店</a>
+<a href="#c-men_kagen"><span class="tn" style="background:#1baf7a;">22</span>津随一の手打ち蕎麦</a>
+<a href="#c-men_onishi"><span class="tn" style="background:#1baf7a;">23</span>完全予約制の蕎麦会席</a>
+<a href="#c-men_kousuke"><span class="tn" style="background:#1baf7a;">24</span>大門の老舗自家製麺うどん</a>
+<a href="#c-men_kinosaki"><span class="tn" style="background:#1baf7a;">25</span>手間ひまかけた麺の二刀流</a>
+<a href="#c-men_jinhou"><span class="tn" style="background:#1baf7a;">26</span>無化調の本気町中華</a>
+</div>
+<div class="sec beer">居酒屋・バー(大門・津駅前)</div>
+<div class="links">
+<a href="#c-iza_syun"><span class="tn" style="background:#0d366b;">27</span>大門のおまかせ焼鳥9席</a>
+<a href="#c-iza_kitashou"><span class="tn" style="background:#0d366b;">28</span>昭和レトロな割烹居酒屋</a>
+<a href="#c-iza_pige"><span class="tn" style="background:#0d366b;">29</span>1973年創業の大門の老舗パブ</a>
+<a href="#c-iza_takosou"><span class="tn" style="background:#0d366b;">30</span>深夜まで営むたこ焼き酒場</a>
+<a href="#c-iza_torisawa"><span class="tn" style="background:#0d366b;">31</span>朝日屋直営の松阪牛焼き鳥</a>
+<a href="#c-iza_kamakura"><span class="tn" style="background:#0d366b;">32</span>伊勢どり鶏刺しと梅酒の店</a>
+<a href="#c-iza_shizuku"><span class="tn" style="background:#0d366b;">33</span>個室で味わう創作和食</a>
+<a href="#c-iza_zakkuri"><span class="tn" style="background:#0d366b;">34</span>千円で酔えるせんべろ酒場</a>
+<a href="#c-iza_awayokuba"><span class="tn" style="background:#0d366b;">35</span>三重大前の肉汁餃子酒場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-nakatsuken"><span class="tn" style="background:#4a3aa7;">36</span>明治44年創業の老舗洋食</a>
+<a href="#c-cattleya_misokatsu"><span class="tn" style="background:#4a3aa7;">37</span>味噌カツ発祥といわれる店</a>
+<a href="#c-lansen"><span class="tn" style="background:#4a3aa7;">38</span>家族経営の郊外洋食店</a>
+<a href="#c-konkichiya"><span class="tn" style="background:#4a3aa7;">39</span>ブランコ席の洋食屋</a>
+<a href="#c-ristorante_prego"><span class="tn" style="background:#4a3aa7;">40</span>1998年開業の本格伊料理</a>
+<a href="#c-albero"><span class="tn" style="background:#4a3aa7;">41</span>津新町通りの生パスタ店</a>
+<a href="#c-pizzaya_westgate"><span class="tn" style="background:#4a3aa7;">42</span>古民家クリスピーピザ</a>
+<a href="#c-chateau_la_palme_dor"><span class="tn" style="background:#4a3aa7;">43</span>城館フレンチの特別空間</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-heiji_senbei_honten"><span class="tn" style="background:#eda100;">44</span>笠形煎餅の大正創業老舗</a>
+<a href="#c-toraya_honke"><span class="tn" style="background:#eda100;">45</span>いちご大福発祥を名乗る店</a>
+<a href="#c-kayama_coffee"><span class="tn" style="background:#eda100;">46</span>百貨店内の終日モーニング</a>
+<a href="#c-nemunoki_coffee"><span class="tn" style="background:#eda100;">47</span>津駅近くの自家焙煎喫茶</a>
+<a href="#c-suzumushi_coffee"><span class="tn" style="background:#eda100;">48</span>焙煎豆10種超の専門店</a>
+<a href="#c-nikki_coffee_space"><span class="tn" style="background:#eda100;">49</span>カステラ発のアートカフェ</a>
+<a href="#c-covopain"><span class="tn" style="background:#eda100;">50</span>予約1年待ちのパン工房</a>
+<a href="#c-tsukawage_kyushoku_morning"><span class="tn" style="background:#eda100;">51</span>土日限定の給食モーニング</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(津駅〜大門・丸之内)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tsu/_map2.png" alt="中心部拡大(津駅〜大門・丸之内)">
+<a href="#c-hashiya" style="left:62.93%;top:62.54%;width:3.0%;height:1.7%;"></a>
+<a href="#c-shintamatei" style="left:29.1%;top:55.96%;width:3.0%;height:1.7%;"></a>
+<a href="#c-daikantei_sakaemachi" style="left:57.19%;top:24.28%;width:3.0%;height:1.7%;"></a>
+<a href="#c-itaro" style="left:31.66%;top:72.47%;width:3.0%;height:1.7%;"></a>
+<a href="#c-kinnabe" style="left:14.49%;top:71.6%;width:3.0%;height:1.7%;"></a>
+<a href="#c-mugiittouhei" style="left:54.77%;top:21.19%;width:3.0%;height:1.7%;"></a>
+<a href="#c-senju" style="left:57.26%;top:59.27%;width:3.0%;height:1.7%;"></a>
+<a href="#c-hachimitsuman" style="left:53.96%;top:59.41%;width:3.0%;height:1.7%;"></a>
+<a href="#c-toyoken" style="left:45.76%;top:65.2%;width:3.0%;height:1.7%;"></a>
+<a href="#c-zabouan" style="left:63.81%;top:68.62%;width:3.0%;height:1.7%;"></a>
+<a href="#c-sushimoto" style="left:49.77%;top:19.73%;width:3.0%;height:1.7%;"></a>
+<a href="#c-amazushi" style="left:49.19%;top:18.33%;width:3.0%;height:1.7%;"></a>
+<a href="#c-uoku" style="left:59.78%;top:60.81%;width:3.0%;height:1.7%;"></a>
+<a href="#c-zuiun" style="left:55.01%;top:21.73%;width:3.0%;height:1.7%;"></a>
+<a href="#c-akirakaze" style="left:55.37%;top:58.15%;width:3.0%;height:1.7%;"></a>
+<a href="#c-men_the_kuro" style="left:35.28%;top:36.81%;width:3.0%;height:1.7%;"></a>
+<a href="#c-men_kousuke" style="left:58.16%;top:62.37%;width:3.0%;height:1.7%;"></a>
+<a href="#c-iza_syun" style="left:65.66%;top:60.39%;width:3.0%;height:1.7%;"></a>
+<a href="#c-iza_kitashou" style="left:74.38%;top:57.14%;width:3.0%;height:1.7%;"></a>
+<a href="#c-iza_pige" style="left:60.31%;top:57.56%;width:3.0%;height:1.7%;"></a>
+<a href="#c-iza_takosou" style="left:67.3%;top:57.81%;width:3.0%;height:1.7%;"></a>
+<a href="#c-iza_torisawa" style="left:57.1%;top:16.31%;width:3.0%;height:1.7%;"></a>
+<a href="#c-iza_kamakura" style="left:57.39%;top:23.76%;width:3.0%;height:1.7%;"></a>
+<a href="#c-iza_shizuku" style="left:55.99%;top:21.22%;width:3.0%;height:1.7%;"></a>
+<a href="#c-iza_zakkuri" style="left:15.85%;top:67.81%;width:3.0%;height:1.7%;"></a>
+<a href="#c-nakatsuken" style="left:49.7%;top:58.88%;width:3.0%;height:1.7%;"></a>
+<a href="#c-cattleya_misokatsu" style="left:54.13%;top:97.36%;width:3.0%;height:1.7%;"></a>
+<a href="#c-ristorante_prego" style="left:89.49%;top:69.17%;width:3.0%;height:1.7%;"></a>
+<a href="#c-albero" style="left:17.36%;top:67.99%;width:3.0%;height:1.7%;"></a>
+<a href="#c-heiji_senbei_honten" style="left:56.68%;top:57.91%;width:3.0%;height:1.7%;"></a>
+<a href="#c-toraya_honke" style="left:59.31%;top:62.75%;width:3.0%;height:1.7%;"></a>
+<a href="#c-kayama_coffee" style="left:50.68%;top:60.44%;width:3.0%;height:1.7%;"></a>
+<a href="#c-nemunoki_coffee" style="left:56.07%;top:20.53%;width:3.0%;height:1.7%;"></a>
+<a href="#c-suzumushi_coffee" style="left:31.36%;top:34.74%;width:3.0%;height:1.7%;"></a>
+<a href="#c-covopain" style="left:24.07%;top:3.72%;width:3.0%;height:1.7%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（35店・番号はピンと同じ）</div>
+<div class="sec red">津のご当地(うなぎ・津ぎょうざ・天むす)</div>
+<div class="links">
+<a href="#c-hashiya"><span class="tn" style="background:#e34948;">1</span>行列必至の備長炭地焼きうなぎ</a>
+<a href="#c-shintamatei"><span class="tn" style="background:#e34948;">2</span>明治23年創業の大盛りうなぎ</a>
+<a href="#c-daikantei_sakaemachi"><span class="tn" style="background:#e34948;">3</span>津駅近くの昭和22年創業うなぎ</a>
+<a href="#c-itaro"><span class="tn" style="background:#e34948;">5</span>津ぎょうざ知名度No.1の一軒</a>
+<a href="#c-kinnabe"><span class="tn" style="background:#e34948;">6</span>ちゃんこと津ぎょうざの相撲料理店</a>
+<a href="#c-mugiittouhei"><span class="tn" style="background:#e34948;">7</span>津駅前・深夜まで津ぎょうざ</a>
+<a href="#c-senju"><span class="tn" style="background:#e34948;">8</span>天むす発祥の店</a>
+<a href="#c-hachimitsuman"><span class="tn" style="background:#e34948;">9</span>1個70円・津のソウルフード</a>
+<a href="#c-toyoken"><span class="tn" style="background:#e34948;">10</span>松阪牛ブラックカレーの老舗洋食</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮</div>
+<div class="links">
+<a href="#c-zabouan"><span class="tn" style="background:#2a78d6;">13</span>ミシュラン掲載の京風懐石</a>
+<a href="#c-sushimoto"><span class="tn" style="background:#2a78d6;">14</span>津駅徒歩1分・目利きの鮨と地酒</a>
+<a href="#c-amazushi"><span class="tn" style="background:#2a78d6;">15</span>津駅西口すぐの本格握り</a>
+<a href="#c-uoku"><span class="tn" style="background:#2a78d6;">16</span>刺身食べ比べが評判の海鮮和食</a>
+<a href="#c-zuiun"><span class="tn" style="background:#2a78d6;">17</span>駅前の1,000円ランチが名物の鮨処</a>
+<a href="#c-akirakaze"><span class="tn" style="background:#2a78d6;">18</span>元魚屋の目利きが光る海鮮酒房</a>
+</div>
+<div class="sec aqua">ラーメン・そば・うどん・町中華</div>
+<div class="links">
+<a href="#c-men_the_kuro"><span class="tn" style="background:#1baf7a;">19</span>濃厚鶏SOBAの実力店</a>
+<a href="#c-men_kousuke"><span class="tn" style="background:#1baf7a;">24</span>大門の老舗自家製麺うどん</a>
+</div>
+<div class="sec beer">居酒屋・バー(大門・津駅前)</div>
+<div class="links">
+<a href="#c-iza_syun"><span class="tn" style="background:#0d366b;">27</span>大門のおまかせ焼鳥9席</a>
+<a href="#c-iza_kitashou"><span class="tn" style="background:#0d366b;">28</span>昭和レトロな割烹居酒屋</a>
+<a href="#c-iza_pige"><span class="tn" style="background:#0d366b;">29</span>1973年創業の大門の老舗パブ</a>
+<a href="#c-iza_takosou"><span class="tn" style="background:#0d366b;">30</span>深夜まで営むたこ焼き酒場</a>
+<a href="#c-iza_torisawa"><span class="tn" style="background:#0d366b;">31</span>朝日屋直営の松阪牛焼き鳥</a>
+<a href="#c-iza_kamakura"><span class="tn" style="background:#0d366b;">32</span>伊勢どり鶏刺しと梅酒の店</a>
+<a href="#c-iza_shizuku"><span class="tn" style="background:#0d366b;">33</span>個室で味わう創作和食</a>
+<a href="#c-iza_zakkuri"><span class="tn" style="background:#0d366b;">34</span>千円で酔えるせんべろ酒場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-nakatsuken"><span class="tn" style="background:#4a3aa7;">36</span>明治44年創業の老舗洋食</a>
+<a href="#c-cattleya_misokatsu"><span class="tn" style="background:#4a3aa7;">37</span>味噌カツ発祥といわれる店</a>
+<a href="#c-ristorante_prego"><span class="tn" style="background:#4a3aa7;">40</span>1998年開業の本格伊料理</a>
+<a href="#c-albero"><span class="tn" style="background:#4a3aa7;">41</span>津新町通りの生パスタ店</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-heiji_senbei_honten"><span class="tn" style="background:#eda100;">44</span>笠形煎餅の大正創業老舗</a>
+<a href="#c-toraya_honke"><span class="tn" style="background:#eda100;">45</span>いちご大福発祥を名乗る店</a>
+<a href="#c-kayama_coffee"><span class="tn" style="background:#eda100;">46</span>百貨店内の終日モーニング</a>
+<a href="#c-nemunoki_coffee"><span class="tn" style="background:#eda100;">47</span>津駅近くの自家焙煎喫茶</a>
+<a href="#c-suzumushi_coffee"><span class="tn" style="background:#eda100;">48</span>焙煎豆10種超の専門店</a>
+<a href="#c-covopain"><span class="tn" style="background:#eda100;">50</span>予約1年待ちのパン工房</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>店は津駅・津新町駅周辺と、旧花街の大門・丸之内かいわいに集まる。うなぎは関西風の地焼きが主流で、昼時の名店は行列必至。津ぎょうざは直径15cmの揚げ餃子で給食発祥、提供店マップは観光協会が公開している。蜂蜜まんじゅうと天むすも津の名物。伊勢湾のあさり・海苔は春が旬。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-tsu" class="c-red">津のご当地(うなぎ・津ぎょうざ・天むす)</h2>
+<div class="card" id="c-hashiya">
+<img class="hero" src="img/tsu/hashiya.jpg" alt="うなぎ料理 はし家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>うなぎ料理 はし家<span class="yomi">はしや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">うなぎ消費量日本一を争う津の中心市街地・大門で昭和28年から続くうなぎ専門店。備長炭を使い関西風の地焼きで仕上げるうなぎは外は香ばしく中はふんわり。この道一筋の職人が焼き上げ、米は伊賀米・一志米と地産地消にこだわる。3階建ての店内は全席禁煙でお子様メニューもあり家族連れでも使いやすい。開店前から行列ができ、昼夜とも売り切れ次第終了となる津を代表する人気店。火曜（第2除く）と第2水曜は昼のみの営業。</div>
+<div class="sig"><b>一皿:</b>うなぎ丼（備長炭地焼き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火 11:00〜14:00 ／ 水・木・金・土・日 11:00〜14:00, 16:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門４−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592284925">☎ 059-228-4925</a> ／ <a href="https://unagi-hashiya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログうなぎ百名店（2022）選出で、津市観光協会の「うなぎ専門店人気6選」にも掲載。公式サイトに2026年8月25日付で9月の営業案内が出ており現在も営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E6%96%99%E7%90%86%20%E3%81%AF%E3%81%97%E5%AE%B6%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://unagi-hashiya.jp/">はし家公式サイト</a> / <a href="https://tsukanko.jp/feature/feature-2916/">津市観光協会「津の時間。」</a></div>
+</div></div>
+<div class="card" id="c-shintamatei">
+<img class="hero" src="img/tsu/shintamatei.jpg" alt="うなぎの新玉亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>うなぎの新玉亭<span class="yomi">しんたまてい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治23年（1890年）創業、はし家と並び津市街の双璧と称される老舗炭火焼うなぎ専門店。醤油・みりん・氷砂糖などを煮詰め一週間以上寝かせる伝統の辛口ダレを守り、炭火で香ばしく焼き上げる。うなぎは天然井戸水で管理してストレスを減らし、米は伊賀米・一志米を使う地産地消の店。丼は小丼990円から特上丼3,630円まで揃い、「中盛り」の驚くほどの飯量でも知られる。店頭では「かみしも」や肝焼きの販売もあり、持ち帰り利用も多い。</div>
+<div class="sig"><b>一皿:</b>特上丼（うなぎ5切・吸物付）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 11:00〜14:00, 16:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>三重県津市丸之内養正町５−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592240008">☎ 059-224-0008</a> ／ <a href="http://www.shintamatei.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津市観光協会と観光三重が揃って推す明治創業の老舗。公式サイトに2026年9月19日〜23日の営業時間変更案内が掲載されており営業実態を確認済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E3%81%AE%E6%96%B0%E7%8E%89%E4%BA%AD%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E4%B8%B8%E4%B9%8B%E5%86%85%E9%A4%8A%E6%AD%A3%E7%94%BA%EF%BC%95%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shintamatei.co.jp/">新玉亭公式サイト</a> / <a href="https://www.kankomie.or.jp/report/197">観光三重 取材レポート</a></div>
+</div></div>
+<div class="card" id="c-daikantei_sakaemachi">
+<img class="hero" src="img/tsu/daikantei_sakaemachi.jpg" alt="大観亭支店 栄町本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>大観亭支店 栄町本店<span class="yomi">だいかんていしてん さかえまちほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和22年創業、現在は4代目が受け継ぐ津駅東口至近のうなぎ店。三河一色産のうなぎを炭火で焼き、伊勢のたまりを使ったタレで仕上げる。うな丼・うな重のほかひつまぶし、白焼き、うなぎダレの豚炭火焼丼まで揃い、持ち帰り窓口（11時〜19時）も充実しているので駅利用のついでに買って帰る地元客も多い。津市内に西口店・渋見店など系列店が展開する「大観亭」の本店格で、出張や観光の合間に立ち寄りやすい立地が強み。</div>
+<div class="sig"><b>一皿:</b>うな重（上）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">土曜</td></tr>
+<tr><th>住所</th><td>三重県津市栄町２丁目４７２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592253445">☎ 059-225-3445</a> ／ <a href="http://www.daikantei.mie.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津市観光協会の「うなぎ専門店人気6選」掲載の老舗。公式サイトに2025年8月28日〜30日の臨時休業告知が掲載されており2025年時点の営業を確認済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A6%B3%E4%BA%AD%E6%94%AF%E5%BA%97%20%E6%A0%84%E7%94%BA%E6%9C%AC%E5%BA%97%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%97%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.daikantei.mie.jp/">大観亭支店 栄町本店 公式サイト</a> / <a href="https://tsukanko.jp/spot/s387/">津市観光協会「津の時間。」</a></div>
+</div></div>
+<div class="card" id="c-unafuji">
+<img class="hero" src="img/tsu/unafuji.jpg" alt="うなふじ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>うなふじ<span class="yomi">うなふじ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">津市北部の高野尾町にある行列必至のうなぎ専門店。蒸さずに焼き上げる地焼きで、外はパリッと香ばしく中はふっくら、甘辛のバランスが良いタレと相性抜群。うなぎ丼は3切1,320円からと驚くほど手頃で、県外からも客が押し寄せる。開店前から自然に列ができる昔ながらのスタイルで、朝一番の「一巡目」を目指して並ぶファンも多い。数量限定の肝焼きは早い時間に売り切れる名物。広い駐車場があり、持ち帰り予約も可能。</div>
+<div class="sig"><b>一皿:</b>うなぎ丼（特）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜13:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>三重県津市高野尾町６３３−２９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592300093">☎ 059-230-0093</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>行列レポートがブログ・SNSに多数あり、みえ情報局が2026年1月に「並んでも食べたい至福の一杯」として特集。食べログにも2026年6月訪問の口コミが投稿されており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%B5%E3%81%98%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E9%AB%98%E9%87%8E%E5%B0%BE%E7%94%BA%EF%BC%96%EF%BC%93%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://toba-osatsu.jp/2026/01/09/tsuunagi/">みえ情報局</a> / <a href="https://r.gnavi.co.jp/a977c6hj0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-itaro">
+<img class="hero" src="img/tsu/itaro.jpg" alt="自家製手もみ麺 ラーメンいたろう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>自家製手もみ麺 ラーメンいたろう<span class="yomi">らーめんいたろう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">平成11年創業、夫婦で営む自家製手もみ麺のラーメン店。学校給食から生まれた直径15cmの揚げ餃子「津ぎょうざ」を町おこしとともに提供し始めた立役者的存在で、その知名度は県内トップクラス。味付けの醤油にチャーシューの煮汁やラーメンのスープを使い、干しエビも入った餡は一口噛めば肉と野菜の旨味があふれる。津ぎょうざ目当てに県外から訪れるファンも多く、ラーメンとの組み合わせが定番。売り切れ次第閉店、日曜は昼のみ営業。</div>
+<div class="sig"><b>一皿:</b>津ぎょうざ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜13:45, 17:30〜19:30 ／ 日 11:30〜13:45</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>三重県津市丸之内４−２０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592231600">☎ 059-223-1600</a> ／ <a href="https://itaro.website/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津市観光協会「津ぎょうざおすすめ5選」と観光三重の特集にともに掲載される代表格。公式サイトが2026年9月1日付で9月の営業案内を更新しており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E8%A3%BD%E6%89%8B%E3%82%82%E3%81%BF%E9%BA%BA%20%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E3%81%84%E3%81%9F%E3%82%8D%E3%81%86%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E4%B8%B8%E4%B9%8B%E5%86%85%EF%BC%94%E2%88%92%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://itaro.website/">ラーメンいたろう公式サイト</a> / <a href="https://tsukanko.jp/feature/feature-6736/">津市観光協会「津の時間。」</a></div>
+</div></div>
+<div class="card" id="c-kinnabe">
+<img class="hero" src="img/tsu/kinnabe.jpg" alt="力士料理 金鍋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>力士料理 金鍋<span class="yomi">りきしりょうり きんなべ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和58年創業、元力士が大島部屋の味を受け継ぐ相撲テーマの料理店。20種類以上の具材が入る名物「金鍋ちゃんこ」は秘伝・カレー・チゲ・味噌の4種のスープから選べ、芸能人のファンも多い。津ぎょうざはパリパリの皮が特徴で、ちゃんこの〆や酒の肴にぴったりと津ぎょうざ協会にも紹介されている。名物コース2,000円から横綱コース5,000円まで宴会向けの構成が揃い、駐車場20台を完備。旅館を併設しており、相撲部屋の雰囲気ごと楽しめる津ならではの一軒。</div>
+<div class="sig"><b>一皿:</b>金鍋ちゃんこ＋津ぎょうざ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>三重県津市南丸之内９−４３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592240075">☎ 059-224-0075</a> ／ <a href="http://www.ztv.ne.jp/maruchi/course.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津市観光協会「津ぎょうざおすすめ5選」掲載で津ぎょうざ協会の公式加盟店。ヒトサラでネット予約を受付中で営業実態を確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8A%9B%E5%A3%AB%E6%96%99%E7%90%86%20%E9%87%91%E9%8D%8B%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%8D%97%E4%B8%B8%E4%B9%8B%E5%86%85%EF%BC%99%E2%88%92%EF%BC%94%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.tsugyoza.net/portfolio/items/476e37a0e8d">津ぎょうざ協会</a> / <a href="https://hitosara.com/0006034270/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-mugiittouhei">
+<img class="hero" src="img/tsu/mugiittouhei.jpg" alt="御麺 麦 一等兵 津駅前店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>御麺 麦 一等兵 津駅前店<span class="yomi">ごめん むぎ いっとうへい</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">津駅東口から徒歩1分、深夜1時半まで営業する使い勝手抜群のラーメン店。ご当地グルメ・津ぎょうざは国産材料を使い、黒コショウを効かせた「大人の味」が身上で、看板の闘魂ラーメンとの組み合わせが定番。電車の待ち時間や飲みの〆に津ぎょうざを試せる店として、津ぎょうざ食べ歩きの記事でも「駅前の頼れる店」と紹介される。駅近×深夜営業という条件で津ぎょうざを食べられる店は貴重で、出張・観光の初日にご当地グルメを押さえたい人に最適。</div>
+<div class="sig"><b>一皿:</b>津ぎょうざ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:30〜1:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市羽所町３１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592216110">☎ 059-221-6110</a> ／ <a href="http://www.ba-ku.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津市観光協会「津ぎょうざおすすめ5選」に津駅前の一軒として掲載。ホットペッパーグルメに現行の店舗ページがあり、近年の津ぎょうざ食べ歩き記事（note）でも訪問が報告されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E9%BA%BA%20%E9%BA%A6%20%E4%B8%80%E7%AD%89%E5%85%B5%20%E6%B4%A5%E9%A7%85%E5%89%8D%E5%BA%97%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E7%BE%BD%E6%89%80%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsukanko.jp/spot/s311/">津市観光協会「津の時間。」</a> / <a href="https://www.hotpepper.jp/strJ000834392/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-senju">
+<img class="hero" src="img/tsu/senju.jpg" alt="元祖 めいふつ天むすの千寿 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>元祖 めいふつ天むすの千寿<span class="yomi">せんじゅ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">名古屋名物と思われがちな天むすの、正真正銘の発祥店。昭和30年代、天ぷら店だった先代の水谷ヨネが夫のために栄養のあるものをと、海老の天ぷらをおむすびに入れたのが始まり。昭和53年頃に名古屋へ暖簾分けされたことで全国に広まった。小ぶりのおむすびに小海老の天ぷらがちょこんと収まり、冷めても美味しいのが身上。店内ではお味噌汁と一緒にいただくこともでき、持ち帰りの行列も名物。「天むす」は登録商標で、元祖の味は今も津の大門で守られている。</div>
+<div class="sig"><b>一皿:</b>元祖天むす（1人前5個）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 9:30〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門９−７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592286798">☎ 059-228-6798</a> ／ <a href="http://www.gansotenmusu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>観光三重・津市観光協会がともに「天むす発祥の店」として掲載する津の看板店。公式サイトで現行の営業時間（9:30〜17:30）を公開しており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%20%E3%82%81%E3%81%84%E3%81%B5%E3%81%A4%E5%A4%A9%E3%82%80%E3%81%99%E3%81%AE%E5%8D%83%E5%AF%BF%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%99%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.gansotenmusu.com/">元祖天むすの千寿 公式サイト</a> / <a href="https://tsukanko.jp/spot/s262/">津市観光協会「津の時間。」</a></div>
+</div></div>
+<div class="card" id="c-hachimitsuman">
+<img class="hero" src="img/tsu/hachimitsuman.jpg" alt="蜂蜜まん本舗 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>蜂蜜まん本舗<span class="yomi">はちみつまんほんぽ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和28年（1953年）創業、地元で「はちまん」の愛称で親しまれる蜂蜜まんじゅうの専門店。養蜂園にルーツを持ち、「蜂蜜をもっと身近に」との思いから生まれた一口サイズのまんじゅうは、蜂蜜入りの生地でこしあんを包み店頭の焼き機でじっくり焼き上げる。1個70円という価格も人気の理由で、焼きたてを頬張りながら大門の商店街を歩くのが津流。手土産の定番として箱買いする地元客が絶えず、津観音の参拝とセットで立ち寄る観光客も多い、津らしさの塊のような一軒。</div>
+<div class="sig"><b>一皿:</b>蜂蜜まん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 9:45〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門８−５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592283012">☎ 059-228-3012</a> ／ <a href="http://www.tsukanko.jp/product/483/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津市観光協会が津のソウルフードとして掲載し、2025年12月の体験レポ記事もある定番店。JAF会員優待が2026年7月〜9月30日の期間で設定されており2026年の営業を確認済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%9C%82%E8%9C%9C%E3%81%BE%E3%82%93%E6%9C%AC%E8%88%97%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%98%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsukanko.jp/spot/s483/">津市観光協会「津の時間。」</a> / <a href="https://area.jaf.or.jp/area/2026/07/chubu/mie/special-benefits/hatimitsu-20260701">JAFナビ（2026年優待）</a></div>
+</div></div>
+<div class="card" id="c-toyoken">
+<img class="hero" src="img/tsu/toyoken.jpg" alt="レストラン東洋軒 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>レストラン東洋軒 本店<span class="yomi">とうようけん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治22年（1889年）東京・三田に開業した東洋軒の暖簾を受け継ぐ、津を代表する老舗洋食レストラン。名物は陶芸家・実業家の川喜田半泥子の着想から生まれた「ブラックカレー」。小麦粉を炒め続けて真っ黒に仕上げるルーは香ばしくコク深く、松阪牛を100%使ったロイヤルブラックカレーは津でしか味わえない贅沢な一皿。キエフ風カツレツなどクラシックな洋食も揃い、格式ある店構えながらランチは使いやすい。津城跡の観光とあわせて訪れたい、津の食文化の象徴的存在。</div>
+<div class="sig"><b>一皿:</b>ロイヤルブラックカレー（松阪牛100%）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:30, 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>三重県津市丸之内２９−１７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592252882">☎ 059-225-2882</a> ／ <a href="http://touyouken.co.jp/sp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津市観光協会・観光三重がともに掲載する明治創業の老舗で、100年食堂系メディアでも紹介される津名物。公式サイトが現行メニューを掲載しヒトサラでネット予約も受付中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E6%9D%B1%E6%B4%8B%E8%BB%92%20%E6%9C%AC%E5%BA%97%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E4%B8%B8%E4%B9%8B%E5%86%85%EF%BC%92%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://touyouken.co.jp/honten/blackcurry.html">東洋軒公式サイト</a> / <a href="https://www.kankomie.or.jp/spot/22716">観光三重</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・海鮮</h2>
+<div class="card" id="c-okuno">
+<img class="hero" src="img/tsu/okuno.jpg" alt="寿司割烹 おくの 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>寿司割烹 おくの<span class="yomi">すしかっぽう おくの</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">津市久居エリアで鮮度と季節感にこだわる寿司割烹。仕入れ状況でその日のメニューが変わる本格派で、国産松茸や鱧、鮎、河豚の白子焼、アワビ、太刀魚の塩焼き、蛤の塩焼、自家製カラスミなど、寿司にとどまらない季節の割烹料理が揃う。カウンターで大将と会話しながら旬を味わうもよし、家族の集まりや接待にもよし。ランチは2,000円台からと敷居が低く、夜は6,000円台からじっくりコースを楽しめる。久居駅方面で和食の名店を探すならまず名前が挙がる一軒。</div>
+<div class="sig"><b>一皿:</b>季節のおまかせ握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>三重県津市久居元町２３５０−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592545000">☎ 059-254-5000</a> ／ <a href="https://tsu-matsusaka.mypl.net/shop/00000373770/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの津市寿司ランキングで上位に挙がり、三重ふるさと新聞など地元媒体でも紹介される実力店。AutoReserve・HAMONIで現在もネット予約を受け付けており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E5%8F%B8%E5%89%B2%E7%83%B9%20%E3%81%8A%E3%81%8F%E3%81%AE%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E4%B9%85%E5%B1%85%E5%85%83%E7%94%BA%EF%BC%92%EF%BC%93%EF%BC%95%EF%BC%90%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://furusato-shinbun.jp/wasyoku-2">三重ふるさと新聞</a> / <a href="https://autoreserve.com/ja/restaurants/YT9WYYdfmiqD6Dsfj8fZ">AutoReserve</a></div>
+</div></div>
+<div class="card" id="c-yamayuki">
+<img class="hero" src="img/tsu/yamayuki.jpg" alt="すし処 やま幸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>すし処 やま幸<span class="yomi">すしどころ やまゆき</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">熊野灘・伊勢湾で揚がる新鮮な魚介を軸に、松阪牛や松茸など三重の山海の幸を握りと一品で味わわせる津市南部の寿司店。清潔感のある店内には個室も備え、接客の評判も高く、法事や慶事、宴会から出前まで幅広く対応する地域密着の実力店。ランチは3,000円台、夜は8,000円台からと価格帯は本格派だが、職人が目の前で握る極上の鮨を落ち着いた雰囲気で楽しめる。Yahoo!マップで4点超の高評価を得ており、津市南部で寿司ならまず候補に挙がる一軒。</div>
+<div class="sig"><b>一皿:</b>職人の握る極上鮨（おまかせ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>三重県津市雲出本郷町１６４１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592647422">☎ 059-264-7422</a> ／ <a href="https://sushidokoro-yamayuki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ3.9点台・Yahoo!マップ4.33点と評価が高く、一休.comレストランなど予約媒体にも掲載される津市南部の代表的寿司店。公式サイトが稼働しており各媒体で予約を受付中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E5%87%A6%20%E3%82%84%E3%81%BE%E5%B9%B8%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E9%9B%B2%E5%87%BA%E6%9C%AC%E9%83%B7%E7%94%BA%EF%BC%91%EF%BC%96%EF%BC%94%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sushidokoro-yamayuki.com/">やま幸公式サイト</a> / <a href="https://hitosara.com/0031359251/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-zabouan">
+<img class="hero" src="img/tsu/zabouan.jpg" alt="坐忘庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>坐忘庵<span class="yomi">ざぼうあん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">津市東丸之内にある予約制の京風懐石料理店。客が部屋に揃ったのを確認してから調理場で鰹節を削って一番出しを取り、お吸い物を仕立てるところから料理が始まるという、出汁への徹底したこだわりが身上。上品な味わいと芸術的な盛り付けで、心温まるお茶から最後のデザートまで静かな個室で堪能できる。顔合わせ・接待・法事など人生の節目に使われる津では貴重な本格日本料理の店で、土瓶蒸しなど季節の椀物も評判。2019年ミシュランガイド東海版に掲載された実績を持つ。</div>
+<div class="sig"><b>一皿:</b>一番出汁のお吸い物から始まる懐石コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 12:00〜14:00, 18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市東丸之内１６−３３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592283754">☎ 059-228-3754</a> ／ <a href="https://zabouan.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2019年ミシュランガイド東海版掲載という津市では希少な実績を持つ懐石店。公式サイトが現行の案内を掲載し、AutoReserveで予約を受け付けており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9D%90%E5%BF%98%E5%BA%B5%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E6%9D%B1%E4%B8%B8%E4%B9%8B%E5%86%85%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%93%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://zabouan.com/">坐忘庵公式サイト</a> / <a href="https://autoreserve.com/ja/restaurants/zYbt126SpoAx33Z9SnfD">AutoReserve</a></div>
+</div></div>
+<div class="card" id="c-sushimoto">
+<img class="hero" src="img/tsu/sushimoto.jpg" alt="寿しもと支店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>寿しもと支店<span class="yomi">すしもとしてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">津駅東口から徒歩1分、魚伝ビル1階に構える夜営業の鮨店。経験豊富な店主が伊勢湾で水揚げされた魚を自ら目利きし、食材の個性を見極めて最も味わうべき瞬間に供する。伊勢湾産とり貝の刺身や蛸の胡麻塩焼き、鱚の握りなど手の込んだおつまみと丁寧な仕事が評判で、地元では老舗の鮨処として知られる。日本酒はリーズナブルなものから貴重な一本まで25〜30種類を厳選し、旬の肴との組み合わせが楽しい。カウンターと小上がりがあり、出張帰りの一人客から接待まで使える駅前の名店。</div>
+<div class="sig"><b>一皿:</b>伊勢湾産の旬魚の握りと肴</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 18:00〜23:00 ／ 火・水・木・金・土 17:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市広明町３６３ 魚伝ビル 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592285051">☎ 059-228-5051</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ヒトサラで「旬を見極めた熟練のもてなし」と紹介される津駅前の実力店で、Retty・ぐるなび等にも現行掲載。ヒトサラに現行の営業時間・予算が掲載されており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%E3%82%82%E3%81%A8%E6%94%AF%E5%BA%97%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%BA%83%E6%98%8E%E7%94%BA%EF%BC%93%EF%BC%96%EF%BC%93%20%E9%AD%9A%E4%BC%9D%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0006127643/">ヒトサラ</a> / <a href="https://retty.me/area/PRE24/ARE80/SUB8001/100000729583/">Retty</a></div>
+</div></div>
+<div class="card" id="c-amazushi">
+<img class="hero" src="img/tsu/amazushi.jpg" alt="天鮨 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>天鮨<span class="yomi">あまずし</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">津駅西口ロータリー右手のビル1階にある握り寿司店。かつて津の名店として知られた「東京大寿司」で14年修業した職人が2015年に独立して開いた店で、確かな仕事の握りを駅前で気軽に楽しめる。ランチは1,500円と2,500円の2本立てで、サラダ・茶碗蒸し・寿司・味噌汁・デザートまで付く構成が好評。夜は5,000円前後で旬のネタをつまみながら一杯やれる。Yahoo!マップ4.33点の高評価で、津駅を使う出張客や観光客が本格的な寿司を食べたいときに最も便利な選択肢のひとつ。</div>
+<div class="sig"><b>一皿:</b>職人握りのランチ寿司</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00, 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>三重県津市大谷町２４０ 大川学園ビル 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592534004">☎ 059-253-4004</a> ／ <a href="http://amazushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの津市寿司紹介で「名店で14年修業した職人の店」として取り上げられ、Yahoo!マップでも高評価。各グルメ媒体に現行の営業時間が掲載されており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E9%AE%A8%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B0%B7%E7%94%BA%EF%BC%92%EF%BC%94%EF%BC%90%20%E5%A4%A7%E5%B7%9D%E5%AD%A6%E5%9C%92%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://map.yahoo.co.jp/v3/place/DY8oMPBEXgA">Yahoo!マップ</a> / <a href="https://retty.me/area/PRE24/ARE80/SUB8001/100001355515/">Retty</a></div>
+</div></div>
+<div class="card" id="c-uoku">
+<img class="hero" src="img/tsu/uoku.jpg" alt="海鮮和食処 魚九 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>海鮮和食処 魚九<span class="yomi">うおく</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">全国各地から厳選した魚を仕入れる大門の海鮮和食処。多種多様な魚を食べ比べられる刺身の盛り合わせが看板で、ランチの「本日のお魚定食」は塩焼きか唐揚げを選べてボリューム満点、サラダ・ご飯・みそ汁・小鉢付きと使い勝手が良い。海鮮丼や煮魚定食、焼魚定食も揃い、清潔な店内とコストパフォーマンスの高さで地元客の支持が厚い。夜は刺身と一品料理で一杯やれる和食処となり、季節の恵方巻や穴子めし弁当など持ち帰り商品も展開。津の中心市街地で魚のランチならまず候補になる店。</div>
+<div class="sig"><b>一皿:</b>刺身盛り合わせ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門１０−２２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592282810">☎ 059-228-2810</a> ／ <a href="https://uo9.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの口コミでランチのコスパと刺身の質が高評価で、公式サイトとX（旧Twitter）で情報を発信し続けている。公式サイトに現行の営業時間・定休日が掲載されており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E5%92%8C%E9%A3%9F%E5%87%A6%20%E9%AD%9A%E4%B9%9D%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://uo9.jp/">魚九公式サイト</a> / <a href="https://r.gnavi.co.jp/napj700/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-zuiun">
+<img class="hero" src="img/tsu/zuiun.jpg" alt="鮨処 瑞雲 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>鮨処 瑞雲<span class="yomi">すしどころ ずいうん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">津駅近くの羽所町に暖簾を掲げる町の鮨処。名物は平日限定・数量限定の1,000円ランチで、月・木曜はにぎり寿司、火・水・金曜は海鮮丼という曜日替わりの構成。カウンターで供される内容は種類が多くボリュームがあり、出汁の効いた味噌汁も評判で、常連客が昼時に集まる。夜は22時半まで営業し、握りと肴で気軽に一杯やれる駅前の使い勝手の良さが魅力。気取らない雰囲気で、津駅周辺で「安くてちゃんとした寿司」を求めるならここという地元密着の一軒。</div>
+<div class="sig"><b>一皿:</b>曜日替わりの1,000円ランチ（にぎり／海鮮丼）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 11:30〜12:45, 17:00〜21:30 ／ 水 11:30〜21:30 ／ 土 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市羽所町３１４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592273399">☎ 059-227-3399</a> ／ <a href="https://instagram.com/suiun327?igshid=YmMyMTA2M2Y=">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前立地の曜日替わり1,000円ランチが口コミで高評価の地元密着店。食べログに2025年9月訪問の口コミが投稿されており営業を確認済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E5%87%A6%20%E7%91%9E%E9%9B%B2%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E7%BE%BD%E6%89%80%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/en/mie/A2401/A240101/24007798/">食べログ</a> / <a href="https://r.gnavi.co.jp/p1sjcrkw0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-akirakaze">
+<img class="hero" src="img/tsu/akirakaze.jpg" alt="旬鮮旨味酒房 明風 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>旬鮮旨味酒房 明風<span class="yomi">あきらかぜ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">元魚屋の店主が旬の魚介を目利きする大門の海鮮酒房。刺身はもちろん焼き・煮・揚げと幅広い調理法でボリュームたっぷりの魚料理を出し、いろんな刺身が漬けになった「色々さしみブツ切り丼」など個性的な丼も人気。月・火・木・金限定のランチは刺身定食や海鮮丼が999円までと破格で、旨い魚を目当てにした昼飲み客も集まる。夜は日本酒の飲み比べセットを片手に、一人飲みからデートまで幅広く使える。津の飲み屋街エリアで「魚で選ぶならここ」と名の挙がる店。</div>
+<div class="sig"><b>一皿:</b>色々さしみブツ切り丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 11:30〜14:00, 18:00〜0:00 ／ 水・土 18:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門２０−１３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592468300">☎ 059-246-8300</a> ／ <a href="https://www.akirakaze.com/?utm_source=google-mybusiness&amp;utm_medium=referral">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ヒトサラ・Rettyなど各媒体で元魚屋の目利きと魚料理が評価される津駅周辺の人気店。公式サイトが現行のランチ・ディナー情報を掲載しており営業中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E9%AE%AE%E6%97%A8%E5%91%B3%E9%85%92%E6%88%BF%20%E6%98%8E%E9%A2%A8%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.akirakaze.com/">明風公式サイト</a> / <a href="https://hitosara.com/0031258002/">ヒトサラ</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・そば・うどん・町中華</h2>
+<div class="card" id="c-men_the_kuro">
+<img class="hero" src="img/tsu/men_the_kuro.jpg" alt="麺 THE KURO 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>麺 THE KURO<span class="yomi">めん ざ くろ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">津駅からほど近い鳥居町にある鶏白湯ラーメン専門店。看板の「濃厚鶏SOBA」は、鶏をじっくり炊き出したポタージュのようなスープに歯切れのよい麺を合わせた一杯で、濃厚ながら後味は重すぎない。鶏つけ麺や限定メニューも人気で、夜遅くまで営業しているため飲み帰りの〆需要にも応える。黒を基調としたスタイリッシュな店構えで、若い世代を中心に支持を集める津駅エリアの実力店。</div>
+<div class="sig"><b>一皿:</b>濃厚鶏SOBA</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火 11:00〜14:00 ／ 水・木・金 11:00〜14:00, 17:30〜21:00 ／ 土・日 11:00〜14:30, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>三重県津市鳥居町２５１−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592222396">☎ 059-222-2396</a> ／ <a href="https://www.instagram.com/men_the_kuro/?hl=ja">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津駅エリアの鶏白湯人気店。2025年9月公開の津市ラーメン特集記事で営業中の店として紹介されており営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%20THE%20KURO%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E9%B3%A5%E5%B1%85%E7%94%BA%EF%BC%92%EF%BC%95%EF%BC%91%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kencellara.com/new_magazines/ramen_tsu">ケンチェ飯 津市ラーメン特集（2025.9.15）</a></div>
+</div></div>
+<div class="card" id="c-men_toriko">
+<img class="hero" src="img/tsu/men_toriko.jpg" alt="鶏恋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>鶏恋<span class="yomi">とりこ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">三重大学にも近い江戸橋エリアの鶏清湯専門店。看板の鶏塩らぁ麺は、鶏の旨みを丁寧に引き出した透き通るスープに塩ダレを合わせた上品な一杯で、淡麗系が好きな人にまず薦めたい店。もう一つの人気メニューである鶏塩まぜそばは、しっとりした鶏と麺を絡めて食べる濃厚系で、二枚看板の振れ幅が広い。学生から家族連れまで客層が幅広く、昼時は行列になることも多い。</div>
+<div class="sig"><b>一皿:</b>鶏塩らぁ麺</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金 11:00〜14:30 ／ 土 11:00〜14:30, 18:00〜20:30 ／ 日 10:00〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>三重県津市江戸橋１丁目１２２−２ テナント金谷</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://www.instagram.com/menya.torikoi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>淡麗系代表として津のラーメン記事で定番の存在。2025年9月公開の津市ラーメン特集記事で営業中の店として紹介されており営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B6%8F%E6%81%8B%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E6%B1%9F%E6%88%B8%E6%A9%8B%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%EF%BC%92%E2%88%92%EF%BC%92%20%E3%83%86%E3%83%8A%E3%83%B3%E3%83%88%E9%87%91%E8%B0%B7">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kencellara.com/new_magazines/ramen_tsu">ケンチェ飯 津市ラーメン特集（2025.9.15）</a></div>
+</div></div>
+<div class="card" id="c-men_nari">
+<img class="hero" src="img/tsu/men_nari.jpg" alt="らーめん 也 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>らーめん 也<span class="yomi">らーめん なり</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip hidden">hidden</span></div>
+<div class="desc">津市郊外の庄田町にありながら、平日でも開店前から行列ができる津を代表する人気店。豚骨醤油らーめんを軸に、つけ麺やまぜそばまで揃え、どれも動物系の厚い旨みとキレのある醤油ダレのバランスが秀逸。ミシュランガイド掲載歴もあり、県外から通うファンも多い。営業は昼から夕方までで売り切れ次第終了。数量限定メニュー狙いなら早い時間の訪問が必須という、郊外型行列店の典型。</div>
+<div class="sig"><b>一皿:</b>豚骨醤油らーめん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">土・日曜</td></tr>
+<tr><th>住所</th><td>三重県津市庄田町２４２４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592564855">☎ 059-256-4855</a> ／ <a href="https://ramen-nari.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランガイド三重掲載歴のある津の看板行列店。2025年9月公開の津市ラーメン特集記事で営業中の店として紹介されており営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E4%B9%9F%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%BA%84%E7%94%B0%E7%94%BA%EF%BC%92%EF%BC%94%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kencellara.com/new_magazines/ramen_tsu">ケンチェ飯 津市ラーメン特集（2025.9.15）</a></div>
+</div></div>
+<div class="card" id="c-men_kagen">
+<img class="hero" src="img/tsu/men_kagen.jpg" alt="手打ちそば 嘉玄 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>手打ちそば 嘉玄<span class="yomi">てうちそば かげん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">食べログ3.5超の評価を保つ、津市で最も評価の高い手打ち蕎麦店のひとつ。丁寧に打たれた蕎麦は香りと喉ごしのバランスがよく、冷・温どちらでも楽しめる。蕎麦屋ながら天ぷらの評価も高く、大ぶりの天丼や鴨汁ざる蕎麦を目当てに通う客が多い。昼は行列も珍しくない人気ぶりで、夜営業は週の後半のみ。住宅地の中の落ち着いた店構えで、予約不可のため時間に余裕をもって訪れたい。</div>
+<div class="sig"><b>一皿:</b>ざる蕎麦と天丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金 11:30〜13:30 ／ 水・木・土 11:30〜13:30, 17:30〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市大倉１０−４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592537341">☎ 059-253-7341</a> ／ <a href="http://kagensoba.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津市の蕎麦で評価トップ級（食べログ3.55）。公式サイトが稼働中で、食べログに2025年12月のレビューがあり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%9D%E3%81%B0%20%E5%98%89%E7%8E%84%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E5%80%89%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kagensoba.jp/">公式サイト</a> / <a href="https://tabelog.com/mie/A2401/A240101/24011872/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-men_onishi">
+<img class="hero" src="img/tsu/men_onishi.jpg" alt="そば処 大西 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>そば処 大西<span class="yomi">そばどころ おおにし</span></div>
+<div class="chips"><span class="chip hidden">hidden</span></div>
+<div class="desc">ミシュランガイドのビブグルマンに選ばれた実績を持つ津市戸木町の名店。約2年の休業を経て2024年12月に完全予約制で復活し、八寸仕立ての前菜から揚げ蕎麦掻き、桜えびのかき揚げ、〆の手打ち蕎麦まで続くコース一本勝負のスタイルに生まれ変わった。蕎麦懐石4,500円という価格で、季節の食材を使った料理と蕎麦を静かな空間でゆっくり味わえる。席数わずかのため予約は早めに。特別な日の蕎麦体験として推せる一軒。</div>
+<div class="sig"><b>一皿:</b>蕎麦会席コース（要予約）</div>
+<table class="info">
+<tr><th>営業時間</th><td>木・金・土・日 12:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火・水曜</td></tr>
+<tr><th>住所</th><td>三重県津市戸木町3503番地1</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592551133">☎ 059-255-1133</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン・ビブグルマン掲載歴の名店。2024年12月に完全予約制で営業再開し、食べログに2025年10月のレビューがあり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E5%A4%A7%E8%A5%BF%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E6%88%B8%E6%9C%A8%E7%94%BA3503%E7%95%AA%E5%9C%B01">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gochisouda.exblog.jp/30550465/">楽食人Shinの遊食案内（2024.12 復活記事）</a> / <a href="https://tabelog.com/mie/A2401/A240101/24011115/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-men_kousuke">
+<img class="hero" src="img/tsu/men_kousuke.jpg" alt="うどんの幸助 だいたて本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>うどんの幸助 だいたて本店<span class="yomi">うどんのこうすけ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">「大門でうどんといえばココ」と言われて40年以上、旧花街・大門の商店街で愛され続ける老舗うどん店。岡山の名店で修業した店主による自家製麺はコシが強く、常に茹でたてを提供するのが信条。かつお香る出汁との相性がよい肉うどんや鍋焼きうどん、ぶっかけ定食が看板で、ほとんどのメニューがワンコイン台という価格も魅力。座敷や子ども椅子もあり、家族連れからお年寄りまで昼どきは行列必至の地元密着店。</div>
+<div class="sig"><b>一皿:</b>肉うどん・ぶっかけ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・金・土・日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月・木曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門６−１９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592289782">☎ 059-228-9782</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>大門を代表する創業40年超の老舗。食べログに2025年11月のレビューがあり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E3%81%AE%E5%B9%B8%E5%8A%A9%20%E3%81%A0%E3%81%84%E3%81%9F%E3%81%A6%E6%9C%AC%E5%BA%97%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsukanko.jp/spot/s673/">津市観光協会</a> / <a href="https://tabelog.com/mie/A2401/A240101/24003556/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-men_kinosaki">
+<img class="hero" src="img/tsu/men_kinosaki.jpg" alt="うどん・そば処 きのさき 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">25</span>うどん・そば処 きのさき<span class="yomi">うどん・そばどころ きのさき</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">「手間を惜しまず、時間をかけて丁寧に」を掲げ、うどんとそばの両方を自家製麺で出す郊外の実力店。三重県産食材を活かした出汁がやさしく、名物の鍋焼きうどんやカレーうどん、海老おろしうどんまで麺類の層が厚い。天ぷらや小鉢が付く「きのさき定食」はボリュームと満足度が高く、昼は売り切れ次第終了になるほどの人気。小さな子どもから年配客まで安心して使える座敷完備のファミリー向け麺処。</div>
+<div class="sig"><b>一皿:</b>鍋焼きうどん・きのさき定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金 11:00〜14:00 ／ 土・日 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>三重県津市大里睦合町３１１−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592120438">☎ 059-212-0438</a> ／ <a href="https://kinosaki-udon-soba.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元人気の自家製麺うどん・そば店。公式サイトに2026年6月の季節メニュー告知と同年7月のお盆営業案内があり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E3%83%BB%E3%81%9D%E3%81%B0%E5%87%A6%20%E3%81%8D%E3%81%AE%E3%81%95%E3%81%8D%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%87%8C%E7%9D%A6%E5%90%88%E7%94%BA%EF%BC%93%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kinosaki-udon-soba.com/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-men_jinhou">
+<img class="hero" src="img/tsu/men_jinhou.jpg" alt="金猴 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">26</span>金猴<span class="yomi">じんほう</span></div>
+<div class="chips"><span class="chip hidden">hidden</span></div>
+<div class="desc">八町の交差点近くに静かに佇む、知る人ぞ知る町中華の実力店。派手な宣伝は一切せず、無化調の清湯スープでとる清湯ラーメンや本格担々麺、皮から仕込む小籠包、香ばしい黒チャーハンなど、一品ごとに店主の哲学が宿る。中華と和モダンが融合した落ち着いた店内で、昼のみの短い営業ながら地元の食通が通い詰める。メディア露出が少ないぶん口コミで評判が広がる、津の町中華の隠れた本命。</div>
+<div class="sig"><b>一皿:</b>担々麺・小籠包・黒チャーハン</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:30, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>三重県津市八町３丁目６−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592611104">☎ 059-261-1104</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログが2025年11月に実食レポートを公開しており、無化調清湯にこだわる町中華として営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%87%91%E7%8C%B4%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%85%AB%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kencellara.com/entry/jinhou">ケンチェ飯（2025.11.25）</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・バー(大門・津駅前)</h2>
+<div class="card" id="c-iza_syun">
+<img class="hero" src="img/tsu/iza_syun.jpg" alt="焼鳥 しゅん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>焼鳥 しゅん<span class="yomi">やきとり しゅん</span></div>
+<div class="chips"><span class="chip hidden">hidden</span></div>
+<div class="desc">旧花街・大門の路地に構える、カウンター9席だけの焼鳥専門店。東京の名店で修業した店主が目の前の炭火で一本ずつ焼き上げるスタイルで、注文はおまかせ10本コース（3,300円）が基本。ふわりと香ばしい自家製つくね、絶妙な火入れのささみや肝など、部位ごとの火加減の妙を静かに堪能できる。木の温もりのある落ち着いた空間は一人飲みにもデートにも向き、大門の夜の新しい名所として予約困難になりつつある。</div>
+<div class="sig"><b>一皿:</b>おまかせ焼鳥10本コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜3:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門１７−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592615893">☎ 059-261-5893</a> ／ <a href="https://www.instagram.com/yakitorishun">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>大門エリアで評価急上昇の焼鳥専門店。2025年3月公開の実食レポート記事で営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%97%E3%82%85%E3%82%93%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kencellara.com/entry/syun">ケンチェ飯（2025.3.16）</a></div>
+</div></div>
+<div class="card" id="c-iza_kitashou">
+<img class="hero" src="img/tsu/iza_kitashou.jpg" alt="喜多昭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>喜多昭<span class="yomi">きたしょう</span></div>
+<div class="chips"><span class="chip hidden">hidden</span><span class="chip local">地元密着</span></div>
+<div class="desc">割烹の伝統を受け継ぎながら、どこか懐かしくホッとできる大門の地元密着型居酒屋。昭和の面影を残す店内で、女将の丁寧なもてなしとともに、冬のもつ鍋、出汁の効いた茶碗蒸し、えび天巻き、〆の鮭茶漬けなど割烹仕込みの和食をつまみに一杯やれる。一人飲みのカウンター使いから少人数の宴会まで幅が利き、季節で営業時間が変わるのも昔ながらの流儀。旧花街の空気を今に伝える、大人のための隠れ家。</div>
+<div class="sig"><b>一皿:</b>もつ鍋・割烹仕込みの和食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門２６−１９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:09041172112">☎ 090-4117-2112</a> ／ <a href="https://instagram.com/kitashou.1107?igshid=NGVhN2U2NjQ0Yg%3D%3D&amp;utm_source=qr">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>大門の老舗系居酒屋として2025年8月公開の実食レポート記事で営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%9C%E5%A4%9A%E6%98%AD%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%92%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kencellara.com/entry/kitashou">ケンチェ飯（2025.8.8）</a></div>
+</div></div>
+<div class="card" id="c-iza_pige">
+<img class="hero" src="img/tsu/iza_pige.jpg" alt="British Pub Pige 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>British Pub Pige<span class="yomi">ぶりてぃっしゅぱぶ ぴげ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和48年（1973年）9月創業、半世紀を超えて大門の夜を照らし続ける老舗ブリティッシュパブ。バーテンダー協会の三重県支部長を務めたマスターの店として知られ、三重のバー文化を育ててきた歴史そのものと言える一軒。カナダで買い付けた魚の剥製が飾られた海洋テーマの店内で、カクテルからウイスキーまで幅広く楽しめ、パブらしく食事メニューが充実しているのも特徴。深夜2時過ぎまで開いており、大門はしご酒の締めに最適。</div>
+<div class="sig"><b>一皿:</b>カクテルと深夜のパブ飯</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 19:00〜2:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門２３−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592295055">☎ 059-229-5055</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>旧花街大門を代表する創業50年超の老舗バー。食べログに2026年8月のレビューがあり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=British%20Pub%20Pige%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://totutotu.jp/tuduri/937">とつとつbyLTS マスター取材記事</a> / <a href="https://tabelog.com/mie/A2401/A240101/24008474/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-iza_takosou">
+<img class="hero" src="img/tsu/iza_takosou.jpg" alt="大門酒場 蛸創 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>大門酒場 蛸創<span class="yomi">だいもんさかば たこそう</span></div>
+<div class="chips"><span class="chip new">new</span></div>
+<div class="desc">2024年12月に大門に誕生した、たこ焼きを肴に日本酒を飲むという新感覚の酒場。カリッと薄い生地にふわトロの中身という自慢の蛸焼きを何種類も揃え、充実の日本酒と合わせるのが流儀。全15席の小さな店ながら深夜3時まで営業しており、大門で飲んだあとの2軒目・3軒目として早くも定着しつつある。夜の大門ににぎわいを呼び戻す若い店として、地元ニュースにも取り上げられた注目株。</div>
+<div class="sig"><b>一皿:</b>蛸焼き×日本酒</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 18:00〜3:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>三重県津市大門２４−２ 大門ＳＩビル</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592618322">☎ 059-261-8322</a> ／ <a href="https://www.instagram.com/daimon_sakaba_takosoo?igsh=MTRucGhmdjkxMGQzYQ%3D%3D&amp;utm_source=qr">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>大門の夜を盛り上げる新鋭酒場。ホットペッパーで2026年9〜11月のネット予約を受付中であり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%96%80%E9%85%92%E5%A0%B4%20%E8%9B%B8%E5%89%B5%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%92%EF%BC%94%E2%88%92%EF%BC%92%20%E5%A4%A7%E9%96%80%EF%BC%B3%EF%BC%A9%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ003984706/">ホットペッパーグルメ</a> / <a href="https://tsu.goguynet.jp/2025/01/04/takosou-open/">号外NET津市（開店記事）</a></div>
+</div></div>
+<div class="card" id="c-iza_torisawa">
+<img class="hero" src="img/tsu/iza_torisawa.jpg" alt="焼とり 鳥さわ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>焼とり 鳥さわ<span class="yomi">やきとり とりさわ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">創業昭和33年の松阪肉の名門「朝日屋」が直営する焼き鳥店。焼き鳥店でありながら口の中でとろける松阪牛の串や希少部位が味わえるのが最大の魅力で、鶏は鳥取・大山どりを使用。肉の目利きは本業ゆえ折り紙付きで、接待や記念日にも使える上質な串をリーズナブルに楽しめる。津駅東口から徒歩1分、個室は4〜24名まで対応し、飲み放題付きコース（5,600円〜）は駅前宴会の定番。津駅前を代表する名店のひとつ。</div>
+<div class="sig"><b>一皿:</b>松阪牛串・大山どり焼き鳥</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>三重県津市羽所町３８１ 津三交ビルディング アネックス2Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05053035364">☎ 050-5303-5364</a> ／ <a href="https://yakitoritorisawa.foodre.jp/?utm_source=gbp&amp;utm_medium=organic&amp;utm_contents=website_link">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松阪肉の老舗・朝日屋直営という唯一無二の背景を持つ津駅前の名店。2025年9月訪問のレビューがあり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E3%81%A8%E3%82%8A%20%E9%B3%A5%E3%81%95%E3%82%8F%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E7%BE%BD%E6%89%80%E7%94%BA%EF%BC%93%EF%BC%98%EF%BC%91%20%E6%B4%A5%E4%B8%89%E4%BA%A4%E3%83%93%E3%83%AB%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%20%E3%82%A2%E3%83%8D%E3%83%83%E3%82%AF%E3%82%B92%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.xn--ogt56tz0a.com/torisawa/">朝日屋公式（鳥さわ）</a> / <a href="https://tabelog.com/mie/A2401/A240101/24013622/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-iza_kamakura">
+<img class="hero" src="img/tsu/iza_kamakura.jpg" alt="炙り屋カマクラ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>炙り屋カマクラ<span class="yomi">あぶりやかまくら</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">朝びきの新鮮な伊勢どりを使う鶏料理専門の居酒屋。鮮度が命のささみ刺しやレバ刺し、鶏ユッケといった生系メニューを揃えられるのが強みで、一本ずつ手打ちする串焼きは特選7種盛りが定番人気。自家製つくねや国産鶏の唐揚げなど火物も充実し、松阪牛ステーキで三重名物も押さえられる。梅酒を常時20種類以上揃えるユニークな酒揃えも特徴で、津駅近くで「鶏で飲む」ならまず名前が挙がる一軒。</div>
+<div class="sig"><b>一皿:</b>鶏刺し盛り・串焼き7種盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>三重県津市栄町２丁目４７３ メイセンカクビルⅡ １F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592465540">☎ 059-246-5540</a> ／ <a href="https://www.aburiya-kamakura.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津駅エリアの鶏料理居酒屋の定番。ホットペッパーで2026年9〜11月のネット予約を受付中であり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%99%E3%82%8A%E5%B1%8B%E3%82%AB%E3%83%9E%E3%82%AF%E3%83%A9%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%97%EF%BC%93%20%E3%83%A1%E3%82%A4%E3%82%BB%E3%83%B3%E3%82%AB%E3%82%AF%E3%83%93%E3%83%AB%E2%85%A1%20%EF%BC%91F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ003648016/">ホットペッパーグルメ</a> / <a href="https://kencellara.com/entry/aburiya_kamakura">ケンチェ飯</a></div>
+</div></div>
+<div class="card" id="c-iza_shizuku">
+<img class="hero" src="img/tsu/iza_shizuku.jpg" alt="御料理 雫 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>御料理 雫<span class="yomi">おりょうり しずく</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">津駅から徒歩3分、漁港直送の鮮魚と三重県産ブランド肉を軸にした創作和食の居酒屋。鮮魚の盛り合わせや松阪牛料理など三重の食材をきちんと使った料理を、半個室・完全個室の落ち着いた席で楽しめるのが持ち味。ソムリエがセレクトしたワインと地酒が揃い、接待や会食、少人数の宴会まで幅広く対応する。駅前ながら喧騒から切り離された和の空間で、津駅周辺で「ちゃんとした店」を探すときの答えになる一軒。</div>
+<div class="sig"><b>一皿:</b>漁港直送鮮魚と松阪牛の創作料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市羽所町３０８ MK BLDG ２F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592224900">☎ 059-222-4900</a> ／ <a href="https://oryouri-shizuku.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津駅前の個室和食居酒屋の定番。ホットペッパーで2026年9〜11月のネット予約を受付中であり営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E6%96%99%E7%90%86%20%E9%9B%AB%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E7%BE%BD%E6%89%80%E7%94%BA%EF%BC%93%EF%BC%90%EF%BC%98%20MK%20BLDG%20%EF%BC%92F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000420362/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-iza_zakkuri">
+<img class="hero" src="img/tsu/iza_zakkuri.jpg" alt="無器用男のざっくり居酒屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>無器用男のざっくり居酒屋<span class="yomi">ぶきようおとこのざっくりいざかや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip cheap">cheap</span></div>
+<div class="desc">チャージもお通し代も取らず、1,000円あればほろ酔いになれると評判の大衆酒場。名物のマグロ中落ち（400円）をはじめ、驚くほど良心的な価格の肴が並び、サービス精神旺盛な大将の人柄も含めて常連が絶えない。2025年1月には南丸之内から西丸之内へ移転し、バーを併設した新店舗にリニューアル。仕事帰りのサラリーマンでにぎわう、津新町の夜の入口のような存在で、はしご酒の一軒目に最適。</div>
+<div class="sig"><b>一皿:</b>マグロ中落ち400円</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市西丸之内９−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:09099232299">☎ 090-9923-2299</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津のせんべろ文化を代表する大衆酒場。2025年1月20日に西丸之内へ移転リニューアルオープンしており営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%A1%E5%99%A8%E7%94%A8%E7%94%B7%E3%81%AE%E3%81%96%E3%81%A3%E3%81%8F%E3%82%8A%E5%B1%85%E9%85%92%E5%B1%8B%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E8%A5%BF%E4%B8%B8%E4%B9%8B%E5%86%85%EF%BC%99%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://mienabi.com/tsu-zakkuri-izakaya-open/">みえなび（2025.1 移転オープン記事）</a> / <a href="https://kencellara.com/entry/clumsy-izakaya">ケンチェ飯</a></div>
+</div></div>
+<div class="card" id="c-iza_awayokuba">
+<img class="hero" src="img/tsu/iza_awayokuba.jpg" alt="大衆酒場あわよくば 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>大衆酒場あわよくば<span class="yomi">たいしゅうさかば あわよくば</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip cheap">cheap</span></div>
+<div class="desc">国道23号沿い、三重大学正門から徒歩1分という立地で、学生から地元の社会人まで幅広く愛される餃子酒場。分厚い皮を噛むと肉汁があふれる名物の肉汁餃子と、SNS映えする濃厚チーズ餃子が二枚看板で、ナッツドレッシングのあわよくばサラダなど脇役も抜かりない。人気カフェのオーナーがプロデュースした店らしく大衆酒場ながら垢抜けた雰囲気で、飲み放題コースも90分1,300円からと財布にやさしい。深夜2時まで営業。</div>
+<div class="sig"><b>一皿:</b>肉汁餃子</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>三重県津市栗真町屋町４８７−１１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592531744">☎ 059-253-1744</a> ／ <a href="https://awayokuba.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>餃子をフックに若者から支持を広げる人気酒場。2025年8月公開の実食レポート記事で営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%E3%81%82%E3%82%8F%E3%82%88%E3%81%8F%E3%81%B0%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E6%A0%97%E7%9C%9F%E7%94%BA%E5%B1%8B%E7%94%BA%EF%BC%94%EF%BC%98%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kencellara.com/entry/awayokuba">ケンチェ飯（2025.8.23）</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-nakatsuken">
+<img class="hero" src="img/tsu/nakatsuken.jpg" alt="レストラン中津軒 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>レストラン中津軒<span class="yomi">れすとらんなかつけん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip 老舗">老舗</span></div>
+<div class="desc">明治44年（1911年）創業、100年以上デミグラスソースの味を守り続ける津の老舗洋食店。基本に忠実に仕込むデミグラスソースを使った名物「メアベア」（カツレツにデミグラスをかけた同店の代名詞）やハヤシライス、オムライスなど、クラシックな洋食が揃う。冬季は的矢産牡蠣を使った季節メニューも登場。地元の家族連れのハレの日から日常使いまで幅広く愛される、東洋軒と並ぶ津の洋食二大老舗のひとつ。</div>
+<div class="sig"><b>一皿:</b>メアベア（デミグラスソースのカツレツ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜14:30, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市中央５−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592282748">☎ 059-228-2748</a> ／ <a href="https://nakatsuken.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>明治創業の老舗で、公式サイトに2026年1月の洋風おせち受付や2025年11月のイベント（M-PAD 2025）告知が掲載されており、2025〜2026年の営業実態が明確に確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E4%B8%AD%E6%B4%A5%E8%BB%92%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%95%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nakatsuken.jp/">レストラン中津軒 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-cattleya_misokatsu">
+<img class="hero" src="img/tsu/cattleya_misokatsu.jpg" alt="カインドコックの家 カトレア 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>カインドコックの家 カトレア<span class="yomi">かいんどこっくのいえ かとれあ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip 老舗">老舗</span><span class="chip 発祥">発祥</span></div>
+<div class="desc">昭和40年（1965年）創業。名古屋名物と思われがちな味噌カツの発祥店といわれる洋食店で、初代・谷シェフが「庶民にもとっつきやすい洋食を」と考案した味噌カツが名物。サクッと揚がった衣のやわらかな豚カツに、八丁味噌ベースのやや甘めのソースがたっぷりかかる。昔ながらの洋食屋の雰囲気が残る店内で、高齢の店主が今も厨房に立ち続けており、津の食文化史を体感できる貴重な一軒。支払いは現金のみ。</div>
+<div class="sig"><b>一皿:</b>味噌カツ（Aセット）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・土・日 9:00〜21:00 ／ 木 9:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">金曜</td></tr>
+<tr><th>住所</th><td>三重県津市下弁財町津興３０５３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592265629">☎ 059-226-5629</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「味噌カツ発祥」という強い物語性を持つ津の名物洋食店。津市観光協会サイトに現行掲載され、2025年1月3日付の訪問ブログ記事でも営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%82%A4%E3%83%B3%E3%83%89%E3%82%B3%E3%83%83%E3%82%AF%E3%81%AE%E5%AE%B6%20%E3%82%AB%E3%83%88%E3%83%AC%E3%82%A2%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E4%B8%8B%E5%BC%81%E8%B2%A1%E7%94%BA%E6%B4%A5%E8%88%88%EF%BC%93%EF%BC%90%EF%BC%95%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsukanko.jp/spot/s455/">津市観光協会「津の時間。」</a> / <a href="https://jima-t.hatenablog.com/entry/2025/01/03/190000">訪問記事（2025年1月）</a> / <a href="https://kencellara.com/entry/katorea-tsu">紹介記事（kencellara）</a></div>
+</div></div>
+<div class="card" id="c-lansen">
+<img class="hero" src="img/tsu/lansen.jpg" alt="Lansen（ランセン） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>Lansen（ランセン）<span class="yomi">らんせん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">津市安濃町の田園地帯にある、家族4人で営む洋食レストラン。屋号に冠した1986年から続く店で、フレンチ仕込みのシェフが作る2日間煮込んだ「ビーフシチュー」（1日限定30食）が看板。ハンバーグやパスタなど親しみやすい洋食も揃い、あたたかい接客と郊外の一軒家ならではのゆったりした時間が魅力。土日祝のランチは予約枠制になるほどの人気で、遠方からわざわざ訪れるファンも多い。</div>
+<div class="sig"><b>一皿:</b>2日間煮込んだビーフシチュー（限定30食）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 11:00〜14:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>三重県津市安濃町曽根５７２−４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592680477">☎ 059-268-0477</a> ／ <a href="http://www.lansen1986.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>郊外ながら予約枠制を敷くほど支持される実力店。公式サイトが現行稼働しており、予約枠や臨時休業などの営業情報を随時更新していることから営業実態を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Lansen%EF%BC%88%E3%83%A9%E3%83%B3%E3%82%BB%E3%83%B3%EF%BC%89%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%AE%89%E6%BF%83%E7%94%BA%E6%9B%BD%E6%A0%B9%EF%BC%95%EF%BC%97%EF%BC%92%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.lansen1986.com/">Lansen 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-konkichiya">
+<img class="hero" src="img/tsu/konkichiya.jpg" alt="狐吉屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>狐吉屋<span class="yomi">こんきちや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip ユニーク">ユニーク</span></div>
+<div class="desc">津市八町、県立津高校の向かいにある山小屋風の洋食店。カウンター席が本物のブランコになっているユニークな造りで知られ、揺られながらハンバーグやクリームコロッケ、エビフライといった昔ながらの洋食を味わえる。家庭的で懐かしい味付けと遊び心ある空間が学生から年配客まで幅広く愛されてきた。夜営業が中心で、土日祝はランチも営業。全24席とこぢんまりしており、地元密着の隠れ家的存在。</div>
+<div class="sig"><b>一皿:</b>ハンバーグ・クリームコロッケ（ブランコ席で味わう洋食）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>三重県津市八町３丁目４−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592275035">☎ 059-227-5035</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ブランコ席という唯一無二の名物性を持つ地元の人気洋食店。食べログ・楽天ぐるなびに営業中として現行掲載され閉店表示がないことを確認（日付入りの2025年記事は未発見のため、訪問前の電話確認を推奨）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8B%90%E5%90%89%E5%B1%8B%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%85%AB%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://r.gnavi.co.jp/dwhtbnut0000/">楽天ぐるなび</a> / <a href="https://tabelog.com/mie/A2401/A240101/24001804/dtlmenu/photo/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-ristorante_prego">
+<img class="hero" src="img/tsu/ristorante_prego.jpg" alt="リストランテ プレーゴ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>リストランテ プレーゴ<span class="yomi">りすとらんて ぷれーご</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">1998年開業（Instagramの屋号にdal 1998と明記）の一軒家イタリアン。季節ごとに厳選した食材を使ったコース仕立ての料理と、高温の窯で焼き上げるピッツァが看板で、夏季の「桃の冷製パスタ」は毎年話題になる名物。自家製の生ハムやフォカッチャなど手仕事のアイテムも充実し、記念日利用から気軽なランチ、14時以降のカフェ利用まで幅広く対応。津のイタリアンの草分け的存在として四半世紀にわたり支持されている。</div>
+<div class="sig"><b>一皿:</b>窯焼きピッツァ・夏季限定の桃の冷製パスタ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>三重県津市寿町１８−２１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592132882">☎ 059-213-2882</a> ／ <a href="https://prego-jp.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津のイタリアンとして各グルメサイトで常に上位に挙がる実力店。AutoReserve・ホットペッパーで2026年現在ネット予約を受付中、公式Instagramも更新中で営業実態を確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AA%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%86%20%E3%83%97%E3%83%AC%E3%83%BC%E3%82%B4%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%AF%BF%E7%94%BA%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://prego-jp.com/">公式サイト</a> / <a href="https://www.hotpepper.jp/strJ003872730/">ホットペッパーグルメ（ネット予約可）</a> / <a href="https://www.instagram.com/ristorante_prego_dal1998/">公式Instagram</a></div>
+</div></div>
+<div class="card" id="c-albero">
+<img class="hero" src="img/tsu/albero.jpg" alt="アルベロ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>アルベロ<span class="yomi">あるべろ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">津新町通り沿いにある、木目調でアンティークな雰囲気のイタリア料理店。厳選イタリアワインと本格料理が身上で、赤ワインでじっくり煮込んだ自家製ミートソースの秋冬限定ラザニアや、チーズと黒胡椒だけで仕上げるカチョ・エ・ペペなど、素材を生かしたパスタに定評がある。駅近ながら落ち着いて食事ができ、ランチからワインを傾けるディナーまで使い勝手がよい。地元グルメメディアでも津のイタリアンの定番として紹介される。</div>
+<div class="sig"><b>一皿:</b>自家製ミートソースのラザニア（秋冬限定）・生パスタ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・土 18:00〜22:00 ／ 火・水・木 11:30〜14:00, 18:00〜22:00 ／ 金 11:30〜14:00, 18:00〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>三重県津市西丸之内９−２ カサキュウスクエアⅡ 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592298300">☎ 059-229-8300</a> ／ <a href="https://s.tabelog.com/mie/A2401/A240101/24016324/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津新町エリアの定番イタリアン。2024年11月の実食記事で営業を確認し、Yahoo!マップ・食べログ（ネット予約ページあり）に営業中として現行掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%AB%E3%83%99%E3%83%AD%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E8%A5%BF%E4%B8%B8%E4%B9%8B%E5%86%85%EF%BC%99%E2%88%92%EF%BC%92%20%E3%82%AB%E3%82%B5%E3%82%AD%E3%83%A5%E3%82%A6%E3%82%B9%E3%82%AF%E3%82%A8%E3%82%A2%E2%85%A1%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://o-ch.jp/mko/?p=39186">実食記事（2024年11月）</a> / <a href="https://map.yahoo.co.jp/v3/place/ar7jwiLjwT-">Yahoo!マップ</a> / <a href="https://tabelog.com/mie/A2401/A240101/24016324/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-pizzaya_westgate">
+<img class="hero" src="img/tsu/pizzaya_westgate.jpg" alt="ぴざ屋 WESTGATE 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>ぴざ屋 WESTGATE<span class="yomi">ぴざや うえすとげーと</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip 古民家">古民家</span></div>
+<div class="desc">三重大学近くの古民家をリノベーションした人気ピザ店。庭の緑を眺められる温かみのある空間で、薄生地カリカリのクリスピータイプのピザを豊富な種類で提供する。定番のマルゲリータのほか、生ハムと温泉卵のビスマルク、シェフの気まぐれピザ、クラムチャウダーやスイーツ、夏のかき氷まで揃い、昼の食事から夜カフェ的な使い方まで幅広い。学生や地元家族連れで常に賑わい、予約がすすめられるほどの人気。</div>
+<div class="sig"><b>一皿:</b>クリスピー生地のマルゲリータ・ビスマルク</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>三重県津市栗真町屋町１５５６−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:09056205179">☎ 090-5620-5179</a> ／ <a href="https://instagram.com/pizza_westgate?utm_medium=copy_link">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>古民家×クリスピーピザで津北部を代表する人気店。Yahoo!マップに2026年8月の口コミが複数投稿され、AutoReserveで公式予約を受付中と、直近の営業実態が明確。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B4%E3%81%96%E5%B1%8B%20WESTGATE%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E6%A0%97%E7%9C%9F%E7%94%BA%E5%B1%8B%E7%94%BA%EF%BC%91%EF%BC%95%EF%BC%95%EF%BC%96%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://autoreserve.com/ja/restaurants/EyiG4JNF9SogSF98vs8A">AutoReserve（公式予約）</a> / <a href="https://map.yahoo.co.jp/v3/place/8D86FLpQT2Q">Yahoo!マップ（2026年8月口コミ）</a></div>
+</div></div>
+<div class="card" id="c-chateau_la_palme_dor">
+<img class="hero" src="img/tsu/chateau_la_palme_dor.jpg" alt="シャトー ラ・パルム・ドール 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">43</span>シャトー ラ・パルム・ドール<span class="yomi">しゃとー ら・ぱるむ・どーる</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip 記念日">記念日</span></div>
+<div class="desc">「お城と森」をテーマにした城館風の建物で、ウエディングも手掛ける本格フレンチレストラン。フランスで修業を積んだ後藤雅司シェフが、三重の旬素材を生かした「新感覚のフレンチ」をコース仕立てで提供する。平日限定ハーフコースから記念日向けのガストロノミーコースまで幅が広く、デザートやパンのワゴンサービスも名物。年齢制限やドレスコードを設けたラグジュアリーな空間は、県内の特別な日の食事の定番として知られる。</div>
+<div class="sig"><b>一皿:</b>後藤シェフの季節のフルコース（デザート・パン食べ放題付きランチ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 10:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>三重県津市あのつ台５丁目２−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592365583">☎ 059-236-5583</a> ／ <a href="https://www.ch-la-palme-dor.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津の特別な日のフレンチとして知名度が高い一軒。公式サイト・ヒトサラで2026年現在WEB予約を受付中、公式Instagramも更新が続いており営業実態を確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%A3%E3%83%88%E3%83%BC%20%E3%83%A9%E3%83%BB%E3%83%91%E3%83%AB%E3%83%A0%E3%83%BB%E3%83%89%E3%83%BC%E3%83%AB%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E3%81%82%E3%81%AE%E3%81%A4%E5%8F%B0%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.palmedor.net/restaurant/">公式サイト（レストラン）</a> / <a href="https://hitosara.com/0006056804/">ヒトサラ（ネット予約可）</a> / <a href="https://www.instagram.com/palmedor.info/">公式Instagram</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・和菓子・パン</h2>
+<div class="card" id="c-heiji_senbei_honten">
+<img class="hero" src="img/tsu/heiji_senbei_honten.jpg" alt="平治煎餅本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>平治煎餅本店<span class="yomi">へいじせんべいほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip 老舗">老舗</span><span class="chip 土産">土産</span></div>
+<div class="desc">大正2年（1913年）創業、津を代表する銘菓「平治煎餅」の本店。阿漕浦に伝わる孝子・平治の物語に登場する「忘れ笠」をかたどった小さな笠形の煎餅は、卵の風味豊かな素朴な甘さで、子どもから年配まで愛され続ける津土産の定番。チョコを染み込ませたショコラや銀笠、生どら焼きなど新旧の菓子も揃う。大正7年から100年以上大門の地に店を構え、全国銘菓の加盟店としても知られる老舗。</div>
+<div class="sig"><b>一皿:</b>平治煎餅（笠形の焼き煎餅）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門２０−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592253212">☎ 059-225-3212</a> ／ <a href="http://www.heijisenbei.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津銘菓の代名詞ともいえる老舗。公式サイトに2026年のポケモンコラボ商品（三重県×ミジュマル版）発売や2026年の百貨店催事出展情報が掲載されており、営業実態が明確。蜂蜜まんじゅう系ではないため分担境界にも抵触しない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B9%B3%E6%B2%BB%E7%85%8E%E9%A4%85%E6%9C%AC%E5%BA%97%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://heijisenbei.com/">平治煎餅本店 公式サイト</a> / <a href="https://www.kankomie.or.jp/report/764">観光三重 取材レポート</a></div>
+</div></div>
+<div class="card" id="c-toraya_honke">
+<img class="hero" src="img/tsu/toraya_honke.jpg" alt="とらや本家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>とらや本家<span class="yomi">とらやほんけ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip 発祥">発祥</span></div>
+<div class="desc">大門商店街アーケードの南端に店を構える和菓子店で、「いちご大福発祥の店」を名乗る一軒として知られる。大粒いちごとあっさりした白餡、ふわふわの求肥を合わせたいちご大福（11月〜5月中旬の季節商品）が看板で、ぱいん大福や栗あずき大福、ばなな・巨峰など季節のフルーツ大福も展開。ゆとりある店内ではイートインも可能で、羊羹などの定番和菓子も揃う。大門の街歩きと合わせて楽しみたい地元密着の和菓子処。</div>
+<div class="sig"><b>一皿:</b>いちご大福（11月〜5月中旬）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>三重県津市大門５−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592284802">☎ 059-228-4802</a> ／ <a href="http://www.ztv.ne.jp/poheo/tsu/toraya.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「いちご大福発祥」の物語性を持つ大門の名物和菓子店。津市観光協会サイトに現行掲載されており、営業中として案内されている（季節商品のため訪問時期に注意）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%89%E3%82%84%E6%9C%AC%E5%AE%B6%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E9%96%80%EF%BC%95%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsukanko.jp/spot/s453/">津市観光協会「津の時間。」</a> / <a href="https://tabelog.com/mie/A2401/A240101/24000641/dtlmenu/photo/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-kayama_coffee">
+<img class="hero" src="img/tsu/kayama_coffee.jpg" alt="カヤマ珈琲 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>カヤマ珈琲<span class="yomi">かやまこーひー</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip モーニング">モーニング</span></div>
+<div class="desc">2023年11月、津市唯一の百貨店・松菱の4階にオープンした喫茶店。最大の特徴は「終日モーニング」で、営業時間中いつでもドリンク代のみでトースト・サラダ・ゆで卵のセットが付いてくる。どこかレトロな雰囲気の店内では、シチューやピラフ、パスタなどの洋食メニューや卵かけご飯も提供し、買い物途中の休憩から遅めの朝食まで幅広く使える。東海地方のモーニング文化を百貨店で気軽に体験できる一軒。</div>
+<div class="sig"><b>一皿:</b>終日モーニングセット（トースト・サラダ・ゆで卵付き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>三重県津市中央１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:07023180605">☎ 070-2318-0605</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「一日中モーニング」という東海らしい名物性があり、松菱百貨店の公式フロアガイド（現行）に営業時間・定休日付きで掲載されていることから2026年時点の営業を確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%A4%E3%83%9E%E7%8F%88%E7%90%B2%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsu-matsubishi.co.jp/floor/">松菱百貨店 フロアガイド</a> / <a href="https://tsu.goguynet.jp/2023/12/07/kayama-coffee/">号外NET 津市（開店記事）</a></div>
+</div></div>
+<div class="card" id="c-nemunoki_coffee">
+<img class="hero" src="img/tsu/nemunoki_coffee.jpg" alt="自家焙煎珈琲 合歓の木 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>自家焙煎珈琲 合歓の木<span class="yomi">じかばいせんこーひー ねむのき</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip 自家焙煎">自家焙煎</span><span class="chip モーニング">モーニング</span></div>
+<div class="desc">津駅近くの羽所町にある自家焙煎珈琲の専門店。直火式焙煎機で丁寧に焼き上げたストレート・ブレンドの豆販売と喫茶を兼ね、朝7時30分から夜まで通し営業する使い勝手のよさが魅力。モーニングやランチ、パスタ、トースト・サンドウィッチ、デザートまでメニューが揃い、通勤前の一杯から打ち合わせ、豆の買い出しまで日常に寄り添う。ポイントカードや豆の増量サービスデーなど、地元常連向けのサービスも根付いている。</div>
+<div class="sig"><b>一皿:</b>直火式自家焙煎の炭火ブレンドとモーニング</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 7:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">土・日曜</td></tr>
+<tr><th>住所</th><td>三重県津市羽所町３４６−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0592240110">☎ 059-224-0110</a> ／ <a href="http://nemunokicafe.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前エリアで朝から夜まで営業する自家焙煎喫茶として貴重な存在。公式サイトが現行で稼働しており、豆販売・喫茶の営業案内が継続掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%E7%8F%88%E7%90%B2%20%E5%90%88%E6%AD%93%E3%81%AE%E6%9C%A8%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E7%BE%BD%E6%89%80%E7%94%BA%EF%BC%93%EF%BC%94%EF%BC%96%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.nemunokicafe.jp/">合歓の木 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-suzumushi_coffee">
+<img class="hero" src="img/tsu/suzumushi_coffee.jpg" alt="珈琲焙煎すずむし 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>珈琲焙煎すずむし<span class="yomi">こーひーばいせんすずむし</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip 自家焙煎">自家焙煎</span></div>
+<div class="desc">2021年3月に鳥居町に開いたコーヒー豆の専門店。世界各地の産地から取り寄せた生豆を店内で焙煎し、浅煎りから深煎りまで常時10種類以上を揃える。豆・粉での販売が中心だが、淹れたてドリップコーヒーのテイクアウトもでき、散歩がてら立ち寄る地元ファンが多い。オンラインショップ（BASE）でも豆を販売しており、津のスペシャルティコーヒー文化を支える新世代のロースターとして定着しつつある。</div>
+<div class="sig"><b>一皿:</b>自家焙煎豆（浅煎り〜深煎り10種類以上）とテイクアウトドリップ</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 10:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>三重県津市鳥居町２６３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592532775">☎ 059-253-2775</a> ／ <a href="https://coffee42.base.shop/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津駅周辺の新世代ロースターの代表格。公式オンラインショップ（BASE）とInstagramが稼働中で、食べログ・Yahoo!マップにも営業中として現行掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E7%84%99%E7%85%8E%E3%81%99%E3%81%9A%E3%82%80%E3%81%97%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E9%B3%A5%E5%B1%85%E7%94%BA%EF%BC%92%EF%BC%96%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://coffee42.base.shop/about">公式オンラインショップ（BASE）</a> / <a href="https://tsu.goguynet.jp/2021/03/01/coffebaisen-suzumushi-open/">号外NET 津市（開店記事）</a> / <a href="https://tabelog.com/mie/A2401/A240101/24017903/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-nikki_coffee_space">
+<img class="hero" src="img/tsu/nikki_coffee_space.jpg" alt="NIKKI COFFEE SPACE 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>NIKKI COFFEE SPACE<span class="yomi">にっきこーひーすぺーす</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip スイーツ">スイーツ</span></div>
+<div class="desc">東京にも店舗を持つ津発のカステラブランド「デカルネロカステ」（焼き絵入りのキューブ型カステラで全国にファンを持つ）がプロデュースするカフェ。本店の隣に位置し、名物カステラや自家製餡の「NIKKIのぜんざい」、季節替わりのイートンメス（イギリス生まれのメレンゲとクリームのデザート）、スパイス香るキーマカレーや豚まんランチをスペシャルティコーヒーとともに楽しめる。ギャラリーのような洗練された空間で「食とアート」を体験できる津の注目スポット。</div>
+<div class="sig"><b>一皿:</b>デカルネロカステのカステラとスペシャルティコーヒー</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>三重県津市長岡町３０６０−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="https://www.instagram.com/nikki_coffee_space/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>津発の人気カステラブランドが手掛ける文化発信型カフェ。2025年8月22日付の詳細な紹介記事と2025年9月のX（旧Twitter）投稿で営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=NIKKI%20COFFEE%20SPACE%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E9%95%B7%E5%B2%A1%E7%94%BA%EF%BC%93%EF%BC%90%EF%BC%96%EF%BC%90%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kencellara.com/entry/%E6%B4%A5%E5%B8%82%E3%81%AE%E6%B3%A8%E7%9B%AE%E3%82%AB%E3%83%95%E3%82%A7%E3%80%8Cnikki-coffee-space%E3%80%8D%E3%81%B8%E3%80%82%E3%82%AB%E3%82%B9%E3%83%86%E3%83%A9x%E3%82%A2%E3%83%BC%E3%83%88">紹介記事（2025年8月）</a> / <a href="https://tabelog.com/en/mie/A2401/A240101/24019855/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-covopain">
+<img class="hero" src="img/tsu/covopain.jpg" alt="COVOPAIN（コーヴォペイン） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>COVOPAIN（コーヴォペイン）<span class="yomi">こーゔぉぺいん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip パン">パン</span><span class="chip 予約制">予約制</span></div>
+<div class="desc">住宅街の小さなパン工房ながら、オーダーメイドのパン予約が一時「1年以上先まで満杯」と話題になった超人気店。電話予約制でひとつひとつ丁寧に焼き上げるパンのほか、カヌレも評判で、イベント出店でも人気を集める。2024年5月からは週に一度、水曜限定で「cafe COVOPAIN」を開き、特選松阪牛のハンバーガーセットなどを提供。パン教室「しんこのパン教室」も主宰し、津のパン好きの憧れ的存在となっている。</div>
+<div class="sig"><b>一皿:</b>予約制のオーダーメイドパン・カヌレ・水曜限定cafeの松阪牛バーガー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 9:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水・土・日曜</td></tr>
+<tr><th>住所</th><td>三重県津市大谷町８９−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:09060829126">☎ 090-6082-9126</a> ／ <a href="http://www.covopain.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「予約1年待ち」という際立った人気を持つ津のパン工房。公式サイトに2026年2月・5月付の新商品情報が掲載されており、2026年の営業実態を確認できる（購入は予約制のため事前連絡必須）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=COVOPAIN%EF%BC%88%E3%82%B3%E3%83%BC%E3%83%B4%E3%82%A9%E3%83%9A%E3%82%A4%E3%83%B3%EF%BC%89%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B0%B7%E7%94%BA%EF%BC%98%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://covopain.com/">COVOPAIN 公式サイト</a> / <a href="https://tsu.goguynet.jp/2024/09/17/cafe-covopin/">号外NET 津市（cafe COVOPAIN記事）</a></div>
+</div></div>
+<div class="card" id="c-tsukawage_kyushoku_morning">
+<img class="hero" src="img/tsu/tsukawage_kyushoku_morning.jpg" alt="道の駅 津かわげ（給食モーニング） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">51</span>道の駅 津かわげ（給食モーニング）<span class="yomi">みちのえき つかわげ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip モーニング">モーニング</span><span class="chip ファミリー">ファミリー</span></div>
+<div class="desc">2016年開駅の道の駅にある名物モーニング。土日限定の「給食モーニング」（650円）は、津発祥の給食グルメ・津ぎょうざに、揚げパン、フルーツゼリー、瓶の牛乳まで付いた懐かしの給食再現プレートで、2025年6月には東海地方の朝の情報番組「ドデスカ!」でも紹介されて話題になった。館内には焼きたてパンコーナーやレストラン「津のものキッチン」、約1,000種類の特産品売り場もあり、朝のドライブがてら津の食文化をまとめて楽しめる。</div>
+<div class="sig"><b>一皿:</b>給食モーニング（津ぎょうざ・揚げパン・牛乳付き、土日限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 7:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>三重県津市河芸町三行２５５−４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0592442755">☎ 059-244-2755</a> ／ <a href="https://www.sinsan.co.jp/tsukawage/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「給食モーニング」という強い名物性を持ち、2025年6月25日付の地域メディア記事でテレビ紹介と提供継続が確認できる。喫茶店ではないが津のモーニング文化を代表する体験として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%81%93%E3%81%AE%E9%A7%85%20%E6%B4%A5%E3%81%8B%E3%82%8F%E3%81%92%EF%BC%88%E7%B5%A6%E9%A3%9F%E3%83%A2%E3%83%BC%E3%83%8B%E3%83%B3%E3%82%B0%EF%BC%89%20%E4%B8%89%E9%87%8D%E7%9C%8C%E6%B4%A5%E5%B8%82%E6%B2%B3%E8%8A%B8%E7%94%BA%E4%B8%89%E8%A1%8C%EF%BC%92%EF%BC%95%EF%BC%95%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tsu.goguynet.jp/2025/06/25/dodesuka-morning/">号外NET 津市（2025年6月記事）</a> / <a href="https://ja.wikipedia.org/wiki/%E9%81%93%E3%81%AE%E9%A7%85%E6%B4%A5%E3%81%8B%E3%82%8F%E3%81%92">Wikipedia 道の駅津かわげ</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年9月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
