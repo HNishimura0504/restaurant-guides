@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>草津美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / KUSATSU・滋賀県 🇯🇵</div>
+  <h1>草津美食ガイド</h1>
+  <div class="sub">東海道と中山道が交わる宿場町は、名物うばがもちが江戸から続く街道グルメの街。本陣が残る旧街道の風情、近江牛と湖国の幸、立命館大学BKCが育てた学生街の名店、草津駅前の活気ある酒場まで厳選47スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年9月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kusatsu/_map.png" alt="全域マップ">
+<a href="#c-ubagamochiya-honten" style="left:38.57%;top:63.03%;width:2.36%;height:2.3%;"></a>
+<a href="#c-omi-suehiro-honten" style="left:39.02%;top:63.59%;width:2.36%;height:2.3%;"></a>
+<a href="#c-dodoitsu" style="left:31.83%;top:62.08%;width:2.36%;height:2.3%;"></a>
+<a href="#c-shimozuki" style="left:33.48%;top:61.84%;width:2.36%;height:2.3%;"></a>
+<a href="#c-masuda" style="left:35.22%;top:60.72%;width:2.36%;height:2.3%;"></a>
+<a href="#c-musuhi" style="left:57.05%;top:29.63%;width:2.36%;height:2.3%;"></a>
+<a href="#c-jimi-kogetsu" style="left:33.92%;top:60.85%;width:2.36%;height:2.3%;"></a>
+<a href="#c-daiei-tansui" style="left:16.75%;top:50.5%;width:2.36%;height:2.3%;"></a>
+<a href="#c-nihonoumi" style="left:10.02%;top:9.57%;width:2.36%;height:2.3%;"></a>
+<a href="#c-oboro" style="left:34.57%;top:61.43%;width:2.36%;height:2.3%;"></a>
+<a href="#c-sushi-seiji" style="left:33.16%;top:62.45%;width:2.36%;height:2.3%;"></a>
+<a href="#c-akou" style="left:33.27%;top:56.73%;width:2.36%;height:2.3%;"></a>
+<a href="#c-renge" style="left:33.25%;top:62.12%;width:2.36%;height:2.3%;"></a>
+<a href="#c-nagomiyasu" style="left:34.01%;top:59.82%;width:2.36%;height:2.3%;"></a>
+<a href="#c-kinuito-adachi" style="left:35.2%;top:60.61%;width:2.36%;height:2.3%;"></a>
+<a href="#c-unamatsu" style="left:22.73%;top:86.71%;width:2.36%;height:2.3%;"></a>
+<a href="#c-shinise-sushisei" style="left:30.59%;top:66.05%;width:2.36%;height:2.3%;"></a>
+<a href="#c-kiyo-minamikusatsu" style="left:19.63%;top:84.27%;width:2.36%;height:2.3%;"></a>
+<a href="#c-yoshichi-minamikusatsu" style="left:20.88%;top:84.23%;width:2.36%;height:2.3%;"></a>
+<a href="#c-fuka-kusatsu" style="left:22.85%;top:55.76%;width:2.36%;height:2.3%;"></a>
+<a href="#c-tenkagomen-minamikusatsu" style="left:27.9%;top:74.28%;width:2.36%;height:2.3%;"></a>
+<a href="#c-nibojiro-minamikusatsu" style="left:22.27%;top:80.52%;width:2.36%;height:2.3%;"></a>
+<a href="#c-rinkai-udon-yabase" style="left:9.02%;top:73.88%;width:2.36%;height:2.3%;"></a>
+<a href="#c-rairaitei-yasu-honten" style="left:90.98%;top:17.52%;width:2.36%;height:2.3%;"></a>
+<a href="#c-matsukichi-kusatsu" style="left:32.28%;top:61.11%;width:2.36%;height:2.3%;"></a>
+<a href="#c-kibariya-kusatsu" style="left:22.25%;top:80.56%;width:2.36%;height:2.3%;"></a>
+<a href="#c-ameiro-kusatsu" style="left:35.6%;top:61.08%;width:2.36%;height:2.3%;"></a>
+<a href="#c-kenbunroku-kusatsu" style="left:32.39%;top:61.21%;width:2.36%;height:2.3%;"></a>
+<a href="#c-gokuraku-sakaba-kusatsu" style="left:33.22%;top:62.15%;width:2.36%;height:2.3%;"></a>
+<a href="#c-atori-kusatsu" style="left:33.81%;top:63.29%;width:2.36%;height:2.3%;"></a>
+<a href="#c-toriyama-stand-kusatsu" style="left:32.63%;top:61.2%;width:2.36%;height:2.3%;"></a>
+<a href="#c-mangekyo-kusatsu" style="left:30.65%;top:61.35%;width:2.36%;height:2.3%;"></a>
+<a href="#c-glicine" style="left:14.14%;top:75.45%;width:2.36%;height:2.3%;"></a>
+<a href="#c-shokudo-masuda" style="left:35.18%;top:60.78%;width:2.36%;height:2.3%;"></a>
+<a href="#c-sundays-bake-river-garden" style="left:30.89%;top:63.74%;width:2.36%;height:2.3%;"></a>
+<a href="#c-bistro-kinoshita" style="left:17.24%;top:30.58%;width:2.36%;height:2.3%;"></a>
+<a href="#c-ct-curry-kusatsu" style="left:20.54%;top:82.35%;width:2.36%;height:2.3%;"></a>
+<a href="#c-nadeshico" style="left:21.27%;top:79.03%;width:2.36%;height:2.3%;"></a>
+<a href="#c-apaiser" style="left:35.3%;top:90.44%;width:2.36%;height:2.3%;"></a>
+<a href="#c-senkien" style="left:20.0%;top:54.05%;width:2.36%;height:2.3%;"></a>
+<a href="#c-kissa-tricolore" style="left:30.73%;top:65.88%;width:2.36%;height:2.3%;"></a>
+<a href="#c-pain-du-marche" style="left:34.62%;top:89.55%;width:2.36%;height:2.3%;"></a>
+<a href="#c-another-table" style="left:39.05%;top:58.74%;width:2.36%;height:2.3%;"></a>
+<a href="#c-wa-cafe-oto" style="left:24.25%;top:89.12%;width:2.36%;height:2.3%;"></a>
+<a href="#c-wakamatsu" style="left:15.4%;top:50.98%;width:2.36%;height:2.3%;"></a>
+<a href="#c-cafe-in-the-knot" style="left:24.85%;top:47.93%;width:2.36%;height:2.3%;"></a>
+<a href="#c-moriyama-hariekan" style="left:62.51%;top:24.29%;width:2.36%;height:2.3%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（47店・番号はピンと同じ）</div>
+<div class="sec red">草津のご当地(うばがもち・近江牛・街道グルメ)</div>
+<div class="links">
+<a href="#c-ubagamochiya-honten"><span class="tn" style="background:#e34948;">1</span>東海道草津宿名物の姥が餅</a>
+<a href="#c-omi-suehiro-honten"><span class="tn" style="background:#e34948;">2</span>しゃぶしゃぶ元祖の系譜の近江牛</a>
+<a href="#c-dodoitsu"><span class="tn" style="background:#e34948;">3</span>全室個室の近江牛焼肉専門店</a>
+<a href="#c-shimozuki"><span class="tn" style="background:#e34948;">4</span>一頭買い近江牛を全席個室で</a>
+<a href="#c-masuda"><span class="tn" style="background:#e34948;">5</span>雌牛一頭買いの炭火近江牛</a>
+<a href="#c-musuhi"><span class="tn" style="background:#e34948;">6</span>古民家で味わう近江牛割烹</a>
+<a href="#c-jimi-kogetsu"><span class="tn" style="background:#e34948;">7</span>湖国の滋味を映す日本料理</a>
+<a href="#c-daiei-tansui"><span class="tn" style="background:#e34948;">8</span>淡水魚専門卸直営の炭火うなぎ</a>
+<a href="#c-nihonoumi"><span class="tn" style="background:#e34948;">9</span>琵琶湖博物館で湖の幸天丼</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮</div>
+<div class="links">
+<a href="#c-oboro"><span class="tn" style="background:#2a78d6;">10</span>草津駅前の実力派おまかせ鮨</a>
+<a href="#c-sushi-seiji"><span class="tn" style="background:#2a78d6;">11</span>鮨と炭火料理の大人の一軒</a>
+<a href="#c-akou"><span class="tn" style="background:#2a78d6;">12</span>会席も担う町の寿司割烹</a>
+<a href="#c-renge"><span class="tn" style="background:#2a78d6;">13</span>創業40年、寿司とふぐの老舗</a>
+<a href="#c-nagomiyasu"><span class="tn" style="background:#2a78d6;">14</span>地産地消の滋味あふれる和食</a>
+<a href="#c-kinuito-adachi"><span class="tn" style="background:#2a78d6;">15</span>揚げたてを供すカウンター天婦羅</a>
+<a href="#c-unamatsu"><span class="tn" style="background:#2a78d6;">16</span>昼だけ営業の実直な鰻重</a>
+<a href="#c-shinise-sushisei"><span class="tn" style="background:#2a78d6;">17</span>草津名物はこずしの老舗</a>
+</div>
+<div class="sec aqua">ラーメン・そば・うどん・町中華</div>
+<div class="links">
+<a href="#c-kiyo-minamikusatsu"><span class="tn" style="background:#1baf7a;">18</span>貝出汁醤油の行列実力店</a>
+<a href="#c-yoshichi-minamikusatsu"><span class="tn" style="background:#1baf7a;">19</span>国産豚骨100%の濃厚白湯</a>
+<a href="#c-fuka-kusatsu"><span class="tn" style="background:#1baf7a;">20</span>超濃厚とんこつの草津の顔</a>
+<a href="#c-tenkagomen-minamikusatsu"><span class="tn" style="background:#1baf7a;">21</span>近江塩鶏麺の滋賀ご当地麺</a>
+<a href="#c-nibojiro-minamikusatsu"><span class="tn" style="background:#1baf7a;">22</span>BKC学生が育てた煮干し二郎系</a>
+<a href="#c-rinkai-udon-yabase"><span class="tn" style="background:#1baf7a;">23</span>昼に完売する自家製うどん</a>
+<a href="#c-rairaitei-yasu-honten"><span class="tn" style="background:#1baf7a;">24</span>全国チェーン発祥の地の一杯</a>
+</div>
+<div class="sec beer">居酒屋・バー(草津駅前)</div>
+<div class="links">
+<a href="#c-matsukichi-kusatsu"><span class="tn" style="background:#0d366b;">25</span>滋賀地酒30種と名物魚串</a>
+<a href="#c-kibariya-kusatsu"><span class="tn" style="background:#0d366b;">26</span>近江鶏を炭火で味わう名店</a>
+<a href="#c-ameiro-kusatsu"><span class="tn" style="background:#0d366b;">27</span>15席の日本酒大衆酒場</a>
+<a href="#c-kenbunroku-kusatsu"><span class="tn" style="background:#0d366b;">28</span>毎日12時開店の昼飲み酒場</a>
+<a href="#c-gokuraku-sakaba-kusatsu"><span class="tn" style="background:#0d366b;">29</span>地酒と手作り餃子の駅前酒場</a>
+<a href="#c-atori-kusatsu"><span class="tn" style="background:#0d366b;">30</span>備長炭で炙る焼き鳥の実力店</a>
+<a href="#c-toriyama-stand-kusatsu"><span class="tn" style="background:#0d366b;">31</span>駅1分・昼飲みもできる串酒場</a>
+<a href="#c-mangekyo-kusatsu"><span class="tn" style="background:#0d366b;">32</span>海鮮と焼き鳥の老舗宴会場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-glicine"><span class="tn" style="background:#4a3aa7;">33</span>夫婦二人の予約制イタリアン</a>
+<a href="#c-shokudo-masuda"><span class="tn" style="background:#4a3aa7;">34</span>ミシュラン仕込みの炭火ビストロ</a>
+<a href="#c-sundays-bake-river-garden"><span class="tn" style="background:#4a3aa7;">35</span>公園の中の薪窯ピッツァ</a>
+<a href="#c-bistro-kinoshita"><span class="tn" style="background:#4a3aa7;">36</span>田園を望む本格フレンチ</a>
+<a href="#c-ct-curry-kusatsu"><span class="tn" style="background:#4a3aa7;">37</span>窯焼きチーズナンのスパイス専門店</a>
+<a href="#c-nadeshico"><span class="tn" style="background:#4a3aa7;">38</span>駅前2分のナポリ薪窯ピッツァ</a>
+<a href="#c-apaiser"><span class="tn" style="background:#4a3aa7;">39</span>フレンチ出身の和牛ハンバーグ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-senkien"><span class="tn" style="background:#eda100;">40</span>老舗茶舗の宇治抹茶スイーツ</a>
+<a href="#c-kissa-tricolore"><span class="tn" style="background:#eda100;">41</span>草津宿の昭和レトロ純喫茶</a>
+<a href="#c-pain-du-marche"><span class="tn" style="background:#eda100;">42</span>行列必至・滋賀屈指のパン屋</a>
+<a href="#c-another-table"><span class="tn" style="background:#eda100;">43</span>国産小麦と石窯の無添加パン</a>
+<a href="#c-wa-cafe-oto"><span class="tn" style="background:#eda100;">44</span>とろとろみたらしの創作和菓子</a>
+<a href="#c-wakamatsu"><span class="tn" style="background:#eda100;">45</span>季節の大福が名物の町の和菓子屋</a>
+<a href="#c-cafe-in-the-knot"><span class="tn" style="background:#eda100;">46</span>本と土山茶のライブラリーカフェ</a>
+<a href="#c-moriyama-hariekan"><span class="tn" style="background:#eda100;">47</span>庭園に囲まれたバームクーヘンの館</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(草津駅〜本陣・商店街)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kusatsu/_map2.png" alt="中心部拡大(草津駅〜本陣・商店街)">
+<a href="#c-ubagamochiya-honten" style="left:88.46%;top:31.82%;width:3.28%;height:2.96%;"></a>
+<a href="#c-omi-suehiro-honten" style="left:90.92%;top:34.67%;width:3.28%;height:2.96%;"></a>
+<a href="#c-dodoitsu" style="left:51.12%;top:26.93%;width:3.28%;height:2.96%;"></a>
+<a href="#c-shimozuki" style="left:60.24%;top:25.73%;width:3.28%;height:2.96%;"></a>
+<a href="#c-masuda" style="left:69.9%;top:19.97%;width:3.28%;height:2.96%;"></a>
+<a href="#c-jimi-kogetsu" style="left:62.67%;top:20.65%;width:3.28%;height:2.96%;"></a>
+<a href="#c-oboro" style="left:66.28%;top:23.6%;width:3.28%;height:2.96%;"></a>
+<a href="#c-sushi-seiji" style="left:58.45%;top:28.85%;width:3.28%;height:2.96%;"></a>
+<a href="#c-renge" style="left:58.99%;top:27.12%;width:3.28%;height:2.96%;"></a>
+<a href="#c-nagomiyasu" style="left:63.21%;top:15.37%;width:3.28%;height:2.96%;"></a>
+<a href="#c-kinuito-adachi" style="left:69.75%;top:19.4%;width:3.28%;height:2.96%;"></a>
+<a href="#c-shinise-sushisei" style="left:44.26%;top:47.27%;width:3.28%;height:2.96%;"></a>
+<a href="#c-tenkagomen-minamikusatsu" style="left:29.35%;top:89.43%;width:3.28%;height:2.96%;"></a>
+<a href="#c-matsukichi-kusatsu" style="left:53.58%;top:21.98%;width:3.28%;height:2.96%;"></a>
+<a href="#c-ameiro-kusatsu" style="left:71.99%;top:21.79%;width:3.28%;height:2.96%;"></a>
+<a href="#c-kenbunroku-kusatsu" style="left:54.18%;top:22.5%;width:3.28%;height:2.96%;"></a>
+<a href="#c-gokuraku-sakaba-kusatsu" style="left:58.79%;top:27.32%;width:3.28%;height:2.96%;"></a>
+<a href="#c-atori-kusatsu" style="left:62.05%;top:33.13%;width:3.28%;height:2.96%;"></a>
+<a href="#c-toriyama-stand-kusatsu" style="left:55.56%;top:22.45%;width:3.28%;height:2.96%;"></a>
+<a href="#c-mangekyo-kusatsu" style="left:44.55%;top:23.21%;width:3.28%;height:2.96%;"></a>
+<a href="#c-shokudo-masuda" style="left:69.65%;top:20.27%;width:3.28%;height:2.96%;"></a>
+<a href="#c-sundays-bake-river-garden" style="left:45.89%;top:35.46%;width:3.28%;height:2.96%;"></a>
+<a href="#c-kissa-tricolore" style="left:45.03%;top:46.4%;width:3.28%;height:2.96%;"></a>
+<a href="#c-another-table" style="left:91.12%;top:9.81%;width:3.28%;height:2.96%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（24店・番号はピンと同じ）</div>
+<div class="sec red">草津のご当地(うばがもち・近江牛・街道グルメ)</div>
+<div class="links">
+<a href="#c-ubagamochiya-honten"><span class="tn" style="background:#e34948;">1</span>東海道草津宿名物の姥が餅</a>
+<a href="#c-omi-suehiro-honten"><span class="tn" style="background:#e34948;">2</span>しゃぶしゃぶ元祖の系譜の近江牛</a>
+<a href="#c-dodoitsu"><span class="tn" style="background:#e34948;">3</span>全室個室の近江牛焼肉専門店</a>
+<a href="#c-shimozuki"><span class="tn" style="background:#e34948;">4</span>一頭買い近江牛を全席個室で</a>
+<a href="#c-masuda"><span class="tn" style="background:#e34948;">5</span>雌牛一頭買いの炭火近江牛</a>
+<a href="#c-jimi-kogetsu"><span class="tn" style="background:#e34948;">7</span>湖国の滋味を映す日本料理</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮</div>
+<div class="links">
+<a href="#c-oboro"><span class="tn" style="background:#2a78d6;">10</span>草津駅前の実力派おまかせ鮨</a>
+<a href="#c-sushi-seiji"><span class="tn" style="background:#2a78d6;">11</span>鮨と炭火料理の大人の一軒</a>
+<a href="#c-renge"><span class="tn" style="background:#2a78d6;">13</span>創業40年、寿司とふぐの老舗</a>
+<a href="#c-nagomiyasu"><span class="tn" style="background:#2a78d6;">14</span>地産地消の滋味あふれる和食</a>
+<a href="#c-kinuito-adachi"><span class="tn" style="background:#2a78d6;">15</span>揚げたてを供すカウンター天婦羅</a>
+<a href="#c-shinise-sushisei"><span class="tn" style="background:#2a78d6;">17</span>草津名物はこずしの老舗</a>
+</div>
+<div class="sec aqua">ラーメン・そば・うどん・町中華</div>
+<div class="links">
+<a href="#c-tenkagomen-minamikusatsu"><span class="tn" style="background:#1baf7a;">21</span>近江塩鶏麺の滋賀ご当地麺</a>
+</div>
+<div class="sec beer">居酒屋・バー(草津駅前)</div>
+<div class="links">
+<a href="#c-matsukichi-kusatsu"><span class="tn" style="background:#0d366b;">25</span>滋賀地酒30種と名物魚串</a>
+<a href="#c-ameiro-kusatsu"><span class="tn" style="background:#0d366b;">27</span>15席の日本酒大衆酒場</a>
+<a href="#c-kenbunroku-kusatsu"><span class="tn" style="background:#0d366b;">28</span>毎日12時開店の昼飲み酒場</a>
+<a href="#c-gokuraku-sakaba-kusatsu"><span class="tn" style="background:#0d366b;">29</span>地酒と手作り餃子の駅前酒場</a>
+<a href="#c-atori-kusatsu"><span class="tn" style="background:#0d366b;">30</span>備長炭で炙る焼き鳥の実力店</a>
+<a href="#c-toriyama-stand-kusatsu"><span class="tn" style="background:#0d366b;">31</span>駅1分・昼飲みもできる串酒場</a>
+<a href="#c-mangekyo-kusatsu"><span class="tn" style="background:#0d366b;">32</span>海鮮と焼き鳥の老舗宴会場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-shokudo-masuda"><span class="tn" style="background:#4a3aa7;">34</span>ミシュラン仕込みの炭火ビストロ</a>
+<a href="#c-sundays-bake-river-garden"><span class="tn" style="background:#4a3aa7;">35</span>公園の中の薪窯ピッツァ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-kissa-tricolore"><span class="tn" style="background:#eda100;">41</span>草津宿の昭和レトロ純喫茶</a>
+<a href="#c-another-table"><span class="tn" style="background:#eda100;">43</span>国産小麦と石窯の無添加パン</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>店はJR草津駅周辺と旧東海道の本陣かいわいに集まる。うばがもちは餡で包んだ小餅で、東海道の旅人が食べた草津名物(本店は矢倉)。草津宿本陣は現存最大級で街道散策の起点。近江牛・近江米・湖魚は滋賀共通の名物。立命館大学びわこ・くさつキャンパス周辺にはボリューム系の学生グルメが育つ。隣の栗東・守山にも名店が点在。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-kusatsu" class="c-red">草津のご当地(うばがもち・近江牛・街道グルメ)</h2>
+<div class="card" id="c-ubagamochiya-honten">
+<img class="hero" src="img/kusatsu/ubagamochiya-honten.jpg" alt="うばがもちや本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>うばがもちや本店<span class="yomi">うばがもちやほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">永禄年間の創業と伝わる草津の象徴的名物「うばがもち」の本店。こしあんで包んだ小さな餅の上に白餡と山芋煉切をのせた姿は乳母の乳房を模したもので、東海道と中山道が合流する草津宿の旅人に愛され、広重の浮世絵や東海道中膝栗毛にも登場する。本店にはイートインスペースがあり、うばがもち入りぜんざいなどをその場で味わえる。草津土産の筆頭であり、街道グルメの原点として外せない一軒。</div>
+<div class="sig"><b>一皿:</b>うばがもち</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 9:00〜19:00 ／ 土・日 8:30〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路２丁目１３−１９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775662580">☎ 077-566-2580</a> ／ <a href="http://www.ubagamochiya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>草津宿を代表する伝統銘菓の本店（和菓子だが担当指定の例外）。公式サイト（2025年閲覧）に店舗案内・営業時間が掲載され、通販も稼働中で営業継続を確認。草津市観光物産協会も現行スポットとして掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%B0%E3%81%8C%E3%82%82%E3%81%A1%E3%82%84%E6%9C%AC%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.ubagamochiya.jp/shop">うばがもちや公式 店舗案内</a> / <a href="https://kanko-kusatsu.com/spot/ubagamochihonten">草津市観光物産協会</a></div>
+</div></div>
+<div class="card" id="c-omi-suehiro-honten">
+<img class="hero" src="img/kusatsu/omi-suehiro-honten.jpg" alt="近江スエヒロ本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>近江スエヒロ本店<span class="yomi">おうみすえひろほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治43年に大阪・北新地で創業し「元祖しゃぶしゃぶ」として知られるスエヒロからのれん分けした老舗。秘伝の胡麻だれとともに元祖の味を草津で守り続け、近江牛と国産黒毛和牛のしゃぶしゃぶ・すき焼き・ステーキを落ち着いた店構えで供する。ランチのステーキ重や近江牛丼は地元でも評判で、贈答用の精肉やお食事券も扱う。接待から家族の記念日まで幅広く使える草津の近江牛の名門。</div>
+<div class="sig"><b>一皿:</b>近江牛しゃぶしゃぶ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜15:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路３丁目１−３９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775623651">☎ 077-562-3651</a> ／ <a href="http://ohmisuehiro.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>百年余の系譜を持つ近江牛料理の老舗。公式サイトに2026年9月2日付のお知らせが掲載されており2026年時点の営業を確認。旅色・草津市観光物産協会にも現行店として掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%BF%91%E6%B1%9F%E3%82%B9%E3%82%A8%E3%83%92%E3%83%AD%E6%9C%AC%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%93%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ohmisuehiro.jp/">近江スエヒロ本店 公式</a> / <a href="https://tabiiro.jp/gourmet/s/314534-kusatsu-ohmisuehiro-honten/">旅色（草津市グルメ）</a></div>
+</div></div>
+<div class="card" id="c-dodoitsu">
+<img class="hero" src="img/kusatsu/dodoitsu.jpg" alt="近江牛焼肉 百々一 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>近江牛焼肉 百々一<span class="yomi">おうみぎゅうやきにく どどいつ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">草津駅前で近江牛だけを扱う焼肉専門店。1室最大10名の完全個室（全館43席）で、上質な近江牛を塩・わさび・地元醤油といった薬味で肉本来の旨みを引き出して味わわせる流儀が特徴。希少部位の盛り合わせやコースが充実し、接待・記念日需要で予約が絶えない。駅近ながら喧噪を離れた造りで、草津で近江牛焼肉といえばまず名前が挙がる一軒。</div>
+<div class="sig"><b>一皿:</b>近江牛希少部位盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 11:30〜14:30, 17:00〜23:00 ／ 火・水・木・金 17:30〜23:00 ／ 土 11:30〜14:30, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目２−８ ドルチェビル</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775986855">☎ 077-598-6855</a> ／ <a href="https://www.dodoitsu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>近江牛が主看板の焼肉専門店として草津駅前で高評価。一休.comレストラン（2026年閲覧）で予約受付が稼働しており営業中を確認。食べログの草津市近江牛焼肉特集にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%BF%91%E6%B1%9F%E7%89%9B%E7%84%BC%E8%82%89%20%E7%99%BE%E3%80%85%E4%B8%80%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%98%20%E3%83%89%E3%83%AB%E3%83%81%E3%82%A7%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://restaurant.ikyu.com/117756/">一休.comレストラン</a> / <a href="https://tabelog.com/keywords/%E8%BF%91%E6%B1%9F%E7%89%9B/shiga/C25206/kwdLst/yakiniku/">食べログ 草津市近江牛焼肉</a></div>
+</div></div>
+<div class="card" id="c-shimozuki">
+<img class="hero" src="img/kusatsu/shimozuki.jpg" alt="近江牛 霜月 草津駅東口店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>近江牛 霜月 草津駅東口店<span class="yomi">おうみぎゅう しもつき くさつえきひがしぐちてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">良質な近江牛を一頭買いで仕入れ、部位ごとの目利きで提供する焼肉店。全席個室へのリニューアルを経て、プライベート感のある空間で特選近江牛の上ロースや上カルビ、希少部位までを楽しめる。一頭買いならではの価格バランスの良さも魅力で、家族利用から会食まで対応。草津駅東口の徒歩圏で近江牛をしっかり食べたいときの有力候補。</div>
+<div class="sig"><b>一皿:</b>特選近江牛 上ロース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１５−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054874897">☎ 050-5487-4897</a> ／ <a href="https://shimozuki-kusatsu.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>近江牛一頭買いが看板の専門店。公式ページ（gorp、2026年閲覧）に営業時間・メニューが掲載され予約導線も稼働中で営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%BF%91%E6%B1%9F%E7%89%9B%20%E9%9C%9C%E6%9C%88%20%E8%8D%89%E6%B4%A5%E9%A7%85%E6%9D%B1%E5%8F%A3%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shimozuki-kusatsu.gorp.jp/">近江牛 霜月 草津駅東口店 公式</a></div>
+</div></div>
+<div class="card" id="c-masuda">
+<img class="hero" src="img/kusatsu/masuda.jpg" alt="炭火焼肉 ます田 草津本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>炭火焼肉 ます田 草津本店<span class="yomi">すみびやきにく ますだ くさつほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">近江牛を一頭買いし、肉質が柔らかく脂がしつこくない雌牛のみを使うこだわりの炭火焼肉店。シャトーブリアンなどの希少部位から特上ネギ塩タンまで、一頭買いの特権を生かした多彩な部位を炭火で味わえる。劇場型カウンター、7〜10名の完全個室、最大23名のテーブル席を備え、デートから宴会まで対応。草津駅徒歩圏で質の高い近江牛を気軽に楽しめる人気店。</div>
+<div class="sig"><b>一皿:</b>近江牛シャトーブリアン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市渋川１丁目３−２４ ＬＡスクエア １Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775991161">☎ 077-599-1161</a> ／ <a href="https://diningexperience.jp/ja/restaurants/yakiniku-masuda/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>近江牛一頭買い（雌牛限定）が主看板の専門店。公式ページ（gorp）とホットペッパーグルメ（2026年閲覧）でネット予約が稼働しており営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E8%82%89%20%E3%81%BE%E3%81%99%E7%94%B0%20%E8%8D%89%E6%B4%A5%E6%9C%AC%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E6%B8%8B%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%94%20%EF%BC%AC%EF%BC%A1%E3%82%B9%E3%82%AF%E3%82%A8%E3%82%A2%20%EF%BC%91%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://keem301.gorp.jp/">炭火焼肉ます田 草津本店 公式</a> / <a href="https://www.hotpepper.jp/strJ003828390/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-musuhi">
+<img class="hero" src="img/kusatsu/musuhi.jpg" alt="近江牛割烹 むすひ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>近江牛割烹 むすひ<span class="yomi">おうみぎゅうかっぽう むすひ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">守山の古民家を改築した、カウンター10席と離れの完全個室のみの大人の隠れ家。近江牛を割烹仕立てのコースで供し、焼き物・揚げ物・炊き合わせなど和の技法で近江牛の多彩な表情を引き出す。前日までの完全予約制で、一皿ずつ目の前で仕上がる臨場感が魅力。草津から2駅の守山で、焼肉ともすき焼きとも違う近江牛の食べ方を提案する注目店。</div>
+<div class="sig"><b>一皿:</b>近江牛おまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県守山市守山１丁目４−２１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775963589">☎ 077-596-3589</a> ／ <a href="https://www.instagram.com/musuhi210/?hl=ja">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>近江牛が主看板の割烹として守山で高評価（隣接市補完枠）。一休.comレストラン・ホットペッパー・TableCheck（2026年閲覧）で予約受付が稼働しており営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%BF%91%E6%B1%9F%E7%89%9B%E5%89%B2%E7%83%B9%20%E3%82%80%E3%81%99%E3%81%B2%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%AE%88%E5%B1%B1%E5%B8%82%E5%AE%88%E5%B1%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://restaurant.ikyu.com/124901">一休.comレストラン</a> / <a href="https://www.hotpepper.jp/strJ004187559/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-jimi-kogetsu">
+<img class="hero" src="img/kusatsu/jimi-kogetsu.jpg" alt="滋味 康月 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>滋味 康月<span class="yomi">じみ こうげつ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">びわ湖や近江の野山の恵みに惚れ込んだ店主が営む、草津を代表する日本料理店。滋賀の野菜を中心に琵琶湖の湖魚や川魚、びわ湖産の天然うなぎなどを織り込んだコースを、無農薬コシヒカリをおくどさんで炊いたご飯とともに供する。地酒の品揃えも厚く、カウンターと座敷個室を備えた店内は接待にも向く。「滋味」の名の通り、湖国の食材の持ち味を静かに引き出す名店。</div>
+<div class="sig"><b>一皿:</b>湖魚と近江野菜の懐石コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 12:00〜15:00, 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１１−１４ B１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054884517">☎ 050-5488-4517</a> ／ <a href="https://kdh6401.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>湖国料理・湖魚が主題の草津随一の日本料理店。ヒトサラ・一休（2025〜2026年閲覧）でネット予約が稼働し、食べログ・ぐるなびにも現行店として掲載され営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%BB%8B%E5%91%B3%20%E5%BA%B7%E6%9C%88%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%94%20B%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031164282/">ヒトサラ</a> / <a href="https://restaurant.ikyu.com/116769">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-daiei-tansui">
+<img class="hero" src="img/kusatsu/daiei-tansui.jpg" alt="大英淡水 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>大英淡水<span class="yomi">だいえいたんすい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">うなぎ・鮎・スッポンなど淡水魚を全国へ卸す草津の専門業者の直営店。卸ならではの目利きで仕入れた鰻を注文後に捌いて炭火でじっくり焼き上げ、香ばしい地焼きの鰻丼・鰻重を手頃な価格で味わえる。琵琶湖のほとりの淡水魚文化を今に伝える存在で、地元客が通い詰める飾らない店構えも魅力。持ち帰りの蒲焼や川魚も扱い、湖国の食文化を体感できる一軒。</div>
+<div class="sig"><b>一皿:</b>炭火焼き鰻丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市上笠４丁目１８−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775645515">☎ 077-564-5515</a> ／ <a href="http://www.daieitansui.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>淡水魚（湖魚・川魚）が主看板の卸直営店。公式サイト（2025年閲覧）に店舗情報が掲載され、食べログ・Retty・Yahoo!ロコ（2025年時点）でも営業中として掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%8B%B1%E6%B7%A1%E6%B0%B4%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E4%B8%8A%E7%AC%A0%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://daieitansui.com/">大英淡水 公式</a> / <a href="https://tabelog.com/shiga/A2502/A250201/25006747/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-nihonoumi">
+<img class="hero" src="img/kusatsu/nihonoumi.jpg" alt="ミュージアムレストラン にほのうみ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>ミュージアムレストラン にほのうみ<span class="yomi">にほのうみ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">琵琶湖岸の烏丸半島に建つ滋賀県立琵琶湖博物館内のレストラン。明治創業の草津の老舗仕出し・駅弁業者「南洋軒」が運営し、ビワマスなど湖魚の天ぷらをのせた「湖の幸の天丼」やびわ湖カレー、近江牛とじ丼など、湖魚・近江米・地元野菜づくしのメニューを気軽な価格で提供する。琵琶湖の固有種や外来魚を食で学べるユニークな存在で、博物館見学とあわせて湖国の食文化を一度に体験できる。</div>
+<div class="sig"><b>一皿:</b>湖の幸の天丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 11:00〜15:00 ／ 土・日 11:00〜16:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市下物町１０９１ 駐車場 ディスカバリールーム</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775684819">☎ 077-568-4819</a> ／ <a href="https://www.biwahaku.jp/guide/restaurant.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>琵琶湖の湖魚料理を看板とする草津市内の代表的スポット。運営元・南洋軒の公式サイトに2025年11月4日付のお知らせが掲載され営業継続を確認。琵琶湖博物館公式・草津市観光物産協会にも現行掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%AB%E3%81%BB%E3%81%AE%E3%81%86%E3%81%BF%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E4%B8%8B%E7%89%A9%E7%94%BA%EF%BC%91%EF%BC%90%EF%BC%99%EF%BC%91%20%E9%A7%90%E8%BB%8A%E5%A0%B4%20%E3%83%87%E3%82%A3%E3%82%B9%E3%82%AB%E3%83%90%E3%83%AA%E3%83%BC%E3%83%AB%E3%83%BC%E3%83%A0">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.nanyouken.co.jp/nionoumi/">にほのうみ 公式（南洋軒）</a> / <a href="https://www.biwahaku.jp/guide/restaurant.html">滋賀県立琵琶湖博物館</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・海鮮</h2>
+<div class="card" id="c-oboro">
+<img class="hero" src="img/kusatsu/oboro.jpg" alt="朧 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">10</span>朧<span class="yomi">おぼろ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">草津駅近くに構える、県内外から客を呼ぶ実力派の鮨店。全国の市場から引く旬の魚介を丁寧な仕事で握りと造りに仕立て、おまかせを軸に日本酒との相性まで計算された構成で楽しませる。食べログの草津市寿司ランキングで上位に立つ評価の高さで、記念日や大切な会食での利用も多い。落ち着いたカウンターで職人の手元を眺めながら過ごす時間が魅力。</div>
+<div class="sig"><b>一皿:</b>旬魚介のおまかせ握り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・日 12:00〜14:30, 17:00〜22:00 ／ 金・土 12:00〜14:30, 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１３−１１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775670008">☎ 077-567-0008</a> ／ <a href="https://kbw5902.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ草津市寿司ランキング上位（3.61・2026年閲覧）の人気店。一休・PayPayグルメ・ホットペッパー（2025〜2026年）でネット予約が稼働しており営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%A7%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://restaurant.ikyu.com/123840">一休.comレストラン</a> / <a href="https://www.hotpepper.jp/strJ004025372/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-sushi-seiji">
+<img class="hero" src="img/kusatsu/sushi-seiji.jpg" alt="鮨 聖司 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>鮨 聖司<span class="yomi">すし せいじ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">草津駅東口エリアで鮨と炭火料理を掛け合わせたスタイルで人気を集める店。旬の魚介の握りに加え、炭火で焼き上げる魚や肉の一品が揃い、酒肴からおまかせまで流れよく楽しめる。食べログの草津市寿司ランキングで上位の評価を得ており、日曜は完全予約制というスタンスからも地元の固定客の厚さがうかがえる。しっぽりと鮨で飲みたい夜に向く一軒。</div>
+<div class="sig"><b>一皿:</b>おまかせ握りと炭火焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１５−３７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775161777">☎ 077-516-1777</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ草津市寿司ランキング上位（3.58・2026年閲覧）。公式ページ（gorp）とぐるなび・一休（2025〜2026年）で予約受付が稼働しており営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E8%81%96%E5%8F%B8%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%93%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sushiseiji.gorp.jp/">鮨 聖司 公式</a> / <a href="https://restaurant.ikyu.com/121169">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-akou">
+<img class="hero" src="img/kusatsu/akou.jpg" alt="寿司 割烹 あこう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>寿司 割烹 あこう<span class="yomi">すしかっぽう あこう</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">草津・西渋川で長く営む寿司割烹。握りや造りに加えて季節の会席料理、魚料理のアラカルト、持ち帰り寿司まで幅広く引き受け、家族の集まりや法事、宴会など地元の暮らしに寄り添ってきた。昼は前日までの予約制で丁寧な昼会席を供し、夜はカウンターで気軽に地魚と地酒を楽しめる。派手さはないが確かな仕事で信頼を積み重ねてきた、草津の日常使いの名店。</div>
+<div class="sig"><b>一皿:</b>季節の会席料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・木・金・土・日 12:00〜14:00, 17:00〜21:00 ／ 水 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市西渋川１丁目３−２５ サンライズ西田</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775618633">☎ 077-561-8633</a> ／ <a href="http://akou932.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ草津市寿司ランキング上位（3.52・2026年閲覧）の地元密着店。公式サイト（akou932.com・2025年閲覧）とホットペッパーで営業情報・予約導線が稼働しており営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E5%8F%B8%20%E5%89%B2%E7%83%B9%20%E3%81%82%E3%81%93%E3%81%86%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E8%A5%BF%E6%B8%8B%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%95%20%E3%82%B5%E3%83%B3%E3%83%A9%E3%82%A4%E3%82%BA%E8%A5%BF%E7%94%B0">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://akou932.com/">寿司割烹あこう 公式</a> / <a href="https://www.hotpepper.jp/strJ000435594/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-renge">
+<img class="hero" src="img/kusatsu/renge.jpg" alt="寿司・ふぐ 紫雲英 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>寿司・ふぐ 紫雲英<span class="yomi">すし・ふぐ れんげ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1984年創業、草津駅東口至近で40年余り続く寿司とふぐ料理の店。新鮮なネタの握りと、てっさ・てっちりから唐揚げまで揃うふぐコースが看板で、冬場はふぐ、通年は寿司会席と、季節で楽しみが変わる。カウンター12席に加え全室個室仕立ての座敷を備えた総席数70席の構えで、宴会や接待、慶事法要まで幅広く対応。駅前で本格ふぐを味わえる貴重な存在。</div>
+<div class="sig"><b>一皿:</b>ふぐコース（てっさ・てっちり）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１５−４０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775622326">☎ 077-562-2326</a> ／ <a href="https://rengesushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1984年創業の老舗（ヒトサラ掲載）。公式サイト（rengesushi.com）とホットペッパー・一休（2025〜2026年閲覧）でネット予約が稼働しており営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E5%8F%B8%E3%83%BB%E3%81%B5%E3%81%90%20%E7%B4%AB%E9%9B%B2%E8%8B%B1%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%94%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://rengesushi.com/">寿司・ふぐ 紫雲英 公式</a> / <a href="https://www.hotpepper.jp/strJ001269332/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-nagomiyasu">
+<img class="hero" src="img/kusatsu/nagomiyasu.jpg" alt="なごみ康 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>なごみ康<span class="yomi">なごみやす</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">草津駅近くの渋川で、地産地消にこだわった滋味深い和食を出す日本料理店。近江の野菜や旬魚を使った肴が丁寧で、一品料理からコースまで日本酒とともにゆっくり楽しめる。食べログの草津市ランキングでは寿司・和食部門の最上位級（3.67）に評価される実力で、カウンター中心の落ち着いた空間は大人の晩酌にちょうどよい。予約して訪れたい草津の夜の本命格。</div>
+<div class="sig"><b>一皿:</b>近江食材の旬の肴とコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市渋川１丁目５−１９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054881324">☎ 050-5488-1324</a> ／ <a href="https://kdh6400.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ草津市ランキング最上位級（3.67・2026年閲覧）。公式ページ（gorp）・ぐるなび・ヒトサラ（2025〜2026年）で営業情報と予約導線が稼働しており営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%81%94%E3%81%BF%E5%BA%B7%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E6%B8%8B%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kdh6400.gorp.jp/">なごみ康 公式</a> / <a href="https://hitosara.com/0031249322/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-kinuito-adachi">
+<img class="hero" src="img/kusatsu/kinuito-adachi.jpg" alt="天婦羅割烹 絹糸 足立 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>天婦羅割烹 絹糸 足立<span class="yomi">てんぷらかっぽう きぬいと あだち</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">日本料理歴40年超の店主が営む、全12席の隠れ家的カウンター天婦羅割烹。滋賀の湖の幸や地野菜、近江牛、旬の魚を目の前で一品ずつ揚げたてで供し、コースからアラカルトまで対応する。琵琶湖の食材を天婦羅で味わえるのが草津らしく、前日までの事前予約制という丁寧な営業姿勢も信頼の証。駅近ながら静かで、少人数の会食や記念日にふさわしい一軒。</div>
+<div class="sig"><b>一皿:</b>湖の幸と近江野菜の天婦羅コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜14:30, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市渋川１丁目３−２５ LAスクエア2 号館１F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:09032742868">☎ 090-3274-2868</a> ／ <a href="https://kinuito-adachi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>草津駅前で希少な天ぷら専門の割烹。公式サイト（kinuito-adachi.com・2025年閲覧）に営業時間・予約案内が掲載され、Retty等にも現行店として掲載され営業中を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E5%A9%A6%E7%BE%85%E5%89%B2%E7%83%B9%20%E7%B5%B9%E7%B3%B8%20%E8%B6%B3%E7%AB%8B%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E6%B8%8B%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%95%20LA%E3%82%B9%E3%82%AF%E3%82%A8%E3%82%A22%20%E5%8F%B7%E9%A4%A8%EF%BC%91F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kinuito-adachi.com/">天婦羅割烹 絹糸 足立 公式</a></div>
+</div></div>
+<div class="card" id="c-unamatsu">
+<img class="hero" src="img/kusatsu/unamatsu.jpg" alt="名代 近江鰻処 うな松 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>名代 近江鰻処 うな松<span class="yomi">なだい おうみうなぎどころ うなまつ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">南草津・野路で昼のみ営業する鰻専門店。こだわりのタレと米、出汁で仕立てる鰻重とひつまぶしが看板で、1日限定6食の鰻を一本まるまる使った「至志の一品」を目当てに開店前から並ぶ客も多い。テイクアウトにも対応し、価格は2,000円台からと良心的。営業時間を昼に絞って焼きに集中する実直な姿勢が支持される、南草津エリアの鰻の本命。</div>
+<div class="sig"><b>一皿:</b>鰻一本重「至志の一品」（1日6食限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路８丁目２２−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775164013">☎ 077-516-4013</a> ／ <a href="https://unamatsu.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>南草津で評判の鰻専門店。公式サイト（unamatsu.jp・2025年閲覧）に営業時間・メニューが掲載され営業中を確認。ヒトサラ等の現行掲載でも裏付け。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E4%BB%A3%20%E8%BF%91%E6%B1%9F%E9%B0%BB%E5%87%A6%20%E3%81%86%E3%81%AA%E6%9D%BE%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%92%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://unamatsu.jp/">近江鰻処うな松 公式</a></div>
+</div></div>
+<div class="card" id="c-shinise-sushisei">
+<img class="hero" src="img/kusatsu/shinise-sushisei.jpg" alt="老舗・寿司清 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>老舗・寿司清<span class="yomi">しにせ・すしせい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">旧東海道草津宿の街道筋・草津2丁目で創業80年以上続く寿司の老舗。木枠で押した草津名物「はこずし」は1人前10切1,000円からで、創業以来守り続けた甘めの酢飯とネタの調和が郷愁を誘う。握り寿司や仕出しも手掛け、法事や祝い事など地元の節目を支えてきた。宿場町の食文化を今に伝える貴重な存在であり、東海道歩きの昼食にも好適。</div>
+<div class="sig"><b>一皿:</b>はこずし</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市草津２丁目１０−２４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775620378">☎ 077-562-0378</a> ／ <a href="https://www.shinise-sushisei.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業80年以上の老舗で草津名物はこずしの継承店。公式サイトに2026年1月・4月・7月付の営業案内が掲載されており2026年の営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%80%81%E8%88%97%E3%83%BB%E5%AF%BF%E5%8F%B8%E6%B8%85%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E8%8D%89%E6%B4%A5%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shinise-sushisei.jp/">老舗・寿司清 公式</a> / <a href="https://www.hotpepper.jp/strJ000435605/">ホットペッパーグルメ</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・そば・うどん・町中華</h2>
+<div class="card" id="c-kiyo-minamikusatsu">
+<img class="hero" src="img/kusatsu/kiyo-minamikusatsu.jpg" alt="麺屋聖〜kiyo〜 南草津店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>麺屋聖〜kiyo〜 南草津店<span class="yomi">めんやきよ みなみくさつてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">京都の名店「麺屋優光」グループが手がける滋賀2号店。貝出汁を合わせた澄んだ醤油スープの「淡竹（HACHIKU)」を看板に、竹筒に入った低温調理チャーシューなど見た目も美しい一杯で、学生街・南草津にありながら遠方からも客を集める。年中無休で昼夜通し営業に近い使い勝手の良さも魅力。</div>
+<div class="sig"><b>一皿:</b>淡竹（貝出汁醤油らーめん）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:00〜14:45, 17:00〜21:45</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路４丁目６−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775147815">☎ 077-514-7815</a> ／ <a href="https://www.instagram.com/menya.kiyo.minamikusatsu/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイト（麺屋優光グループ）に南草津店のページがあり、無休・営業時間の現行案内を確認（2026年9月閲覧）。ラーメン専門メディアや南草津ラーメン特集（クックピット2025）でも上位掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%E8%81%96%E3%80%9Ckiyo%E3%80%9C%20%E5%8D%97%E8%8D%89%E6%B4%A5%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://yukou-kiyo.com/kiyo-minamikusatsu.html">麺屋優光グループ公式・南草津店</a></div>
+</div></div>
+<div class="card" id="c-yoshichi-minamikusatsu">
+<img class="hero" src="img/kusatsu/yoshichi-minamikusatsu.jpg" alt="らーめん与七 南草津店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>らーめん与七 南草津店<span class="yomi">らーめんよしち みなみくさつてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">大津・堅田と南草津に店を構える滋賀ローカルの豚骨専門店。国産豚の骨と水だけを長時間炊いたコラーゲンたっぷりの白濁スープが身上で、替え玉スタイルで学生から家族連れまで幅広く支持される。深夜23時まで通し営業しており、立命館BKCの学生の「締めの一杯」としても定番。</div>
+<div class="sig"><b>一皿:</b>とんこつらーめん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:50, 18:00〜22:50</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路４丁目２−７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775674711">☎ 077-567-4711</a> ／ <a href="https://yoshichi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに2025年2月の価格改定・2025年3月の堅田店リニューアルなど新着情報が掲載され、営業継続を確認（2026年9月閲覧）。住所・営業時間も公式サイト記載に基づく。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E4%B8%8E%E4%B8%83%20%E5%8D%97%E8%8D%89%E6%B4%A5%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://yoshichi.jp/">らーめん与七 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-fuka-kusatsu">
+<img class="hero" src="img/kusatsu/fuka-kusatsu.jpg" alt="麺屋 風火 草津元店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>麺屋 風火 草津元店<span class="yomi">めんや ふうか くさつもとてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">草津駅からびわ湖方面へ延びる浜街道沿いに構える地元人気の豚骨ラーメン店。濃厚からあっさりまで炊き加減の異なる豚骨スープを選べるのが特徴で、超濃厚の「とことんこつ」はとんこつ好きを唸らせる看板メニュー。土日は通し営業で、部活帰りの学生や家族連れでにぎわう草津の定番店。</div>
+<div class="sig"><b>一皿:</b>とことんこつ（超濃厚豚骨）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜15:00, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野村４丁目２−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775617748">☎ 077-561-7748</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ヒトサラ・ホットペッパーの現行店舗ページで住所（野村4-2-3）・営業時間・月曜定休を確認（2026年9月閲覧）。おでかけmoa（滋賀の地域情報誌）の草津・南草津ラーメン特集にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E9%A2%A8%E7%81%AB%20%E8%8D%89%E6%B4%A5%E5%85%83%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E6%9D%91%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031076426/">ヒトサラ 麺屋風火 草津元店</a> / <a href="https://www.hotpepper.jp/strJ000635602/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-tenkagomen-minamikusatsu">
+<img class="hero" src="img/kusatsu/tenkagomen-minamikusatsu.jpg" alt="天下ご麺 南草津店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>天下ご麺 南草津店<span class="yomi">てんかごめん みなみくさつてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大津発の滋賀ローカル麺処が国道1号沿いに構える南草津店。鶏の旨みを澄んだ塩スープに閉じ込めた「近江塩鶏麺」はご当地ラーメンとして知られ、口コミ評価4点超の看板メニュー。鶏白湯の「鶏の白雪麺」など鶏系の引き出しが多彩で、車利用の家族連れにも学生にも使いやすい一軒。</div>
+<div class="sig"><b>一皿:</b>近江塩鶏麺</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜1:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市東矢倉１丁目５−３０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775665135">☎ 077-566-5135</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Yahoo!マップの現行店舗ページで「営業中」表示と住所・メニュー（近江塩鶏麺900円）を確認（2026年9月閲覧）。じゃらん口コミ・食べログにも掲載継続。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E4%B8%8B%E3%81%94%E9%BA%BA%20%E5%8D%97%E8%8D%89%E6%B4%A5%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E6%9D%B1%E7%9F%A2%E5%80%89%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%93%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://map.yahoo.co.jp/v3/place/k0D0kMgDULI">Yahoo!マップ 天下ご麺 南草津店</a> / <a href="https://tabelog.com/shiga/A2502/A250201/25006018/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-nibojiro-minamikusatsu">
+<img class="hero" src="img/kusatsu/nibojiro-minamikusatsu.jpg" alt="幻の中華そば加藤屋 にぼ次朗 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>幻の中華そば加藤屋 にぼ次朗<span class="yomi">まぼろしのちゅうかそばかとうや にぼじろう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">滋賀の人気ラーメングループ「加藤屋」が2009年に開いた煮干し×豚骨の二郎インスパイア店。麺量を「一朗」（100g）から「五朗」（500g）まで同価格帯で選べる仕組みと山盛り野菜で、立命館BKCの学生に鍛えられた滋賀屈指のボリューム系行列店。深夜0時まで営業し、夜遅くでも学生の列が絶えない。</div>
+<div class="sig"><b>一皿:</b>にぼ次朗（麺量五朗まで選択可）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路１丁目１２−２３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775620730">☎ 077-562-0730</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ヒトサラ・ホットペッパー・食べログの現行ページで住所・営業時間（水曜定休）を確認（2026年9月閲覧）。2009年開業以来の南草津の名物店として滋賀ローカルメディア（しがまにあ等）掲載多数。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B9%BB%E3%81%AE%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E5%8A%A0%E8%97%A4%E5%B1%8B%20%E3%81%AB%E3%81%BC%E6%AC%A1%E6%9C%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031084867/">ヒトサラ 幻の中華そば加藤屋にぼ次朗</a> / <a href="https://tabelog.com/shiga/A2502/A250201/25003976/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-rinkai-udon-yabase">
+<img class="hero" src="img/kusatsu/rinkai-udon-yabase.jpg" alt="うどんと天ぷらのりんかい 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>うどんと天ぷらのりんかい<span class="yomi">うどんとてんぷらのりんかい</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">南草津の住宅街で行列を生む自家製うどんと天ぷらの専門店。店主こだわりの自家製麺と深みのある出汁に、体に優しい米油100%で揚げる揚げたて天ぷらを合わせるのが流儀。昼にうどんが完売すると夜営業が休みになるほどの人気で、売切れ情報は公式Instagramで発信される。</div>
+<div class="sig"><b>一皿:</b>天ぷらうどん（自家製麺×揚げたて天ぷら）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・金 11:00〜14:30, 18:00〜21:00 ／ 火・木 11:00〜14:30 ／ 土・日 11:00〜15:00, 18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市矢橋町97−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775097969">☎ 077-509-7969</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで住所・営業時間・定休日（第1・3火曜と水曜）と「完売時は夜営業なし・Instagramで告知」の現行運用を確認（2026年9月閲覧）。ぐるなび・ヒトサラ等の草津うどん特集にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E3%81%A8%E5%A4%A9%E3%81%B7%E3%82%89%E3%81%AE%E3%82%8A%E3%82%93%E3%81%8B%E3%81%84%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E7%9F%A2%E6%A9%8B%E7%94%BA97%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://rinkai-udon-tenpura.jp/">うどんと天ぷらのりんかい 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-rairaitei-yasu-honten">
+<img class="hero" src="img/kusatsu/rairaitei-yasu-honten.jpg" alt="来来亭 野洲本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>来来亭 野洲本店<span class="yomi">らいらいてい やすほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">全国250店超を展開する「来来亭」が1997年に産声を上げた発祥の本店。鶏ガラ醤油に背脂を浮かべた京都風スープと細麺、麺のかたさや背脂の量を細かく注文できるスタイルはここから全国へ広がった。滋賀県民のソウルフードの原点として、深夜まで地元客と巡礼のラーメンファンが絶えない。</div>
+<div class="sig"><b>一皿:</b>ラーメン（背脂鶏ガラ醤油）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・日 11:00〜23:30 ／ 金・土 11:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県野洲市小篠原７６３−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775875556">☎ 077-587-5556</a> ／ <a href="http://www.rairaitei.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>来来亭公式サイト会社概要で1997年野洲1号店創業・本社滋賀県野洲市を確認。公式店舗検索・Yahoo!マップで野洲本店の現行営業（深夜まで）を確認（2026年9月閲覧）。地元発祥チェーンの本店として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%A5%E6%9D%A5%E4%BA%AD%20%E9%87%8E%E6%B4%B2%E6%9C%AC%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E9%87%8E%E6%B4%B2%E5%B8%82%E5%B0%8F%E7%AF%A0%E5%8E%9F%EF%BC%97%EF%BC%96%EF%BC%93%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.rairaitei.co.jp/company/">来来亭 公式サイト（会社概要）</a> / <a href="https://map.yahoo.co.jp/v3/place/TjfmJ0LVrr-">Yahoo!マップ 来来亭 野洲本店</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・バー(草津駅前)</h2>
+<div class="card" id="c-matsukichi-kusatsu">
+<img class="hero" src="img/kusatsu/matsukichi-kusatsu.jpg" alt="日本酒と魚串 松吉 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>日本酒と魚串 松吉<span class="yomi">にほんしゅとうおぐし まつきち</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">草津駅前で20年近く続く滋賀地酒の名酒場。松の司をはじめ滋賀全域の地酒を常時30種類以上揃え、毎朝市場から仕入れる鮮魚の造りと、一本150円からの焼串・天串「魚串」で合わせるのが松吉流。鮒ずしや赤こんにゃくなど湖国の肴も揃い、滋賀酒入門の一軒目として最適。</div>
+<div class="sig"><b>一皿:</b>魚串（焼串・天串）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１−１ Ｌｔｙ９３２ ２Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775077480">☎ 077-507-7480</a> ／ <a href="https://www.hotpepper.jp/strJ001152589/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで滋賀全域の地酒常時25〜30種・魚串名物・2024年6月の19周年創業祭を確認し、ホットペッパー現行ページでネット予約受付中（2026年9月閲覧）＝営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E9%85%92%E3%81%A8%E9%AD%9A%E4%B8%B2%20%E6%9D%BE%E5%90%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%20%EF%BC%AC%EF%BD%94%EF%BD%99%EF%BC%99%EF%BC%93%EF%BC%92%20%EF%BC%92%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://matsukichi-shiga.com/">松吉 公式サイト</a> / <a href="https://www.hotpepper.jp/strJ001152589/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-kibariya-kusatsu">
+<img class="hero" src="img/kusatsu/kibariya-kusatsu.jpg" alt="近江鶏料理 きばり屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>近江鶏料理 きばり屋<span class="yomi">おうみとりりょうり きばりや</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">滋賀が誇る近江鶏を焼き鳥や炭火焼で味わわせる鶏料理専門の居酒屋。食べログ3.5点と草津駅周辺の居酒屋で頭ひとつ抜けた評価を持ち、鶏の部位ごとの焼き分けと鶏すき・唐揚げなど一羽を使い切る構成が持ち味。34席の落ち着いた店内で、地元の大人が近江の地鶏と酒をゆっくり楽しむ。</div>
+<div class="sig"><b>一皿:</b>近江鶏の炭火焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路１丁目１２−２３ エスポワール 1FA号</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775188377">☎ 077-518-8377</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパー現行ページでネット予約受付中、住所・営業時間を確認（2026年9月閲覧）。食べログ草津駅周辺居酒屋で3.5点の最上位評価（2026年時点の一覧表示で確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%BF%91%E6%B1%9F%E9%B6%8F%E6%96%99%E7%90%86%20%E3%81%8D%E3%81%B0%E3%82%8A%E5%B1%8B%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%93%20%E3%82%A8%E3%82%B9%E3%83%9D%E3%83%AF%E3%83%BC%E3%83%AB%201FA%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ001264372/">ホットペッパーグルメ 近江鶏料理きばり屋</a> / <a href="https://kibariya.gorp.jp/">公式（ぐるっぽ）</a></div>
+</div></div>
+<div class="card" id="c-ameiro-kusatsu">
+<img class="hero" src="img/kusatsu/ameiro-kusatsu.jpg" alt="大衆酒場 アメヰロ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>大衆酒場 アメヰロ<span class="yomi">たいしゅうさかば あめいろ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">「美味い・安い・早い・楽しい」を掲げるカウンター15席の小さな大衆酒場。季節の鮮魚、氷締めの旬野菜、趣向を凝らした肉料理が日替わりで黒板に並び、全国から厳選した日本酒・地酒と合わせる。立ち飲みも座り飲みもできる気安さで、草津駅裏の飲み歩き文化を牽引する一軒。</div>
+<div class="sig"><b>一皿:</b>日替わり鮮魚のお造りと日本酒</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 18:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路２丁目１−４１ 太田ビル 1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:05054869196">☎ 050-5486-9196</a> ／ <a href="https://ameiro.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式（ぐるっぽ）現行ページで住所・営業時間17:30〜24:00・不定休、日本酒厳選の店舗紹介を確認（2026年9月閲覧）。InstagramとFacebookで休業日を随時告知する運用も記載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%20%E3%82%A2%E3%83%A1%E3%83%B0%E3%83%AD%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%94%EF%BC%91%20%E5%A4%AA%E7%94%B0%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ameiro.gorp.jp/">大衆酒場アメヰロ 公式（ぐるっぽ）</a></div>
+</div></div>
+<div class="card" id="c-kenbunroku-kusatsu">
+<img class="hero" src="img/kusatsu/kenbunroku-kusatsu.jpg" alt="草津酒場 見聞録 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>草津酒場 見聞録<span class="yomi">くさつさかば けんぶんろく</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">草津駅前エルティ932の地下で毎日12時から通しで飲める和食居酒屋。三重・紀伊長島港から直送される鮮魚をリーズナブルに出すのが看板で、昼飲み・せんべろ需要から宴会まで幅広く受け止める。年末年始以外ほぼ無休という営業体制で、草津駅前の「困ったらここ」的存在。</div>
+<div class="sig"><b>一皿:</b>紀伊長島港直送の刺身盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 12:00〜23:00 ／ 金・土 12:00〜0:00 ／ 日 12:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１−１ エルティ 932 B１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054853956">☎ 050-5485-3956</a> ／ <a href="https://kusatsu-kenbunroku.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式（ぐるっぽ）現行ページで毎日12時開店・年末年始のみ休みの営業体制と住所を確認（2026年9月閲覧）。ホットペッパー・食べログにも現行掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8D%89%E6%B4%A5%E9%85%92%E5%A0%B4%20%E8%A6%8B%E8%81%9E%E9%8C%B2%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%20%E3%82%A8%E3%83%AB%E3%83%86%E3%82%A3%20932%20B%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kusatsu-kenbunroku.gorp.jp/">草津酒場見聞録 公式（ぐるっぽ）</a></div>
+</div></div>
+<div class="card" id="c-gokuraku-sakaba-kusatsu">
+<img class="hero" src="img/kusatsu/gokuraku-sakaba-kusatsu.jpg" alt="草津 極楽酒場 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>草津 極楽酒場<span class="yomi">くさつ ごくらくさかば</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">竜王「松の司」や東近江「喜楽長」など滋賀の地酒を軸に全国の日本酒を集める駅近の創作居酒屋。野菜たっぷりの餡を包むジューシーな手作り焼き餃子、串天ぷら、近江牛を使ったもつ鍋と、名物が多彩。深夜24時まで営業し、仕事帰りの一杯から宴会まで使える草津の夜の定番。</div>
+<div class="sig"><b>一皿:</b>近江牛もつ鍋</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・日 17:30〜0:00 ／ 金・土 17:30〜3:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１５−４０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054868884">☎ 050-5486-8884</a> ／ <a href="https://gokurakusakaba.com/?utm_source=GBP&amp;utm_medium=GBP&amp;utm_term=GBP&amp;utm_content=GBP&amp;utm_campaign=GBP">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで住所・営業時間・名物（餃子・串天・近江牛もつ鍋）と2026年7月更新の新着情報を確認（2026年9月閲覧）。公式LPに松の司・喜楽長など地酒取り寄せの記載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8D%89%E6%B4%A5%20%E6%A5%B5%E6%A5%BD%E9%85%92%E5%A0%B4%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%94%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gokurakusakaba.com/">草津極楽酒場 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-atori-kusatsu">
+<img class="hero" src="img/kusatsu/atori-kusatsu.jpg" alt="炙り屋 あとり 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>炙り屋 あとり<span class="yomi">あぶりや あとり</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">備長炭の炭火にこだわる「居酒屋超えの炭火焼処」。京赤地鶏の炙り焼きや歯ごたえのあるひね鳥の塩焼き、おまかせ焼き鳥10本盛りが看板で、素材の味を引き出す繊細な火入れに定評がある。深夜まで開いており、草津駅裏で焼き鳥と酒を静かに楽しみたい夜の受け皿になっている。</div>
+<div class="sig"><b>一皿:</b>焼き鳥おまかせ10本盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路２丁目３−１ アトリエ3号館</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054842595">☎ 050-5484-2595</a> ／ <a href="https://r.gnavi.co.jp/r2fc8p1u0000/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式（ぐるっぽ）現行ページで住所・営業時間17:00〜24:00・2025年年始休業の告知を確認、ヒトサラ現行ページでネット予約受付中（2026年9月閲覧）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%99%E3%82%8A%E5%B1%8B%20%E3%81%82%E3%81%A8%E3%82%8A%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%20%E3%82%A2%E3%83%88%E3%83%AA%E3%82%A83%E5%8F%B7%E9%A4%A8">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://atori.gorp.jp/">炙り屋あとり 公式（ぐるっぽ）</a> / <a href="https://hitosara.com/0006110323/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-toriyama-stand-kusatsu">
+<img class="hero" src="img/kusatsu/toriyama-stand-kusatsu.jpg" alt="炭火焼キ鳥ト焼きとん 鉄板×酒場 トリヤマスタンド 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>炭火焼キ鳥ト焼きとん 鉄板×酒場 トリヤマスタンド<span class="yomi">とりやますたんど</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip new">new</span></div>
+<div class="desc">草津駅から徒歩1分のビル地下に構える炭火焼き鳥と焼きとんの専門酒場。鶏と豚の串を一本ずつ炭火で焼き分け、鉄板料理とハイボールで気軽に立ち寄れるネオ大衆酒場スタイル。金曜は昼12時から、週末も午後早くから開くため、昼飲み・0次会・新幹線待ちまで守備範囲が広い。</div>
+<div class="sig"><b>一皿:</b>炭火焼き鳥と焼きとんの串盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 14:00〜23:00 ／ 火・水・木 16:00〜23:00 ／ 金 12:00〜23:30 ／ 土 14:00〜23:30 ／ 日 14:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目１０−１ 第2 南洋軒ビル B1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054862140">☎ 050-5486-2140</a> ／ <a href="https://kusatsu-sumisyun.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>マピオン電話帳・食べログ・ヒトサラの現行ページで住所（大路1-10-1南洋軒第2ビルB1）・駅徒歩1分・営業時間を確認、REGLI等でネット予約受付中（2026年9月閲覧）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E3%82%AD%E9%B3%A5%E3%83%88%E7%84%BC%E3%81%8D%E3%81%A8%E3%82%93%20%E9%89%84%E6%9D%BF%C3%97%E9%85%92%E5%A0%B4%20%E3%83%88%E3%83%AA%E3%83%A4%E3%83%9E%E3%82%B9%E3%82%BF%E3%83%B3%E3%83%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%20%E7%AC%AC2%20%E5%8D%97%E6%B4%8B%E8%BB%92%E3%83%93%E3%83%AB%20B1F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/shiga/A2502/A250201/25010743/">食べログ トリヤマスタンド</a> / <a href="https://kusatsu-sumisyun.gorp.jp/">公式（ぐるっぽ）</a></div>
+</div></div>
+<div class="card" id="c-mangekyo-kusatsu">
+<img class="hero" src="img/kusatsu/mangekyo-kusatsu.jpg" alt="酒宴 万華鏡 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>酒宴 万華鏡<span class="yomi">しゅえん まんげきょう</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">草津駅西口エリアで長く続く、季節の海鮮と焼き鳥を柱にした地元密着の居酒屋。平日はコスパの高いランチ定食を出し、夜は刺身の盛り合わせや焼き物で宴会需要を受け止める二毛作営業。地元情報サイトでもランチと夜の使い勝手が繰り返し取り上げられる、駅西の安定株。</div>
+<div class="sig"><b>一皿:</b>お造り盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜14:00, 16:30〜23:00 ／ 土 16:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市西大路町１０−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775640901">☎ 077-564-0901</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパー・ヒトサラの現行ページでネット予約受付中、住所（西大路町10-5）・営業時間を確認（2026年9月閲覧）。地元メディアlomoreのランチ実食記事でも営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E5%AE%B4%20%E4%B8%87%E8%8F%AF%E9%8F%A1%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E8%A5%BF%E5%A4%A7%E8%B7%AF%E7%94%BA%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000435734/">ホットペッパーグルメ 酒宴万華鏡</a> / <a href="https://hitosara.com/0005033141/">ヒトサラ</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-glicine">
+<img class="hero" src="img/kusatsu/glicine.jpg" alt="グリーチネ（Glicine） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">33</span>グリーチネ（Glicine）<span class="yomi">ぐりーちね</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">夫婦二人で営む一日最大6席・完全予約制の小さなイタリアン。ご主人が厨房に立ち、ソムリエの奥様がワインを合わせる。滋賀の旬食材をシンプルかつ繊細に仕立てる皿が評判で、食べログ「イタリアンWEST百名店2025」に選出された草津随一の実力店。記念日など特別な日の一軒として県外からも客が訪れる。</div>
+<div class="sig"><b>一皿:</b>滋賀県産食材のおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 12:00〜15:00, 18:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路町４６９−４ 2Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775646617">☎ 077-564-6617</a> ／ <a href="https://www.instagram.com/glicine.kusatsu.shiga.official/?hl=ja">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「イタリアンWEST百名店2025」選出。一休.comレストランに現役掲載中（2026年9月閲覧）で、前日までの予約制・不定休（金曜休）の営業情報を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B0%E3%83%AA%E3%83%BC%E3%83%81%E3%83%8D%EF%BC%88Glicine%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%E7%94%BA%EF%BC%94%EF%BC%96%EF%BC%99%E2%88%92%EF%BC%94%202%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://restaurant.ikyu.com/121497">一休.comレストラン</a> / <a href="https://tabelog.com/shiga/A2502/A250201/25005562/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-shokudo-masuda">
+<img class="hero" src="img/kusatsu/shokudo-masuda.jpg" alt="ワインと炭の音 食堂ますだ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>ワインと炭の音 食堂ますだ<span class="yomi">わいんとすみのおと しょくどうますだ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">草津駅近くでミシュラン店の味をカジュアルに楽しめると評判の炭火焼きビストロ。A5黒毛和牛赤モモ肉や鴨ロースの炭火焼き、パエリアが看板で、フレンチ経験を持つシェフによる特別コースも。23時以降は暖簾を掛け替え「深夜食堂」として朝まで営業するユニークな二毛作スタイルでも知られる。</div>
+<div class="sig"><b>一皿:</b>A5黒毛和牛赤モモ肉の炭火焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:30〜4:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市渋川１丁目３−２４ LAスクエア 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775990133">☎ 077-599-0133</a> ／ <a href="https://diningexperience.jp/ja/restaurants/shokudo-masuda/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイト（owst.jp）で住所・営業時間を確認（2026年9月閲覧）。ヒトサラ・一休にも現役掲載。地元メディアlomoreが「ミシュラン店の味をカジュアルに」と紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AF%E3%82%A4%E3%83%B3%E3%81%A8%E7%82%AD%E3%81%AE%E9%9F%B3%20%E9%A3%9F%E5%A0%82%E3%81%BE%E3%81%99%E3%81%A0%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E6%B8%8B%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%94%20LA%E3%82%B9%E3%82%AF%E3%82%A8%E3%82%A2%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shokudoumasuda.owst.jp/">公式サイト</a> / <a href="https://hitosara.com/0031556236/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-sundays-bake-river-garden">
+<img class="hero" src="img/kusatsu/sundays-bake-river-garden.jpg" alt="SUNDAY'S BAKE RIVER GARDEN 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>SUNDAY'S BAKE RIVER GARDEN<span class="yomi">さんでーずべいく りばーがーでん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip new">new</span></div>
+<div class="desc">旧草津川の天井川跡を再生した公園「KUSATSU COCORIVA（de愛ひろば）」に立つガーデンレストラン。イタリア製薪窯で一気に焼き上げるナポリピッツァと滋賀野菜のイタリアンが看板で、テラス席はペット同伴も可。ベーカリー併設でカフェ使いもでき、家族連れから支持される草津の新名所的存在。</div>
+<div class="sig"><b>一皿:</b>薪窯焼きナポリピッツァ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市大路１丁目３−１８−３ クサツココリバ内</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775695291">☎ 077-569-5291</a> ／ <a href="https://sundaysbake.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>運営バルニバービの公式ブランドページで住所・営業時間を確認（2026年9月閲覧）。ホットペッパーでネット予約受付中で現在営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SUNDAY%27S%20BAKE%20RIVER%20GARDEN%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%93%20%E3%82%AF%E3%82%B5%E3%83%84%E3%82%B3%E3%82%B3%E3%83%AA%E3%83%90%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://brands.balnibarbi.com/brands/restaurants/sundays_bake_river_garden">バルニバービ公式</a> / <a href="https://www.hotpepper.jp/strJ001258535/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-bistro-kinoshita">
+<img class="hero" src="img/kusatsu/bistro-kinoshita.jpg" alt="Bistro Kinoshita（ビストロキノシタ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>Bistro Kinoshita（ビストロキノシタ）<span class="yomi">びすとろきのした</span></div>
+<div class="chips"><span class="chip new">new</span></div>
+<div class="desc">琵琶湖に近い志那中町の田園風景の中に2024年7月開店したフレンチレストラン。「Bar Francais 和」を7年営んだシェフ歴約20年の料理人が移転再出発した店で、近江牛やジビエ（狩猟肉）など季節素材を使った本格コースを提供する。喧騒を離れたロケーションと駐車場8台を備え、記念日利用にも向く。</div>
+<div class="sig"><b>一皿:</b>A5ランク近江牛のロースト</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜14:00, 17:00〜22:00 ／ 日 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市志那中町１３８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775750843">☎ 077-575-0843</a> ／ <a href="https://bistrokinoshita.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで2024年7月7日開店、住所・営業時間・コース価格を確認。ランチ企画の告知も掲載され営業中（2026年9月閲覧）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Bistro%20Kinoshita%EF%BC%88%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%E3%82%AD%E3%83%8E%E3%82%B7%E3%82%BF%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%BF%97%E9%82%A3%E4%B8%AD%E7%94%BA%EF%BC%91%EF%BC%93%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://bistrokinoshita.com/">Bistro Kinoshita公式</a></div>
+</div></div>
+<div class="card" id="c-ct-curry-kusatsu">
+<img class="hero" src="img/kusatsu/ct-curry-kusatsu.jpg" alt="CTカレー 草津店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>CTカレー 草津店<span class="yomi">しーてぃーかれー くさつてん</span></div>
+<div class="chips"><span class="chip new">new</span><span class="chip local">地元密着</span></div>
+<div class="desc">野洲市西河原の人気店が2024年2月に南草津へ出店したスパイス料理専門店。滋賀県産小麦100%の生地を窯で焼き上げるナンが自慢で、とろけるチーズナンとビリヤニ（インド式炊き込みご飯）が名物。学生の多い南草津らしくボリュームも十分で、地元メディアでチーズナン食べ放題企画が話題になった。</div>
+<div class="sig"><b>一皿:</b>窯焼きチーズナンとスパイスカレー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:30, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路２丁目２３−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775164259">☎ 077-516-4259</a> ／ <a href="https://ctcurry.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Yahoo!ニュース（エキスパート記事）で2024年2月9日開店を確認。ヒトサラに現役掲載され住所・営業時間を確認（2026年9月閲覧）。野洲本店を持つ地元発祥店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=CT%E3%82%AB%E3%83%AC%E3%83%BC%20%E8%8D%89%E6%B4%A5%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031682984/">ヒトサラ</a> / <a href="https://lomore.net/ctcurrykusatsu/">lomore（地元メディア）</a></div>
+</div></div>
+<div class="card" id="c-nadeshico">
+<img class="hero" src="img/kusatsu/nadeshico.jpg" alt="薪窯ピッツァとワイン酒場 NADESHICO 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>薪窯ピッツァとワイン酒場 NADESHICO<span class="yomi">まきがまぴっつぁとわいんさかば なでしこ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">南草津駅から徒歩2分、ナポリから直送した薪窯で焼き上げる本格ピッツァが看板のイタリアン。ピッツァのほか近江牛ステーキなど滋賀素材の一皿も揃い、仕事帰りの一杯から宴会まで使い勝手がよい。駅近×本格薪窯という組み合わせが貴重で、南草津エリアのイタリアンの定番として定着している。</div>
+<div class="sig"><b>一皿:</b>薪窯焼きマルゲリータ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路１丁目１４−３８ サンマール南草津 102</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775613373">☎ 077-561-3373</a> ／ <a href="https://makigama-nadeshico.nadeshico1000.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>楽天ぐるなびで住所・営業時間・メニューを確認（2026年9月閲覧）。ヒトサラでネット予約受付中で現在営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%96%AA%E7%AA%AF%E3%83%94%E3%83%83%E3%83%84%E3%82%A1%E3%81%A8%E3%83%AF%E3%82%A4%E3%83%B3%E9%85%92%E5%A0%B4%20NADESHICO%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%98%20%E3%82%B5%E3%83%B3%E3%83%9E%E3%83%BC%E3%83%AB%E5%8D%97%E8%8D%89%E6%B4%A5%20102">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://r.gnavi.co.jp/4s7r05hw0000/">楽天ぐるなび</a> / <a href="https://hitosara.com/0031346417/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-apaiser">
+<img class="hero" src="img/kusatsu/apaiser.jpg" alt="アペゼ（Apaiser） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>アペゼ（Apaiser）<span class="yomi">あぺぜ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">草津でフランス料理店を20年営んだ店主が、2024年10月に「フランス×洋食」をコンセプトに衣替えした和牛100%ハンバーグの店。フレンチの技法とソースで仕立てるハンバーグは肉の香りと軽やかさが両立し、地元客のふだん使いの洋食店として愛される。かしこまらず本格の味に出会える一軒。</div>
+<div class="sig"><b>一皿:</b>和牛100%ハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜15:00, 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市追分南５丁目１１−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775674788">☎ 077-567-4788</a> ／ <a href="https://apaiser184.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで2024年10月30日リニューアルオープン、住所・営業時間・定休日を確認（2026年9月閲覧）。地元メディアlomoreも紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%9A%E3%82%BC%EF%BC%88Apaiser%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E8%BF%BD%E5%88%86%E5%8D%97%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://apaiser184.com/">アペゼ公式</a> / <a href="https://lomore.net/apeze/">lomore（地元メディア）</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・和菓子・パン</h2>
+<div class="card" id="c-senkien">
+<img class="hero" src="img/kusatsu/senkien.jpg" alt="千紀園 草津本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">40</span>千紀園 草津本店<span class="yomi">せんきえん くさつほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">江戸時代創業と伝わる草津の老舗茶舗。日本茶・茶道具の販売とともに、茶匠とパティシエが自社工房で仕上げる宇治抹茶スイーツが人気で、茶房では抹茶パフェや抹茶を点てて味わえる。2025年5月に草津本店をリニューアルグランドオープンし、老舗の風格と現代的な和カフェの心地よさを併せ持つ。</div>
+<div class="sig"><b>一皿:</b>宇治抹茶パフェ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市上笠２丁目１１−８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775623424">☎ 077-562-3424</a> ／ <a href="https://www.senkien.jp/f/shop_kusatsuhonten">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの2025年5月23日「草津本店グランドオープン」告知で最新の営業を確認（2026年9月閲覧）。草津市観光物産協会サイトにも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%83%E7%B4%80%E5%9C%92%20%E8%8D%89%E6%B4%A5%E6%9C%AC%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E4%B8%8A%E7%AC%A0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.senkien.jp/f/shop_kusatsuhonten">千紀園公式</a> / <a href="https://www.senkien.jp/blog/notice_grandopening20250523">公式オープン告知</a></div>
+</div></div>
+<div class="card" id="c-kissa-tricolore">
+<img class="hero" src="img/kusatsu/kissa-tricolore.jpg" alt="喫茶トリコロール 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>喫茶トリコロール<span class="yomi">きっさとりころーる</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">旧東海道の宿場町・草津宿の商店街に佇む昭和レトロな純喫茶。白と青を基調にした外観が宿場町の町並みに映える。丁寧に淹れる本格コーヒーとともに、オムライスやカレーなど昔ながらの喫茶洋食が揃い、地元の常連に長く愛される。今では貴重になった「町の純喫茶」の時間が流れる一軒。</div>
+<div class="sig"><b>一皿:</b>トリコロールオムライス</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県草津市草津２丁目１０−２７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775620525">☎ 077-562-0525</a> ／ <a href="http://www.kusatsu-honjin.com/store/torico.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメに現役掲載され住所・営業時間を確認(2026年9月閲覧)。地域ニュースサイト号外NETが草津2丁目の純喫茶として紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%83%88%E3%83%AA%E3%82%B3%E3%83%AD%E3%83%BC%E3%83%AB%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E8%8D%89%E6%B4%A5%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000435610/">ホットペッパーグルメ</a> / <a href="https://kusatsuritto.goguynet.jp/2022/01/12/tricolore/">号外NET草津・栗東</a></div>
+</div></div>
+<div class="card" id="c-pain-du-marche">
+<img class="hero" src="img/kusatsu/pain-du-marche.jpg" alt="パン・ドゥ・マルシェ（Pain du Marché） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>パン・ドゥ・マルシェ（Pain du Marché）<span class="yomi">ぱんどぅまるしぇ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">「滋賀で一番人気」と評される南草津の大人気ベーカリー。名物の食パンは1日800本以上売れるといわれ、平日でも行列ができ駐車場が埋まるほど。玄米食パンをはじめ、小ぶりで買いやすい惣菜パンやクロワッサンが所狭しと並ぶ。土日は朝7時30分開店で、朝から焼きたてを求める客で賑わう。</div>
+<div class="sig"><b>一皿:</b>玄米食パン</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金 9:00〜19:00 ／ 土・日 7:30〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市追分南６丁目１９−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775148810">☎ 077-514-8810</a> ／ <a href="https://www.instagram.com/paindumarche/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元メディアlomoreが「食パンが1日820本売れる滋賀屈指の人気店」と紹介。PayPayグルメ・楽天ぐるなびに現役掲載で住所・営業時間を確認（2026年9月閲覧）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%B3%E3%83%BB%E3%83%89%E3%82%A5%E3%83%BB%E3%83%9E%E3%83%AB%E3%82%B7%E3%82%A7%EF%BC%88Pain%20du%20March%C3%A9%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E8%BF%BD%E5%88%86%E5%8D%97%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%99%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://lomore.net/paindumarche/">lomore（地元メディア）</a> / <a href="https://paypaygourmet.yahoo.co.jp/place/g-hJix1sPxoYA/">PayPayグルメ</a></div>
+</div></div>
+<div class="card" id="c-another-table">
+<img class="hero" src="img/kusatsu/another-table.jpg" alt="アナザーテーブル（Another Table） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>アナザーテーブル（Another Table）<span class="yomi">あなざーてーぶる</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">国産小麦・無添加にこだわり、石窯で焼き上げるパンが評判の住宅街のベーカリー。ハード系のパンや具だくさんのキッシュが看板で、店内中央の丸テーブルに並ぶ焼きたてを選ぶ楽しさがある。奥にはイートインスペースも。派手さはないが、素材で選ぶ地元ファンが通う堅実な一軒。</div>
+<div class="sig"><b>一皿:</b>石窯焼きキッシュ</div>
+<table class="info">
+<tr><th>営業時間</th><td>木・金・土 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火・水・日曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市若竹町５−１０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775488592">☎ 077-548-8592</a> ／ <a href="https://www.instagram.com/another_table_bakery.s">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Yahoo!マップに現役掲載され住所（若竹町5-10）・定休日を確認（2026年9月閲覧）。Rettyの草津人気パン屋リストにも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%8A%E3%82%B6%E3%83%BC%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB%EF%BC%88Another%20Table%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E8%8B%A5%E7%AB%B9%E7%94%BA%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://map.yahoo.co.jp/v3/place/_hgQIjQZNJ2">Yahoo!マップ</a> / <a href="https://tabelog.com/shiga/A2502/A250201/25010529/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-wa-cafe-oto">
+<img class="hero" src="img/kusatsu/wa-cafe-oto.jpg" alt="和・菓ふぇoto 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>和・菓ふぇoto<span class="yomi">わかふぇおと</span></div>
+<div class="chips"><span class="chip new">new</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">南草津の住宅街にある創作和菓子店＋和カフェ。焼きたてを提供するみたらし団子は「とろとろ」と評される柔らかさで、コロンと可愛いチョコ最中やわらび餅など、写真映えと本格の両方を備えた和スイーツが並ぶ。イートインでは出来たてを味わえ、手土産需要でも売り切れ必至の人気ぶり。</div>
+<div class="sig"><b>一皿:</b>焼きたてみたらし団子</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市野路東５丁目２５−２３ 102</td></tr>
+<tr><th>予約</th><td>可 — <a href="https://wa-cafe-oto.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトのアクセスページで住所・営業時間・定休日を確認（2026年9月閲覧）。草津市観光物産協会サイト・まいぷれ草津のカフェ特集にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%83%BB%E8%8F%93%E3%81%B5%E3%81%87oto%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E9%87%8E%E8%B7%AF%E6%9D%B1%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%93%20102">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://wa-cafe-oto.com/access.html">和・菓ふぇoto公式</a> / <a href="https://kanko-kusatsu.com/spot/wacafeoto">草津市観光物産協会</a></div>
+</div></div>
+<div class="card" id="c-wakamatsu">
+<img class="hero" src="img/kusatsu/wakamatsu.jpg" alt="御菓子司 若松 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>御菓子司 若松<span class="yomi">おかしつかさ わかまつ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1969年頃から続く上笠の和菓子店。冬から初夏の白餡苺大福をはじめ、みかん大福など季節の果実を使った大福シリーズが名物で、季節ごとに通いたくなる品揃え。朝8時30分から開く町の御菓子司として、地元の贈答や仏事・祝い事の菓子も担い、半世紀にわたり草津の暮らしに寄り添ってきた。</div>
+<div class="sig"><b>一皿:</b>白餡の苺大福（冬〜初夏）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 8:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市上笠４丁目３０−１１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0775646746">☎ 077-564-6746</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元メディアlomoreが季節の大福シリーズを紹介。Yahoo!マップ・エキテンに現役掲載され住所・営業時間・定休日を確認（2026年9月閲覧）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E8%8B%A5%E6%9D%BE%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E4%B8%8A%E7%AC%A0%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://lomore.net/wakamatsu/">lomore（地元メディア）</a> / <a href="https://map.yahoo.co.jp/v3/place/6jNyxJQs836">Yahoo!マップ</a></div>
+</div></div>
+<div class="card" id="c-cafe-in-the-knot">
+<img class="hero" src="img/kusatsu/cafe-in-the-knot.jpg" alt="CAFE In The Knot 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>CAFE In The Knot<span class="yomi">かふぇ いん ざ のっと</span></div>
+<div class="chips"><span class="chip new">new</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">本に囲まれたライブラリースタイルの空間で、滋賀・土山の茶葉を使ったドリンクやパンケーキを味わえる話題のカフェ。落ち着いた店内席のほか、犬同伴可のテラス席も備え、週末はモーニングも営業。地元の茶文化と読書の時間を掛け合わせた個性で、草津の「わざわざ行きたいカフェ」として人気を集める。</div>
+<div class="sig"><b>一皿:</b>土山茶のパンケーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>滋賀県草津市川原町２９８−１ 若竹福祉総合学院 内</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0775995390">☎ 077-599-5390</a> ／ <a href="https://cafe-intheknot.d-nouen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメに現役掲載され住所・営業時間・定休日を確認（2026年9月閲覧）。草津市観光物産協会サイト・公式Instagramでも営業情報を発信中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=CAFE%20In%20The%20Knot%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E8%8D%89%E6%B4%A5%E5%B8%82%E5%B7%9D%E5%8E%9F%E7%94%BA%EF%BC%92%EF%BC%99%EF%BC%98%E2%88%92%EF%BC%91%20%E8%8B%A5%E7%AB%B9%E7%A6%8F%E7%A5%89%E7%B7%8F%E5%90%88%E5%AD%A6%E9%99%A2%20%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ003559609/">ホットペッパーグルメ</a> / <a href="https://kanko-kusatsu.com/spot/cafe-in-the-knot">草津市観光物産協会</a></div>
+</div></div>
+<div class="card" id="c-moriyama-hariekan">
+<img class="hero" src="img/kusatsu/moriyama-hariekan.jpg" alt="クラブハリエ 守山玻璃絵館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>クラブハリエ 守山玻璃絵館<span class="yomi">くらぶはりえ もりやまはりえかん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">バームクーヘンで知られる滋賀の名門洋菓子ブランド、クラブハリエ（たねやグループ）の工房併設店。イギリスの田園風景をモチーフにした庭園に囲まれ、たねやの和菓子とシェフ特製の洋菓子が並ぶ。予約制のペーストリーブッフェでは焼きたてバームクーヘンや季節のケーキを90分堪能でき、県内外から予約が集まる。</div>
+<div class="sig"><b>一皿:</b>焼きたてバームクーヘン（ペーストリーブッフェ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>滋賀県守山市吉身３丁目１９−１５</td></tr>
+<tr><th>予約</th><td>可 — <a href="http://clubharie.jp/shop/moriyama/index.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>隣接・守山市からの補完。クラブハリエ公式店舗ページで住所・営業時間を確認（2026年9月閲覧）。地元メディアのシガマンマが2025年11月に12月開始のブッフェを紹介し直近の営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AF%E3%83%A9%E3%83%96%E3%83%8F%E3%83%AA%E3%82%A8%20%E5%AE%88%E5%B1%B1%E7%8E%BB%E7%92%83%E7%B5%B5%E9%A4%A8%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%AE%88%E5%B1%B1%E5%B8%82%E5%90%89%E8%BA%AB%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://clubharie.jp/shop/moriyama">クラブハリエ公式</a> / <a href="https://news.p-mom.net/2025/11/28/%E3%80%90%E6%9C%9F%E9%96%93%E9%99%90%E5%AE%9A%E3%80%91%E3%82%AF%E3%83%A9%E3%83%96%E3%83%8F%E3%83%AA%E3%82%A8%E3%81%AE%E4%BA%BA%E6%B0%97%E3%81%AE%E3%82%B1%E3%83%BC%E3%82%AD%E3%81%8C%E3%81%9A%E3%82%89/">シガマンマ（2025年11月記事）</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年9月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
