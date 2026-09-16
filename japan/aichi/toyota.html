@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>豊田美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / TOYOTA・愛知県 🇯🇵</div>
+  <h1>豊田美食ガイド</h1>
+  <div class="sub">世界のクルマの街は、実は山の幸の宝庫。香嵐渓を擁する足助の五平餅と鮎、猪鹿の山里料理、八丁味噌文化の食堂、駅前の名酒場、ものづくりの街らしい堅実な洋食まで厳選53スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年9月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/toyota/_map.png" alt="全域マップ">
+<a href="#c-bikkuriya" style="left:54.7%;top:48.74%;width:2.26%;height:4.18%;"></a>
+<a href="#c-hinoki_chaya" style="left:56.06%;top:49.89%;width:2.26%;height:4.18%;"></a>
+<a href="#c-shimoyama_no_sato" style="left:55.75%;top:91.83%;width:2.26%;height:4.18%;"></a>
+<a href="#c-izukame" style="left:57.01%;top:46.79%;width:2.26%;height:4.18%;"></a>
+<a href="#c-ichinotani" style="left:57.08%;top:49.11%;width:2.26%;height:4.18%;"></a>
+<a href="#c-tororoan" style="left:51.66%;top:51.61%;width:2.26%;height:4.18%;"></a>
+<a href="#c-mui" style="left:66.55%;top:29.05%;width:2.26%;height:4.18%;"></a>
+<a href="#c-hirose_yana" style="left:37.7%;top:39.93%;width:2.26%;height:4.18%;"></a>
+<a href="#c-odo_yana" style="left:65.06%;top:7.71%;width:2.26%;height:4.18%;"></a>
+<a href="#c-donguritei" style="left:93.17%;top:12.53%;width:2.26%;height:4.18%;"></a>
+<a href="#c-kawayasu" style="left:56.4%;top:47.95%;width:2.26%;height:4.18%;"></a>
+<a href="#c-unachu" style="left:29.92%;top:66.38%;width:2.26%;height:4.18%;"></a>
+<a href="#c-kisaragi" style="left:16.7%;top:84.2%;width:2.26%;height:4.18%;"></a>
+<a href="#c-miyakozushi" style="left:26.11%;top:74.12%;width:2.26%;height:4.18%;"></a>
+<a href="#c-mizushima" style="left:22.19%;top:53.25%;width:2.26%;height:4.18%;"></a>
+<a href="#c-houryukaku" style="left:29.53%;top:86.07%;width:2.26%;height:4.18%;"></a>
+<a href="#c-taiseien" style="left:22.34%;top:72.45%;width:2.26%;height:4.18%;"></a>
+<a href="#c-meigetsukan" style="left:24.35%;top:67.96%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_tsurugi" style="left:21.33%;top:89.53%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_toragen" style="left:23.16%;top:82.82%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_ouka" style="left:6.83%;top:87.31%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_nanaya" style="left:25.71%;top:73.67%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_junchan" style="left:26.77%;top:60.83%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_daisangen" style="left:18.6%;top:81.01%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_toyotaya" style="left:24.12%;top:77.71%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_taishoan" style="left:26.94%;top:67.22%;width:2.26%;height:4.18%;"></a>
+<a href="#c-men_kukuri" style="left:25.98%;top:68.21%;width:2.26%;height:4.18%;"></a>
+<a href="#c-iza_hanamizuki" style="left:25.09%;top:69.94%;width:2.26%;height:4.18%;"></a>
+<a href="#c-iza_antete" style="left:25.55%;top:68.28%;width:2.26%;height:4.18%;"></a>
+<a href="#c-iza_kabukimono" style="left:25.91%;top:69.93%;width:2.26%;height:4.18%;"></a>
+<a href="#c-iza_ikkonan" style="left:25.64%;top:69.98%;width:2.26%;height:4.18%;"></a>
+<a href="#c-iza_robata_tonbo" style="left:25.24%;top:68.71%;width:2.26%;height:4.18%;"></a>
+<a href="#c-iza_marunana" style="left:24.9%;top:69.42%;width:2.26%;height:4.18%;"></a>
+<a href="#c-iza_roncana" style="left:25.84%;top:68.29%;width:2.26%;height:4.18%;"></a>
+<a href="#c-iza_robata_suzuki" style="left:24.33%;top:84.29%;width:2.26%;height:4.18%;"></a>
+<a href="#c-ashetto_toyota" style="left:22.22%;top:86.95%;width:2.26%;height:4.18%;"></a>
+<a href="#c-la_ferice" style="left:29.82%;top:73.5%;width:2.26%;height:4.18%;"></a>
+<a href="#c-la_mano_di_marco" style="left:28.44%;top:84.42%;width:2.26%;height:4.18%;"></a>
+<a href="#c-leclat_de_rire" style="left:30.65%;top:69.31%;width:2.26%;height:4.18%;"></a>
+<a href="#c-reveur" style="left:17.75%;top:78.37%;width:2.26%;height:4.18%;"></a>
+<a href="#c-bacchus_toyota" style="left:25.14%;top:69.53%;width:2.26%;height:4.18%;"></a>
+<a href="#c-meatman153" style="left:21.51%;top:70.94%;width:2.26%;height:4.18%;"></a>
+<a href="#c-spice_curry_tomos" style="left:21.01%;top:68.89%;width:2.26%;height:4.18%;"></a>
+<a href="#c-baguru" style="left:11.37%;top:92.31%;width:2.26%;height:4.18%;"></a>
+<a href="#c-kissa_tamaki" style="left:27.63%;top:51.15%;width:2.26%;height:4.18%;"></a>
+<a href="#c-abusanto" style="left:25.03%;top:71.98%;width:2.26%;height:4.18%;"></a>
+<a href="#c-cafe_de_chef" style="left:26.46%;top:70.59%;width:2.26%;height:4.18%;"></a>
+<a href="#c-cafe_kona" style="left:31.26%;top:71.38%;width:2.26%;height:4.18%;"></a>
+<a href="#c-little_cockoo" style="left:24.23%;top:78.5%;width:2.26%;height:4.18%;"></a>
+<a href="#c-oliva_eterna" style="left:24.95%;top:65.46%;width:2.26%;height:4.18%;"></a>
+<a href="#c-shiawase_no_pan" style="left:20.23%;top:71.61%;width:2.26%;height:4.18%;"></a>
+<a href="#c-fukuokaya" style="left:18.9%;top:47.23%;width:2.26%;height:4.18%;"></a>
+<a href="#c-kawamuraya" style="left:56.97%;top:46.72%;width:2.26%;height:4.18%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（53店・番号はピンと同じ）</div>
+<div class="sec red">豊田のご当地(五平餅・鮎・山里の味・味噌)</div>
+<div class="links">
+<a href="#c-bikkuriya"><span class="tn" style="background:#e34948;">1</span>きなこ五平餅の老舗専門店</a>
+<a href="#c-hinoki_chaya"><span class="tn" style="background:#e34948;">2</span>足助屋敷前の山里定食茶屋</a>
+<a href="#c-shimoyama_no_sato"><span class="tn" style="background:#e34948;">3</span>生姜味噌の大判わらじ五平餅</a>
+<a href="#c-izukame"><span class="tn" style="background:#e34948;">4</span>明治創業、猪鍋と天然鮎の老舗</a>
+<a href="#c-ichinotani"><span class="tn" style="background:#e34948;">5</span>活鮎と猪・キジ鍋の渓谷料理</a>
+<a href="#c-tororoan"><span class="tn" style="background:#e34948;">6</span>自然薯とろろの気軽な専門店</a>
+<a href="#c-mui"><span class="tn" style="background:#e34948;">7</span>女性猟師が営むジビエカフェ</a>
+<a href="#c-hirose_yana"><span class="tn" style="background:#e34948;">8</span>矢作川の鮎を味わう観光やな</a>
+<a href="#c-odo_yana"><span class="tn" style="background:#e34948;">9</span>小渡の川床で鮎づくし</a>
+<a href="#c-donguritei"><span class="tn" style="background:#e34948;">10</span>稲武米ミネアサヒのわっぱ飯</a>
+</div>
+<div class="sec blue">寿司・和食・うなぎ・焼肉</div>
+<div class="links">
+<a href="#c-kawayasu"><span class="tn" style="background:#2a78d6;">11</span>行列必至、足助の地焼きうなぎ</a>
+<a href="#c-unachu"><span class="tn" style="background:#2a78d6;">12</span>創業50年、備長炭焼きうなぎ</a>
+<a href="#c-kisaragi"><span class="tn" style="background:#2a78d6;">13</span>三河前寿司と名物穴子まぶし</a>
+<a href="#c-miyakozushi"><span class="tn" style="background:#2a78d6;">14</span>駅近で職人が握る町の寿司店</a>
+<a href="#c-mizushima"><span class="tn" style="background:#2a78d6;">15</span>浄水の実力派おまかせ和食</a>
+<a href="#c-houryukaku"><span class="tn" style="background:#2a78d6;">16</span>桜の水源公園に立つ和食処</a>
+<a href="#c-taiseien"><span class="tn" style="background:#2a78d6;">17</span>名物ホルモン鍋の老舗焼肉</a>
+<a href="#c-meigetsukan"><span class="tn" style="background:#2a78d6;">18</span>1965年創業、秘伝ダレの焼肉</a>
+</div>
+<div class="sec aqua">ラーメン・そば・うどん・町中華</div>
+<div class="links">
+<a href="#c-men_tsurugi"><span class="tn" style="background:#1baf7a;">19</span>ベトコンと麻婆の行列麺処</a>
+<a href="#c-men_toragen"><span class="tn" style="background:#1baf7a;">20</span>豊田発祥の担担麺専門店本店</a>
+<a href="#c-men_ouka"><span class="tn" style="background:#1baf7a;">21</span>淡麗醤油の新鋭中華そば</a>
+<a href="#c-men_nanaya"><span class="tn" style="background:#1baf7a;">22</span>百名店のジビエラーメン</a>
+<a href="#c-men_junchan"><span class="tn" style="background:#1baf7a;">23</span>30年続くみそラーメンの雄</a>
+<a href="#c-men_daisangen"><span class="tn" style="background:#1baf7a;">24</span>深夜まで賑わう台湾中華</a>
+<a href="#c-men_toyotaya"><span class="tn" style="background:#1baf7a;">25</span>昭和29年創業の手打ちうどん</a>
+<a href="#c-men_taishoan"><span class="tn" style="background:#1baf7a;">26</span>麺切れ御免の手打ちうどん</a>
+<a href="#c-men_kukuri"><span class="tn" style="background:#1baf7a;">27</span>駅近の古民家風十割そば</a>
+</div>
+<div class="sec beer">居酒屋・バー</div>
+<div class="links">
+<a href="#c-iza_hanamizuki"><span class="tn" style="background:#0d366b;">28</span>奥三河どりの備長炭焼鳥</a>
+<a href="#c-iza_antete"><span class="tn" style="background:#0d366b;">29</span>地鶏焼鳥と串揚げの大箱酒場</a>
+<a href="#c-iza_kabukimono"><span class="tn" style="background:#0d366b;">30</span>名物大将の旬魚居酒屋</a>
+<a href="#c-iza_ikkonan"><span class="tn" style="background:#0d366b;">31</span>蕎麦で〆る大人の酒房</a>
+<a href="#c-iza_robata_tonbo"><span class="tn" style="background:#0d366b;">32</span>駅前で昼飲みできる炉端</a>
+<a href="#c-iza_marunana"><span class="tn" style="background:#0d366b;">33</span>昼はうどん屋、夜は呑処</a>
+<a href="#c-iza_roncana"><span class="tn" style="background:#0d366b;">34</span>銀座仕込みの老舗バー</a>
+<a href="#c-iza_robata_suzuki"><span class="tn" style="background:#0d366b;">35</span>住宅街の実力派海鮮炉端</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-ashetto_toyota"><span class="tn" style="background:#4a3aa7;">36</span>末野原の町の洋食屋</a>
+<a href="#c-la_ferice"><span class="tn" style="background:#4a3aa7;">37</span>美里の欧風ハンバーグの名店</a>
+<a href="#c-la_mano_di_marco"><span class="tn" style="background:#4a3aa7;">38</span>イタリア人シェフの本格派</a>
+<a href="#c-leclat_de_rire"><span class="tn" style="background:#4a3aa7;">39</span>南仏仕込みの本格ビストロ</a>
+<a href="#c-reveur"><span class="tn" style="background:#4a3aa7;">40</span>昼夜2組限定の完全予約制フレンチ</a>
+<a href="#c-bacchus_toyota"><span class="tn" style="background:#4a3aa7;">41</span>駅近ワイン充実イタリアン</a>
+<a href="#c-meatman153"><span class="tn" style="background:#4a3aa7;">42</span>72時間ミートソースの専門店</a>
+<a href="#c-spice_curry_tomos"><span class="tn" style="background:#4a3aa7;">43</span>アジア各国の本格スパイスカレー</a>
+<a href="#c-baguru"><span class="tn" style="background:#4a3aa7;">44</span>肉好き店主の炭焼ハンバーグ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-kissa_tamaki"><span class="tn" style="background:#eda100;">45</span>朝5時開店・400円モーニング</a>
+<a href="#c-abusanto"><span class="tn" style="background:#eda100;">46</span>石窯パンと自家焙煎珈琲</a>
+<a href="#c-cafe_de_chef"><span class="tn" style="background:#eda100;">47</span>3Dラテアートの欧州風カフェ</a>
+<a href="#c-cafe_kona"><span class="tn" style="background:#eda100;">48</span>ガーデン自慢のモーニング店</a>
+<a href="#c-little_cockoo"><span class="tn" style="background:#eda100;">49</span>カレーとタルティーヌのカフェ</a>
+<a href="#c-oliva_eterna"><span class="tn" style="background:#eda100;">50</span>朝8時から並ぶ人気ベーカリー</a>
+<a href="#c-shiawase_no_pan"><span class="tn" style="background:#eda100;">51</span>毎日50種の町のパン屋</a>
+<a href="#c-fukuokaya"><span class="tn" style="background:#eda100;">52</span>明治35年創業・大福の老舗</a>
+<a href="#c-kawamuraya"><span class="tn" style="background:#eda100;">53</span>大正5年創業・足助の銘菓</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 豊田市駅〜西町・喜多町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/toyota/_map2.png" alt="中心部拡大1 豊田市駅〜西町・喜多町">
+<a href="#c-miyakozushi" style="left:72.75%;top:92.55%;width:3.6%;height:2.94%;"></a>
+<a href="#c-meigetsukan" style="left:28.02%;top:23.12%;width:3.6%;height:2.94%;"></a>
+<a href="#c-men_nanaya" style="left:62.61%;top:87.45%;width:3.6%;height:2.94%;"></a>
+<a href="#c-men_taishoan" style="left:93.86%;top:14.71%;width:3.6%;height:2.94%;"></a>
+<a href="#c-men_kukuri" style="left:69.52%;top:25.85%;width:3.6%;height:2.94%;"></a>
+<a href="#c-iza_hanamizuki" style="left:46.77%;top:45.42%;width:3.6%;height:2.94%;"></a>
+<a href="#c-iza_antete" style="left:58.39%;top:26.67%;width:3.6%;height:2.94%;"></a>
+<a href="#c-iza_kabukimono" style="left:67.78%;top:45.24%;width:3.6%;height:2.94%;"></a>
+<a href="#c-iza_ikkonan" style="left:60.79%;top:45.89%;width:3.6%;height:2.94%;"></a>
+<a href="#c-iza_robata_tonbo" style="left:50.61%;top:31.53%;width:3.6%;height:2.94%;"></a>
+<a href="#c-iza_marunana" style="left:42.05%;top:39.55%;width:3.6%;height:2.94%;"></a>
+<a href="#c-iza_roncana" style="left:65.96%;top:26.83%;width:3.6%;height:2.94%;"></a>
+<a href="#c-bacchus_toyota" style="left:48.07%;top:40.75%;width:3.6%;height:2.94%;"></a>
+<a href="#c-abusanto" style="left:45.36%;top:68.39%;width:3.6%;height:2.94%;"></a>
+<a href="#c-cafe_de_chef" style="left:81.86%;top:52.68%;width:3.6%;height:2.94%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（15店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・うなぎ・焼肉</div>
+<div class="links">
+<a href="#c-miyakozushi"><span class="tn" style="background:#2a78d6;">14</span>駅近で職人が握る町の寿司店</a>
+<a href="#c-meigetsukan"><span class="tn" style="background:#2a78d6;">18</span>1965年創業、秘伝ダレの焼肉</a>
+</div>
+<div class="sec aqua">ラーメン・そば・うどん・町中華</div>
+<div class="links">
+<a href="#c-men_nanaya"><span class="tn" style="background:#1baf7a;">22</span>百名店のジビエラーメン</a>
+<a href="#c-men_taishoan"><span class="tn" style="background:#1baf7a;">26</span>麺切れ御免の手打ちうどん</a>
+<a href="#c-men_kukuri"><span class="tn" style="background:#1baf7a;">27</span>駅近の古民家風十割そば</a>
+</div>
+<div class="sec beer">居酒屋・バー</div>
+<div class="links">
+<a href="#c-iza_hanamizuki"><span class="tn" style="background:#0d366b;">28</span>奥三河どりの備長炭焼鳥</a>
+<a href="#c-iza_antete"><span class="tn" style="background:#0d366b;">29</span>地鶏焼鳥と串揚げの大箱酒場</a>
+<a href="#c-iza_kabukimono"><span class="tn" style="background:#0d366b;">30</span>名物大将の旬魚居酒屋</a>
+<a href="#c-iza_ikkonan"><span class="tn" style="background:#0d366b;">31</span>蕎麦で〆る大人の酒房</a>
+<a href="#c-iza_robata_tonbo"><span class="tn" style="background:#0d366b;">32</span>駅前で昼飲みできる炉端</a>
+<a href="#c-iza_marunana"><span class="tn" style="background:#0d366b;">33</span>昼はうどん屋、夜は呑処</a>
+<a href="#c-iza_roncana"><span class="tn" style="background:#0d366b;">34</span>銀座仕込みの老舗バー</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-bacchus_toyota"><span class="tn" style="background:#4a3aa7;">41</span>駅近ワイン充実イタリアン</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-abusanto"><span class="tn" style="background:#eda100;">46</span>石窯パンと自家焙煎珈琲</a>
+<a href="#c-cafe_de_chef"><span class="tn" style="background:#eda100;">47</span>3Dラテアートの欧州風カフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 足助・香嵐渓（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/toyota/_map3.png" alt="中心部拡大2 足助・香嵐渓">
+<a href="#c-bikkuriya" style="left:40.67%;top:64.64%;width:2.22%;height:2.36%;"></a>
+<a href="#c-hinoki_chaya" style="left:51.41%;top:69.8%;width:2.22%;height:2.36%;"></a>
+<a href="#c-izukame" style="left:58.87%;top:55.86%;width:2.22%;height:2.36%;"></a>
+<a href="#c-ichinotani" style="left:59.4%;top:66.28%;width:2.22%;height:2.36%;"></a>
+<a href="#c-tororoan" style="left:16.83%;top:77.57%;width:2.22%;height:2.36%;"></a>
+<a href="#c-kawayasu" style="left:54.03%;top:61.08%;width:2.22%;height:2.36%;"></a>
+<a href="#c-kawamuraya" style="left:58.5%;top:55.54%;width:2.22%;height:2.36%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（7店・番号はピンと同じ）</div>
+<div class="sec red">豊田のご当地(五平餅・鮎・山里の味・味噌)</div>
+<div class="links">
+<a href="#c-bikkuriya"><span class="tn" style="background:#e34948;">1</span>きなこ五平餅の老舗専門店</a>
+<a href="#c-hinoki_chaya"><span class="tn" style="background:#e34948;">2</span>足助屋敷前の山里定食茶屋</a>
+<a href="#c-izukame"><span class="tn" style="background:#e34948;">4</span>明治創業、猪鍋と天然鮎の老舗</a>
+<a href="#c-ichinotani"><span class="tn" style="background:#e34948;">5</span>活鮎と猪・キジ鍋の渓谷料理</a>
+<a href="#c-tororoan"><span class="tn" style="background:#e34948;">6</span>自然薯とろろの気軽な専門店</a>
+</div>
+<div class="sec blue">寿司・和食・うなぎ・焼肉</div>
+<div class="links">
+<a href="#c-kawayasu"><span class="tn" style="background:#2a78d6;">11</span>行列必至、足助の地焼きうなぎ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン</div>
+<div class="links">
+<a href="#c-kawamuraya"><span class="tn" style="background:#eda100;">53</span>大正5年創業・足助の銘菓</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>店は豊田市駅周辺(西町・喜多町)と、足助・松平・小原など山間の旧町村部に分かれる。五平餅は足助が本場でくるみ味噌だれが流儀、紅葉の香嵐渓シーズン(11月)は大混雑する。鮎は夏、猪鹿は冬が旬。市街地はトヨタ関係の会食需要で焼肉・寿司の質が高い。豊田スタジアムの試合日は駅前が混む。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-toyota" class="c-red">豊田のご当地(五平餅・鮎・山里の味・味噌)</h2>
+<div class="card" id="c-bikkuriya">
+<img class="hero" src="img/toyota/bikkuriya.jpg" alt="五平餅 びっくりや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>五平餅 びっくりや<span class="yomi">ごへいもち びっくりや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">香嵐渓へ向かう国道153号沿い、赤い傘が目印の創業約50年の五平餅専門店。注文を受けてから炭火で焼き上げるスタイルで、赤味噌にネギとごまを合わせた自家製ネギ味噌ダレの「味噌」、香ばしい「しょうゆ」、そして他ではまず見られない「きなこ」の3種を提供する。だしの染みたおでんも名物。畳敷きの古民家風の店内は暖色照明で温かみがあり、紅葉散策の休憩にちょうどよい。将棋の藤井聡太七冠が訪れた店としても知られ、地元客と観光客の双方に愛され続けている。テイクアウト可、駐車場20台。</div>
+<div class="sig"><b>一皿:</b>きなこ五平餅</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市足助町成瀬３１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565621397">☎ 0565-62-1397</a> ／ <a href="http://asuke.info/eat/eatdrink/entry-125.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>CBCマガジンが2025年4月に「愛され続ける秘密」として特集し、足助観光協会公式サイトにも現行掲載。地元WEBマガジン「まちクル」の五平餅特集でも筆頭で紹介される定番店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%94%E5%B9%B3%E9%A4%85%20%E3%81%B3%E3%81%A3%E3%81%8F%E3%82%8A%E3%82%84%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%B6%B3%E5%8A%A9%E7%94%BA%E6%88%90%E7%80%AC%EF%BC%93%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hicbc.com/magazine/article/?id=aisarefood-column-25041601">CBCマガジン</a> / <a href="https://asuke.info/eat/eatdrink/entry-125.html">足助観光協会</a></div>
+</div></div>
+<div class="card" id="c-hinoki_chaya">
+<img class="hero" src="img/toyota/hinoki_chaya.jpg" alt="桧茶屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>桧茶屋<span class="yomi">ひのきちゃや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">香嵐渓の生きた民俗資料館「三州足助屋敷」の前に立つ茶屋。手作りの五平餅、鮎の塩焼き、山菜そば、季節の小皿を一度に味わえる「桧定食」が看板で、こんにゃく田楽など山里の味を気軽に追加できる。自家製味噌ダレの五平餅は甘さ控えめで香ばしく、川のせせらぎを聞きながら縁台で食べる一本は格別。香嵐渓散策や足助屋敷の手仕事見学とセットで立ち寄れる使い勝手の良さが魅力で、紅葉最盛期の11月は無休で営業する。</div>
+<div class="sig"><b>一皿:</b>桧定食（五平餅・鮎塩焼き・山菜そば）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金 10:00〜16:00 ／ 土・日 9:00〜16:30</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市足助町飯盛３６番地</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565621188">☎ 0565-62-1188</a> ／ <a href="http://asukeyashiki.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>三州足助屋敷の公式サイトに2026年5月現在のメニュー・価格が掲載されており営業実態が明確。まちクルの五平餅6選や西三河ぐるっとナビでも紹介される香嵐渓の定番。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A1%A7%E8%8C%B6%E5%B1%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%B6%B3%E5%8A%A9%E7%94%BA%E9%A3%AF%E7%9B%9B%EF%BC%93%EF%BC%96%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://asukeyashiki.jp/eat/hinoki_menu.html">三州足助屋敷公式</a> / <a href="https://www.machikuru.jp/special/p6983">まちクル</a></div>
+</div></div>
+<div class="card" id="c-shimoyama_no_sato">
+<img class="hero" src="img/toyota/shimoyama_no_sato.jpg" alt="五平餅・食事処 しもやまの里 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>五平餅・食事処 しもやまの里<span class="yomi">ごへいもち・しょくじどころ しもやまのさと</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">豊田市南東部の下山地区、国道301号沿いに立つ大きな五平餅の看板が目印の食事処兼農産物直売所。生姜のきいた甘口の赤味噌ダレをたっぷり塗った大判のわらじ型五平餅が名物で、冷めてもおいしいと評判。焼きたてを店先で頬張るもよし、そばなどの食事と合わせるもよし、持ち帰りもできる。地元の新鮮な農産物も購入でき、香嵐渓と岡崎・新城方面を結ぶドライブ途中のオアシスとして親しまれている。冬には五平餅の冬季イベントも開催される。</div>
+<div class="sig"><b>一皿:</b>生姜味噌の五平餅</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市大沼町根崎４７番地1</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565903003">☎ 0565-90-3003</a> ／ <a href="https://www.tourismtoyota.jp/foods/detail/156/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログに2025〜2026年の訪問口コミが継続投稿され、しもやま観光ナビが2025年12月開始の冬季イベントを告知するなど営業実態が確認できる。まちクルの五平餅6選にも選出。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%94%E5%B9%B3%E9%A4%85%E3%83%BB%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E3%81%97%E3%82%82%E3%82%84%E3%81%BE%E3%81%AE%E9%87%8C%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%A4%A7%E6%B2%BC%E7%94%BA%E6%A0%B9%E5%B4%8E%EF%BC%94%EF%BC%97%E7%95%AA%E5%9C%B01">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.karen-shimoyama.jp/news/detail/50/">しもやま観光ナビ</a> / <a href="https://tabelog.com/aichi/A2305/A230501/23031001/dtlrvwlst/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-izukame">
+<img class="hero" src="img/toyota/izukame.jpg" alt="季節料理 井筒亀 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>季節料理 井筒亀<span class="yomi">きせつりょうり いづかめ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">重伝建に選定された足助の古い町並みに店を構える明治創業の老舗和食処。純和風3階建てで、茶室風・書院風の個室や90名収容の宴会場を備える。春は山菜と岩魚、夏は矢作川水系の天然鮎とうなぎ、秋はきのこ、冬は近隣の山で獲れた猪の鍋と、四季で献立が入れ替わるのが身上。名物のしし鍋は赤味噌仕立てで体の芯から温まり、シシコロッケのお膳など気軽な足助グルメも揃う。香嵐渓の紅葉見物や町並み散策と組み合わせたい一軒。</div>
+<div class="sig"><b>一皿:</b>猪鍋（しし鍋）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:00〜14:00, 16:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市足助町田町１７</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565620018">☎ 0565-62-0018</a> ／ <a href="http://aichi.j47.jp/izukame/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>西三河ぐるっとナビ（公式観光サイト）と足助観光協会が現行掲載し、猪鍋膳などの季節料理を案内中。明治期創業の老舗として足助中央商店街組合の店舗紹介にも名を連ねる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AD%A3%E7%AF%80%E6%96%99%E7%90%86%20%E4%BA%95%E7%AD%92%E4%BA%80%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%B6%B3%E5%8A%A9%E7%94%BA%E7%94%B0%E7%94%BA%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nishimikawanavi.jp/foods/detail/154/">西三河ぐるっとナビ</a> / <a href="https://asuke.info/eat/eatdrink/entry-113.html">足助観光協会</a></div>
+</div></div>
+<div class="card" id="c-ichinotani">
+<img class="hero" src="img/toyota/ichinotani.jpg" alt="香嵐渓 一の谷 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>香嵐渓 一の谷<span class="yomi">こうらんけい いちのたに</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">香嵐渓の奥、山あいの谷に広がる敷地で営む料理店。夏（6〜10月中旬）は生け簀の活鮎を塩焼きや刺身で味わう鮎料理、冬（10月中旬〜5月）は猪鍋・キジ鍋と、山里のご馳走を四季で提供する。2021年にリニューアルし、落ち着いた料亭・ダイニングに加えトレーラーハウス宿泊や日帰りBBQ、テントサイトも併設。鮎のつかみ取りや音楽イベントなど季節催事も多彩で、家族連れから会食まで幅広く使える。うなぎ定食や月替わり会席もあり、香嵐渓観光の食の拠点となる存在。</div>
+<div class="sig"><b>一皿:</b>活鮎の鮎御膳</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 10:30〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市足助町一ノ谷２２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565620508">☎ 0565-62-0508</a> ／ <a href="http://ichinotani1.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに2026年9月の鮎つかみ取りやイベント告知が続けて掲載され、営業実態が明確。ホットペッパーやchaooなど地元媒体でもジビエ・鮎料理の店として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A6%99%E5%B5%90%E6%B8%93%20%E4%B8%80%E3%81%AE%E8%B0%B7%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%B6%B3%E5%8A%A9%E7%94%BA%E4%B8%80%E3%83%8E%E8%B0%B7%EF%BC%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://ichinotani1.com/">公式サイト</a> / <a href="https://chaoo.jp/gourmet/shop/ichinotanifusion/index.html">chaoo</a></div>
+</div></div>
+<div class="card" id="c-tororoan">
+<img class="hero" src="img/toyota/tororoan.jpg" alt="とろろ庵（旬菜・じねんじょ市場） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>とろろ庵（旬菜・じねんじょ市場）<span class="yomi">とろろあん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">香嵐渓の入口近く、国道153号沿いにある自然薯とろろの専門店。「気軽に食べられる自然薯料理」を掲げ、いりこと昆布の自家製だしで伸ばしたとろろごはん、とろろうどん・そばを900円という手頃な価格で提供する。冬季には豊田・旭地区特産の自然薯「夢とろろ」を使うなど地場産にもこだわり、自然薯とうふなどの加工品や業務用販売も手がける市場を併設。学生からファミリー、年配夫婦まで客層が広く、香嵐渓ドライブの昼食に立ち寄りやすい。無料駐車場15台。</div>
+<div class="sig"><b>一皿:</b>自然薯とろろごはん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜16:30 ／ 土・日 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市井ノ口町三斗蒔４−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565611860">☎ 0565-61-1860</a> ／ <a href="http://www.tororoan.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現行運営され、西三河ぐるっとナビ（公式観光サイト）にメニュー・価格つきで掲載中。香嵐渓エリアの自然薯料理の店として楽天ぐるなび等でも案内が続く。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%8D%E3%82%8D%E5%BA%B5%EF%BC%88%E6%97%AC%E8%8F%9C%E3%83%BB%E3%81%98%E3%81%AD%E3%82%93%E3%81%98%E3%82%87%E5%B8%82%E5%A0%B4%EF%BC%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E4%BA%95%E3%83%8E%E5%8F%A3%E7%94%BA%E4%B8%89%E6%96%97%E8%92%94%EF%BC%94%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tororoan.jp/">公式サイト</a> / <a href="https://nishimikawanavi.jp/foods/detail/344/">西三河ぐるっとナビ</a></div>
+</div></div>
+<div class="card" id="c-mui">
+<img class="hero" src="img/toyota/mui.jpg" alt="山里カフェMui 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>山里カフェMui<span class="yomi">やまざとかふぇ むい</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">自ら山に入り年間100頭超を捕獲する女性猟師・清水潤子さんが、築150年の古民家を改装して2017年に開いたジビエカフェ。「いただいた命を無駄にしない」を掲げ、隣接する自前の食肉処理施設で仕留めたての猪や鹿を精肉し、鹿カツ、鹿マーボー、猪肉のデミグラス煮込みなど月替わりのランチに仕立てる。臭みのない新鮮なジビエのおいしさに驚く人が多く、ここを訪れて猟師を志す人が出るほど。山里の風景を眺めながらの食事は予約制で、冬季はスタッドレスタイヤ必須。</div>
+<div class="sig"><b>一皿:</b>月替わりジビエランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市北小田町伯母平２６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:09050375199">☎ 090-5037-5199</a> ／ <a href="https://www.mui3cafe.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに2026年9月の営業日程・メニュー告知が投稿され営業実態が明確。ジビエ専門サイト「ジビエト」や旅色、colocalなど全国媒体が豊田の山里ジビエの店として紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E9%87%8C%E3%82%AB%E3%83%95%E3%82%A7Mui%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%8C%97%E5%B0%8F%E7%94%B0%E7%94%BA%E4%BC%AF%E6%AF%8D%E5%B9%B3%EF%BC%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.mui3cafe.com/">公式サイト</a> / <a href="https://gibierto.jp/article/shops/restaurants/10325/">ジビエト</a></div>
+</div></div>
+<div class="card" id="c-hirose_yana">
+<img class="hero" src="img/toyota/hirose_yana.jpg" alt="広瀬やな 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>広瀬やな<span class="yomi">ひろせやな</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">矢作川に伝統の竹組みのやな場を架ける、市街地から最も近い観光やな。夏から秋の営業期間中は、川面を渡る風を感じる座敷で炭火の鮎塩焼きや鮎フライなどを盛り込んだ定食を味わえる。子どもに人気の鮎のつかみ取り体験もでき、捕まえた鮎はその場で塩焼きにしてもらえる。落ち鮎の季節には子持ち鮎も登場。豊田市内に複数ある観光やな文化を手軽に体験できる代表格で、家族連れの夏の恒例行事として親しまれている。</div>
+<div class="sig"><b>一皿:</b>炭火焼きの鮎定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市西広瀬町市場２０３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565412359">☎ 0565-41-2359</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>西三河ぐるっとナビの「ヤナ特集2026」に2026年7月11日〜10月12日の営業期間つきで掲載され、営業継続が確認できる。まちクルの市内やな特集でも紹介される定番スポット。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%83%E7%80%AC%E3%82%84%E3%81%AA%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%A5%BF%E5%BA%83%E7%80%AC%E7%94%BA%E5%B8%82%E5%A0%B4%EF%BC%92%EF%BC%90%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nishimikawanavi.jp/features/detail/19/">西三河ぐるっとナビ ヤナ特集2026</a> / <a href="https://www.machikuru.jp/special/p3821/">まちクル</a></div>
+</div></div>
+<div class="card" id="c-odo_yana">
+<img class="hero" src="img/toyota/odo_yana.jpg" alt="おど観光やな 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>おど観光やな<span class="yomi">おどかんこうやな</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">「風鈴寺」増福寺で知られる旧旭町の小渡の町、矢作川上流の清流沿いに開かれる観光やな。塩焼き・刺身・甘露煮など鮎料理を一通り盛り込んだ「鮎づくし」から気軽な塩焼き定食まで揃い、川のすぐそばの席で上流域ならではの鮎を味わえる。鮎のつかみ取りは3匹1,500円で、焼き代を払えばその場で塩焼きにしてくれるため子ども連れに人気。周辺は小渡温泉や風鈴まつりなど夏の見どころが多く、奥矢作の川遊びとあわせて楽しめる。</div>
+<div class="sig"><b>一皿:</b>鮎づくし</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市小渡町間ケ島１２−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565682255">☎ 0565-68-2255</a> ／ <a href="https://yahagi-ayu.net/kankouyana/odo_yana.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田市旭観光協会が2025年7月に「7月1日より営業中」と2025年営業期間（〜10月31日）を告知しており営業実態が明確。矢作川漁協の観光やな案内にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%A9%E8%A6%B3%E5%85%89%E3%82%84%E3%81%AA%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%B0%8F%E6%B8%A1%E7%94%BA%E9%96%93%E3%82%B1%E5%B3%B6%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kankou-asahi.toyota.aichi.jp/2025/07/6416/">豊田市旭観光協会</a> / <a href="https://yahagi-ayu.net/kankouyana/">矢作川漁業協同組合</a></div>
+</div></div>
+<div class="card" id="c-donguritei">
+<img class="hero" src="img/toyota/donguritei.jpg" alt="お食事処 どんぐり亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>お食事処 どんぐり亭<span class="yomi">おしょくじどころ どんぐりてい</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">豊田市最北の稲武地区、道の駅どんぐりの里いなぶの温泉施設「どんぐりの湯」2階にある食事処。標高差のある山あいで育つ幻の米ともいわれる稲武産ブランド米「ミネアサヒ」を、ひのきのわっぱで蒸し上げた看板の「わっぱ飯」は、木の香りがほのかに移り季節の山の幸と一緒に楽しめる。イワナの塩焼き御膳やとろろ御膳、名古屋コーチンの卵かけご飯など山里ならではの品も揃う。温泉入浴や名物どんぐり横丁の買い物とセットで、稲武ドライブの締めに使いやすい。</div>
+<div class="sig"><b>一皿:</b>ミネアサヒのわっぱ飯御膳</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金 11:00〜14:00 ／ 土・日 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市武節町針原２２−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565823135">☎ 0565-82-3135</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>西三河ぐるっとナビ（公式観光サイト）にメニュー・価格つきで現行掲載され、道の駅どんぐりの里いなぶの公式サイト・SNSでも施設の営業案内が継続している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E3%81%A9%E3%82%93%E3%81%90%E3%82%8A%E4%BA%AD%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%AD%A6%E7%AF%80%E7%94%BA%E9%87%9D%E5%8E%9F%EF%BC%92%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nishimikawanavi.jp/foods/detail/366/">西三河ぐるっとナビ</a> / <a href="https://dongurinosato.com/">どんぐりの里いなぶ公式</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・うなぎ・焼肉</h2>
+<div class="card" id="c-kawayasu">
+<img class="hero" src="img/toyota/kawayasu.jpg" alt="川安 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>川安<span class="yomi">かわやす</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">足助の古い町並みの一角、香嵐渓観光とあわせて訪れたい人気のうなぎ店。蒸さずに炭火で焼き上げる関西風の地焼きで、皮はパリッと香ばしく身はふっくら。手頃な価格で本格的な炭火うなぎが味わえると評判で、開店前から行列ができることも珍しくない。電話での席予約は受け付けておらず、店頭の用紙に名前を書いて待つ昔ながらのスタイル（うなぎ弁当のみ電話予約可）。昼過ぎには売り切れて閉まることもあるため、早めの訪問が確実。</div>
+<div class="sig"><b>一皿:</b>炭火地焼きのうな丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜13:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市足助町西町１４−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565620644">☎ 0565-62-0644</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>足助観光協会公式サイトが「安くて炭火で香ばしい大人気のうなぎ店」として現行掲載し、地元グルメサイトも行列必至の店として紹介。食べログでも4点超の高評価を維持している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E5%AE%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%B6%B3%E5%8A%A9%E7%94%BA%E8%A5%BF%E7%94%BA%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://asuke.info/eat/eatdrink/entry-106.html">足助観光協会</a> / <a href="https://toyota-gourmet.info/?p=28745">豊田グルメ情報</a></div>
+</div></div>
+<div class="card" id="c-unachu">
+<img class="hero" src="img/toyota/unachu.jpg" alt="うな忠 豊田本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>うな忠 豊田本店<span class="yomi">うなちゅう とよたほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">瓦屋根と白壁の日本家屋が目を引く、創業50年のうなぎ料理専門店の本店。匠の焼きの技と代々受け継ぐ秘伝の自家製ダレで、備長炭を使って外はパリッと中はふっくらと焼き上げる。関東と関西の間に位置する三河地区ならではの焼き方にこだわり、ご飯は店専用に育てた自家製コシヒカリを使うなど脇役まで抜かりがない。昭和の趣を残す落ち着いた店内で、うなぎ丼のランチから御膳、持ち帰りまで幅広く対応。地元で長く愛される豊田のうなぎの代表格。</div>
+<div class="sig"><b>一皿:</b>備長炭焼きのうなぎ丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜14:00, 16:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市高上１丁目７−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565882113">☎ 0565-88-2113</a> ／ <a href="https://www.unachu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ヒトサラでネット予約を受け付ける現行営業店で、地元メディア「とよくる」や豊田市のグルメブログが営業時間・メニューつきで紹介。創業50年の地元発祥店の本店にあたる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E5%BF%A0%20%E8%B1%8A%E7%94%B0%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E9%AB%98%E4%B8%8A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031125013/">ヒトサラ</a> / <a href="https://toyokuru.com/shop/unachu/">とよくる</a></div>
+</div></div>
+<div class="card" id="c-kisaragi">
+<img class="hero" src="img/toyota/kisaragi.jpg" alt="割烹・すし きさらぎ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>割烹・すし きさらぎ<span class="yomi">かっぽう・すし きさらぎ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">三河湾で揚がる新鮮な魚介を握る「三河前」の寿司と旬の割烹料理の店。名物は国産の上質な穴子を使った穴子まぶしで、ふっくら香ばしい穴子を出汁茶漬けまで三様に楽しめる。彩り豊かな「宝石箱ばらちらし」も人気。庭園を望む個室は2名から35名まで対応し、接待や慶事・法事など改まった席に使われることが多い一方、ランチは手頃な価格で寿司と割烹の技を味わえる。豊田市で本格的な寿司をと言えば名前が挙がる一軒。</div>
+<div class="sig"><b>一皿:</b>穴子まぶし</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 11:30〜14:00, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市本町高根２７−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565392901">☎ 0565-39-2901</a> ／ <a href="https://kisaragi-sakura.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ヒトサラ・楽天ぐるなびでネット予約を受け付ける現行営業店で、ツーリズムとよた（市公式観光サイト）にも掲載。地元サイトが三河前の寿司の店として紹介を続けている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%E3%83%BB%E3%81%99%E3%81%97%20%E3%81%8D%E3%81%95%E3%82%89%E3%81%8E%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%9C%AC%E7%94%BA%E9%AB%98%E6%A0%B9%EF%BC%92%EF%BC%97%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kisaragi-sakura.com/">公式サイト</a> / <a href="https://hitosara.com/0010000780/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-miyakozushi">
+<img class="hero" src="img/toyota/miyakozushi.jpg" alt="みやこ寿司 豊田 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>みやこ寿司 豊田<span class="yomi">みやこずし とよた</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">豊田市駅にほど近い元宮町で職人が一貫ずつ心を込めて握る町の寿司店。昼はちらしランチや六ツ仕切りの弁当箱など手頃な献立、夜は上寿司や「葵」「雅」「月」と名づけた寿司会席まで揃い、普段使いから接待・法事まで幅広く対応する。個室があり、家族の集まりや会食にも使いやすい。回転寿司チェーンが多い豊田市街にあって、カウンターで職人と向き合いながら食べられる貴重な個人店として地元の評価が高い。</div>
+<div class="sig"><b>一皿:</b>寿司会席</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00、17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市元宮町１丁目５−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565317861">☎ 0565-31-7861</a> ／ <a href="https://miyakozushtoyota.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメでネット予約を受け付ける現行営業店で、利用者評価も高い。豊田市駅周辺の職人が握る個人経営の寿司店として地元検索でも上位に挙がる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%82%84%E3%81%93%E5%AF%BF%E5%8F%B8%20%E8%B1%8A%E7%94%B0%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%85%83%E5%AE%AE%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000410339/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-mizushima">
+<img class="hero" src="img/toyota/mizushima.jpg" alt="日本料理 水嶋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>日本料理 水嶋<span class="yomi">にほんりょうり みずしま</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">名鉄豊田線浄水駅近くに構える日本料理店。旬の食材を軸に月替わりで献立を組むおまかせコースが柱で、刺身や天ぷらを含む昼の会席・季節御膳は2,000円台からと、質に対して手が届きやすい。木の温もりを生かした数寄屋風の店内にはカウンターと個室があり、誕生日・記念日やお食い初めなど家族の節目の食事に選ばれることが多い。丁寧な仕事の一品が順に運ばれる構成で、豊田市北西部で改まった和食をというときの有力候補。</div>
+<div class="sig"><b>一皿:</b>月替わりのおまかせ会席</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市浄水町３丁目 20番地 １</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565415284">☎ 0565-41-5284</a> ／ <a href="http://www.katsusuke.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>AutoReserveやYahoo!マップでネット予約を受け付ける現行営業店で、飲食店支援会社のグルメブログ等が個室の昼会席を詳報。豊田市の高級和食として公式サイトも運営中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E6%B0%B4%E5%B6%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%B5%84%E6%B0%B4%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%2020%E7%95%AA%E5%9C%B0%20%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.katsusuke.com/">公式サイト</a> / <a href="https://hitosara.com/0031359076/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-houryukaku">
+<img class="hero" src="img/toyota/houryukaku.jpg" alt="四季の料理 さくら亭 豊龍閣 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>四季の料理 さくら亭 豊龍閣<span class="yomi">しきのりょうり さくらてい ほうりゅうかく</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">矢作川沿いの桜の名所・水源公園の中に立つ和食店。春は窓の外いっぱいに桜を望む絶好のロケーションで、「そめい吉野御膳」「しだれ桜御膳」などランチ限定の御膳から、顔合わせ・結納・お食い初め・法事に対応する会席まで、人生の節目の食事を幅広く受け止める。個室が充実し、仕出し弁当も手がけるため地元の冠婚葬祭で長く頼りにされてきた。公園散策とあわせて季節の御膳を楽しむ使い方が心地よい、豊田の景勝地の和食処。</div>
+<div class="sig"><b>一皿:</b>季節の御膳</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜14:30, 17:00〜21:30 ／ 日 11:00〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市水源町７丁目１３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565281966">☎ 0565-28-1966</a> ／ <a href="https://www.sakuratei-houryukaku.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが営業時間・御膳・個室案内を現行掲載しており（2026年9月確認）、ホットペッパー等の予約媒体にも掲載が続く。水源公園内という立地で地元の慶弔食事の定番。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9B%9B%E5%AD%A3%E3%81%AE%E6%96%99%E7%90%86%20%E3%81%95%E3%81%8F%E3%82%89%E4%BA%AD%20%E8%B1%8A%E9%BE%8D%E9%96%A3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%B0%B4%E6%BA%90%E7%94%BA%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.sakuratei-houryukaku.com/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-taiseien">
+<img class="hero" src="img/toyota/taiseien.jpg" alt="大衆焼肉 大成園 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>大衆焼肉 大成園<span class="yomi">たいしゅうやきにく たいせいえん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">遠方から通うファンも多い豊田の老舗大衆焼肉店。名物は「角鍋」と呼ばれる牛ホルモン鍋で、ぷりぷりのホルモンを味噌ベースのタレで煮ながら食べる一品はここでしか味わえないと評判。カルビ・ロースの定番に加え、牛コリコリやスジ焼など通好みの部位も揃う。座敷・掘りごたつ・テーブル席で少人数から50名まで対応し、送迎バスまである地域密着ぶり。気取らず腹いっぱい焼肉をという日に真っ先に名前が挙がる、地元で代替わりしながら愛され続ける店。</div>
+<div class="sig"><b>一皿:</b>牛ホルモン鍋（角鍋）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市朝日ケ丘１丁目１７−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565333535">☎ 0565-33-3535</a> ／ <a href="http://www.hm3.aitai.ne.jp/~taiseien/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元情報サイトchaooの「【2026年版】豊田市で焼肉を食べるならここ！」（2026年1月）で老舗として選出され、まちクルにも店舗ページが現行掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E7%84%BC%E8%82%89%20%E5%A4%A7%E6%88%90%E5%9C%92%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%9C%9D%E6%97%A5%E3%82%B1%E4%B8%98%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://chaoo.jp/gourmet/contents/blog/6627/">chaoo（2026年版焼肉5選）</a> / <a href="https://www.machikuru.jp/taiseien/">まちクル</a></div>
+</div></div>
+<div class="card" id="c-meigetsukan">
+<img class="hero" src="img/toyota/meigetsukan.jpg" alt="焼肉 明月館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>焼肉 明月館<span class="yomi">やきにく めいげつかん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1965年から続く、知る人ぞ知る家族経営の焼肉店。先代から受け継ぐ秘伝のタレが身上で、厚切りの牛タンや評判のハラミ、臭みのない新鮮なホルモンなど、メニューを絞り込んだ分どれを頼んでも外れがないと常連が口を揃える。「ねぎねぎ茶漬け」や豚タンといったここならではの品も面白い。テーブルと座敷あわせて24席、個室は8名まで対応と小ぢんまりした店構えで、長い付き合いの客が多いのも老舗の証。豊田市駅徒歩圏の焼肉の穴場として覚えておきたい。</div>
+<div class="sig"><b>一皿:</b>秘伝ダレのハラミ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土・日 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水・木曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市月見町２丁目9−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565325076">☎ 0565-32-5076</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメに営業時間・直近の口コミつきで現行掲載され、豊田市のグルメブログも訪問記を公開。創業約60年の地元の老舗として食べログランキングにも名を連ねる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E6%98%8E%E6%9C%88%E9%A4%A8%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%9C%88%E8%A6%8B%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE9%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ004067804/">ホットペッパーグルメ</a> / <a href="https://toyotanikublog.com/meigetsukan/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・そば・うどん・町中華</h2>
+<div class="card" id="c-men_tsurugi">
+<img class="hero" src="img/toyota/men_tsurugi.jpg" alt="めん処 つるぎ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>めん処 つるぎ<span class="yomi">めんどころ つるぎ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2022年11月開店ながら、Googleクチコミ評価4.4で豊田市ラーメン店ランキング1位（ねとらぼ2025年3月版）となった人気店。ニンニクと野菜たっぷりのスタミナ系「ベトコンラーメン」、魚介豚骨の濃厚つけ麺、土鍋で提供される麻婆豆富が三本柱。券売機で食券を買うスタイルで、昼時は地元の働き手や家族連れで行列ができる。人気を受けて2025年12月にはトヨタ元町工場近くの広久手町に2号店をオープンした。</div>
+<div class="sig"><b>一皿:</b>ベトコンラーメン・濃厚つけ麺</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市大林町１０丁目２４−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:09092665189">☎ 090-9266-5189</a> ／ <a href="https://www.instagram.com/tsurugi_ramen?igsh=em1qMWx1bmkyYW5j&amp;utm_source=qr">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ねとらぼ2025年3月版の豊田市ラーメンランキング1位。2025年12月の号外NET記事で2号店開店と本店の営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%81%E3%82%93%E5%87%A6%20%E3%81%A4%E3%82%8B%E3%81%8E%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%A4%A7%E6%9E%97%E7%94%BA%EF%BC%91%EF%BC%90%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%94%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nlab.itmedia.co.jp/research/articles/3174646/">ねとらぼリサーチ</a> / <a href="https://toyota.goguynet.jp/2025/12/14/menndokoro-turugi-hirobatenn-toyotasi/">号外NET豊田市</a> / <a href="https://chaoo.jp/gourmet/shop/tsurugi/">chaoo</a></div>
+</div></div>
+<div class="card" id="c-men_toragen">
+<img class="hero" src="img/toyota/men_toragen.jpg" alt="担担麺と麻婆豆腐の店 虎玄 山之手本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>担担麺と麻婆豆腐の店 虎玄 山之手本店<span class="yomi">とらげん やまのてほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local_chain_honten">local_chain_honten</span></div>
+<div class="desc">豊田市発祥の担担麺と麻婆豆腐の専門店で、市内に複数店を構える人気ブランドの本店。自家製ラー油を使った濃厚クリーミーな担担麺は、後から辛さが追いかけてくる中毒性のある味と評され、土鍋で提供される麻婆豆腐も看板商品。ミシュランのグルメガイドにも掲載歴があり、昼時は行列が絶えない。担担麺に小麻婆豆腐とご飯を付ける食べ方が定番で、スペシャル担担麺や汁無し担担麺も人気。</div>
+<div class="sig"><b>一皿:</b>担担麺・土鍋麻婆豆腐</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 11:30〜14:00, 18:00〜22:00 ／ 土・日 11:30〜14:30, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市山之手５丁目９１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565415669">☎ 0565-41-5669</a> ／ <a href="https://toragen.storeinfo.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田発祥ローカルチェーンの本店として選定（神田町店等の支店は除外）。ねとらぼ2025年3月版3位、食べログに2025年10月訪問の口コミがあり営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%8B%85%E6%8B%85%E9%BA%BA%E3%81%A8%E9%BA%BB%E5%A9%86%E8%B1%86%E8%85%90%E3%81%AE%E5%BA%97%20%E8%99%8E%E7%8E%84%20%E5%B1%B1%E4%B9%8B%E6%89%8B%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%B1%B1%E4%B9%8B%E6%89%8B%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%99%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://toragen.storeinfo.jp/">虎玄公式</a> / <a href="https://www.machikuru.jp/special/p5145/">まちクル特集</a> / <a href="https://nlab.itmedia.co.jp/research/articles/3174646/">ねとらぼリサーチ</a></div>
+</div></div>
+<div class="card" id="c-men_ouka">
+<img class="hero" src="img/toyota/men_ouka.jpg" alt="中華そば 桜花 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>中華そば 桜花<span class="yomi">ちゅうかそば おうか</span></div>
+<div class="chips"><span class="chip new">new</span></div>
+<div class="desc">2024年4月開業の新鋭ながら、開業1年でGoogleクチコミ評価上位に入った実力店。「また食べたくなる味わい」をコンセプトに、熟成醤油の淡麗中華そばを看板に据える。チャーシューで丼を埋め尽くした「肉そば」は見た目の美しさでも評判で、地元グルメブログでも至高の一杯と紹介された。店内は22席で、昼夜通し営業ではなく昼・夜の二部制。</div>
+<div class="sig"><b>一皿:</b>熟成醤油淡麗中華そば・肉そば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜14:00, 17:30〜21:00 ／ 土・日 11:00〜14:30, 17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市西岡町保ケ山５６−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:05088827366">☎ 050-8882-7366</a> ／ <a href="https://chukasoba-ouka.com/?utm_source=GBP&amp;utm_medium=GBP&amp;utm_term=GBP&amp;utm_content=GBP&amp;utm_campaign=GBP">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ねとらぼ2025年3月版の豊田市ラーメンランキング4位に入り、2025年時点の営業と人気を確認。2024年4月開業の実店舗情報はPR TIMESと楽天ぐるなびで裏付け。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E6%A1%9C%E8%8A%B1%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%A5%BF%E5%B2%A1%E7%94%BA%E4%BF%9D%E3%82%B1%E5%B1%B1%EF%BC%95%EF%BC%96%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nlab.itmedia.co.jp/research/articles/3174646/">ねとらぼリサーチ</a> / <a href="https://prtimes.jp/main/html/rd/p/000000020.000100887.html">PR TIMES</a> / <a href="https://r.gnavi.co.jp/hfh97x5p0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-men_nanaya">
+<img class="hero" src="img/toyota/men_nanaya.jpg" alt="麺創 なな家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>麺創 なな家<span class="yomi">めんそう ななや</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip unique">unique</span></div>
+<div class="desc">猪や鹿などのジビエと旬の魚介を使った創作ラーメンで知られる豊田市の看板店。猪の骨から出汁を取り低温ロースト猪肉をチャーシューに載せた「参州マタギそば」は他ではまず食べられない一杯で、日によって素材が変わる限定麺も楽しみのひとつ。ミシュランプレートの獲得歴があり、県外からもファンが訪れる。昼夜二部制の営業。</div>
+<div class="sig"><b>一皿:</b>参州マタギそば（ジビエラーメン）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜14:00, 18:00〜20:30 ／ 日 11:00〜14:00, 18:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市松ケ枝町２丁目２１−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565422567">☎ 0565-42-2567</a> ／ <a href="http://mensoh778.blog122.fc2.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「ラーメン百名店 AICHI 2025」に選出され、2025年の営業実態と評価を確認。ミシュランプレート獲得歴のある市内屈指の個性派。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%89%B5%20%E3%81%AA%E3%81%AA%E5%AE%B6%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%9D%BE%E3%82%B1%E6%9E%9D%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://maitabi-gurume.com/nanaya-jibie-toyota/">まいたびグルメ</a> / <a href="https://www.machikuru.jp/special/p5145/">まちクル特集</a> / <a href="https://toyotanikublog.com/nanaya-ramen/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-men_junchan">
+<img class="hero" src="img/toyota/men_junchan.jpg" alt="じゅんちゃんラーメン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>じゅんちゃんラーメン<span class="yomi">じゅんちゃんらーめん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">平成8年（1996年）創業、豊田市東梅坪町で約30年続くみそラーメン専門の老舗。元イタリアンシェフの店主が作るオリジナル味噌のこってり濃厚な辛みそラーメンが看板で、ニンニクとバターを効かせた「みそニンニクバターラーメン」が名物。北海道スタイルにならい、麺は北海道産小麦の黄色い縮れ麺を特注で取り寄せる。座敷席があり家族連れでも使いやすい。</div>
+<div class="sig"><b>一皿:</b>みそニンニクバターラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜14:00, 18:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市東梅坪町２丁目１−２３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565335633">☎ 0565-33-5633</a> ／ <a href="http://www.jyunchan-ramen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1996年創業の地元老舗。公式サイトが営業情報を掲載中で、食べログに2025年3月27日投稿の口コミがあり営業継続を確認（2026年9月時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%98%E3%82%85%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%9D%B1%E6%A2%85%E5%9D%AA%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.jyunchan-ramen.com/">公式サイト</a> / <a href="https://www.machikuru.jp/special/p5145/">まちクル特集</a> / <a href="https://tabelog.com/en/aichi/A2305/A230501/23007950/dtlrvwlst/">食べログ口コミ</a></div>
+</div></div>
+<div class="card" id="c-men_daisangen">
+<img class="hero" src="img/toyota/men_daisangen.jpg" alt="大三元 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>大三元<span class="yomi">だいさんげん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip late_night">late_night</span></div>
+<div class="desc">豊田市清水町の台湾・中華料理店で、ボリューム満点の台湾ラーメンと香ばしいニンニクチャーハンで地元に愛される町中華的存在。濃厚な旨みの牛肉ラーメンや、濃縮味噌だれで仕上げるホルモン料理も人気で、夕方から深夜2時まで営業しており仕事帰りの一杯にも使われる。人気を受けて細谷町に麺料理特化の姉妹店「大三元麺工房」も開店した。</div>
+<div class="sig"><b>一皿:</b>台湾ラーメン・ニンニクチャーハン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・日 17:00〜0:30 ／ 金・土 17:00〜2:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市清水町１丁目２９−３ 豊福第一</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565248803">☎ 0565-24-8803</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ねとらぼ2025年3月版の豊田市ラーメンランキング5位に入り2025年の営業と人気を確認。深夜営業の町中華枠として選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E4%B8%89%E5%85%83%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%B8%85%E6%B0%B4%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%99%E2%88%92%EF%BC%93%20%E8%B1%8A%E7%A6%8F%E7%AC%AC%E4%B8%80">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nlab.itmedia.co.jp/research/articles/3174646/">ねとらぼリサーチ</a> / <a href="https://toyotanikublog.com/daisangen/">コハクの豊田市ぼっちグルメ</a> / <a href="https://r.gnavi.co.jp/rrrkazk00000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-men_toyotaya">
+<img class="hero" src="img/toyota/men_toyotaya.jpg" alt="名代手打うどん・そば 豊田屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">25</span>名代手打うどん・そば 豊田屋<span class="yomi">なだいてうちうどん とよたや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip long_established">long_established</span></div>
+<div class="desc">昭和29年（1954年）創業、現在は2代目が営む豊田市を代表する手打ちうどんの老舗。「創業以来手打ちうどん一筋」を掲げ、コクのある赤味噌で煮込む味噌煮込みうどん、にかけ、鍋焼きなど品書きは幅広い。名物は天ぷらを豪快に載せた「天ぷら盛り味噌煮込みうどん定食」。座敷36席と駐車場15台を備え、バリアフリー対応で年配客や家族連れにも使いやすい。</div>
+<div class="sig"><b>一皿:</b>味噌煮込みうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市丸山町２丁目７３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565282076">☎ 0565-28-2076</a> ／ <a href="http://aichi.j47.jp/toyotaudon/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業70年超の地元老舗。AutoReserveで予約受付中（2026年9月確認）で営業継続を確認。地元情報サイトchaooにも現行掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E4%BB%A3%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%E3%83%BB%E3%81%9D%E3%81%B0%20%E8%B1%8A%E7%94%B0%E5%B1%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E4%B8%B8%E5%B1%B1%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%97%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://chaoo.jp/gourmet/shop/toyotaya/">chaoo</a> / <a href="https://autoreserve.com/ja/restaurants/FyeRyU3jedPXDW3BqMRD">AutoReserve</a> / <a href="https://r.gnavi.co.jp/dw0902n80000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-men_taishoan">
+<img class="hero" src="img/toyota/men_taishoan.jpg" alt="豊田大正庵 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">26</span>豊田大正庵 本店<span class="yomi">とよたたいしょうあん ほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">岡崎の老舗「大正庵」からののれん分けの系譜を持つ手打ちうどん店。職人気質の店主が麺を一から打ち、出来立ての麺は上品な出汁つゆとコシの強さで地元ファンを掴む。肉とじうどんや胸肉を使ったヘルシーなカレーうどん、手頃な味噌煮込みうどんが人気で、うどんに加えてカツ丼などの丼物も評判。麺がなくなり次第終了するため昼は早めの来店が確実。店前に10台超の駐車場を備える。</div>
+<div class="sig"><b>一皿:</b>肉とじうどん・カレーうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜13:30 ／ 土・日 11:00〜13:30, 17:00〜18:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市日之出町１丁目１２−１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565324915">☎ 0565-32-4915</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメブログが2026年4月に記事を更新しており営業継続を確認。のれん分けの歴史を持つ地元で長く愛されるうどん店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%B1%8A%E7%94%B0%E5%A4%A7%E6%AD%A3%E5%BA%B5%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%97%A5%E4%B9%8B%E5%87%BA%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://toyotanikublog.com/toyotataisyoan/">コハクの豊田市ぼっちグルメ</a> / <a href="https://hitosara.com/0031132008/">ヒトサラ</a> / <a href="https://r.gnavi.co.jp/5yjhzyrm0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-men_kukuri">
+<img class="hero" src="img/toyota/men_kukuri.jpg" alt="手打ち蕎麦 くくり 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">27</span>手打ち蕎麦 くくり<span class="yomi">てうちそば くくり</span></div>
+<div class="chips"><span class="chip station">station</span></div>
+<div class="desc">豊田市駅から歩ける竹生町にある手打ち蕎麦の専門店。細切りでコシのある十割蕎麦と二八蕎麦を打ち分け、ざる蕎麦800円、天ざる1500円、地鶏蕎麦1300円など価格も良心的。つゆを選べる趣向もあり、蕎麦の香りをじっくり楽しめる。古民家や茶屋を思わせる改装空間は天井が高く和モダンな落ち着いた雰囲気で、まちなかで蕎麦を食べたいときの第一候補になる店。</div>
+<div class="sig"><b>一皿:</b>十割そば・天ざる</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 11:00〜15:00 ／ 土・日 11:00〜15:00, 17:30〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市竹生町４丁目５８−５８ 手打ち蕎麦くくり</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565777037">☎ 0565-77-7037</a> ／ <a href="https://www.facebook.com/%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%E3%81%8F%E3%81%8F%E3%82%8A-531193496940478/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田市駅徒歩圏で本格手打ち蕎麦を出す貴重な店。AutoReserveで現在も予約受付中（2026年9月確認）で営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20%E3%81%8F%E3%81%8F%E3%82%8A%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E7%AB%B9%E7%94%9F%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%95%EF%BC%98%E2%88%92%EF%BC%95%EF%BC%98%20%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%E3%81%8F%E3%81%8F%E3%82%8A">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://autoreserve.com/ja/restaurants/bRiKgyjo9TafaoSMMP4S">AutoReserve</a> / <a href="https://hitosara.com/0031226302/">ヒトサラ</a> / <a href="https://www.navitime.co.jp/poi?spot=01125-6933878">NAVITIME</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・バー</h2>
+<div class="card" id="c-iza_hanamizuki">
+<img class="hero" src="img/toyota/iza_hanamizuki.jpg" alt="焼鳥 はなみづき 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>焼鳥 はなみづき<span class="yomi">やきとり はなみづき</span></div>
+<div class="chips"><span class="chip station">station</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">豊田市駅近くの西町で奥三河どりを備長炭で焼き上げる焼鳥店。定番のかしわやだきみに加え、白子やこころのこりといった希少部位、キンカン醤油漬け、砂肝のコンフィなど鶏を隅々まで味わえる品揃えが自慢。売れ筋はハツ198円、月見つくね385円など価格も手頃。2階建ての店内は両フロアに個室を備え、少人数の飲みから16名までの宴会まで対応する。</div>
+<div class="sig"><b>一皿:</b>奥三河どりの串焼き・月見つくね</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 18:00〜23:00 ／ 金 18:00〜0:00 ／ 土 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市西町５丁目３４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565427727">☎ 0565-42-7727</a> ／ <a href="https://nbpy302.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>奥三河どりを使う駅前焼鳥の人気店。公式予約ページで2026年9月の空席確認ができ、営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%AF%E3%81%AA%E3%81%BF%E3%81%A5%E3%81%8D%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%A5%BF%E7%94%BA%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://nbpy302.gorp.jp/">公式サイト</a> / <a href="https://tabelog.com/aichi/A2305/A230501/23087427/">食べログ</a> / <a href="https://chaoo.jp/gourmet/shop/hanamizuki/">chaoo</a></div>
+</div></div>
+<div class="card" id="c-iza_antete">
+<img class="hero" src="img/toyota/iza_antete.jpg" alt="備長炭火焼き鳥・串揚げ くしや あんてて 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>備長炭火焼き鳥・串揚げ くしや あんてて<span class="yomi">くしや あんてて</span></div>
+<div class="chips"><span class="chip station">station</span></div>
+<div class="desc">豊田市駅からすぐの場所で、奥三河の上質な地鶏を備長炭でじっくり焼き上げる焼鳥と串揚げの店。希少部位までお手頃価格で味わえるのが持ち味で、だし巻きたまご600円、旬魚の刺身盛り1280円、三河湾名物メヒカリの唐揚げなど一品料理も充実。カウンター、掘りごたつの座敷、個室を合わせて77席の大箱で、日常の一杯から宴会まで幅広く使える。</div>
+<div class="sig"><b>一皿:</b>奥三河地鶏の備長炭火焼き鳥</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市昭和町４丁目４６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565320566">☎ 0565-32-0566</a> ／ <a href="https://r.gnavi.co.jp/nahp601/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>奥三河地鶏を扱う駅近の人気店。公式サイトが稼働しホットペッパーでネット予約受付中（2026年9月確認）で営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%82%99%E9%95%B7%E7%82%AD%E7%81%AB%E7%84%BC%E3%81%8D%E9%B3%A5%E3%83%BB%E4%B8%B2%E6%8F%9A%E3%81%92%20%E3%81%8F%E3%81%97%E3%82%84%20%E3%81%82%E3%82%93%E3%81%A6%E3%81%A6%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%98%AD%E5%92%8C%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kushiyaantete.foodre.jp/">公式サイト</a> / <a href="https://www.hotpepper.jp/strJ000764960/">ホットペッパー</a> / <a href="https://r.gnavi.co.jp/nahp601/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-iza_kabukimono">
+<img class="hero" src="img/toyota/iza_kabukimono.jpg" alt="海鮮居酒屋 傾奇者 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>海鮮居酒屋 傾奇者<span class="yomi">かいせんいざかや かぶきもの</span></div>
+<div class="chips"><span class="chip station">station</span></div>
+<div class="desc">魚介をメインに旬のものが揃う豊田市駅近くの海鮮居酒屋。気さくな人柄で愛されるスキンヘッドの名物大将・大羅氏が腕を振るい、刺身や寿司のほか串焼き、牛ハラミ丼など多彩な料理を出す。海のない豊田市で鮮度の良い魚を食べたいときの定番として地元客の支持が厚い。2階には30名ほどまで対応できる個室を備え、コースも2種類用意されるため歓送迎会や宴会にも向く。</div>
+<div class="sig"><b>一皿:</b>旬魚の刺身・寿司</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 17:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市桜町１丁目８５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565635233">☎ 0565-63-5233</a> ／ <a href="https://s.tabelog.com/aichi/A2305/A230501/23066461/top_amp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ヒトサラで料理人紹介付きで掲載される地元の人気海鮮居酒屋。ホットペッパー現行掲載・ネット予約対応（2026年9月確認）で営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%82%BE%E5%A5%87%E8%80%85%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0006139386/">ヒトサラ</a> / <a href="https://www.hotpepper.jp/strJ004364633/">ホットペッパー</a></div>
+</div></div>
+<div class="card" id="c-iza_ikkonan">
+<img class="hero" src="img/toyota/iza_ikkonan.jpg" alt="蕎麦と懐石料理 一献庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>蕎麦と懐石料理 一献庵<span class="yomi">そばとかいせきりょうり いっこんあん</span></div>
+<div class="chips"><span class="chip station">station</span></div>
+<div class="desc">福井産の蕎麦粉を使う手打ち蕎麦と懐石料理を看板にした、豊田市駅近くの和の酒房。越前そば粉の名店カガセイフンから蕎麦粉の納品を受けており、蕎麦の質は折り紙付き。地酒の品揃えが豊富で、福井の地酒とそば懐石を合わせる会が開かれるなど日本酒好きの集う店でもある。個室を備え、昼は蕎麦ランチ、夜は一品と酒を楽しみ〆に蕎麦を手繰る大人の使い方ができる。</div>
+<div class="sig"><b>一皿:</b>手打ち蕎麦と地酒・懐石コース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土 11:30〜14:30, 17:00〜23:00 ／ 水 11:30〜14:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市桜町１丁目６３ シングルプレイス 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05054880779">☎ 050-5488-0779</a> ／ <a href="https://ikkon-hanare-aichi.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>越前そば粉の製粉所が納品事例として公開する本格派。ホットペッパーでネット予約受付中（2026年9月確認）で営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%E3%81%A8%E6%87%90%E7%9F%B3%E6%96%99%E7%90%86%20%E4%B8%80%E7%8C%AE%E5%BA%B5%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%A1%9C%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%EF%BC%93%20%E3%82%B7%E3%83%B3%E3%82%B0%E3%83%AB%E3%83%97%E3%83%AC%E3%82%A4%E3%82%B9%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ003917228/">ホットペッパー</a> / <a href="https://soba-sueyoshi.co.jp/pro/wp/case/1941">カガセイフン納品事例</a> / <a href="https://r.gnavi.co.jp/n889402/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-iza_robata_tonbo">
+<img class="hero" src="img/toyota/iza_robata_tonbo.jpg" alt="ROBATAとんぼ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>ROBATAとんぼ<span class="yomi">ろばたとんぼ</span></div>
+<div class="chips"><span class="chip station">station</span><span class="chip day_drinking">day_drinking</span></div>
+<div class="desc">豊田市駅徒歩1分、若宮町のビル1階にある炉端焼き居酒屋。新鮮な魚介の刺し盛り、季節の食材の炉端焼き、A5ランク飛騨牛サーロインなど、旬の食材を目の前で焼き上げるスタイルが持ち味で、日本酒の品揃えにも定評がある。平日は15時、週末は14時開店と昼飲みができる貴重な店で、和モダンな30席の店内は最大10名までの貸切宴会にも対応する。</div>
+<div class="sig"><b>一皿:</b>炉端焼き・刺し盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木 15:00〜23:00 ／ 金・土 14:00〜23:00 ／ 日 14:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市若宮町１丁目２８−１ 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565333132">☎ 0565-33-3132</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅徒歩1分で昼から営業する地元人気の炉端居酒屋。公式サイトが最新の営業時間変更を告知しており（2026年9月確認）営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=ROBATA%E3%81%A8%E3%82%93%E3%81%BC%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%8B%A5%E5%AE%AE%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%98%E2%88%92%EF%BC%91%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://robata-tonbo.jp/">公式サイト</a> / <a href="https://www.hotpepper.jp/strJ001213672/">ホットペッパー</a></div>
+</div></div>
+<div class="card" id="c-iza_marunana">
+<img class="hero" src="img/toyota/iza_marunana.jpg" alt="西町呑処 マルナナ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>西町呑処 マルナナ<span class="yomi">にしまちのみどころ まるなな</span></div>
+<div class="chips"><span class="chip station">station</span><span class="chip new">new</span></div>
+<div class="desc">2023年6月に西町に開業した、昼は「うどんマルナナ」としてうどん屋、夜は呑処として営業する二毛作スタイルの店。夜は創作和食の一品料理と酒が楽しめ、名物の半熟玉子フライは地元グルメブログでも絶賛された。飲んだ後に自家のうどんで〆られるのも二毛作店ならではの魅力。豊田市駅西口の飲み屋街エリアにあり、深夜0時まで営業しているため2軒目使いにも向く。</div>
+<div class="sig"><b>一皿:</b>半熟玉子フライ・〆のうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市西町６丁目７−４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565323489">☎ 0565-32-3489</a> ／ <a href="https://www.instagram.com/udon_marunana">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昼うどん・夜呑処の個性的な営業形態で人気の新店。ホットペッパーでネット予約受付中（2026年9月確認）で営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%A5%BF%E7%94%BA%E5%91%91%E5%87%A6%20%E3%83%9E%E3%83%AB%E3%83%8A%E3%83%8A%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%A5%BF%E7%94%BA%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ003736586/">ホットペッパー</a> / <a href="https://toyotanikublog.com/nomidokoro-marunana/">コハクの豊田市ぼっちグルメ</a> / <a href="https://hitosara.com/0031643808/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-iza_roncana">
+<img class="hero" src="img/toyota/iza_roncana.jpg" alt="BAR RON CANA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>BAR RON CANA<span class="yomi">ばー ろんけーな</span></div>
+<div class="chips"><span class="chip station">station</span><span class="chip bar">bar</span><span class="chip long_established">long_established</span></div>
+<div class="desc">銀座の名門バーで修業した店主が地元豊田で25年以上（案内によっては30年）営む、豊田市を代表するオーセンティックバー。厳選した600種以上の酒を揃え、特にスコッチシングルモルトをはじめとするウイスキーの品揃えが厚い。カウンター14席の店内は英国クラブ風のスコティッシュな空間で、客との会話からその日の一杯を仕立てるスタンダードカクテルにも定評がある。一人飲みの止まり木にもデートにも使える。</div>
+<div class="sig"><b>一皿:</b>スコッチシングルモルト・スタンダードカクテル</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・日 18:00〜0:00 ／ 金・土 18:00〜1:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市竹生町４丁目１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565345959">☎ 0565-34-5959</a> ／ <a href="https://tabelog.com/aichi/A2305/A230501/23033896/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田市駅エリアで四半世紀以上続く老舗オーセンティックバー。公式サイトが稼働し地域店舗情報サイトにも現行掲載（2026年9月確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=BAR%20RON%20CANA%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E7%AB%B9%E7%94%9F%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.rc1109.com/roncana_top.html">公式サイト</a> / <a href="https://tabelog.com/aichi/A2305/A230501/23033896/dtlmenu/">食べログ</a> / <a href="https://aicity.jp/aichi/store/txtlzptzz">aicity</a></div>
+</div></div>
+<div class="card" id="c-iza_robata_suzuki">
+<img class="hero" src="img/toyota/iza_robata_suzuki.jpg" alt="炉ばた すずき 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>炉ばた すずき<span class="yomi">ろばた すずき</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">愛知環状鉄道三河豊田駅から徒歩5分の住宅街にある海鮮居酒屋。地元の市場で毎日仕入れる新鮮な魚介を、職人がお造りや炭火の炉端焼きなど様々な調理法で仕立てる。トヨタ関連の職場宴会需要も厚く、個室での刺身・魚料理と日本酒の組み合わせが評判。個室は4名まで部屋代2000円、5〜8名は会計の10%という明朗な設定。まちなかから少し外れても通う価値のある実力店。</div>
+<div class="sig"><b>一皿:</b>お造り・炭火炉端焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 17:00〜23:00 ／ 日 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市御幸本町３丁目８４ パレス第２みゆき 1階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565271681">☎ 0565-27-1681</a> ／ <a href="https://tsuku2.jp/robatasuzuki">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>市場直送の魚と日本酒で評判の海鮮居酒屋。公式サイトが稼働しブログ・スタッフ募集を随時更新中（2026年9月確認)で営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%89%E3%81%B0%E3%81%9F%20%E3%81%99%E3%81%9A%E3%81%8D%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%BE%A1%E5%B9%B8%E6%9C%AC%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%98%EF%BC%94%20%E3%83%91%E3%83%AC%E3%82%B9%E7%AC%AC%EF%BC%92%E3%81%BF%E3%82%86%E3%81%8D%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.robata-suzuki.com/">公式サイト</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-ashetto_toyota">
+<img class="hero" src="img/toyota/ashetto_toyota.jpg" alt="洋食屋 あしぇっと 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>洋食屋 あしぇっと<span class="yomi">ようしょくや あしぇっと</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">豊田市大林町の住宅街に構える町の洋食屋。落ち着いた広々とした店内で、オムライスやハンバーグ、カニクリームコロッケなど、手間ひまかけた定番洋食をゆったり味わえる。好きな料理を2品選べるランチが名物で、ハンバーグとカニクリームコロッケの組み合わせが定番人気。カニクリームコロッケは「身がたっぷり入ってとろける」と口コミで評判が高い。テーブル24席・駐車場12台で家族連れでも使いやすく、日替わりランチもあり地元客のリピートが多い。支払いは現金のみ。</div>
+<div class="sig"><b>一皿:</b>カニクリームコロッケ／選べる2品ランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金 11:30〜14:00, 18:00〜20:00 ／ 火 11:30〜14:00 ／ 土・日 11:30〜14:00, 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市大林町１２丁目5−１４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565278568">☎ 0565-27-8568</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田市の洋食ジャンルでRetty・食べログ等の人気上位常連。ホットペッパーグルメに閉店・掲載終了表示なく店舗情報が掲載継続中で（2026年9月確認）、AutoReserveでも予約受付中。地元グルメブログでも継続的に紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E3%81%82%E3%81%97%E3%81%87%E3%81%A3%E3%81%A8%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%A4%A7%E6%9E%97%E7%94%BA%EF%BC%91%EF%BC%92%E4%B8%81%E7%9B%AE5%E2%88%92%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000410065/">ホットペッパーグルメ</a> / <a href="https://toyotanikublog.com/ashetto-oobayashi/">コハクの豊田市ぼっちグルメ</a> / <a href="https://autoreserve.com/ja/restaurants/Rav8YggKZRBqJhtNS2sG">AutoReserve</a></div>
+</div></div>
+<div class="card" id="c-la_ferice">
+<img class="hero" src="img/toyota/la_ferice.jpg" alt="ラ・フェリィチェ。 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>ラ・フェリィチェ。<span class="yomi">ら・ふぇりぃちぇ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">2006年3月開業、豊田市美里で長く愛されるハンバーグと欧風家庭料理の店。店名はイタリア語で「幸せ」を意味する。看板のハンバーグは旨味の多い国産牛にオーストラリア産牛もも肉を合わせた粗挽き仕立てで、肉々しい食感とあふれる肉汁が身上。デミグラスなど選べる4種のソースで楽しめる。パスタや焼きたてパンも自家製で、季節限定パスタも人気。結婚式二次会など貸切利用にも対応する。駐車場9台。</div>
+<div class="sig"><b>一皿:</b>粗挽きハンバーグ（選べる4種ソース）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜15:00, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市美里５丁目１３−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565871360">☎ 0565-87-1360</a> ／ <a href="http://www.la-ferice.com/html/kodawari/index.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>開業から約20年続く地元人気店で、豊田市のハンバーグ特集（chaoo「三河おいしい推しグルメ」等）常連。2025年9月時点の営業情報更新が確認でき、地元ブログで2025年秋の限定パスタ実食記事もあり営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BB%E3%83%95%E3%82%A7%E3%83%AA%E3%82%A3%E3%83%81%E3%82%A7%E3%80%82%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E7%BE%8E%E9%87%8C%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://www.la-ferice.com/">公式サイト</a> / <a href="https://chaoo.jp/gourmet/shop/laferice/">chaoo（三河おいしい推しグルメ）</a> / <a href="https://toyotanikublog.com/laferiche-2/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-la_mano_di_marco">
+<img class="hero" src="img/toyota/la_mano_di_marco.jpg" alt="La Mano di Marco（ラ・マーノ・ディ・マルコ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>La Mano di Marco（ラ・マーノ・ディ・マルコ）<span class="yomi">ら・まーの・でぃ・まるこ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">イタリア人シェフ・マルコ氏が腕を振るう、豊田市屈指の本格イタリアン。京都から豊田へ移転してきた実力店で、ミシュランガイド掲載歴を持つ。手打ちパスタや炭火で焼き上げるステーキなど、本場仕込みの料理をコース仕立てで提供し、自家輸入のバルサミコなど食材への こだわりも強い。ランチは手頃なコース、夜は予約必須のディナーコースが中心。地元では「豊田で一番イタリアに近い店」と評され、記念日利用も多い。</div>
+<div class="sig"><b>一皿:</b>本場仕込みの手打ちパスタと炭火ステーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:30〜14:00, 18:00〜22:00 ／ 日 11:30〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市平山町５丁目２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565417347">☎ 0565-41-7347</a> ／ <a href="https://www.la-mano-di-marco.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン掲載歴のあるイタリア人シェフの店で、豊田市のイタリアンでは別格の評価。公式サイトに2025年11〜12月のクリスマスコース・年末年始休業のお知らせが掲載されており、営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=La%20Mano%20di%20Marco%EF%BC%88%E3%83%A9%E3%83%BB%E3%83%9E%E3%83%BC%E3%83%8E%E3%83%BB%E3%83%87%E3%82%A3%E3%83%BB%E3%83%9E%E3%83%AB%E3%82%B3%EF%BC%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%B9%B3%E5%B1%B1%E7%94%BA%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.la-mano-di-marco.com/">公式サイト</a> / <a href="https://hitosara.com/0031297013/">ヒトサラ</a> / <a href="https://toyotanikublog.com/la-mano-di-marco/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-leclat_de_rire">
+<img class="hero" src="img/toyota/leclat_de_rire.jpg" alt="レクラ・ド・リール（L'éclat de rire） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>レクラ・ド・リール（L'éclat de rire）<span class="yomi">れくら・ど・りーる</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">南仏・リヨン・トゥールーズで修業したシェフが営む、2012年開業のフランス料理店。パリのビストロ風の外観で、オープンキッチン前のカウンターとテーブル席を備える。フランスの地方料理・伝統料理を軸に、自家農園の採れたて野菜や豊田近郊の食材を使ったコースを提供し、ナチュラルワインとのマリアージュも楽しめる。2026年6月には14周年記念コースを催すなど、豊田で本格フレンチを長く支えてきた一軒。</div>
+<div class="sig"><b>一皿:</b>自家農園野菜を使うフランス地方料理のコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日 11:30〜14:00, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月・火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市東山町１丁目１０−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565803377">☎ 0565-80-3377</a> ／ <a href="http://leclatderire.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田市では希少な本格フレンチとして食べログ・ヒトサラ等で高評価。公式サイトが2026年9月11日の予約状況、2026年6月の14周年記念コース、2026年7月のコース改定を告知しており、現在の営業が明確に確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%AF%E3%83%A9%E3%83%BB%E3%83%89%E3%83%BB%E3%83%AA%E3%83%BC%E3%83%AB%EF%BC%88L%27%C3%A9clat%20de%20rire%EF%BC%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%9D%B1%E5%B1%B1%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://leclatderire.com/">公式サイト</a> / <a href="https://r.gnavi.co.jp/kgch8tz20000/">楽天ぐるなび</a> / <a href="https://tabelog.com/aichi/A2305/A230501/23045833/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-reveur">
+<img class="hero" src="img/toyota/reveur.jpg" alt="Reveur（レヴール） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>Reveur（レヴール）<span class="yomi">れゔーる</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">2022年12月開業の完全予約制フレンチレストラン。昼・夜とも各2組限定で、豊田市や隣接するみよし市産の旬野菜、地元の炭職人から仕入れた炭での調理など、地元食材にとことんこだわった全10品のフルコースを提供する。アーチ型の高い天井と木のぬくもりが心地よい店内は、テーブルや椅子も豊田市の家具職人による特注品。誕生日・記念日・顔合わせなど特別な日の利用が多く、隠れ家的な一軒として評価を高めている。</div>
+<div class="sig"><b>一皿:</b>地元食材づくしの全10品フルコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜15:30, 18:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市美山町５丁目１４２−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565479955">☎ 0565-47-9955</a> ／ <a href="https://reveur-1127.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「まちクル」等の地域メディアで豊田の特別な日のフレンチとして紹介される注目店。公式ブログが2026年9月1日に更新（8月の来店御礼）されており、2026年時点の営業実態が明確に確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Reveur%EF%BC%88%E3%83%AC%E3%83%B4%E3%83%BC%E3%83%AB%EF%BC%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E7%BE%8E%E5%B1%B1%E7%94%BA%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%EF%BC%92%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.reveur-1127.com/">公式サイト</a> / <a href="https://www.machikuru.jp/special/p5647/">まちクル</a> / <a href="https://www.hotpepper.jp/strJ003984260/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-bacchus_toyota">
+<img class="hero" src="img/toyota/bacchus_toyota.jpg" alt="BACCHUS TOYOTA（バッカス トヨタ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>BACCHUS TOYOTA（バッカス トヨタ）<span class="yomi">ばっかす とよた</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">豊田市駅徒歩2分という好立地のカジュアルイタリアンダイニング。約30種を揃えるワインと黒毛和牛グリルが看板で、記念日や誕生日のディナー、接待まで幅広く使われる。シックで大人っぽい店内はデート利用にも人気。土日はパスタが選べるランチセットも提供し、テイクアウトの惣菜マルシェも展開するなど、街なかの「使える」イタリアンとして地元の支持が厚い。</div>
+<div class="sig"><b>一皿:</b>黒毛和牛グリルと約30種のワイン</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 17:00〜23:00 ／ 土・日 11:30〜14:30, 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市西町５丁目２４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565635775">☎ 0565-63-5775</a> ／ <a href="http://www.bacchus-mm.com/toyota/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田市駅前エリアのイタリアンとして一休・食べログ等で人気上位。2025年12月30日に店舗情報が更新されており、一休.comレストラン・AutoReserveでも予約受付が継続中で営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=BACCHUS%20TOYOTA%EF%BC%88%E3%83%90%E3%83%83%E3%82%AB%E3%82%B9%20%E3%83%88%E3%83%A8%E3%82%BF%EF%BC%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%A5%BF%E7%94%BA%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.bacchus-toyota.com/">公式サイト</a> / <a href="https://restaurant.ikyu.com/146440">一休.comレストラン</a> / <a href="https://chaoo.jp/gourmet/contents/blog/942/">chaoo（三河おいしい推しグルメ）</a></div>
+</div></div>
+<div class="card" id="c-meatman153">
+<img class="hero" src="img/toyota/meatman153.jpg" alt="みーとまん153 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>みーとまん153<span class="yomi">みーとまん いちごーさん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">国道153号沿いにあるミートソース専門のカジュアルイタリアン。看板は安城和牛と国産野菜を使い72時間かけて仕上げるミートソースで、濃厚な旨味とコクが評判。お箸で気軽に食べられるスタイルで、ランチは1,000円前後とコストパフォーマンスも高い。人気を受けて市内に2号店「ミートマン153 2nd」も展開する。テイクアウト対応・駐車場ありで、家族連れから一人ランチまで幅広く使われている。</div>
+<div class="sig"><b>一皿:</b>安城和牛の72時間ミートソースパスタ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00〜14:00, 18:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市広久手町７丁目１４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565392681">☎ 0565-39-2681</a> ／ <a href="https://www.instagram.com/meatman153">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田発祥のミートソース専門店の本店（市内に2nd店を持つ地元発祥ローカル展開だが本店を選定）。ホットペッパーでネット予約受付中、公式Instagramも更新されており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%83%BC%E3%81%A8%E3%81%BE%E3%82%93153%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%BA%83%E4%B9%85%E6%89%8B%E7%94%BA%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ004453001/">ホットペッパーグルメ</a> / <a href="https://tabelog.com/aichi/A2305/A230501/23067711/">食べログ</a> / <a href="https://www.instagram.com/meatman153/">Instagram</a></div>
+</div></div>
+<div class="card" id="c-spice_curry_tomos">
+<img class="hero" src="img/toyota/spice_curry_tomos.jpg" alt="スパイスカレー トモス 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">43</span>スパイスカレー トモス<span class="yomi">すぱいすかれー ともす</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">豊田市宮上町の小さな店舗で、厳選スパイスを使ったアジア各国の本格スパイスカレーを提供する専門店。日替わり・週替わりでインドやスリランカなど各国のカレーが登場し、香り高いビリヤニも評判。あいがけで複数の味を楽しむファンが多い。まちクルの「こだわりカレーが食べられる店6選」にも選ばれ、豊田のスパイスカレーブームを牽引する存在。ディナーは金・土のみで、テイクアウトにも対応する。駐車場8台。</div>
+<div class="sig"><b>一皿:</b>週替わりの本格スパイスカレーとビリヤニ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・日 11:30〜14:30 ／ 金・土 11:30〜14:30, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市宮上町８丁目９６−２ コーポ水野</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565342587">☎ 0565-34-2587</a> ／ <a href="https://www.instagram.com/tomos0824?igsh=dWFsYmtna2NqbjZs">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田市のスパイスカレーで検索上位・地域メディア掲載の人気店。公式Instagramが継続更新されており、まちクル・食べログ等の掲載も継続中で営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%E3%82%AB%E3%83%AC%E3%83%BC%20%E3%83%88%E3%83%A2%E3%82%B9%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%AE%AE%E4%B8%8A%E7%94%BA%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%99%EF%BC%96%E2%88%92%EF%BC%92%20%E3%82%B3%E3%83%BC%E3%83%9D%E6%B0%B4%E9%87%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.instagram.com/tomos0824/">Instagram</a> / <a href="https://www.machikuru.jp/special/p5582/">まちクル（カレー6選）</a> / <a href="https://toyotanikublog.com/spicecurry-tomos/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-baguru">
+<img class="hero" src="img/toyota/baguru.jpg" alt="炭焼ハンバーグ バグる 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">44</span>炭焼ハンバーグ バグる<span class="yomi">すみやきはんばーぐ ばぐる</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">肉好きの店主が3年かけて完成させたという炭焼ハンバーグの専門店。国産・オーストラリア産の牛もも肉を使った牛100%の粗挽きハンバーグと、牛豚合挽きの2本立てで、炭火の香ばしさとあふれる肉汁が身上。巨盛りの唐揚げなどサイドも豪快で、お子様プレートもあり家族連れに人気。メディアでも度々取り上げられ、週末は行列もできる。駐車場24台と郊外店らしい使いやすさも魅力。</div>
+<div class="sig"><b>一皿:</b>牛100%の炭焼き粗挽きハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 11:00〜15:00, 17:00〜22:30 ／ 土・日 11:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市若林西町茶屋間１−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565857955">☎ 0565-85-7955</a> ／ <a href="https://hamburg-baguru.therestaurant.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Yahoo!ニュース（地域グルメエキスパート記事）やchaooのハンバーグ特集で紹介される豊田南部の人気店。ホットペッパーに閉店表示なく掲載継続中で（2026年9月確認）、営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0%20%E3%83%90%E3%82%B0%E3%82%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%8B%A5%E6%9E%97%E8%A5%BF%E7%94%BA%E8%8C%B6%E5%B1%8B%E9%96%93%EF%BC%91%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://news.yahoo.co.jp/expert/articles/670aa2b5d91dbcebc63e76facffec2b601edc7bb">Yahoo!ニュース エキスパート</a> / <a href="https://www.hotpepper.jp/strJ001283988/">ホットペッパーグルメ</a> / <a href="https://hamburg-baguru.therestaurant.jp/">公式サイト</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・和菓子・パン</h2>
+<div class="card" id="c-kissa_tamaki">
+<img class="hero" src="img/toyota/kissa_tamaki.jpg" alt="喫茶たまき 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>喫茶たまき<span class="yomi">きっさたまき</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip morning">morning</span></div>
+<div class="desc">豊田市四郷町に佇む昭和レトロな喫茶店。朝5時から開く早起きの店で、地元の常連客に長年愛され続けている。名物は400円という驚きの価格のモーニングセットで、厚切りトーストまたはカレー風味キャベツ入りのホットドッグに、コールスローサラダ・ゆで卵・コーヒーまで付くボリューム満点の内容。飾らない店内と気さくな接客が「懐かしの豊田モーニング」として再評価されており、豊田の喫茶モーニング文化を体感できる代表格。共同駐車場11台。</div>
+<div class="sig"><b>一皿:</b>400円モーニング（厚切りトースト／ホットドッグ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 5:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市四郷町天道２３−１ 鈴彦ハイツ</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565452390">☎ 0565-45-2390</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田のモーニング文化を象徴するコスパ最強の老舗喫茶として地域メディアで話題。まんぷくナビの2025年4月11日付紹介記事があり、2025年の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%81%9F%E3%81%BE%E3%81%8D%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%9B%9B%E9%83%B7%E7%94%BA%E5%A4%A9%E9%81%93%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%91%20%E9%88%B4%E5%BD%A6%E3%83%8F%E3%82%A4%E3%83%84">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://manpuku-navi.net/2025/04/11/%E3%80%90%E8%B1%8A%E7%94%B0%E3%81%AE%E6%87%90%E3%81%8B%E3%81%97%E3%83%A2%E3%83%BC%E3%83%8B%E3%83%B3%E3%82%B0%E3%80%91400%E5%86%86%E3%81%A7%E5%A4%A7%E6%BA%80%E8%B6%B3%EF%BC%81%E5%9C%B0%E5%85%83/">まんぷくナビ（2025年4月）</a> / <a href="https://toyotanikublog.com/kissatamaki/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-abusanto">
+<img class="hero" src="img/toyota/abusanto.jpg" alt="自家焙煎珈琲 あぶさんと 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>自家焙煎珈琲 あぶさんと<span class="yomi">じかばいせんこーひー あぶさんと</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip morning">morning</span></div>
+<div class="desc">豊田市駅から徒歩約10分、石窯で焼く自家製パンと自家焙煎コーヒーの店。豆の販売も行う本格派で、ブレンド3種にストレート数種を常時用意する。朝はドリンク代のみで食パンが付き、＋300円で日替わりパン・サラダ・ヨーグルト付きのモーニングセットになる名物モーニングが人気。昼はサンドイッチや石窯ピザ、そして厚みのある巨大ホットケーキも名物で、ハード系パンのファンも多い。喫茶モーニング文化と自家焙煎文化を一度に味わえる一軒。</div>
+<div class="sig"><b>一皿:</b>石窯パンのモーニングと巨大ホットケーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 9:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市神田町２丁目４−３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565350212">☎ 0565-35-0212</a> ／ <a href="https://www.instagram.com/abusantocoffee?igsh=ZWl1MWdkeXRiaDZr">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>自家焙煎と石窯自家製パンを両立する豊田では希少な店。まちクルの2025年3月19日付モーニング特集に掲載されており、2025年の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%E7%8F%88%E7%90%B2%20%E3%81%82%E3%81%B6%E3%81%95%E3%82%93%E3%81%A8%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E7%A5%9E%E7%94%B0%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.machikuru.jp/special/p9225/">まちクル（2025年3月モーニング特集）</a> / <a href="https://tabelog.com/aichi/A2305/A230501/23007405/dtlmap/">食べログ</a> / <a href="https://toyotanikublog.com/abusanto-morning/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-cafe_de_chef">
+<img class="hero" src="img/toyota/cafe_de_chef.jpg" alt="カフェ・ド・シェフ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>カフェ・ド・シェフ<span class="yomi">かふぇ・ど・しぇふ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">豊田市挙母町の欧州風スペシャルティコーヒー専門店。本格焙煎のコーヒーは種類豊富で、ラテアート講師も務める店主による立体的な3Dラテアートが名物。パティシエ歴30年の手づくりケーキも自慢で、バスクチーズケーキやフルーツまるごとケーキが人気。トーストなどの軽食やコーヒーぜんざいといった喫茶らしい甘味もあり、朝9時から夜まで通しで使える。挙母神社にも近く、街歩きの休憩にも好適な一軒。</div>
+<div class="sig"><b>一皿:</b>3Dラテアートとパティシエ特製ケーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市挙母町４丁目１０−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565312339">☎ 0565-31-2339</a> ／ <a href="https://cafe-de-chef.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>コーヒー・ケーキ・ラテアートの三拍子が揃う豊田の実力派カフェ。公式サイトのコラムが2026年9月4日付で更新されており、2026年の営業実態が明確に確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%83%89%E3%83%BB%E3%82%B7%E3%82%A7%E3%83%95%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%8C%99%E6%AF%8D%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://cafe-de-chef.jp/">公式サイト</a> / <a href="https://tabelog.com/en/aichi/A2305/A230501/23004265/">食べログ</a> / <a href="https://toyotanikublog.com/cafe-de-chef/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-cafe_kona">
+<img class="hero" src="img/toyota/cafe_kona.jpg" alt="くつろぎのcafe KONA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>くつろぎのcafe KONA<span class="yomi">くつろぎのかふぇ こな</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip morning">morning</span></div>
+<div class="desc">豊田スタジアムにほど近い美里の住宅街で、朝7時30分から開くくつろぎ系カフェ。手入れの行き届いたガーデンを望む店内が心地よく、モーニングはドリンク代だけで「トースト・ゆで卵」または「おにぎり・味噌汁」を選べる名古屋圏らしいサービスが魅力。コーヒーか紅茶付きのスペシャルセット770円やフレンチトーストも人気。ランチ・カフェタイム・夜ごはんまで通しで営業し、韓国料理メニューも揃うユニークな地元密着店。駐車場24台。</div>
+<div class="sig"><b>一皿:</b>おにぎり・味噌汁も選べるモーニング</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 7:30〜21:00 ／ 土 8:00〜21:00 ／ 日 8:00〜11:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県豊田市美里２丁目１９−８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565423439">☎ 0565-42-3439</a> ／ <a href="http://www.queengardenkona.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>和洋選べるモーニングとガーデン席で支持される地元人気店。まちクルの2025年3月19日付モーニング特集に掲載され、公式サイトも稼働中で営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%A4%E3%82%8D%E3%81%8E%E3%81%AEcafe%20KONA%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E7%BE%8E%E9%87%8C%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%99%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.queengardenkona.com/">公式サイト</a> / <a href="https://www.machikuru.jp/special/p9225/">まちクル（2025年3月モーニング特集）</a> / <a href="https://toyotanikublog.com/kuturogino-cafe-kona/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-little_cockoo">
+<img class="hero" src="img/toyota/little_cockoo.jpg" alt="Little Cockoo（リトルクックー） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>Little Cockoo（リトルクックー）<span class="yomi">りとるくっくー</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip morning">morning</span></div>
+<div class="desc">スパイスにこだわるカレーと、ライ麦パンのタルティーヌが看板のおしゃれカフェ。西町の空き家リノベ施設で人気を集め、2024年4月に丸山町へ移転して席数・駐車場を拡充した。モーニングはストロベリーレアチーズクリームなど華やかなタルティーヌにサラダ・スープ・ドリンクが付く充実の内容。季節の食材を合わせるキーマカレーや、カレー屋で食べるいちごショートケーキも名物。丹羽郡大口町に姉妹店を持つ豊田発祥の店の本店。</div>
+<div class="sig"><b>一皿:</b>ライ麦パンのタルティーヌモーニングとキーマカレー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 8:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市丸山町３丁目４７−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0565416008">☎ 0565-41-6008</a> ／ <a href="http://www.instagram.com/__little__cockoo__">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田発祥（大口町に姉妹店を持つ）の本店。2024年4月に丸山町へ移転オープンし、まちクルの2025年3月19日付モーニング特集に掲載されており、2025年の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Little%20Cockoo%EF%BC%88%E3%83%AA%E3%83%88%E3%83%AB%E3%82%AF%E3%83%83%E3%82%AF%E3%83%BC%EF%BC%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E4%B8%B8%E5%B1%B1%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%97%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.machikuru.jp/special/p9225/">まちクル（2025年3月モーニング特集）</a> / <a href="https://toyota.goguynet.jp/2024/04/19/little-cockoo-toyotasi-itenn/">号外NET豊田市（移転記事）</a> / <a href="https://toyotanikublog.com/little-cockoo-lunch-2/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-oliva_eterna">
+<img class="hero" src="img/toyota/oliva_eterna.jpg" alt="オリーヴァ・エテルナ（OLIVA ETERNA） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>オリーヴァ・エテルナ（OLIVA ETERNA）<span class="yomi">おりーゔぁ・えてるな</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip morning">morning</span></div>
+<div class="desc">「シンプル＆ユニーク」をコンセプトに、素材の味と旬、形やネーミングのわくわく感を大切にする豊田市永覚新町のベーカリー。旧店名エイラクドーから続く地元密着の店で、メイプルがマーブル状に入った「メイプルラウンド」が一番人気。朝8時のモーニングタイムからランチ、午後のホッとタイムまで時間帯ごとにパンが焼き上がり、小ぶりな店内に常時多彩なパンが並ぶ。広島のパンイベントに招かれるなど県外からも注目される実力店。</div>
+<div class="sig"><b>一皿:</b>メイプルラウンド</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">火・日曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市栄町５丁目２−１ 三宅ビル 1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565850500">☎ 0565-85-0500</a> ／ <a href="https://www.instagram.com/olivaeterna/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊田市のパン屋ランキング・特集の常連で、広島パンフェスタ出店店舗にも選ばれる実力派。食べログ・Rettyに閉店表示なく掲載が継続しており（2026年9月確認）、営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AA%E3%83%AA%E3%83%BC%E3%83%B4%E3%82%A1%E3%83%BB%E3%82%A8%E3%83%86%E3%83%AB%E3%83%8A%EF%BC%88OLIVA%20ETERNA%EF%BC%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%20%E4%B8%89%E5%AE%85%E3%83%93%E3%83%AB%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hiroshima-painfesta.com/shoplist/shop498">広島パンフェスタ出店情報</a> / <a href="https://tabelog.com/aichi/A2305/A230501/23008397/">食べログ</a> / <a href="https://toyotanikublog.com/oliva-eterna/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-shiawase_no_pan">
+<img class="hero" src="img/toyota/shiawase_no_pan.jpg" alt="幸せのパン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">51</span>幸せのパン<span class="yomi">しあわせのぱん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">愛知県豊田市広久手町の小さなパン屋。毎日約50種類のパンを焼き上げ、店内には焼きたての香りが漂うアットホームな雰囲気が魅力。食パンや惣菜パン、菓子パンまで日常使いのラインナップが揃い、「毎日でも通いたいパン屋」として地域メディアの特集にも選ばれている。売り切れ次第終了のため午前中の来店がおすすめ。地元の家族連れや近隣勤めの常連に支えられる、豊田の暮らしに根ざした一軒。</div>
+<div class="sig"><b>一皿:</b>毎日約50種類の焼きたてパン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市広久手町５丁目２７−４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565773525">☎ 0565-77-3525</a> ／ <a href="https://shiawasenopan.com/%20%20%20%20%20https://instagram.com/pan_shiawase?r=nametag">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>まちクル「地元で愛されるおすすめのパン屋さん5選」掲載の地元人気店。2025年4月17日付のグルメブログ実食記事があり、公式サイトも稼働中で2025年の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B9%B8%E3%81%9B%E3%81%AE%E3%83%91%E3%83%B3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E5%BA%83%E4%B9%85%E6%89%8B%E7%94%BA%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%97%E2%88%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://shiawasenopan.com/">公式サイト</a> / <a href="https://www.machikuru.jp/special/p13044/">まちクル（パン屋5選）</a> / <a href="https://bibigur.com/2025/04/17/siawasenopann/">ビビッとグルメ（2025年4月）</a></div>
+</div></div>
+<div class="card" id="c-fukuokaya">
+<img class="hero" src="img/toyota/fukuokaya.jpg" alt="御菓子司 福岡屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">52</span>御菓子司 福岡屋<span class="yomi">おかしつかさ ふくおかや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip wagashi">wagashi</span></div>
+<div class="desc">明治35年（1902年）創業、120年以上続く豊田市保見町の老舗和菓子店。毎年11月〜5月頃に販売するいちご大福が有名で、みかん・トマト・パイナップルなど季節の素材を使った変わり大福も次々と生み出す進化系の老舗。パイナップル大福は中日新聞の三河銘菓連載でも取り上げられた。彼岸団子やおはぎ、月見団子など歳時記の和菓子、慶弔用菓子や赤飯も揃い、地域の暮らしに寄り添う。2001年度には「保見の里」がとよた・かも銘菓推奨品を受賞。</div>
+<div class="sig"><b>一皿:</b>いちご大福・パイナップル大福</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 8:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市保見町塚原１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565488036">☎ 0565-48-8036</a> ／ <a href="http://www.machikuru.jp/mc0167/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業120年超で豊田を代表する和菓子の老舗。まちクルの店舗ページで9月の彼岸団子・月見団子の販売告知が出ており（2026年9月確認）、現在の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E7%A6%8F%E5%B2%A1%E5%B1%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E4%BF%9D%E8%A6%8B%E7%94%BA%E5%A1%9A%E5%8E%9F%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.machikuru.jp/fukuokaya/">まちクル店舗ページ</a> / <a href="https://www.chunichi.co.jp/article/505176">中日新聞（三河百菓）</a> / <a href="https://toyotanikublog.com/fukuokaya/">コハクの豊田市ぼっちグルメ</a></div>
+</div></div>
+<div class="card" id="c-kawamuraya">
+<img class="hero" src="img/toyota/kawamuraya.jpg" alt="日月もなか總本舗 川村屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">53</span>日月もなか總本舗 川村屋<span class="yomi">じつげつもなかそうほんぽ かわむらや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip wagashi">wagashi</span><span class="chip asuke">asuke</span></div>
+<div class="desc">紅葉の名所・香嵐渓で知られる足助の古い町並みに店を構える、大正5年（1916年）創業の老舗和菓子店。看板の「日月もなか」は鎌倉時代の武将・足助重範公の旗印「日月」にちなむ足助の銘菓。上質な糯米を焼いた皮は口に張り付かず香ばしく、北海道産大手亡（白いんげん）を裏山のミネラル豊富な水で炊いた白餡は、すっきりした甘さと豊かな風味が広がる。100年以上変わらぬ製法を守り、足助散策の土産の定番として愛され続けている。</div>
+<div class="sig"><b>一皿:</b>日月もなか</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 8:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県豊田市足助町田町２２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0565620014">☎ 0565-62-0014</a> ／ <a href="https://www.tourismtoyota.jp/foods/detail/16/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業100年超・足助を代表する銘菓の総本舗。豊田市足助観光協会の公式サイトに現在も営業店舗として掲載されており（2026年9月確認）、営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%88%E3%82%82%E3%81%AA%E3%81%8B%E7%B8%BD%E6%9C%AC%E8%88%97%20%E5%B7%9D%E6%9D%91%E5%B1%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E8%B1%8A%E7%94%B0%E5%B8%82%E8%B6%B3%E5%8A%A9%E7%94%BA%E7%94%B0%E7%94%BA%EF%BC%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://asuke.info/eat/sweets/entry-59.html">豊田市足助観光協会</a> / <a href="https://www.jalan.net/kankou/spt_23541ga3550085603/">じゃらんnet</a> / <a href="http://toyota-marche.jp/item/%E6%97%A5%E6%9C%88%E3%82%82%E3%81%AA%E3%81%8B%E7%B8%BD%E6%9C%AC%E8%88%97%E3%80%80%E5%B7%9D%E6%9D%91%E5%B1%8B%E3%80%80%E6%97%A5%E6%9C%88%E3%82%82%E3%81%AA%E3%81%8B">WE LOVEとよたマルシェ</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年9月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>

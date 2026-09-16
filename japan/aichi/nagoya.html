@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>名古屋美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / NAGOYA・愛知県 🇯🇵</div>
+  <h1>名古屋美食ガイド</h1>
+  <div class="sub">独自の食文化「名古屋めし」が花開く大都会。櫃で供するひつまぶし、土鍋の味噌煮込みうどん、八丁味噌のどて煮と味噌カツ、甘辛い手羽先、鉄板ナポリタンにあんかけスパ、小倉トーストの喫茶文化まで厳選72スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(Google Maps投稿写真)。</div>
+  <div class="meta">2026年9月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/nagoya/_map.png" alt="全域マップ">
+<a href="#c-atsuta_horaiken" style="left:38.28%;top:65.62%;width:3.46%;height:3.18%;"></a>
+<a href="#c-shirakawa_joshin" style="left:29.19%;top:17.54%;width:3.46%;height:3.18%;"></a>
+<a href="#c-yamamotoya_sohonke" style="left:36.88%;top:34.8%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kadomaru" style="left:41.14%;top:28.66%;width:3.46%;height:3.18%;"></a>
+<a href="#c-yabaton_honten" style="left:37.89%;top:37.67%;width:3.46%;height:3.18%;"></a>
+<a href="#c-tonpachi" style="left:42.26%;top:42.34%;width:3.46%;height:3.18%;"></a>
+<a href="#c-yamachan_honten" style="left:42.18%;top:33.41%;width:3.46%;height:3.18%;"></a>
+<a href="#c-shimasho" style="left:33.33%;top:33.88%;width:3.46%;height:3.18%;"></a>
+<a href="#c-yokoi_sumiyoshi" style="left:36.16%;top:33.79%;width:3.46%;height:3.18%;"></a>
+<a href="#c-hanabi_takabata" style="left:8.24%;top:51.49%;width:3.46%;height:3.18%;"></a>
+<a href="#c-tenmusu_senju" style="left:37.91%;top:39.04%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kissa_yuki" style="left:50.57%;top:30.49%;width:3.46%;height:3.18%;"></a>
+<a href="#c-unafuji_shirakane" style="left:42.9%;top:45.61%;width:3.46%;height:3.18%;"></a>
+<a href="#c-unatoyo" style="left:57.27%;top:63.53%;width:3.46%;height:3.18%;"></a>
+<a href="#c-miyakagi" style="left:29.03%;top:33.55%;width:3.46%;height:3.18%;"></a>
+<a href="#c-hasshokan" style="left:71.18%;top:53.89%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kamome" style="left:43.91%;top:23.95%;width:3.46%;height:3.18%;"></a>
+<a href="#c-sushi_ueda" style="left:22.54%;top:47.77%;width:3.46%;height:3.18%;"></a>
+<a href="#c-daijin_honten" style="left:32.39%;top:33.38%;width:3.46%;height:3.18%;"></a>
+<a href="#c-tempura_yokoi" style="left:61.58%;top:8.51%;width:3.46%;height:3.18%;"></a>
+<a href="#c-torigin_honten" style="left:37.61%;top:31.4%;width:3.46%;height:3.18%;"></a>
+<a href="#c-sugimoto_honten" style="left:35.73%;top:33.19%;width:3.46%;height:3.18%;"></a>
+<a href="#c-hirono" style="left:65.96%;top:43.84%;width:3.46%;height:3.18%;"></a>
+<a href="#c-mikien_shigahondori" style="left:49.12%;top:15.71%;width:3.46%;height:3.18%;"></a>
+<a href="#c-tenpei" style="left:30.15%;top:14.51%;width:3.46%;height:3.18%;"></a>
+<a href="#c-tamaya" style="left:65.29%;top:34.18%;width:3.46%;height:3.18%;"></a>
+<a href="#c-misen_imaike" style="left:55.68%;top:33.51%;width:3.46%;height:3.18%;"></a>
+<a href="#c-miya_kishimen_jingu" style="left:39.24%;top:62.6%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kawaiya_honten" style="left:45.12%;top:25.67%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kishimen_yoshida_esca" style="left:22.55%;top:32.45%;width:3.46%;height:3.18%;"></a>
+<a href="#c-korai_dojo" style="left:57.9%;top:38.41%;width:3.46%;height:3.18%;"></a>
+<a href="#c-ramen_ajisai" style="left:21.9%;top:61.16%;width:3.46%;height:3.18%;"></a>
+<a href="#c-josui_tokugawacho" style="left:51.16%;top:23.28%;width:3.46%;height:3.18%;"></a>
+<a href="#c-manchinken" style="left:16.0%;top:33.69%;width:3.46%;height:3.18%;"></a>
+<a href="#c-sarrasin_honten" style="left:55.07%;top:91.5%;width:3.46%;height:3.18%;"></a>
+<a href="#c-pikaichi_imaike" style="left:55.42%;top:33.16%;width:3.46%;height:3.18%;"></a>
+<a href="#c-gomitori_honten" style="left:36.87%;top:33.95%;width:3.46%;height:3.18%;"></a>
+<a href="#c-sakatsuya_nakamise" style="left:39.26%;top:32.31%;width:3.46%;height:3.18%;"></a>
+<a href="#c-ouma_no_oyako" style="left:33.45%;top:38.31%;width:3.46%;height:3.18%;"></a>
+<a href="#c-bar_barns" style="left:34.24%;top:33.63%;width:3.46%;height:3.18%;"></a>
+<a href="#c-atarayo" style="left:36.76%;top:34.41%;width:3.46%;height:3.18%;"></a>
+<a href="#c-uenoya_honten" style="left:27.75%;top:27.73%;width:3.46%;height:3.18%;"></a>
+<a href="#c-nobinobi_imaike" style="left:55.37%;top:33.35%;width:3.46%;height:3.18%;"></a>
+<a href="#c-obanzai_anko" style="left:28.67%;top:34.54%;width:3.46%;height:3.18%;"></a>
+<a href="#c-wine_bar_k" style="left:53.53%;top:28.95%;width:3.46%;height:3.18%;"></a>
+<a href="#c-minoya_kitamura" style="left:57.23%;top:17.04%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kitchen_oumi" style="left:57.39%;top:44.6%;width:3.46%;height:3.18%;"></a>
+<a href="#c-bunka_yoshokuten" style="left:60.64%;top:29.85%;width:3.46%;height:3.18%;"></a>
+<a href="#c-ma_maison_hoshigaoka" style="left:82.42%;top:38.46%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kitamura" style="left:44.63%;top:24.75%;width:3.46%;height:3.18%;"></a>
+<a href="#c-reminiscence" style="left:53.47%;top:29.17%;width:3.46%;height:3.18%;"></a>
+<a href="#c-solo_pizza_osu" style="left:35.71%;top:39.76%;width:3.46%;height:3.18%;"></a>
+<a href="#c-yoshokuya_nakamura" style="left:30.87%;top:16.78%;width:3.46%;height:3.18%;"></a>
+<a href="#c-uohiro" style="left:33.37%;top:27.67%;width:3.46%;height:3.18%;"></a>
+<a href="#c-al_fortuna" style="left:65.48%;top:34.19%;width:3.46%;height:3.18%;"></a>
+<a href="#c-dubonnet" style="left:43.59%;top:24.46%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kissa_matsuba" style="left:29.48%;top:27.98%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kissa_new_poppy" style="left:29.75%;top:28.23%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kissa_bonbon" style="left:42.79%;top:26.92%;width:3.46%;height:3.18%;"></a>
+<a href="#c-silvia_tokugawa" style="left:51.49%;top:21.45%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kako_hanaguruma" style="left:28.36%;top:31.95%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kissa_tsuzuki" style="left:13.74%;top:33.33%;width:3.46%;height:3.18%;"></a>
+<a href="#c-morning_lyon" style="left:25.6%;top:33.79%;width:3.46%;height:3.18%;"></a>
+<a href="#c-konparu_osu" style="left:36.98%;top:39.21%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kawaguchiya" style="left:37.36%;top:31.2%;width:3.46%;height:3.18%;"></a>
+<a href="#c-yoshimitsu" style="left:52.38%;top:23.46%;width:3.46%;height:3.18%;"></a>
+<a href="#c-baikado" style="left:66.06%;top:34.25%;width:3.46%;height:3.18%;"></a>
+<a href="#c-kiyomemochi" style="left:41.18%;top:62.87%;width:3.46%;height:3.18%;"></a>
+<a href="#c-fukyuen" style="left:29.83%;top:50.01%;width:3.46%;height:3.18%;"></a>
+<a href="#c-osuuiro_honten" style="left:34.34%;top:39.46%;width:3.46%;height:3.18%;"></a>
+<a href="#c-chez_shibata" style="left:65.8%;top:33.8%;width:3.46%;height:3.18%;"></a>
+<a href="#c-baguette_rabbit" style="left:91.76%;top:28.18%;width:3.46%;height:3.18%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（72店・番号はピンと同じ）</div>
+<div class="sec red">名古屋めし(ひつまぶし・味噌煮込み・手羽先・味噌カツ)</div>
+<div class="links">
+<a href="#c-atsuta_horaiken"><span class="tn" style="background:#e34948;">1</span>ひつまぶし発祥の明治の老舗</a>
+<a href="#c-shirakawa_joshin"><span class="tn" style="background:#e34948;">2</span>手頃な価格のひつまぶし名店</a>
+<a href="#c-yamamotoya_sohonke"><span class="tn" style="background:#e34948;">3</span>味噌煮込みうどんの代名詞</a>
+<a href="#c-kadomaru"><span class="tn" style="background:#e34948;">4</span>大正創業・地元派の味噌煮込み</a>
+<a href="#c-yabaton_honten"><span class="tn" style="background:#e34948;">5</span>味噌カツの代名詞の本店</a>
+<a href="#c-tonpachi"><span class="tn" style="background:#e34948;">6</span>鶴舞の行列味噌かつ専門店</a>
+<a href="#c-yamachan_honten"><span class="tn" style="background:#e34948;">7</span>幻の手羽先の総本山</a>
+<a href="#c-shimasho"><span class="tn" style="background:#e34948;">8</span>八丁味噌どて焼きの殿堂</a>
+<a href="#c-yokoi_sumiyoshi"><span class="tn" style="background:#e34948;">9</span>あんかけスパ発祥の店</a>
+<a href="#c-hanabi_takabata"><span class="tn" style="background:#e34948;">10</span>台湾まぜそば発祥の本店</a>
+<a href="#c-tenmusu_senju"><span class="tn" style="background:#e34948;">11</span>大須の天むすの老舗</a>
+<a href="#c-kissa_yuki"><span class="tn" style="background:#e34948;">12</span>鉄板ナポリタン発祥の喫茶店</a>
+</div>
+<div class="sec blue">寿司・和食・うなぎ・天ぷら</div>
+<div class="links">
+<a href="#c-unafuji_shirakane"><span class="tn" style="background:#2a78d6;">13</span>百名店の炭焼き青うなぎ</a>
+<a href="#c-unatoyo"><span class="tn" style="background:#2a78d6;">14</span>瑞穂区の実力派うなぎ店</a>
+<a href="#c-miyakagi"><span class="tn" style="background:#2a78d6;">15</span>明治32年創業のかしわ割烹</a>
+<a href="#c-hasshokan"><span class="tn" style="background:#2a78d6;">16</span>魯山人ゆかりの名料亭</a>
+<a href="#c-kamome"><span class="tn" style="background:#2a78d6;">17</span>白壁の老舗料亭</a>
+<a href="#c-sushi_ueda"><span class="tn" style="background:#2a78d6;">18</span>百名店選出の下町鮨</a>
+<a href="#c-daijin_honten"><span class="tn" style="background:#2a78d6;">19</span>明治40年創業の伝説的酒亭</a>
+<a href="#c-tempura_yokoi"><span class="tn" style="background:#2a78d6;">20</span>守山の百名店天ぷら割烹</a>
+<a href="#c-torigin_honten"><span class="tn" style="background:#2a78d6;">21</span>コーチン鍋を創り広めた専門店</a>
+<a href="#c-sugimoto_honten"><span class="tn" style="background:#2a78d6;">22</span>明治33年創業の精肉店直営すき焼き</a>
+<a href="#c-hirono"><span class="tn" style="background:#2a78d6;">23</span>三河産豚を大鍋で手揚げする名店</a>
+<a href="#c-mikien_shigahondori"><span class="tn" style="background:#2a78d6;">24</span>甘辛味噌ダレ焼肉の百名店</a>
+<a href="#c-tenpei"><span class="tn" style="background:#2a78d6;">25</span>昭和42年創業の町の天ぷら食堂</a>
+<a href="#c-tamaya"><span class="tn" style="background:#2a78d6;">26</span>覚王山参道の老舗大衆食堂</a>
+</div>
+<div class="sec aqua">ラーメン・きしめん・台湾ラーメン・町中華</div>
+<div class="links">
+<a href="#c-misen_imaike"><span class="tn" style="background:#1baf7a;">27</span>台湾ラーメン発祥の総本山</a>
+<a href="#c-miya_kishimen_jingu"><span class="tn" style="background:#1baf7a;">28</span>熱田神宮境内の名物きしめん</a>
+<a href="#c-kawaiya_honten"><span class="tn" style="background:#1baf7a;">29</span>大正10年創業の純手打ちきしめん</a>
+<a href="#c-kishimen_yoshida_esca"><span class="tn" style="background:#1baf7a;">30</span>明治23年創業・麺業直営の駅前店</a>
+<a href="#c-korai_dojo"><span class="tn" style="background:#1baf7a;">31</span>名古屋独自「好来系」の総本山</a>
+<a href="#c-ramen_ajisai"><span class="tn" style="background:#1baf7a;">32</span>百名店常連の淡麗醤油らぁ麺</a>
+<a href="#c-josui_tokugawacho"><span class="tn" style="background:#1baf7a;">33</span>行列の絶えない無添加塩ラーメン</a>
+<a href="#c-manchinken"><span class="tn" style="background:#1baf7a;">34</span>玉子とじラーメン発祥の深夜中華</a>
+<a href="#c-sarrasin_honten"><span class="tn" style="background:#1baf7a;">35</span>契約栽培そば粉の手打ち蕎麦処</a>
+<a href="#c-pikaichi_imaike"><span class="tn" style="background:#1baf7a;">36</span>ドラキチの聖地と呼ばれる町中華</a>
+</div>
+<div class="sec beer">居酒屋・バー(伏見・栄・大須)</div>
+<div class="links">
+<a href="#c-gomitori_honten"><span class="tn" style="background:#0d366b;">37</span>朝5時まで営む名古屋めし居酒屋</a>
+<a href="#c-sakatsuya_nakamise"><span class="tn" style="background:#0d366b;">38</span>地下街で朝から飲める昭和酒場</a>
+<a href="#c-ouma_no_oyako"><span class="tn" style="background:#0d366b;">39</span>赤提灯灯る大須の塩とんちゃん</a>
+<a href="#c-bar_barns"><span class="tn" style="background:#0d366b;">40</span>名古屋を代表する正統派バー</a>
+<a href="#c-atarayo"><span class="tn" style="background:#0d366b;">41</span>百名店選出の鮮魚×日本酒酒場</a>
+<a href="#c-uenoya_honten"><span class="tn" style="background:#0d366b;">42</span>円頓寺・大正5年創業のとんやき</a>
+<a href="#c-nobinobi_imaike"><span class="tn" style="background:#0d366b;">43</span>今池の昼から飲める人気酒場</a>
+<a href="#c-obanzai_anko"><span class="tn" style="background:#0d366b;">44</span>百名店のワンオペおばんざい酒場</a>
+<a href="#c-wine_bar_k"><span class="tn" style="background:#0d366b;">45</span>星付き店併設の本格ワインバー</a>
+<a href="#c-minoya_kitamura"><span class="tn" style="background:#0d366b;">46</span>昭和13年創業・大曽根の老舗角打ち</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-kitchen_oumi"><span class="tn" style="background:#4a3aa7;">47</span>皿からはみ出す特大エビフライ</a>
+<a href="#c-bunka_yoshokuten"><span class="tn" style="background:#4a3aa7;">48</span>池下の正統派デミグラス洋食</a>
+<a href="#c-ma_maison_hoshigaoka"><span class="tn" style="background:#4a3aa7;">49</span>名古屋発洋食チェーンの発祥1号店</a>
+<a href="#c-kitamura"><span class="tn" style="background:#4a3aa7;">50</span>大正の洋館で味わう本格フレンチ</a>
+<a href="#c-reminiscence"><span class="tn" style="background:#4a3aa7;">51</span>「余韻と記憶」のミシュラン二つ星</a>
+<a href="#c-solo_pizza_osu"><span class="tn" style="background:#4a3aa7;">52</span>世界一のナポリピッツァを大須で</a>
+<a href="#c-yoshokuya_nakamura"><span class="tn" style="background:#4a3aa7;">53</span>西区の実力派アットホーム洋食</a>
+<a href="#c-uohiro"><span class="tn" style="background:#4a3aa7;">54</span>仕出し屋の目利きが光る洋食</a>
+<a href="#c-al_fortuna"><span class="tn" style="background:#4a3aa7;">55</span>覚王山の無農薬野菜イタリアン</a>
+<a href="#c-dubonnet"><span class="tn" style="background:#4a3aa7;">56</span>文化財の旧邸で味わう創作フレンチ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン(モーニングの本場)</div>
+<div class="links">
+<a href="#c-kissa_matsuba"><span class="tn" style="background:#eda100;">57</span>名古屋現存最古・元祖直伝小倉トースト</a>
+<a href="#c-kissa_new_poppy"><span class="tn" style="background:#eda100;">58</span>四間道の自家焙煎リノベ喫茶</a>
+<a href="#c-kissa_bonbon"><span class="tn" style="background:#eda100;">59</span>昭和24年創業のレトロ純喫茶</a>
+<a href="#c-silvia_tokugawa"><span class="tn" style="background:#eda100;">60</span>カルボトースト発祥の1号店</a>
+<a href="#c-kako_hanaguruma"><span class="tn" style="background:#eda100;">61</span>自家焙煎の草分けと餡×生クリーム</a>
+<a href="#c-kissa_tsuzuki"><span class="tn" style="background:#eda100;">62</span>カフェオレ「天井落とし」の老舗</a>
+<a href="#c-morning_lyon"><span class="tn" style="background:#eda100;">63</span>一日中モーニングの名物喫茶</a>
+<a href="#c-konparu_osu"><span class="tn" style="background:#eda100;">64</span>エビフライサンドの老舗喫茶本店</a>
+<a href="#c-kawaguchiya"><span class="tn" style="background:#eda100;">65</span>元禄創業330年の上生菓子店</a>
+<a href="#c-yoshimitsu"><span class="tn" style="background:#eda100;">66</span>全国区の究極のわらび餅</a>
+<a href="#c-baikado"><span class="tn" style="background:#eda100;">67</span>鬼まんじゅうの代名詞的存在</a>
+<a href="#c-kiyomemochi"><span class="tn" style="background:#eda100;">68</span>熱田神宮門前の名物餅</a>
+<a href="#c-fukyuen"><span class="tn" style="background:#eda100;">69</span>菊最中一筋約100年の老舗</a>
+<a href="#c-osuuiro_honten"><span class="tn" style="background:#eda100;">70</span>名古屋ういろの二大巨頭の本店</a>
+<a href="#c-chez_shibata"><span class="tn" style="background:#eda100;">71</span>世界で活躍する柴田武の洋菓子店</a>
+<a href="#c-baguette_rabbit"><span class="tn" style="background:#eda100;">72</span>高加水パンで行列のベーカリー</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(名駅〜伏見・栄〜大須)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/nagoya/_map2.png" alt="中心部拡大(名駅〜伏見・栄〜大須)">
+<a href="#c-yamamotoya_sohonke" style="left:66.39%;top:40.21%;width:3.6%;height:3.92%;"></a>
+<a href="#c-kadomaru" style="left:84.17%;top:9.83%;width:3.6%;height:3.92%;"></a>
+<a href="#c-yabaton_honten" style="left:70.59%;top:54.41%;width:3.6%;height:3.92%;"></a>
+<a href="#c-tonpachi" style="left:88.85%;top:77.5%;width:3.6%;height:3.92%;"></a>
+<a href="#c-yamachan_honten" style="left:88.53%;top:33.32%;width:3.6%;height:3.92%;"></a>
+<a href="#c-shimasho" style="left:51.57%;top:35.65%;width:3.6%;height:3.92%;"></a>
+<a href="#c-yokoi_sumiyoshi" style="left:63.37%;top:35.18%;width:3.6%;height:3.92%;"></a>
+<a href="#c-tenmusu_senju" style="left:70.69%;top:61.17%;width:3.6%;height:3.92%;"></a>
+<a href="#c-unafuji_shirakane" style="left:91.51%;top:93.7%;width:3.6%;height:3.92%;"></a>
+<a href="#c-miyakagi" style="left:33.64%;top:34.01%;width:3.6%;height:3.92%;"></a>
+<a href="#c-daijin_honten" style="left:47.65%;top:33.17%;width:3.6%;height:3.92%;"></a>
+<a href="#c-torigin_honten" style="left:69.43%;top:23.38%;width:3.6%;height:3.92%;"></a>
+<a href="#c-sugimoto_honten" style="left:61.58%;top:32.23%;width:3.6%;height:3.92%;"></a>
+<a href="#c-kishimen_yoshida_esca" style="left:6.57%;top:28.54%;width:3.6%;height:3.92%;"></a>
+<a href="#c-gomitori_honten" style="left:66.33%;top:35.99%;width:3.6%;height:3.92%;"></a>
+<a href="#c-sakatsuya_nakamise" style="left:76.3%;top:27.89%;width:3.6%;height:3.92%;"></a>
+<a href="#c-ouma_no_oyako" style="left:52.06%;top:57.57%;width:3.6%;height:3.92%;"></a>
+<a href="#c-bar_barns" style="left:55.38%;top:34.41%;width:3.6%;height:3.92%;"></a>
+<a href="#c-atarayo" style="left:65.89%;top:38.27%;width:3.6%;height:3.92%;"></a>
+<a href="#c-uenoya_honten" style="left:28.27%;top:5.21%;width:3.6%;height:3.92%;"></a>
+<a href="#c-obanzai_anko" style="left:32.13%;top:38.92%;width:3.6%;height:3.92%;"></a>
+<a href="#c-solo_pizza_osu" style="left:61.49%;top:64.74%;width:3.6%;height:3.92%;"></a>
+<a href="#c-uohiro" style="left:51.72%;top:4.93%;width:3.6%;height:3.92%;"></a>
+<a href="#c-kissa_matsuba" style="left:35.51%;top:6.44%;width:3.6%;height:3.92%;"></a>
+<a href="#c-kissa_new_poppy" style="left:36.64%;top:7.68%;width:3.6%;height:3.92%;"></a>
+<a href="#c-kissa_bonbon" style="left:91.03%;top:2.38%;width:3.6%;height:3.92%;"></a>
+<a href="#c-kako_hanaguruma" style="left:30.84%;top:26.11%;width:3.6%;height:3.92%;"></a>
+<a href="#c-morning_lyon" style="left:19.31%;top:35.18%;width:3.6%;height:3.92%;"></a>
+<a href="#c-konparu_osu" style="left:66.8%;top:62.01%;width:3.6%;height:3.92%;"></a>
+<a href="#c-kawaguchiya" style="left:68.39%;top:22.37%;width:3.6%;height:3.92%;"></a>
+<a href="#c-osuuiro_honten" style="left:55.77%;top:63.26%;width:3.6%;height:3.92%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（31店・番号はピンと同じ）</div>
+<div class="sec red">名古屋めし(ひつまぶし・味噌煮込み・手羽先・味噌カツ)</div>
+<div class="links">
+<a href="#c-yamamotoya_sohonke"><span class="tn" style="background:#e34948;">3</span>味噌煮込みうどんの代名詞</a>
+<a href="#c-kadomaru"><span class="tn" style="background:#e34948;">4</span>大正創業・地元派の味噌煮込み</a>
+<a href="#c-yabaton_honten"><span class="tn" style="background:#e34948;">5</span>味噌カツの代名詞の本店</a>
+<a href="#c-tonpachi"><span class="tn" style="background:#e34948;">6</span>鶴舞の行列味噌かつ専門店</a>
+<a href="#c-yamachan_honten"><span class="tn" style="background:#e34948;">7</span>幻の手羽先の総本山</a>
+<a href="#c-shimasho"><span class="tn" style="background:#e34948;">8</span>八丁味噌どて焼きの殿堂</a>
+<a href="#c-yokoi_sumiyoshi"><span class="tn" style="background:#e34948;">9</span>あんかけスパ発祥の店</a>
+<a href="#c-tenmusu_senju"><span class="tn" style="background:#e34948;">11</span>大須の天むすの老舗</a>
+</div>
+<div class="sec blue">寿司・和食・うなぎ・天ぷら</div>
+<div class="links">
+<a href="#c-unafuji_shirakane"><span class="tn" style="background:#2a78d6;">13</span>百名店の炭焼き青うなぎ</a>
+<a href="#c-miyakagi"><span class="tn" style="background:#2a78d6;">15</span>明治32年創業のかしわ割烹</a>
+<a href="#c-daijin_honten"><span class="tn" style="background:#2a78d6;">19</span>明治40年創業の伝説的酒亭</a>
+<a href="#c-torigin_honten"><span class="tn" style="background:#2a78d6;">21</span>コーチン鍋を創り広めた専門店</a>
+<a href="#c-sugimoto_honten"><span class="tn" style="background:#2a78d6;">22</span>明治33年創業の精肉店直営すき焼き</a>
+</div>
+<div class="sec aqua">ラーメン・きしめん・台湾ラーメン・町中華</div>
+<div class="links">
+<a href="#c-kishimen_yoshida_esca"><span class="tn" style="background:#1baf7a;">30</span>明治23年創業・麺業直営の駅前店</a>
+</div>
+<div class="sec beer">居酒屋・バー(伏見・栄・大須)</div>
+<div class="links">
+<a href="#c-gomitori_honten"><span class="tn" style="background:#0d366b;">37</span>朝5時まで営む名古屋めし居酒屋</a>
+<a href="#c-sakatsuya_nakamise"><span class="tn" style="background:#0d366b;">38</span>地下街で朝から飲める昭和酒場</a>
+<a href="#c-ouma_no_oyako"><span class="tn" style="background:#0d366b;">39</span>赤提灯灯る大須の塩とんちゃん</a>
+<a href="#c-bar_barns"><span class="tn" style="background:#0d366b;">40</span>名古屋を代表する正統派バー</a>
+<a href="#c-atarayo"><span class="tn" style="background:#0d366b;">41</span>百名店選出の鮮魚×日本酒酒場</a>
+<a href="#c-uenoya_honten"><span class="tn" style="background:#0d366b;">42</span>円頓寺・大正5年創業のとんやき</a>
+<a href="#c-obanzai_anko"><span class="tn" style="background:#0d366b;">44</span>百名店のワンオペおばんざい酒場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-solo_pizza_osu"><span class="tn" style="background:#4a3aa7;">52</span>世界一のナポリピッツァを大須で</a>
+<a href="#c-uohiro"><span class="tn" style="background:#4a3aa7;">54</span>仕出し屋の目利きが光る洋食</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・パン(モーニングの本場)</div>
+<div class="links">
+<a href="#c-kissa_matsuba"><span class="tn" style="background:#eda100;">57</span>名古屋現存最古・元祖直伝小倉トースト</a>
+<a href="#c-kissa_new_poppy"><span class="tn" style="background:#eda100;">58</span>四間道の自家焙煎リノベ喫茶</a>
+<a href="#c-kissa_bonbon"><span class="tn" style="background:#eda100;">59</span>昭和24年創業のレトロ純喫茶</a>
+<a href="#c-kako_hanaguruma"><span class="tn" style="background:#eda100;">61</span>自家焙煎の草分けと餡×生クリーム</a>
+<a href="#c-morning_lyon"><span class="tn" style="background:#eda100;">63</span>一日中モーニングの名物喫茶</a>
+<a href="#c-konparu_osu"><span class="tn" style="background:#eda100;">64</span>エビフライサンドの老舗喫茶本店</a>
+<a href="#c-kawaguchiya"><span class="tn" style="background:#eda100;">65</span>元禄創業330年の上生菓子店</a>
+<a href="#c-osuuiro_honten"><span class="tn" style="background:#eda100;">70</span>名古屋ういろの二大巨頭の本店</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>店は名駅・伏見・栄・大須・金山に集まるが、名店は円頓寺商店街や覚王山・今池・藤が丘など各区にも散る。ひつまぶしと味噌煮込みの老舗は昼時に行列必至で、開店前到着か予約が無難。喫茶モーニングは朝11時頃まで、小倉トーストは通年。手羽先は夜の居酒屋文化。味噌おでん・どて煮は冬が本番だが通年出す店も多い。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-nagoya" class="c-red">名古屋めし(ひつまぶし・味噌煮込み・手羽先・味噌カツ)</h2>
+<div class="card" id="c-atsuta_horaiken">
+<img class="hero" src="img/nagoya/atsuta_horaiken.jpg" alt="あつた蓬莱軒 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>あつた蓬莱軒 本店<span class="yomi">あつたほうらいけん ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治6年（1873）創業、熱田神宮の南に本店を構える「ひつまぶし」の登録商標を持つ名店。備長炭で香ばしく焼き上げた鰻を細かく刻んでお櫃のご飯にまぶし、そのまま・薬味・お茶漬けと三通りに味わう流儀を広めた本家として、平日から長い行列ができる。門外不出の継ぎ足しダレは創業以来のもの。数寄屋造りの店構えと庭が老舗の風格を伝え、180席の広さと40台分の無料駐車場を備えるため、観光の昼食にも家族の集まりにも使いやすい。熱田神宮参拝とセットで訪れるのが名古屋観光の定番コース。</div>
+<div class="sig"><b>一皿:</b>ひつまぶし</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜14:00, 16:30〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市熱田区神戸町５０３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0526718686">☎ 052-671-8686</a> ／ <a href="http://www.houraiken.com/honten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光サイト「名古屋コンシェルジュ」掲載のひつまぶし代表格で、CBCマガジン等の地元媒体も発祥の店として繰り返し特集。公式サイトで営業案内が更新されており、2025年以降も予約困難な人気が続くと各媒体が報じている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%A4%E3%81%9F%E8%93%AC%E8%8E%B1%E8%BB%92%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E7%86%B1%E7%94%B0%E5%8C%BA%E7%A5%9E%E6%88%B8%E7%94%BA%EF%BC%95%EF%BC%90%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.houraiken.com/">あつた蓬莱軒 公式サイト</a> / <a href="https://www.nagoya-info.jp/gourmet/detail/13/">名古屋コンシェルジュ</a></div>
+</div></div>
+<div class="card" id="c-shirakawa_joshin">
+<img class="hero" src="img/nagoya/shirakawa_joshin.jpg" alt="しら河 浄心本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>しら河 浄心本店<span class="yomi">しらかわ じょうしんほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和23年（1948）創業の天ぷら店を前身とする、西区浄心のひつまぶし専門店。あっさりめの自家製ダレと丁寧な炭火焼きで、鰻の名店がひしめく名古屋でも「価格と質のバランスが良いひつまぶし」として地元客に支持される。ひつまぶしが3100円と有名店の中では手頃で、専用駐車場・個室・75席を備え、家族連れや接待の入り口にも使いやすい。名駅や栄の繁華街から少し外れる分、観光客の行列が比較的穏やかで、地元民が「普段使いのひつまぶし」として挙げることが多い店。</div>
+<div class="sig"><b>一皿:</b>しら河のひつまぶし</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜14:30, 17:00〜21:30 ／ 土・日 11:00〜15:00, 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市西区城西４丁目２０−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0525241415">☎ 052-524-1415</a> ／ <a href="https://hitsumabushi.jp/tenpo/jyoushinhonten">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋めし紹介サイトや一休・ヒトサラ等の予約媒体で西区を代表するひつまぶし店として掲載され、ネット予約を現在も受け付けている。公式サイトの店舗案内も更新が続いており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%97%E3%82%89%E6%B2%B3%20%E6%B5%84%E5%BF%83%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E8%A5%BF%E5%8C%BA%E5%9F%8E%E8%A5%BF%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitsumabushi.jp/tenpo/jyoushinhonten">しら河 公式・浄心本店</a> / <a href="https://nagoya-meshi.com/area/nagoyacastle/shirakawa">名古屋めし.com</a></div>
+</div></div>
+<div class="card" id="c-yamamotoya_sohonke">
+<img class="hero" src="img/nagoya/yamamotoya_sohonke.jpg" alt="山本屋総本家 本家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>山本屋総本家 本家<span class="yomi">やまもとやそうほんけ ほんけ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大正14年（1925）創業と伝わる味噌煮込みうどんの老舗で、栄三丁目の「本家」はその本店格。名古屋発祥のローカルチェーンだが、ここは観光客も地元客も「まずはここから」と訪れる基準の店。土鍋でぐつぐつ煮立ったまま供される芯の残ったような固めの生麺と、豆味噌の濃厚なつゆが身上で、蓋を取り皿代わりにして食べるのが流儀。名古屋コーチン入りや親子煮込みなど種類も豊富。カウンターと座敷があり、一人でも入りやすい。冬はもちろん、夏に汗をかきながら食べる常連も多い。</div>
+<div class="sig"><b>一皿:</b>味噌煮込うどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜15:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄３丁目１２−１９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0522415617">☎ 052-241-5617</a> ／ <a href="https://www.yamamotoya.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光サイト「名古屋コンシェルジュ」が味噌煮込みうどんの代表店として掲載する老舗。名古屋発祥ローカルチェーンのため本家（本店格）のみ選定。公式サイトで店舗一覧・営業案内が現在も更新されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E6%9C%AC%E5%B1%8B%E7%B7%8F%E6%9C%AC%E5%AE%B6%20%E6%9C%AC%E5%AE%B6%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://yamamotoya.co.jp/">山本屋総本家 公式サイト</a> / <a href="https://www.nagoya-info.jp/gourmet/detail/12/">名古屋コンシェルジュ</a></div>
+</div></div>
+<div class="card" id="c-kadomaru">
+<img class="hero" src="img/nagoya/kadomaru.jpg" alt="みそ煮込の角丸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>みそ煮込の角丸<span class="yomi">みそにこみのかどまる</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正15年（1926）創業、東区泉の味噌煮込みうどん専門店。山本屋系より細めの角打ち麺はモチモチと食べやすく、赤味噌と白味噌をブレンドしたつゆはまろやかで、「固麺が苦手でも角丸なら」と地元民が推す一杯。昭和の風情を残すこぢんまりした店内と丁寧な接客も評判で、官庁街・久屋大通のビジネス客の昼食処として長年愛されてきた。親子煮込みやかしわ入りなどメニューの幅も広く、観光地化した有名店とは違う「名古屋の日常の味噌煮込み」を体験できる貴重な老舗。</div>
+<div class="sig"><b>一皿:</b>味噌煮込みうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金 11:00〜15:00, 17:00〜19:00 ／ 木 11:00〜15:00 ／ 土 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区泉１丁目１８−３３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0529712068">☎ 052-971-2068</a> ／ <a href="http://www.kadomaru.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>るるぶ等の観光媒体と地元食べ歩きブログの双方で山本屋と並ぶ老舗として紹介される。Yahoo!マップに2025年8月の訪問レビューが複数投稿されており、営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%81%9D%E7%85%AE%E8%BE%BC%E3%81%AE%E8%A7%92%E4%B8%B8%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E6%B3%89%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%93%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kadomaru.shop/">角丸 公式オンライン支店</a> / <a href="https://rurubu.jp/andmore/spot/80023368">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-yabaton_honten">
+<img class="hero" src="img/nagoya/yabaton_honten.jpg" alt="みそかつ 矢場とん 矢場町本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>みそかつ 矢場とん 矢場町本店<span class="yomi">みそかつ やばとん やばちょうほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">昭和22年（1947）創業、味噌カツを全国区にした名古屋発祥店の本店。一年半熟成させた天然醸造の豆味噌を使う秘伝のみそだれは、ドロッと濃厚に見えて後味は意外に軽く、南九州産の豚を使ったカツと相性抜群。名物「わらじとんかつ」は草鞋のような大判カツで食べ応え満点。ブタのキャラクター看板が目印の本店ビルは大須・矢場町エリアの観光名所と化しており、行列必至だが回転は速い。無休で通し営業のため、昼時を外せば比較的入りやすいのも観光利用に便利。</div>
+<div class="sig"><b>一皿:</b>わらじとんかつ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区大須３丁目６−１８</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522528810">☎ 052-252-8810</a> ／ <a href="https://www.yabaton.com/modules/shop/index.php?content_id=2">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光サイトやCBCマガジン等の地元媒体が味噌カツの代表として必ず挙げる店で、名古屋発祥ローカルチェーンのため矢場町本店のみ選定。2026年版の名古屋味噌カツ特集記事でも定番として紹介され営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%81%9D%E3%81%8B%E3%81%A4%20%E7%9F%A2%E5%A0%B4%E3%81%A8%E3%82%93%20%E7%9F%A2%E5%A0%B4%E7%94%BA%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E9%A0%88%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.nagoya-info.jp/gourmet/detail/24/">名古屋コンシェルジュ</a> / <a href="https://hicbc.com/magazine/article/?id=delalover-column-23092115">CBC MAGAZINE</a></div>
+</div></div>
+<div class="card" id="c-tonpachi">
+<img class="hero" src="img/nagoya/tonpachi.jpg" alt="とん八 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>とん八<span class="yomi">とんぱち</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和23年（1948）創業と伝わる、鶴舞の七本松通沿いに立つ味噌かつ・とんかつ専門店。静岡県産銘柄豚「いきいきポーク」を独自ブレンドの自家製パン粉とラード配合の油でカラリと揚げ、八丁味噌と豆味噌にザラメを加えてじっくり煮込んだ甘く濃厚な味噌ダレをカツが見えなくなるほどたっぷりかけるのが流儀。昔ながらの洋食店のような店構えと家族的な接客で、開店前から行列ができる地元の人気店。矢場とんが観光の味なら、とん八は名古屋人が通う味噌かつと評されることが多い。</div>
+<div class="sig"><b>一皿:</b>味噌とんかつ定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・金・土 11:00〜13:45, 17:00〜20:00 ／ 水・木 11:00〜13:45</td></tr>
+<tr><th>定休日</th><td class="off">火・日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区千代田３丁目１７−１５</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0523310546">☎ 052-331-0546</a> ／ <a href="https://tonpachi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元グルメ媒体や食べ歩きブログで「地元民が推す味噌かつ」として繰り返し紹介される専門店。大人の週末系媒体等の近年の実食記事で行列と営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E5%85%AB%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%8D%83%E4%BB%A3%E7%94%B0%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tonpachi.jp/">とん八 公式サイト</a> / <a href="https://otonano-shumatsu.com/articles/377428">おとなの週末</a></div>
+</div></div>
+<div class="card" id="c-yamachan_honten">
+<img class="hero" src="img/nagoya/yamachan_honten.jpg" alt="世界の山ちゃん 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>世界の山ちゃん 本店<span class="yomi">せかいのやまちゃん ほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和56年（1981）創業、名古屋名物・手羽先唐揚げを全国に広めた居酒屋チェーンの本店。看板の「幻の手羽先」は二度揚げした手羽先に甘辛ダレと胡椒をたっぷり効かせたスパイシーな味付けで、ビールが止まらなくなると評判。栄の女子大小路近くに構える本店は数フロアの大型店ながら連日賑わい、手羽先以外にもどて煮や味噌串カツなど名古屋めし居酒屋メニューが一通り揃うため、観光客が「名古屋の夜の一軒目」に使いやすい。年中無休で深夜まで営業する使い勝手の良さも魅力。</div>
+<div class="sig"><b>一皿:</b>幻の手羽先</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 16:00〜23:15 ／ 土 15:00〜0:15 ／ 日 15:00〜23:15</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄４丁目９−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522421342">☎ 052-242-1342</a> ／ <a href="https://www.yamachan.co.jp/shop/aichi/honten.php">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋発祥ローカルチェーンのため本店のみ選定。公式サイトの店舗ページで営業時間が現在も案内されており、るるぶ等の観光媒体でも手羽先の代表店として掲載が続く。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%96%E7%95%8C%E3%81%AE%E5%B1%B1%E3%81%A1%E3%82%83%E3%82%93%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://yamachan.co.jp/shop/aichi/honten.php">世界の山ちゃん 公式・本店</a> / <a href="https://rurubu.jp/andmore/spot/80023601">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-shimasho">
+<img class="hero" src="img/nagoya/shimasho.jpg" alt="島正 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>島正<span class="yomi">しましょう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和24年（1949）に屋台から始まった、伏見のどて焼き（味噌おでん）の老舗。岡崎の八丁味噌ベースのダシでじっくり煮込む大根・豆腐・こんにゃく・玉子・里芋は、濃厚なのにほのかな甘みがあり酒が進む味。とろとろの牛すじや味噌串カツも名物で、味噌だれの中にオムライスを沈めた「どてオムライス」という変化球も地元媒体で話題。カウンター中心の小さな店は平日夜でも行列ができるため早めの来店が吉。名古屋の味噌文化を一晩で体感できる店として、出張者にも観光客にも推される。</div>
+<div class="sig"><b>一皿:</b>どて焼き盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">土・日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄２丁目１−１９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0522315977">☎ 052-231-5977</a> ／ <a href="http://shimasho.biz/index.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋情報通など地元メディアが味噌おでんの名店として繰り返し特集し、Yahoo!マップや食べログに近年のレビューが継続投稿されている。夜のみ営業・土日祝休という硬派な営業形態ながら行列が絶えない実力店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B3%B6%E6%AD%A3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.tabemaro.jp/shop/shimasho/">tabemaro</a> / <a href="https://jouhou.nagoya/shimasho/">名古屋情報通</a></div>
+</div></div>
+<div class="card" id="c-yokoi_sumiyoshi">
+<img class="hero" src="img/nagoya/yokoi_sumiyoshi.jpg" alt="スパゲッティ・ハウス ヨコイ 住吉本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>スパゲッティ・ハウス ヨコイ 住吉本店<span class="yomi">すぱげってぃはうす よこい すみよしほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和38年（1963）開店、名古屋独自の「あんかけスパゲッティ」を生んだ元祖。野菜と肉をじっくり煮込み10日以上熟成させるピリ辛で濃厚なオリジナルソースを、ラードで炒めた2.2mmの極太麺にたっぷりかける。赤ウインナーと野菜の「ミラカン」が定番で、粉チーズとタバスコで味変しながら食べるのが名古屋流。栄のビル2階という立地ながら昼時は行列必至で、ソースが無くなり次第終了。昭和の洋食屋の空気を残す店内で、名古屋のB級グルメ史の原点を味わえる。</div>
+<div class="sig"><b>一皿:</b>ミラカン</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜15:00, 17:00〜21:00 ／ 日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄３丁目１０−１１ サントウビル ２階</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0522415571">☎ 052-241-5571</a> ／ <a href="https://yokoi-anspa.jp/restaurant/sumiyoshi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが「元祖あんかけスパゲッティ」を掲げ、名古屋市公式観光サイトも発祥店として掲載。店舗案内ページで現在の営業時間が更新されており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%B2%E3%83%83%E3%83%86%E3%82%A3%E3%83%BB%E3%83%8F%E3%82%A6%E3%82%B9%20%E3%83%A8%E3%82%B3%E3%82%A4%20%E4%BD%8F%E5%90%89%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%91%20%E3%82%B5%E3%83%B3%E3%83%88%E3%82%A6%E3%83%93%E3%83%AB%20%EF%BC%92%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://yokoi-anspa.jp/restaurant/sumiyoshi/">ヨコイ 公式・住吉本店</a> / <a href="https://www.nagoya-info.jp/gourmet/detail/10/">名古屋コンシェルジュ</a></div>
+</div></div>
+<div class="card" id="c-hanabi_takabata">
+<img class="hero" src="img/nagoya/hanabi_takabata.jpg" alt="麺屋はなび 高畑本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>麺屋はなび 高畑本店<span class="yomi">めんやはなび たかばたほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">2008年8月に中川区高畑で開業し、いまや全国区となった「台湾まぜそば」を生み出した発祥店。唐辛子とニンニクを効かせた醤油味のピリ辛台湾ミンチに、刻みニラ・ネギ・魚粉・卵黄を極太麺の上に盛り、豪快に混ぜて食べる汁なし麺で、食べ終わりに少量のご飯を入れる「追い飯」までが正しい作法。行列必至だが回転は速く、スープが無くなり次第終了。名古屋めしの中では最も新しい世代の代表格で、発祥の地・高畑の本店で食べることに巡礼的な価値がある。</div>
+<div class="sig"><b>一皿:</b>元祖台湾まぜそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜14:00, 18:00〜21:00 ／ 土・日 11:00〜14:30, 18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中川区高畑１丁目１７０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0523541119">☎ 052-354-1119</a> ／ <a href="http://menya-hanabi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>マイナビニュース等の全国媒体が台湾まぜそば発祥店として紹介し、公式サイトの店舗ページで現在の営業案内が確認できる。名古屋めし特集で必ず名前が挙がる現代名古屋めしの代表。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%E3%81%AF%E3%81%AA%E3%81%B3%20%E9%AB%98%E7%95%91%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%B7%9D%E5%8C%BA%E9%AB%98%E7%95%91%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.menya-hanabi.com/takabata">麺屋はなび 公式・高畑本店</a> / <a href="https://news.mynavi.jp/article/20170421-taiwan/">マイナビニュース</a></div>
+</div></div>
+<div class="card" id="c-tenmusu_senju">
+<img class="hero" src="img/nagoya/tenmusu_senju.jpg" alt="めいふつ天むす 千寿 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>めいふつ天むす 千寿<span class="yomi">めいふつてんむす せんじゅ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">三重・津の元祖天むす「千寿」からのれん分けを受け、大須で天むすを名古屋名物に押し上げた店。小ぶりのおにぎりに揚げたての小海老の天ぷらを埋め込み、パリッとした海苔で包んだ天むすは、冷めても海老の旨みと塩加減が生きる仕上がり。名物のきゃらぶき（ふきの佃煮）が添えられるのも伝統。基本はテイクアウトで、昼の時間帯のみ小さなイートインも可能。大須商店街の食べ歩き・手土産の定番であり、芸能人の楽屋差し入れとしても有名になった名古屋土産の代表格。</div>
+<div class="sig"><b>一皿:</b>天むす</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 8:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区大須４丁目１０−８２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0522620466">☎ 052-262-0466</a> ／ <a href="https://www.tenmusu-nagoya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光サイトやるるぶ等が天むすの代表店として掲載する大須の老舗。ホットペッパー等の店舗情報で現在の営業時間・定休日が案内されており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%81%E3%81%84%E3%81%B5%E3%81%A4%E5%A4%A9%E3%82%80%E3%81%99%20%E5%8D%83%E5%AF%BF%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E9%A0%88%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%98%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.tenmusu-nagoya.com/">天むす千寿 公式サイト</a> / <a href="https://rurubu.jp/andmore/spot/80023644">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-kissa_yuki">
+<img class="hero" src="img/nagoya/kissa_yuki.jpg" alt="喫茶ユキ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>喫茶ユキ<span class="yomi">きっさゆき</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和32年（1957）創業。熱した鉄板に溶き卵を敷き、その上にナポリタンを盛る名古屋独自の「鉄板スパゲッティ（鉄板イタリアン）」を生んだ発祥店。創業者がイタリア視察から着想を得て「最後まで熱々で食べられるように」と考案したのが始まりで、豚肉・玉ねぎ・ピーマン・もやしに赤ウインナーが載る昔ながらの構成を守り続ける。2018年に現店舗へ移転・リニューアルしたが味は変わらず、食後にお菓子のお土産を渡す温かいもてなしも名物。名古屋喫茶文化と名古屋めしが交差する一皿を、発祥の店で数百円で味わえる。</div>
+<div class="sig"><b>一皿:</b>鉄板スパゲッティ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 10:30〜15:00 ／ 火・水・木・日 10:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">金・土曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区葵３丁目２−３０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0529351653">☎ 052-935-1653</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>CBCマガジンやYahoo!ニュース掲載の地元ライター記事が鉄板ナポリタン発祥店として特集し、2025年秋時点の営業時間を伝える記事やテレビ紹介のSNS投稿（2025年9月）で営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%83%A6%E3%82%AD%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E8%91%B5%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%93%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://news.yahoo.co.jp/expert/articles/96b7014feceaa0b7bcb5663e224966342c7ec630">Yahoo!ニュース エキスパート</a> / <a href="https://hicbc.com/magazine/article/?id=delalover-column-23092101">CBC MAGAZINE</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・うなぎ・天ぷら</h2>
+<div class="card" id="c-unafuji_shirakane">
+<img class="hero" src="img/nagoya/unafuji_shirakane.jpg" alt="炭焼 うな富士 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>炭焼 うな富士 本店<span class="yomi">すみやき うなふじ ほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和区白金に本店を構える、名古屋のうなぎ人気で常に筆頭に挙がる専門店。肉厚で脂の乗った希少な「青うなぎ」を仕入れ、備長炭で外は香ばしく中はふっくらと焼き上げる関西風の地焼きが身上。上ひつまぶしや肝入りうなぎ丼が名物で、開店前から行列ができるため早めの来店か予約が必須。ミシュランガイド掲載・食べログうなぎ百名店選出と評価は全国区になったが、住宅街の本店は今も職人が炭前に立つ専門店の空気を保つ。蓬莱軒と並び「名古屋でうなぎならここ」と語られる存在。</div>
+<div class="sig"><b>一皿:</b>上ひつまぶし</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:00〜14:30, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市昭和区白金１丁目１−４ 1階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0528810067">☎ 052-881-0067</a> ／ <a href="https://sumiyaki-unafuji.com/shops/honten/?utm_source=google&amp;utm_medium=meo&amp;utm_campaign=unafuji_honten">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログうなぎ百名店選出・ミシュランガイド掲載と公式サイトが謳う名古屋うなぎの代表格。公式店舗ページで現在の営業時間・不定休の案内が確認でき、予約媒体でも受付が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%20%E3%81%86%E3%81%AA%E5%AF%8C%E5%A3%AB%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%98%AD%E5%92%8C%E5%8C%BA%E7%99%BD%E9%87%91%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%94%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sumiyaki-unafuji.com/shops/honten/">炭焼うな富士 公式・本店</a> / <a href="https://www.tabemaro.jp/shop/unafuji/">tabemaro</a></div>
+</div></div>
+<div class="card" id="c-unatoyo">
+<img class="hero" src="img/nagoya/unatoyo.jpg" alt="炭焼きの店 うな豊 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>炭焼きの店 うな豊<span class="yomi">うなとよ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和35年（1960）創業、瑞穂区豊岡通の炭火焼きうなぎ専門店。三代続く店で、注文を受けてから捌いた鰻を紀州備長炭でじっくり焼き上げる地焼きスタイル。皮目パリッと身はふんわりの蒲焼きと、香ばしさが際立つひつまぶしの両方が看板で、食べログうなぎ百名店2022選出、ミシュランガイド愛知・岐阜・三重2019特別版掲載と評価も高い。繁華街から離れた住宅地にあるため落ち着いて食事ができ、地元民が「観光客で混む有名店よりうな豊」と挙げる典型的な実力店。市南東部エリアでのうなぎの第一候補。</div>
+<div class="sig"><b>一皿:</b>ひつまぶし</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜14:30, 17:00〜21:00 ／ 日 11:00〜14:30, 16:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市瑞穂区豊岡通３丁目４０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0528512632">☎ 052-851-2632</a> ／ <a href="https://unatoyo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログうなぎ百名店2022選出・ミシュランガイド2019掲載を公式サイトが掲げる瑞穂区の名店。公式サイトとぐるなび等で現在の営業時間・定休日が案内されており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%8D%E3%81%AE%E5%BA%97%20%E3%81%86%E3%81%AA%E8%B1%8A%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E7%91%9E%E7%A9%82%E5%8C%BA%E8%B1%8A%E5%B2%A1%E9%80%9A%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.unatoyo.com/">うな豊 公式サイト</a> / <a href="https://r.gnavi.co.jp/2txz3ptx0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-miyakagi">
+<img class="hero" src="img/nagoya/miyakagi.jpg" alt="かしわ・うなぎ 宮鍵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>かしわ・うなぎ 宮鍵<span class="yomi">みやかぎ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治32年（1899）創業、名駅南に暖簾を守る「かしわ（鶏）とうなぎ」の老舗割烹。名古屋の食文化の二本柱である鶏とうなぎを一軒で味わえる店として貴重で、鶏すき（みそすき）や親子丼、櫃まぶしが看板。鶏ひき肉と卵だけで仕立てる親子丼は770円からと老舗らしからぬ手頃さで、昼はこれを目当てに行列ができる。夜は創業以来の鶏鍋を囲む常連が多く、風格ある店構えと磨き込まれた店内が120年超の歴史を伝える。名古屋駅から歩ける立地で、老舗の味を気軽に体験できる一軒。</div>
+<div class="sig"><b>一皿:</b>みそすき（鶏すき鍋）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・日 11:30〜14:00, 17:00〜21:00 ／ 水 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">土曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中村区名駅南１丁目２−１３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0525410760">☎ 052-541-0760</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>るるぶや老舗紹介サイト等が明治創業の名店として掲載し、食べログ等の店舗情報で現在の営業時間が案内されている。親子丼の行列は地元媒体で繰り返し報じられており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%81%97%E3%82%8F%E3%83%BB%E3%81%86%E3%81%AA%E3%81%8E%20%E5%AE%AE%E9%8D%B5%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E6%9D%91%E5%8C%BA%E5%90%8D%E9%A7%85%E5%8D%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/aichi/A2301/A230102/23000110/">食べログ</a> / <a href="https://rurubu.jp/andmore/spot/80023472">るるぶ&amp;more.</a></div>
+</div></div>
+<div class="card" id="c-hasshokan">
+<img class="hero" src="img/nagoya/hasshokan.jpg" alt="八勝館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>八勝館<span class="yomi">はっしょうかん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">八事の丘に広大な庭園と数寄屋建築を構える、名古屋を代表する料亭。明治期の実業家の別荘を起源とし、北大路魯山人が滞在して器と料理の美を残したことでも知られる。「御幸の間」など9棟が国の重要文化財に指定され、建築・庭園・器・料理が一体となった総合芸術のような食体験ができる。ミシュランガイド愛知・岐阜・三重2019で2つ星を獲得。昼夜とも完全予約制の会席のみで敷居は高いが、慶事や記念日、大切な接待に名古屋でこれ以上ない格の店。四季の移ろいを映す庭を眺めながらの食事は別格。</div>
+<div class="sig"><b>一皿:</b>季節の会席料理</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 12:00〜15:00, 18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市昭和区広路町石坂29</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0528311585">☎ 052-831-1585</a> ／ <a href="http://www.hasshoukan.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランガイド2019で2つ星、9棟が国指定重要文化財という名古屋料亭文化の頂点。公式サイトと一休.com等で現在も予約を受け付けており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%AB%E5%8B%9D%E9%A4%A8%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%98%AD%E5%92%8C%E5%8C%BA%E5%BA%83%E8%B7%AF%E7%94%BA%E7%9F%B3%E5%9D%8229">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hasshoukan.com/">八勝館 公式サイト</a> / <a href="https://restaurant.ikyu.com/115057">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-kamome">
+<img class="hero" src="img/nagoya/kamome.jpg" alt="料亭 か茂免 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>料亭 か茂免<span class="yomi">りょうてい かもめ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">大正元年（1912）より東区白壁の町並み保存地区で暖簾を守る老舗料亭。武家屋敷の面影を残す門構えと庭園、数寄屋の座敷で、ふぐ・すっぽん・鱧など季節の素材を活かした会席を供する。将棋のタイトル戦の対局場として使われ、藤井聡太七冠が注文した「ぽんきし」（ぽん酢仕立てのきしめん）が勝負めしとして全国に知られたことでも話題に。八勝館より予約の敷居がやや低く、昼の会席なら1万円台からと、名古屋の料亭文化への入り口として使いやすい。白壁の歴史散歩と組み合わせたい一軒。</div>
+<div class="sig"><b>一皿:</b>季節の会席（ぽんきし入り）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜15:00, 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区白壁４丁目８５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0529318506">☎ 052-931-8506</a> ／ <a href="http://www.ka-mo-me.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>将棋タイトル戦の舞台として全国媒体に登場する白壁の老舗で、一休.comに2025年夏季休業・2025年末年始休業の告知と2026年の季節会席プランが掲載されており営業継続が明確に確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%20%E3%81%8B%E8%8C%82%E5%85%8D%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E7%99%BD%E5%A3%81%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%98%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.ka-mo-me.com/">か茂免 公式サイト</a> / <a href="https://restaurant.ikyu.com/100840">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-sushi_ueda">
+<img class="hero" src="img/nagoya/sushi_ueda.jpg" alt="鮨 右江田 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>鮨 右江田<span class="yomi">すし うえだ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">中川区の住宅街という意外な立地にありながら、食べログ「寿司 EAST 百名店 2025」に選出された名古屋を代表する鮨店のひとつ。東海の魚を軸に全国から仕入れる旬のタネを、丁寧な仕事のおまかせで供する。繁華街の高級鮨と違い、下町の落ち着いた空気の中で大将の握りとじっくり向き合えるのが持ち味で、地元の食通が「名古屋で鮨ならまず右江田」と挙げる存在。昼夜ともコース中心の完全予約が基本で、週末は早くから席が埋まる。名駅からタクシーで10分足らずと、実はアクセスも悪くない。</div>
+<div class="sig"><b>一皿:</b>おまかせ握りコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・土 17:30〜20:00 ／ 水・木・金・日 12:00〜14:00, 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中川区八幡本通２丁目２０</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0523536005">☎ 052-353-6005</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「寿司 EAST 百名店 2025」選出店として2025年の評価と営業実態が公式に確認できる。予約サイトでも現在の営業時間・定休日が案内され受付が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E5%8F%B3%E6%B1%9F%E7%94%B0%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%B7%9D%E5%8C%BA%E5%85%AB%E5%B9%A1%E6%9C%AC%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://award.tabelog.com/hyakumeiten/sushi_east/2025">食べログ 寿司EAST百名店2025</a> / <a href="https://autoreserve.com/ja/restaurants/QTTN7LxutTSWAsRGxst2">AutoReserve</a></div>
+</div></div>
+<div class="card" id="c-daijin_honten">
+<img class="hero" src="img/nagoya/daijin_honten.jpg" alt="大甚本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>大甚本店<span class="yomi">だいじんほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治40年（1907）創業、「日本一の居酒屋」と評されることもある伏見の老舗酒亭。夕方の開店と同時に、大テーブルに並ぶ煮魚・酢の物・煮豆・刺身などの小皿料理を客が自分で取りに行く独特のスタイルで、燗銅壺で付ける賀茂鶴の燗酒とともに味わう。板の間に置かれた年季物のテーブルと椅子、店の空気そのものが生きた近代食文化の資料館のようで、全国の酒場好きの聖地となっている。一人でもふらりと入れ、明治から続く名古屋の食の日常を数千円で体験できる唯一無二の店。</div>
+<div class="sig"><b>一皿:</b>小皿料理と賀茂鶴の燗酒</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 15:45〜21:15 ／ 土 15:45〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄１丁目５−６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522311909">☎ 052-231-1909</a> ／ <a href="https://www.daijin1907.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ウォーカープラス等の媒体が「全国にその名を知られた老舗」として特集する明治創業の名店。公式サイトとSNSで現在の営業時間・定休日が案内されており営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E7%94%9A%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.daijin1907.com/">大甚本店 公式サイト</a> / <a href="https://www.walkerplus.com/trend/matome/article/115721/">ウォーカープラス</a></div>
+</div></div>
+<div class="card" id="c-tempura_yokoi">
+<img class="hero" src="img/nagoya/tempura_yokoi.jpg" alt="割烹 天ぷらよこい 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>割烹 天ぷらよこい<span class="yomi">かっぽう てんぷらよこい</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">守山区幸心の住宅地に暖簾を掲げる天ぷら割烹で、食べログ「天ぷら百名店2025」に選出された市北東部の実力店。カウンター越しに職人が素材ごとに衣と温度を変えながら一品ずつ揚げたてを供するスタイルで、昼は11時30分から30分刻みの一斉スタート制。天ぷら定食が2000円台からと、この内容としては破格の価格設定が地元で評判を呼び、メディア取材をすべて断る姿勢も「味だけで勝負する店」として語り草になっている。繁華街の高級天ぷらとは対極にある、地域に根ざした名店を体験できる一軒。</div>
+<div class="sig"><b>一皿:</b>天ぷら定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30〜14:00, 17:30〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市守山区幸心１丁目１３１９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0527932333">☎ 052-793-2333</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「天ぷら百名店2025」選出店で、2025年の評価と営業実態が公式アワードで確認できる。地球の歩き方特派員記事や地元ブログも守山区の名店として紹介し、予約サイトで現在も受付が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E5%A4%A9%E3%81%B7%E3%82%89%E3%82%88%E3%81%93%E3%81%84%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%AE%88%E5%B1%B1%E5%8C%BA%E5%B9%B8%E5%BF%83%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://gourmet.watch.impress.co.jp/docs/news/2010530.html">食べログ 天ぷら百名店2025発表（グルメWatch）</a> / <a href="https://tabelog.com/aichi/A2301/A230114/23006034/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-torigin_honten">
+<img class="hero" src="img/nagoya/torigin_honten.jpg" alt="名古屋コーチン料理 鳥銀本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>名古屋コーチン料理 鳥銀本店<span class="yomi">とりぎんほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">錦三丁目で名古屋コーチン料理一筋に創業50年余を数える専門店。看板の「名古屋コーチン鍋」はこの店が創り広めたとされ、朝びきの純系名古屋コーチンのみを使い、コーチン刺身の五種盛合わせ、手羽先唐揚げ、串焼きなど独創的なコーチン料理を揃える。令和2年には徒歩30秒の場所に全席完全個室の宴会向け店舗「鳥銀風月」も新築移転しており、接待や会食にも対応。地元の贅沢な鶏文化を一晩で体感できる、コーチン料理の代表格といえる存在。</div>
+<div class="sig"><b>一皿:</b>名古屋コーチン鍋</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・日 17:00〜22:00 ／ 金・土 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区錦３丁目１４−２２ 宮木ビル １Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0529733000">☎ 052-973-3000</a> ／ <a href="http://www.torigin.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光サイト「名古屋コンシェルジュ」がコーチン料理の代表店として掲載。公式サイト・ホットペッパー等の予約サイトで現在も営業情報が更新されており、営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E5%8F%A4%E5%B1%8B%E3%82%B3%E3%83%BC%E3%83%81%E3%83%B3%E6%96%99%E7%90%86%20%E9%B3%A5%E9%8A%80%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E9%8C%A6%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%92%EF%BC%92%20%E5%AE%AE%E6%9C%A8%E3%83%93%E3%83%AB%20%EF%BC%91%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.torigin.co.jp/">鳥銀本店 公式サイト</a> / <a href="https://www.nagoya-info.jp/gourmet/detail/2/">名古屋コンシェルジュ</a></div>
+</div></div>
+<div class="card" id="c-sugimoto_honten">
+<img class="hero" src="img/nagoya/sugimoto_honten.jpg" alt="スギモト本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>スギモト本店<span class="yomi">すぎもとほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">明治33年（1900年）創業の杉本食肉産業が営む肉料理の本店。1階が精肉店、2階が食事処という造りで、肉を見極めて百二十余年の老舗ならではの目利きで仕入れた松阪牛など最上級の血統和牛をすき焼き・しゃぶしゃぶで味わえる。昼は弁当スタイルのランチで色々な部位を少しずつ楽しめ、毎月29日の「お肉の日」には限定の黒毛和牛二段重も登場する。精肉店直営ゆえの品質と価格のバランスが魅力で、名古屋で「良い肉の日」を過ごしたいときの本命となる。</div>
+<div class="sig"><b>一皿:</b>松阪牛のすき焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜15:00, 16:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄３丁目１−１ ３５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522612065">☎ 052-261-2065</a> ／ <a href="https://sukiyaki3251.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>一休.comレストランやホットペッパー等の予約サイトで現在も予約を受け付けており営業継続を確認。創業125年前後の名古屋の肉の老舗として複数媒体が掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%82%AE%E3%83%A2%E3%83%88%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%20%EF%BC%93%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.oniku-sugimoto.com/restaurant/honten/">スギモトグループ公式</a> / <a href="https://restaurant.ikyu.com/120222/">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-hirono">
+<img class="hero" src="img/nagoya/hirono.jpg" alt="とんかつ家 比呂野 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>とんかつ家 比呂野<span class="yomi">とんかつや ひろの</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和48年（1973年）創業。新鮮な三河産の豚肉を厳選・熟成させ、一枚一枚大鍋で手揚げする昭和区の人気とんかつ店。揚がったかつは岩塩、フルーツの甘味を効かせた自家製ソース、特製味噌ダレの3種で食べ比べられるのが特徴で、全国から厳選したコシヒカリのブレンド米とオリジナル味噌の赤だしも評判。同じ通り沿いに鰻ときしめん・天むすの姉妹専門店を構え、コラボメニューも展開する。平日から行列のできる、地元密着の実力店。</div>
+<div class="sig"><b>一皿:</b>とんかつ定食（3種の味で食べ比べ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:00, 17:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市昭和区山花町１１６</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0527632643">☎ 052-763-2643</a> ／ <a href="http://nagoya-hirono.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ことりっぷやLocipo（東海テレビ系メディア）、Yahoo!ニュース地域記事など複数媒体が地元の名店として紹介。予約サイト・地域ニュースの近年の掲載から営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E3%81%8B%E3%81%A4%E5%AE%B6%20%E6%AF%94%E5%91%82%E9%87%8E%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%98%AD%E5%92%8C%E5%8C%BA%E5%B1%B1%E8%8A%B1%E7%94%BA%EF%BC%91%EF%BC%91%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://co-trip.jp/article/713164">ことりっぷ</a> / <a href="http://nagoya-hirono.com/access">比呂野 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-mikien_shigahondori">
+<img class="hero" src="img/nagoya/mikien_shigahondori.jpg" alt="焼肉 味樹園 志賀本通店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>焼肉 味樹園 志賀本通店<span class="yomi">やきにく みきえん しがほんどおりてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和51年（1976年）創業、「元祖名古屋甘辛ダレ焼肉」を掲げる老舗焼肉店。その日仕入れた肉の質やサシの入り具合を見て、注文ごとにブレンドするという秘伝の味噌ダレが持ち味で、名物の「幻の塩カルビ」や厚切りタンの食べ比べなど肉のラインナップも幅広い。古民家をリノベーションした落ち着いた店内で、北区の住宅街にありながら食べログ「焼肉百名店2024」に名駅3丁目店とともに選出された実力を誇る。名古屋の焼肉文化の「味噌ダレ」系譜を味わうならまずこの店。</div>
+<div class="sig"><b>一皿:</b>幻の塩カルビ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 16:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市北区芦辺町１丁目18−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0529159434">☎ 052-915-9434</a> ／ <a href="https://mikien.net/shoplist/sigahondouri/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「焼肉百名店2024」選出（志賀本通店・名駅3丁目店）。公式サイトと一休・ホットペッパー等で2025年以降も予約を受け付けており営業継続を確認。ローカルチェーンのため創業の味を守る志賀本通店のみ選定。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E5%91%B3%E6%A8%B9%E5%9C%92%20%E5%BF%97%E8%B3%80%E6%9C%AC%E9%80%9A%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8C%97%E5%8C%BA%E8%8A%A6%E8%BE%BA%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE18%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://mikien.net/">味樹園 公式サイト</a> / <a href="https://restaurant.ikyu.com/124984">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-tenpei">
+<img class="hero" src="img/nagoya/tenpei.jpg" alt="天ぷら 天平 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>天ぷら 天平<span class="yomi">てんぷら てんぺい</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和42年（1967年）創業、西区上名古屋で半世紀以上続く町の天ぷら店。新鮮な食材をその場で揚げるサクサクの天ぷらと、ボリューム満点の定食を気取らない価格で出し続けており、ランチは1000円台で揚げたての天ぷら定食が味わえる。ほとんどのメニューが持ち帰り可能なのも日常使いの食堂らしい懐の深さで、地元客の夕食のおかず需要にも応えてきた。高級店化が進む天ぷらの世界で、昔ながらの「天ぷら食堂」の姿を守る貴重な存在。</div>
+<div class="sig"><b>一皿:</b>天ぷら定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土 11:00〜14:00, 17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月・日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市西区上名古屋３丁目１５−１９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0525229300">☎ 052-522-9300</a> ／ <a href="http://www.tenpei1967.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトで営業日カレンダーを公開しており営業継続を確認。ヒトサラ・ぐるなび等のグルメ媒体にも掲載される西区の老舗天ぷら店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E5%A4%A9%E5%B9%B3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%B8%8A%E5%90%8D%E5%8F%A4%E5%B1%8B%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.tenpei1967.com/">天平 公式サイト</a> / <a href="https://hitosara.com/0031169179/">ヒトサラ</a></div>
+</div></div>
+<div class="card" id="c-tamaya">
+<img class="hero" src="img/nagoya/tamaya.jpg" alt="玉屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>玉屋<span class="yomi">たまや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">覚王山日泰寺の参道沿いに建つ、創業90年を超す老舗の大衆食堂。板張りの店内に昭和の空気がそのまま残り、壁に張り出された品書きには麺類から丼物、カレーライスまで多種多様な料理が並ぶ。名物はご飯が器からあふれんばかりのデカ盛り「カツ丼定食」で、きしめん450円など価格も庶民派。日泰寺の縁日や参拝の帰りに老若男女が集う、まちの食堂文化の生き証人のような店。行列必至だが回転は早く、覚王山散策とセットで訪れたい。</div>
+<div class="sig"><b>一皿:</b>カツ丼定食（デカ盛り）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土 11:30〜14:20, 17:30〜20:20 ／ 木 11:30〜14:20</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区山門町２丁目４７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0527515512">☎ 052-751-5512</a> ／ <a href="https://www.instagram.com/tamaya_kakuozan/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログに2025年の訪問口コミが複数投稿されており営業継続を確認。地元メディアや食堂系ブログが「覚王山の老若男女に愛される老舗食堂」として繰り返し紹介する定番店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8E%89%E5%B1%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E5%B1%B1%E9%96%80%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/aichi/A2301/A230107/23007030/">食べログ</a> / <a href="https://town.mec-h.com/mh-ikeshita/25">池下・覚王山エリアガイド</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・きしめん・台湾ラーメン・町中華</h2>
+<div class="card" id="c-misen_imaike">
+<img class="hero" src="img/nagoya/misen_imaike.jpg" alt="味仙 今池本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">27</span>味仙 今池本店<span class="yomi">みせん いまいけほんてん</span></div>
+<div class="chips"><span class="chip classic">classic</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1960年創業の中国台湾料理店で、名古屋名物「台湾ラーメン」発祥の店。台湾出身の初代・郭明優氏が台南の担仔麺を激辛にアレンジしてまかないから生み出したのが始まりで、唐辛子とニンニクを効かせた挽肉とニラが乗る一杯は名古屋の食文化を代表する存在になった。夜は深夜1時まで営業し、青菜炒めやコブクロなど中華のつまみで一杯やってから締めに台湾ラーメンという使い方が地元流。市内に暖簾分け店舗があるが、今池の本店は常に行列の絶えない聖地である。</div>
+<div class="sig"><b>一皿:</b>台湾ラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜0:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区今池１丁目１２−１０</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0527337670">☎ 052-733-7670</a> ／ <a href="http://www.misen.ne.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光情報「名古屋コンシェルジュ」やウォーカープラス等が台湾ラーメン発祥店として紹介する別格の存在。公式サイトで店舗情報が現在も案内されており営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E4%BB%99%20%E4%BB%8A%E6%B1%A0%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E4%BB%8A%E6%B1%A0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%90">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.misen.ne.jp/store">味仙公式サイト</a> / <a href="https://www.nagoya-info.jp/gourmet/detail/36/">名古屋コンシェルジュ</a></div>
+</div></div>
+<div class="card" id="c-miya_kishimen_jingu">
+<img class="hero" src="img/nagoya/miya_kishimen_jingu.jpg" alt="宮きしめん 神宮店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">28</span>宮きしめん 神宮店<span class="yomi">みやきしめん じんぐうてん</span></div>
+<div class="chips"><span class="chip classic">classic</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大正12年（1923年）創業。熱田神宮の宮司から「宮」の字を授かって命名された、名古屋きしめんの代名詞的存在。熱田神宮の緑濃い境内にある神宮店は、参拝帰りに木立を眺めながら屋外席でむろあじ・宗田がつおの出汁が香るきしめんをすすれる名物スポットで、初詣や観光の定番コースにもなっている。朝9時から通しで営業しているため、朝食や昼食の時間をずらした利用にも便利。かつお節とお揚げ、ほうれん草が乗る定番の宮きしめんのほか、季節メニューも揃う。</div>
+<div class="sig"><b>一皿:</b>宮きしめん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 9:00〜16:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市熱田区神宮１丁目１−１ 熱田神宮境内 くさなぎ広場</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0526826340">☎ 052-682-6340</a> ／ <a href="https://www.miyakishimen.co.jp/jingu/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Life Designsの「名古屋人が本気で推すきしめんの名店」等の地元媒体で必ず名が挙がる定番。公式サイトと名古屋情報通のリニューアルオープン記事で営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AE%AE%E3%81%8D%E3%81%97%E3%82%81%E3%82%93%20%E7%A5%9E%E5%AE%AE%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E7%86%B1%E7%94%B0%E5%8C%BA%E7%A5%9E%E5%AE%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%20%E7%86%B1%E7%94%B0%E7%A5%9E%E5%AE%AE%E5%A2%83%E5%86%85%20%E3%81%8F%E3%81%95%E3%81%AA%E3%81%8E%E5%BA%83%E5%A0%B4">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.miyakishimen.co.jp/jingu/">宮きしめん公式</a> / <a href="https://life-designs.jp/webmagazine/kisimen/">Life Designs</a></div>
+</div></div>
+<div class="card" id="c-kawaiya_honten">
+<img class="hero" src="img/nagoya/kawaiya_honten.jpg" alt="川井屋 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">29</span>川井屋 本店<span class="yomi">かわいや ほんてん</span></div>
+<div class="chips"><span class="chip classic">classic</span></div>
+<div class="desc">大正10年（1921年）創業、東区「文化のみち」エリアに佇む手打ち麺の老舗。伝統の「手ごね・手延し・手切り」の純手打ち製法を100年以上守り続け、天候に合わせて水と塩加減を調整した麺を一晩寝かせて仕上げる。看板は、ほんのり甘い上品なつゆに大根おろしと揚げたての車海老天を乗せた「えびおろしきしめん」。つるりとした薄い機械打ちとは一線を画す、もっちりと力強い手打ちきしめんが味わえる貴重な店で、昼時は近隣の常連と観光客で賑わう。</div>
+<div class="sig"><b>一皿:</b>えびおろしきしめん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜14:00, 17:00〜19:30 ／ 土 11:00〜14:00, 17:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区飯田町３１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0529310474">☎ 052-931-0474</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ウォーカープラスが「手作りにこだわり大正から続く老舗」として特集し、Life Designsのきしめん名店8選にも選出。Retty等の予約・口コミサイトで現在も営業情報が更新されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E4%BA%95%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E9%A3%AF%E7%94%B0%E7%94%BA%EF%BC%93%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.walkerplus.com/trend/matome/article/154012/">ウォーカープラス</a> / <a href="https://nagoya.xtone.jp/archives/kawaiya.html">名古屋名物ドットコム</a></div>
+</div></div>
+<div class="card" id="c-kishimen_yoshida_esca">
+<img class="hero" src="img/nagoya/kishimen_yoshida_esca.jpg" alt="きしめん よしだ エスカ店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">30</span>きしめん よしだ エスカ店<span class="yomi">きしめん よしだ えすかてん</span></div>
+<div class="chips"><span class="chip classic">classic</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治23年（1890年）に中川区荒子で創業した製麺会社・吉田麺業の直営店。新幹線口直結のエスカ地下街にあり、新幹線の乗車前後に本格きしめんを食べられる店として出張客・観光客に長年愛されてきた。保存料などの添加物を使わず、厳選した小麦粉と塩だけで打つ自家製麺は、薄くしなやかでつるりとした喉ごしが身上。定番のきしめんのほか、味噌煮込みや季節の変わり麺、天ぷらを乗せた贅沢版まで揃い、昼から夜まで通し営業で使い勝手が良い。</div>
+<div class="sig"><b>一皿:</b>よしだきしめん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:00〜15:00, 17:00〜20:30 ／ 土・日 11:00〜15:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中村区椿町６−９ エスカ地下街</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0524522875">☎ 052-452-2875</a> ／ <a href="http://www.yoshidamen.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光情報やエスカ公式サイトが案内する名駅きしめんの代表格で、Life Designsのきしめん名店特集にも選出。エスカ公式ショップガイドに現在も掲載されており営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8D%E3%81%97%E3%82%81%E3%82%93%20%E3%82%88%E3%81%97%E3%81%A0%20%E3%82%A8%E3%82%B9%E3%82%AB%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E6%9D%91%E5%8C%BA%E6%A4%BF%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%99%20%E3%82%A8%E3%82%B9%E3%82%AB%E5%9C%B0%E4%B8%8B%E8%A1%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.esca-sc.com/shop_guide/119/">エスカ公式</a> / <a href="https://yoshidamen.co.jp/menu/">吉田麺業公式</a></div>
+</div></div>
+<div class="card" id="c-korai_dojo">
+<img class="hero" src="img/nagoya/korai_dojo.jpg" alt="総本家 好来道場 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">31</span>総本家 好来道場<span class="yomi">そうほんけ こうらいどうじょう</span></div>
+<div class="chips"><span class="chip classic">classic</span><span class="chip hyakumeiten">hyakumeiten</span></div>
+<div class="desc">昭和34年（1959年）から続く系譜を持つ、名古屋独自のご当地ラーメン「好来系」の総本家。鶏ガラと豚骨に根菜や漢方系素材を合わせて炊いた滋味深い醤油スープに、たっぷりのネギとメンマ、細めの麺が泳ぐ薬膳的な一杯で、卓上の高麗人参酢を途中で加える独特の作法も名物。昼3時間・1日80食限定の営業で、売り切れ次第終了。「道場」の名の通り店内には独特の求道的な空気が漂い、市内に多くの暖簾分け店を生んだ名古屋ラーメン文化の源流の一つである。</div>
+<div class="sig"><b>一皿:</b>醤(ひしお)ラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 11:00〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区春岡通６丁目１−１６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0527353655">☎ 052-735-3655</a> ／ <a href="https://www.tsuganature.com/noodle/korai_souhonke.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「ラーメンAICHI百名店2025」選出店で、好来系の総本山としてWikipediaにも項目がある存在。昼のみ・売切終了の営業ながら2025年も選出されており営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B7%8F%E6%9C%AC%E5%AE%B6%20%E5%A5%BD%E6%9D%A5%E9%81%93%E5%A0%B4%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E6%98%A5%E5%B2%A1%E9%80%9A%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/en/aichi/A2301/A230106/23006712/">食べログ</a> / <a href="https://ja.wikipedia.org/wiki/%E5%A5%BD%E6%9D%A5%E7%B3%BB%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3">Wikipedia 好来系ラーメン</a></div>
+</div></div>
+<div class="card" id="c-ramen_ajisai">
+<img class="hero" src="img/nagoya/ramen_ajisai.jpg" alt="らぁ麺 紫陽花 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">32</span>らぁ麺 紫陽花<span class="yomi">らぁめん あじさい</span></div>
+<div class="chips"><span class="chip hyakumeiten">hyakumeiten</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">淡麗系の名店「らぁ麺やまぐち」「鉢ノ葦葉」で修業した店主が2015年4月に開いた、名古屋の醤油ラーメンを代表する一軒。5種の醤油をブレンドしたキレのあるカエシに黒薩摩鶏の濃厚な旨味を重ねたスープは、繊細な酸味と余韻が身上で、遠方から通うファンも多い。中川区の住宅街という立地ながら開店前から行列ができ、現在は予約制を取り入れてSNSで営業情報を発信している。名古屋のラーメンシーンの実力を全国に示した功労店といえる。</div>
+<div class="sig"><b>一皿:</b>醤油らぁ麺</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中川区八剱町４丁目２０−１</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0523550787">☎ 052-355-0787</a> ／ <a href="https://twitter.com/ramen_ajisai?s=09">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「ラーメンAICHI百名店2025」選出店で、2017年以降百名店に連続選出されている実力店。名古屋情報通など地元媒体の紹介記事も多数あり、2025年の選出で営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%81%E9%BA%BA%20%E7%B4%AB%E9%99%BD%E8%8A%B1%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%B7%9D%E5%8C%BA%E5%85%AB%E5%89%B1%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://jouhou.nagoya/ramen-ajisai/">名古屋情報通</a> / <a href="https://tabelog.com/aichi/A2301/A230112/23055953/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-josui_tokugawacho">
+<img class="hero" src="img/nagoya/josui_tokugawacho.jpg" alt="徳川町 如水 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">33</span>徳川町 如水 本店<span class="yomi">とくがわちょう じょすい ほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">東区徳川町で長年行列を作り続ける塩ラーメンの人気店。化学調味料に頼らない無添加スープにこだわり、動物系と魚介系を合わせたダブルスープは、しっかりとした塩味ながらあっさり上品な後味で、老若男女を問わず支持される。つけ麺や季節限定メニューも充実し、昼夜通して家族連れからラーメンフリークまで幅広い客層で賑わう。名古屋市内に複数の系列店を展開するが、徳川園にほど近い本店が原点で、名古屋の塩ラーメンといえばまず名前が挙がる存在。</div>
+<div class="sig"><b>一皿:</b>塩ラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜14:30, 17:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区徳川町２０１ 日幸ビル １階</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0529379228">☎ 052-937-9228</a> ／ <a href="https://josuiramen.jp/josui_honten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ラーメンデータベースや各グルメサイトで名古屋の塩ラーメンの代表格として高評価を維持する人気店。公式サイトで本店の営業情報が現在も案内されており営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%B3%E5%B7%9D%E7%94%BA%20%E5%A6%82%E6%B0%B4%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E5%BE%B3%E5%B7%9D%E7%94%BA%EF%BC%92%EF%BC%90%EF%BC%91%20%E6%97%A5%E5%B9%B8%E3%83%93%E3%83%AB%20%EF%BC%91%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://josuiramen.jp/josui_honten/">如水公式サイト</a> / <a href="https://ramendb.supleks.jp/s/393.html">ラーメンデータベース</a></div>
+</div></div>
+<div class="card" id="c-manchinken">
+<img class="hero" src="img/nagoya/manchinken.jpg" alt="萬珍軒 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">34</span>萬珍軒<span class="yomi">まんちんけん</span></div>
+<div class="chips"><span class="chip classic">classic</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">屋台から始まり半世紀以上、太閤通で暖簾を守る老舗中華。名物は昭和43年に試行錯誤の末に生まれた「玉子とじラーメン」で、三河鶏ガラや豚骨を毎日10時間以上炊いたスープに溶き玉子を混ぜ込んだ、ふわとろの黄金色の一杯は名古屋のご当地ラーメンとして全国に知られる。夕方から深夜2時頃まで営業しており、飲んだ後の締めの一杯としても絶大な支持を得る。餃子や中華料理も揃う大箱で、家族での夕食から深夜のひとりラーメンまで受け止めてくれる。</div>
+<div class="sig"><b>一皿:</b>玉子とじラーメン</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木 17:00〜0:30 ／ 火・金・土 17:00〜1:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中村区太閤通４丁目３８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0524818824">☎ 052-481-8824</a> ／ <a href="http://www.manchinken.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>旅色やtabemaro等の媒体が「玉子とじラーメン発祥の店」として紹介する名古屋ご当地麺の代表格。公式サイトが稼働しており、各予約サイトでも現在の営業情報を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%90%AC%E7%8F%8D%E8%BB%92%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E6%9D%91%E5%8C%BA%E5%A4%AA%E9%96%A4%E9%80%9A%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://manchinken.com/">萬珍軒公式</a> / <a href="https://tabiiro.jp/gourmet/s/301321-nagoya-manchinken/">旅色</a></div>
+</div></div>
+<div class="card" id="c-sarrasin_honten">
+<img class="hero" src="img/nagoya/sarrasin_honten.jpg" alt="蕎麦工房 紗羅餐 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">35</span>蕎麦工房 紗羅餐 本店<span class="yomi">そばこうぼう さらざん ほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">南区星崎の住宅街にありながら、名古屋の蕎麦好きが車を走らせて通う手打ち蕎麦の名店。農家との直接契約で仕入れる国産そば粉を毎日店で打ち、香り高い二八や季節の変わり蕎麦、桜海老のかき揚げなどの蕎麦前とともに味わえる。ジャズが流れる落ち着いた店内はテーブル席の間隔が広く、調理を眺められるカウンターも備え、蕎麦懐石的なコースから昼のせいろ一枚まで使い分けられる。ミッドランドスクエアやセントレアにも出店するが、本店の空気は別格。</div>
+<div class="sig"><b>一皿:</b>手打ちせいろ蕎麦</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜14:00, 17:30〜19:30 ／ 土・日 11:30〜14:00, 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市南区星崎１丁目１４７−３</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0528247037">☎ 052-824-7037</a> ／ <a href="http://sarrasin.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元媒体でミシュラン掲載歴が紹介される名古屋を代表する蕎麦店で、市外からの来訪も多い。食べログに2025年12月時点のレビューが投稿されており営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%E5%B7%A5%E6%88%BF%20%E7%B4%97%E7%BE%85%E9%A4%90%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%97%E5%8C%BA%E6%98%9F%E5%B4%8E%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%EF%BC%97%E2%88%92%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://sarrasin.jp/">紗羅餐公式</a> / <a href="https://aunblog.net/gourmet-15/">THEナゴヤ</a></div>
+</div></div>
+<div class="card" id="c-pikaichi_imaike">
+<img class="hero" src="img/nagoya/pikaichi_imaike.jpg" alt="中国料理 ピカイチ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">36</span>中国料理 ピカイチ<span class="yomi">ちゅうごくりょうり ぴかいち</span></div>
+<div class="chips"><span class="chip classic">classic</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">創業50年を超える今池の大型町中華で、店内にカウンターを埋め尽くすほど中日ドラゴンズゆかりの品が並ぶことから「ドラキチの聖地」と呼ばれる。名物はふわふわの玉子を乗せた玉子炒飯と、10段階から辛さを選べるピカイチラーメン。ゴボウと細切り肉炒めなどの一品料理も豊富で、昭和の香り漂う店内で野球中継を見ながらビールと中華をつつく夜は今池ならではの体験。総席数120席の大箱ながら試合のある夜は満席になる、地元に深く根付いた一軒。</div>
+<div class="sig"><b>一皿:</b>玉子炒飯</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 18:00〜23:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区今池１丁目１４−５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0527318413">☎ 052-731-8413</a> ／ <a href="http://pikaichi-imaike.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>CBCマガジンが「愛され続ける今池の町中華」として特集し、Wikipediaに単独項目を持つ名物店。公式サイトが稼働しており、各グルメサイトで現在の営業情報を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E3%83%94%E3%82%AB%E3%82%A4%E3%83%81%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E4%BB%8A%E6%B1%A0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://pikaichi-imaike.jp/">ピカイチ公式</a> / <a href="https://hicbc.com/magazine/article/?id=delalover-column-24032701">CBCマガジン</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・バー(伏見・栄・大須)</h2>
+<div class="card" id="c-gomitori_honten">
+<img class="hero" src="img/nagoya/gomitori_honten.jpg" alt="伍味酉 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">37</span>伍味酉 本店<span class="yomi">ごみとり ほんてん</span></div>
+<div class="chips"><span class="chip classic">classic</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">昭和31年（1956年）創業、「元祖名古屋めし居酒屋」を名乗る栄の老舗。名古屋コーチンの造りや味噌おでん、手羽先、どて焼き、天むすまで、名古屋名物を一度に味わえる品揃えで、観光客の「名古屋めし入門」にも地元客の宴会にも応えてきた。店内に数百点の骨董品が飾られ「博物館居酒屋」の異名を持つ雑多で賑やかな空間も魅力。夕方17時から翌朝5時まで年中無休という営業時間の長さも貴重で、終電を逃した夜や二軒目・三軒目の受け皿としても半世紀以上機能し続けている。</div>
+<div class="sig"><b>一皿:</b>名古屋コーチンと名古屋めし各種</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜5:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄３丁目９−13 地下1階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522410041">☎ 052-241-0041</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光情報「名古屋コンシェルジュ」掲載店で、栄ミナミWebが2025年8月に紹介記事を公開しており営業実態を確認。昭和31年創業の老舗として地元媒体の評価が高い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BC%8D%E5%91%B3%E9%85%89%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%9213%20%E5%9C%B0%E4%B8%8B1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://sakaeminami.jp/2025/08/12/22742/">栄ミナミWeb(2025年8月)</a> / <a href="https://www.nagoya-info.jp/gourmet/detail/34/">名古屋コンシェルジュ</a></div>
+</div></div>
+<div class="card" id="c-sakatsuya_nakamise">
+<img class="hero" src="img/nagoya/sakatsuya_nakamise.jpg" alt="酒津屋 中店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">38</span>酒津屋 中店<span class="yomi">さかつや なかみせ</span></div>
+<div class="chips"><span class="chip classic">classic</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">栄駅直結「森の地下街」南一番街で50年以上続く大衆酒場。朝7時から店を開けており、モーニング感覚で瓶ビールを傾ける常連から昼飲み客、仕事帰りの一杯まで、地下街の雑踏の中で一日中誰かが飲んでいる名古屋昼飲み文化の象徴的存在。味噌カツ、どて煮、マグロぶつ、海老カツなど名古屋らしいつまみと定食メニューがどれもリーズナブルで、一人でふらりと立ち寄れる敷居の低さが身上。昭和の空気をそのまま封じ込めたような店構えは、それ自体が栄の風景になっている。</div>
+<div class="sig"><b>一皿:</b>味噌カツと朝からの一杯</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木 10:00〜22:30 ／ 金 10:00〜23:00 ／ 土 9:00〜23:00 ／ 日 9:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄３丁目５−１２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0529511140">☎ 052-951-1140</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>せんべろnetやタケマシュランなど酒場系媒体が「名古屋昼飲みの聖地」として紹介する地下街の名物店。ホットペッパー等でネット予約を受け付けており現在の営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E6%B4%A5%E5%B1%8B%20%E4%B8%AD%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://1000bero.net/restaurant-870/">せんべろnet</a> / <a href="https://www.hotpepper.jp/strJ000918575/">ホットペッパー</a></div>
+</div></div>
+<div class="card" id="c-ouma_no_oyako">
+<img class="hero" src="img/nagoya/ouma_no_oyako.jpg" alt="お馬のおやこ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">39</span>お馬のおやこ<span class="yomi">おうまのおやこ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大須観音から徒歩2分、赤い看板と赤提灯が目印の大衆酒場。創業25年、大須の地で20年にわたり深夜3時まで暖簾を掲げ、芸人やミュージシャンのサインと写真が壁を埋め尽くす下町の社交場として愛されてきた。名物はぷりぷりの豚ホルモンをニンニクの効いた塩だれで焼く「塩とんちゃん」で、キンキンのホッピーやサワーとの相性は抜群。もつ煮や串ものなど酒場の定番も揃い、大須散策の締めや観音様への参拝帰りの一杯にちょうどよい、気取らない一軒。</div>
+<div class="sig"><b>一皿:</b>塩とんちゃん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 17:00〜3:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区大須２丁目１１−５ ベルメゾン白川</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522211308">☎ 052-221-1308</a> ／ <a href="http://www.ouma.uud.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログの大須エリア居酒屋まとめ等で名物店として挙げられ、ヒトサラでネット予約を受け付けており現在の営業を確認。深夜3時まで営業する大須の大衆酒場として貴重。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A6%AC%E3%81%AE%E3%81%8A%E3%82%84%E3%81%93%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E9%A0%88%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%95%20%E3%83%99%E3%83%AB%E3%83%A1%E3%82%BE%E3%83%B3%E7%99%BD%E5%B7%9D">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0006025536/">ヒトサラ</a> / <a href="https://ouma.uud.jp/">公式サイト</a></div>
+</div></div>
+<div class="card" id="c-bar_barns">
+<img class="hero" src="img/nagoya/bar_barns.jpg" alt="BAR BARNS 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">40</span>BAR BARNS<span class="yomi">ばー ばーんず</span></div>
+<div class="chips"><span class="chip hyakumeiten">hyakumeiten</span></div>
+<div class="desc">伏見駅から徒歩3分、広小路通のビル地下に構える名古屋を代表するオーセンティックバー。旬のフルーツを使ったカクテルの完成度で全国のバー好きに知られ、ウイスキーは1杯500円台から1万円超のレアボトルまで700種以上のショットを揃える。バックバーの美しさ、柔らかな接客、細部まで行き届いた空間は「極上の大人時間」と評され、県外から目当てに訪れる客も多い。人気ゆえ満席のことが多く、電話予約をしてから訪れるのが確実。名古屋の夜の締めくくりに相応しい一軒。</div>
+<div class="sig"><b>一皿:</b>季節のフルーツカクテル</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 16:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄２丁目３−３２ HP広小路ビル ( 旧アマノビル ) B1</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522031114">☎ 052-203-1114</a> ／ <a href="https://www.bar-barns.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログのバー百名店に選出された名古屋バー界の看板店として飲食系媒体が紹介。公式サイトで店舗情報・予約案内が現在も更新されており営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=BAR%20BARNS%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%92%20HP%E5%BA%83%E5%B0%8F%E8%B7%AF%E3%83%93%E3%83%AB%20%28%20%E6%97%A7%E3%82%A2%E3%83%9E%E3%83%8E%E3%83%93%E3%83%AB%20%29%20B1">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.bar-barns.jp/">BAR BARNS公式</a> / <a href="https://www.foodconnection.jp/fc-gourmet/bar-barns/">フードコネクション</a></div>
+</div></div>
+<div class="card" id="c-atarayo">
+<img class="hero" src="img/nagoya/atarayo.jpg" alt="魚ト日本酒 あたらよ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">41</span>魚ト日本酒 あたらよ<span class="yomi">さかなとにほんしゅ あたらよ</span></div>
+<div class="chips"><span class="chip hyakumeiten">hyakumeiten</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">栄・住吉のビル地下に構える、鮮魚の創作料理と日本酒に特化した人気店。毎朝仕入れる魚を刺身や炙り、燻製など一手間加えた肴に仕立て、全国の蔵から集めた日本酒と合わせる構成で、日本酒初心者にも好みに合わせた提案をしてくれる。土日祝は13時から通し営業しており、昼から良い魚で一杯という休日の使い方ができるのも嬉しい。食べログ居酒屋百名店に選出されて以降予約困難になりつつあるが、名古屋で魚と日本酒ならまずここという評価を確立している。</div>
+<div class="sig"><b>一皿:</b>鮮魚の盛り合わせと日本酒</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 17:00〜23:30 ／ 土・日 13:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区栄３丁目１２−６ インペリアルプラザビル 地下１階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522538227">☎ 052-253-8227</a> ／ <a href="https://instagram.com/atarayo.nagoya?igshid=MmIzYWVlNDQ5Yg==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「居酒屋EAST百名店2025」選出店で、グルメブログ・タケマシュランも2025年4月に詳細レビューを公開。百名店選出と直近レビューで営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E3%83%88%E6%97%A5%E6%9C%AC%E9%85%92%20%E3%81%82%E3%81%9F%E3%82%89%E3%82%88%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%A0%84%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%96%20%E3%82%A4%E3%83%B3%E3%83%9A%E3%83%AA%E3%82%A2%E3%83%AB%E3%83%97%E3%83%A9%E3%82%B6%E3%83%93%E3%83%AB%20%E5%9C%B0%E4%B8%8B%EF%BC%91%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.takemachelin.com/2025/04/atarayo.html">タケマシュラン(2025年4月)</a> / <a href="https://tabelog.com/aichi/A2301/A230103/23085958/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-uenoya_honten">
+<img class="hero" src="img/nagoya/uenoya_honten.jpg" alt="上野屋 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">42</span>上野屋 本店<span class="yomi">うえのや ほんてん</span></div>
+<div class="chips"><span class="chip classic">classic</span></div>
+<div class="desc">名古屋最古級の商店街・円頓寺で大正5年（1916年）から続く百年酒場。名物は豚の大腸を秘伝のタレ「てり」に絡めて焼く「とんやき」で、創業以来継ぎ足されてきた甘辛のタレが香ばしい串は瓶ビールと無限に進む。豚もも肉の串かつや味噌おでんも揃い、昼は定食、夜は酒場として商店街の暮らしに寄り添ってきた。レトロブームで注目される円頓寺界隈でも、観光化とは無縁の営みを続ける本物の老舗で、下町名古屋の空気を吸うなら真っ先に暖簾をくぐりたい。</div>
+<div class="sig"><b>一皿:</b>とんやき</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜13:30, 17:00〜22:00 ／ 土 16:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市西区那古野２丁目２０−２１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0525716074">☎ 052-571-6074</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>サッポロ赤星公式の連載「赤星探偵団」が「円頓寺商店街の100年酒場」として創業108年の歴史とともに特集。同記事および食べログまとめで現在の営業情報を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E9%87%8E%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E8%A5%BF%E5%8C%BA%E9%82%A3%E5%8F%A4%E9%87%8E%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.akaboshi-tanteidan.com/gendaibusiness/marathon/marathon-no90/">赤星探偵団</a> / <a href="https://s.tabelog.com/smartphone/matome/22728/">食べログまとめ</a></div>
+</div></div>
+<div class="card" id="c-nobinobi_imaike">
+<img class="hero" src="img/nagoya/nobinobi_imaike.jpg" alt="大衆酒場 のびのび 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">43</span>大衆酒場 のびのび<span class="yomi">たいしゅうさかば のびのび</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">ライブハウスと酒場の街・今池で、週末は昼13時から夜中まで賑わう人気の大衆酒場。ビルの一角に赤提灯とネオンが灯る店内は昭和歌謡が流れるレトロな設えで、どて煮や串かつ、ポテサラ、鮮魚の刺身まで酒場の定番が手頃な値段で揃う。提供の早さと気持ちの良い接客で一人飲みから宴会まで受け止め、今池飲みの一軒目としても、はしご酒の途中でも使いやすい。昔ながらの老舗ではないが、今池の酒場文化を現代に引き継ぐ店として地元の支持が厚い。</div>
+<div class="sig"><b>一皿:</b>どて煮と串かつ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 16:00〜0:00 ／ 土・日 13:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区今池１丁目１５−６ 大成ビル 1階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0527536767">☎ 052-753-6767</a> ／ <a href="https://www.instagram.com/nobi.nobi_imaike/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ヒトサラや名古屋めしドットコム等の地元媒体が今池の人気酒場として紹介。ヒトサラ・予約サイトで現在の営業情報が更新されており、Instagramでも営業告知が続いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%20%E3%81%AE%E3%81%B3%E3%81%AE%E3%81%B3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E4%BB%8A%E6%B1%A0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%96%20%E5%A4%A7%E6%88%90%E3%83%93%E3%83%AB%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031600282/">ヒトサラ</a> / <a href="https://nagoya-meshi.com/area2/chikusa/nobinobi">名古屋めしドットコム</a></div>
+</div></div>
+<div class="card" id="c-obanzai_anko">
+<img class="hero" src="img/nagoya/obanzai_anko.jpg" alt="おばんざい あんこ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">44</span>おばんざい あんこ<span class="yomi">おばんざい あんこ</span></div>
+<div class="chips"><span class="chip hyakumeiten">hyakumeiten</span></div>
+<div class="desc">名駅南の路地にあるL字カウンター10席だけの小さな店を、女性店主がひとりで切り盛りするおばんざい居酒屋。カウンターに並ぶ手作りのおばんざいから好きなものを選び、日本酒や焼酎とゆっくり合わせるスタイルで、家庭料理の温かさと酒場の楽しさが同居する。15時から24時までの通し営業なので、早い時間からしっぽり飲みたい日にも重宝する。予約必須の人気ぶりだが、その分カウンター越しの会話も含めて名古屋の夜のいい思い出になる一軒。</div>
+<div class="sig"><b>一皿:</b>日替わりおばんざい盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 15:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中村区名駅南１丁目１０−１９</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0525813101">☎ 052-581-3101</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「居酒屋EAST百名店2025」選出店で、グルメnote等でも「女性店主がワンオペで営む人気店」として紹介。百名店選出と予約サイトの稼働で営業実態を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%B0%E3%82%93%E3%81%96%E3%81%84%20%E3%81%82%E3%82%93%E3%81%93%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E6%9D%91%E5%8C%BA%E5%90%8D%E9%A7%85%E5%8D%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://tabelog.com/aichi/A2301/A230101/23073563/">食べログ</a> / <a href="https://retty.me/area/PRE23/ARE61/SUB6101/100001531564/">Retty</a></div>
+</div></div>
+<div class="card" id="c-wine_bar_k">
+<img class="hero" src="img/nagoya/wine_bar_k.jpg" alt="Wine Bar K 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">45</span>Wine Bar K<span class="yomi">わいんばー けい</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">名古屋を代表するミシュラン星付きフレンチ「レミニセンス」に併設された、夜21時から開くワインバー。ブルゴーニュを中心に3000本を超えるストックを持ち、経験豊富な女性ソムリエがグラスの一杯から希少なボトルまで、その日の気分に寄り添って選んでくれる。独立した落ち着いた空間はディナー後の一杯にも、ワインだけをゆっくり楽しむ夜にも良く、名古屋のワイン好きの止まり木として静かに支持を集める。栄や名駅の喧騒から離れた東区筒井という立地も隠れ家的。</div>
+<div class="sig"><b>一皿:</b>ブルゴーニュワインのグラス</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 21:00〜0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区筒井３丁目１８−３ 北口</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:07016293800">☎ 070-1629-3800</a> ／ <a href="https://winebar-k.reminiscence0723.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン星付き「レミニセンス」併設という背景を持つ本格ワインバーで、居酒屋・バー枠に幅を持たせる一軒として選定。公式サイトと予約サイトが稼働しており営業を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Wine%20Bar%20K%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E7%AD%92%E4%BA%95%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%93%20%E5%8C%97%E5%8F%A3">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://winebar-k.reminiscence0723.com/">Wine Bar K公式</a> / <a href="https://autoreserve.com/ja/restaurants/VDPfqf9cGqqAitzUELag">AutoReserve</a></div>
+</div></div>
+<div class="card" id="c-minoya_kitamura">
+<img class="hero" src="img/nagoya/minoya_kitamura.jpg" alt="みのや北村酒店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">46</span>みのや北村酒店<span class="yomi">みのやきたむらさけてん</span></div>
+<div class="chips"><span class="chip classic">classic</span></div>
+<div class="desc">昭和13年（1938年）から大曽根で続く酒屋で、店内の一角で買った酒をそのまま立ち飲みできる名古屋では貴重な老舗の角打ち。コンビニのように気軽な店構えで、朝8時半の開店から地元の常連が缶詰や乾き物、ちょっとしたつまみを肴に瓶ビールやカップ酒を傾ける。酒屋ならではの品揃えで日本酒や焼酎を小売価格ベースで楽しめるのが角打ちの醍醐味で、一杯あたりの安さは居酒屋の比ではない。大曽根駅からすぐという立地もあり、仕事帰りの0次会や昼飲みの起点として愛される、下町酒文化の生き証人のような一軒。</div>
+<div class="sig"><b>一皿:</b>角打ちでの一杯（日本酒・瓶ビール）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 9:00〜22:00 ／ 土 10:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区矢田１丁目５−３３</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0527220308">☎ 052-722-0308</a> ／ <a href="https://ja-jp.facebook.com/pages/%E3%81%BF%E3%81%AE%E3%82%84%E5%8C%97%E6%9D%91%E9%85%92%E5%BA%97/146201742082007">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>せんべろnetが「コンビニのように気軽な老舗角打ち」として特集する大曽根の名物酒販店。2025年5月・7月の訪問口コミやYelpの2025年10月更新情報があり、営業実態を確認済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%81%AE%E3%82%84%E5%8C%97%E6%9D%91%E9%85%92%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E7%9F%A2%E7%94%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%93%EF%BC%93">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://1000bero.net/restaurant-871/">せんべろnet</a> / <a href="https://tabelog.com/aichi/A2301/A230110/23045589/">食べログ</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-kitchen_oumi">
+<img class="hero" src="img/nagoya/kitchen_oumi.jpg" alt="キッチン欧味 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">47</span>キッチン欧味<span class="yomi">きっちんおうみ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip meibutsu">meibutsu</span></div>
+<div class="desc">千種区吹上・古井ノ坂で約30年愛された洋食店が、ビルの老朽化に伴い2026年3月10日に昭和区塩付通（御器所エリア）へ移転リニューアルした。名物は皿から大きくはみ出す「ジャンボ海老フライ」で、名古屋のエビフライ文化を象徴する一皿としてテレビや雑誌の常連。ハンバーグやコロッケなど「当店の料理はすべて手作り」を掲げる昔ながらの調理姿勢で、移転後もピンク色のビル1階で変わらぬ味を提供する。家族連れでも入りやすい町の洋食屋の雰囲気で、夜は22時（日祝は21時）まで通しで使いやすい。</div>
+<div class="sig"><b>一皿:</b>ジャンボ海老フライ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市昭和区塩付通２丁目２ メゾンアルファ 1F</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0527340345">☎ 052-734-0345</a> ／ <a href="http://kitchen-oumi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ウォーカープラスが「地元民が選ぶ名古屋名物エビフライの名店」に挙げる有名店。公式サイトと地域ニュース（名古屋情報通・しょうわん）が2026年3月10日の移転リニューアルオープンを報じており、2026年の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%E6%AC%A7%E5%91%B3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%98%AD%E5%92%8C%E5%8C%BA%E5%A1%A9%E4%BB%98%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%20%E3%83%A1%E3%82%BE%E3%83%B3%E3%82%A2%E3%83%AB%E3%83%95%E3%82%A1%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.kitchen-oumi.com/">キッチン欧味 公式サイト</a> / <a href="https://jouhou.nagoya/kitchen-oumi-gokiso/">名古屋情報通（移転オープン記事）</a></div>
+</div></div>
+<div class="card" id="c-bunka_yoshokuten">
+<img class="hero" src="img/nagoya/bunka_yoshokuten.jpg" alt="文化洋食店 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">48</span>文化洋食店 本店<span class="yomi">ぶんかようしょくてん ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1983年から千種区高見で愛される洋食店で、名古屋の「町の洋食」を代表する存在。毎朝練り上げるフレッシュなハンバーグ、一日かけて仕込むカニクリームコロッケ、オニオングラタンスープなど、手間を惜しまない正統派の洋食が看板。風情ある一軒家風の店内は世代を問わず居心地がよく、昼は15時台まで通し営業で使い勝手がよい。人気は市外にも知られ、松坂屋名古屋店への出店やビストロ業態など暖簾を広げるが、本店の落ち着いた雰囲気は別格。</div>
+<div class="sig"><b>一皿:</b>カニクリームコロッケ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 11:30〜15:45, 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区高見１丁目２−１ ＳＫビル １Ｆ</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0527612941">☎ 052-761-2941</a> ／ <a href="https://www.instagram.com/bunkayoushokuten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>千種・今池エリアの老舗洋食として旅行サイトや地元メディアで定番的に紹介される名店。2025年夏にはYahoo!ニュース（地域クリエイター記事）で季節限定デザートが紹介されており、直近の営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%87%E5%8C%96%E6%B4%8B%E9%A3%9F%E5%BA%97%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E9%AB%98%E8%A6%8B%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%20%EF%BC%B3%EF%BC%AB%E3%83%93%E3%83%AB%20%EF%BC%91%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://news.yahoo.co.jp/expert/articles/4f38bcbfb13e7a66d48899d924a04497386d66a4">Yahoo!ニュース（2025年紹介記事）</a> / <a href="https://town.mec-h.com/mh-ikeshita/27">池下・覚王山エリアガイド</a></div>
+</div></div>
+<div class="card" id="c-ma_maison_hoshigaoka">
+<img class="hero" src="img/nagoya/ma_maison_hoshigaoka.jpg" alt="洋食屋 マ・メゾン 星ヶ丘本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">49</span>洋食屋 マ・メゾン 星ヶ丘本店<span class="yomi">ようしょくや ま・めぞん ほしがおかほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip family">family</span></div>
+<div class="desc">名古屋発の洋食ブランド「マ・メゾン」の発祥店で、1981年オープンの1号店。山小屋風の建物は開業当時の佇まいをそのまま残し、星ヶ丘の丘の上で40年以上愛され続けている。看板は鉄板でジュージューと供される焼きたてハンバーグと、季節のフルーツを使ったデザート。地下鉄星ヶ丘駅から徒歩5分で、家族の記念日から普段のランチまで幅広く使える。市内に姉妹店・分店が広がった今も、本店ならではのクラシックな雰囲気を求めて通う常連が多い。</div>
+<div class="sig"><b>一皿:</b>鉄板ハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金・土・日 11:00〜14:30, 17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区星が丘元町１−１５</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0527816562">☎ 052-781-6562</a> ／ <a href="https://ma-maison.jp/shop/hoshi/?utm_source=google&amp;utm_medium=organic&amp;utm_campaign=google_maps_hoshi">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋発祥ローカルチェーンのため規定に従い発祥店・星ヶ丘本店のみを選定。公式サイトが1981年開業の1号店であることを明記し、現行の営業時間を掲載しており営業継続が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E3%83%9E%E3%83%BB%E3%83%A1%E3%82%BE%E3%83%B3%20%E6%98%9F%E3%83%B6%E4%B8%98%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E6%98%9F%E3%81%8C%E4%B8%98%E5%85%83%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%95">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.ma-maison.jp/shop/hoshi/">洋食 マ・メゾン 公式（星ヶ丘本店）</a> / <a href="https://tabelog.com/en/aichi/A2301/A230111/23000419/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-kitamura">
+<img class="hero" src="img/nagoya/kitamura.jpg" alt="ラ・グランターブル ドゥ キタムラ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">50</span>ラ・グランターブル ドゥ キタムラ<span class="yomi">ら・ぐらんたーぶる どぅ きたむら</span></div>
+<div class="chips"><span class="chip fine">fine</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">名古屋の歴史地区「文化のみち」の一角、主税町の旧邸を改装したグランメゾン。シェフの北村竜二氏は、フレンチ最高峰と謳われたスイスの三ツ星「ジラルデ」でスーシェフを務めた経歴を持ち、その日仕入れた地物食材を軸にした端正なフランス料理を供する。クラシックな洋館のダイニングは記念日や顔合わせの定番で、名古屋のフレンチを語る際に必ず名が挙がる存在。昼はコースを比較的手頃に楽しめ、夜は20時ラストオーダーでゆったりと過ごせる。</div>
+<div class="sig"><b>一皿:</b>地物食材のフルコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00（L.O.13:00）／17:30〜22:00（L.O.20:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区主税町４丁目８４ ラ・グランターブル・ドゥ・キタムラ</td></tr>
+<tr><th>予約</th><td>要確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>一休.comレストランやRettyで予約を受け付ける名古屋を代表する老舗グランメゾンで、掲載中の営業情報から現在の営業が確認できる。「ジラルデ」出身シェフの店として各グルメメディアが名古屋フレンチの筆頭格に挙げる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BB%E3%82%B0%E3%83%A9%E3%83%B3%E3%82%BF%E3%83%BC%E3%83%96%E3%83%AB%20%E3%83%89%E3%82%A5%20%E3%82%AD%E3%82%BF%E3%83%A0%E3%83%A9%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E4%B8%BB%E7%A8%8E%E7%94%BA%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%98%EF%BC%94%20%E3%83%A9%E3%83%BB%E3%82%B0%E3%83%A9%E3%83%B3%E3%82%BF%E3%83%BC%E3%83%96%E3%83%AB%E3%83%BB%E3%83%89%E3%82%A5%E3%83%BB%E3%82%AD%E3%82%BF%E3%83%A0%E3%83%A9">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://french-kitamura.jp/">公式サイト</a> / <a href="https://restaurant.ikyu.com/106810">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-reminiscence">
+<img class="hero" src="img/nagoya/reminiscence.jpg" alt="レミニセンス 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">51</span>レミニセンス<span class="yomi">れみにせんす</span></div>
+<div class="chips"><span class="chip fine">fine</span></div>
+<div class="desc">名古屋出身の葛原将季シェフが「余韻と記憶」をテーマに、ストーリー仕立てのコースを紡ぐモダンフレンチ。東京「カンテサンス」、大阪「HAJIME」という二つの三つ星で研鑽を積み、2015年に栄で開業。2023年にグランメゾンを目指して車道駅近くの閑静な住宅街（東区筒井）へ移転リニューアルした。世界的グルメガイドで二つ星を獲得し、名古屋のファインダイニングの頂点格として全国から食通が訪れる。完全予約制で、特別な日の食事にふさわしい一軒。</div>
+<div class="sig"><b>一皿:</b>「余韻と記憶」を表現するおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 12:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区筒井３丁目１８−３ 南口</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522288337">☎ 052-228-8337</a> ／ <a href="http://reminiscence0723.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン二つ星に加え、食べログ「フレンチEAST百名店2025」に選出されており、2025年の高い評価と営業実態が確認できる。一休.comレストラン等で現在も予約を受け付けている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%83%9F%E3%83%8B%E3%82%BB%E3%83%B3%E3%82%B9%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E7%AD%92%E4%BA%95%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%93%20%E5%8D%97%E5%8F%A3">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://reminiscence0723.com/">公式サイト</a> / <a href="https://restaurant.ikyu.com/121840">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-solo_pizza_osu">
+<img class="hero" src="img/nagoya/solo_pizza_osu.jpg" alt="ソロ ピッツァ ナポレターナ ダ ピッコロ 大須本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">52</span>ソロ ピッツァ ナポレターナ ダ ピッコロ 大須本店<span class="yomi">そろ ぴっつぁ なぽれたーな だ ぴっころ おおすほんてん</span></div>
+<div class="chips"><span class="chip meibutsu">meibutsu</span><span class="chip casual">casual</span></div>
+<div class="desc">ナポリピッツァ世界チャンピオンの職人が立ち上げた、ナポリピッツァ職人協会認定の専門店。薪窯で一気に焼き上げる本場さながらのピッツァを、驚くほど手頃な価格で提供することで大須の食べ歩き文化に本格イタリアンを根付かせた。定番のマルゲリータは水牛モッツァレラ使用の上位版「マルゲリータ・エクストラ」と並ぶ看板で、行列必至ながら回転は早い。11時から21時台まで通し営業なので、大須商店街の散策途中に使いやすいのも魅力。</div>
+<div class="sig"><b>一皿:</b>マルゲリータ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:00〜21:15</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区大須３丁目３６−４４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522510655">☎ 052-251-0655</a> ／ <a href="http://www.solopizza.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ナポリピッツァ職人協会認定店として公式サイトが現行の店舗情報を掲載し、食べログ・AutoReserve等で現在も予約可能なことから営業実態が確認できる。世界大会優勝職人の店として名古屋のピッツァ人気を牽引する存在。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%BD%E3%83%AD%20%E3%83%94%E3%83%83%E3%83%84%E3%82%A1%20%E3%83%8A%E3%83%9D%E3%83%AC%E3%82%BF%E3%83%BC%E3%83%8A%20%E3%83%80%20%E3%83%94%E3%83%83%E3%82%B3%E3%83%AD%20%E5%A4%A7%E9%A0%88%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E9%A0%88%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%96%E2%88%92%EF%BC%94%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://solopizza.jp/shop.html">ソロピッツァ ナポレターナ 公式</a> / <a href="https://tabelog.com/en/aichi/A2301/A230105/23000240/">食べログ</a></div>
+</div></div>
+<div class="card" id="c-yoshokuya_nakamura">
+<img class="hero" src="img/nagoya/yoshokuya_nakamura.jpg" alt="洋食や なかむら 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">53</span>洋食や なかむら<span class="yomi">ようしょくや なかむら</span></div>
+<div class="chips"><span class="chip casual">casual</span></div>
+<div class="desc">名古屋市西区上名古屋の住宅街に構える、昔ながらのアットホームな洋食店。看板はボールのように厚みのある粗挽きハンバーグと、濃厚なカニクリームコロッケで、締めには昔ながらの固めプリンを目当てにする常連も多い。夫婦的な温かい接客と手仕事の味で、地元・浄心界隈では「困ったらなかむら」と言われる存在。ランチはコストパフォーマンスが高く、夜は洋食をつまみにワインも楽しめる。名古屋の洋食好きの間で評価が高く、遠方から通うファンもいる。</div>
+<div class="sig"><b>一皿:</b>粗挽きハンバーグ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜14:30, 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市西区上名古屋２丁目２−２１ 日商岩井第一城北ハイツ 1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0525249322">☎ 052-524-9322</a> ／ <a href="https://instagram.com/yosyoku_nakamura?igshid=OGQ5ZDc2ODk2ZA==">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地域メディア「住む街なび」やRettyの2025年前後の人気洋食まとめで名古屋の実力店として紹介され、ホットペッパーグルメでネット予約を受け付けており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E3%82%84%20%E3%81%AA%E3%81%8B%E3%82%80%E3%82%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%B8%8A%E5%90%8D%E5%8F%A4%E5%B1%8B%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%91%20%E6%97%A5%E5%95%86%E5%B2%A9%E4%BA%95%E7%AC%AC%E4%B8%80%E5%9F%8E%E5%8C%97%E3%83%8F%E3%82%A4%E3%83%84%201F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ000841629/">ホットペッパーグルメ</a> / <a href="https://www.nissho-apn.co.jp/area/nagoya/1196961_1646.html">住む街なび（西区紹介記事）</a></div>
+</div></div>
+<div class="card" id="c-uohiro">
+<img class="hero" src="img/nagoya/uohiro.jpg" alt="洋食屋 うおひろ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">54</span>洋食屋 うおひろ<span class="yomi">ようしょくや うおひろ</span></div>
+<div class="chips"><span class="chip casual">casual</span></div>
+<div class="desc">丸の内駅から徒歩1分、老舗仕出し屋が手がける洋食店。仕出しで培った食材の目利きと丁寧な仕込みを生かし、エビフライやハンバーグ、フライの盛り合わせなど王道の洋食を手頃な価格で提供する。オフィス街・丸の内という立地から平日昼はビジネスパーソンで賑わい、夜は洋食で一杯やれる使い勝手の良さも人気の理由。土曜・祝日も昼営業があるため、名古屋城や文化のみち観光の前後のランチにも組み込みやすい。</div>
+<div class="sig"><b>一皿:</b>エビフライとハンバーグの洋食ランチ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金 11:30〜15:00, 17:30〜22:00 ／ 土 11:30〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区丸の内２丁目２−２４</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0522316363">☎ 052-231-6363</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2025年の名古屋の洋食まとめ記事（Retty等）で「老舗仕出し屋プロデュースの洋食店」として紹介される人気店。ホットペッパーグルメ・楽天ぐるなびに現行の店舗情報が掲載され営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E3%81%86%E3%81%8A%E3%81%B2%E3%82%8D%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E4%B8%B8%E3%81%AE%E5%86%85%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.hotpepper.jp/strJ004381745/">ホットペッパーグルメ</a> / <a href="https://r.gnavi.co.jp/6msunxtx0000/">楽天ぐるなび</a></div>
+</div></div>
+<div class="card" id="c-al_fortuna">
+<img class="hero" src="img/nagoya/al_fortuna.jpg" alt="AL Fortuna（アルフォルトゥーナ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">55</span>AL Fortuna（アルフォルトゥーナ）<span class="yomi">あるふぉるとぅーな</span></div>
+<div class="chips"><span class="chip fine">fine</span></div>
+<div class="desc">地下鉄東山線覚王山駅1番出口すぐ、「本物の料理をカジュアルに」を掲げるイタリアン。無農薬野菜を軸に、月替わりで旬の素材を生かしたコースを提供し、素材の持ち味を引き出す誠実な料理で覚王山エリアの食通に支持されている。落ち着いたビル2階の店内はデートや記念日にも使いやすく、土日祝はランチコースも楽しめる。日泰寺参道の散策やギャラリー巡りと合わせて、覚王山らしい上質な食事を楽しみたいときの本命候補。</div>
+<div class="sig"><b>一皿:</b>無農薬野菜と旬素材の月替わりコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・金 18:00〜22:30 ／ 土・日 12:00〜15:00, 18:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区末盛通１丁目１ 弘法屋ビル 2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0527534799">☎ 052-753-4799</a> ／ <a href="http://www.alfortuna.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>食べログ「レストランセレクション」掲載かつ一休.comレストランでネット予約を受け付けており、現在の営業と予約受付が確認できる。覚王山エリアのイタリアンとして公式サイトも稼働中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=AL%20Fortuna%EF%BC%88%E3%82%A2%E3%83%AB%E3%83%95%E3%82%A9%E3%83%AB%E3%83%88%E3%82%A5%E3%83%BC%E3%83%8A%EF%BC%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E6%9C%AB%E7%9B%9B%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%20%E5%BC%98%E6%B3%95%E5%B1%8B%E3%83%93%E3%83%AB%202F">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://alfortuna.net/">AL Fortuna 公式サイト</a> / <a href="https://restaurant.ikyu.com/110827">一休.comレストラン</a></div>
+</div></div>
+<div class="card" id="c-dubonnet">
+<img class="hero" src="img/nagoya/dubonnet.jpg" alt="レストラン デュボネ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">56</span>レストラン デュボネ<span class="yomi">れすとらん でゅぼね</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip fine">fine</span></div>
+<div class="desc">大正14年（1925年築とも伝わる1924年建築）の旧春田鉄次郎邸を利用したフレンチレストラン。100年を超える歴史を持つ邸宅は国の登録有形文化財で、名古屋市の景観重要建造物にも指定され、洋館と和館からなる建物の一部が無料見学もできる観光名所になっている。料理は全国から集めた旬の食材を使い、箸で食べられる和のテイストを取り入れた創作フレンチのコース。席は完全個室のみで、記念日や顔合わせ、少人数の会食にじっくり使える。文化のみち散策と組み合わせたい、建物ごと味わう一軒。</div>
+<div class="sig"><b>一皿:</b>旬素材の創作フレンチコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・金・土・日 11:30〜15:00, 18:00〜21:00 ／ 木 18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火・水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区主税町３丁目６−２</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0529361477">☎ 052-936-1477</a> ／ <a href="https://www.dubonnet.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>登録有形文化財・旧春田鉄次郎邸のレストランとして観光メディア（Yahoo!トラベル・NAVITIME等）が紹介する名所型フレンチ。公式サイトが現行のコース・営業時間を掲載し、一休.comレストランやホットペッパーグルメで現在も予約を受け付けており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%87%E3%83%A5%E3%83%9C%E3%83%8D%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E4%B8%BB%E7%A8%8E%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.dubonnet.jp/menu.html">レストランデュボネ 公式サイト</a> / <a href="https://restaurant.ikyu.com/116013">一休.comレストラン</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・和菓子・パン(モーニングの本場)</h2>
+<div class="card" id="c-kissa_matsuba">
+<img class="hero" src="img/nagoya/kissa_matsuba.jpg" alt="喫茶まつば 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">57</span>喫茶まつば<span class="yomi">きっさまつば</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip morning">morning</span></div>
+<div class="desc">1933年（昭和8年）創業、名古屋市内に現存する喫茶店として最古の歴史を誇る円頓寺商店街の顔。小倉トースト発祥の店「満つ葉」からの暖簾分けで、元祖直伝の小倉トーストを今も看板に掲げる。大粒の餡をのせた小倉トーストと深煎りコーヒーの組み合わせは、名古屋喫茶文化の原点を味わえる一皿。モーニングは昼12時までとたっぷり長く、商店街散策の起点に最適。レトロな店内には常連と観光客が自然に混ざり合う、下町の空気が残る。</div>
+<div class="sig"><b>一皿:</b>元祖直伝の小倉トースト</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市西区那古野１丁目３５−１４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0525510669">☎ 052-551-0669</a> ／ <a href="https://www.instagram.com/matsuba1933/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>NAGOYA.やテレビ（Locipo配信の東海モーニング番組）が「名古屋最古級の喫茶店」として紹介する殿堂的存在。2025年のモーニング特集記事群でも定番として掲載され、円頓寺商店街公式サイトにも現役店舗として掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%81%BE%E3%81%A4%E3%81%B0%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E8%A5%BF%E5%8C%BA%E9%82%A3%E5%8F%A4%E9%87%8E%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://endojishotengai.com/shop01/485.html">円頓寺商店街 online</a> / <a href="https://nagoyadot.jp/gourmet/50721/">NAGOYA.（純喫茶めぐり）</a></div>
+</div></div>
+<div class="card" id="c-kissa_new_poppy">
+<img class="hero" src="img/nagoya/kissa_new_poppy.jpg" alt="喫茶ニューポピー 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">58</span>喫茶ニューポピー<span class="yomi">きっさにゅーぽぴー</span></div>
+<div class="chips"><span class="chip retro">retro</span><span class="chip morning">morning</span></div>
+<div class="desc">土蔵の街並みが残る四間道・那古野エリアで、昭和52年創業の「喫茶ポピー」を受け継いで生まれた喫茶店。店内に焙煎機を据え、マスターがほぼ毎日焙煎する自家焙煎コーヒーが主役で、入口にはコーヒーの麻袋が積まれる。手作り餡の小倉トースト、コーヒーで炊いたご飯が特徴の「ポピーのコーヒーライスカレー」など、古き良き喫茶メニューを現代的な感覚で再構築。金・土は夜22時まで営業し、夜喫茶としても使える。円頓寺・四間道散策と組み合わせたい一軒。</div>
+<div class="sig"><b>一皿:</b>自家焙煎コーヒーと小倉トースト</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土・日 8:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市西区那古野１丁目３６−５２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0524338188">☎ 052-433-8188</a> ／ <a href="https://b-bitou.com/shop/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>三井ガーデンホテル名古屋プレミアの2025年3月の案内記事で紹介されるなど、直近の営業実態が確認できる。運営元Beans Bitouの公式サイトにも現行店舗として掲載され、地元メディアが那古野の代表的喫茶として挙げる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%83%8B%E3%83%A5%E3%83%BC%E3%83%9D%E3%83%94%E3%83%BC%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E8%A5%BF%E5%8C%BA%E9%82%A3%E5%8F%A4%E9%87%8E%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%96%E2%88%92%EF%BC%95%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.gardenhotels.co.jp/nagoya-premier/mimiyori/20250324/">三井ガーデンホテル名古屋プレミア（2025年記事）</a> / <a href="https://b-bitou.com/shop/">株式会社Beans Bitou（運営元）</a></div>
+</div></div>
+<div class="card" id="c-kissa_bonbon">
+<img class="hero" src="img/nagoya/kissa_bonbon.jpg" alt="洋菓子・喫茶ボンボン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">59</span>洋菓子・喫茶ボンボン<span class="yomi">ようがし・きっさぼんぼん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip retro">retro</span></div>
+<div class="desc">1949年（昭和24年）創業の老舗純喫茶。昭和の面影をそのまま残す広い店内に赤いソファが並び、朝8時から夜9時まで年中無休で開いている懐の深さが魅力。名物は昔ながらの製法を守る自家製洋菓子で、固めのプリンにフルーツを添えた「プリンローヤル」や洋酒香る「サバラン」が二枚看板。ケーキとコーヒーを合わせても驚くほど手頃で、モーニングから夜のお茶まで一日中使える。地下鉄高岳駅から徒歩5分、世代を超えて愛される名古屋レトロ喫茶の代表格。</div>
+<div class="sig"><b>一皿:</b>プリンローヤル</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区泉２丁目１−２２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0529310442">☎ 052-931-0442</a> ／ <a href="http://www.cake-bonbon.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>BRUTUSの名古屋喫茶モーニング特集やことりっぷ等、全国メディアが名古屋レトロ喫茶の代表として繰り返し取り上げる。るるぶ&amp;more.掲載の2025年時点の営業情報（8:00〜21:00・年中無休）で営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E8%8F%93%E5%AD%90%E3%83%BB%E5%96%AB%E8%8C%B6%E3%83%9C%E3%83%B3%E3%83%9C%E3%83%B3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E6%B3%89%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://cake-bonbon.com/">ボンボン 公式サイト</a> / <a href="https://brutus.jp/nagoya_mornig5/">BRUTUS（名古屋喫茶特集）</a></div>
+</div></div>
+<div class="card" id="c-silvia_tokugawa">
+<img class="hero" src="img/nagoya/silvia_tokugawa.jpg" alt="支留比亜珈琲店 徳川本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">60</span>支留比亜珈琲店 徳川本店<span class="yomi">しるびあこーひーてん とくがわほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip morning">morning</span></div>
+<div class="desc">1972年創業の名古屋発喫茶チェーン「支留比亜珈琲」の1号店。徳川美術館近くのマンション1階に入るレトロな店構えで、山小屋風の落ち着いた内装は創業時の空気を残す。名物は厚切りトーストにカルボナーラ風のソースとベーコンをのせて焼き上げた「カルボトースト」で、ここから名古屋中に広がった喫茶メシの傑作。朝7時開店で、11時までドリンク代のみでトーストとゆで卵が付く正統派名古屋モーニングも健在。チェーン展開後も本店は巡礼地的な存在であり続けている。</div>
+<div class="sig"><b>一皿:</b>カルボトースト</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 7:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区徳川２丁目１２−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0529356128">☎ 052-935-6128</a> ／ <a href="https://www.instagram.com/silvia_coffee_honten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋発祥ローカルチェーンのため規定に従い発祥店・徳川本店のみを選定。フランチャイズ本部の公式ページが徳川本店の現行営業情報（7:00〜17:00・火曜定休）を掲載しており営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%94%AF%E7%95%99%E6%AF%94%E4%BA%9C%E7%8F%88%E7%90%B2%E5%BA%97%20%E5%BE%B3%E5%B7%9D%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E5%BE%B3%E5%B7%9D%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="http://silviacoffee.ecgo.jp/page0112.html">支留比亜珈琲 公式（徳川本店）</a> / <a href="https://oinagoya.com/silviacoffee/">おいでよ名古屋の食べ歩きログ</a></div>
+</div></div>
+<div class="card" id="c-kako_hanaguruma">
+<img class="hero" src="img/nagoya/kako_hanaguruma.jpg" alt="コーヒーハウスかこ 花車本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">61</span>コーヒーハウスかこ 花車本店<span class="yomi">こーひーはうすかこ はなぐるまほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip morning">morning</span></div>
+<div class="desc">昭和47年（1972年）創業、名古屋で初めて自家焙煎を導入したと伝わる老舗喫茶。国際センター駅から徒歩3分、名駅エリアとは思えない古き良き面影を残す店内で、ネルドリップで淹れる深いコーヒーを味わえる。名物はモーニングの「シャンティールージュスペシャル」。トーストに自家製あんこ、たっぷりの生クリーム、赤い自家製コンフィチュールを重ねた一枚は、小倉トースト文化の進化形として全国の喫茶ファンを呼び寄せる。朝7時開店、モーニングは11時まで。</div>
+<div class="sig"><b>一皿:</b>シャンティールージュスペシャル（あんこ×生クリームトースト）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 7:00〜16:30</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中村区名駅５丁目１６−１７</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0525860239">☎ 052-586-0239</a> ／ <a href="https://www.instagram.com/kako_coffee_honten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Life Designsが「名古屋で初めて自家焙煎を導入した老舗喫茶店」として特集し、読売旅行の連載やオレンジページ等の媒体も名古屋モーニングの代表格として紹介。ホットペッパーグルメに現行の営業情報が掲載され営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%E3%83%8F%E3%82%A6%E3%82%B9%E3%81%8B%E3%81%93%20%E8%8A%B1%E8%BB%8A%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E6%9D%91%E5%8C%BA%E5%90%8D%E9%A7%85%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%97">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://life-designs.jp/webmagazine/coffee-shop-kako/">Life Designs（特集記事）</a> / <a href="https://www.hotpepper.jp/strJ000394478/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-kissa_tsuzuki">
+<img class="hero" src="img/nagoya/kissa_tsuzuki.jpg" alt="喫茶ツヅキ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">62</span>喫茶ツヅキ<span class="yomi">きっさつづき</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip retro">retro</span></div>
+<div class="desc">昭和21年（1946年）創業、親子二代でメニューを探求し続ける中村区の老舗喫茶。名物は脚立に上ったマスターが高さ約2.5メートルの天井際からコーヒーとミルクを同時に注ぐ「カフェオレ天井落とし」。高所から注ぐことできめ細かな泡が立ち、まろやかな味になるという唯一無二のパフォーマンスは、テレビや雑誌の取材が絶えない。花と観葉植物に囲まれた華やかな店内で、ホットケーキパフェなど遊び心あるメニューも楽しい。朝7時半からのモーニングも地元に愛される。</div>
+<div class="sig"><b>一皿:</b>カフェオレ天井落とし</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 7:30〜17:00 ／ 火 7:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中村区太閤通６丁目１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0524820001">☎ 052-482-0001</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>るるぶ&amp;more.やぐるなび「みんなのごはん」、Life Designsなど多媒体が名古屋の名物喫茶として特集。AutoReserve等の予約サイトに現行の曜日別営業時間が掲載されており、営業実態が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%83%84%E3%83%85%E3%82%AD%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E6%9D%91%E5%8C%BA%E5%A4%AA%E9%96%A4%E9%80%9A%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://rurubu.jp/andmore/article/17116">るるぶ&amp;more.</a> / <a href="https://life-designs.jp/webmagazine/kissatuzuki/">Life Designs（特集記事）</a></div>
+</div></div>
+<div class="card" id="c-morning_lyon">
+<img class="hero" src="img/nagoya/morning_lyon.jpg" alt="モーニング喫茶リヨン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">63</span>モーニング喫茶リヨン<span class="yomi">もーにんぐきっさりよん</span></div>
+<div class="chips"><span class="chip morning">morning</span><span class="chip meibutsu">meibutsu</span></div>
+<div class="desc">名古屋駅から徒歩数分、三井ビル地下1階に店を構える「一日中モーニング」の代名詞的喫茶店。通常は朝だけのモーニングサービスを営業時間中ずっと実施しており、ドリンク代のみで選べるプレスサンドは小倉あん、ハムエッグ、ツナなど6種類。中でも熱々に焼かれた小倉あんプレスサンドは名古屋モーニング文化を凝縮した一品として観光客の目当てになっている。昭和の趣が残る店内は週末になると行列ができるが回転は早い。名古屋駅観光の締めやスタートに最適。</div>
+<div class="sig"><b>一皿:</b>小倉あんプレスサンド（終日モーニング）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中村区名駅南１丁目２４−３０ 三井ビル別館 Ｂ１Ｆ</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0525513865">☎ 052-551-3865</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>るるぶ&amp;more.が「名古屋人の朝を体験できる店」として特集し、2025年前後のYahoo!ニュース地域記事でも人気店として紹介。ぐるなび等に現行の営業情報が掲載され、週末に行列ができる現役の人気が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A2%E3%83%BC%E3%83%8B%E3%83%B3%E3%82%B0%E5%96%AB%E8%8C%B6%E3%83%AA%E3%83%A8%E3%83%B3%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E6%9D%91%E5%8C%BA%E5%90%8D%E9%A7%85%E5%8D%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%90%20%E4%B8%89%E4%BA%95%E3%83%93%E3%83%AB%E5%88%A5%E9%A4%A8%20%EF%BC%A2%EF%BC%91%EF%BC%A6">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://rurubu.jp/andmore/article/17113">るるぶ&amp;more.</a> / <a href="https://news.yahoo.co.jp/expert/articles/5a1a3769ee01c8030ea2728a74476110e996e59d">Yahoo!ニュース（地域記事）</a></div>
+</div></div>
+<div class="card" id="c-konparu_osu">
+<img class="hero" src="img/nagoya/konparu_osu.jpg" alt="コンパル 大須本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">64</span>コンパル 大須本店<span class="yomi">こんぱる おおすほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip meibutsu">meibutsu</span></div>
+<div class="desc">昭和22年（1947年）大須で創業した老舗喫茶の本店。蝶ネクタイのスタッフと赤いソファが迎えるクラシックな店内は、名古屋喫茶の黄金時代を今に伝える。名物はエビフライを3本、ふんわり玉子とカツソース＋タルタルのダブルソースでトーストに挟んだ「エビフライサンド」。濃いめに淹れたコーヒーを氷の入ったグラスに自分で注ぐ独特のアイスコーヒーも名物で、大須散策の休憩に欠かせない存在。朝8時から夜7時まで無休で営業し、モーニングは11時まで。</div>
+<div class="sig"><b>一皿:</b>エビフライサンド</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区大須３丁目２０−１９</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0522413883">☎ 052-241-3883</a> ／ <a href="https://www.konparu.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋市公式観光サイト「名古屋コンシェルジュ」やBRUTUSが名古屋を代表する喫茶として掲載。名古屋発ローカルチェーンのため規定に従い大須本店のみを選定し、ホットペッパー等の現行掲載情報（8:00〜19:00・無休）で営業が確認できる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B3%E3%83%B3%E3%83%91%E3%83%AB%20%E5%A4%A7%E9%A0%88%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E9%A0%88%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%99">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.nagoya-info.jp/gourmet/detail/23/">名古屋コンシェルジュ（市公式観光サイト）</a> / <a href="https://www.hotpepper.jp/strJ000430215/">ホットペッパーグルメ</a></div>
+</div></div>
+<div class="card" id="c-kawaguchiya">
+<img class="hero" src="img/nagoya/kawaguchiya.jpg" alt="川口屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">65</span>川口屋<span class="yomi">かわぐちや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">元禄3年（1690年）頃創業と伝わる、330年以上続く名古屋屈指の老舗和菓子店。錦三丁目の繁華街の中に古い一軒家の店構えがぽつんと残る光景そのものが名物で、季節の上生菓子を少数精鋭で商う。冬季限定のわらび餅は、とろけるような餅と上品なこし餡で「名古屋随一」と評され、夕方を待たず売り切れることも多い。BRUTUSの餡子特集やテレビ番組でも取り上げられ、茶人から出張者の手土産まで幅広い支持を集める。物販のみの店なので買ったら栄の街歩きのお供に。</div>
+<div class="sig"><b>一皿:</b>わらび餅（冬季限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 9:30〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区錦３丁目１３−１２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0529713389">☎ 052-971-3389</a> ／ <a href="https://www.instagram.com/kawaguchiya_758/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>BRUTUSが名古屋の餡の名店として特集し、公式SNSで2025年以降も季節菓子の販売情報を発信しており営業継続を確認。テレビ番組でも紹介される名古屋和菓子の筆頭格。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E5%8F%A3%E5%B1%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E9%8C%A6%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://brutus.jp/anko_kawaguchiya/">BRUTUS</a> / <a href="https://www.instagram.com/kawaguchiya_758/">川口屋 公式Instagram</a></div>
+</div></div>
+<div class="card" id="c-yoshimitsu">
+<img class="hero" src="img/nagoya/yoshimitsu.jpg" alt="御菓子処 芳光 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">66</span>御菓子処 芳光<span class="yomi">おかしどころ よしみつ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和40年創業、徳川園にほど近い東区新出来に店を構える和菓子の名店。看板の「わらび餅」は、消え入るように柔らかいわらび粉の生地でみずみずしいこし餡を包んだもので、全国の食通が取り寄せ・持ち帰りに走る逸品として知られる。品質保持のため夏季（7〜9月頃）は販売を休止し、それ以外の季節は多い日に1000個以上売れるという。季節の生菓子も端正で、茶席菓子としての評価も高い。名古屋で和菓子を一つだけ選ぶなら、と地元民が名を挙げる店。</div>
+<div class="sig"><b>一皿:</b>わらび餅</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土 9:00〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市東区新出来１丁目９−１ 京菓子所芳光ビル</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0529314432">☎ 052-931-4432</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋情報通など複数媒体が「全国の食通が絶賛する究極のわらび餅」として紹介。2025年8月の購入記録ブログがあり営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%87%A6%20%E8%8A%B3%E5%85%89%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E6%9D%B1%E5%8C%BA%E6%96%B0%E5%87%BA%E6%9D%A5%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%20%E4%BA%AC%E8%8F%93%E5%AD%90%E6%89%80%E8%8A%B3%E5%85%89%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://jouhou.nagoya/yoshimitsu/">名古屋情報通</a> / <a href="https://nagoya-meshi.com/recommend/sweets/yoshimitsu2">なごやめし普及促進協議会系メディア</a></div>
+</div></div>
+<div class="card" id="c-baikado">
+<img class="hero" src="img/nagoya/baikado.jpg" alt="梅花堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">67</span>梅花堂<span class="yomi">ばいかどう</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和8年（1933年）創業、覚王山の交差点角に建つ町の和菓子屋。名物の「鬼まんじゅう」は、小麦粉と砂糖だけの簡素な生地に角切りのさつまいもをごろごろと混ぜて蒸し上げた名古屋の郷土菓子で、この店のものはいもの比率の高さと素朴な甘さで市内随一と評判。朝から蒸したてが並び、昼過ぎには売り切れることも珍しくない。1個180円という価格も庶民派で、覚王山散歩の食べ歩きにぴったり。戦中戦後の代用食から生まれた名古屋の菓子文化を今に伝える一軒。</div>
+<div class="sig"><b>一皿:</b>鬼まんじゅう</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区末盛通１丁目６−２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0527518025">☎ 052-751-8025</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋情報通・おいしいなごや等の地元メディアが鬼まんじゅうの代表店として紹介。食べログに2025年の口コミと2025年時点の価格（180円）が確認でき営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E8%8A%B1%E5%A0%82%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E6%9C%AB%E7%9B%9B%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://jouhou.nagoya/baikadou/">名古屋情報通</a> / <a href="https://juno.nagoya/entry/baika-dou/">おいしいなごや</a></div>
+</div></div>
+<div class="card" id="c-kiyomemochi">
+<img class="hero" src="img/nagoya/kiyomemochi.jpg" alt="きよめ餅総本家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">68</span>きよめ餅総本家<span class="yomi">きよめもちそうほんけ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">熱田神宮の門前に店を構える、参拝土産の定番「きよめ餅」の総本家。羽二重餅でこし餡を包んだ柔らかな餅菓子に「きよめ」の焼印を押した姿は、熱田参りの証として古くから親しまれてきた。江戸期に参拝人が休んだ「きよめ茶屋」の故事に由来する菓子で、全国銘産菓子工業協同組合の加盟店でもある。朝8時半から年中無休で開いており、熱田神宮参拝とセットで立ち寄りやすいのが魅力。季節限定の栗入りやきしめんどころへの卸しなど、熱田の食文化の要となっている。</div>
+<div class="sig"><b>一皿:</b>きよめ餅</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市熱田区神宮３丁目７−２１</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0526816161">☎ 052-681-6161</a> ／ <a href="http://www.kiyome.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>熱田神宮参拝土産の代表として観光媒体・和菓子系メディアが広く掲載。公式サイトとホットペッパー等で年中無休の営業情報が現在も確認でき、営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8D%E3%82%88%E3%82%81%E9%A4%85%E7%B7%8F%E6%9C%AC%E5%AE%B6%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E7%86%B1%E7%94%B0%E5%8C%BA%E7%A5%9E%E5%AE%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%92%EF%BC%91">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kiyome.net/">きよめ餅総本家 公式サイト</a> / <a href="https://wagashitabi.nagoya-cci.jp/0014kiyomemochi/">なごや和菓子旅（名古屋商工会議所）</a></div>
+</div></div>
+<div class="card" id="c-fukyuen">
+<img class="hero" src="img/nagoya/fukyuen.jpg" alt="菓子處 不朽園 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">69</span>菓子處 不朽園 本店<span class="yomi">かしどころ ふきゅうえん ほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和2年（1927年）創業、中川区尾頭橋で一世紀近く最中を作り続ける老舗。看板の「菊最中」は、北海道十勝や丹波産など厳選した小豆を伝統製法で炊いた餡を、菊花をかたどった香ばしい最中種に詰めたもので、翌日でも皮がサクリとした食感を保つと評判。朝7時から開く店には進物需要の地元客が絶えず、名古屋の慶弔菓子の定番として世代を超えて愛される。本店のほか通販も行うが、尾頭橋の本店で買う出来たてはやはり別格。中心部から少し外れた下町の和菓子文化を担う存在。</div>
+<div class="sig"><b>一皿:</b>菊最中</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 7:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中川区尾頭橋３丁目４−８</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0523214671">☎ 052-321-4671</a> ／ <a href="http://fukyuen.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>おいしいなごや等の地元メディアが「創業90年超・地元で愛される店」として紹介。公式サイトで駐車場リニューアル等の近況が発信されており営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8F%93%E5%AD%90%E8%99%95%20%E4%B8%8D%E6%9C%BD%E5%9C%92%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%B7%9D%E5%8C%BA%E5%B0%BE%E9%A0%AD%E6%A9%8B%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%98">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.fukyuen.co.jp/">不朽園 公式サイト</a> / <a href="https://juno.nagoya/entry/fukyu-en/">おいしいなごや</a></div>
+</div></div>
+<div class="card" id="c-osuuiro_honten">
+<img class="hero" src="img/nagoya/osuuiro_honten.jpg" alt="大須ういろ 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">70</span>大須ういろ 本店<span class="yomi">おおすういろ ほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">昭和22年（1947年）創業、青柳総本家と並ぶ名古屋ういろの代表格「大須ういろ」の創業の地・大須に建つ本店。米粉の蒸し菓子ならではのもっちり食感のういろを白・黒・抹茶など定番5種で揃え、アイスキャンディーのようなスティック包装でデザイン賞も話題になった「ウイロバー」、ういろを最中種で挟む「ういろモナカ」など現代的な商品開発でも知られる。無休で夜まで開いており、大須商店街の食べ歩きや名古屋土産の調達拠点として使いやすい。</div>
+<div class="sig"><b>一皿:</b>ウイロバー</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市中区大須２丁目１８−４２</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0522012000">☎ 052-201-2000</a> ／ <a href="https://osuuiro.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋発祥の菓子メーカーのため創業の地の本店のみ選定。公式サイトの2024-2025年末年始営業案内や2025年7月時点の口コミで営業継続を確認。名古屋市公式観光サイトも土産の定番として掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%A0%88%E3%81%86%E3%81%84%E3%82%8D%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E9%A0%88%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%94%EF%BC%92">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://osuuiro.co.jp/shopinfo">大須ういろ 公式サイト</a> / <a href="https://www.nagoya-info.jp/souvenir/detail/35/">名古屋コンシェルジュ</a></div>
+</div></div>
+<div class="card" id="c-chez_shibata">
+<img class="hero" src="img/nagoya/chez_shibata.jpg" alt="シェ・シバタ 名古屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">71</span>シェ・シバタ 名古屋<span class="yomi">しぇ・しばた なごや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">神戸とパリの名店・ホテルで研鑽を積んだパティシエ柴田武氏がオーナーシェフを務める、覚王山を代表するパティスリー。端正なムースやタルト、シュークリームなどの生菓子から焼き菓子まで揃い、東海圏の洋菓子シーンを牽引してきた存在として全国のスイーツファンに知られる。アジアにも店舗展開する柴田氏の本拠地的店舗であり、2026年には近隣に軽食も出す新業態「Taste of Shibata」を開くなど進化を続ける。覚王山の甘味散歩では梅花堂の鬼まんじゅうと並ぶ必訪店。</div>
+<div class="sig"><b>一皿:</b>季節のケーキ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 10:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市千種区山門町２丁目５４</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0527620007">☎ 052-762-0007</a> ／ <a href="http://chez-shibata.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>なごやめし系メディアや食べログで覚王山の代表的パティスリーとして掲載され、2025年6月時点の駐車サービス情報や2026年の新店開業ニュースから営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%82%A7%E3%83%BB%E3%82%B7%E3%83%90%E3%82%BF%20%E5%90%8D%E5%8F%A4%E5%B1%8B%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%8D%83%E7%A8%AE%E5%8C%BA%E5%B1%B1%E9%96%80%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%EF%BC%94">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://chez-shibata.com/shop/nagoya/">シェ・シバタ 公式サイト</a> / <a href="https://nagoya-meshi.com/recommend/cafe/shezshibata">なごやめし系メディア</a></div>
+</div></div>
+<div class="card" id="c-baguette_rabbit">
+<img class="hero" src="img/nagoya/baguette_rabbit.jpg" alt="バゲットラビット 社口本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">72</span>バゲットラビット 社口本店<span class="yomi">ばげっとらびっと やしろぐちほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">2010年に名古屋で創業したシェフ古井和憲氏によるベーカリーの本店。「パン・オブ・ザ・イヤー2018」バゲット部門受賞など評価の高いハード系を軸に、高加水製法によるもっちりとした「ブール」が看板商品で、午前中に売り切れる日もある人気ぶり。スイーツ系から惣菜系までラインナップが幅広く、名東区の食べログパン部門で上位常連。東京・自由が丘や金山にも出店するが、焼きたてを最も豊富に揃えるのは社口の本店で、名古屋東部の住宅街までわざわざ足を運ぶ価値のある一軒。</div>
+<div class="sig"><b>一皿:</b>ブール（高加水パン）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・金・土・日 8:30〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし(要最終確認)</td></tr>
+<tr><th>住所</th><td>愛知県名古屋市名東区社口１丁目９１６</td></tr>
+<tr><th>予約</th><td>要確認 — <a href="tel:0527790006">☎ 052-779-0006</a> ／ <a href="https://baguette-rabbit.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>名古屋発祥ブランドのため本店のみ選定。じゃらんニュースや名古屋情報通など複数媒体が名店として紹介し、2024年11月の季節商品記事や運営会社の店舗ページ掲載から営業継続を確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%82%B2%E3%83%83%E3%83%88%E3%83%A9%E3%83%93%E3%83%83%E3%83%88%20%E7%A4%BE%E5%8F%A3%E6%9C%AC%E5%BA%97%20%E6%84%9B%E7%9F%A5%E7%9C%8C%E5%90%8D%E5%8F%A4%E5%B1%8B%E5%B8%82%E5%90%8D%E6%9D%B1%E5%8C%BA%E7%A4%BE%E5%8F%A3%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%99%EF%BC%91%EF%BC%96">Googleマップで開く</a>
+<div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://jouhou.nagoya/baguette-rabbit/">名古屋情報通</a> / <a href="https://nagoyameito-chikusa.goguynet.jp/2024/11/05/baguetterabbit/">号外NET名東区（2024年11月）</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年9月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。</p>
+</body>
+</html>
