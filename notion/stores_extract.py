@@ -25,7 +25,7 @@ SKIP_DIRS = {".git", ".github", "notion", "map"}
 CATEGORY_RULES = [
     ("屋台・食べ歩き", r"屋台|食べ歩き|テイクアウト"),
     ("市場・食材店", r"市場|食材|チーズ|加工肉|惣菜|専門店街|青果|精肉|鮮魚"),
-    ("カフェ・パン・スイーツ", r"カフェ|喫茶|パン|ベーカリー|スイーツ|菓子|甘味|ジェラート|アイス"),
+    ("カフェ・パン・スイーツ", r"カフェ|喫茶|パン|ベーカリー|スイーツ|菓子|甘味|ジェラート|アイス|デザート|チョコレート|ショコラ|プラリネ"),
     ("ビール・バー", r"ビール|バー|ワイン|地酒|酒どころ|醸造|ブルワリー|パブ"),
     ("居酒屋・焼肉", r"居酒屋|焼肉|焼鳥|炉端|酒場|ホルモン"),
     ("麺類", r"ラーメン|そば|蕎麦|うどん|町中華|麺|パスタ専門"),
@@ -39,13 +39,31 @@ CATEGORY_RULES = [
 NOT_A_STORE_SECTION = r"モデルルート|モデルコース|歩き方|使い方|凡例"
 
 
-def category_of(heading):
+# ガイドの所在国の料理を指す見出しは「ご当地名物」にする。
+# 「ベルギー料理・レストラン」はベルギーのガイドでは郷土料理だが、
+# 日本のガイドに出てくれば外国料理である。**同じ語でも、どの国のガイドかで意味が変わる。**
+# リエージュ・ケルンでは郷土料理の章を「ご当地名物」に対応させており、
+# ルーベンだけこの規則から外れて「ご当地名物が0件」になっていた（2026-09-09 の指摘）。
+HOME_CUISINE = {
+    "belgium": r"ベルギー料理|フランデレン|フラマン",
+    "germany": r"ドイツ料理",
+    "france": r"フランス料理|ビストロ",
+    "netherlands": r"オランダ料理",
+    "nepal": r"ネパール料理",
+    "usa": r"ハワイ|ローカルフード|ロコ",
+}
+
+
+def category_of(heading, country=""):
     """見出しをカテゴリへ畳む。
 
     見出しは「京料理・和食・寿司・鶏料理」のように複数ジャンルが並ぶので、
     **先頭の区切りまでを先に見る**（その節の主題は先頭にある）。
     先頭で決まらなければ見出し全体で当てる。
     """
+    pat = HOME_CUISINE.get((country or "").lower())
+    if pat and re.search(pat, heading):
+        return "ご当地名物"
     head = re.split(r"[・/／(（]", heading)[0]
     for target in (head, heading):
         for name, pat in CATEGORY_RULES:
@@ -104,6 +122,10 @@ def main():
             s = io.open(full, encoding="utf-8").read()
             base = rel[:-5].replace("/", "_")
             title, city, pref, region = guide_meta(rel, s)
+            # 所在国のディレクトリ名（europe/belgium/leuven.html → "belgium"）。
+            # 「その国の料理」を「ご当地名物」に畳むために使う（HOME_CUISINE）。
+            parts = rel.split("/")
+            country = parts[1] if len(parts) > 2 else ""
 
             slug = fn[:-5]
             loc_path = os.path.join(dirpath, "control", "locations_%s.json" % slug)
@@ -130,7 +152,7 @@ def main():
                         "slug": cid,
                         "店名": c["name"], "よみ": c["yomi"],
                         "地図番号": int(c["no"]) if c["no"].isdigit() else None,
-                        "章（原文）": heading, "カテゴリ": category_of(heading),
+                        "章（原文）": heading, "カテゴリ": category_of(heading, country),
                         "タグ": c["chips"], "説明": c["desc"], "一皿": c["sig"],
                         "選定理由": c["reason"],
                         "Googleマップ": c["map"], "参照元": first_url(c["src"]),

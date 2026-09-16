@@ -25,12 +25,32 @@ except ImportError:
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STORES = os.path.join(ROOT, "notion", "stores.json")
-KEY = os.environ.get("MAPS_KEY", "").strip()
+def _key_from_ledger():
+    """ai-memory の台帳からキーを読む（AI_memory.md §4[2026-07-10]）。
+
+    キーをコマンド行や環境変数に出さないための経路。
+    コマンド行に書くと、シェルの履歴・プロセス一覧・ログに残る。
+    台帳は非公開リポジトリで、キーの保存はユーザーが承認済み。
+    """
+    import glob
+    for cand in ("/home/user/ai-memory/AI_memory.md",):
+        if not os.path.isfile(cand):
+            continue
+        for line in io.open(cand, encoding="utf-8"):
+            if "Google Maps API" not in line:
+                continue
+            m = re.search(r"`(AIza[A-Za-z0-9_\-]{20,})`", line)
+            if m:
+                return m.group(1)
+    return ""
+
+
+KEY = os.environ.get("MAPS_KEY", "").strip() or _key_from_ledger()
 LIMIT = int(os.environ.get("LIMIT", "0") or 0)
 URL = "https://places.googleapis.com/v1/places:searchText"
 
 if not KEY:
-    sys.exit("MAPS_KEY が要ります")
+    sys.exit("MAPS_KEY も台帳のキーも見つからない（AI_memory.md §4[2026-07-10] を確認）")
 
 S = requests.Session()
 S.headers.update({
