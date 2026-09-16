@@ -87,7 +87,11 @@ def search(query):
 
 def main():
     stores = json.load(io.open(STORES, encoding="utf-8"))
-    todo = [r for r in stores if "lat" not in r and r["slug"] and r.get("住所")]
+    # lat が「無い」だけでなく「None が入っている」行も対象にする。
+    # 2026-09-09 の拡充は lat/lng を None で埋めたため、`"lat" not in r` では
+    # 1件も拾えず、座標が無いまま地図に出ない状態が1週間続いた（2026-09-16 判明）。
+    todo = [r for r in stores
+            if r.get("lat") is None and r["slug"] and r.get("住所")]
     if LIMIT:
         todo = todo[:LIMIT]
     print("対象 %d 件" % len(todo))
