@@ -98,6 +98,126 @@ BELGIUM / LEUVEN 🇧🇪
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Muntstraat%20Leuven)
 - **参照元**: [たびこふれ](https://tabicoffret.com/article/75073/index.html) / [Visit Leuven](https://www.visitleuven.be/en/food-drinks)
 
+### Notre Dame（ノートルダム）
+
+`老舗・歴史`
+
+グローテ・マルクト（市庁舎前の大広場）に面したベルギー料理店。クロック・ムッシュからシャトーブリアンまで幅広く、ムール貝とウィトロフ（チコリのベシャメル包み焼き）といったフランドルの定番も置く。
+
+- **一皿**: ウィトロフのグラタン（チコリをハムで巻きベシャメルで焼くフランドルの家庭料理）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Grote Markt 11, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部が学会参加者向けに編んだ公式レストランガイドが、ベルギー料理の筆頭格として掲載。市庁舎前という最も分かりやすい立地で、初日の一軒に向く。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Notre%20Dame%20Grote%20Markt%2011%2C%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+
+### Den Beiaard（デン・ベイアード）
+
+`口コミ突出`
+
+大学図書館の塔が建つラデューズ広場に面したブラッスリー。素材の新しさを売りにし、ベルギーの定番料理を今風の盛りで出す。学生と教職員の待ち合わせ場所としても使われる。
+
+- **一皿**: ベルギー風ブラッスリー料理（季節の素材を使った日替わりの一皿）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Mgr. Ladeuzeplein 8, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部の公式ガイドが「トレンディなブラッスリー」として掲載。大学図書館前という学生街の中心にあり、観光の動線と重なる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Den%20Beiaard%20Mgr.%20Ladeuzeplein%208%2C%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+
+### De Kansel（デ・カンセル）
+
+`老舗・歴史`
+
+飲食店が並ぶムントストラートにある地方料理の店。ネオゴシック様式の内装が独特で、夏は広いテラスが出る。
+
+- **一皿**: ベルギーの地方料理（ネオゴシックの店内でいただく郷土の定番）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Muntstraat 15, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部の公式ガイドが「独特のネオゴシック内装」と明記して掲載。ムントストラートの飲食店街で、内装まで含めて記憶に残る一軒。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Kansel%20Muntstraat%2015%2C%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+
+### Het Moorinneken（ヘット・モーリンネケン）
+
+`地元密着`
+
+グローテ・マルクトに面したフランス＝ベルギー料理のレストラン兼パブ。季節で大きく変わる献立で、自家製のチーズコロッケ・エビコロッケ、ステーキタルタルが看板。
+
+- **一皿**: 自家製エビコロッケ（北海産の小エビを使うベルギーの前菜の定番）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Grote Markt 10, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部の公式ガイドが「自家製で新鮮な素材ばかりの献立」と評価。ベルギーの前菜の代表であるコロッケを自家製で出す点を採った。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Het%20Moorinneken%20Grote%20Markt%2010%2C%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+
+### De Troubadour（デ・トゥルバドゥール）
+
+`老舗・歴史` `口コミ突出`
+
+ムントストラートとティーンセストラートの両方に入口を持つ大箱。地方料理とムール貝が中心で、パスタやサラダも置く。昼の3皿定食が使いやすい。
+
+- **一皿**: ムール貝の白ワイン蒸し（鍋ごと供されるベルギーの国民食）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Tiensestraat 32, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部の公式ガイドが「ルーベンのレストランの中では見逃しようのない象徴的存在」と記載。ムール貝を確実に食べたいときの一軒。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Troubadour%20Tiensestraat%2032%2C%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-ix/leuvenrestaurants)
+
+### Meating Room（ミーティング・ルーム）
+
+`口コミ突出`
+
+オウデ・マルクトに面したステーキ専門店。アルゼンチン産フィレからスコットランドのアバディーン牛まで産地を選べる。現代的なビストロの造りで、予約が薦められている。
+
+- **一皿**: 産地を選べるステーキ（アルゼンチン産フィレやアバディーン牛から選ぶ）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Oude Markt 12, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部の公式ガイドが「肉が売りで、産地の幅が広い」と掲載。ビールの街で肉料理を厚めに取りたいときの選択肢として採った。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Meating%20Room%20Oude%20Markt%2012%2C%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-ix/leuvenrestaurants)
+
+### Otomat（オトマット）
+
+`ブログ推薦` `ベジ対応`
+
+ベルギー産の素材を載せた大皿ピザを取り分けて食べる店。ベルギービールの酵母を生地に使うのが特徴で、菜食の選択肢も置く。
+
+- **一皿**: ベルギービールの酵母で仕込んだ生地の大皿ピザ
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Tiensestraat 33, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部の公式ガイドが「ベルギー料理をシェアするピザ店」として掲載。ベルギー食材とビール文化を一皿に落とし込んだ現代的な一軒。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Otomat%20Tiensestraat%2033%2C%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+
+### Lukemieke（ルケミーケ）
+
+`老舗・歴史` `ベジ対応` `地元密着`
+
+市立公園のそばで50年以上続く菜食レストラン。昼夜とも日替わりかオーブン料理で、焼きたてのパイやチョコレートムース、ティラミスといった自家製のデザートが評判。持ち帰り容器を持参すると割引がある。
+
+- **一皿**: 日替わりのオーブン料理（その日の野菜で仕立てる菜食の主菜）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Vlamingenstraat 55, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが地元推薦として掲載。50年以上続く菜食店は市内でも希少で、肉料理中心のガイドの偏りを補える。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Lukemieke%20Vlamingenstraat%2055%2C%203000%20Leuven)
+- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/where-to-eat)
+
 ## 食べ歩き — ワッフル・フリッツ・ソーセージ
 
 ### Frituur Boem Patat（ブーム・パタット）
@@ -156,6 +276,96 @@ Margarethaplein の人気ワッフル＆ジェラート店。名物は焼きた�
 - **選定理由**: 「best fries in Leuven(ルーベン最優秀フリッツ)」を受賞。口コミで大盛り・接客の良さが突出する食べ歩きフリッツの本命。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Frittoerist%20Sint-Jacobsplein%2013%20Leuven)
 - **参照元**: [RestaurantGuru](https://restaurantguru.com/De-Frittoerist-Leuven) / [openingsurengids.be](https://www.openingsurengids.be/de-frittoerist/leuven/1)
+
+### Frituur Belgium（フリチュール・ベルギウム）
+
+`地元密着`
+
+オウデ・マルクトのすぐ脇、コルテストラートのフリッツ店。揚げたてを安価で出すため、夜遊びの途中に立ち寄られる。
+
+- **一皿**: 揚げたてのフリッツ（ベルギー式の二度揚げ）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Kortestraat, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 地域の飲食情報が「オウデ・マルクトのすぐ隣で夜の立ち寄りに最適」と紹介。既収録3軒と場所が重ならない。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Frituur%20Belgium%20Kortestraat%2C%203000%20Leuven)
+- **参照元**: [wanderlog.com](https://wanderlog.com/place/details/1153908/frituur-belgium)
+
+### Friet Markt（フリート・マルクト）
+
+`地元密着`
+
+オウデ・マルクトのフリッツ店。フリッツのほかバーガーや揚げ物の軽食を置き、明け方7時まで開く。
+
+- **一皿**: 深夜のフリッツ（明け方まで開く）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Oude Markt, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 公式サイトで所在と営業時間を確認。「ヨーロッパで一番長いバー」と呼ばれるオウデ・マルクトの締めに直結する。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Friet%20Markt%20Oude%20Markt%2C%203000%20Leuven)
+- **参照元**: [frietmarkt.be](https://frietmarkt.be/)
+
+### 't Fritwinkeltje（ト・フリットウィンケルチェ）
+
+`地元密着`
+
+フリッツとバーガー、揚げ物の軽食を出す店。
+
+- **一皿**: フリッツとバーガー
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 公式サイトで品揃えと所在を確認。フリッツ店の層を厚くするために採った。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%27t%20Fritwinkeltje%203000%20Leuven)
+- **参照元**: [fritwinkeltje-leuven.be](https://www.fritwinkeltje-leuven.be/)
+
+### Luc's Friet（リュックス・フリート）
+
+`口コミ突出`
+
+地元で「ルーベン最良のフリッツ店」を掲げる一軒。
+
+- **一皿**: 看板のフリッツ
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 公式サイトが「ルーベン最良のフリッツ店」を掲げ、地元の評価をまとめている。既収録に無い立地を補える。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Luc%27s%20Friet%203000%20Leuven)
+- **参照元**: [lucsfriet.be](https://lucsfriet.be/beste-frituur-van-leuven/)
+
+### Panos（パノス）
+
+`地元密着`
+
+ベルギー全土に展開するパンと軽食の店。ブリュッセルセストラートに市内店がある。安価で朝から開く。
+
+- **一皿**: 焼きたてのパンと軽食
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Brusselsestraat, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 地域の飲食情報が学生の価格の基準として挙げる。早朝に開く店が少ない市内で、朝の受け皿として採った。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Panos%20Brusselsestraat%2C%203000%20Leuven)
+- **参照元**: [ubereats.com](https://www.ubereats.com/be-en/store/panos-city-leuven-brusselsestraat/u094LoV1WZOFmPlzRU7dtw)
+
+### Stuffed（スタッフト）
+
+`ブログ推薦`
+
+具を詰めたパンの店。クッキー生地やケーキ生地をそのまま買えるのが特徴で、注文をオンラインで組み立てて受け取り時刻を指定できる。
+
+- **一皿**: 生のクッキー生地（そのまま食べられる仕立て）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 地域の飲食情報が「生地をそのまま買える」点を特徴として紹介。甘い食べ歩きの選択肢として、フリッツ一辺倒の章を補える。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Stuffed%203000%20Leuven)
+- **参照元**: [stuffed-leuven.be](https://stuffed-leuven.be/)
 
 ## チーズ・加工肉・惣菜
 
@@ -234,254 +444,77 @@ Stella Artois醸造所の旧鍛冶場を改装した屋内市場(2017年開業�
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ladeuzeplein%20Leuven%20markt)
 - **参照元**: [Visit Leuven](https://www.visitleuven.be/en/food-drinks)
 
-## デザート・チョコレート
+### De Walvis（デ・ワルヴィス）
 
-### ZUUT（ズート）
+`食の専門街・市場`
 
-@@IMG:europe/belgium/img/leuven/zuut.jpg@@
+メヘルセストラートの鮮魚店兼惣菜店。市場に出る鮮魚・貝・甲殻類の上位の等級を扱うことを掲げる。買って帰る惣菜も置く。
 
-`ブログ推薦` `食の専門街`
-
-Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。クラシックケーキ、季節菓子、プラリネ、板チョコまで職人仕事。
-
-- **一皿**: 看板:層の美しいクラシックケーキと洗練プラリネ
-- **営業時間**: 水〜土 10:00〜18:00頃(週4日営業・要確認)
-- **定休日**: 日〜火
-- **住所**: Vismarkt 2, 3000 Leuven
-- **公式**: [公式サイト](http://www.patisseriezuut.be/)
-- **選定理由**: 「ルーベンにしかないチョコ専門店」として日本語ブログでも言及。ケーキ・プラリネ・板チョコまで手広く職人品質。エルセン(チーズ)と同じ通り沿いでハシゴしやすい。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Patisserie%20ZUUT%20Vismarkt%20Leuven)
-- **参照元**: [patisseriezuut.be](https://www.patisseriezuut.be/) / [Visit Leuven](https://www.visitleuven.be/en/patisserie-zuut)
-
-### Bittersweet（ビタースウィート）
-
-@@IMG:europe/belgium/img/leuven/bittersweet.jpg@@
-
-@@IMG:europe/belgium/img/leuven/bittersweet_exterior.jpg@@
-
-`ブログ推薦`
-
-中心部のショコラトリー。「ルーベンで最も創作的なプラリネ」と評され、Gault&Millauにも掲載。金・土はトッピング付きソフトクリームも。
-
-- **一皿**: 看板:独創的なフレーバーの手作りプラリネ
-- **営業時間**: 火〜土 10:00〜18:00
-- **定休日**: 日・月
-- **住所**: Bondgenotenlaan 108, 3000 Leuven
-- **公式**: [公式サイト](http://www.bittersweet.be/)
-- **選定理由**: 店主Bram Jaenenが約15年営む実力店で、グルメガイドGault&Millauにチョコラティエとして掲載(=第三者の権威評価)。創作プラリネの独自性で選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bittersweet%20Bondgenotenlaan%20108%20Leuven)
-- **参照元**: [bittersweet.be](https://www.bittersweet.be/) / [Gault&Millau](https://www.gaultmillau.be/en/chocolatiers/bittersweet-leuven)
-
-### 't Galetje（ト・ハレチェ）
-
-@@IMG:europe/belgium/img/leuven/galetje.jpg@@
-
-@@IMG:europe/belgium/img/leuven/galetje_exterior.jpg@@
-
-`口コミ突出` `老舗・歴史`
-
-2001年創業、毎日店内で作る自家製ジェラート&ソルベ。市中心近くに2店舗。「常に人だかり」の記述が複数ソースで一致。
-
-- **一皿**: 一つ:自家製ジェラートを名物の自家製ワッフルコーンで
-- **営業時間**: 月〜日 11:00〜23:00(季節変動あり)
-- **定休日**: 無休(冬季短縮あり)
-- **住所**: Tiensestraat 44, 3000 Leuven ほか
-- **公式**: [公式サイト](http://www.galetje.be/)
-- **選定理由**: 2001年から続く"ルーベンで最も美味しい自家製アイス"を掲げる人気店。複数レビューで行列・高評価が突出(=基準②)。ワッフルコーンの評価も高い。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%27t%20Galetje%20Tiensestraat%2044%20Leuven)
-- **参照元**: [galetje.be](https://www.galetje.be/) / [Visit Leuven](https://www.visitleuven.be/en/blog/ice-cream)
-
-### Tartufo（タルトゥーフォ）
-
-@@IMG:europe/belgium/img/leuven/tartufo.jpg@@
-
-@@IMG:europe/belgium/img/leuven/tartufo_exterior.jpg@@
-
-`ブログ推薦`
-
-25年以上続く、トリュフ&プラリネの伝統的なチョコレート工房。自社アトリエ製の独自フレーバーが売り。日本語旅行ブログ発掘の店。
-
-- **一皿**: 看板:ころんとした手作りチョコtrufa(トリュフ)
-- **営業時間**: 店頭掲示・要確認(電話 +32 16 23 06 42)
+- **一皿**: 北海の鮮魚と貝（その日の入荷から選ぶ）
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
 - **定休日**: 要確認
-- **住所**: Louis Melsensstraat 14, 3000 Leuven
-- **公式**: [公式サイト](https://www.chocolade-tartufo.be/)
-- **選定理由**: 25年以上、自社工房でトリュフとプラリネを作る老舗。日本語ブログで"ベルギーでもここだけ"の小さな名店として紹介され、観光地化していない点が魅力。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Tartufo%20chocolade%20Louis%20Melsensstraat%2014%20Leuven)
-- **参照元**: [chocolade-tartufo.be](https://www.chocolade-tartufo.be/) / [Visit Leuven](https://www.visitleuven.be/en/blog/chocolate-shops)
+- **住所**: Mechelsestraat 23, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 公式サイトで「ルーベン中心部の鮮魚店兼惣菜店」と所在・方針を確認。既収録のチーズ・精肉に対して魚介の系統を足せる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Walvis%20Mechelsestraat%2023%2C%203000%20Leuven)
+- **参照元**: [walvis.be](https://www.walvis.be/)
 
-## パン(朝食・買い出し)
+### Gigi（ジジ）
 
-### Bakkerij Het Brood（ヘット・ブロート）
+`食の専門街・市場`
 
-@@IMG:europe/belgium/img/leuven/hetbrood.jpg@@
+メヘルセストラートのイタリア食材の専門店。生ハムやチーズ、乾物を扱う。
 
-@@IMG:europe/belgium/img/leuven/hetbrood_exterior.jpg@@
-
-`ブログ推薦`
-
-中心部の職人系ベーカリー。クロワッサンとケーキ類の評価が高い、朝食パンの調達に便利な一軒。
-
-- **一皿**: 看板:サクサクのクロワッサンと素朴なパン
-- **営業時間**: 早朝〜夕方(店頭・要確認)
+- **一皿**: イタリアの生ハムとチーズ
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
 - **定休日**: 要確認
-- **住所**: Leuven中心部
-- **公式**: [公式サイト](http://www.hetbrood.be/)
-- **選定理由**: ガイド・レビューでクロワッサンとケーキの質が繰り返し言及される中心部の職人ベーカリー。ホテル朝食代わりの買い出し用として選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bakkerij%20Het%20Brood%20Leuven)
-- **参照元**: [Wanderlog(best bakeries)](https://wanderlog.com/list/geoCategory/5033/best-bakeries-in-leuven)
+- **住所**: Mechelsestraat 34, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 地域の商店情報でメヘルセストラート34番地の食材専門店として確認。既収録のチーズ店（Elsen）と並ぶ食の通りの厚みを示せる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Gigi%20Mechelsestraat%2034%2C%203000%20Leuven)
+- **参照元**: [handelsgids.be](https://www.handelsgids.be/straat/leuven/mechelsestraat/)
 
-### De 4de Generatie（第4世代(ベーカリー)）
+### Louise & Co.（ルイーズ・アンド・コー）
 
-@@IMG:europe/belgium/img/leuven/generatie.jpg@@
+`食の専門街・市場`
 
-`老舗・歴史`
+フィスマルクト（魚市場広場）に面した食材・惣菜の店。
 
-店名どおり4代続く家族経営ベーカリー。エクレアの中のカスタードまで自家製という「純粋で正直な製品」が信条。
-
-- **一皿**: 看板:クリームまで自家製のエクレア
-- **営業時間**: 要確認(移転・休業情報あり)
+- **一皿**: 広場の食材店で選ぶ惣菜
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
 - **定休日**: 要確認
-- **住所**: Aarschotsesteenweg 181, Wilsele(Leuven)
-- **選定理由**: 4代続く家族経営で「中身のクリームまで自家製」という徹底ぶり(=基準⑤の職人度)。※現在は営業状況が変動している情報があるため、訪問前にマップで営業確認を推奨。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%204de%20Generatie%20Bakkerij%20Leuven)
-- **参照元**: [openingsurengids.be](https://www.openingsurengids.be/de-4de-generatie-bakkerij/leuven/1)
+- **住所**: Vismarkt 4, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 地域の商店情報でフィスマルクト4番地の所在を確認。既収録の Vrijdagmarkt と合わせ、広場まわりの買い出しの動線を作れる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Louise%20%26%20Co.%20Vismarkt%204%2C%203000%20Leuven)
+- **参照元**: [cylex-belgie.be](https://www.cylex-belgie.be/leuven/delicatessenwinkel.html)
 
-## ビール(おまけ)
+### Temmerman（テメルマン）
 
-### Stella Artois 醸造所（ステラ・アルトワ見学）
+`食の専門街・市場`
 
-@@IMG:europe/belgium/img/leuven/stella.jpg@@
+地域の産品と贈答用の詰め合わせを扱う専門店。土産の買い出しに向く。
 
-@@IMG:europe/belgium/img/leuven/stella_exterior.jpg@@
+- **一皿**: ベルギーの地域産品の詰め合わせ
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 公式サイトで地域産品・贈答品の専門店であることを確認。持ち帰りの土産をまとめて揃えたいときの一軒。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Temmerman%203000%20Leuven)
+- **参照元**: [temmermanleuven.be](https://www.temmermanleuven.be/producten/delicatessen)
 
-`老舗・歴史`
+### Coup de Soup（クー・ド・スープ）
 
-ルーベンはStella Artois発祥の地。駅北側の醸造所は見学ツアーあり(要予約)。
+`地元密着`
 
-- **一皿**: 体験:専用グラスで注ぐ"9段階の儀式"と醸造ライン見学
-- **見学**: ツアー制・事前予約推奨(公式で日時確認)
-- **定休日**: ツアー日程による
-- **住所**: Aarschotsesteenweg 20 付近, 3000 Leuven
-- **予約**: 要(醸造所見学ツアー・要予約) — [公式サイト](https://www.breweryvisits.com/en/stella-artois)
-- **公式**: [公式サイト](https://www.breweryvisits.com/en/stella-artois)
-- **選定理由**: ルーベンが世界的ビールの発祥地であることを体感できる定番。食べ歩きの合間に組み込める大人の社会科見学として選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Stella%20Artois%20Brewery%20Leuven)
-- **参照元**: [Visit Leuven](https://www.visitleuven.be/en/food-drinks)
+スープとパスタの持ち帰り店。席数は少なく、買って外で食べる使い方が中心。安価。
 
-### Oude Markt（アウデ・マルクト(旧市場広場)）
-
-@@IMG:europe/belgium/img/leuven/oudemarkt.jpg@@
-
-@@IMG:europe/belgium/img/leuven/oudemarkt_exterior.jpg@@
-
-`口コミ突出` `老舗・歴史`
-
-広場全体がカフェ・バーで埋まる「ヨーロッパ最長のバーカウンター」。夜はここで一杯が定番。
-
-- **一皿**: 体験:広場をぐるり囲むテラスでベルギービールをはしご
-- **営業時間**: 各店により異なる(夜が本番)
-- **定休日**: 店による
-- **住所**: Oude Markt, 3000 Leuven
-- **公式**: [公式サイト](https://www.delangstetoog.be/)
-- **選定理由**: "ヨーロッパ最長のバー"と呼ばれる名所そのものが体験価値。食べ歩きの締めに、地元学生と混じってビールを味わう夜の定番スポットとして選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Oude%20Markt%20Leuven)
-- **参照元**: [Visit Leuven](https://www.visitleuven.be/en/food-drinks)
-
-## 非ベルギー欧州料理
-
-### Ristorante Rossi（リストランテ・ロッシ）
-
-@@IMG:europe/belgium/img/leuven/rossi_rist.jpg@@
-
-@@IMG:europe/belgium/img/leuven/rossi_rist_exterior.jpg@@
-
-`権威評価`
-
-「シンプルさの贅沢」を掲げる南イタリア系スローフード店。小規模生産者から選んだオーガニック食材で、その日の素材から作る手打ちパスタが中心。
-
-- **一皿**: 打ちたての手打ち生パスタ
-- **営業時間**: 火〜土 12:00–14:00 / 18:00–22:00
-- **定休日**: 日・月
-- **住所**: Standonckstraat 2, 3000 Leuven
-- **予約**: 推奨 — ☎ 電話で予約 +32 16 62 48 48 ／ [公式サイト](http://www.ristoranterossi.be/)
-- **公式**: [公式サイト](http://www.ristoranterossi.be/)
-- **選定理由**: Gault&Millauが2017年にシェフFelice Miluzziを「ベルギー最優秀イタリア人シェフ」に選出(評点13.5/20)。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ristorante%20Rossi%20Standonckstraat%202%20Leuven)
-- **参照元**: [Gault&Millau](https://www.gaultmillau.be/en/restaurants/rossi-leuven) / [RestaurantGuru](https://restaurantguru.com/Rossi-Leuven)
-
-### Restaurant Kreta（クレタ）
-
-@@IMG:europe/belgium/img/leuven/kreta.jpg@@
-
-`食の専門街` `ブログ推薦`
-
-レストラン街 Muntstraat のギリシャ料理店。ギリシャ出身のシェフEmmaが、ギリシャ産の食材だけを使い、伝統料理に自身のひとひねりを加える。
-
-- **一皿**: ギリシャ産食材の郷土料理(メゼ＝前菜盛り合わせ、グリル)
-- **営業時間**: 12:00–14:00 / 18:00–22:00
-- **定休日**: 火 終日＋水 昼
-- **住所**: Muntstraat 23, 3000 Leuven
-- **予約**: 推奨 — ☎ 電話で予約 +32 486 44 73 00 ／ [公式サイト](http://www.kretarestaurant.be/%20%20%20%20http://kretawines.be)
-- **公式**: [公式サイト](http://www.kretarestaurant.be/)
-- **選定理由**: レストラン街Muntstraat屈指のギリシャ料理店。ギリシャ人シェフの「ギリシャ産のみ」の食材主義が支持され、複数サイトで高評価。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20Kreta%20Muntstraat%2023%20Leuven)
-- **参照元**: [Muntstraat公式ガイド](http://www.muntstraat.be/content/88.html) / [TripAdvisor](https://www.tripadvisor.com/Restaurant_Review-g188669-d16820394-Reviews-Kreta_Restaurant-Leuven_Flemish_Brabant_Province.html)
-
-### Las Lanzas（ラス・ランサス）
-
-@@IMG:europe/belgium/img/leuven/laslanzas.jpg@@
-
-@@IMG:europe/belgium/img/leuven/laslanzas_exterior.jpg@@
-
-`老舗・歴史`
-
-約55年続く老舗スペイン料理店。パエリア(paella＝サフラン風味の米の炊き込み)やタパス(tapas＝小皿料理)。夏はSint-Pieterskerkそばの広場テラスが人気。
-
-- **一皿**: パエリア、各種タパス
-- **営業時間**: 月・火・木〜日 12:00–14:30 / 18:00–22:30
-- **定休日**: 水
-- **住所**: Mathieu de Layensplein 3, 3000 Leuven
-- **予約**: 推奨 — ☎ 電話で予約 +32 16 22 76 29 ／ [公式サイト](http://www.restaurantlaslanzas.be/)
-- **公式**: [公式サイト](http://www.restaurantlaslanzas.be/)
-- **選定理由**: マドリード出身シェフが創業し、地元に地中海料理を根付かせた草分け的存在。約55年の歴史を持つ本格スペイン料理店。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Las%20Lanzas%20Mathieu%20de%20Layensplein%20Leuven)
-- **参照元**: [restaurantlaslanzas.be](https://www.restaurantlaslanzas.be/) / [openingsuren.vlaanderen](https://www.openingsuren.vlaanderen/las-lanzas/3000-leuven/mathieu-de-layensplein-3)
-
-### Restaurant d'Artagnan（ダルタニアン）
-
-@@IMG:europe/belgium/img/leuven/dartagnan.jpg@@
-
-`ミシュラン掲載`
-
-2000年から続く邸宅レストラン。地元・新鮮食材のフランス料理(ベルギー・フレンチ折衷)に国際的なアクセントを加える。庭のテラスが名物。
-
-- **一皿**: 季節のフレンチ・コース
-- **営業時間**: 木・金 昼12:00–13:30/夜18:30–20:30、土 夜18:30–20:30(他要確認)
-- **定休日**: 日〜水(要確認)
-- **住所**: Naamsestraat 72, 3000 Leuven
-- **予約**: 要(要予約) — ☎ 電話で予約 +32 16 29 26 26 ／ [公式サイト](https://www.restaurantdartagnan.be/)
-- **公式**: [公式サイト](https://www.restaurantdartagnan.be/)
-- **選定理由**: ミシュランガイド掲載・Gault&Millau掲載。ルーベンのグルメに長年愛される邸宅レストラン。※厳密にはベルギー・フレンチ折衷。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20d%27Artagnan%20Naamsestraat%2072%20Leuven)
-- **参照元**: [ミシュランガイド](https://guide.michelin.com/us/en/vlaams-brabant/leuven/restaurant/d-artagnan) / [Gault&Millau](https://www.gaultmillau.be/en/restaurants/dartagnan-leuven)
-
-## 中東料理
-
-### Palmyra（パルミラ）
-
-@@IMG:europe/belgium/img/leuven/palmyra.jpg@@
-
-`ブログ推薦`
-
-2017年開業、ルーベン初のシリア・レバノン料理店を標榜。多彩なメゼ(mezze＝前菜の盛り合わせ)と炭火グリルの肉料理が売り。
-
-- **一皿**: メゼ盛り合わせ＋炭火グリル(フムス＝ひよこ豆のペースト等)
-- **営業時間**: 月17:00–22:00 / 火〜金12:00–15:00・17:00–22:30 / 土12:00–22:30 / 日12:00–15:00・17:00–22:30
-- **定休日**: 無休(公式・要確認)
-- **住所**: Parijsstraat 49, 3000 Leuven
-- **予約**: 推奨 — ☎ 電話で予約 +32 16 90 38 84 ／ [公式サイト](https://www.palmyra-restaurant.com/)
-- **公式**: [公式サイト](https://www.palmyra-restaurant.com/)
-- **選定理由**: シリア・レバノン料理専門の先駆けとして紹介される定番店。TripAdvisor★4.2(約92件)。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Palmyra%20restaurant%20Parijsstraat%2049%20Leuven)
-- **参照元**: [palmyra-restaurant.com](https://www.palmyra-restaurant.com/) / [TripAdvisor](https://www.tripadvisor.com/Restaurant_Review-g188669-d13490907-Reviews-Palmyra_Restaurant-Leuven_Flemish_Brabant_Province.html)
+- **一皿**: 日替わりのスープ
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部の公式ガイドが「非常に安価、持ち帰りに向く」と掲載。天候の悪い日の昼の受け皿になる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Coup%20de%20Soup%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xi/Food_site)
