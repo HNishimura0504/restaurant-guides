@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>盛岡 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <h1>盛岡 の食べ歩き地図<span class="n">50店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+    <a href="index.html">都市一覧</a>
+    <a href="../japan/iwate/morioka.html">ガイド記事</a>
+  </nav>
+</header>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "そば処 東家 本店", "c": ["麺類"], "lat": 39.7004865, "lng": 141.1565753, "d": "わんこそば(一口大のそばを給仕が次々と椀に入れる盛岡名物。9種前後の薬味重付き)", "a": "岩手県盛岡市中ノ橋通１丁目８−３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E6%9D%B1%E5%AE%B6%20%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E4%B8%AD%E3%83%8E%E6%A9%8B%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%93", "u": "../japan/iwate/morioka.html#c-azumaya_honten", "food": "../japan/iwate/img/morioka/azumaya_honten.jpg", "ext": ""}, {"i": 1, "n": "初駒 本店", "c": ["麺類"], "lat": 39.6957544, "lng": 141.16189319999998, "d": "わんこそば(小椀のそばを次々おかわりする体験型そば。まぐろ・とろろ・なめこ等の薬味付き)", "a": "岩手県盛岡市八幡町１０−２１", "m": "https://www.google.com/maps/search/?api=1&query=%E5%88%9D%E9%A7%92%20%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%85%AB%E5%B9%A1%E7%94%BA%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%91", "u": "../japan/iwate/morioka.html#c-hatsukoma_honten", "food": "../japan/iwate/img/morioka/hatsukoma_honten.jpg", "ext": ""}, {"i": 2, "n": "直利庵", "c": ["麺類"], "lat": 39.698907999999996, "lng": 141.15770999999998, "d": "たらぼそば(たらの芽を天ぷらにして温かいそばに載せた、この店オリジナルの一杯)", "a": "岩手県盛岡市中ノ橋通１丁目１２−１３", "m": "https://www.google.com/maps/search/?api=1&query=%E7%9B%B4%E5%88%A9%E5%BA%B5%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E4%B8%AD%E3%83%8E%E6%A9%8B%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%93", "u": "../japan/iwate/morioka.html#c-chokurian", "food": "../japan/iwate/img/morioka/chokurian.jpg", "ext": ""}, {"i": 3, "n": "ぴょんぴょん舎 稲荷町本店", "c": ["麺類"], "lat": 39.7085462, "lng": 141.1110659, "d": "盛岡冷麺(強いコシの半透明麺+牛骨スープ。辛さは別添えキムチで調整)", "a": "岩手県盛岡市稲荷町１２−５ ぴょんぴょん舎", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B4%E3%82%87%E3%82%93%E3%81%B4%E3%82%87%E3%82%93%E8%88%8E%20%E7%A8%B2%E8%8D%B7%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E7%A8%B2%E8%8D%B7%E7%94%BA%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%95%20%E3%81%B4%E3%82%87%E3%82%93%E3%81%B4%E3%82%87%E3%82%93%E8%88%8E", "u": "../japan/iwate/morioka.html#c-pyonpyonsya_inaricho", "food": "../japan/iwate/img/morioka/pyonpyonsya_inaricho.jpg", "ext": ""}, {"i": 4, "n": "食道園", "c": ["麺類"], "lat": 39.703315499999995, "lng": 141.1481883, "d": "冷麺(発祥店の手練り麺と国産牛スープ。キムチは別添えで辛さ調節可)", "a": "岩手県盛岡市大通１丁目８−２", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E9%81%93%E5%9C%92%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%92", "u": "../japan/iwate/morioka.html#c-shokudoen", "food": "../japan/iwate/img/morioka/shokudoen.jpg", "ext": ""}, {"i": 5, "n": "焼肉・冷麺 盛楼閣", "c": ["麺類"], "lat": 39.702830999999996, "lng": 141.1365983, "d": "冷麺(牛骨・すね肉のスープに自家製麺と自家製キムチを合わせた一杯)", "a": "岩手県盛岡市盛岡駅前通１５−５", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%83%BB%E5%86%B7%E9%BA%BA%20%E7%9B%9B%E6%A5%BC%E9%96%A3%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E7%9B%9B%E5%B2%A1%E9%A7%85%E5%89%8D%E9%80%9A%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%95", "u": "../japan/iwate/morioka.html#c-seiroukaku", "food": "../japan/iwate/img/morioka/seiroukaku.jpg", "ext": ""}, {"i": 6, "n": "白龍 本店", "c": ["麺類"], "lat": 39.7022579, "lng": 141.1521889, "d": "じゃじゃ麺(平打ち麺+秘伝の肉味噌。〆の玉子スープ『ちいたんたん』も追加可)", "a": "岩手県盛岡市内丸５−１５", "m": "https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E9%BE%8D%20%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%86%85%E4%B8%B8%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%95", "u": "../japan/iwate/morioka.html#c-pairon_honten", "food": "../japan/iwate/img/morioka/pairon_honten.jpg", "ext": ""}, {"i": 7, "n": "じゃじゃ麺屋 香醤 大通店", "c": ["麺類"], "lat": 39.70377, "lng": 141.1470909, "d": "じゃじゃ麺(コクのある自家製肉味噌。追加の『ちいたんたん』で締めるのが定番)", "a": "岩手県盛岡市大通２丁目４−１８", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%98%E3%82%83%E3%81%98%E3%82%83%E9%BA%BA%E5%B1%8B%20%E9%A6%99%E9%86%A4%20%E5%A4%A7%E9%80%9A%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%98", "u": "../japan/iwate/morioka.html#c-koujan_odori", "food": "../japan/iwate/img/morioka/koujan_odori.jpg", "ext": ""}, {"i": 8, "n": "盛岡じゃじゃ麺 HOT JaJa", "c": ["麺類"], "lat": 39.7112328, "lng": 141.0991637, "d": "盛岡じゃじゃ麺(自家製平打ち麺と岩手県産味噌の肉味噌を合わせた一杯)", "a": "岩手県盛岡市前潟４丁目７−１ イオンモール盛岡 2F フードコート内", "m": "https://www.google.com/maps/search/?api=1&query=%E7%9B%9B%E5%B2%A1%E3%81%98%E3%82%83%E3%81%98%E3%82%83%E9%BA%BA%20HOT%20JaJa%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%89%8D%E6%BD%9F%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91%20%E3%82%A4%E3%82%AA%E3%83%B3%E3%83%A2%E3%83%BC%E3%83%AB%E7%9B%9B%E5%B2%A1%202F%20%E3%83%95%E3%83%BC%E3%83%89%E3%82%B3%E3%83%BC%E3%83%88%E5%86%85", "u": "../japan/iwate/morioka.html#c-hot_jaja", "food": "../japan/iwate/img/morioka/hot_jaja.jpg", "ext": ""}, {"i": 9, "n": "蕎麦 金時", "c": ["麺類"], "lat": 39.702454499999995, "lng": 141.14547980000003, "d": "焼き鴨そば(炭の香りをまとった鴨と十割そばを合わせた看板の一品)", "a": "岩手県盛岡市菜園２丁目５−２６ メルヘンハウス 1Ｆ", "m": "https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%20%E9%87%91%E6%99%82%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E8%8F%9C%E5%9C%92%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%96%20%E3%83%A1%E3%83%AB%E3%83%98%E3%83%B3%E3%83%8F%E3%82%A6%E3%82%B9%201%EF%BC%A6", "u": "../japan/iwate/morioka.html#c-soba_kintoki", "food": "../japan/iwate/img/morioka/soba_kintoki.jpg", "ext": ""}, {"i": 10, "n": "蕎麦喰い処 やまや", "c": ["麺類"], "lat": 39.698874599999996, "lng": 141.14839419999998, "d": "三種そば食べ比べ(挽きぐるみ・さらしな・だったんを一度に味わえる盛り)", "a": "岩手県盛岡市大沢川原１丁目１−１６", "m": "https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%E5%96%B0%E3%81%84%E5%87%A6%20%E3%82%84%E3%81%BE%E3%82%84%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E6%B2%A2%E5%B7%9D%E5%8E%9F%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%96", "u": "../japan/iwate/morioka.html#c-yamaya_soba", "food": "../japan/iwate/img/morioka/yamaya_soba.jpg", "ext": ""}, {"i": 11, "n": "柳家 総本店", "c": ["麺類"], "lat": 39.702361599999996, "lng": 141.1467487, "d": "キムチ納豆らーめん(自家製キムチと納豆味噌を溶かしながら食べる盛岡発祥の一杯)", "a": "岩手県盛岡市大通２丁目１−２３ サンクイーンビル 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9F%B3%E5%AE%B6%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%93%20%E3%82%B5%E3%83%B3%E3%82%AF%E3%82%A4%E3%83%BC%E3%83%B3%E3%83%93%E3%83%AB%201F", "u": "../japan/iwate/morioka.html#c-yanagiya_sohonten", "food": "../japan/iwate/img/morioka/yanagiya_sohonten.jpg", "ext": ""}, {"i": 12, "n": "中河", "c": ["麺類"], "lat": 39.7062692, "lng": 141.155778, "d": "中華そば(澄んだ醤油スープの、昔ながらのあっさり中華そば)", "a": "岩手県盛岡市本町通１丁目７−３７", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E6%B2%B3%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E6%9C%AC%E7%94%BA%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%93%EF%BC%97", "u": "../japan/iwate/morioka.html#c-nakagawa_chuka", "food": "../japan/iwate/img/morioka/nakagawa_chuka.jpg", "ext": ""}, {"i": 13, "n": "中華そば 正太郎", "c": ["麺類"], "lat": 39.731382499999995, "lng": 141.1152059, "d": "中華そば(醤油ベースの王道スープに縮れ麺を合わせた盛岡の定番)", "a": "岩手県盛岡市青山４丁目２７−１１", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E6%AD%A3%E5%A4%AA%E9%83%8E%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E9%9D%92%E5%B1%B1%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%91", "u": "../japan/iwate/morioka.html#c-shotaro_chukasoba", "food": "../japan/iwate/img/morioka/shotaro_chukasoba.jpg", "ext": ""}, {"i": 14, "n": "三寿司 菜園総本店", "c": ["寿司・海鮮"], "lat": 39.7022277, "lng": 141.14539299999998, "d": "納豆巻き(この店が発祥とされる、粘りと海苔の香りが際立つ細巻)", "a": "岩手県盛岡市菜園２丁目５−３", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E5%AF%BF%E5%8F%B8%20%E8%8F%9C%E5%9C%92%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E8%8F%9C%E5%9C%92%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%93", "u": "../japan/iwate/morioka.html#c-sanzushi_saien", "food": "../japan/iwate/img/morioka/sanzushi_saien.jpg", "ext": ""}, {"i": 15, "n": "鮨懐石 重兵衛", "c": ["寿司・海鮮", "和食・郷土料理"], "lat": 39.708464, "lng": 141.141801, "d": "鮨懐石コース(三陸の旬魚の握りに、岩手の季節の一品を組み合わせたコース)", "a": "岩手県盛岡市長田町１４−２", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E6%87%90%E7%9F%B3%20%E9%87%8D%E5%85%B5%E8%A1%9B%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E9%95%B7%E7%94%B0%E7%94%BA%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%92", "u": "../japan/iwate/morioka.html#c-sushi_jubei", "food": "../japan/iwate/img/morioka/sushi_jubei.jpg", "ext": ""}, {"i": 16, "n": "うなぎ 善", "c": ["寿司・海鮮"], "lat": 39.7004976, "lng": 141.1492158, "d": "うな重(注文後に焼き上げる香ばしい蒲焼を、たれごはんに載せた看板)", "a": "岩手県盛岡市菜園１丁目１−２", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%20%E5%96%84%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E8%8F%9C%E5%9C%92%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92", "u": "../japan/iwate/morioka.html#c-unagi_zen", "food": "../japan/iwate/img/morioka/unagi_zen.jpg", "ext": ""}, {"i": 17, "n": "沢内甚句", "c": ["ご当地名物", "和食・郷土料理"], "lat": 39.702501999999996, "lng": 141.141396, "d": "辛美味ももどり(秘伝だれに漬け込んだ鶏もも肉を香ばしく焼いた看板料理)", "a": "岩手県盛岡市開運橋通５−４", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B2%A2%E5%86%85%E7%94%9A%E5%8F%A5%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E9%96%8B%E9%81%8B%E6%A9%8B%E9%80%9A%EF%BC%95%E2%88%92%EF%BC%94", "u": "../japan/iwate/morioka.html#c-sawauchi_jinku", "food": "../japan/iwate/img/morioka/sawauchi_jinku.jpg", "ext": ""}, {"i": 18, "n": "ひっつみ亭", "c": ["和食・郷土料理", "ご当地名物"], "lat": 39.6257534, "lng": 141.18419169999999, "d": "ひっつみ定食(手でちぎった小麦生地を出汁で煮た郷土料理に、そば・餅を組み合わせた定食)", "a": "岩手県盛岡市黒川１８地割18−６５", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B2%E3%81%A3%E3%81%A4%E3%81%BF%E4%BA%AD%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E9%BB%92%E5%B7%9D%EF%BC%91%EF%BC%98%E5%9C%B0%E5%89%B218%E2%88%92%EF%BC%96%EF%BC%95", "u": "../japan/iwate/morioka.html#c-hittsumi_tei", "food": "../japan/iwate/img/morioka/hittsumi_tei.jpg", "ext": ""}, {"i": 19, "n": "割烹 惣門", "c": ["和食・郷土料理", "寿司・海鮮"], "lat": 39.696778599999995, "lng": 141.1584894, "d": "おまかせコース(岩手県産40種超の食材を少量ずつ組み立てる季節のコース)", "a": "2 ５ ５, ５ 松尾町 盛岡市 岩手県 020-0873 日本", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E6%83%A3%E9%96%80%202%20%EF%BC%95%20%EF%BC%95%2C%20%EF%BC%95%20%E6%9D%BE%E5%B0%BE%E7%94%BA%20%E7%9B%9B%E5%B2%A1%E5%B8%82%20%E5%B2%A9%E6%89%8B%E7%9C%8C%20020-0873%20%E6%97%A5%E6%9C%AC", "u": "../japan/iwate/morioka.html#c-kappo_soumon", "food": "../japan/iwate/img/morioka/kappo_soumon.jpg", "ext": ""}, {"i": 20, "n": "日本料理 ひで蔵", "c": ["和食・郷土料理"], "lat": 39.7058, "lng": 141.148374, "d": "ひで蔵コース(その日の仕入れで構成し、締めに手打ちそばが付くおまかせ)", "a": "岩手県盛岡市中央通１丁目６−３４", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%B2%E3%81%A7%E8%94%B5%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%93%EF%BC%94", "u": "../japan/iwate/morioka.html#c-nihonryori_hidezo", "food": "../japan/iwate/img/morioka/nihonryori_hidezo.jpg", "ext": ""}, {"i": 21, "n": "ステーキ・鉄板料理 和かな 盛岡本店", "c": ["寿司・海鮮"], "lat": 39.6998293, "lng": 141.14837989999998, "d": "前沢牛・いわて短角和牛のステーキ(鉄板で目の前で焼き上げる看板メニュー)", "a": "岩手県盛岡市大沢川原１丁目３−３３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E3%83%BB%E9%89%84%E6%9D%BF%E6%96%99%E7%90%86%20%E5%92%8C%E3%81%8B%E3%81%AA%20%E7%9B%9B%E5%B2%A1%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E6%B2%A2%E5%B7%9D%E5%8E%9F%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%93", "u": "../japan/iwate/morioka.html#c-wakana_morioka", "food": "../japan/iwate/img/morioka/wakana_morioka.jpg", "ext": ""}, {"i": 22, "n": "炭火焼ステーキ 天元", "c": ["ご当地名物"], "lat": 39.7030445, "lng": 141.14749039999998, "d": "前沢牛ステーキ(炭火で香ばしく焼き上げる岩手の銘柄牛。ガーリックライスとの組合せが定番)", "a": "岩手県盛岡市大通１丁目９−１０ レインボービル 3階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%20%E5%A4%A9%E5%85%83%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%90%20%E3%83%AC%E3%82%A4%E3%83%B3%E3%83%9C%E3%83%BC%E3%83%93%E3%83%AB%203%E9%9A%8E", "u": "../japan/iwate/morioka.html#c-sumibiyaki_tengen", "food": "../japan/iwate/img/morioka/sumibiyaki_tengen.jpg", "ext": ""}, {"i": 23, "n": "じゃじゃ麺と酒の肴 喜作", "c": ["ご当地名物"], "lat": 39.6984855, "lng": 141.15477719999998, "d": "じゃじゃ麺(締めの一杯として供される、肉味噌をよく混ぜて食べる盛岡名物)", "a": "岩手県盛岡市肴町６−９", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%98%E3%82%83%E3%81%98%E3%82%83%E9%BA%BA%E3%81%A8%E9%85%92%E3%81%AE%E8%82%B4%20%E5%96%9C%E4%BD%9C%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E8%82%B4%E7%94%BA%EF%BC%96%E2%88%92%EF%BC%99", "u": "../japan/iwate/morioka.html#c-kisaku_sakanacho", "food": "../japan/iwate/img/morioka/kisaku_sakanacho.jpg", "ext": ""}, {"i": 24, "n": "洋食 金宝堂", "c": ["洋食・各国料理"], "lat": 39.7024127, "lng": 141.138745, "d": "とんてき(厚切り豚ロースを自家製の甘辛オリジナルソースで焼き上げた看板料理)", "a": "岩手県盛岡市盛岡駅前通１０−３", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%20%E9%87%91%E5%AE%9D%E5%A0%82%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E7%9B%9B%E5%B2%A1%E9%A7%85%E5%89%8D%E9%80%9A%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%93", "u": "../japan/iwate/morioka.html#c-kimpodo", "food": "../japan/iwate/img/morioka/kimpodo.jpg", "ext": ""}, {"i": 25, "n": "レストランユキノヤ", "c": ["洋食・各国料理"], "lat": 39.708527, "lng": 141.149123, "d": "オムライス(ケチャップライスを包んだ昔ながらの薄焼き玉子スタイル)", "a": "岩手県盛岡市本町通２丁目１７−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%A6%E3%82%AD%E3%83%8E%E3%83%A4%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E6%9C%AC%E7%94%BA%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%91", "u": "../japan/iwate/morioka.html#c-yukinoya", "food": "../japan/iwate/img/morioka/yukinoya.jpg", "ext": ""}, {"i": 26, "n": "filo", "c": ["洋食・各国料理"], "lat": 39.700757599999996, "lng": 141.15630579999998, "d": "いわて短角牛のメイン料理(赤身の旨みが濃い岩手在来種の牛を使ったコースの主菜)", "a": "岩手県盛岡市中ノ橋通１丁目３−２１", "m": "https://www.google.com/maps/search/?api=1&query=filo%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E4%B8%AD%E3%83%8E%E6%A9%8B%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%91", "u": "../japan/iwate/morioka.html#c-filo", "food": "../japan/iwate/img/morioka/filo.jpg", "ext": ""}, {"i": 27, "n": "Ristorante SHIKAZAWA", "c": ["洋食・各国料理"], "lat": 39.693445, "lng": 141.15523199999998, "d": "シェフのおまかせコース(岩手・三陸の旬食材を一皿ずつ組み立てるデギュスタシオン)", "a": "岩手県盛岡市鉈屋町３−３６", "m": "https://www.google.com/maps/search/?api=1&query=Ristorante%20SHIKAZAWA%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E9%89%88%E5%B1%8B%E7%94%BA%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%96", "u": "../japan/iwate/morioka.html#c-shikazawa", "food": "../japan/iwate/img/morioka/shikazawa.jpg", "ext": ""}, {"i": 28, "n": "フレンチレストラン シェムラ ブル・リス", "c": ["洋食・各国料理"], "lat": 39.7001965, "lng": 141.159166, "d": "季節のランチコース(前菜・メイン・デザートで組む岩手産野菜中心のコース)", "a": "岩手県盛岡市神明町１０−１０", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%83%AC%E3%83%B3%E3%83%81%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%B7%E3%82%A7%E3%83%A0%E3%83%A9%20%E3%83%96%E3%83%AB%E3%83%BB%E3%83%AA%E3%82%B9%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E7%A5%9E%E6%98%8E%E7%94%BA%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%90", "u": "../japan/iwate/morioka.html#c-chezmura", "food": "../japan/iwate/img/morioka/chezmura.jpg", "ext": ""}, {"i": 29, "n": "カレー工房 Chalten", "c": ["洋食・各国料理"], "lat": 39.700286299999995, "lng": 141.15642499999998, "d": "チキンカレー(骨まで柔らかい鶏とスパイスの効いた濃厚ルウ)", "a": "岩手県盛岡市中ノ橋通１丁目８−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%AC%E3%83%BC%E5%B7%A5%E6%88%BF%20Chalten%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E4%B8%AD%E3%83%8E%E6%A9%8B%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%91", "u": "../japan/iwate/morioka.html#c-chalten", "food": "../japan/iwate/img/morioka/chalten.jpg", "ext": ""}, {"i": 30, "n": "マルパソ", "c": ["洋食・各国料理"], "lat": 39.7076615, "lng": 141.14644289999998, "d": "ビーフカレー(とろみのある昔ながらのルウに牛肉の旨みを溶かし込んだ看板)", "a": "岩手県盛岡市本町通３丁目４−２３ シタラ レジデンス", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%83%AB%E3%83%91%E3%82%BD%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E6%9C%AC%E7%94%BA%E9%80%9A%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%92%EF%BC%93%20%E3%82%B7%E3%82%BF%E3%83%A9%20%E3%83%AC%E3%82%B8%E3%83%87%E3%83%B3%E3%82%B9", "u": "../japan/iwate/morioka.html#c-marupaso", "food": "../japan/iwate/img/morioka/marupaso.jpg", "ext": ""}, {"i": 31, "n": "三陸居酒屋 とらや", "c": ["居酒屋・焼肉"], "lat": 39.7025077, "lng": 141.1490347, "d": "三陸の刺身盛り合わせ(その日の水揚げから数種を盛る看板の一皿)", "a": "岩手県盛岡市大通１丁目６−１７ プラザタイガースビル B1F", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E9%99%B8%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%A8%E3%82%89%E3%82%84%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%97%20%E3%83%97%E3%83%A9%E3%82%B6%E3%82%BF%E3%82%A4%E3%82%AC%E3%83%BC%E3%82%B9%E3%83%93%E3%83%AB%20B1F", "u": "../japan/iwate/morioka.html#c-toraya", "food": "../japan/iwate/img/morioka/toraya.jpg", "ext": ""}, {"i": 32, "n": "炭火焼 鳥八 分店", "c": ["居酒屋・焼肉"], "lat": 39.703735699999996, "lng": 141.14551079999998, "d": "盛岡元祖ジャンボ焼鳥(390円。厚切りもも肉を備長炭で香ばしく焼いた名物串)", "a": "岩手県盛岡市大通２丁目６−２１ 2階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%20%E9%B3%A5%E5%85%AB%20%E5%88%86%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92%EF%BC%91%202%E9%9A%8E", "u": "../japan/iwate/morioka.html#c-torihachi", "food": "../japan/iwate/img/morioka/torihachi.jpg", "ext": ""}, {"i": 33, "n": "大同苑 盛岡総本店", "c": ["居酒屋・焼肉"], "lat": 39.7022383, "lng": 141.1443903, "d": "元祖ネギタン塩(牛タンでネギを包み小ネギで結んだ数量限定の看板メニュー)", "a": "岩手県盛岡市菜園２丁目６−１９", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%90%8C%E8%8B%91%20%E7%9B%9B%E5%B2%A1%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E8%8F%9C%E5%9C%92%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%99", "u": "../japan/iwate/morioka.html#c-daidoen", "food": "../japan/iwate/img/morioka/daidoen.jpg", "ext": ""}, {"i": 34, "n": "鉄板焼き 香月", "c": ["居酒屋・焼肉"], "lat": 39.7017044, "lng": 141.1480791, "d": "いわて短角牛サーロインステーキ(赤身の旨みが濃い岩手在来種を鉄板で焼き上げる)", "a": "岩手県盛岡市菜園１丁目５−１０ グリムハウス 4F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E9%A6%99%E6%9C%88%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E8%8F%9C%E5%9C%92%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%90%20%E3%82%B0%E3%83%AA%E3%83%A0%E3%83%8F%E3%82%A6%E3%82%B9%204F", "u": "../japan/iwate/morioka.html#c-katsuki", "food": "../japan/iwate/img/morioka/katsuki.jpg", "ext": ""}, {"i": 35, "n": "ホルモン幸楽 盛岡店", "c": ["居酒屋・焼肉"], "lat": 39.698124899999996, "lng": 141.1564678, "d": "幸楽ホルモン鍋(味噌ダレでホルモンとキャベツを煮焼きする鹿角式の鍋)", "a": "岩手県盛岡市南大通１丁目５−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E5%B9%B8%E6%A5%BD%20%E7%9B%9B%E5%B2%A1%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%8D%97%E5%A4%A7%E9%80%9A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91", "u": "../japan/iwate/morioka.html#c-koraku", "food": "../japan/iwate/img/morioka/koraku.jpg", "ext": ""}, {"i": 36, "n": "福田パン 長田町本店", "c": ["カフェ・パン・スイーツ"], "lat": 39.7082304, "lng": 141.1420896, "d": "あんバター(粒あんと自家製バタークリームを合わせた不動の一番人気)", "a": "岩手県盛岡市長田町１２−１１", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E7%94%B0%E3%83%91%E3%83%B3%20%E9%95%B7%E7%94%B0%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E9%95%B7%E7%94%B0%E7%94%BA%EF%BC%91%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%91", "u": "../japan/iwate/morioka.html#c-fukudapan", "food": "../japan/iwate/img/morioka/fukudapan.jpg", "ext": ""}, {"i": 37, "n": "光原社 可否館", "c": ["カフェ・パン・スイーツ"], "lat": 39.7059816, "lng": 141.1380043, "d": "深煎珈琲(ネルドリップで淹れる濃いめのブレンド。550円前後)", "a": "岩手県盛岡市材木町２−１８ 光原社本店内", "m": "https://www.google.com/maps/search/?api=1&query=%E5%85%89%E5%8E%9F%E7%A4%BE%20%E5%8F%AF%E5%90%A6%E9%A4%A8%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E6%9D%90%E6%9C%A8%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%98%20%E5%85%89%E5%8E%9F%E7%A4%BE%E6%9C%AC%E5%BA%97%E5%86%85", "u": "../japan/iwate/morioka.html#c-kogensha", "food": "../japan/iwate/img/morioka/kogensha.jpg", "ext": ""}, {"i": 38, "n": "自家焙煎コーヒー屋 クラムボン", "c": ["カフェ・パン・スイーツ"], "lat": 39.703781, "lng": 141.156656, "d": "自家焙煎ブレンド(店で焙煎した豆をネルで丁寧に落とす一杯)", "a": "岩手県盛岡市紺屋町５−３３", "m": "https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%E5%B1%8B%20%E3%82%AF%E3%83%A9%E3%83%A0%E3%83%9C%E3%83%B3%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA%EF%BC%95%E2%88%92%EF%BC%93%EF%BC%93", "u": "../japan/iwate/morioka.html#c-kuranbon", "food": "../japan/iwate/img/morioka/kuranbon.jpg", "ext": ""}, {"i": 39, "n": "ふかくさ", "c": ["カフェ・パン・スイーツ"], "lat": 39.7011963, "lng": 141.1550865, "d": "ケーキセット(コーヒーと日替わりケーキ。店の唯一の甘味メニュー)", "a": "岩手県盛岡市紺屋町１−２", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%8B%E3%81%8F%E3%81%95%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA%EF%BC%91%E2%88%92%EF%BC%92", "u": "../japan/iwate/morioka.html#c-fukakusa", "food": "../japan/iwate/img/morioka/fukakusa.jpg", "ext": ""}, {"i": 40, "n": "NAGASAWA COFFEE", "c": ["カフェ・パン・スイーツ"], "lat": 39.7135026, "lng": 141.1436529, "d": "KEEP SMILE BLEND(中深煎りの看板ブレンド。豆でも購入可)", "a": "岩手県盛岡市上田１丁目１１−２３", "m": "https://www.google.com/maps/search/?api=1&query=NAGASAWA%20COFFEE%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E4%B8%8A%E7%94%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%93", "u": "../japan/iwate/morioka.html#c-nagasawacoffee", "food": "../japan/iwate/img/morioka/nagasawacoffee.jpg", "ext": ""}, {"i": 41, "n": "タルトタタン 八幡町本店", "c": ["カフェ・パン・スイーツ"], "lat": 39.6960562, "lng": 141.1660921, "d": "ニュートンのりんご(北海道産バターのパイ生地に大きめ角切りりんごを詰めた焼き菓子)", "a": "岩手県盛岡市八幡町１３−３４", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%BF%E3%83%AB%E3%83%88%E3%82%BF%E3%82%BF%E3%83%B3%20%E5%85%AB%E5%B9%A1%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%85%AB%E5%B9%A1%E7%94%BA%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%94", "u": "../japan/iwate/morioka.html#c-tartetatin", "food": "../japan/iwate/img/morioka/tartetatin.jpg", "ext": ""}, {"i": 42, "n": "ミッシェル 大通店", "c": ["カフェ・パン・スイーツ"], "lat": 39.7040599, "lng": 141.14345889999998, "d": "岩手県産小麦のフランスパン(自然酵母と石窯で焼く看板のハード系)", "a": "岩手県盛岡市大通３丁目３−１ タウンコート大通", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9F%E3%83%83%E3%82%B7%E3%82%A7%E3%83%AB%20%E5%A4%A7%E9%80%9A%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E9%80%9A%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%20%E3%82%BF%E3%82%A6%E3%83%B3%E3%82%B3%E3%83%BC%E3%83%88%E5%A4%A7%E9%80%9A", "u": "../japan/iwate/morioka.html#c-michel", "food": "../japan/iwate/img/morioka/michel.jpg", "ext": ""}, {"i": 43, "n": "老舗白沢せんべい店", "c": ["カフェ・パン・スイーツ"], "lat": 39.702281299999996, "lng": 141.1562356, "d": "ごませんべい(白ごまをたっぷり乗せて薄く焼き上げた不動の看板)", "a": "岩手県盛岡市紺屋町２−１６", "m": "https://www.google.com/maps/search/?api=1&query=%E8%80%81%E8%88%97%E7%99%BD%E6%B2%A2%E3%81%9B%E3%82%93%E3%81%B9%E3%81%84%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%96", "u": "../japan/iwate/morioka.html#c-shirasawasenbei", "food": "../japan/iwate/img/morioka/shirasawasenbei.jpg", "ext": ""}, {"i": 44, "n": "うなぎ料理 多賀", "c": ["寿司・海鮮"], "lat": 39.703868299999996, "lng": 141.14447049999998, "d": "うな重(2,750〜5,500円。炭火で焼いた蒲焼を秘伝のタレでご飯にのせた看板メニュー)", "a": "岩手県盛岡市大通り３丁目２−２１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E6%96%99%E7%90%86%20%E5%A4%9A%E8%B3%80%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%A4%A7%E9%80%9A%E3%82%8A%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%91", "u": "../japan/iwate/morioka.html#c-taga_unagi", "food": "../japan/iwate/img/morioka/taga_unagi.jpg", "ext": ""}, {"i": 45, "n": "とんかつ むら八 上田店", "c": ["和食・郷土料理", "ご当地名物"], "lat": 39.7213103, "lng": 141.13741819999998, "d": "わらじかつ定食(極上ヒレを大判に仕立てたサクサク衣のとんかつ定食)", "a": "岩手県盛岡市上田４丁目２１−３１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E3%81%8B%E3%81%A4%20%E3%82%80%E3%82%89%E5%85%AB%20%E4%B8%8A%E7%94%B0%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E4%B8%8A%E7%94%B0%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%93%EF%BC%91", "u": "../japan/iwate/morioka.html#c-murahachi_ueda", "food": "../japan/iwate/img/morioka/murahachi_ueda.jpg", "ext": ""}, {"i": 46, "n": "みよし食堂", "c": ["和食・郷土料理"], "lat": 39.7269843, "lng": 141.1119572, "d": "豚バラ定食(肉厚の豚バラを甘辛ダレで炒めた盛岡屈指のごはんが進む定食)", "a": "岩手県盛岡市青山２丁目２４−２１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%82%88%E3%81%97%E9%A3%9F%E5%A0%82%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E9%9D%92%E5%B1%B1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%94%E2%88%92%EF%BC%92%EF%BC%91", "u": "../japan/iwate/morioka.html#c-miyoshi_shokudo", "food": "../japan/iwate/img/morioka/miyoshi_shokudo.jpg", "ext": ""}, {"i": 47, "n": "餃子の店 白乾児", "c": ["洋食・各国料理"], "lat": 39.7021069, "lng": 141.1522606, "d": "焼き餃子(創業以来手包みを守る、皮のもちもち感が身上の看板メニュー)", "a": "岩手県盛岡市内丸４−８", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A4%83%E5%AD%90%E3%81%AE%E5%BA%97%20%E7%99%BD%E4%B9%BE%E5%85%90%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E5%86%85%E4%B8%B8%EF%BC%94%E2%88%92%EF%BC%98", "u": "../japan/iwate/morioka.html#c-paikaru", "food": "../japan/iwate/img/morioka/paikaru.jpg", "ext": ""}, {"i": 48, "n": "ヒマラヤの風", "c": ["洋食・各国料理"], "lat": 39.7056623, "lng": 141.1485305, "d": "ビリヤニ(スパイスと肉を米に重ねて炊き上げる本場式の炊き込みご飯)", "a": "岩手県盛岡市中央通り１丁目６−２６ サトウビル １F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%92%E3%83%9E%E3%83%A9%E3%83%A4%E3%81%AE%E9%A2%A8%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E9%80%9A%E3%82%8A%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92%EF%BC%96%20%E3%82%B5%E3%83%88%E3%82%A6%E3%83%93%E3%83%AB%20%EF%BC%91F", "u": "../japan/iwate/morioka.html#c-himalaya_no_kaze", "food": "../japan/iwate/img/morioka/himalaya_no_kaze.jpg", "ext": ""}, {"i": 49, "n": "関口屋菓子舗", "c": ["カフェ・パン・スイーツ"], "lat": 39.702259399999996, "lng": 141.1574712, "d": "焼酎糖(砂糖の薄い衣の中に焼酎が閉じ込められた和製ウイスキーボンボン)", "a": "岩手県盛岡市神明町２−３", "m": "https://www.google.com/maps/search/?api=1&query=%E9%96%A2%E5%8F%A3%E5%B1%8B%E8%8F%93%E5%AD%90%E8%88%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E7%9B%9B%E5%B2%A1%E5%B8%82%E7%A5%9E%E6%98%8E%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%93", "u": "../japan/iwate/morioka.html#c-sekiguchiya", "food": "../japan/iwate/img/morioka/sekiguchiya.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([39.702614,141.147198],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    const k=b.dataset.cat;
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+</script>

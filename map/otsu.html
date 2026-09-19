@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>大津 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <h1>大津 の食べ歩き地図<span class="n">52店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+    <a href="index.html">都市一覧</a>
+    <a href="../japan/shiga/otsu.html">ガイド記事</a>
+  </nav>
+</header>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "元祖阪本屋", "c": ["寿司・海鮮"], "lat": 35.008091199999996, "lng": 135.8610396, "d": "鮒寿し（ニゴロブナ）", "a": "滋賀県大津市長等１丁目５−２１", "m": "https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%E9%98%AA%E6%9C%AC%E5%B1%8B%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E9%95%B7%E7%AD%89%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%92%EF%BC%91", "u": "../japan/shiga/otsu.html#c-ganso-sakamotoya", "food": "../japan/shiga/img/otsu/ganso-sakamotoya.jpg", "ext": ""}, {"i": 1, "n": "大津魚忠", "c": ["寿司・海鮮", "ご当地名物"], "lat": 35.0066026, "lng": 135.865829, "d": "花遊手かご弁当", "a": "滋賀県大津市京町２丁目４−１０", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E6%B4%A5%E9%AD%9A%E5%BF%A0%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E4%BA%AC%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%90", "u": "../japan/shiga/otsu.html#c-otsu-uochuu", "food": "../japan/shiga/img/otsu/otsu-uochuu.jpg", "ext": ""}, {"i": 2, "n": "湖舟", "c": ["寿司・海鮮"], "lat": 34.9607719, "lng": 135.9080233, "d": "志じみ釜めし", "a": "滋賀県大津市石山寺３丁目２−３７", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B9%96%E8%88%9F%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E7%9F%B3%E5%B1%B1%E5%AF%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%93%EF%BC%97", "u": "../japan/shiga/otsu.html#c-koshu-ishiyamadera", "food": "../japan/shiga/img/otsu/koshu-ishiyamadera.jpg", "ext": ""}, {"i": 3, "n": "近江牛専門店 れすとらん松喜屋 本店", "c": ["ご当地名物"], "lat": 34.973951, "lng": 135.90259749999998, "d": "近江牛すき焼き", "a": "滋賀県大津市鳥居川町７−５", "m": "https://www.google.com/maps/search/?api=1&query=%E8%BF%91%E6%B1%9F%E7%89%9B%E5%B0%82%E9%96%80%E5%BA%97%20%E3%82%8C%E3%81%99%E3%81%A8%E3%82%89%E3%82%93%E6%9D%BE%E5%96%9C%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E9%B3%A5%E5%B1%85%E5%B7%9D%E7%94%BA%EF%BC%97%E2%88%92%EF%BC%95", "u": "../japan/shiga/otsu.html#c-matsukiya-honten", "food": "../japan/shiga/img/otsu/matsukiya-honten.jpg", "ext": ""}, {"i": 4, "n": "手打蕎麦 鶴屋喜八", "c": ["ご当地名物"], "lat": 35.070492, "lng": 135.8702336, "d": "鶴㐂そば（手打二八そば）", "a": "滋賀県大津市坂本４丁目１１−４０", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E8%95%8E%E9%BA%A6%20%E9%B6%B4%E5%B1%8B%E5%96%9C%E5%85%AB%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E5%9D%82%E6%9C%AC%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%94%EF%BC%90", "u": "../japan/shiga/otsu.html#c-honke-tsurukisoba", "food": "../japan/shiga/img/otsu/honke-tsurukisoba.jpg", "ext": ""}, {"i": 5, "n": "芙蓉園本館", "c": ["寿司・海鮮", "ご当地名物"], "lat": 35.070530999999995, "lng": 135.866196, "d": "比叡ゆばの御膳（ゆばの柳川風）", "a": "滋賀県大津市坂本４丁目５−１７", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8A%99%E8%93%89%E5%9C%92%E6%9C%AC%E9%A4%A8%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E5%9D%82%E6%9C%AC%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%97", "u": "../japan/shiga/otsu.html#c-fuyoen-honkan", "food": "../japan/shiga/img/otsu/fuyoen-honkan.jpg", "ext": ""}, {"i": 6, "n": "逢坂山かねよ", "c": ["寿司・海鮮", "ご当地名物"], "lat": 34.9943234, "lng": 135.8542005, "d": "きんし丼", "a": "滋賀県大津市大谷町２３−１５ 23番地15号", "m": "https://www.google.com/maps/search/?api=1&query=%E9%80%A2%E5%9D%82%E5%B1%B1%E3%81%8B%E3%81%AD%E3%82%88%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%B0%B7%E7%94%BA%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%95%2023%E7%95%AA%E5%9C%B015%E5%8F%B7", "u": "../japan/shiga/otsu.html#c-osakayama-kaneyo", "food": "../japan/shiga/img/otsu/osakayama-kaneyo.jpg", "ext": ""}, {"i": 7, "n": "近江牛焼肉 咲蔵 大津店", "c": ["ご当地名物"], "lat": 35.00615, "lng": 135.8672688, "d": "近江牛焼肉盛り合わせ（天然石焼き）", "a": "滋賀県大津市京町３丁目３−１８", "m": "https://www.google.com/maps/search/?api=1&query=%E8%BF%91%E6%B1%9F%E7%89%9B%E7%84%BC%E8%82%89%20%E5%92%B2%E8%94%B5%20%E5%A4%A7%E6%B4%A5%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E4%BA%AC%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%98", "u": "../japan/shiga/otsu.html#c-omigyu-sakura-otsu", "food": "../japan/shiga/img/otsu/omigyu-sakura-otsu.jpg", "ext": ""}, {"i": 8, "n": "嬉酔くわ乃", "c": ["寿司・海鮮"], "lat": 35.1194443, "lng": 135.9174472, "d": "琵琶湖の湖魚と天然鰻の炭火焼き", "a": "滋賀県大津市本堅田４丁目１５−１３ 山田ビル 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AC%89%E9%85%94%E3%81%8F%E3%82%8F%E4%B9%83%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%9C%AC%E5%A0%85%E7%94%B0%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%93%20%E5%B1%B1%E7%94%B0%E3%83%93%E3%83%AB%201%E9%9A%8E", "u": "../japan/shiga/otsu.html#c-kissui-kuwano", "food": "../japan/shiga/img/otsu/kissui-kuwano.jpg", "ext": ""}, {"i": 9, "n": "近江牛専門店 近江かど萬", "c": ["ご当地名物"], "lat": 35.0094646, "lng": 135.8647423, "d": "近江牛ステーキコース", "a": "滋賀県大津市中央１丁目７−３５", "m": "https://www.google.com/maps/search/?api=1&query=%E8%BF%91%E6%B1%9F%E7%89%9B%E5%B0%82%E9%96%80%E5%BA%97%20%E8%BF%91%E6%B1%9F%E3%81%8B%E3%81%A9%E8%90%AC%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%93%EF%BC%95", "u": "../japan/shiga/otsu.html#c-omi-kadoman", "food": "../japan/shiga/img/otsu/omi-kadoman.jpg", "ext": ""}, {"i": 10, "n": "日本料理 新月", "c": ["和食・郷土料理"], "lat": 34.9628113, "lng": 135.9056944, "d": "季節の懐石コース", "a": "滋賀県大津市石山寺１丁目３−３", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E6%96%B0%E6%9C%88%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E7%9F%B3%E5%B1%B1%E5%AF%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%93", "u": "../japan/shiga/otsu.html#c-nihonryori-shingetsu", "food": "../japan/shiga/img/otsu/nihonryori-shingetsu.jpg", "ext": ""}, {"i": 11, "n": "おゝ杉", "c": ["寿司・海鮮", "和食・郷土料理"], "lat": 35.0059232, "lng": 135.8684188, "d": "うなしゃぶ（天然うなぎのしゃぶしゃぶ）", "a": "滋賀県大津市中央３丁目４−３０", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%82%9D%E6%9D%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E4%B8%AD%E5%A4%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%90", "u": "../japan/shiga/otsu.html#c-oosugi", "food": "../japan/shiga/img/otsu/oosugi.jpg", "ext": ""}, {"i": 12, "n": "うなぎ料亭 山重", "c": ["寿司・海鮮", "和食・郷土料理"], "lat": 34.972952, "lng": 135.909019, "d": "うな重（炭火焼き）", "a": "滋賀県大津市瀬田１丁目１６−１５", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E6%96%99%E4%BA%AD%20%E5%B1%B1%E9%87%8D%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E7%80%AC%E7%94%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%95", "u": "../japan/shiga/otsu.html#c-unagi-yamaju", "food": "../japan/shiga/img/otsu/unagi-yamaju.jpg", "ext": ""}, {"i": 13, "n": "京料理 寿司ふじ", "c": ["和食・郷土料理", "寿司・海鮮"], "lat": 34.981653099999996, "lng": 135.8872932, "d": "おまかせコース（締めの寿司付き）", "a": "滋賀県大津市富士見台５５−１１", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BA%AC%E6%96%99%E7%90%86%20%E5%AF%BF%E5%8F%B8%E3%81%B5%E3%81%98%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E5%AF%8C%E5%A3%AB%E8%A6%8B%E5%8F%B0%EF%BC%95%EF%BC%95%E2%88%92%EF%BC%91%EF%BC%91", "u": "../japan/shiga/otsu.html#c-sushifuji", "food": "../japan/shiga/img/otsu/sushifuji.jpg", "ext": ""}, {"i": 14, "n": "天ぷら割烹くにもと", "c": ["和食・郷土料理", "寿司・海鮮"], "lat": 35.004267, "lng": 135.86155069999998, "d": "天ぷらコース（締めの手打ち蕎麦）", "a": "滋賀県大津市春日町８−１２ ロイヤルレジェンド 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%E5%89%B2%E7%83%B9%E3%81%8F%E3%81%AB%E3%82%82%E3%81%A8%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%98%A5%E6%97%A5%E7%94%BA%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%92%20%E3%83%AD%E3%82%A4%E3%83%A4%E3%83%AB%E3%83%AC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%89%201%E9%9A%8E", "u": "../japan/shiga/otsu.html#c-tempura-kunimoto", "food": "../japan/shiga/img/otsu/tempura-kunimoto.jpg", "ext": ""}, {"i": 15, "n": "天ぷら割烹 湖都 臣", "c": ["和食・郷土料理", "寿司・海鮮"], "lat": 35.001698499999996, "lng": 135.8807641, "d": "おまかせ天ぷらコース（鮨付き）", "a": "滋賀県大津市馬場１丁目４−３０ スペースVANVA1 106", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%E5%89%B2%E7%83%B9%20%E6%B9%96%E9%83%BD%20%E8%87%A3%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E9%A6%AC%E5%A0%B4%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%90%20%E3%82%B9%E3%83%9A%E3%83%BC%E3%82%B9VANVA1%20106", "u": "../japan/shiga/otsu.html#c-koto-jin", "food": "../japan/shiga/img/otsu/koto-jin.jpg", "ext": ""}, {"i": 16, "n": "昼だけ間借り 石山うなぎ", "c": ["寿司・海鮮"], "lat": 34.9770847, "lng": 135.9012301, "d": "うな重（関東風）", "a": "滋賀県大津市栄町３−４", "m": "https://www.google.com/maps/search/?api=1&query=%E6%98%BC%E3%81%A0%E3%81%91%E9%96%93%E5%80%9F%E3%82%8A%20%E7%9F%B3%E5%B1%B1%E3%81%86%E3%81%AA%E3%81%8E%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%93%E2%88%92%EF%BC%94", "u": "../japan/shiga/otsu.html#c-ishiyama-unagi", "food": "../japan/shiga/img/otsu/ishiyama-unagi.jpg", "ext": ""}, {"i": 17, "n": "ラーメン ととち丸", "c": ["麺類"], "lat": 34.9728014, "lng": 135.9255471, "d": "こってり醤油ラーメン", "a": "滋賀県大津市大江６丁目３０−１８", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E3%81%A8%E3%81%A8%E3%81%A1%E4%B8%B8%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E5%A4%A7%E6%B1%9F%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%92%EF%BC%91%EF%BC%98", "u": "../japan/shiga/otsu.html#c-totochimaru", "food": "../japan/shiga/img/otsu/totochimaru.jpg", "ext": ""}, {"i": 18, "n": "らーめん与七 堅田店", "c": ["麺類"], "lat": 35.1243623, "lng": 135.91847769999998, "d": "とんこつらーめん（玉子入り）", "a": "滋賀県大津市今堅田２丁目４０−２５", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E4%B8%8E%E4%B8%83%20%E5%A0%85%E7%94%B0%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E4%BB%8A%E5%A0%85%E7%94%B0%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%94%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%95", "u": "../japan/shiga/otsu.html#c-yoshichi-katata", "food": "../japan/shiga/img/otsu/yoshichi-katata.jpg", "ext": ""}, {"i": 19, "n": "STEAK&RAMEN MIFUKU（らーめん みふく）", "c": ["麺類", "アジア・エスニック"], "lat": 35.004959299999996, "lng": 135.8636046, "d": "鶏白湯麺", "a": "滋賀県大津市御幸町４−３０ 田中市コーポ 101", "m": "https://www.google.com/maps/search/?api=1&query=STEAK%26RAMEN%20MIFUKU%EF%BC%88%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E3%81%BF%E3%81%B5%E3%81%8F%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E5%BE%A1%E5%B9%B8%E7%94%BA%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%90%20%E7%94%B0%E4%B8%AD%E5%B8%82%E3%82%B3%E3%83%BC%E3%83%9D%20101", "u": "../japan/shiga/otsu.html#c-mifuku", "food": "../japan/shiga/img/otsu/mifuku.jpg", "ext": ""}, {"i": 20, "n": "鶏煮干らぁ麺 くろき", "c": ["麺類"], "lat": 34.9834731, "lng": 135.9283781, "d": "鶏煮干ラーメン", "a": "滋賀県大津市一里山２丁目１８−１３ コーポ 幸", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B6%8F%E7%85%AE%E5%B9%B2%E3%82%89%E3%81%81%E9%BA%BA%20%E3%81%8F%E3%82%8D%E3%81%8D%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E4%B8%80%E9%87%8C%E5%B1%B1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%93%20%E3%82%B3%E3%83%BC%E3%83%9D%20%E5%B9%B8", "u": "../japan/shiga/otsu.html#c-kuroki", "food": "../japan/shiga/img/otsu/kuroki.jpg", "ext": ""}, {"i": 21, "n": "大津 天下ご麺", "c": ["麺類"], "lat": 35.012405099999995, "lng": 135.86388739999998, "d": "近江塩鶏麺", "a": "滋賀県大津市浜大津４丁目７−３５", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E6%B4%A5%20%E5%A4%A9%E4%B8%8B%E3%81%94%E9%BA%BA%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%B5%9C%E5%A4%A7%E6%B4%A5%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%93%EF%BC%95", "u": "../japan/shiga/otsu.html#c-tenkagomen", "food": "../japan/shiga/img/otsu/tenkagomen.jpg", "ext": ""}, {"i": 22, "n": "中華そば専門店 八真道", "c": ["アジア・エスニック", "麺類"], "lat": 35.0013916, "lng": 135.88086189999999, "d": "中華そば", "a": "滋賀県大津市馬場１丁目４−３３ Ｔ＆Ｔ第２ビル", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E5%B0%82%E9%96%80%E5%BA%97%20%E5%85%AB%E7%9C%9F%E9%81%93%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E9%A6%AC%E5%A0%B4%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%93%20%EF%BC%B4%EF%BC%86%EF%BC%B4%E7%AC%AC%EF%BC%92%E3%83%93%E3%83%AB", "u": "../japan/shiga/otsu.html#c-yamato-chukasoba", "food": "../japan/shiga/img/otsu/yamato-chukasoba.jpg", "ext": ""}, {"i": 23, "n": "中国料理 あたか飯店", "c": ["麺類", "アジア・エスニック"], "lat": 35.0126995, "lng": 135.8633843, "d": "週替り麺（塩ワンタン麺ほか）", "a": "滋賀県大津市浜大津４丁目７−８", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E3%81%82%E3%81%9F%E3%81%8B%E9%A3%AF%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%B5%9C%E5%A4%A7%E6%B4%A5%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%98", "u": "../japan/shiga/otsu.html#c-ataka-hanten", "food": "../japan/shiga/img/otsu/ataka-hanten.jpg", "ext": ""}, {"i": 24, "n": "蕎麦屋すみ蔵", "c": ["麺類"], "lat": 34.9617711, "lng": 135.9067971, "d": "せいろそば（粗挽き手打ち）", "a": "滋賀県大津市石山寺１丁目３−１７", "m": "https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%E5%B1%8B%E3%81%99%E3%81%BF%E8%94%B5%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E7%9F%B3%E5%B1%B1%E5%AF%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%97", "u": "../japan/shiga/otsu.html#c-sumikura", "food": "../japan/shiga/img/otsu/sumikura.jpg", "ext": ""}, {"i": 25, "n": "手打ちうどん ヤマエ", "c": ["麺類"], "lat": 34.9709739, "lng": 135.9874955, "d": "肉ぶっかけうどん", "a": "滋賀県大津市桐生１丁目２３−１１", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%86%E3%81%A9%E3%82%93%20%E3%83%A4%E3%83%9E%E3%82%A8%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%A1%90%E7%94%9F%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%91", "u": "../japan/shiga/otsu.html#c-yamae-udon", "food": "../japan/shiga/img/otsu/yamae-udon.jpg", "ext": ""}, {"i": 26, "n": "利やん", "c": ["居酒屋・焼肉"], "lat": 35.0041741, "lng": 135.86387480000002, "d": "豆腐の出汁巻き", "a": "滋賀県大津市末広町２−３", "m": "https://www.google.com/maps/search/?api=1&query=%E5%88%A9%E3%82%84%E3%82%93%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%9C%AB%E5%BA%83%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%93", "u": "../japan/shiga/otsu.html#c-riyan", "food": "../japan/shiga/img/otsu/riyan.jpg", "ext": ""}, {"i": 27, "n": "もてなし家 とっくり", "c": ["ビール・バー", "居酒屋・焼肉"], "lat": 35.003521899999996, "lng": 135.8634488, "d": "天然真鯛の鯛めし（土鍋炊き）", "a": "滋賀県大津市春日町２−１ COCOLAS大津 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%81%A6%E3%81%AA%E3%81%97%E5%AE%B6%20%E3%81%A8%E3%81%A3%E3%81%8F%E3%82%8A%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%98%A5%E6%97%A5%E7%94%BA%EF%BC%92%E2%88%92%EF%BC%91%20COCOLAS%E5%A4%A7%E6%B4%A5%201F", "u": "../japan/shiga/otsu.html#c-tokkuri", "food": "../japan/shiga/img/otsu/tokkuri.jpg", "ext": ""}, {"i": 28, "n": "大津駅前酒場 ゑいじん", "c": ["居酒屋・焼肉", "ビール・バー"], "lat": 35.003597, "lng": 135.866704, "d": "おでんとお造り", "a": "滋賀県大津市梅林１丁目３−１３ リンカーンビル 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E6%B4%A5%E9%A7%85%E5%89%8D%E9%85%92%E5%A0%B4%20%E3%82%91%E3%81%84%E3%81%98%E3%82%93%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%A2%85%E6%9E%97%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%93%20%E3%83%AA%E3%83%B3%E3%82%AB%E3%83%BC%E3%83%B3%E3%83%93%E3%83%AB%201%E9%9A%8E", "u": "../japan/shiga/otsu.html#c-eijin", "food": "../japan/shiga/img/otsu/eijin.jpg", "ext": ""}, {"i": 29, "n": "酒仙わたる", "c": ["居酒屋・焼肉", "ビール・バー"], "lat": 35.0047547, "lng": 135.8648336, "d": "名物おでん", "a": "滋賀県大津市末広町８−１３", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E4%BB%99%E3%82%8F%E3%81%9F%E3%82%8B%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%9C%AB%E5%BA%83%E7%94%BA%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%93", "u": "../japan/shiga/otsu.html#c-shusen-wataru", "food": "../japan/shiga/img/otsu/shusen-wataru.jpg", "ext": ""}, {"i": 30, "n": "駅前酒場 御蔵", "c": ["居酒屋・焼肉", "ビール・バー"], "lat": 35.011379999999996, "lng": 135.863079, "d": "滋賀の地酒飲み比べ", "a": "滋賀県大津市浜大津２丁目１−２６", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A7%85%E5%89%8D%E9%85%92%E5%A0%B4%20%E5%BE%A1%E8%94%B5%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%B5%9C%E5%A4%A7%E6%B4%A5%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%92%EF%BC%96", "u": "../japan/shiga/otsu.html#c-okura", "food": "../japan/shiga/img/otsu/okura.jpg", "ext": ""}, {"i": 31, "n": "浜大津酒場 見聞録", "c": ["居酒屋・焼肉"], "lat": 35.0096956, "lng": 135.8646236, "d": "お造り5種盛り合わせ", "a": "滋賀県大津市浜大津１丁目１−５", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E5%A4%A7%E6%B4%A5%E9%85%92%E5%A0%B4%20%E8%A6%8B%E8%81%9E%E9%8C%B2%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%B5%9C%E5%A4%A7%E6%B4%A5%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%95", "u": "../japan/shiga/otsu.html#c-kenbunroku", "food": "../japan/shiga/img/otsu/kenbunroku.jpg", "ext": ""}, {"i": 32, "n": "おでん旬菜 ろざん", "c": ["居酒屋・焼肉"], "lat": 35.010327, "lng": 135.863404, "d": "関西風おでん盛り合わせ", "a": "滋賀県大津市浜大津１丁目２−３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%A7%E3%82%93%E6%97%AC%E8%8F%9C%20%E3%82%8D%E3%81%96%E3%82%93%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%B5%9C%E5%A4%A7%E6%B4%A5%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%93", "u": "../japan/shiga/otsu.html#c-rozan", "food": "../japan/shiga/img/otsu/rozan.jpg", "ext": ""}, {"i": 33, "n": "宴 -En-", "c": ["居酒屋・焼肉", "ビール・バー"], "lat": 35.0025851, "lng": 135.8807136, "d": "近江黒鶏の炭火串焼き", "a": "滋賀県大津市馬場１丁目４−２０", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AE%B4%20-En-%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E9%A6%AC%E5%A0%B4%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%94%E2%88%92%EF%BC%92%EF%BC%90", "u": "../japan/shiga/otsu.html#c-en-zeze", "food": "../japan/shiga/img/otsu/en-zeze.jpg", "ext": ""}, {"i": 34, "n": "炉端と日本酒 魚丸 石山店", "c": ["居酒屋・焼肉", "ビール・バー"], "lat": 34.9794485, "lng": 135.9013196, "d": "カツオの藁焼き", "a": "滋賀県大津市粟津町４−９ ステーションプラザ 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E3%81%A8%E6%97%A5%E6%9C%AC%E9%85%92%20%E9%AD%9A%E4%B8%B8%20%E7%9F%B3%E5%B1%B1%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E7%B2%9F%E6%B4%A5%E7%94%BA%EF%BC%94%E2%88%92%EF%BC%99%20%E3%82%B9%E3%83%86%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%83%97%E3%83%A9%E3%82%B6%201F", "u": "../japan/shiga/otsu.html#c-uomaru-ishiyama", "food": "../japan/shiga/img/otsu/uomaru-ishiyama.jpg", "ext": ""}, {"i": 35, "n": "ciocco（チョッコ）", "c": ["洋食・各国料理"], "lat": 35.0087796, "lng": 135.8594468, "d": "薪焼きの肉料理", "a": "滋賀県大津市長等２丁目３−９", "m": "https://www.google.com/maps/search/?api=1&query=ciocco%EF%BC%88%E3%83%81%E3%83%A7%E3%83%83%E3%82%B3%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E9%95%B7%E7%AD%89%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%99", "u": "../japan/shiga/otsu.html#c-ciocco-nagara", "food": "../japan/shiga/img/otsu/ciocco-nagara.jpg", "ext": ""}, {"i": 36, "n": "いろんなお肉と近江野菜バル trasparente", "c": ["洋食・各国料理"], "lat": 35.002229299999996, "lng": 135.8809688, "d": "近江野菜と自家製パスタのランチ", "a": "滋賀県大津市馬場１丁目１１−２ 膳所 駅前 通り 第 13 森田 ビル 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%82%8D%E3%82%93%E3%81%AA%E3%81%8A%E8%82%89%E3%81%A8%E8%BF%91%E6%B1%9F%E9%87%8E%E8%8F%9C%E3%83%90%E3%83%AB%20trasparente%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E9%A6%AC%E5%A0%B4%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%92%20%E8%86%B3%E6%89%80%20%E9%A7%85%E5%89%8D%20%E9%80%9A%E3%82%8A%20%E7%AC%AC%2013%20%E6%A3%AE%E7%94%B0%20%E3%83%93%E3%83%AB%201F", "u": "../japan/shiga/otsu.html#c-trasparente-zeze", "food": "../japan/shiga/img/otsu/trasparente-zeze.jpg", "ext": ""}, {"i": 37, "n": "アンチョビ なぎさのテラス店", "c": ["洋食・各国料理"], "lat": 35.007646099999995, "lng": 135.8757719, "d": "湖を眺めて味わうパスタランチ", "a": "滋賀県大津市打出浜１５−３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%B3%E3%83%81%E3%83%A7%E3%83%93%20%E3%81%AA%E3%81%8E%E3%81%95%E3%81%AE%E3%83%86%E3%83%A9%E3%82%B9%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%89%93%E5%87%BA%E6%B5%9C%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%93", "u": "../japan/shiga/otsu.html#c-anchovy-nagisa", "food": "../japan/shiga/img/otsu/anchovy-nagisa.jpg", "ext": ""}, {"i": 38, "n": "bistro guccho（ビストロ グッチョ）", "c": ["洋食・各国料理"], "lat": 34.9772424, "lng": 135.9016792, "d": "近江野菜を使ったビストロフレンチコース", "a": "滋賀県大津市粟津町１７−１４ リアル石山ビル 1F", "m": "https://www.google.com/maps/search/?api=1&query=bistro%20guccho%EF%BC%88%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%82%B0%E3%83%83%E3%83%81%E3%83%A7%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E7%B2%9F%E6%B4%A5%E7%94%BA%EF%BC%91%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%94%20%E3%83%AA%E3%82%A2%E3%83%AB%E7%9F%B3%E5%B1%B1%E3%83%93%E3%83%AB%201F", "u": "../japan/shiga/otsu.html#c-bistro-guccho", "food": "../japan/shiga/img/otsu/bistro-guccho.jpg", "ext": ""}, {"i": 39, "n": "ビストロ フジハラ", "c": ["洋食・各国料理"], "lat": 34.9770507, "lng": 135.90101239999998, "d": "フォアグラ入りフレンチコース", "a": "滋賀県大津市栄町３−２ タツミビル 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%83%95%E3%82%B8%E3%83%8F%E3%83%A9%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%93%E2%88%92%EF%BC%92%20%E3%82%BF%E3%83%84%E3%83%9F%E3%83%93%E3%83%AB%202F", "u": "../japan/shiga/otsu.html#c-bistro-fujihara", "food": "../japan/shiga/img/otsu/bistro-fujihara.jpg", "ext": ""}, {"i": 40, "n": "ドイツレストラン ヴュルツブルク", "c": ["洋食・各国料理"], "lat": 35.00129, "lng": 135.89166, "d": "自家製ソーセージの盛り合わせ", "a": "滋賀県大津市由美浜５", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%89%E3%82%A4%E3%83%84%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%B4%E3%83%A5%E3%83%AB%E3%83%84%E3%83%96%E3%83%AB%E3%82%AF%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E7%94%B1%E7%BE%8E%E6%B5%9C%EF%BC%95", "u": "../japan/shiga/otsu.html#c-wurzburg-otsu", "food": "../japan/shiga/img/otsu/wurzburg-otsu.jpg", "ext": ""}, {"i": 41, "n": "gururi（グルリ）", "c": ["洋食・各国料理"], "lat": 35.0081159, "lng": 135.8678041, "d": "三種あいがけスパイスカレー", "a": "滋賀県大津市浜町９−２８ 中央ビル 南側角", "m": "https://www.google.com/maps/search/?api=1&query=gururi%EF%BC%88%E3%82%B0%E3%83%AB%E3%83%AA%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%B5%9C%E7%94%BA%EF%BC%99%E2%88%92%EF%BC%92%EF%BC%98%20%E4%B8%AD%E5%A4%AE%E3%83%93%E3%83%AB%20%E5%8D%97%E5%81%B4%E8%A7%92", "u": "../japan/shiga/otsu.html#c-gururi-hamamachi", "food": "../japan/shiga/img/otsu/gururi-hamamachi.jpg", "ext": ""}, {"i": 42, "n": "KWC -kyon world curry-", "c": ["洋食・各国料理"], "lat": 35.0062445, "lng": 135.8623982, "d": "週替わりの世界のスパイスカレー", "a": "滋賀県大津市京町１丁目１−１４", "m": "https://www.google.com/maps/search/?api=1&query=KWC%20-kyon%20world%20curry-%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E4%BA%AC%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%94", "u": "../japan/shiga/otsu.html#c-kwc-kyomachi", "food": "../japan/shiga/img/otsu/kwc-kyomachi.jpg", "ext": ""}, {"i": 43, "n": "ラメリストア（lameristore）", "c": ["洋食・各国料理"], "lat": 35.1108688, "lng": 135.921294, "d": "滋賀食材のスパイスカレー", "a": "滋賀県大津市本堅田１丁目１８−１０", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%A1%E3%83%AA%E3%82%B9%E3%83%88%E3%82%A2%EF%BC%88lameristore%EF%BC%89%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%9C%AC%E5%A0%85%E7%94%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%90", "u": "../japan/shiga/otsu.html#c-lameristore-katata", "food": "../japan/shiga/img/otsu/lameristore-katata.jpg", "ext": ""}, {"i": 44, "n": "三井寺力餅本家", "c": ["カフェ・パン・スイーツ"], "lat": 35.0111151, "lng": 135.8629525, "d": "三井寺力餅（きな粉の串餅）", "a": "滋賀県大津市浜大津２丁目１−３０", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E4%BA%95%E5%AF%BA%E5%8A%9B%E9%A4%85%E6%9C%AC%E5%AE%B6%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%B5%9C%E5%A4%A7%E6%B4%A5%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%93%EF%BC%90", "u": "../japan/shiga/otsu.html#c-mitsui-chikaramochi", "food": "../japan/shiga/img/otsu/mitsui-chikaramochi.jpg", "ext": ""}, {"i": 45, "n": "叶 匠壽庵 寿長生の郷", "c": ["カフェ・パン・スイーツ"], "lat": 34.8978648, "lng": 135.9150975, "d": "丹波大納言小豆の銘菓「あも」", "a": "滋賀県大津市大石龍門４丁目２−１", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B6%20%E5%8C%A0%E5%A3%BD%E5%BA%B5%20%E5%AF%BF%E9%95%B7%E7%94%9F%E3%81%AE%E9%83%B7%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E5%A4%A7%E7%9F%B3%E9%BE%8D%E9%96%80%EF%BC%94%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91", "u": "../japan/shiga/otsu.html#c-sunainosato", "food": "../japan/shiga/img/otsu/sunainosato.jpg", "ext": ""}, {"i": 46, "n": "茶丈藤村", "c": ["カフェ・パン・スイーツ"], "lat": 34.9616962, "lng": 135.90706079999998, "d": "たばしる（胡桃餡の餅菓子）", "a": "滋賀県大津市石山寺１丁目３−２２", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E4%B8%88%E8%97%A4%E6%9D%91%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E7%9F%B3%E5%B1%B1%E5%AF%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%92", "u": "../japan/shiga/otsu.html#c-sajo-towson", "food": "../japan/shiga/img/otsu/sajo-towson.jpg", "ext": ""}, {"i": 47, "n": "マタリ", "c": ["カフェ・パン・スイーツ"], "lat": 35.004614, "lng": 135.8759698, "d": "揚げたてカツサンド", "a": "滋賀県大津市打出浜４−１４", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%82%BF%E3%83%AA%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%89%93%E5%87%BA%E6%B5%9C%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%94", "u": "../japan/shiga/otsu.html#c-matari-uchidehama", "food": "../japan/shiga/img/otsu/matari-uchidehama.jpg", "ext": ""}, {"i": 48, "n": "サモワール", "c": ["カフェ・パン・スイーツ"], "lat": 35.008569, "lng": 135.8599773, "d": "サイフォンで淹れるブレンドコーヒー", "a": "滋賀県大津市長等２丁目３−４", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B5%E3%83%A2%E3%83%AF%E3%83%BC%E3%83%AB%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E9%95%B7%E7%AD%89%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%94", "u": "../japan/shiga/otsu.html#c-samovar-nagara", "food": "../japan/shiga/img/otsu/samovar-nagara.jpg", "ext": ""}, {"i": 49, "n": "なぎさWARMS", "c": ["カフェ・パン・スイーツ"], "lat": 35.0076867, "lng": 135.8754659, "d": "滋賀県産食材のランチプレート", "a": "滋賀県大津市打出浜１５−５ なぎさＷＡＲＭＳ", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%81%8E%E3%81%95WARMS%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E6%89%93%E5%87%BA%E6%B5%9C%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%95%20%E3%81%AA%E3%81%8E%E3%81%95%EF%BC%B7%EF%BC%A1%EF%BC%B2%EF%BC%AD%EF%BC%B3", "u": "../japan/shiga/otsu.html#c-nagisa-warms", "food": "../japan/shiga/img/otsu/nagisa-warms.jpg", "ext": ""}, {"i": 50, "n": "Rcafe at Marina", "c": ["カフェ・パン・スイーツ"], "lat": 35.117148, "lng": 135.92613260000002, "d": "湖を望むテラスのカフェランチ", "a": "滋賀県大津市今堅田１丁目２−２０ レークウエストヨットクラブ 2F", "m": "https://www.google.com/maps/search/?api=1&query=Rcafe%20at%20Marina%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E4%BB%8A%E5%A0%85%E7%94%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%92%EF%BC%90%20%E3%83%AC%E3%83%BC%E3%82%AF%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A8%E3%83%83%E3%83%88%E3%82%AF%E3%83%A9%E3%83%96%202F", "u": "../japan/shiga/otsu.html#c-rcafe-at-marina", "food": "../japan/shiga/img/otsu/rcafe-at-marina.jpg", "ext": ""}, {"i": 51, "n": "パン工房 バオバブの木 瀬田店", "c": ["カフェ・パン・スイーツ"], "lat": 34.9863838, "lng": 135.925025, "d": "牛肉ゴロゴロビーフカレーパン", "a": "滋賀県大津市大萱１丁目１１−１１ 萱野ビル 1f", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%B3%E5%B7%A5%E6%88%BF%20%E3%83%90%E3%82%AA%E3%83%90%E3%83%96%E3%81%AE%E6%9C%A8%20%E7%80%AC%E7%94%B0%E5%BA%97%20%E6%BB%8B%E8%B3%80%E7%9C%8C%E5%A4%A7%E6%B4%A5%E5%B8%82%E5%A4%A7%E8%90%B1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%91%20%E8%90%B1%E9%87%8E%E3%83%93%E3%83%AB%201f", "u": "../japan/shiga/otsu.html#c-baobab-seta", "food": "../japan/shiga/img/otsu/baobab-seta.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([35.005675,135.885994],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    const k=b.dataset.cat;
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+</script>

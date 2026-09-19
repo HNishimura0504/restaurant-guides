@@ -54,6 +54,68 @@ HOME_CUISINE = {
 }
 
 
+def country_of_guide(guide):
+    """ガイドの識別子から国のキーを拾う。
+
+    `guide` は `north_america_usa_alamoana` のような**アンダースコア区切り**で、
+    スラッシュ区切りではない（2026-09-19 実測。ここを取り違えると HOME_CUISINE が
+    一度も当たらず、ハワイのご当地料理が「和食・郷土料理」に落ちる）。
+    """
+    g = (guide or "").lower()
+    for k in HOME_CUISINE:
+        if k in g:
+            return k
+    return ""
+
+
+def categories_of(heading, country="", name="", dish="", desc=""):
+    """その店のカテゴリを**複数**返す（主カテゴリが先頭）。
+
+    **なぜ複数が要るか**: ユーザー指摘（2026-09-12）「ご当地グルメかつビールの店が、
+    どちらかでしか出ない」。`category_of` は**最初に当たった規則で打ち切る**ので、
+    1店1カテゴリしか持てなかった。
+
+    **なぜ見出しだけで決められないか**: 見出しは
+    「日本食・ラーメン・寿司・居酒屋」のように**複数ジャンルの束**であることがある。
+    見出しの一致をそのまま全部採ると、うどん店に「寿司・海鮮」が付く（実測で確認）。
+    そこで**候補は見出しから出し、採否は店自身の文（店名・一皿・説明）で裏を取る**。
+
+    **順序**: 店自身の文の中で**早く出てくる語ほどその店の主題に近い**ので、
+    一致位置の昇順に並べる。これで「握り寿司に…」の店が寿司・海鮮になり、
+    「肉汁つけうどん…」の店が麺類になる（どちらも見出しは同じ束）。
+
+    **所在国の郷土料理（HOME_CUISINE）は主カテゴリを動かさない**（B-464）。
+    """
+    home = HOME_CUISINE.get((country or "").lower())
+    is_home = bool(home and re.search(home, heading))
+
+    cand = []
+    head = re.split(r"[・/／(（]", heading)[0]
+    for target in (head, heading):
+        for cat, pat in CATEGORY_RULES:
+            if re.search(pat, target) and cat not in cand:
+                cand.append(cat)
+
+    own = " ".join([str(name or ""), str(dish or ""), str(desc or "")])
+    rules = dict(CATEGORY_RULES)
+    scored = []
+    for cat in cand:
+        pat = rules.get(cat)
+        if not pat:
+            continue
+        hit = re.search(pat, own)
+        if hit:
+            scored.append((hit.start(), cat))
+    scored.sort()
+    ev = [c for _, c in scored]
+
+    if is_home:
+        return ["ご当地名物"] + [c for c in ev if c != "ご当地名物"]
+    if len(cand) <= 1:
+        return cand or [category_of(heading, country)]
+    return ev if ev else [category_of(heading, country)]
+
+
 def category_of(heading, country=""):
     """見出しをカテゴリへ畳む。
 
@@ -77,6 +139,26 @@ def first_url(s):
     return m.group(1) if m else ""
 
 
+# 日本のガイドの表紙は「JAPAN / GIFU・岐阜県 🇯🇵」の形だが、
+# 大垣は「大垣市」、吹田は「北摂」、藤井寺は「南河内」と**県名ではない語**が入る
+# （2026-09-19 実測）。都市一覧を県でまとめるには県名が要るので、
+# ディレクトリ名（japan/<pref>/<city>.html）を正とする。
+JP_PREF = {
+    "aichi": "愛知県", "akita": "秋田県", "aomori": "青森県", "chiba": "千葉県",
+    "ehime": "愛媛県", "fukui": "福井県", "fukuoka": "福岡県", "fukushima": "福島県",
+    "gifu": "岐阜県", "gunma": "群馬県", "hiroshima": "広島県", "hokkaido": "北海道",
+    "hyogo": "兵庫県", "ibaraki": "茨城県", "ishikawa": "石川県", "iwate": "岩手県",
+    "kagawa": "香川県", "kagoshima": "鹿児島県", "kanagawa": "神奈川県", "kochi": "高知県",
+    "kumamoto": "熊本県", "kyoto": "京都府", "mie": "三重県", "miyagi": "宮城県",
+    "miyazaki": "宮崎県", "nagano": "長野県", "nagasaki": "長崎県", "nara": "奈良県",
+    "niigata": "新潟県", "oita": "大分県", "okayama": "岡山県", "okinawa": "沖縄県",
+    "osaka": "大阪府", "saga": "佐賀県", "saitama": "埼玉県", "shiga": "滋賀県",
+    "shimane": "島根県", "shizuoka": "静岡県", "tochigi": "栃木県", "tokushima": "徳島県",
+    "tokyo": "東京都", "tottori": "鳥取県", "toyama": "富山県", "wakayama": "和歌山県",
+    "yamagata": "山形県", "yamaguchi": "山口県", "yamanashi": "山梨県",
+}
+
+
 def guide_meta(path, s):
     """HTML自身から 都市（日本語）・国/都道府県・地方 を取る。"""
     t = re.search(r"<title>(.*?)</title>", s, re.S)
@@ -90,19 +172,29 @@ def guide_meta(path, s):
         if m:
             head = htmllib.unescape(re.sub(r"<[^>]+>", "", m.group(1))).strip()
 
-    region = {"japan": "日本", "europe": "ヨーロッパ", "asia": "アジア"}.get(
-        path.replace("\\", "/").split("/")[0], "")
-    # 日本は「JAPAN / GIFU・岐阜県 🇯🇵」、国外は「BELGIUM / BRUSSELS 🇧🇪」
+    seg = path.replace("\\", "/").split("/")
+    region = {"japan": "日本", "europe": "ヨーロッパ", "asia": "アジア",
+              "north_america": "北米"}.get(seg[0], "")
+    # 日本は表紙が「JAPAN / GIFU・岐阜県 🇯🇵」で「・」の右が県名。
+    # 国外は「USA / HAWAII・ホノルル(ワイキキ) 🇺🇸」のように **「・」の右が都市名** で、
+    # 県名ではない（2026-09-19 実測。ここを共通化していたのでハワイの「国」が
+    # 「ホノルル(ワイキキ)」になり、都市一覧が国でまとまらなかった）。
+    # したがって **「・」で取るのは日本だけ**、国外はディレクトリ名から国名を引く。
     pref = ""
-    if "・" in head:
-        pref = re.sub(r"\s*[\U0001F1E6-\U0001F1FF]{2}\s*$", "", head.split("・", 1)[1]).strip()
-    elif region == "日本":
-        # 京都・大阪は表紙が「JAPAN / KYOTO 🇯🇵」で府名が省かれている（都市名と同じため）
-        pref = {"京都": "京都府", "大阪": "大阪府"}.get(city, "")
+    if region == "日本":
+        pref = JP_PREF.get(seg[1] if len(seg) > 1 else "", "")
+        if pref:
+            pass
+        elif "・" in head:
+            pref = re.sub(r"\s*[\U0001F1E6-\U0001F1FF]{2}\s*$", "", head.split("・", 1)[1]).strip()
+        else:
+            # 京都・大阪は表紙が「JAPAN / KYOTO 🇯🇵」で府名が省かれている（都市名と同じため）
+            pref = {"京都": "京都府", "大阪": "大阪府"}.get(city, "")
     else:
         country = {"belgium": "ベルギー", "france": "フランス", "germany": "ドイツ",
-                   "netherlands": "オランダ", "nepal": "ネパール"}
-        pref = country.get(path.replace("\\", "/").split("/")[1], "")
+                   "netherlands": "オランダ", "nepal": "ネパール",
+                   "usa": "アメリカ（ハワイ）"}
+        pref = country.get(seg[1] if len(seg) > 1 else "", "")
     return title, city, pref, region
 
 
@@ -146,13 +238,15 @@ def main():
                           % (base, heading, len(ids), len(cards)))
                     ids = [""] * len(cards)
                 for cid, c in zip(ids, cards):
+                    cats = categories_of(heading, country_of_guide(base) or country,
+                                         c["name"], c["sig"], c["desc"])
                     rec = {
-                        "guide": base, "guide_title": title,
+                        "guide": base, "guide_title": title, "path": rel,
                         "都市": city, "国・都道府県": pref, "地方": region,
                         "slug": cid,
                         "店名": c["name"], "よみ": c["yomi"],
                         "地図番号": int(c["no"]) if c["no"].isdigit() else None,
-                        "章（原文）": heading, "カテゴリ": category_of(heading, country),
+                        "章（原文）": heading, "カテゴリ": cats[0], "カテゴリ群": cats,
                         "タグ": c["chips"], "説明": c["desc"], "一皿": c["sig"],
                         "選定理由": c["reason"],
                         "Googleマップ": c["map"], "参照元": first_url(c["src"]),
@@ -179,6 +273,8 @@ def main():
     print("カテゴリ内訳   :")
     for k, v in collections.Counter(r["カテゴリ"] for r in out).most_common():
         print("   %-22s %4d" % (k, v))
+    multi = [r for r in out if len(r.get("カテゴリ群", [])) > 1]
+    print("複数カテゴリ   : %d (%.0f%%)" % (len(multi), 100.0 * len(multi) / max(1, len(out))))
     empty = [r["guide"] for r in out if not r["都市"] or not r["国・都道府県"]]
     print("都市/県が空    : %d %s" % (len(empty), sorted(set(empty))[:5]))
 

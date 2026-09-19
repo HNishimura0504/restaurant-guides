@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ケルン の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <h1>ケルン の食べ歩き地図<span class="n">37店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+    <a href="index.html">都市一覧</a>
+    <a href="../europe/germany/cologne.html">ガイド記事</a>
+  </nav>
+</header>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "Brauhaus FRÜH am Dom", "c": ["ご当地名物"], "lat": 50.9398732, "lng": 6.956944099999999, "d": "ハルヴァー・ハーン(熟成ゴーダチーズを厚切りにしてライ麦パン(レゲルヒェン)に載せ、マスタードと玉ねぎを添えるケルシュの定番つまみ)", "a": "Am Hof 12-18, 50667 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Brauhaus%20FR%C3%9CH%20am%20Dom%20Am%20Hof%2012-18%2C%2050667%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-frueh-am-dom", "food": "../europe/germany/img/cologne/frueh-am-dom.jpg", "ext": ""}, {"i": 1, "n": "Brauhaus Päffgen", "c": ["ご当地名物"], "lat": 50.9407688, "lng": 6.9419115, "d": "シュヴァインスハクセ(豚すね肉を皮ごとカリカリに焼き上げたドイツ名物のロースト。ザワークラウトやジャガイモと共に供される)", "a": "Friesenstraße 64-66, 50670 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Brauhaus%20P%C3%A4ffgen%20Friesenstra%C3%9Fe%2064-66%2C%2050670%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-paeffgen", "food": "../europe/germany/img/cologne/paeffgen.jpg", "ext": ""}, {"i": 2, "n": "Lommerzheim", "c": ["ご当地名物"], "lat": 50.9386073, "lng": 6.973666799999999, "d": "コテレット(厚切り豚カツレツ)(骨付き豚ロースを豪快に焼いた分厚いチョップに炒め玉ねぎを載せた名物。自家製ポテトサラダと共に)", "a": "Siegesstraße 18, 50679 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Lommerzheim%20Siegesstra%C3%9Fe%2018%2C%2050679%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-lommerzheim", "food": "../europe/germany/img/cologne/lommerzheim.jpg", "ext": ""}, {"i": 3, "n": "Brauhaus zur Malzmühle", "c": ["ご当地名物"], "lat": 50.934710499999994, "lng": 6.9605091, "d": "ザウアーブラーテン(酢とワインに数日漬け込んだ牛肉を煮込み、レーズン入りの甘酸っぱいソースで供するライン地方の郷土ロースト)", "a": "Heumarkt 6, 50667 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Brauhaus%20zur%20Malzm%C3%BChle%20Heumarkt%206%2C%2050667%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-malzmuehle", "food": "../europe/germany/img/cologne/malzmuehle.jpg", "ext": ""}, {"i": 4, "n": "Brauhaus Sion", "c": ["ご当地名物", "和食・郷土料理"], "lat": 50.939428, "lng": 6.9593234, "d": "ヒンメル・ウン・エード(「天(リンゴ)と地(ジャガイモ)」を意味する郷土料理。リンゴソースとマッシュポテトに焼いた血のソーセージを載せる)", "a": "Unter Taschenmacher 5-7, 50667 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Brauhaus%20Sion%20Unter%20Taschenmacher%205-7%2C%2050667%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-brauhaus-sion", "food": "../europe/germany/img/cologne/brauhaus-sion.jpg", "ext": ""}, {"i": 5, "n": "Bei Oma Kleinmann", "c": ["ご当地名物"], "lat": 50.92961, "lng": 6.9382783, "d": "シュニッツェル(薄くたたいた豚や仔牛の肉に衣を付けて揚げ焼きにするドイツ定番のカツレツ。ここでは多彩なソースと大盛りで供される)", "a": "Zülpicher Str. 9, 50674 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Bei%20Oma%20Kleinmann%20Z%C3%BClpicher%20Str.%209%2C%2050674%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-bei-oma-kleinmann", "food": "../europe/germany/img/cologne/bei-oma-kleinmann.jpg", "ext": ""}, {"i": 6, "n": "Rievkoochebud", "c": ["屋台・食べ歩き"], "lat": 50.937579500000005, "lng": 6.9615374, "d": "ライベクーヘン(すりおろしたジャガイモを薄く円形に揚げ焼きにするドイツ名物のパンケーキ。リンゴソースを付けて食べるのが定番)", "a": "Salzgasse 6, 50667 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Rievkoochebud%20Salzgasse%206%2C%2050667%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-rievkoochebud", "food": "../europe/germany/img/cologne/rievkoochebud.jpg", "ext": ""}, {"i": 7, "n": "Curry B.", "c": ["屋台・食べ歩き"], "lat": 50.938558699999994, "lng": 6.9455485, "d": "カリーヴルスト+ポメス(焼きソーセージを刻んでカレー粉入りトマトソースをかけるドイツ国民食に、カリカリのフライドポテトを添えた定番セット)", "a": "Willy-Millowitsch-Platz (Breite Str./Ehrenstr.間), 50667 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Curry%20B.%20Willy-Millowitsch-Platz%20%28Breite%20Str./Ehrenstr.%E9%96%93%29%2C%2050667%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-curry-b", "food": "../europe/germany/img/cologne/curry-b.jpg", "ext": ""}, {"i": 8, "n": "ABA Yaprak Döner", "c": ["屋台・食べ歩き"], "lat": 50.9658199, "lng": 7.0093548, "d": "ヤプラック・ドネル(薄切りの牛肉を何層にも重ねて焼き上げる職人仕込みのドネルケバブ。パンやデュリュム(薄焼きパン巻き)で味わう)", "a": "Keupstraße 19-21, 51063 Köln", "m": "https://www.google.com/maps/search/?api=1&query=ABA%20Yaprak%20D%C3%B6ner%20Keupstra%C3%9Fe%2019-21%2C%2051063%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-aba-yaprak-doener", "food": "../europe/germany/img/cologne/aba-yaprak-doener.jpg", "ext": ""}, {"i": 9, "n": "Metzgerei Schmitz (Salon Schmitz)", "c": ["市場・食材店"], "lat": 50.9366105, "lng": 6.9361368, "d": "キッシュと日替わり惣菜(卵と生クリームを注いで焼くフランス風の塩味タルト。ショーケースからサラダと組み合わせて選ぶスタイル)", "a": "Aachener Straße 30, 50674 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Metzgerei%20Schmitz%20%28Salon%20Schmitz%29%20Aachener%20Stra%C3%9Fe%2030%2C%2050674%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-metzgerei-schmitz", "food": "../europe/germany/img/cologne/metzgerei-schmitz.jpg", "ext": ""}, {"i": 10, "n": "Käseglück", "c": ["市場・食材店"], "lat": 50.9777783, "lng": 7.071032199999999, "d": "ロホミルヒケーゼ(生乳チーズ)(殺菌しない生乳から伝統製法で造るチーズ。熟成による産地ごとの風味の違いが濃く出るのが特徴で、ハード・ウォッシュ・青カビまで揃う)", "a": "Idastraße 46, 51069 Köln", "m": "https://www.google.com/maps/search/?api=1&query=K%C3%A4segl%C3%BCck%20Idastra%C3%9Fe%2046%2C%2051069%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-kaeseglueck-dellbrueck", "food": "../europe/germany/img/cologne/kaeseglueck-dellbrueck.jpg", "ext": ""}, {"i": 11, "n": "Friedrichs Die Metzgerei", "c": ["市場・食材店"], "lat": 50.918573099999996, "lng": 6.9225768, "d": "自家製ソーセージと熟成肉(自社農場の放牧豚・牛から作るハムやメットヴルスト(生食用挽肉ソーセージ)などライン地方の精肉店文化を味わえる)", "a": "Sülzburgstraße 126, 50937 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Friedrichs%20Die%20Metzgerei%20S%C3%BClzburgstra%C3%9Fe%20126%2C%2050937%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-friedrichs-metzgerei", "food": "../europe/germany/img/cologne/friedrichs-metzgerei.jpg", "ext": ""}, {"i": 12, "n": "Wochenmarkt Wilhelmplatz (Nippes)", "c": ["市場・食材店"], "lat": 50.963005599999995, "lng": 6.9524034, "d": "市場の食べ歩き(チーズや焼きたてパン、季節の果物を屋台で買い集めるのが市場流。ライベクーヘンの屋台が出る日もある)", "a": "Wilhelmplatz, 50733 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Wochenmarkt%20Wilhelmplatz%20%28Nippes%29%20Wilhelmplatz%2C%2050733%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-wochenmarkt-wilhelmplatz", "food": "../europe/germany/img/cologne/wochenmarkt-wilhelmplatz.jpg", "ext": ""}, {"i": 13, "n": "Törtchen Törtchen", "c": ["カフェ・パン・スイーツ"], "lat": 50.937968, "lng": 6.945009, "d": "テルトヒェン(ミニタルト)(店名の由来でもある一人分の小さなタルト。季節のフルーツやクリームを飾ったフランス菓子仕立て)", "a": "Apostelnstraße 19, 50667 Köln", "m": "https://www.google.com/maps/search/?api=1&query=T%C3%B6rtchen%20T%C3%B6rtchen%20Apostelnstra%C3%9Fe%2019%2C%2050667%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-toertchen-toertchen", "food": "../europe/germany/img/cologne/toertchen-toertchen.jpg", "ext": ""}, {"i": 14, "n": "Konditorei Café Riese", "c": ["カフェ・パン・スイーツ"], "lat": 50.93638, "lng": 6.950354, "d": "ドームヴァッフェルンとツィムトドームヒェン(大聖堂(ドーム)にちなんだワッフルとシナモン菓子。バウムクーヘンや自家製アイスも看板商品)", "a": "Schildergasse 103, 50667 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Konditorei%20Caf%C3%A9%20Riese%20Schildergasse%20103%2C%2050667%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-cafe-riese", "food": "../europe/germany/img/cologne/cafe-riese.jpg", "ext": ""}, {"i": 15, "n": "Bäckerei Zimmermann", "c": ["カフェ・パン・スイーツ"], "lat": 50.9381925, "lng": 6.940435399999999, "d": "ライン風黒パン(シュヴァルツブロート)(ライ麦を長時間発酵させて焼く目の詰まった黒パン。薄く切ってバターやチーズ、フルンツと合わせるのが地元流)", "a": "Ehrenstraße 75, 50672 Köln", "m": "https://www.google.com/maps/search/?api=1&query=B%C3%A4ckerei%20Zimmermann%20Ehrenstra%C3%9Fe%2075%2C%2050672%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-baeckerei-zimmermann", "food": "../europe/germany/img/cologne/baeckerei-zimmermann.jpg", "ext": ""}, {"i": 16, "n": "Schokoladenmuseum Köln (Chocolat Grand Café & ショップ)", "c": ["カフェ・パン・スイーツ"], "lat": 50.931972, "lng": 6.964647299999999, "d": "ホットチョコレートと生トリュフ(併設カフェの名物。博物館ではカカオ栽培から板チョコ製造までの工程も見学でき、出来たてチョコの試食もある)", "a": "Am Schokoladenmuseum 1a, 50678 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Schokoladenmuseum%20K%C3%B6ln%20%28Chocolat%20Grand%20Caf%C3%A9%20%26%20%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%29%20Am%20Schokoladenmuseum%201a%2C%2050678%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-schokoladenmuseum", "food": "../europe/germany/img/cologne/schokoladenmuseum.jpg", "ext": ""}, {"i": 17, "n": "Brauhaus Schreckenskammer", "c": ["ビール・バー"], "lat": 50.9459039, "lng": 6.9535808999999995, "d": "自家醸造ケルシュとヘムシェン(ここだけの無添加ケルシュに、茹でた豚すね肉の郷土料理ヘムシェンなど素朴なブラウハウス料理を合わせる)", "a": "Ursulagartenstraße 11-15, 50668 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Brauhaus%20Schreckenskammer%20Ursulagartenstra%C3%9Fe%2011-15%2C%2050668%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-schreckenskammer", "food": "../europe/germany/img/cologne/schreckenskammer.jpg", "ext": ""}, {"i": 18, "n": "Braustelle (Helios-Braustelle)", "c": ["ビール・バー"], "lat": 50.9538745, "lng": 6.9107515, "d": "自家醸造ヘリオスと醸造所ごはん(醸造タンクの隣で飲む出来たてビール。クヌーデル(団子)やフリカデレ(ミートボール)などドイツの家庭料理と合わせる)", "a": "Christianstraße 2, 50825 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Braustelle%20%28Helios-Braustelle%29%20Christianstra%C3%9Fe%202%2C%2050825%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-braustelle", "food": "../europe/germany/img/cologne/braustelle.jpg", "ext": ""}, {"i": 19, "n": "Hellers Volksgarten", "c": ["ビール・バー"], "lat": 50.9214528, "lng": 6.9464264, "d": "ビオ・ケルシュと湖畔の軽食(有機栽培のホップと麦芽で醸すヘラース・ケルシュ。フラムクーヘンやソーセージなどビアガーデン料理と共に)", "a": "Volksgartenstraße 27, 50677 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Hellers%20Volksgarten%20Volksgartenstra%C3%9Fe%2027%2C%2050677%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-hellers-volksgarten", "food": "../europe/germany/img/cologne/hellers-volksgarten.jpg", "ext": ""}, {"i": 20, "n": "NOI Cologne", "c": ["洋食・各国料理"], "lat": 50.940196699999994, "lng": 6.937066799999999, "d": "自家製生パスタ(週替わり)(毎日店内で打つイタリアの生麺パスタ。カルボナーラや季節野菜のソースなど週替わりで、ブッラータ(生クリーム入りモッツァレラ)の前菜や薪窯ピッツァも看板)", "a": "Antwerpener Straße 5, 50672 Köln", "m": "https://www.google.com/maps/search/?api=1&query=NOI%20Cologne%20Antwerpener%20Stra%C3%9Fe%205%2C%2050672%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-noi-cologne", "food": "../europe/germany/img/cologne/noi-cologne.jpg", "ext": ""}, {"i": 21, "n": "Jamas Griechische Taverne", "c": ["洋食・各国料理"], "lat": 50.9597933, "lng": 6.9499828, "d": "スブラキとタコのグリル(炭火で焼く豚肉の串焼きスブラキと、柔らかく香ばしいタコのグリルがギリシャ定番の看板)", "a": "Sechzigstraße 1, 50733 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Jamas%20Griechische%20Taverne%20Sechzigstra%C3%9Fe%201%2C%2050733%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-jamas-taverne", "food": "../europe/germany/img/cologne/jamas-taverne.jpg", "ext": ""}, {"i": 22, "n": "Mesón El Cordobés", "c": ["洋食・各国料理"], "lat": 50.9453889, "lng": 6.940382199999999, "d": "アンダルシア風タパス盛り合わせ(小皿で少しずつ楽しむスペイン式前菜。ガーリックシュリンプやトルティージャ等を注文ごとに手作り)", "a": "Gladbacher Straße 11, 50672 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Mes%C3%B3n%20El%20Cordob%C3%A9s%20Gladbacher%20Stra%C3%9Fe%2011%2C%2050672%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-meson-el-cordobes", "food": "../europe/germany/img/cologne/meson-el-cordobes.jpg", "ext": ""}, {"i": 23, "n": "LeBistrot99", "c": ["洋食・各国料理"], "lat": 50.9379786, "lng": 6.8625972, "d": "ブッフ・ブルギニョン(牛肉を赤ワインで長時間煮込むブルゴーニュ地方の代表的煮込み料理)", "a": "Aachener Straße 1002, 50858 Köln", "m": "https://www.google.com/maps/search/?api=1&query=LeBistrot99%20Aachener%20Stra%C3%9Fe%201002%2C%2050858%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-le-bistrot-99", "food": "../europe/germany/img/cologne/le-bistrot-99.jpg", "ext": ""}, {"i": 24, "n": "Restaurant Kilim", "c": ["アジア・エスニック"], "lat": 50.964617, "lng": 7.010935, "d": "ラフマジュン(トルコ風ピザ)とピデ(薄い生地にスパイス入りひき肉を載せて石窯で焼くトルコの定番粉物。同店のものは市内最高との呼び声)", "a": "Keupstraße 69, 51063 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Kilim%20Keupstra%C3%9Fe%2069%2C%2051063%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-kilim", "food": "../europe/germany/img/cologne/kilim.jpg", "ext": ""}, {"i": 25, "n": "Mevlana an der Keupstraße", "c": ["アジア・エスニック"], "lat": 50.9651718, "lng": 7.010056499999999, "d": "グリルテラー(混合グリル)(ケバブ・キョフテ・チキン等を炭火で焼き、焼き立てパンと共に盛る豪快なトルコ式グリル盛り合わせ)", "a": "Keupstraße 64, 51063 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Mevlana%20an%20der%20Keupstra%C3%9Fe%20Keupstra%C3%9Fe%2064%2C%2051063%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-mevlana-keupstrasse", "food": "../europe/germany/img/cologne/mevlana-keupstrasse.jpg", "ext": ""}, {"i": 26, "n": "Bethlehem", "c": ["アジア・エスニック"], "lat": 50.957369299999996, "lng": 6.9194492, "d": "フムス・スペツィアル(牛ひき肉のせフムス)(ひよこ豆のペーストに炒めた牛ひき肉と松の実を載せる看板メニュー。パンですくって食べる)", "a": "Lenauplatz 8, 50825 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Bethlehem%20Lenauplatz%208%2C%2050825%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-bethlehem", "food": "../europe/germany/img/cologne/bethlehem.jpg", "ext": ""}, {"i": 27, "n": "Fasika Äthiopisches Restaurant", "c": ["アジア・エスニック"], "lat": 50.928109, "lng": 6.9407934, "d": "ゲミシュター・テラー(ミックスプラッター)(酸味のある発酵クレープ「インジェラ」の上に肉・豆・野菜の煮込みを彩りよく盛り、手でちぎって食べる盛り合わせ)", "a": "Luxemburger Straße 17, 50674 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Fasika%20%C3%84thiopisches%20Restaurant%20Luxemburger%20Stra%C3%9Fe%2017%2C%2050674%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-fasika", "food": "../europe/germany/img/cologne/fasika.jpg", "ext": ""}, {"i": 28, "n": "Selam Restaurant", "c": ["アジア・エスニック"], "lat": 50.9510374, "lng": 6.9171046, "d": "ドロ・ワット(Doro Key Wot)(鶏肉とゆで卵をベルベレという唐辛子スパイスでじっくり煮込むエチオピアの国民的シチュー)", "a": "Ehrenfeldgürtel 91, 50823 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Selam%20Restaurant%20Ehrenfeldg%C3%BCrtel%2091%2C%2050823%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-selam", "food": "../europe/germany/img/cologne/selam.jpg", "ext": ""}, {"i": 29, "n": "Ramen Bar Takezo", "c": ["アジア・エスニック"], "lat": 50.9334138, "lng": 6.9595157, "d": "豚骨ラーメン(豚骨を長時間炊いた濃厚スープに自家製麺を合わせる日本の定番ラーメン。チャーシューと味玉付き)", "a": "Mathiasstraße 24-26, 50676 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Ramen%20Bar%20Takezo%20Mathiasstra%C3%9Fe%2024-26%2C%2050676%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-takezo", "food": "../europe/germany/img/cologne/takezo.jpg", "ext": ""}, {"i": 30, "n": "Chum Chay", "c": ["アジア・エスニック"], "lat": 50.9386362, "lng": 6.940659999999999, "d": "ベジタリアン・フォー(香草香る澄んだ野菜出汁の米麺スープ。豆腐や湯葉で作る具で伝統のフォーを肉なしで表現)", "a": "Friesenwall 29, 50672 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Chum%20Chay%20Friesenwall%2029%2C%2050672%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-chum-chay", "food": "../europe/germany/img/cologne/chum-chay.jpg", "ext": ""}, {"i": 31, "n": "Bulgogi-Haus", "c": ["アジア・エスニック"], "lat": 50.98457, "lng": 6.9472949999999996, "d": "プルコギ(卓上焼き)(甘辛いタレに漬けた薄切り牛肉を席で焼く韓国の代表的焼肉。ナムル等の副菜と共に供される)", "a": "Neusser Straße 654, 50737 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Bulgogi-Haus%20Neusser%20Stra%C3%9Fe%20654%2C%2050737%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-bulgogi-haus", "food": "../europe/germany/img/cologne/bulgogi-haus.jpg", "ext": ""}, {"i": 32, "n": "Chok Dee", "c": ["アジア・エスニック"], "lat": 50.9338245, "lng": 6.947761000000001, "d": "パッタイとタイカレー(米麺を甘酸っぱいタマリンドだれで炒めるタイの国民食パッタイと、ココナッツミルク香る各種カレー)", "a": "Bayardsgasse 4, 50676 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Chok%20Dee%20Bayardsgasse%204%2C%2050676%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-chok-dee", "food": "../europe/germany/img/cologne/chok-dee.jpg", "ext": ""}, {"i": 33, "n": "Restaurant Kamasutra", "c": ["アジア・エスニック"], "lat": 50.929824700000005, "lng": 6.9420682, "d": "タンドリー・ラムチョップ(スパイスとヨーグルトに漬けた仔羊を土窯タンドールで香ばしく焼き上げるシェフの看板料理)", "a": "Weyerstraße 114, 50676 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Kamasutra%20Weyerstra%C3%9Fe%20114%2C%2050676%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-kamasutra", "food": "../europe/germany/img/cologne/kamasutra.jpg", "ext": ""}, {"i": 34, "n": "Flor y Canela", "c": ["洋食・各国料理"], "lat": 50.9222889, "lng": 6.9569319, "d": "セビーチェ・フロール・イ・カネラ(白身魚をライムと唐辛子でしめ、サツマイモを添えるペルーの国民的マリネ料理)", "a": "Karolingerring 40, 50678 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Flor%20y%20Canela%20Karolingerring%2040%2C%2050678%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-flor-y-canela", "food": "../europe/germany/img/cologne/flor-y-canela.jpg", "ext": ""}, {"i": 35, "n": "Casita Mexicana (Südstadt)", "c": ["洋食・各国料理"], "lat": 50.9226001, "lng": 6.9593519, "d": "タコス(本場スタイル)(トウモロコシのトルティーヤに肉や野菜、パクチー、サルサを載せるメキシコの国民食)", "a": "Severinstraße 10-12, 50678 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Casita%20Mexicana%20%28S%C3%BCdstadt%29%20Severinstra%C3%9Fe%2010-12%2C%2050678%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-casita-mexicana", "food": "../europe/germany/img/cologne/casita-mexicana.jpg", "ext": ""}, {"i": 36, "n": "Pantanal Rodizio", "c": ["洋食・各国料理"], "lat": 50.9469272, "lng": 6.9448273, "d": "シュラスコ食べ放題(ロジージオ)(ピカーニャ等の牛肉を大串で炭火焼きし、席で好きなだけ切り分けてくれるブラジル式BBQ)", "a": "Maybachstraße 22, 50670 Köln", "m": "https://www.google.com/maps/search/?api=1&query=Pantanal%20Rodizio%20Maybachstra%C3%9Fe%2022%2C%2050670%20K%C3%B6ln", "u": "../europe/germany/cologne.html#c-pantanal-rodizio", "food": "../europe/germany/img/cologne/pantanal-rodizio.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([50.942930,6.952087],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    const k=b.dataset.cat;
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+</script>
