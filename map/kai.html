@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>甲斐 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <h1>甲斐 の食べ歩き地図<span class="n">40店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+    <a href="index.html">都市一覧</a>
+    <a href="../japan/yamanashi/kai.html">ガイド記事</a>
+  </nav>
+</header>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "甲州ほうとう 小作 竜王玉川店", "c": ["ご当地名物"], "lat": 35.636297899999995, "lng": 138.5220032, "d": "かぼちゃほうとう（1,450円）", "a": "山梨県甲斐市玉川２３４", "m": "https://www.google.com/maps/search/?api=1&query=%E7%94%B2%E5%B7%9E%E3%81%BB%E3%81%86%E3%81%A8%E3%81%86%20%E5%B0%8F%E4%BD%9C%20%E7%AB%9C%E7%8E%8B%E7%8E%89%E5%B7%9D%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%8E%89%E5%B7%9D%EF%BC%92%EF%BC%93%EF%BC%94", "u": "../japan/yamanashi/kai.html#c-kosaku_ryuo_tamagawa", "food": "../japan/yamanashi/img/kai/kosaku_ryuo_tamagawa.jpg", "ext": ""}, {"i": 1, "n": "奥藤 竜王分店", "c": ["ご当地名物"], "lat": 35.6741108, "lng": 138.4984278, "d": "鳥もつ煮とそばのセット", "a": "山梨県甲斐市下今井２９６４−１", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A5%A5%E8%97%A4%20%E7%AB%9C%E7%8E%8B%E5%88%86%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%8B%E4%BB%8A%E4%BA%95%EF%BC%92%EF%BC%99%EF%BC%96%EF%BC%94%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-okutou_ryuo_bunten", "food": "../japan/yamanashi/img/kai/okutou_ryuo_bunten.jpg", "ext": ""}, {"i": 2, "n": "甲斐の四季料理 いち囲", "c": ["ご当地名物"], "lat": 35.6838836, "lng": 138.5136756, "d": "四季の会席コース", "a": "山梨県甲斐市龍地３０２８", "m": "https://www.google.com/maps/search/?api=1&query=%E7%94%B2%E6%96%90%E3%81%AE%E5%9B%9B%E5%AD%A3%E6%96%99%E7%90%86%20%E3%81%84%E3%81%A1%E5%9B%B2%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%BE%8D%E5%9C%B0%EF%BC%93%EF%BC%90%EF%BC%92%EF%BC%98", "u": "../japan/yamanashi/kai.html#c-ichii_ryuji", "food": "../japan/yamanashi/img/kai/ichii_ryuji.jpg", "ext": ""}, {"i": 3, "n": "シャトレーゼ ベルフォーレ ワイナリー", "c": ["ご当地名物"], "lat": 35.6876347, "lng": 138.49039249999998, "d": "樽出し生ワインと、ワインに合わせた昼の一皿", "a": "山梨県甲斐市下今井１９５４", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%A3%E3%83%88%E3%83%AC%E3%83%BC%E3%82%BC%20%E3%83%99%E3%83%AB%E3%83%95%E3%82%A9%E3%83%BC%E3%83%AC%20%E3%83%AF%E3%82%A4%E3%83%8A%E3%83%AA%E3%83%BC%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%8B%E4%BB%8A%E4%BA%95%EF%BC%91%EF%BC%99%EF%BC%95%EF%BC%94", "u": "../japan/yamanashi/kai.html#c-belleforet_winery_shimoimai", "food": "../japan/yamanashi/img/kai/belleforet_winery_shimoimai.jpg", "ext": ""}, {"i": 4, "n": "うどんダイニング らんたん", "c": ["ご当地名物"], "lat": 35.6357028, "lng": 138.52163769999999, "d": "肉うどん", "a": "山梨県甲斐市玉川２５６ 樋口貸店舗 1-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E3%82%89%E3%82%93%E3%81%9F%E3%82%93%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%8E%89%E5%B7%9D%EF%BC%92%EF%BC%95%EF%BC%96%20%E6%A8%8B%E5%8F%A3%E8%B2%B8%E5%BA%97%E8%88%97%201-1", "u": "../japan/yamanashi/kai.html#c-rantan_tamagawa", "food": "../japan/yamanashi/img/kai/rantan_tamagawa.jpg", "ext": ""}, {"i": 5, "n": "しを里", "c": ["ご当地名物"], "lat": 35.707625, "lng": 138.5230861, "d": "山菜そば", "a": "山梨県甲斐市牛句３２６８−３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%97%E3%82%92%E9%87%8C%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%89%9B%E5%8F%A5%EF%BC%93%EF%BC%92%EF%BC%96%EF%BC%98%E2%88%92%EF%BC%93", "u": "../japan/yamanashi/kai.html#c-shiori_ushiku", "food": "../japan/yamanashi/img/kai/shiori_ushiku.jpg", "ext": ""}, {"i": 6, "n": "礎", "c": ["寿司・海鮮"], "lat": 35.6783394, "lng": 138.5049898, "d": "旬の魚を握った一人前", "a": "山梨県甲斐市下今井２７６３", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A4%8E%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%8B%E4%BB%8A%E4%BA%95%EF%BC%92%EF%BC%97%EF%BC%96%EF%BC%93", "u": "../japan/yamanashi/kai.html#c-ishizue_shimoimai", "food": "../japan/yamanashi/img/kai/ishizue_shimoimai.jpg", "ext": ""}, {"i": 7, "n": "市場寿し", "c": ["寿司・海鮮", "和食・郷土料理"], "lat": 35.654289899999995, "lng": 138.5160355, "d": "木箱盛りのちらし", "a": "山梨県甲斐市篠原", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B8%82%E5%A0%B4%E5%AF%BF%E3%81%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AF%A0%E5%8E%9F", "u": "../japan/yamanashi/kai.html#c-ichibazushi_shinohara", "food": "../japan/yamanashi/img/kai/ichibazushi_shinohara.jpg", "ext": ""}, {"i": 8, "n": "菊寿し 玉幡店", "c": ["寿司・海鮮"], "lat": 35.6448203, "lng": 138.52279579999998, "d": "海鮮丼 超大盛り（平日昼・1日30食）", "a": "山梨県甲斐市西八幡１１８７−１４", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8F%8A%E5%AF%BF%E3%81%97%20%E7%8E%89%E5%B9%A1%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E8%A5%BF%E5%85%AB%E5%B9%A1%EF%BC%91%EF%BC%91%EF%BC%98%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%94", "u": "../japan/yamanashi/kai.html#c-kikuzushi_tamahata", "food": "../japan/yamanashi/img/kai/kikuzushi_tamahata.jpg", "ext": ""}, {"i": 9, "n": "ふたばすし", "c": ["寿司・海鮮"], "lat": 35.6881275, "lng": 138.5049549, "d": "上にぎり（2,750円）", "a": "山梨県甲斐市龍地６６６５", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%9F%E3%81%B0%E3%81%99%E3%81%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%BE%8D%E5%9C%B0%EF%BC%96%EF%BC%96%EF%BC%96%EF%BC%95", "u": "../japan/yamanashi/kai.html#c-futabazushi_ryuji", "food": "../japan/yamanashi/img/kai/futabazushi_ryuji.jpg", "ext": ""}, {"i": 10, "n": "すずこう 鈴木幸廣", "c": ["和食・郷土料理"], "lat": 35.6738868, "lng": 138.5311408, "d": "季節の会席コース", "a": "山梨県甲斐市長塚８１−７", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%9A%E3%81%93%E3%81%86%20%E9%88%B4%E6%9C%A8%E5%B9%B8%E5%BB%A3%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%95%B7%E5%A1%9A%EF%BC%98%EF%BC%91%E2%88%92%EF%BC%97", "u": "../japan/yamanashi/kai.html#c-suzukou_nagatsuka", "food": "../japan/yamanashi/img/kai/suzukou_nagatsuka.jpg", "ext": ""}, {"i": 11, "n": "和ダイニング 青山", "c": ["和食・郷土料理"], "lat": 35.6733245, "lng": 138.5341844, "d": "日替わりの昼膳", "a": "山梨県甲斐市長塚２６１−６", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E9%9D%92%E5%B1%B1%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%95%B7%E5%A1%9A%EF%BC%92%EF%BC%96%EF%BC%91%E2%88%92%EF%BC%96", "u": "../japan/yamanashi/kai.html#c-wadining_aoyama_nagatsuka", "food": "../japan/yamanashi/img/kai/wadining_aoyama_nagatsuka.jpg", "ext": ""}, {"i": 12, "n": "うな竹", "c": ["寿司・海鮮"], "lat": 35.6642009, "lng": 138.52610239999998, "d": "うな重（白焼きとたれ焼きの半々も可）", "a": "山梨県甲斐市名取３６９−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E7%AB%B9%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E5%90%8D%E5%8F%96%EF%BC%93%EF%BC%96%EF%BC%99%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-unatake_natori", "food": "../japan/yamanashi/img/kai/unatake_natori.jpg", "ext": ""}, {"i": 13, "n": "藤義", "c": ["寿司・海鮮"], "lat": 35.659526, "lng": 138.5329246, "d": "大海老天重", "a": "山梨県甲斐市富竹新田４６０−４", "m": "https://www.google.com/maps/search/?api=1&query=%E8%97%A4%E7%BE%A9%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E5%AF%8C%E7%AB%B9%E6%96%B0%E7%94%B0%EF%BC%94%EF%BC%96%EF%BC%90%E2%88%92%EF%BC%94", "u": "../japan/yamanashi/kai.html#c-fujiyoshi_tomitakeshinden", "food": "../japan/yamanashi/img/kai/fujiyoshi_tomitakeshinden.jpg", "ext": ""}, {"i": 14, "n": "うどんのみち", "c": ["麺類"], "lat": 35.6675184, "lng": 138.5084585, "d": "田舎汁うどん（野菜たっぷりのつけ汁うどん）", "a": "山梨県甲斐市竜王１０４５−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E3%81%AE%E3%81%BF%E3%81%A1%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AB%9C%E7%8E%8B%EF%BC%91%EF%BC%90%EF%BC%94%EF%BC%95%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-udon_no_michi_ryuo", "food": "../japan/yamanashi/img/kai/udon_no_michi_ryuo.jpg", "ext": ""}, {"i": 15, "n": "カレーうどん屋 咲々", "c": ["麺類"], "lat": 35.6833597, "lng": 138.5083307, "d": "手打ち讃岐麺のカレーうどん", "a": "山梨県甲斐市龍地３２９６−３ コア響ヶ丘", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%AC%E3%83%BC%E3%81%86%E3%81%A9%E3%82%93%E5%B1%8B%20%E5%92%B2%E3%80%85%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%BE%8D%E5%9C%B0%EF%BC%93%EF%BC%92%EF%BC%99%EF%BC%96%E2%88%92%EF%BC%93%20%E3%82%B3%E3%82%A2%E9%9F%BF%E3%83%B6%E4%B8%98", "u": "../japan/yamanashi/kai.html#c-sasa_curry_udon_futaba", "food": "../japan/yamanashi/img/kai/sasa_curry_udon_futaba.jpg", "ext": ""}, {"i": 16, "n": "麺屋 しん道", "c": ["麺類"], "lat": 35.6798667, "lng": 138.5050506, "d": "つけそば（豚と鶏の2種チャーシュー）", "a": "山梨県甲斐市下今井２７０７−１", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E3%81%97%E3%82%93%E9%81%93%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%8B%E4%BB%8A%E4%BA%95%EF%BC%92%EF%BC%97%EF%BC%90%EF%BC%97%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-menya_shindo_kai", "food": "../japan/yamanashi/img/kai/menya_shindo_kai.jpg", "ext": ""}, {"i": 17, "n": "麺や壱進", "c": ["麺類", "アジア・エスニック"], "lat": 35.6423027, "lng": 138.51934699999998, "d": "醤油らぁ麺（鶏清湯スープ）", "a": "山梨県甲斐市西八幡１８６１", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%82%84%E5%A3%B1%E9%80%B2%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E8%A5%BF%E5%85%AB%E5%B9%A1%EF%BC%91%EF%BC%98%EF%BC%96%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-menya_isshin_kai", "food": "../japan/yamanashi/img/kai/menya_isshin_kai.jpg", "ext": ""}, {"i": 18, "n": "あかつき食堂", "c": ["麺類"], "lat": 35.6929435, "lng": 138.5176859, "d": "チャーシューメン（あっさり醤油スープ）", "a": "山梨県甲斐市牛句２７５０", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%8B%E3%81%A4%E3%81%8D%E9%A3%9F%E5%A0%82%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%89%9B%E5%8F%A5%EF%BC%92%EF%BC%97%EF%BC%95%EF%BC%90", "u": "../japan/yamanashi/kai.html#c-akatsuki_shokudo_kai", "food": "../japan/yamanashi/img/kai/akatsuki_shokudo_kai.jpg", "ext": ""}, {"i": 19, "n": "串亭 福よし", "c": ["居酒屋・焼肉"], "lat": 35.6535229, "lng": 138.52779859999998, "d": "炭火串焼き盛り合わせと竹酒", "a": "山梨県甲斐市篠原３２３１−３", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E4%BA%AD%20%E7%A6%8F%E3%82%88%E3%81%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AF%A0%E5%8E%9F%EF%BC%93%EF%BC%92%EF%BC%93%EF%BC%91%E2%88%92%EF%BC%93", "u": "../japan/yamanashi/kai.html#c-fukuyoshi_shinohara", "food": "../japan/yamanashi/img/kai/fukuyoshi_shinohara.jpg", "ext": ""}, {"i": 20, "n": "鳥かん", "c": ["居酒屋・焼肉"], "lat": 35.6417576, "lng": 138.5191181, "d": "やきとりおまかせ5種とチーズタッカルビ", "a": "山梨県甲斐市西八幡２３５５", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E3%81%8B%E3%82%93%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E8%A5%BF%E5%85%AB%E5%B9%A1%EF%BC%92%EF%BC%93%EF%BC%95%EF%BC%95", "u": "../japan/yamanashi/kai.html#c-torikan_nishiyawata", "food": "../japan/yamanashi/img/kai/torikan_nishiyawata.jpg", "ext": ""}, {"i": 21, "n": "炭火串焼き 鈴いち", "c": ["ビール・バー"], "lat": 35.6649816, "lng": 138.5131734, "d": "炭火焼き鳥と希少銘柄の日本酒", "a": "山梨県甲斐市竜王１２８４−１", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E4%B8%B2%E7%84%BC%E3%81%8D%20%E9%88%B4%E3%81%84%E3%81%A1%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AB%9C%E7%8E%8B%EF%BC%91%EF%BC%92%EF%BC%98%EF%BC%94%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-suzuichi_ryuo", "food": "../japan/yamanashi/img/kai/suzuichi_ryuo.jpg", "ext": ""}, {"i": 22, "n": "酒肴旬菜 彩心", "c": ["ビール・バー", "居酒屋・焼肉"], "lat": 35.648584299999996, "lng": 138.5262907, "d": "刺身盛り合わせと山梨の地酒（春鶯囀・青煌など）", "a": "山梨県甲斐市篠原８８０−１", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%82%B4%E6%97%AC%E8%8F%9C%20%E5%BD%A9%E5%BF%83%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AF%A0%E5%8E%9F%EF%BC%98%EF%BC%98%EF%BC%90%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-iroha_shinohara", "food": "../japan/yamanashi/img/kai/iroha_shinohara.jpg", "ext": ""}, {"i": 23, "n": "とらベル×ベルとら", "c": ["居酒屋・焼肉"], "lat": 35.6632557, "lng": 138.5297233, "d": "部位ごとに焼き分ける焼き鳥と〆の鶏だしラーメン", "a": "山梨県甲斐市名取７８７−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%89%E3%83%99%E3%83%AB%C3%97%E3%83%99%E3%83%AB%E3%81%A8%E3%82%89%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E5%90%8D%E5%8F%96%EF%BC%97%EF%BC%98%EF%BC%97%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-toraberu_berutora_natori", "food": "../japan/yamanashi/img/kai/toraberu_berutora_natori.jpg", "ext": ""}, {"i": 24, "n": "セソンローゼ", "c": ["ビール・バー"], "lat": 35.6826607, "lng": 138.5063965, "d": "イタリア郷土料理とソムリエ選定ワインのペアリング", "a": "山梨県甲斐市龍地３５７９−１３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%BB%E3%82%BD%E3%83%B3%E3%83%AD%E3%83%BC%E3%82%BC%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%BE%8D%E5%9C%B0%EF%BC%93%EF%BC%95%EF%BC%97%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%93", "u": "../japan/yamanashi/kai.html#c-seson_rose_futaba", "food": "../japan/yamanashi/img/kai/seson_rose_futaba.jpg", "ext": ""}, {"i": 25, "n": "居酒屋さんばん", "c": ["居酒屋・焼肉", "ビール・バー"], "lat": 35.7111606, "lng": 138.45382039999998, "d": "豊洲直送の刺身盛り合わせと七賢純米生酒", "a": "山梨県韮崎市富士見１丁目６−２６", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%E3%81%95%E3%82%93%E3%81%B0%E3%82%93%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E9%9F%AE%E5%B4%8E%E5%B8%82%E5%AF%8C%E5%A3%AB%E8%A6%8B%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%92%EF%BC%96", "u": "../japan/yamanashi/kai.html#c-sanban_nirasaki", "food": "../japan/yamanashi/img/kai/sanban_nirasaki.jpg", "ext": ""}, {"i": 26, "n": "キングスウェル（レストラン カンパーナ）", "c": ["洋食・各国料理"], "lat": 35.682232299999995, "lng": 138.5025677, "d": "自家農園野菜を使ったカンパーナのランチコース", "a": "山梨県甲斐市下今井２４４６", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%B3%E3%82%B0%E3%82%B9%E3%82%A6%E3%82%A7%E3%83%AB%EF%BC%88%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%AB%E3%83%B3%E3%83%91%E3%83%BC%E3%83%8A%EF%BC%89%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%8B%E4%BB%8A%E4%BA%95%EF%BC%92%EF%BC%94%EF%BC%94%EF%BC%96", "u": "../japan/yamanashi/kai.html#c-kingswell_shimoimai", "food": "../japan/yamanashi/img/kai/kingswell_shimoimai.jpg", "ext": ""}, {"i": 27, "n": "Italian シチリナ（SITILI菜）", "c": ["洋食・各国料理"], "lat": 35.669579, "lng": 138.5168435, "d": "旬野菜を使った日替わりパスタランチ", "a": "山梨県甲斐市竜王新町２１９−７", "m": "https://www.google.com/maps/search/?api=1&query=Italian%20%E3%82%B7%E3%83%81%E3%83%AA%E3%83%8A%EF%BC%88SITILI%E8%8F%9C%EF%BC%89%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AB%9C%E7%8E%8B%E6%96%B0%E7%94%BA%EF%BC%92%EF%BC%91%EF%BC%99%E2%88%92%EF%BC%97", "u": "../japan/yamanashi/kai.html#c-sitilina_ryuo", "food": "../japan/yamanashi/img/kai/sitilina_ryuo.jpg", "ext": ""}, {"i": 28, "n": "リストランテ ロマーニャ", "c": ["洋食・各国料理"], "lat": 35.659108499999995, "lng": 138.5166762, "d": "生地から手作りする焼きたてピザのランチブッフェ", "a": "山梨県甲斐市篠原２８８２−３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AA%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%86%20%E3%83%AD%E3%83%9E%E3%83%BC%E3%83%8B%E3%83%A3%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AF%A0%E5%8E%9F%EF%BC%92%EF%BC%98%EF%BC%98%EF%BC%92%E2%88%92%EF%BC%93", "u": "../japan/yamanashi/kai.html#c-romagna_shinohara", "food": "../japan/yamanashi/img/kai/romagna_shinohara.jpg", "ext": ""}, {"i": 29, "n": "カフェ＆レストラン BERG", "c": ["洋食・各国料理"], "lat": 35.6805781, "lng": 138.5075934, "d": "甲州ワインビーフのオムライス", "a": "山梨県甲斐市龍地３４５２", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%86%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20BERG%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%BE%8D%E5%9C%B0%EF%BC%93%EF%BC%94%EF%BC%95%EF%BC%92", "u": "../japan/yamanashi/kai.html#c-berg_hibikigaoka", "food": "../japan/yamanashi/img/kai/berg_hibikigaoka.jpg", "ext": ""}, {"i": 30, "n": "スパイスキッチンインド料理 ビンドゥ", "c": ["洋食・各国料理"], "lat": 35.6417994, "lng": 138.5190782, "d": "焼きたてナンおかわり自由のインドカレーランチ", "a": "山梨県甲斐市西八幡２３５５", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%E3%82%A4%E3%83%B3%E3%83%89%E6%96%99%E7%90%86%20%E3%83%93%E3%83%B3%E3%83%89%E3%82%A5%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E8%A5%BF%E5%85%AB%E5%B9%A1%EF%BC%92%EF%BC%93%EF%BC%95%EF%BC%95", "u": "../japan/yamanashi/kai.html#c-bindu_nishiyahata", "food": "../japan/yamanashi/img/kai/bindu_nishiyahata.jpg", "ext": ""}, {"i": 31, "n": "レストランらんぶる", "c": ["洋食・各国料理"], "lat": 35.6407062, "lng": 138.5192896, "d": "包み焼きのハンバーグパピヨット", "a": "山梨県甲斐市西八幡２２９７−６", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%82%89%E3%82%93%E3%81%B6%E3%82%8B%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E8%A5%BF%E5%85%AB%E5%B9%A1%EF%BC%92%EF%BC%92%EF%BC%99%EF%BC%97%E2%88%92%EF%BC%96", "u": "../japan/yamanashi/kai.html#c-ranburu_nishiyahata", "food": "../japan/yamanashi/img/kai/ranburu_nishiyahata.jpg", "ext": ""}, {"i": 32, "n": "DRAGON COFFEE", "c": ["カフェ・パン・スイーツ"], "lat": 35.6764035, "lng": 138.5064207, "d": "自家焙煎ハンドドリップコーヒーと日替わりドーナツ", "a": "山梨県甲斐市竜王新町２２７６−１０", "m": "https://www.google.com/maps/search/?api=1&query=DRAGON%20COFFEE%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AB%9C%E7%8E%8B%E6%96%B0%E7%94%BA%EF%BC%92%EF%BC%92%EF%BC%97%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%90", "u": "../japan/yamanashi/kai.html#c-dragon_coffee_ryuo", "food": "../japan/yamanashi/img/kai/dragon_coffee_ryuo.jpg", "ext": ""}, {"i": 33, "n": "お茶の春木屋 アルプス通り店", "c": ["カフェ・パン・スイーツ"], "lat": 35.6428785, "lng": 138.5343464, "d": "濃さが選べる抹茶ジェラート", "a": "山梨県甲斐市万才８３４−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E8%8C%B6%E3%81%AE%E6%98%A5%E6%9C%A8%E5%B1%8B%20%E3%82%A2%E3%83%AB%E3%83%97%E3%82%B9%E9%80%9A%E3%82%8A%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%87%E6%89%8D%EF%BC%98%EF%BC%93%EF%BC%94%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-harukiya_alps_dori", "food": "../japan/yamanashi/img/kai/harukiya_alps_dori.jpg", "ext": ""}, {"i": 34, "n": "御菓子司 松寿堂", "c": ["カフェ・パン・スイーツ"], "lat": 35.6401041, "lng": 138.511708, "d": "全国菓子大博覧会金賞の「やはた芋饅頭」", "a": "山梨県甲斐市西八幡４３５３−３", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E6%9D%BE%E5%AF%BF%E5%A0%82%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E8%A5%BF%E5%85%AB%E5%B9%A1%EF%BC%94%EF%BC%93%EF%BC%95%EF%BC%93%E2%88%92%EF%BC%93", "u": "../japan/yamanashi/kai.html#c-shojudo_nishiyahata", "food": "../japan/yamanashi/img/kai/shojudo_nishiyahata.jpg", "ext": ""}, {"i": 35, "n": "丸十平林製パン", "c": ["カフェ・パン・スイーツ"], "lat": 35.6646456, "lng": 138.5180782, "d": "昔ながらのレモンパン", "a": "山梨県甲斐市富竹新田１２０８−１", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B8%E5%8D%81%E5%B9%B3%E6%9E%97%E8%A3%BD%E3%83%91%E3%83%B3%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E5%AF%8C%E7%AB%B9%E6%96%B0%E7%94%B0%EF%BC%91%EF%BC%92%EF%BC%90%EF%BC%98%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-hirabayashi_seipan_ryuo", "food": "../japan/yamanashi/img/kai/hirabayashi_seipan_ryuo.jpg", "ext": ""}, {"i": 36, "n": "Bagel cafe Bagel tao（ベーグル タオ）", "c": ["カフェ・パン・スイーツ"], "lat": 35.6841777, "lng": 138.5231795, "d": "スモークサーモンクリームチーズのベーグルサンド", "a": "山梨県甲斐市中下条６５９−１", "m": "https://www.google.com/maps/search/?api=1&query=Bagel%20cafe%20Bagel%20tao%EF%BC%88%E3%83%99%E3%83%BC%E3%82%B0%E3%83%AB%20%E3%82%BF%E3%82%AA%EF%BC%89%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%AD%E4%B8%8B%E6%9D%A1%EF%BC%96%EF%BC%95%EF%BC%99%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-bagel_tao_nakashimojo", "food": "../japan/yamanashi/img/kai/bagel_tao_nakashimojo.jpg", "ext": ""}, {"i": 37, "n": "プリエール洋菓子店（本店）", "c": ["カフェ・パン・スイーツ"], "lat": 35.6761939, "lng": 138.5318548, "d": "手作りジャム・ペーストを使った小ぶりなケーキ", "a": "山梨県甲斐市長塚３４−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%97%E3%83%AA%E3%82%A8%E3%83%BC%E3%83%AB%E6%B4%8B%E8%8F%93%E5%AD%90%E5%BA%97%EF%BC%88%E6%9C%AC%E5%BA%97%EF%BC%89%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%95%B7%E5%A1%9A%EF%BC%93%EF%BC%94%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-priere_nagatsuka", "food": "../japan/yamanashi/img/kai/priere_nagatsuka.jpg", "ext": ""}, {"i": 38, "n": "ヴァン・サンク", "c": ["カフェ・パン・スイーツ"], "lat": 35.6865327, "lng": 138.5070345, "d": "やさしい甘さのショートケーキ", "a": "山梨県甲斐市龍地６４４７−１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%B4%E3%82%A1%E3%83%B3%E3%83%BB%E3%82%B5%E3%83%B3%E3%82%AF%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%BE%8D%E5%9C%B0%EF%BC%96%EF%BC%94%EF%BC%94%EF%BC%97%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-vingt_cinq_ryuji", "food": "../japan/yamanashi/img/kai/vingt_cinq_ryuji.jpg", "ext": ""}, {"i": 39, "n": "The CAFE L.D.K", "c": ["カフェ・パン・スイーツ"], "lat": 35.6560047, "lng": 138.5208741, "d": "週末限定モーニングの自家製キッシュプレート", "a": "山梨県甲斐市篠原２７４−１", "m": "https://www.google.com/maps/search/?api=1&query=The%20CAFE%20L.D.K%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AF%A0%E5%8E%9F%EF%BC%92%EF%BC%97%EF%BC%94%E2%88%92%EF%BC%91", "u": "../japan/yamanashi/kai.html#c-cafe_ldk_shinohara", "food": "../japan/yamanashi/img/kai/cafe_ldk_shinohara.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([35.667366,138.515327],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    const k=b.dataset.cat;
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+</script>

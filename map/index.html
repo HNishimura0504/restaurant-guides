@@ -1,44 +1,100 @@
 <!doctype html>
+<html lang="ja">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>美食ガイドの地図</title>
-<link rel="stylesheet" href="vendor/leaflet.css">
+<title>美食ガイド 都市一覧</title>
 <style>
-  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; }
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
   html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
-  #map{position:absolute;inset:0}
-  .bar{position:absolute;z-index:1000;top:8px;left:8px;right:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-       background:rgba(252,252,251,.95);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
-  .bar h1{font-size:15px;margin:0 6px 0 0}
-  .bar a{color:var(--ink2)}
-  .legend{position:absolute;z-index:1000;left:8px;bottom:8px;background:rgba(252,252,251,.95);
-          border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-width:min(92vw,420px)}
-  .legend b{display:block;font-size:12px;color:var(--ink2);font-weight:600;margin-bottom:4px}
-  .legend ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 10px}
-  .legend li{display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap}
-  .sw{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 2px #fff}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
   .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
        box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
   .leaflet-popup-content{margin:10px 12px;width:250px!important}
   .pop h3{margin:0 0 2px;font-size:15px}
   .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
   .pop .dish{margin:0 0 8px}
-  .pop figure{margin:0 0 6px}
-  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
   .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
   .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
-  .pop .links a{margin-right:10px}
-  table{border-collapse:collapse;width:100%;background:var(--bg)}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
   th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
-  #list{position:absolute;inset:0;overflow:auto;background:var(--bg);padding:64px 12px 24px;display:none}
-  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;cursor:pointer}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
 </style>
-
-<div style="max-width:640px;margin:32px auto;padding:0 16px">
-<h1 style="font-size:20px">美食ガイドの地図</h1>
-<p>ピンの色は料理の系統、絵文字はカテゴリです。ピンをタップすると料理と外観の写真、名物の一皿、Googleマップへのリンクが出ます。</p>
-<table><thead><tr><th>都市</th><th>店数</th><th>料理写真</th><th>外観写真</th></tr></thead><tbody>
-<tr><td><a href="osaka.html">大阪</a></td><td>72</td><td>72</td><td>61</td></tr><tr><td><a href="kyoto.html">京都</a></td><td>71</td><td>70</td><td>61</td></tr><tr><td><a href="suita.html">吹田</a></td><td>49</td><td>48</td><td>43</td></tr><tr><td><a href="tokyo23.html">東京23区</a></td><td>70</td><td>70</td><td>62</td></tr><tr><td><a href="leuven.html">ルーベン</a></td><td>34</td><td>34</td><td>23</td></tr>
-</tbody></table>
-<p style="color:var(--ink2);font-size:12px">写真の出典: Google の店舗写真および Google Street View。地図: OpenStreetMap</p>
+<body>
+<header class="bar">
+  <h1>美食ガイド<span class="n">66都市 / 3586店</span></h1>
+</header>
+<div class="wrap">
+<p class="lead">都市ごとに、店をカテゴリで色分けした地図と、全店の一覧・ガイド記事があります。
+地図のピンをタップすると料理と外観の写真、名物の一皿、記事とGoogleマップへのリンクが出ます。</p>
+<div class="lhead" style="position:static;border:0;padding:12px 0 0">
+  <input id="q" type="search" placeholder="都市・県・国で探す（例: 静岡、ベルギー）" autocomplete="off">
+  <div class="toc"><a href="#r-0">日本 <b>54都市 / 3026店</b></a><a href="#r-1">アジア <b>1都市 / 63店</b></a><a href="#r-2">ヨーロッパ <b>8都市 / 356店</b></a><a href="#r-3">北米 <b>3都市 / 141店</b></a></div>
 </div>
+<h2 id="r-0">日本</h2><h3>北海道</h3><ul class="cities"><li data-k="日本 北海道 旭川"><span class="cn">旭川</span><span class="cc">44店</span><span class="cl"><a href="asahikawa.html">地図</a><a href="../japan/hokkaido/asahikawa.html">ガイド記事</a></span></li><li data-k="日本 北海道 札幌"><span class="cn">札幌</span><span class="cc">71店</span><span class="cl"><a href="sapporo.html">地図</a><a href="../japan/hokkaido/sapporo.html">ガイド記事</a></span></li></ul><h3>青森県</h3><ul class="cities"><li data-k="日本 青森県 八戸"><span class="cn">八戸</span><span class="cc">47店</span><span class="cl"><a href="hachinohe.html">地図</a><a href="../japan/aomori/hachinohe.html">ガイド記事</a></span></li><li data-k="日本 青森県 青森"><span class="cn">青森</span><span class="cc">46店</span><span class="cl"><a href="aomori.html">地図</a><a href="../japan/aomori/aomori.html">ガイド記事</a></span></li></ul><h3>岩手県</h3><ul class="cities"><li data-k="日本 岩手県 一関"><span class="cn">一関</span><span class="cc">40店</span><span class="cl"><a href="ichinoseki.html">地図</a><a href="../japan/iwate/ichinoseki.html">ガイド記事</a></span></li><li data-k="日本 岩手県 盛岡"><span class="cn">盛岡</span><span class="cc">50店</span><span class="cl"><a href="morioka.html">地図</a><a href="../japan/iwate/morioka.html">ガイド記事</a></span></li></ul><h3>宮城県</h3><ul class="cities"><li data-k="日本 宮城県 仙台"><span class="cn">仙台</span><span class="cc">74店</span><span class="cl"><a href="sendai.html">地図</a><a href="../japan/miyagi/sendai.html">ガイド記事</a></span></li><li data-k="日本 宮城県 石巻"><span class="cn">石巻</span><span class="cc">53店</span><span class="cl"><a href="ishinomaki.html">地図</a><a href="../japan/miyagi/ishinomaki.html">ガイド記事</a></span></li></ul><h3>秋田県</h3><ul class="cities"><li data-k="日本 秋田県 横手"><span class="cn">横手</span><span class="cc">47店</span><span class="cl"><a href="yokote.html">地図</a><a href="../japan/akita/yokote.html">ガイド記事</a></span></li><li data-k="日本 秋田県 秋田"><span class="cn">秋田</span><span class="cc">56店</span><span class="cl"><a href="akita.html">地図</a><a href="../japan/akita/akita.html">ガイド記事</a></span></li></ul><h3>山形県</h3><ul class="cities"><li data-k="日本 山形県 山形"><span class="cn">山形</span><span class="cc">57店</span><span class="cl"><a href="yamagata.html">地図</a><a href="../japan/yamagata/yamagata.html">ガイド記事</a></span></li><li data-k="日本 山形県 鶴岡"><span class="cn">鶴岡</span><span class="cc">50店</span><span class="cl"><a href="tsuruoka.html">地図</a><a href="../japan/yamagata/tsuruoka.html">ガイド記事</a></span></li></ul><h3>福島県</h3><ul class="cities"><li data-k="日本 福島県 福島"><span class="cn">福島</span><span class="cc">57店</span><span class="cl"><a href="fukushima.html">地図</a><a href="../japan/fukushima/fukushima.html">ガイド記事</a></span></li><li data-k="日本 福島県 郡山"><span class="cn">郡山</span><span class="cc">53店</span><span class="cl"><a href="koriyama.html">地図</a><a href="../japan/fukushima/koriyama.html">ガイド記事</a></span></li></ul><h3>茨城県</h3><ul class="cities"><li data-k="日本 茨城県 つくば"><span class="cn">つくば</span><span class="cc">53店</span><span class="cl"><a href="tsukuba.html">地図</a><a href="../japan/ibaraki/tsukuba.html">ガイド記事</a></span></li><li data-k="日本 茨城県 水戸"><span class="cn">水戸</span><span class="cc">54店</span><span class="cl"><a href="mito.html">地図</a><a href="../japan/ibaraki/mito.html">ガイド記事</a></span></li></ul><h3>栃木県</h3><ul class="cities"><li data-k="日本 栃木県 宇都宮"><span class="cn">宇都宮</span><span class="cc">79店</span><span class="cl"><a href="utsunomiya.html">地図</a><a href="../japan/tochigi/utsunomiya.html">ガイド記事</a></span></li><li data-k="日本 栃木県 小山"><span class="cn">小山</span><span class="cc">47店</span><span class="cl"><a href="oyama.html">地図</a><a href="../japan/tochigi/oyama.html">ガイド記事</a></span></li></ul><h3>群馬県</h3><ul class="cities"><li data-k="日本 群馬県 前橋"><span class="cn">前橋</span><span class="cc">49店</span><span class="cl"><a href="maebashi.html">地図</a><a href="../japan/gunma/maebashi.html">ガイド記事</a></span></li><li data-k="日本 群馬県 高崎"><span class="cn">高崎</span><span class="cc">48店</span><span class="cl"><a href="takasaki.html">地図</a><a href="../japan/gunma/takasaki.html">ガイド記事</a></span></li></ul><h3>埼玉県</h3><ul class="cities"><li data-k="日本 埼玉県 さいたま"><span class="cn">さいたま</span><span class="cc">70店</span><span class="cl"><a href="saitama.html">地図</a><a href="../japan/saitama/saitama.html">ガイド記事</a></span></li><li data-k="日本 埼玉県 川口"><span class="cn">川口</span><span class="cc">62店</span><span class="cl"><a href="kawaguchi.html">地図</a><a href="../japan/saitama/kawaguchi.html">ガイド記事</a></span></li></ul><h3>千葉県</h3><ul class="cities"><li data-k="日本 千葉県 千葉"><span class="cn">千葉</span><span class="cc">69店</span><span class="cl"><a href="chiba.html">地図</a><a href="../japan/chiba/chiba.html">ガイド記事</a></span></li><li data-k="日本 千葉県 船橋"><span class="cn">船橋</span><span class="cc">64店</span><span class="cl"><a href="funabashi.html">地図</a><a href="../japan/chiba/funabashi.html">ガイド記事</a></span></li></ul><h3>東京都</h3><ul class="cities"><li data-k="日本 東京都 八王子"><span class="cn">八王子</span><span class="cc">67店</span><span class="cl"><a href="hachioji.html">地図</a><a href="../japan/tokyo/hachioji.html">ガイド記事</a></span></li><li data-k="日本 東京都 東京23区"><span class="cn">東京23区</span><span class="cc">70店</span><span class="cl"><a href="tokyo23.html">地図</a><a href="../japan/tokyo/tokyo23.html">ガイド記事</a></span></li></ul><h3>神奈川県</h3><ul class="cities"><li data-k="日本 神奈川県 川崎"><span class="cn">川崎</span><span class="cc">71店</span><span class="cl"><a href="kawasaki.html">地図</a><a href="../japan/kanagawa/kawasaki.html">ガイド記事</a></span></li><li data-k="日本 神奈川県 横浜"><span class="cn">横浜</span><span class="cc">68店</span><span class="cl"><a href="yokohama.html">地図</a><a href="../japan/kanagawa/yokohama.html">ガイド記事</a></span></li></ul><h3>新潟県</h3><ul class="cities"><li data-k="日本 新潟県 新潟"><span class="cn">新潟</span><span class="cc">67店</span><span class="cl"><a href="niigata.html">地図</a><a href="../japan/niigata/niigata.html">ガイド記事</a></span></li><li data-k="日本 新潟県 長岡"><span class="cn">長岡</span><span class="cc">48店</span><span class="cl"><a href="nagaoka.html">地図</a><a href="../japan/niigata/nagaoka.html">ガイド記事</a></span></li></ul><h3>富山県</h3><ul class="cities"><li data-k="日本 富山県 富山"><span class="cn">富山</span><span class="cc">55店</span><span class="cl"><a href="toyama.html">地図</a><a href="../japan/toyama/toyama.html">ガイド記事</a></span></li><li data-k="日本 富山県 高岡"><span class="cn">高岡</span><span class="cc">47店</span><span class="cl"><a href="takaoka.html">地図</a><a href="../japan/toyama/takaoka.html">ガイド記事</a></span></li></ul><h3>石川県</h3><ul class="cities"><li data-k="日本 石川県 白山"><span class="cn">白山</span><span class="cc">45店</span><span class="cl"><a href="hakusan.html">地図</a><a href="../japan/ishikawa/hakusan.html">ガイド記事</a></span></li><li data-k="日本 石川県 金沢"><span class="cn">金沢</span><span class="cc">57店</span><span class="cl"><a href="kanazawa.html">地図</a><a href="../japan/ishikawa/kanazawa.html">ガイド記事</a></span></li></ul><h3>福井県</h3><ul class="cities"><li data-k="日本 福井県 坂井"><span class="cn">坂井</span><span class="cc">46店</span><span class="cl"><a href="sakai.html">地図</a><a href="../japan/fukui/sakai.html">ガイド記事</a></span></li><li data-k="日本 福井県 福井"><span class="cn">福井</span><span class="cc">54店</span><span class="cl"><a href="fukui.html">地図</a><a href="../japan/fukui/fukui.html">ガイド記事</a></span></li></ul><h3>山梨県</h3><ul class="cities"><li data-k="日本 山梨県 甲府"><span class="cn">甲府</span><span class="cc">46店</span><span class="cl"><a href="kofu.html">地図</a><a href="../japan/yamanashi/kofu.html">ガイド記事</a></span></li><li data-k="日本 山梨県 甲斐"><span class="cn">甲斐</span><span class="cc">40店</span><span class="cl"><a href="kai.html">地図</a><a href="../japan/yamanashi/kai.html">ガイド記事</a></span></li></ul><h3>長野県</h3><ul class="cities"><li data-k="日本 長野県 松本"><span class="cn">松本</span><span class="cc">49店</span><span class="cl"><a href="matsumoto.html">地図</a><a href="../japan/nagano/matsumoto.html">ガイド記事</a></span></li><li data-k="日本 長野県 長野"><span class="cn">長野</span><span class="cc">49店</span><span class="cl"><a href="nagano.html">地図</a><a href="../japan/nagano/nagano.html">ガイド記事</a></span></li></ul><h3>岐阜県</h3><ul class="cities"><li data-k="日本 岐阜県 大垣"><span class="cn">大垣</span><span class="cc">47店</span><span class="cl"><a href="ogaki.html">地図</a><a href="../japan/gifu/ogaki.html">ガイド記事</a></span></li><li data-k="日本 岐阜県 岐阜"><span class="cn">岐阜</span><span class="cc">50店</span><span class="cl"><a href="gifu.html">地図</a><a href="../japan/gifu/gifu.html">ガイド記事</a></span></li></ul><h3>静岡県</h3><ul class="cities"><li data-k="日本 静岡県 浜松"><span class="cn">浜松</span><span class="cc">73店</span><span class="cl"><a href="hamamatsu.html">地図</a><a href="../japan/shizuoka/hamamatsu.html">ガイド記事</a></span></li><li data-k="日本 静岡県 静岡"><span class="cn">静岡</span><span class="cc">72店</span><span class="cl"><a href="shizuoka.html">地図</a><a href="../japan/shizuoka/shizuoka.html">ガイド記事</a></span></li></ul><h3>愛知県</h3><ul class="cities"><li data-k="日本 愛知県 名古屋"><span class="cn">名古屋</span><span class="cc">72店</span><span class="cl"><a href="nagoya.html">地図</a><a href="../japan/aichi/nagoya.html">ガイド記事</a></span></li><li data-k="日本 愛知県 豊田"><span class="cn">豊田</span><span class="cc">53店</span><span class="cl"><a href="toyota.html">地図</a><a href="../japan/aichi/toyota.html">ガイド記事</a></span></li></ul><h3>三重県</h3><ul class="cities"><li data-k="日本 三重県 四日市"><span class="cn">四日市</span><span class="cc">53店</span><span class="cl"><a href="yokkaichi.html">地図</a><a href="../japan/mie/yokkaichi.html">ガイド記事</a></span></li><li data-k="日本 三重県 津"><span class="cn">津</span><span class="cc">51店</span><span class="cl"><a href="tsu.html">地図</a><a href="../japan/mie/tsu.html">ガイド記事</a></span></li></ul><h3>滋賀県</h3><ul class="cities"><li data-k="日本 滋賀県 大津"><span class="cn">大津</span><span class="cc">52店</span><span class="cl"><a href="otsu.html">地図</a><a href="../japan/shiga/otsu.html">ガイド記事</a></span></li><li data-k="日本 滋賀県 草津"><span class="cn">草津</span><span class="cc">47店</span><span class="cl"><a href="kusatsu.html">地図</a><a href="../japan/shiga/kusatsu.html">ガイド記事</a></span></li></ul><h3>京都府</h3><ul class="cities"><li data-k="日本 京都府 京都"><span class="cn">京都</span><span class="cc">71店</span><span class="cl"><a href="kyoto.html">地図</a><a href="../japan/kyoto/kyoto.html">ガイド記事</a></span></li></ul><h3>大阪府</h3><ul class="cities"><li data-k="日本 大阪府 吹田"><span class="cn">吹田</span><span class="cc">49店</span><span class="cl"><a href="suita.html">地図</a><a href="../japan/osaka/suita.html">ガイド記事</a></span></li><li data-k="日本 大阪府 大阪"><span class="cn">大阪</span><span class="cc">72店</span><span class="cl"><a href="osaka.html">地図</a><a href="../japan/osaka/osaka.html">ガイド記事</a></span></li><li data-k="日本 大阪府 藤井寺"><span class="cn">藤井寺</span><span class="cc">45店</span><span class="cl"><a href="fujiidera.html">地図</a><a href="../japan/osaka/fujiidera.html">ガイド記事</a></span></li></ul><h2 id="r-1">アジア</h2><h3>ネパール</h3><ul class="cities"><li data-k="アジア ネパール カトマンズ"><span class="cn">カトマンズ</span><span class="cc">63店</span><span class="cl"><a href="kathmandu.html">地図</a><a href="../asia/nepal/kathmandu.html">ガイド記事</a></span></li></ul><h2 id="r-2">ヨーロッパ</h2><h3>オランダ</h3><ul class="cities"><li data-k="ヨーロッパ オランダ アムステルダム"><span class="cn">アムステルダム</span><span class="cc">37店</span><span class="cl"><a href="amsterdam.html">地図</a><a href="../europe/netherlands/amsterdam.html">ガイド記事</a></span></li></ul><h3>ドイツ</h3><ul class="cities"><li data-k="ヨーロッパ ドイツ ケルン"><span class="cn">ケルン</span><span class="cc">37店</span><span class="cl"><a href="cologne.html">地図</a><a href="../europe/germany/cologne.html">ガイド記事</a></span></li><li data-k="ヨーロッパ ドイツ フランクフルト"><span class="cn">フランクフルト</span><span class="cc">37店</span><span class="cl"><a href="frankfurt.html">地図</a><a href="../europe/germany/frankfurt.html">ガイド記事</a></span></li></ul><h3>フランス</h3><ul class="cities"><li data-k="ヨーロッパ フランス パリ"><span class="cn">パリ</span><span class="cc">36店</span><span class="cl"><a href="paris.html">地図</a><a href="../europe/france/paris.html">ガイド記事</a></span></li></ul><h3>ベルギー</h3><ul class="cities"><li data-k="ヨーロッパ ベルギー ブリュッセル"><span class="cn">ブリュッセル</span><span class="cc">36店</span><span class="cl"><a href="brussels.html">地図</a><a href="../europe/belgium/brussels.html">ガイド記事</a></span></li><li data-k="ヨーロッパ ベルギー ヘント"><span class="cn">ヘント</span><span class="cc">37店</span><span class="cl"><a href="ghent.html">地図</a><a href="../europe/belgium/ghent.html">ガイド記事</a></span></li><li data-k="ヨーロッパ ベルギー リエージュ"><span class="cn">リエージュ</span><span class="cc">37店</span><span class="cl"><a href="liege.html">地図</a><a href="../europe/belgium/liege.html">ガイド記事</a></span></li><li data-k="ヨーロッパ ベルギー ルーベン"><span class="cn">ルーベン</span><span class="cc">99店</span><span class="cl"><a href="leuven.html">地図</a><a href="../europe/belgium/leuven.html">ガイド記事</a></span></li></ul><h2 id="r-3">北米</h2><h3>アメリカ（ハワイ）</h3><ul class="cities"><li data-k="北米 アメリカ（ハワイ） ホノルル・その他エリア"><span class="cn">ホノルル・その他エリア</span><span class="cc">50店</span><span class="cl"><a href="honolulu_other.html">地図</a><a href="../north_america/usa/honolulu_other.html">ガイド記事</a></span></li><li data-k="北米 アメリカ（ハワイ） ホノルル・アラモアナ周辺"><span class="cn">ホノルル・アラモアナ周辺</span><span class="cc">45店</span><span class="cl"><a href="alamoana.html">地図</a><a href="../north_america/usa/alamoana.html">ガイド記事</a></span></li><li data-k="北米 アメリカ（ハワイ） ホノルル・ワイキキ"><span class="cn">ホノルル・ワイキキ</span><span class="cc">46店</span><span class="cl"><a href="waikiki.html">地図</a><a href="../north_america/usa/waikiki.html">ガイド記事</a></span></li></ul>
+<p class="foot">写真の出典: Google の店舗写真および Google ストリートビュー。地図タイル: OpenStreetMap contributors。</p>
+</div>
+<script>
+const q=document.getElementById('q');
+q.oninput=()=>{
+  const t=q.value.trim().toLowerCase();
+  for(const li of document.querySelectorAll('ul.cities li'))
+    li.style.display=(!t||li.dataset.k.toLowerCase().includes(t))?'':'none';
+  /* 中身が全部消えた県・地方の見出しも一緒に隠す（空の見出しだけが並ばないように） */
+  for(const ul of document.querySelectorAll('ul.cities')){
+    const any=[...ul.children].some(li=>li.style.display!=='none');
+    ul.style.display=any?'':'none';
+    if(ul.previousElementSibling&&ul.previousElementSibling.tagName==='H3')
+      ul.previousElementSibling.style.display=any?'':'none';
+  }
+  for(const h2 of document.querySelectorAll('.wrap h2')){
+    let any=false;
+    for(let e=h2.nextElementSibling;e&&e.tagName!=='H2';e=e.nextElementSibling)
+      if(e.tagName==='UL'&&e.style.display!=='none') any=true;
+    h2.style.display=any?'':'none';
+  }
+};
+</script>

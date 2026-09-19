@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>旭川 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <h1>旭川 の食べ歩き地図<span class="n">44店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+    <a href="index.html">都市一覧</a>
+    <a href="../japan/hokkaido/asahikawa.html">ガイド記事</a>
+  </nav>
+</header>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "蜂屋 五条創業店", "c": ["麺類"], "lat": 43.769963399999995, "lng": 142.3607168, "d": "しょうゆラーメン(焦がしラードが香る豚骨×煮干しWスープの一杯)", "a": "北海道旭川市５条通７丁目右６", "m": "https://www.google.com/maps/search/?api=1&query=%E8%9C%82%E5%B1%8B%20%E4%BA%94%E6%9D%A1%E5%89%B5%E6%A5%AD%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%E5%8F%B3%EF%BC%96", "u": "../japan/hokkaido/asahikawa.html#c-hachiya", "food": "../japan/hokkaido/img/asahikawa/hachiya.jpg", "ext": ""}, {"i": 1, "n": "旭川らぅめん青葉 本店", "c": ["麺類"], "lat": 43.7685052, "lng": 142.3609873, "d": "醤油ラぅめん(創業から継ぎ足す伝統Wスープの正統派醤油味)", "a": "北海道旭川市２条通８丁目１４４ ６ ２条 旭川二条通ビル 名店街", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AD%E5%B7%9D%E3%82%89%E3%81%85%E3%82%81%E3%82%93%E9%9D%92%E8%91%89%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%EF%BC%94%20%EF%BC%96%20%EF%BC%92%E6%9D%A1%20%E6%97%AD%E5%B7%9D%E4%BA%8C%E6%9D%A1%E9%80%9A%E3%83%93%E3%83%AB%20%E5%90%8D%E5%BA%97%E8%A1%97", "u": "../japan/hokkaido/asahikawa.html#c-aoba", "food": "../japan/hokkaido/img/asahikawa/aoba.jpg", "ext": ""}, {"i": 2, "n": "らーめんや天金 四条店", "c": ["麺類"], "lat": 43.7678054, "lng": 142.3632508, "d": "正油ラーメン(豚骨ベースの濃厚スープにラードが層をなすこってり醤油)", "a": "北海道旭川市４条通９丁目１７０４−３１", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E3%82%84%E5%A4%A9%E9%87%91%20%E5%9B%9B%E6%9D%A1%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%EF%BC%90%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%91", "u": "../japan/hokkaido/asahikawa.html#c-tenkinramen", "food": "../japan/hokkaido/img/asahikawa/tenkinramen.jpg", "ext": ""}, {"i": 3, "n": "梅光軒 本店", "c": ["麺類"], "lat": 43.7661576, "lng": 142.359704, "d": "醤油ラーメン(動物系×魚介系Wスープの王道旭川醤油)", "a": "北海道旭川市２条通８丁目 ピアザビル B1F ピアザビル B1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E5%85%89%E8%BB%92%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%20%E3%83%94%E3%82%A2%E3%82%B6%E3%83%93%E3%83%AB%20B1F%20%E3%83%94%E3%82%A2%E3%82%B6%E3%83%93%E3%83%AB%20B1F", "u": "../japan/hokkaido/asahikawa.html#c-baikoken", "food": "../japan/hokkaido/img/asahikawa/baikoken.jpg", "ext": ""}, {"i": 4, "n": "らーめん山頭火 旭川本店", "c": ["麺類"], "lat": 43.7648722, "lng": 142.3600634, "d": "しおらーめん(小梅がのる、まろやかな白濁豚骨塩)", "a": "北海道旭川市１条通８丁目３４８−６ MANNY BLD 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E5%B1%B1%E9%A0%AD%E7%81%AB%20%E6%97%AD%E5%B7%9D%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%91%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%94%EF%BC%98%E2%88%92%EF%BC%96%20MANNY%20BLD%201F", "u": "../japan/hokkaido/asahikawa.html#c-santoka", "food": "../japan/hokkaido/img/asahikawa/santoka.jpg", "ext": ""}, {"i": 5, "n": "みそラーメンのよし乃 本店", "c": ["麺類"], "lat": 43.756993, "lng": 142.38796399999998, "d": "味噌ラーメン(ニンニクと唐辛子が利いたピリ辛味噌にもやしたっぷり)", "a": "北海道旭川市豊岡１条１丁目１−８", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%81%9D%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E3%81%AE%E3%82%88%E3%81%97%E4%B9%83%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E8%B1%8A%E5%B2%A1%EF%BC%91%E6%9D%A1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%98", "u": "../japan/hokkaido/asahikawa.html#c-yoshino", "food": "../japan/hokkaido/img/asahikawa/yoshino.jpg", "ext": ""}, {"i": 6, "n": "ラーメン専門 つるや", "c": ["麺類"], "lat": 43.7639692, "lng": 142.37922709999998, "d": "正油ラーメン(澄んだスープの「ザ・旭川ラーメン」といえる一杯)", "a": "北海道旭川市４条通１９丁目左１０", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%B0%82%E9%96%80%20%E3%81%A4%E3%82%8B%E3%82%84%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%91%EF%BC%99%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%91%EF%BC%90", "u": "../japan/hokkaido/asahikawa.html#c-tsuruya", "food": "../japan/hokkaido/img/asahikawa/tsuruya.jpg", "ext": ""}, {"i": 7, "n": "生姜ラーメン みづの", "c": ["麺類"], "lat": 43.7752791, "lng": 142.3618749, "d": "生姜ラーメン(醤油スープにおろし生姜が利いた温活系の一杯)", "a": "北海道旭川市常盤通２丁目", "m": "https://www.google.com/maps/search/?api=1&query=%E7%94%9F%E5%A7%9C%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E3%81%BF%E3%81%A5%E3%81%AE%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE", "u": "../japan/hokkaido/asahikawa.html#c-mizuno", "food": "../japan/hokkaido/img/asahikawa/mizuno.jpg", "ext": ""}, {"i": 8, "n": "幌加内伝承手打ち蕎麦 せい一", "c": ["麺類"], "lat": 43.812830399999996, "lng": 142.3695779, "d": "もりそば+ミニ鳥天丼(幌加内産そば粉の手打ちそばと巨大鶏天丼のセット)", "a": "北海道旭川市末広７条２丁目１−１", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B9%8C%E5%8A%A0%E5%86%85%E4%BC%9D%E6%89%BF%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20%E3%81%9B%E3%81%84%E4%B8%80%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%9C%AB%E5%BA%83%EF%BC%97%E6%9D%A1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91", "u": "../japan/hokkaido/asahikawa.html#c-seiichi", "food": "../japan/hokkaido/img/asahikawa/seiichi.jpg", "ext": ""}, {"i": 9, "n": "手作りうどん 杉", "c": ["麺類"], "lat": 43.7816007, "lng": 142.3070645, "d": "ぶっかけ梅自慢うどん(道産小麦の手打ち麺に梅と出汁を合わせた看板うどん)", "a": "北海道旭川市忠和５条１丁目６−１５", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E4%BD%9C%E3%82%8A%E3%81%86%E3%81%A9%E3%82%93%20%E6%9D%89%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%BF%A0%E5%92%8C%EF%BC%95%E6%9D%A1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%95", "u": "../japan/hokkaido/asahikawa.html#c-udonsugi", "food": "../japan/hokkaido/img/asahikawa/udonsugi.jpg", "ext": ""}, {"i": 10, "n": "小西鮨", "c": ["寿司・海鮮"], "lat": 43.7683308, "lng": 142.3581201, "d": "おまかせ握り(道産を中心に全国の旬ネタを握るコース)", "a": "北海道旭川市３条通６丁目 右6 ビル A1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E8%A5%BF%E9%AE%A8%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%96%E4%B8%81%E7%9B%AE%20%E5%8F%B36%20%E3%83%93%E3%83%AB%20A1F", "u": "../japan/hokkaido/asahikawa.html#c-konishizushi", "food": "../japan/hokkaido/img/asahikawa/konishizushi.jpg", "ext": ""}, {"i": 11, "n": "鮨みなと", "c": ["寿司・海鮮"], "lat": 43.768877499999995, "lng": 142.3571249, "d": "おまかせ握りコース(江戸前仕事を施した蝦夷前鮨)", "a": "北海道旭川市３条通５丁目左９", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E3%81%BF%E3%81%AA%E3%81%A8%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%95%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%99", "u": "../japan/hokkaido/asahikawa.html#c-sushiminato", "food": "../japan/hokkaido/img/asahikawa/sushiminato.jpg", "ext": ""}, {"i": 12, "n": "独酌三四郎", "c": ["居酒屋・焼肉"], "lat": 43.7681884, "lng": 142.356459, "d": "新子焼き(若鶏半身を炭火でじっくり焼いた旭川名物)", "a": "北海道旭川市２条通５丁目左７", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8B%AC%E9%85%8C%E4%B8%89%E5%9B%9B%E9%83%8E%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%95%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%97", "u": "../japan/hokkaido/asahikawa.html#c-dokushaku", "food": "../japan/hokkaido/img/asahikawa/dokushaku.jpg", "ext": ""}, {"i": 13, "n": "焼鳥専門 ぎんねこ", "c": ["居酒屋・焼肉"], "lat": 43.770063199999996, "lng": 142.3609058, "d": "新子焼き(若鶏半身をタレで香ばしく焼き上げる旭川名物の看板)", "a": "北海道旭川市５条通７丁目右６", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E5%B0%82%E9%96%80%20%E3%81%8E%E3%82%93%E3%81%AD%E3%81%93%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%E5%8F%B3%EF%BC%96", "u": "../japan/hokkaido/asahikawa.html#c-ginneko", "food": "../japan/hokkaido/img/asahikawa/ginneko.jpg", "ext": ""}, {"i": 14, "n": "鳥料理 小野木", "c": ["和食・郷土料理"], "lat": 43.7707955, "lng": 142.4434386, "d": "新子焼きと千鳥揚げ(若鶏半身焼きと名物唐揚げの二枚看板)", "a": "北海道旭川市東旭川北１条６丁目１０−２７ 鳥料理小野木", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E6%96%99%E7%90%86%20%E5%B0%8F%E9%87%8E%E6%9C%A8%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%9D%B1%E6%97%AD%E5%B7%9D%E5%8C%97%EF%BC%91%E6%9D%A1%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%97%20%E9%B3%A5%E6%96%99%E7%90%86%E5%B0%8F%E9%87%8E%E6%9C%A8", "u": "../japan/hokkaido/asahikawa.html#c-onoki", "food": "../japan/hokkaido/img/asahikawa/onoki.jpg", "ext": ""}, {"i": 15, "n": "三代目 かん太郎", "c": ["和食・郷土料理"], "lat": 43.765279899999996, "lng": 142.3680633, "d": "新子てり焼き(継ぎ足し秘伝ダレの若鶏半身てり焼き)", "a": "北海道旭川市３条通１３丁目右1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E4%BB%A3%E7%9B%AE%20%E3%81%8B%E3%82%93%E5%A4%AA%E9%83%8E%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%91%EF%BC%93%E4%B8%81%E7%9B%AE%E5%8F%B31", "u": "../japan/hokkaido/asahikawa.html#c-kantaro", "food": "../japan/hokkaido/img/asahikawa/kantaro.jpg", "ext": ""}, {"i": 16, "n": "居酒屋 天金", "c": ["居酒屋・焼肉", "寿司・海鮮", "和食・郷土料理"], "lat": 43.7689051, "lng": 142.3603972, "d": "活魚介の刺身盛り(道産鮮魚を中心にした看板の盛り合わせ)", "a": "北海道旭川市４条通７丁目５８６−１", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%A4%A9%E9%87%91%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%95%EF%BC%98%EF%BC%96%E2%88%92%EF%BC%91", "u": "../japan/hokkaido/asahikawa.html#c-tenkinizakaya", "food": "../japan/hokkaido/img/asahikawa/tenkinizakaya.jpg", "ext": ""}, {"i": 17, "n": "郷土料理の店 居酒屋 バンガロー", "c": ["和食・郷土料理", "居酒屋・焼肉", "寿司・海鮮"], "lat": 43.769266, "lng": 142.358895, "d": "炉端の炭火焼き(ホッケなど道産魚介を炭火でじっくり焼く名物)", "a": "北海道旭川市４条通６丁目右７-８２５－１", "m": "https://www.google.com/maps/search/?api=1&query=%E9%83%B7%E5%9C%9F%E6%96%99%E7%90%86%E3%81%AE%E5%BA%97%20%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%83%90%E3%83%B3%E3%82%AC%E3%83%AD%E3%83%BC%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%96%E4%B8%81%E7%9B%AE%E5%8F%B3%EF%BC%97-%EF%BC%98%EF%BC%92%EF%BC%95%EF%BC%8D%EF%BC%91", "u": "../japan/hokkaido/asahikawa.html#c-bungalow", "food": "../japan/hokkaido/img/asahikawa/bungalow.jpg", "ext": ""}, {"i": 18, "n": "炉端のユーカラ", "c": ["居酒屋・焼肉"], "lat": 43.769137099999995, "lng": 142.3606431, "d": "真ホッケの炭火焼き(肉厚の道産ホッケを炭火でふっくら焼いた看板)", "a": "北海道旭川市４条通７丁目１６３７", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E3%81%AE%E3%83%A6%E3%83%BC%E3%82%AB%E3%83%A9%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%EF%BC%93%EF%BC%97", "u": "../japan/hokkaido/asahikawa.html#c-yukara", "food": "../japan/hokkaido/img/asahikawa/yukara.jpg", "ext": ""}, {"i": 19, "n": "和菜酒房 おりべ", "c": ["和食・郷土料理", "居酒屋・焼肉"], "lat": 43.7674788, "lng": 142.358861, "d": "だし巻き玉子(出汁をたっぷり含ませ注文後に焼き上げる名物)", "a": "北海道旭川市２条通７丁目７ プラネット2・7ビル 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E8%8F%9C%E9%85%92%E6%88%BF%20%E3%81%8A%E3%82%8A%E3%81%B9%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%97%20%E3%83%97%E3%83%A9%E3%83%8D%E3%83%83%E3%83%882%E3%83%BB7%E3%83%93%E3%83%AB%201F", "u": "../japan/hokkaido/asahikawa.html#c-oribe", "food": "../japan/hokkaido/img/asahikawa/oribe.jpg", "ext": ""}, {"i": 20, "n": "ゆるり", "c": ["居酒屋・焼肉"], "lat": 43.767907099999995, "lng": 142.3583343, "d": "日替わりの手料理とおにぎり(家庭的な肴と締めの塩むすび)", "a": "北海道旭川市３条通６丁目 １Ｆ", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%86%E3%82%8B%E3%82%8A%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%96%E4%B8%81%E7%9B%AE%20%EF%BC%91%EF%BC%A6", "u": "../japan/hokkaido/asahikawa.html#c-yururi", "food": "../japan/hokkaido/img/asahikawa/yururi.jpg", "ext": ""}, {"i": 21, "n": "旭川塩ホルモン 炭や 本店", "c": ["居酒屋・焼肉", "ご当地名物"], "lat": 43.769492299999996, "lng": 142.36187479999998, "d": "塩ホルモン(秘伝の塩だれで味付けした豚ホルモンの七輪炭火焼き)", "a": "北海道旭川市５条通８丁目右３", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AD%E5%B7%9D%E5%A1%A9%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%20%E7%82%AD%E3%82%84%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%E5%8F%B3%EF%BC%93", "u": "../japan/hokkaido/asahikawa.html#c-sumiya", "food": "../japan/hokkaido/img/asahikawa/sumiya.jpg", "ext": ""}, {"i": 22, "n": "馬場ホルモン", "c": ["居酒屋・焼肉", "ご当地名物"], "lat": 43.771629999999995, "lng": 142.363144, "d": "塩ホルモン(豚の各部位ミックスを七輪炭火でセルフ焼きする唯一のメニュー)", "a": "北海道旭川市７条通８丁目右4", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A6%AC%E5%A0%B4%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%97%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%E5%8F%B34", "u": "../japan/hokkaido/asahikawa.html#c-babahorumon", "food": "../japan/hokkaido/img/asahikawa/babahorumon.jpg", "ext": ""}, {"i": 23, "n": "旭川成吉思汗 大黒屋 五丁目支店", "c": ["居酒屋・焼肉"], "lat": 43.7694439, "lng": 142.35727989999998, "d": "生ラムジンギスカン(冷凍しない柔らかなラム肩ロースを鉄鍋で焼く)", "a": "北海道旭川市４条通５丁目1425 3 4 仲通", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AD%E5%B7%9D%E6%88%90%E5%90%89%E6%80%9D%E6%B1%97%20%E5%A4%A7%E9%BB%92%E5%B1%8B%20%E4%BA%94%E4%B8%81%E7%9B%AE%E6%94%AF%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%95%E4%B8%81%E7%9B%AE1425%203%204%20%E4%BB%B2%E9%80%9A", "u": "../japan/hokkaido/asahikawa.html#c-daikokuya", "food": "../japan/hokkaido/img/asahikawa/daikokuya.jpg", "ext": ""}, {"i": 24, "n": "旭川成吉思汗 ひつじ家", "c": ["居酒屋・焼肉"], "lat": 43.7688772, "lng": 142.35852119999998, "d": "サフォークジンギスカン(国産最高級羊種サフォークの生ラム焼き)", "a": "北海道旭川市３条通６丁目７１８−２ ヨシタケユニオンビル 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AD%E5%B7%9D%E6%88%90%E5%90%89%E6%80%9D%E6%B1%97%20%E3%81%B2%E3%81%A4%E3%81%98%E5%AE%B6%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%97%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%92%20%E3%83%A8%E3%82%B7%E3%82%BF%E3%82%B1%E3%83%A6%E3%83%8B%E3%82%AA%E3%83%B3%E3%83%93%E3%83%AB%201F", "u": "../japan/hokkaido/asahikawa.html#c-hitsujiya", "food": "../japan/hokkaido/img/asahikawa/hitsujiya.jpg", "ext": ""}, {"i": 25, "n": "炭火焼肉 旭川ほるもん 七輪屋", "c": ["居酒屋・焼肉"], "lat": 43.7698713, "lng": 142.3609303, "d": "ネギ塩ホルモン(新鮮な生豚ホルモンにネギ塩だれを合わせた七輪焼き)", "a": "北海道旭川市５条通７丁目", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E8%82%89%20%E6%97%AD%E5%B7%9D%E3%81%BB%E3%82%8B%E3%82%82%E3%82%93%20%E4%B8%83%E8%BC%AA%E5%B1%8B%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE", "u": "../japan/hokkaido/asahikawa.html#c-shichirinya", "food": "../japan/hokkaido/img/asahikawa/shichirinya.jpg", "ext": ""}, {"i": 26, "n": "独酌 三四郎", "c": ["居酒屋・焼肉", "ご当地名物"], "lat": 43.7681884, "lng": 142.356459, "d": "新子焼き(炭火でじっくり焼いた若鶏半身、塩・たれで味わう)", "a": "北海道旭川市２条通５丁目左７", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8B%AC%E9%85%8C%20%E4%B8%89%E5%9B%9B%E9%83%8E%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%95%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%97", "u": "../japan/hokkaido/asahikawa.html#c-sanshiro", "food": "../japan/hokkaido/img/asahikawa/sanshiro.jpg", "ext": ""}, {"i": 27, "n": "自由軒", "c": ["洋食・各国料理"], "lat": 43.7703129, "lng": 142.3620915, "d": "五郎セット(塩ホルモン焼きとたまご焼きの定食、ドラマ登場で名物化)", "a": "北海道旭川市５条通８丁目左2号", "m": "https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E7%94%B1%E8%BB%92%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%E5%B7%A62%E5%8F%B7", "u": "../japan/hokkaido/asahikawa.html#c-jiyuken", "food": "../japan/hokkaido/img/asahikawa/jiyuken.jpg", "ext": ""}, {"i": 28, "n": "立喰いそば屋 天勇", "c": ["洋食・各国料理"], "lat": 43.7696678, "lng": 142.3607956, "d": "ゲソ丼(カリッと揚げたイカゲソ天をのせた甘辛だれの丼)", "a": "北海道旭川市５条通７丁目１１８７−７", "m": "https://www.google.com/maps/search/?api=1&query=%E7%AB%8B%E5%96%B0%E3%81%84%E3%81%9D%E3%81%B0%E5%B1%8B%20%E5%A4%A9%E5%8B%87%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%EF%BC%98%EF%BC%97%E2%88%92%EF%BC%97", "u": "../japan/hokkaido/asahikawa.html#c-tenyu", "food": "../japan/hokkaido/img/asahikawa/tenyu.jpg", "ext": ""}, {"i": 29, "n": "大雪地ビール館", "c": ["洋食・各国料理"], "lat": 43.762588799999996, "lng": 142.3638667, "d": "大雪地ビール飲み比べ(併設醸造所直送のクラフトビール各種)", "a": "北海道旭川市宮下通１１丁目１６０４−１", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%9B%AA%E5%9C%B0%E3%83%93%E3%83%BC%E3%83%AB%E9%A4%A8%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%AE%AE%E4%B8%8B%E9%80%9A%EF%BC%91%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%EF%BC%90%EF%BC%94%E2%88%92%EF%BC%91", "u": "../japan/hokkaido/asahikawa.html#c-taisetsujibeer", "food": "../japan/hokkaido/img/asahikawa/taisetsujibeer.jpg", "ext": ""}, {"i": 30, "n": "ル・ビストロ メランジェ", "c": ["洋食・各国料理"], "lat": 43.7676101, "lng": 142.35908659999998, "d": "蝦夷フレンチコース(道産魚介と近郊野菜を使う季節のコース)", "a": "北海道旭川市３条通７丁目７１１−１ つかさビル １F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AB%E3%83%BB%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%83%A1%E3%83%A9%E3%83%B3%E3%82%B8%E3%82%A7%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%97%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%91%20%E3%81%A4%E3%81%8B%E3%81%95%E3%83%93%E3%83%AB%20%EF%BC%91F", "u": "../japan/hokkaido/asahikawa.html#c-melanger", "food": "../japan/hokkaido/img/asahikawa/melanger.jpg", "ext": ""}, {"i": 31, "n": "ビストロ ポ・プーレ", "c": ["洋食・各国料理"], "lat": 43.7694231, "lng": 142.3611437, "d": "シェフ気まぐれコース(道産食材を使った日替わり構成のおまかせフレンチ)", "a": "北海道旭川市４条通７丁目１５４３−５ 買物公園通", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%83%9D%E3%83%BB%E3%83%97%E3%83%BC%E3%83%AC%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%EF%BC%94%EF%BC%93%E2%88%92%EF%BC%95%20%E8%B2%B7%E7%89%A9%E5%85%AC%E5%9C%92%E9%80%9A", "u": "../japan/hokkaido/asahikawa.html#c-porcpoulet", "food": "../japan/hokkaido/img/asahikawa/porcpoulet.jpg", "ext": ""}, {"i": 32, "n": "オステリア キャニオンベース", "c": ["洋食・各国料理"], "lat": 43.770387199999995, "lng": 142.36208, "d": "渓谷味豚のグリル(上川産ブランド豚を使った炭火グリル)", "a": "北海道旭川市５条通８丁目１２５３番地３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AA%E3%82%B9%E3%83%86%E3%83%AA%E3%82%A2%20%E3%82%AD%E3%83%A3%E3%83%8B%E3%82%AA%E3%83%B3%E3%83%99%E3%83%BC%E3%82%B9%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%92%EF%BC%95%EF%BC%93%E7%95%AA%E5%9C%B0%EF%BC%93", "u": "../japan/hokkaido/asahikawa.html#c-canyonbase", "food": "../japan/hokkaido/img/asahikawa/canyonbase.jpg", "ext": ""}, {"i": 33, "n": "珈琲亭ちろる", "c": ["カフェ・パン・スイーツ"], "lat": 43.767904699999995, "lng": 142.3616111, "d": "銅板焼きふわふわリコッタパンケーキ(比布町産卵使用、自家製ハニーナッツバター添え)", "a": "北海道旭川市３条通８丁目左７", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E4%BA%AD%E3%81%A1%E3%82%8D%E3%82%8B%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%97", "u": "../japan/hokkaido/asahikawa.html#c-kohitei-tirol", "food": "../japan/hokkaido/img/asahikawa/kohitei-tirol.jpg", "ext": ""}, {"i": 34, "n": "旭川珈琲 カフェ・ドゥ・コリンズ", "c": ["カフェ・パン・スイーツ"], "lat": 43.7658045, "lng": 142.3590793, "d": "自家焙煎ブレンドコーヒー(オムライスなど喫茶洋食とのセットが人気)", "a": "北海道旭川市１条通７丁目 地下1階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AD%E5%B7%9D%E7%8F%88%E7%90%B2%20%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%83%89%E3%82%A5%E3%83%BB%E3%82%B3%E3%83%AA%E3%83%B3%E3%82%BA%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%91%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%20%E5%9C%B0%E4%B8%8B1%E9%9A%8E", "u": "../japan/hokkaido/asahikawa.html#c-cafe-de-collins", "food": "../japan/hokkaido/img/asahikawa/cafe-de-collins.jpg", "ext": ""}, {"i": 35, "n": "ブンカフェー", "c": ["カフェ・パン・スイーツ"], "lat": 43.7702029, "lng": 142.3614725, "d": "季節のパフェ(自家製ソフトクリームとケーキ素材を重ねた本格パフェ)", "a": "北海道旭川市５条通７丁目１４８６ 旭川フードテラス 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%96%E3%83%B3%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BC%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%EF%BC%98%EF%BC%96%20%E6%97%AD%E5%B7%9D%E3%83%95%E3%83%BC%E3%83%89%E3%83%86%E3%83%A9%E3%82%B9%201%E9%9A%8E", "u": "../japan/hokkaido/asahikawa.html#c-buncafe", "food": "../japan/hokkaido/img/asahikawa/buncafe.jpg", "ext": ""}, {"i": 36, "n": "COFFEE STAND CONTAINER", "c": ["カフェ・パン・スイーツ"], "lat": 43.771924399999996, "lng": 142.36286379999999, "d": "カフェラテ(エスプレッソにスチームミルクを合わせた看板ドリンク)", "a": "北海道旭川市７条通８丁目３８−１９", "m": "https://www.google.com/maps/search/?api=1&query=COFFEE%20STAND%20CONTAINER%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%97%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%99", "u": "../japan/hokkaido/asahikawa.html#c-coffee-stand-container", "food": "../japan/hokkaido/img/asahikawa/coffee-stand-container.jpg", "ext": ""}, {"i": 37, "n": "salon de bois(サロンドボア)", "c": ["カフェ・パン・スイーツ"], "lat": 43.7649426, "lng": 142.35861610000003, "d": "ガレットランチ(そば粉のクレープに卵やチーズをのせた食事系クレープ)", "a": "北海道旭川市宮下通７丁目２３９９−１ 明治屋ビル 3階 Le Ann横", "m": "https://www.google.com/maps/search/?api=1&query=salon%20de%20bois%28%E3%82%B5%E3%83%AD%E3%83%B3%E3%83%89%E3%83%9C%E3%82%A2%29%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%AE%AE%E4%B8%8B%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%93%EF%BC%99%EF%BC%99%E2%88%92%EF%BC%91%20%E6%98%8E%E6%B2%BB%E5%B1%8B%E3%83%93%E3%83%AB%203%E9%9A%8E%20Le%20Ann%E6%A8%AA", "u": "../japan/hokkaido/asahikawa.html#c-salon-de-bois", "food": "../japan/hokkaido/img/asahikawa/salon-de-bois.jpg", "ext": ""}, {"i": 38, "n": "福吉カフェ 旭橋本店", "c": ["カフェ・パン・スイーツ"], "lat": 43.775554, "lng": 142.3622068, "d": "トキワ焼き(旭橋モチーフ・クロワッサン生地のおやき、つぶあんやクリーム等5種)", "a": "北海道旭川市常盤通２丁目１９７０−１", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%90%89%E3%82%AB%E3%83%95%E3%82%A7%20%E6%97%AD%E6%A9%8B%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%99%EF%BC%97%EF%BC%90%E2%88%92%EF%BC%91", "u": "../japan/hokkaido/asahikawa.html#c-fukuyoshi-cafe", "food": "../japan/hokkaido/img/asahikawa/fukuyoshi-cafe.jpg", "ext": ""}, {"i": 39, "n": "壺屋 き花の杜", "c": ["カフェ・パン・スイーツ"], "lat": 43.752449999999996, "lng": 142.3729624, "d": "き花(アーモンドガレットにホワイトチョコを挟んだ旭川銘菓。カフェでは特製ケーキも)", "a": "北海道旭川市南６条通１９丁目２１８−２−１０３", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A3%BA%E5%B1%8B%20%E3%81%8D%E8%8A%B1%E3%81%AE%E6%9D%9C%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%8D%97%EF%BC%96%E6%9D%A1%E9%80%9A%EF%BC%91%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%90%EF%BC%93", "u": "../japan/hokkaido/asahikawa.html#c-tsuboya-kibananomori", "food": "../japan/hokkaido/img/asahikawa/tsuboya-kibananomori.jpg", "ext": ""}, {"i": 40, "n": "The Sun 蔵人 本店", "c": ["カフェ・パン・スイーツ"], "lat": 43.748913699999996, "lng": 142.3613829, "d": "蔵生(生チョコ入りのしっとり生サブレ。売店ではソフトクリームも人気)", "a": "北海道旭川市神楽岡８条１丁目１", "m": "https://www.google.com/maps/search/?api=1&query=The%20Sun%20%E8%94%B5%E4%BA%BA%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E7%A5%9E%E6%A5%BD%E5%B2%A1%EF%BC%98%E6%9D%A1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91", "u": "../japan/hokkaido/asahikawa.html#c-thesun-kurando", "food": "../japan/hokkaido/img/asahikawa/thesun-kurando.jpg", "ext": ""}, {"i": 41, "n": "EZOKAFFE", "c": ["カフェ・パン・スイーツ"], "lat": 43.7451072, "lng": 142.3959277, "d": "自家製カスタードプリン(固め食感にたっぷりのホイップクリーム)", "a": "北海道旭川市東光１１条３丁目３−２９", "m": "https://www.google.com/maps/search/?api=1&query=EZOKAFFE%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%9D%B1%E5%85%89%EF%BC%91%EF%BC%91%E6%9D%A1%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%99", "u": "../japan/hokkaido/asahikawa.html#c-ezokaffe", "food": "../japan/hokkaido/img/asahikawa/ezokaffe.jpg", "ext": ""}, {"i": 42, "n": "欧風パン ベーカリー寛", "c": ["カフェ・パン・スイーツ"], "lat": 43.793189999999996, "lng": 142.3297266, "d": "ハード系欧風パン(バゲット等。ふわふわ食パンも定番人気)", "a": "北海道旭川市錦町２０丁目２１６６−９８", "m": "https://www.google.com/maps/search/?api=1&query=%E6%AC%A7%E9%A2%A8%E3%83%91%E3%83%B3%20%E3%83%99%E3%83%BC%E3%82%AB%E3%83%AA%E3%83%BC%E5%AF%9B%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E9%8C%A6%E7%94%BA%EF%BC%92%EF%BC%90%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%EF%BC%96%EF%BC%96%E2%88%92%EF%BC%99%EF%BC%98", "u": "../japan/hokkaido/asahikawa.html#c-bakery-hiro", "food": "../japan/hokkaido/img/asahikawa/bakery-hiro.jpg", "ext": ""}, {"i": 43, "n": "エチュード洋菓子店 旭町店(本店)", "c": ["カフェ・パン・スイーツ"], "lat": 43.7884169, "lng": 142.3502604, "d": "お昼ねプリン(道産牛乳と卵のとろけるカスタードプリン)", "a": "北海道旭川市旭町１条９丁目６８９−２３", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A8%E3%83%81%E3%83%A5%E3%83%BC%E3%83%89%E6%B4%8B%E8%8F%93%E5%AD%90%E5%BA%97%20%E6%97%AD%E7%94%BA%E5%BA%97%28%E6%9C%AC%E5%BA%97%29%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%97%AD%E7%94%BA%EF%BC%91%E6%9D%A1%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%96%EF%BC%98%EF%BC%99%E2%88%92%EF%BC%92%EF%BC%93", "u": "../japan/hokkaido/asahikawa.html#c-etude-yogashiten", "food": "../japan/hokkaido/img/asahikawa/etude-yogashiten.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([43.769412,142.362615],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    const k=b.dataset.cat;
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+</script>
