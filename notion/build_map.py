@@ -35,6 +35,9 @@ import shutil
 import sys
 from html import escape
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from rwd import TOGGLE_CSS, TOGGLE_HTML, TOGGLE_JS, dual   # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STORES = os.path.join(ROOT, "notion", "stores.json")
 SITE = os.path.join(ROOT, "map")
@@ -159,7 +162,36 @@ CSS = """
   ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
   ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
   ul.cities .cl a{margin-left:10px}
-"""
+""" + TOGGLE_CSS + dual("""
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  @@ .bar{padding:6px 10px;gap:6px}
+  @@ .bar h1{font-size:14px;width:100%}
+  @@ .bar nav{margin-left:0;width:100%;gap:6px}
+  @@ .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  @@ .chip{flex:0 0 auto}
+  @@ .leaflet-popup-content{width:min(74vw,250px)!important}
+  @@ .pop img{height:104px}
+  @@ .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  @@ .grp table,@@ .grp tbody,@@ .grp tr,@@ .grp td{display:block;width:auto}
+  @@ .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  @@ .grp td{border:0;padding:2px 0}
+  @@ .grp td.nm{white-space:normal;font-size:14px}
+  @@ .grp td.ac{text-align:left;margin-top:4px}
+  @@ .grp td.ac a,@@ .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  @@ ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  @@ ul.cities .cn{min-width:0}
+  @@ ul.cities .cl{margin-left:auto}
+  @@ .wrap{padding:12px 12px 40px}
+""")
 
 HEAD = """<!doctype html>
 <html lang="ja">
@@ -182,6 +214,7 @@ CITY_BODY = """<body style="display:flex;flex-direction:column">
   <nav>
     <button id="b-map" class="on">地図</button>
     <button id="b-list">一覧</button>
+    {{TOGGLE}}
     <a href="index.html">都市一覧</a>
     <a href="{{GUIDE}}">ガイド記事</a>
   </nav>
@@ -310,6 +343,7 @@ grps.onclick=e=>{
   view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
 };
 refresh(); view('map');
+{{TOGGLEJS}}
 </script>
 """
 
@@ -341,7 +375,8 @@ def city_page(city, stores, prefix="../"):
             .replace("{{COLORS}}", json.dumps(FAMILY_COLOR, ensure_ascii=False))
             .replace("{{CATMETA}}", json.dumps(CATEGORY, ensure_ascii=False))
             .replace("{{DATA}}", json.dumps(data, ensure_ascii=False))
-            .replace("{{LAT}}", "%f" % lat).replace("{{LNG}}", "%f" % lng))
+            .replace("{{LAT}}", "%f" % lat).replace("{{LNG}}", "%f" % lng)
+            .replace("{{TOGGLE}}", TOGGLE_HTML).replace("{{TOGGLEJS}}", TOGGLE_JS))
     return head("%s の食べ歩き地図" % city,
                 '<link rel="stylesheet" href="vendor/leaflet.css">\n') + body
 
@@ -386,6 +421,7 @@ def index_page(cities, prefix=""):
     return head("美食ガイド 都市一覧") + """<body>
 <header class="bar">
   <h1>美食ガイド<span class="n">%(nc)d都市 / %(nt)d店</span></h1>
+  <nav style="margin-left:auto">%(toggle)s</nav>
 </header>
 <div class="wrap">
 <p class="lead">都市ごとに、店をカテゴリで色分けした地図と、全店の一覧・ガイド記事があります。
@@ -417,8 +453,11 @@ q.oninput=()=>{
     h2.style.display=any?'':'none';
   }
 };
+%(togglejs)s
 </script>
-""" % {"nc": len(cities), "nt": total, "nav": "".join(nav), "secs": "".join(secs)}
+""" % {"nc": len(cities), "nt": total, "nav": "".join(nav), "secs": "".join(secs),
+       # 既存の <script> の中へ入れるので、タグでは包まない（包むと </script> が二重になる）
+       "toggle": TOGGLE_HTML, "togglejs": TOGGLE_JS}
 
 
 def main():
