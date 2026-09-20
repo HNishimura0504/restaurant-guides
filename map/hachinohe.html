@@ -16,8 +16,10 @@
   button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
   button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
   .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
-        border:1px solid var(--line);background:#fff;cursor:pointer}
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
   .chip[aria-pressed="false"]{opacity:.35}
   .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
   .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
@@ -222,7 +224,8 @@ const on=new Set(CATS);
 const chips=document.getElementById('chips');
 chips.innerHTML=CATS.map(k=>{
   const n=DATA.filter(r=>r.c.includes(k)).length;
-  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true">`+
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
          `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
 }).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
 
@@ -306,13 +309,41 @@ function refresh(){
   }
   render();
 }
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
 chips.onclick=e=>{
   const b=e.target.closest('.chip'); if(!b) return;
-  if(b.id==='c-all'){
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
     const all=on.size===CATS.length;
     on.clear(); if(!all) CATS.forEach(c=>on.add(c));
   }else{
-    const k=b.dataset.cat;
     on.has(k)?on.delete(k):on.add(k);
   }
   for(const el of chips.querySelectorAll('.chip[data-cat]'))
