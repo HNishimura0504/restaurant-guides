@@ -11,7 +11,7 @@
 使い方: python3 notion/add_stores.py <記事のパス> <新しい店のJSON>
 JSON の形は `docs/` の要件定義書 `requirements_rule_backfill_2026.md` §3 を参照。
 """
-import io, json, os, re, sys, urllib.parse
+import io, json, os, re, shutil, sys, urllib.parse
 
 CHIP = {"地元密着": "local", "老舗・歴史": "hist", "口コミ突出": "pop",
         "ブログ推薦": "blog", "隣接市": "near", "食の専門街": "street"}
@@ -61,6 +61,12 @@ def main():
     new = json.load(io.open(js, encoding="utf-8"))
     for st in new:
         st["_city"] = city
+        # **写真の実体をコピーする。** ここを忘れると `<img>` だけ入って画像が404になる
+        # （2026-09-20 に一関で実際に踏んだ）。
+        if st.get("photo_file"):
+            dst = os.path.join(os.path.dirname(path), "img", city, st["sid"] + ".jpg")
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copy(st["photo_file"], dst)
 
     # 章の見出し（`<h2 id="s-…">`）を出現順に拾い、章名 → id の対応を作る
     heads = [(m.group(1), re.sub("<[^>]+>", "", m.group(2)).strip(), m.end())
@@ -109,7 +115,9 @@ def main():
     s = re.sub(r"(\d+)\s*店", lambda m: "%d店" % total, s, count=1)
     io.open(path, "w", encoding="utf-8").write(s)
     print("%-40s 足した %d 店 / 合計 %d 店（番号を振り直した）" % (path, added, total))
-    print("   このあと build_map.py → stores_extract.py の順で回し直すこと（地図と目次が追随する）")
+    print("   **このあと必ず**: ①`control/locations_<市>.json` に新しい店の座標を足す")
+    print("     ②`add_guide_map.py --rebuild` で地図と目次を作り直す（目次には自動で入らない）")
+    print("     ③`build_map.py` → `stores_extract.py`")
 
 
 if __name__ == "__main__":

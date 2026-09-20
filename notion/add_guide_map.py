@@ -247,6 +247,13 @@ def toc_block(items, pinnum, n, only=None):
 def replace_toc(s, new_html):
     """既存の `.toc` ブロックを、括弧の対応で範囲を取って丸ごと差し替える。
     **素朴な find だと入れ子の `</div>` で切れる**ので、必ず深さを数える。"""
+    if '<div class="toc">' not in s:
+        # **地図を作り直したときは、剥がしたあとに目次が残っていない。**
+        # その場合は最初の章見出しの直前へ入れる（元の地図もそこに在った）。
+        m = re.search(r'<h2[^>]*id="s-', s)
+        if not m:
+            raise SystemExit("差し込み先が見つからない")
+        return s[:m.start()] + new_html + "\n\n" + s[m.start():], ""
     start = s.index('<div class="toc">')
     depth, i = 0, start
     while True:
@@ -259,13 +266,48 @@ def replace_toc(s, new_html):
             return s[:start] + new_html + s[i:], s[start:i]
 
 
-def process(path):
+def strip_maps(s):
+    """既にある地図セクションと、その直下の目次を全部取り除く。
+
+    **元の題は覚えておいて使い回す**（「中心部拡大(一ノ関駅〜大町・地主町)」のように
+    人が付けた題が入っていることがあり、機械が付け直すと情報が落ちるため）。
+    """
+    titles = [re.sub(r"（.*", "", t).strip()
+              for t in re.findall(r'<div class="mapttl">🗺?🗾?\s*店舗マップ\s*—\s*([^<]*)', s)]
+    while '<div class="mapsec">' in s:
+        i = s.index('<div class="mapsec">')
+        depth, j = 0, i
+        while True:
+            m = re.compile(r"<div\b|</div>").search(s, j)
+            depth += 1 if m.group(0) == "<div" else -1
+            j = m.end()
+            if depth == 0:
+                break
+        # 直後に続く目次（.toc）も一緒に取る
+        k = re.match(r'\s*<div class="toc">', s[j:])
+        if k:
+            depth, jj = 0, j + k.start()
+            while True:
+                m = re.compile(r"<div\b|</div>").search(s, jj)
+                depth += 1 if m.group(0) == "<div" else -1
+                jj = m.end()
+                if depth == 0:
+                    break
+            j = jj
+        s = s[:i].rstrip() + "\n" + s[j:].lstrip("\n")
+    return s, titles
+
+
+def process(path, rebuild=False):
     s = io.open(path, encoding="utf-8").read()
     d = os.path.dirname(path)
     city = os.path.basename(path)[:-5]
-    if '<div class="mapsec">' in s:   # CSS の `.mapsec{` と取り違えないよう、本文の要素で判定する
-        print("%-34s 既に地図あり — 飛ばす" % path)
-        return 0
+    old_titles = []
+    if '<div class="mapsec">' in s:
+        if not rebuild:
+            print("%-34s 既に地図あり — 飛ばす" % path)
+            return 0
+        s, old_titles = strip_maps(s)
     locs = json.load(io.open(os.path.join(d, "control", "locations_%s.json" % city), encoding="utf-8"))
     items = sections_and_cards(s)
     cards = [(i[1], i[2], "be") for i in items if i[0] == "c"]
@@ -283,7 +325,7 @@ def process(path):
         return 0
 
     out_png = Path(d) / "img" / city / "_map.png"
-    mp = build_map("全域マップ", cards, locs, out_png)
+    mp = build_map(old_titles[0] if old_titles else "全域マップ", cards, locs, out_png)
     if not mp:
         print("%-34s 地図を作れなかった" % path)
         return 0
@@ -291,7 +333,8 @@ def process(path):
     maps = [mp]
     bb = dense_bbox(cards, locs)
     if bb:
-        mp2 = build_map("中心部拡大", cards, locs, Path(d) / "img" / city / "_map2.png",
+        mp2 = build_map(old_titles[1] if len(old_titles) > 1 else "中心部拡大",
+                        cards, locs, Path(d) / "img" / city / "_map2.png",
                         maxz=16, bbox=bb)
         if mp2:
             maps.append(mp2)
@@ -338,11 +381,12 @@ def process(path):
 
 
 def main():
-    targets = sys.argv[1:] or sorted(
-        p for p in __import__("glob").glob("europe/*/*.html"))
+    args = [a for a in sys.argv[1:] if a != "--rebuild"]
+    rebuild = "--rebuild" in sys.argv
+    targets = args or sorted(p for p in __import__("glob").glob("europe/*/*.html"))
     n = 0
     for t in targets:
-        n += process(t)
+        n += process(t, rebuild)
     print("\n地図を入れた記事: %d 本" % n)
 
 
