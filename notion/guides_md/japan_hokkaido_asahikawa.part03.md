@@ -1,4 +1,38 @@
-### 40. 壺屋 き花の杜（つぼや きばなのもり）
+### 39. salon de bois(サロンドボア)（さろん・ど・ぼあ）
+
+@@IMG:japan/hokkaido/img/asahikawa/salon-de-bois.jpg@@
+
+`ブログ推薦` `口コミ突出`
+
+駅前のフレンチレストラン「ル アン」がプロデュースするビル3階の隠れ家カフェ。そば粉のクレープであるガレットのランチや、レストラン仕込みのケーキ・スイーツが楽しめる。駅チカながら落ち着いた穴場的存在。
+
+- **一皿**: ガレットランチ(そば粉のクレープに卵やチーズをのせた食事系クレープ)
+- **営業時間**: 水・木・金・土・日 11:00〜17:00
+- **定休日**: 月・火曜
+- **住所**: 北海道旭川市宮下通７丁目２３９９−１ 明治屋ビル 3階 Le Ann横
+- **予約**: 要確認 — ☎ 080-3290-1642 ／ [公式サイト](https://www.instagram.com/salondebois77?igshid=MTNiYzNiMzkwZA%3D%3D&utm_source=qr)
+- **選定理由**: 道民ブログもぐトリップが「駅チカの超穴場」として詳細レポート、asatanの駅前カフェ特集でも紹介。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=salon%20de%20bois%28%E3%82%B5%E3%83%AD%E3%83%B3%E3%83%89%E3%83%9C%E3%82%A2%29%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%AE%AE%E4%B8%8B%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%93%EF%BC%99%EF%BC%99%E2%88%92%EF%BC%91%20%E6%98%8E%E6%B2%BB%E5%B1%8B%E3%83%93%E3%83%AB%203%E9%9A%8E%20Le%20Ann%E6%A8%AA)
+- **参照元**: [もぐトリップ(道民ブログ)](https://akj.mogtrip.jp/salon-de-bois/) / [asatan(旭川ローカルメディア)](https://asatan.com/articles/8985)
+
+### 40. 福吉カフェ 旭橋本店（ふくよしかふぇ あさひばしほんてん）
+
+@@IMG:japan/hokkaido/img/asahikawa/fukuyoshi-cafe.jpg@@
+
+`地元密着` `老舗・歴史` `口コミ突出`
+
+大正13年建築の旧北島製粉所をリノベーションした、昭和レトロな外観の和風カフェ。名物は旭橋をかたどった「トキワ焼き」で、クロワッサン生地で餡やクリームを包んで焼くサクサク食感のおやき。ほうじ茶ラテ系の「福吉らて」と合わせる地元客が多い。
+
+- **一皿**: トキワ焼き(旭橋モチーフ・クロワッサン生地のおやき、つぶあんやクリーム等5種)
+- **営業時間**: 月・火・水・木・金・土・日 10:00〜21:30
+- **定休日**: なし(要最終確認)
+- **住所**: 北海道旭川市常盤通２丁目１９７０−１
+- **予約**: 要確認 — ☎ 0166-85-6014 ／ [公式サイト](https://fukuyoshicafe.com/)
+- **選定理由**: 歴史的建造物を活かした旭川発祥カフェとして道民ブログやローカル誌slowびよりで紹介。公式サイトで営業情報を確認。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%90%89%E3%82%AB%E3%83%95%E3%82%A7%20%E6%97%AD%E6%A9%8B%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%99%EF%BC%97%EF%BC%90%E2%88%92%EF%BC%91)
+- **参照元**: [福吉カフェ公式サイト](https://www.fukuyoshicafe.com/) / [slowびより](https://slowbiyori.com/article-fukuyoshicafe/) / [もぐトリップ(道民ブログ)](https://akj.mogtrip.jp/asahikawa-cafe/)
+
+### 41. 壺屋 き花の杜（つぼや きばなのもり）
 
 @@IMG:japan/hokkaido/img/asahikawa/tsuboya-kibananomori.jpg@@
 
@@ -15,7 +49,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%A3%BA%E5%B1%8B%20%E3%81%8D%E8%8A%B1%E3%81%AE%E6%9D%9C%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%8D%97%EF%BC%96%E6%9D%A1%E9%80%9A%EF%BC%91%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%EF%BC%98%E2%88%92%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%90%EF%BC%93)
 - **参照元**: [壺屋総本店公式サイト](https://tsuboya.net/pages/shop-kibana) / [たびらい観光情報](https://www.tabirai.net/localinfo/article/article-45848/)
 
-### 41. The Sun 蔵人 本店（ざ・さん くらんど ほんてん）
+### 42. The Sun 蔵人 本店（ざ・さん くらんど ほんてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/thesun-kurando.jpg@@
 
@@ -32,7 +66,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=The%20Sun%20%E8%94%B5%E4%BA%BA%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E7%A5%9E%E6%A5%BD%E5%B2%A1%EF%BC%98%E6%9D%A1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91)
 - **参照元**: [日専連旭川](https://www.nissenren-asahikawa.co.jp/recom-290/) / [食べログ](https://tabelog.com/hokkaido/A0104/A010401/1001339/)
 
-### 42. EZOKAFFE（えぞかふぇ）
+### 43. EZOKAFFE（えぞかふぇ）
 
 @@IMG:japan/hokkaido/img/asahikawa/ezokaffe.jpg@@
 
@@ -49,7 +83,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=EZOKAFFE%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%9D%B1%E5%85%89%EF%BC%91%EF%BC%91%E6%9D%A1%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%99)
 - **参照元**: [asatan(旭川ローカルメディア)](https://asatan.com/articles/9723) / [食べログ](https://tabelog.com/hokkaido/A0104/A010401/1053895/)
 
-### 43. 欧風パン ベーカリー寛（おうふうぱん べーかりーひろ）
+### 44. 欧風パン ベーカリー寛（おうふうぱん べーかりーひろ）
 
 @@IMG:japan/hokkaido/img/asahikawa/bakery-hiro.jpg@@
 
@@ -66,7 +100,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%AC%A7%E9%A2%A8%E3%83%91%E3%83%B3%20%E3%83%99%E3%83%BC%E3%82%AB%E3%83%AA%E3%83%BC%E5%AF%9B%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E9%8C%A6%E7%94%BA%EF%BC%92%EF%BC%90%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%91%EF%BC%96%EF%BC%96%E2%88%92%EF%BC%99%EF%BC%98)
 - **参照元**: [ベーカリー寛公式サイト](http://www.bakeryhiro.com/location) / [ライナーウェブ(旭川ローカル)](https://www.liner.jp/spot/423/)
 
-### 44. エチュード洋菓子店 旭町店(本店)（えちゅーどようがしてん あさひまちてん）
+### 45. エチュード洋菓子店 旭町店(本店)（えちゅーどようがしてん あさひまちてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/etude-yogashiten.jpg@@
 

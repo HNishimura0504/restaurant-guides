@@ -1,3 +1,73 @@
+### Las Lanzas（ラス・ランサス）
+
+@@IMG:europe/belgium/img/leuven/laslanzas.jpg@@
+
+@@IMG:europe/belgium/img/leuven/laslanzas_exterior.jpg@@
+
+`老舗・歴史`
+
+約55年続く老舗スペイン料理店。パエリア(paella＝サフラン風味の米の炊き込み)やタパス(tapas＝小皿料理)。夏はSint-Pieterskerkそばの広場テラスが人気。
+
+- **一皿**: パエリア、各種タパス
+- **営業時間**: 月・火・木〜日 12:00–14:30 / 18:00–22:30
+- **定休日**: 水
+- **住所**: Mathieu de Layensplein 3, 3000 Leuven
+- **予約**: 推奨 — ☎ 電話で予約 +32 16 22 76 29 ／ [公式サイト](http://www.restaurantlaslanzas.be/)
+- **公式**: [公式サイト](http://www.restaurantlaslanzas.be/)
+- **選定理由**: マドリード出身シェフが創業し、地元に地中海料理を根付かせた草分け的存在。約55年の歴史を持つ本格スペイン料理店。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Las%20Lanzas%20Mathieu%20de%20Layensplein%20Leuven)
+- **参照元**: [restaurantlaslanzas.be](https://www.restaurantlaslanzas.be/) / [openingsuren.vlaanderen](https://www.openingsuren.vlaanderen/las-lanzas/3000-leuven/mathieu-de-layensplein-3)
+
+### Restaurant d'Artagnan（ダルタニアン）
+
+@@IMG:europe/belgium/img/leuven/dartagnan.jpg@@
+
+`ミシュラン掲載`
+
+2000年から続く邸宅レストラン。地元・新鮮食材のフランス料理(ベルギー・フレンチ折衷)に国際的なアクセントを加える。庭のテラスが名物。
+
+- **一皿**: 季節のフレンチ・コース
+- **営業時間**: 木・金 昼12:00–13:30/夜18:30–20:30、土 夜18:30–20:30(他要確認)
+- **定休日**: 日〜水(要確認)
+- **住所**: Naamsestraat 72, 3000 Leuven
+- **予約**: 要(要予約) — ☎ 電話で予約 +32 16 29 26 26 ／ [公式サイト](https://www.restaurantdartagnan.be/)
+- **公式**: [公式サイト](https://www.restaurantdartagnan.be/)
+- **選定理由**: ミシュランガイド掲載・Gault&Millau掲載。ルーベンのグルメに長年愛される邸宅レストラン。※厳密にはベルギー・フレンチ折衷。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20d%27Artagnan%20Naamsestraat%2072%20Leuven)
+- **参照元**: [ミシュランガイド](https://guide.michelin.com/us/en/vlaams-brabant/leuven/restaurant/d-artagnan) / [Gault&Millau](https://www.gaultmillau.be/en/restaurants/dartagnan-leuven)
+
+### Ristorante Guzzi（リストランテ・グッツィ）
+
+@@IMG:europe/belgium/img/leuven/ristorante-guzzi.jpg@@
+
+`権威評価`
+
+2021年開業。既収録 Rossi のシェフ Felice Miluzzi による姉妹店で、有機の天然酵母種を使ったピッツァが看板。
+
+- **一皿**: 天然酵母種のピッツァ
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが Rossi の姉妹店として掲載。Rossi のシェフは Gault&Millau でイタリア料理の最優秀に選ばれている。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ristorante%20Guzzi%203000%20Leuven)
+- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/world-kitchen)／写真: [gaultmillau.be](https://www.gaultmillau.be/en/restaurants/guzzi-leuven)
+
+### Zoff（ゾフ）
+
+`口コミ突出`
+
+メヘルセストラートのイタリア料理のレストバー。食事と一杯の両方に使える造り。
+
+- **一皿**: イタリアの前菜と一杯
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: Mechelsestraat, 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが「評価の高いイタリアのレストバー」として掲載。食の通りメヘルセストラートの夜の受け皿。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Zoff%20Mechelsestraat%2C%203000%20Leuven)
+- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/world-kitchen)
+
 ### SUD SUD Bistro（スッド・スッド）
 
 `口コミ突出`
@@ -45,6 +115,8 @@
 
 ### Kalypta（カリプタ）
 
+@@IMG:europe/belgium/img/leuven/kalypta.jpg@@
+
 `ブログ推薦`
 
 世界各地の料理を一つの品書きに並べる店。パリスストラートにある。
@@ -56,7 +128,7 @@
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部の公式ガイドと Visit Leuven の双方が掲載。系統を決めずに入れる店として、同行者の好みが割れるときに使える。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Kalypta%20Parijsstraat%2021%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)／写真: [kalypta.be](https://kalypta.be/)
 
 ### At the Bebop（アット・ザ・ビバップ）
 
@@ -230,6 +302,8 @@
 
 ### Bar Afrique（バー・アフリック）
 
+@@IMG:europe/belgium/img/leuven/bar-afrique.jpg@@
+
 `口コミ突出`
 
 ティーンセストラートのアフリカ料理店。ケニアとコンゴの料理を軸に、大陸各地の料理を出す。南アフリカのワインや、ティラミスをもじった Afro-misu といった甘味も置く。
@@ -241,7 +315,7 @@
 - **予約**: 要確認
 - **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログと公式サイトの双方で確認。市内でアフリカ料理を通しで出す代表格。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bar%20Afrique%20Tiensestraat%20109%2C%203000%20Leuven)
-- **参照元**: [barafrique.com](https://www.barafrique.com/)
+- **参照元**: [barafrique.com](https://www.barafrique.com/)／写真: [socialdeal.be](https://www.socialdeal.be/deals/leuven/bar-afrique/heerlijk-afrikaans-2-gangendiner-a-la-carte-bij-bar-afrique-in-hartje-leuven-geniet-met-vrienden-of-familie-van-de-smaken-uit-de-afrikaanse-keuken-mei-2025-leuven/)
 
 ### Mamaye（ママイェ）
 
@@ -356,6 +430,8 @@
 
 ### Thai House（タイ・ハウス）
 
+@@IMG:europe/belgium/img/leuven/thai-house.jpg@@
+
 `口コミ突出`
 
 ティーンセストラートのタイ料理店。金曜の昼はスープ・主菜・ご飯・野菜が付く定食が用意される。
@@ -367,9 +443,11 @@
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部の公式ガイドが上位版のタイ料理店として掲載。学生街の価格帯で本格的なタイ料理が取れる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Thai%20House%20Tiensestraat%2056%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xi/Food_site)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xi/Food_site)／写真: [thaihouse.be](https://www.thaihouse.be/)
 
 ### Thai House Snack（タイ・ハウス・スナック）
+
+@@IMG:europe/belgium/img/leuven/thai-house-snack.jpg@@
 
 `地元密着`
 
@@ -382,9 +460,11 @@
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部の公式ガイドが安価な昼食の場として掲載。菜食対応が明記されている数少ない一軒。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Thai%20House%20Snack%20Tiensestraat%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xi/Food_site)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xi/Food_site)／写真: [thaihouse.be](https://www.thaihouse.be/)
 
 ### Fuji Sushi（フジ・スシ）
+
+@@IMG:europe/belgium/img/leuven/fuji-sushi.jpg@@
 
 `口コミ突出`
 
@@ -397,7 +477,7 @@
 - **予約**: 要確認
 - **選定理由**: 複数の飲食情報サイトがルーベンの日本料理の代表として挙げる。公式サイトで所在と営業を確認できる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Fuji%20Sushi%20Tiensestraat%20121%2C%203000%20Leuven)
-- **参照元**: [fuji-sushi.be](https://www.fuji-sushi.be/)
+- **参照元**: [fuji-sushi.be](https://www.fuji-sushi.be/)／写真: [fuji-sushi.be](https://www.fuji-sushi.be/)
 
 ### RORU Japanese Street Food（ロル）
 
@@ -413,95 +493,3 @@
 - **選定理由**: 公式サイトでティーンセストラート店の所在を確認。既収録の Umamido（ラーメン）と重ならない丼・屋台系として補強。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=RORU%20Japanese%20Street%20Food%20Tiensestraat%2C%203000%20Leuven)
 - **参照元**: [restaurants.roru.be](https://restaurants.roru.be/sushi-leuven-tiensestraat-japanese-street-food/)
-
-### saki Sushi Restaurant（サキ）
-
-`口コミ突出`
-
-市内の寿司店。握りと巻きを中心に、日本料理の定番を揃える。
-
-- **一皿**: 寿司の盛り合わせ
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: 飲食情報サイトのルーベンの寿司一覧で上位に挙がる。日本料理の層を厚くするために採った。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=saki%20Sushi%20Restaurant%203000%20Leuven)
-- **参照元**: [wanderlog.com](https://wanderlog.com/list/geoCategory/85355/best-sushi-restaurants-and-sushi-bars-in-leuven)
-
-### Nirvana Kitchen（ニルヴァーナ・キッチン）
-
-`地元密着`
-
-大学図書館の塔の足元にあるインド料理店。図書館前の広場からそのまま入れる立地で、学生の利用が多い。
-
-- **一皿**: インドのカレーとナン
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: Mgr. Ladeuzeplein, 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが世界の料理の項で掲載。大学図書館という観光の要所に隣接する。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Nirvana%20Kitchen%20Mgr.%20Ladeuzeplein%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/world-kitchen)
-
-### Raffat（ラファット）
-
-`地元密着`
-
-ナームセストラートのパキスタン料理店。伝統的な調理をうたう。
-
-- **一皿**: パキスタンのカレー（香辛料を重ねた伝統的な仕立て）
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: Naamsestraat, 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが「伝統的なパキスタン料理」として掲載。既収録に無い南アジアの系統を足せる。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Raffat%20Naamsestraat%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/world-kitchen)
-
-### Annapurna（アンナプルナ）
-
-`ブログ推薦`
-
-ネパール料理の店。辛さを求める客に向くと紹介されている。
-
-- **一皿**: ネパールのカレーとダルバート
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが掲載。ネパール料理は市内で希少で、系統の重複が無い。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Annapurna%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/world-kitchen)
-
-### Food with Varinder（フード・ウィズ・ヴァリンダー）
-
-`ブログ推薦`
-
-英国・インド・ペルシャの要素を混ぜた料理を出す店。系統をまたぐ構成が特徴。
-
-- **一皿**: 英国×インド×ペルシャの混成料理
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが「興味深い混成」として掲載。分類しにくい独自性を採った。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Food%20with%20Varinder%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/world-kitchen)
-
-### Loving Hut（ラビング・ハット）
-
-`ベジ対応`
-
-完全菜食の軽食店。バーガー、ラップ、サラダを低価格で出す。市庁舎裏の広場に面する。
-
-- **一皿**: 菜食バーガー（肉を使わない具でまとめた一品）
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: Rector de Somerplein 13, 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: KU Leuven 神学部の公式ガイドが「完全菜食の軽食店」として掲載。菜食が必要な同行者がいる場合の受け皿になる。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Loving%20Hut%20Rector%20de%20Somerplein%2013%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
-
-## 中南米料理

@@ -18,25 +18,25 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 
 ## 🗾 店舗マップ
 
-**全域マップ**
+**🗺️ 店舗マップ — 全域マップ**
 
 @@IMG:japan/hokkaido/img/asahikawa/_map.png@@
 
-@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44@@
+@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45@@
 
-**中心部拡大(駅前〜さんろく街)**
+**🗺️ 店舗マップ — 中心部拡大(駅前〜さんろく街)**
 
 @@IMG:japan/hokkaido/img/asahikawa/_map2.png@@
 
-@@MAPTOC:1,2,3,4,5,8,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39@@
+@@MAPTOC:1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,19,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40@@
 
-> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+> Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
 ## 和食・寿司・居酒屋
 
-### 11. 小西鮨（こにしずし）
+### 1. 小西鮨（こにしずし）
 
 @@IMG:japan/hokkaido/img/asahikawa/konishizushi.jpg@@
 
@@ -53,7 +53,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E8%A5%BF%E9%AE%A8%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%96%E4%B8%81%E7%9B%AE%20%E5%8F%B36%20%E3%83%93%E3%83%AB%20A1F)
 - **参照元**: [小西鮨 公式サイト](https://konishisushi.com/) / [モグトリップ旭川(実食レビュー)](https://akj.mogtrip.jp/konishisushi-asahikawa/)
 
-### 12. 鮨みなと（すしみなと）
+### 2. 鮨みなと（すしみなと）
 
 @@IMG:japan/hokkaido/img/asahikawa/sushiminato.jpg@@
 
@@ -70,7 +70,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E3%81%BF%E3%81%AA%E3%81%A8%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%95%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%99)
 - **参照元**: [ホットペッパーグルメ](https://www.hotpepper.jp/strJ000303431/) / [タケマシュラン(グルメブログ)](https://www.takemachelin.com/2020/08/minato.html)
 
-### 13. 独酌三四郎（どくしゃくさんしろう）
+### 3. 独酌三四郎（どくしゃくさんしろう）
 
 @@IMG:japan/hokkaido/img/asahikawa/dokushaku.jpg@@
 
@@ -87,7 +87,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%8B%AC%E9%85%8C%E4%B8%89%E5%9B%9B%E9%83%8E%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%95%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%97)
 - **参照元**: [モグトリップ旭川](https://akj.mogtrip.jp/sanshiro-asahikawa/) / [ホットペッパーグルメ](https://www.hotpepper.jp/strJ000782007/)
 
-### 14. 焼鳥専門 ぎんねこ（やきとりせんもん ぎんねこ）
+### 4. 焼鳥専門 ぎんねこ（やきとりせんもん ぎんねこ）
 
 @@IMG:japan/hokkaido/img/asahikawa/ginneko.jpg@@
 
@@ -104,7 +104,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E5%B0%82%E9%96%80%20%E3%81%8E%E3%82%93%E3%81%AD%E3%81%93%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%E5%8F%B3%EF%BC%96)
 - **参照元**: [5・7小路ふらりーと 公式](http://furari-to.net/shop/s_06.html) / [モグトリップ旭川(新子焼き6選)](https://akj.mogtrip.jp/shinkoyaki-asahikawa/)
 
-### 15. 鳥料理 小野木（とりりょうり おのき）
+### 5. 鳥料理 小野木（とりりょうり おのき）
 
 @@IMG:japan/hokkaido/img/asahikawa/onoki.jpg@@
 
@@ -121,7 +121,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E6%96%99%E7%90%86%20%E5%B0%8F%E9%87%8E%E6%9C%A8%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%9D%B1%E6%97%AD%E5%B7%9D%E5%8C%97%EF%BC%91%E6%9D%A1%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%92%EF%BC%97%20%E9%B3%A5%E6%96%99%E7%90%86%E5%B0%8F%E9%87%8E%E6%9C%A8)
 - **参照元**: [鳥料理小野木 公式サイト](https://www.onoki.org/) / [モグトリップ旭川](https://akj.mogtrip.jp/asahikawa-onoki/)
 
-### 16. 三代目 かん太郎（さんだいめ かんたろう）
+### 6. 三代目 かん太郎（さんだいめ かんたろう）
 
 @@IMG:japan/hokkaido/img/asahikawa/kantaro.jpg@@
 
@@ -138,7 +138,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E4%BB%A3%E7%9B%AE%20%E3%81%8B%E3%82%93%E5%A4%AA%E9%83%8E%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%91%EF%BC%93%E4%B8%81%E7%9B%AE%E5%8F%B31)
 - **参照元**: [モグトリップ旭川(新子焼き6選)](https://akj.mogtrip.jp/shinkoyaki-asahikawa/) / [旭川名物新子焼きの会](https://www.shinkoyaki.com/)
 
-### 17. 居酒屋 天金（いざかや てんきん）
+### 7. 居酒屋 天金（いざかや てんきん）
 
 @@IMG:japan/hokkaido/img/asahikawa/tenkinizakaya.jpg@@
 
@@ -155,7 +155,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%A4%A9%E9%87%91%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%95%EF%BC%98%EF%BC%96%E2%88%92%EF%BC%91)
 - **参照元**: [居酒屋天金 公式サイト](https://tenkin.net/) / [北海グルメDAIGO(note)](https://note.com/hokkai_/n/n19ccef829421)
 
-### 18. 郷土料理の店 居酒屋 バンガロー（きょうどりょうりのみせ いざかや ばんがろー）
+### 8. 郷土料理の店 居酒屋 バンガロー（きょうどりょうりのみせ いざかや ばんがろー）
 
 @@IMG:japan/hokkaido/img/asahikawa/bungalow.jpg@@
 
@@ -172,7 +172,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%83%B7%E5%9C%9F%E6%96%99%E7%90%86%E3%81%AE%E5%BA%97%20%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%83%90%E3%83%B3%E3%82%AC%E3%83%AD%E3%83%BC%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%96%E4%B8%81%E7%9B%AE%E5%8F%B3%EF%BC%97-%EF%BC%98%EF%BC%92%EF%BC%95%EF%BC%8D%EF%BC%91)
 - **参照元**: [旭川観光コンベンション協会](https://www.atca.jp/group_meal/bungalow/) / [ライナーウェブ(旭川ローカル紙)](https://liner.jp/spot/12883)
 
-### 19. 炉端のユーカラ（ろばたのゆーから）
+### 9. 炉端のユーカラ（ろばたのゆーから）
 
 @@IMG:japan/hokkaido/img/asahikawa/yukara.jpg@@
 
@@ -189,7 +189,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E3%81%AE%E3%83%A6%E3%83%BC%E3%82%AB%E3%83%A9%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%EF%BC%93%EF%BC%97)
 - **参照元**: [ホットペッパーグルメ](https://www.hotpepper.jp/strJ000796317/) / [北海グルメDAIGO(note)](https://note.com/hokkai_/n/n19ccef829421)
 
-### 20. 和菜酒房 おりべ（わさいしゅぼう おりべ）
+### 10. 和菜酒房 おりべ（わさいしゅぼう おりべ）
 
 @@IMG:japan/hokkaido/img/asahikawa/oribe.jpg@@
 
@@ -206,7 +206,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E8%8F%9C%E9%85%92%E6%88%BF%20%E3%81%8A%E3%82%8A%E3%81%B9%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%97%20%E3%83%97%E3%83%A9%E3%83%8D%E3%83%83%E3%83%882%E3%83%BB7%E3%83%93%E3%83%AB%201F)
 - **参照元**: [北海グルメDAIGO(note)](https://note.com/hokkai_/n/n19ccef829421) / [はらへり(居酒屋特集)](https://haraheri.net/article/1432/asahikawa-izakaya)
 
-### 21. ゆるり（ゆるり）
+### 11. ゆるり（ゆるり）
 
 @@IMG:japan/hokkaido/img/asahikawa/yururi.jpg@@
 
@@ -225,7 +225,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 
 ## 旭川ラーメン・そば・うどん
 
-### 1. 蜂屋 五条創業店（はちや ごじょうそうぎょうてん）
+### 12. 蜂屋 五条創業店（はちや ごじょうそうぎょうてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/hachiya.jpg@@
 
@@ -242,7 +242,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E8%9C%82%E5%B1%8B%20%E4%BA%94%E6%9D%A1%E5%89%B5%E6%A5%AD%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%E5%8F%B3%EF%BC%96)
 - **参照元**: [蜂屋 公式サイト](https://hachiya88.storeinfo.jp/) / [都良(TORA)の旭川食べ歩き](https://torawriter.hatenadiary.jp/entry/2025/09/17/032654)
 
-### 2. 旭川らぅめん青葉 本店（あさひかわらぅめんあおば ほんてん）
+### 13. 旭川らぅめん青葉 本店（あさひかわらぅめんあおば ほんてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/aoba.jpg@@
 
@@ -259,7 +259,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%97%AD%E5%B7%9D%E3%82%89%E3%81%85%E3%82%81%E3%82%93%E9%9D%92%E8%91%89%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%EF%BC%94%20%EF%BC%96%20%EF%BC%92%E6%9D%A1%20%E6%97%AD%E5%B7%9D%E4%BA%8C%E6%9D%A1%E9%80%9A%E3%83%93%E3%83%AB%20%E5%90%8D%E5%BA%97%E8%A1%97)
 - **参照元**: [なまら旭川](https://namara-asahikawa.jp/gourmet/ramen/aoba-honten/) / [きょくめし(在住者ブログ)](https://kyokumeshi.com/aoba/)
 
-### 3. らーめんや天金 四条店（らーめんやてんきん よじょうてん）
+### 14. らーめんや天金 四条店（らーめんやてんきん よじょうてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/tenkinramen.jpg@@
 
@@ -276,7 +276,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E3%82%84%E5%A4%A9%E9%87%91%20%E5%9B%9B%E6%9D%A1%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%99%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%97%EF%BC%90%EF%BC%94%E2%88%92%EF%BC%93%EF%BC%91)
 - **参照元**: [天金 公式サイト](https://www.tenkin-asahikawa.jp/) / [地球の歩き方 特派員ブログ](https://www.arukikata.co.jp/tokuhain/255493/)
 
-### 4. 梅光軒 本店（ばいこうけん ほんてん）
+### 15. 梅光軒 本店（ばいこうけん ほんてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/baikoken.jpg@@
 
@@ -293,7 +293,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E5%85%89%E8%BB%92%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%20%E3%83%94%E3%82%A2%E3%82%B6%E3%83%93%E3%83%AB%20B1F%20%E3%83%94%E3%82%A2%E3%82%B6%E3%83%93%E3%83%AB%20B1F)
 - **参照元**: [梅光軒 本店 公式ページ](https://h074500.gorp.jp/) / [asatan(旭川ローカルメディア)](https://asatan.com/articles/2067)
 
-### 5. らーめん山頭火 旭川本店（らーめんさんとうか あさひかわほんてん）
+### 16. らーめん山頭火 旭川本店（らーめんさんとうか あさひかわほんてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/santoka.jpg@@
 
@@ -310,7 +310,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E5%B1%B1%E9%A0%AD%E7%81%AB%20%E6%97%AD%E5%B7%9D%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%91%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%94%EF%BC%98%E2%88%92%EF%BC%96%20MANNY%20BLD%201F)
 - **参照元**: [らーめん山頭火 公式(旭川本店)](https://www.santouka.co.jp/shop-jp/hokkaido/area01-001) / [北海道Likers](https://hokkaidolikers.com/archives/47846)
 
-### 6. みそラーメンのよし乃 本店（みそらーめんのよしの ほんてん）
+### 17. みそラーメンのよし乃 本店（みそらーめんのよしの ほんてん）
 
 @@IMG:japan/hokkaido/img/asahikawa/yoshino.jpg@@
 
@@ -327,7 +327,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%81%9D%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E3%81%AE%E3%82%88%E3%81%97%E4%B9%83%20%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E8%B1%8A%E5%B2%A1%EF%BC%91%E6%9D%A1%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%98)
 - **参照元**: [ラーメンよし乃 公式サイト](https://www.misoramen-yoshino.com/) / [北海道Likers](https://hokkaidolikers.com/archives/44286)
 
-### 7. ラーメン専門 つるや（らーめんせんもん つるや）
+### 18. ラーメン専門 つるや（らーめんせんもん つるや）
 
 @@IMG:japan/hokkaido/img/asahikawa/tsuruya.jpg@@
 
@@ -344,7 +344,7 @@ JAPAN / ASAHIKAWA・北海道 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%B0%82%E9%96%80%20%E3%81%A4%E3%82%8B%E3%82%84%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%91%EF%BC%99%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%91%EF%BC%90)
 - **参照元**: [旭川観光コンベンション協会](https://www.atca.jp/menberinfo/%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%B0%82%E9%96%80-%E3%81%A4%E3%82%8B%E3%82%84-%EF%BC%88%E3%81%A4%E3%82%8B%E3%82%84%E7%B4%B0%E6%9C%A8-%E6%9C%89%E9%99%90%E4%BC%9A%E7%A4%BE%EF%BC%89/) / [食べログ ラーメンHOKKAIDO百名店](https://award.tabelog.com/hyakumeiten/ramen_hokkaido/2024)
 
-### 8. 生姜ラーメン みづの（しょうがらーめん みづの）
+### 19. 生姜ラーメン みづの（しょうがらーめん みづの）
 
 @@IMG:japan/hokkaido/img/asahikawa/mizuno.jpg@@
 

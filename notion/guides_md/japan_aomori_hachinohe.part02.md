@@ -329,6 +329,8 @@
 
 ### 40. 香彩珈琲 みな実 三日町中央店（こうさいこーひー みなみ）
 
+@@IMG:japan/aomori/img/hachinohe/minami.jpg@@
+
 `老舗・歴史` `地元密着`
 
 昭和48(1973)年創業、中心街・三日町の老舗珈琲店。アンティークの時計やカップが並ぶ店内で、一杯ずつ丁寧に淹れる自家焙煎コーヒーを味わえる。さくら野百貨店八戸店にも支店を持つ地元の定番。
@@ -340,7 +342,7 @@
 - **予約**: 要確認 — ☎ 0178-44-1151 ／ [公式サイト](https://sakurano-dept.jp/hachinohe/floor_shop.html?post=191)
 - **選定理由**: 創業50年を超える中心街の老舗喫茶として旅行口コミ・地元ブログで紹介される。営業はPayPayグルメ等で確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%A6%99%E5%BD%A9%E7%8F%88%E7%90%B2%20%E3%81%BF%E3%81%AA%E5%AE%9F%20%E4%B8%89%E6%97%A5%E7%94%BA%E4%B8%AD%E5%A4%AE%E5%BA%97%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E5%85%AB%E6%88%B8%E5%B8%82%E4%B8%89%E6%97%A5%E7%94%BA%EF%BC%91%EF%BC%93%20%E5%9C%B0%E4%B8%8B%E4%B8%80%E9%9A%8E)
-- **参照元**: [フォートラベル](https://4travel.jp/dm_shisetsu/11390780) / [PayPayグルメ](https://paypaygourmet.yahoo.co.jp/place/g-zEtlo6qnlKI/)
+- **参照元**: [フォートラベル](https://4travel.jp/dm_shisetsu/11390780) / [PayPayグルメ](https://paypaygourmet.yahoo.co.jp/place/g-zEtlo6qnlKI/)／写真: [graphaomori.jimdofree.com](https://graphaomori.jimdofree.com/web%E8%A8%98%E4%BA%8B/389%E5%8F%B7%E9%9D%92%E6%A3%AE%E3%81%AE%E7%8F%88%E7%90%B2/%E7%8F%88%E7%90%B2%E3%81%BF%E3%81%AA%E5%AE%9F/)
 
 ### 41. パスタと喫茶のお店 茶比伊（ぱすたときっさのおみせ ちゃっぴい）
 

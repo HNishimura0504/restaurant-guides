@@ -1,4 +1,38 @@
+### Temmerman（テメルマン）
+
+@@IMG:europe/belgium/img/leuven/temmerman.jpg@@
+
+`食の専門街・市場`
+
+地域の産品と贈答用の詰め合わせを扱う専門店。土産の買い出しに向く。
+
+- **一皿**: ベルギーの地域産品の詰め合わせ
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: 公式サイトで地域産品・贈答品の専門店であることを確認。持ち帰りの土産をまとめて揃えたいときの一軒。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Temmerman%203000%20Leuven)
+- **参照元**: [temmermanleuven.be](https://www.temmermanleuven.be/producten/delicatessen)
+
+### Coup de Soup（クー・ド・スープ）
+
+`地元密着`
+
+スープとパスタの持ち帰り店。席数は少なく、買って外で食べる使い方が中心。安価。
+
+- **一皿**: 日替わりのスープ
+- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
+- **定休日**: 要確認
+- **住所**: 3000 Leuven
+- **予約**: 要確認
+- **選定理由**: KU Leuven 神学部の公式ガイドが「非常に安価、持ち帰りに向く」と掲載。天候の悪い日の昼の受け皿になる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Coup%20de%20Soup%203000%20Leuven)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xi/Food_site)
+
 ### Boccone（ボッコーネ）
+
+@@IMG:europe/belgium/img/leuven/boccone.jpg@@
 
 `地元密着`
 
@@ -11,7 +45,7 @@
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部の公式ガイドが「持ち帰りに最適」として掲載。市庁舎裏の広場に面し、歩きながら食べる動線に合う。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Boccone%20Rector%20De%20Somerplein%2015/A%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)／写真: [boccone.be](https://boccone.be/)
 
 ### Pasta Ruffo（パスタ・ルッフォ）
 
@@ -30,6 +64,8 @@
 
 ### Piccolo Belegde Broodjes（ピッコロ）
 
+@@IMG:europe/belgium/img/leuven/piccolo-belegde-broodjes.jpg@@
+
 `地元密着` `口コミ突出`
 
 具を挟んだパン（ベルギー式のサンドイッチ）の専門店。バゲットの具の種類が多く、サラダや軽食も置く。改装済み。
@@ -41,7 +77,7 @@
 - **予約**: 要確認
 - **選定理由**: 公式サイトで品揃えと所在を確認。ベルギーの昼食の主流である「belegde broodjes（具を挟んだパン）」を代表させるために採った。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Piccolo%20Belegde%20Broodjes%203000%20Leuven)
-- **参照元**: [piccolo-leuven.be](https://www.piccolo-leuven.be/)
+- **参照元**: [piccolo-leuven.be](https://www.piccolo-leuven.be/)／写真: [piccolo-leuven.be](https://www.piccolo-leuven.be/)
 
 ## デザート・チョコレート
 
@@ -166,6 +202,8 @@ Vismarkt(Mechelsestraatの延長)のパティスリー&ショコラトリー。�
 
 ### Kokozi（ココジ）
 
+@@IMG:europe/belgium/img/leuven/kokozi.jpg@@
+
 `ブログ推薦`
 
 Mama Leone の近くにあるアイス店。作りたてのアイスに加え、アイスのカップケーキ、ブラウニー、ケーキを置く。
@@ -177,9 +215,11 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: 地域の飲食情報が「作りたての職人アイスと焼き菓子」と紹介。アイスと焼き菓子を一度に取れる構成を採った。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Kokozi%203000%20Leuven)
-- **参照元**: [wannderful.com](https://www.wannderful.com/de-lekkerste-ijsjes-in-leuven/)
+- **参照元**: [wannderful.com](https://www.wannderful.com/de-lekkerste-ijsjes-in-leuven/)／写真: [kokozi.be](https://kokozi.be/)
 
 ### Decadenza Gelateria（デカデンツァ）
+
+@@IMG:europe/belgium/img/leuven/decadenza-gelateria.jpg@@
 
 `眺望`
 
@@ -192,9 +232,11 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが「大学図書館を見晴らす」と明記して掲載。景色と結び付く数少ない甘味。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Decadenza%20Gelateria%20Mgr.%20Ladeuzeplein%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/ice-cream)
+- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/ice-cream)／写真: [decadenza.be](https://www.decadenza.be/)
 
 ### Sarah Renson（サラ・レンソン）
+
+@@IMG:europe/belgium/img/leuven/sarah-renson.jpg@@
 
 `権威評価`
 
@@ -207,9 +249,11 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが職人名を明記して掲載。既収録の ZUUT・Bittersweet と並ぶ職人系の3軒目として採った。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Sarah%20Renson%20Pensstraat%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/ice-cream)
+- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/ice-cream)／写真: [sarahrenson.be](https://sarahrenson.be/)
 
 ### MOK Specialty Coffee（モック）
+
+@@IMG:europe/belgium/img/leuven/mok-specialty-coffee.jpg@@
 
 `口コミ突出`
 
@@ -222,9 +266,11 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: 地域の珈琲専門メディアがルーベンの上位に継続して挙げる。既収録に珈琲の専門店が無く、朝の選択肢を足せる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=MOK%20Specialty%20Coffee%203000%20Leuven)
-- **参照元**: [koffietje.nl](https://www.koffietje.nl/plaats/leuven/)
+- **参照元**: [koffietje.nl](https://www.koffietje.nl/plaats/leuven/)／写真: [mokcoffee.be](https://www.mokcoffee.be/)
 
 ### Thelma Coffee & Design（テルマ）
+
+@@IMG:europe/belgium/img/leuven/thelma-coffee-design.jpg@@
 
 `ブログ推薦`
 
@@ -237,7 +283,7 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: 地域の珈琲専門メディアが掲載。買い物と休憩を一度に済ませたいときの一軒として、純粋な珈琲店（MOK）と性格を分けて採った。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Thelma%20Coffee%20%26%20Design%203000%20Leuven)
-- **参照元**: [koffietje.nl](https://www.koffietje.nl/plaats/leuven/)
+- **参照元**: [koffietje.nl](https://www.koffietje.nl/plaats/leuven/)／写真: [smarksthespots.com](https://www.smarksthespots.com/thelma-coffee-design-leuven/)
 
 ## パン(朝食・買い出し)
 
@@ -278,6 +324,8 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 
 ### De Broodenier（デ・ブローデニール）
 
+@@IMG:europe/belgium/img/leuven/de-broodenier.jpg@@
+
 `ブログ推薦`
 
 2020年8月開業の職人パン店。サワードウ（天然酵母）のパンを中心に、クロワッサン、アーモンドクロワッサン、パン・オ・ショコラ、干しぶどうパン、シナモンロールを焼く。
@@ -289,9 +337,11 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが開業年と品目まで挙げて掲載。既収録2軒に無い天然酵母の系統を足せる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Broodenier%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/where-to-eat)
+- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/where-to-eat)／写真: [broodenier.be](https://broodenier.be/)
 
 ### Vangrootloon（ファングロートローン）
+
+@@IMG:europe/belgium/img/leuven/vangrootloon.jpg@@
 
 `老舗・歴史`
 
@@ -304,7 +354,7 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: 地域の飲食メディアが所在と営業時間を明記して掲載。大学の中心軸ナームセストラート沿いで朝の買い出しに向く。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Vangrootloon%20Naamsestraat%2012%2C%203000%20Leuven)
-- **参照元**: [mijnleuven.be](https://www.mijnleuven.be/artikel/dossier-ontbijten-in-leuven)
+- **参照元**: [mijnleuven.be](https://www.mijnleuven.be/artikel/dossier-ontbijten-in-leuven)／写真: [lekkerleuven.be](https://www.lekkerleuven.be/item/bakkerij-vangrootloon/)
 
 ### Bakkerij Scheys（バッケレイ・スヘイス）
 
@@ -323,6 +373,8 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 
 ### ZOUT（ザウト）
 
+@@IMG:europe/belgium/img/leuven/zout.jpg@@
+
 `ブログ推薦`
 
 既収録の菓子店 ZUUT の隣にあるパン店。ZUUT の店頭で売られるパンはここから出る。
@@ -334,7 +386,7 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが ZUUT の項で「隣の ZOUT の焼きたてパン」と明記。菓子と食事パンを一度に揃えられる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=ZOUT%20Vismarkt%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/ice-cream)
+- **参照元**: [visitleuven.be](https://www.visitleuven.be/en/blog/ice-cream)／写真: [zoutbakkerij.be](https://www.zoutbakkerij.be/)
 
 ## ビール(おまけ)
 
@@ -394,6 +446,8 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 
 ### De Blauwe Kater（デ・ブラウウェ・カテル）
 
+@@IMG:europe/belgium/img/leuven/de-blauwe-kater.jpg@@
+
 `老舗・歴史`
 
 100種の銘柄を置くビール酒場。毎週月曜にジャズとブルースの生演奏がある。
@@ -405,9 +459,11 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが「100銘柄」「月曜に生演奏」と具体的に掲載。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Blauwe%20Kater%20Mechelsestraat%2051%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/beer-bars-shops)
+- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/beer-bars-shops)／写真: [belgiansmaak.com](https://www.belgiansmaak.com/de-blauwe-kater/)
 
 ### Leuven Central（ルーベン・セントラル）
+
+@@IMG:europe/belgium/img/leuven/leuven-central.jpg@@
 
 `眺望` `地元密着`
 
@@ -420,9 +476,11 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが「市庁舎と聖ペーター教会を見晴らすテラス」と明記して掲載。景色とビールが結び付く一軒。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Leuven%20Central%20Margarethaplein%203%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/beer-bars-shops)
+- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/beer-bars-shops)／写真: [leuven-central.be](https://leuven-central.be/)
 
 ### Hops 'N More（ホップス・アンド・モア）
+
+@@IMG:europe/belgium/img/leuven/hops-n-more.jpg@@
 
 `ブログ推薦`
 
@@ -435,7 +493,7 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **予約**: 要確認
 - **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが掲載。ノンアルコールの選択肢が明記されており、飲めない同行者がいる場合に使える。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Hops%20%27N%20More%20Mechelsestraat%2050%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/beer-bars-shops)
+- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/beer-bars-shops)／写真: [visitleuven.be](https://visitleuven.be/en/blog/beer-bars-shops)
 
 ## 非ベルギー欧州料理
 
@@ -476,71 +534,3 @@ Mama Leone の近くにあるアイス店。作りたてのアイスに加え、
 - **選定理由**: レストラン街Muntstraat屈指のギリシャ料理店。ギリシャ人シェフの「ギリシャ産のみ」の食材主義が支持され、複数サイトで高評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20Kreta%20Muntstraat%2023%20Leuven)
 - **参照元**: [Muntstraat公式ガイド](http://www.muntstraat.be/content/88.html) / [TripAdvisor](https://www.tripadvisor.com/Restaurant_Review-g188669-d16820394-Reviews-Kreta_Restaurant-Leuven_Flemish_Brabant_Province.html)
-
-### Las Lanzas（ラス・ランサス）
-
-@@IMG:europe/belgium/img/leuven/laslanzas.jpg@@
-
-@@IMG:europe/belgium/img/leuven/laslanzas_exterior.jpg@@
-
-`老舗・歴史`
-
-約55年続く老舗スペイン料理店。パエリア(paella＝サフラン風味の米の炊き込み)やタパス(tapas＝小皿料理)。夏はSint-Pieterskerkそばの広場テラスが人気。
-
-- **一皿**: パエリア、各種タパス
-- **営業時間**: 月・火・木〜日 12:00–14:30 / 18:00–22:30
-- **定休日**: 水
-- **住所**: Mathieu de Layensplein 3, 3000 Leuven
-- **予約**: 推奨 — ☎ 電話で予約 +32 16 22 76 29 ／ [公式サイト](http://www.restaurantlaslanzas.be/)
-- **公式**: [公式サイト](http://www.restaurantlaslanzas.be/)
-- **選定理由**: マドリード出身シェフが創業し、地元に地中海料理を根付かせた草分け的存在。約55年の歴史を持つ本格スペイン料理店。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Las%20Lanzas%20Mathieu%20de%20Layensplein%20Leuven)
-- **参照元**: [restaurantlaslanzas.be](https://www.restaurantlaslanzas.be/) / [openingsuren.vlaanderen](https://www.openingsuren.vlaanderen/las-lanzas/3000-leuven/mathieu-de-layensplein-3)
-
-### Restaurant d'Artagnan（ダルタニアン）
-
-@@IMG:europe/belgium/img/leuven/dartagnan.jpg@@
-
-`ミシュラン掲載`
-
-2000年から続く邸宅レストラン。地元・新鮮食材のフランス料理(ベルギー・フレンチ折衷)に国際的なアクセントを加える。庭のテラスが名物。
-
-- **一皿**: 季節のフレンチ・コース
-- **営業時間**: 木・金 昼12:00–13:30/夜18:30–20:30、土 夜18:30–20:30(他要確認)
-- **定休日**: 日〜水(要確認)
-- **住所**: Naamsestraat 72, 3000 Leuven
-- **予約**: 要(要予約) — ☎ 電話で予約 +32 16 29 26 26 ／ [公式サイト](https://www.restaurantdartagnan.be/)
-- **公式**: [公式サイト](https://www.restaurantdartagnan.be/)
-- **選定理由**: ミシュランガイド掲載・Gault&Millau掲載。ルーベンのグルメに長年愛される邸宅レストラン。※厳密にはベルギー・フレンチ折衷。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20d%27Artagnan%20Naamsestraat%2072%20Leuven)
-- **参照元**: [ミシュランガイド](https://guide.michelin.com/us/en/vlaams-brabant/leuven/restaurant/d-artagnan) / [Gault&Millau](https://www.gaultmillau.be/en/restaurants/dartagnan-leuven)
-
-### Ristorante Guzzi（リストランテ・グッツィ）
-
-`権威評価`
-
-2021年開業。既収録 Rossi のシェフ Felice Miluzzi による姉妹店で、有機の天然酵母種を使ったピッツァが看板。
-
-- **一皿**: 天然酵母種のピッツァ
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが Rossi の姉妹店として掲載。Rossi のシェフは Gault&Millau でイタリア料理の最優秀に選ばれている。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ristorante%20Guzzi%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/world-kitchen)
-
-### Zoff（ゾフ）
-
-`口コミ突出`
-
-メヘルセストラートのイタリア料理のレストバー。食事と一杯の両方に使える造り。
-
-- **一皿**: イタリアの前菜と一杯
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: Mechelsestraat, 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: ルーベン市観光局 Visit Leuven の公式ブログが「評価の高いイタリアのレストバー」として掲載。食の通りメヘルセストラートの夜の受け皿。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Zoff%20Mechelsestraat%2C%203000%20Leuven)
-- **参照元**: [visitleuven.be](https://visitleuven.be/en/blog/world-kitchen)

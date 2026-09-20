@@ -20,6 +20,8 @@
 
 ### Kelterei Possmann（ケルタライ・ポスマン）
 
+@@IMG:europe/germany/img/frankfurt/kelterei-possmann.jpg@@
+
 `老舗・歴史`
 
 1881年創業、5代目が営むドイツ最大級のアプフェルヴァイン醸造所(レーデルハイム地区)。敷地内に素朴なアプフェルヴァイン食堂と夏のリンゴ酒ガーデンがあり、平日は醸造所見学(要予約)もできる。
@@ -32,9 +34,11 @@
 - **公式**: [公式サイト](https://www.possmann.de/)
 - **選定理由**: 公式サイトが1881年創業・敷地内食堂・見学ツアーを明記。「作り手を訪ねる」体験ができる市内唯一級のスポットとしてドリンク枠に選定(ザクセンハウゼンの酒場とは重複しない)。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Kelterei%20Possmann%20Eschborner%20Landstra%C3%9Fe%20156-162%2C%2060489%20Frankfurt%20am%20Main%20%28R%C3%B6delheim%29)
-- **参照元**: [possmann.de](https://www.possmann.de/english/our-family-winery/) / [possmann.de(見学)](https://www.possmann.de/english/our-family-winery/guided-tours/)
+- **参照元**: [possmann.de](https://www.possmann.de/english/our-family-winery/) / [possmann.de(見学)](https://www.possmann.de/english/our-family-winery/guided-tours/)／写真: [visitfrankfurt.travel](https://www.visitfrankfurt.travel/gastro/kelterei-possmann-und-frankfurter-aepfelwein-botschaft)
 
 ### Weingut Rollanderhof Weinterrasse (Kleinmarkthalle)（ロランダーホーフ・ヴァインテラッセ）
+
+@@IMG:europe/germany/img/frankfurt/rollanderhof-weinterrasse.jpg@@
 
 `ブログ推薦` `食の専門街・市場`
 
@@ -48,7 +52,7 @@
 - **公式**: [公式サイト](http://www.weingut-rollanderhof.de/)
 - **選定理由**: ワイナリー公式サイトがテラスの存在を明記し、Genussmagazin Frankfurt が「土曜昼に地元の社交界が集う」名物スポットとして紹介。市場観光と組み合わせられるドリンク枠として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Weingut%20Rollanderhof%20Weinterrasse%20%28Kleinmarkthalle%29%20Kleinmarkthalle%20%28%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC%E9%9A%8E%29%2C%20Hasengasse%205-7%2C%2060311%20Frankfurt%20am%20Main)
-- **参照元**: [weingut-rollanderhof.de](https://www.weingut-rollanderhof.de/pages/weinterrasse) / [genussmagazin-frankfurt.de](https://www.genussmagazin-frankfurt.de/gastro_service/Kulinarische-Fuehrungen-109/Kleinmarkthalle-Frankfurt-1417.html)
+- **参照元**: [weingut-rollanderhof.de](https://www.weingut-rollanderhof.de/pages/weinterrasse) / [genussmagazin-frankfurt.de](https://www.genussmagazin-frankfurt.de/gastro_service/Kulinarische-Fuehrungen-109/Kleinmarkthalle-Frankfurt-1417.html)／写真: [weingut-rollanderhof.de](https://www.weingut-rollanderhof.de/pages/wochenmarkte)
 
 ## 非ドイツ欧州料理
 

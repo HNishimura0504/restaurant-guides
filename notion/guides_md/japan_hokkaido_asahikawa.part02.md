@@ -1,4 +1,4 @@
-### 9. 幌加内伝承手打ち蕎麦 せい一（ほろかないでんしょうてうちそば せいいち）
+### 20. 幌加内伝承手打ち蕎麦 せい一（ほろかないでんしょうてうちそば せいいち）
 
 @@IMG:japan/hokkaido/img/asahikawa/seiichi.jpg@@
 
@@ -15,7 +15,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%B9%8C%E5%8A%A0%E5%86%85%E4%BC%9D%E6%89%BF%E6%89%8B%E6%89%93%E3%81%A1%E8%95%8E%E9%BA%A6%20%E3%81%9B%E3%81%84%E4%B8%80%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E6%9C%AB%E5%BA%83%EF%BC%97%E6%9D%A1%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91)
 - **参照元**: [せい一 公式サイト](https://r.goope.jp/seiichi/) / [号外NET 旭川(移転記事)](https://asahikawa.goguynet.jp/2024/08/22/seiichitoyooka-iten/)
 
-### 10. 手作りうどん 杉（てづくりうどん すぎ）
+### 21. 手作りうどん 杉（てづくりうどん すぎ）
 
 @@IMG:japan/hokkaido/img/asahikawa/udonsugi.jpg@@
 
@@ -136,9 +136,26 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%8B%AC%E9%85%8C%20%E4%B8%89%E5%9B%9B%E9%83%8E%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%95%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%97)
 - **参照元**: [もぐとりっぷ(旭川在住者グルメサイト)](https://akj.mogtrip.jp/sanshiro-asahikawa/) / [ホットペッパーグルメ](https://www.hotpepper.jp/strJ000782007/)
 
+### 28. 炭火焼き肉 金花郎 一条本店（すみびやきにく きんかろう いちじょうほんてん）
+
+@@IMG:japan/hokkaido/img/asahikawa/kinkarou.jpg@@
+
+`地元密着` `ブログ推薦`
+
+旭川駅から歩けるビル街の炭火焼肉店で、創業28年。名物のネギ塩牛たん＝厚切りの牛タンに、ごま油と塩だれで和えた刻みネギをのせ、巻いて食べる一品。塩ホルモン（豚の腸などを塩だれで焼く旭川定番の焼肉）や国産牛サガリ（横隔膜の赤身肉）も揃い、昼は1,300円台のランチセットがある。
+
+- **一皿**: 一皿: ネギ塩牛たん（厚切り牛タンで、ごま油の効いた塩だれの刻みネギを包んで食べる看板メニュー。昼の「タン尽くしセット」1,980円税込／単品は牛タン379円〜）
+- **営業時間**: 昼11:30〜14:30(L.O.14:00／全日昼営業、ランチセットは平日のみ)、夜 月〜金17:00〜22:00・土日祝16:00〜22:00(L.O.21:30)
+- **定休日**: 不定休
+- **住所**: 北海道旭川市1条通4丁目2043-2
+- **予約**: 可(夜は混むため推奨): 0166-22-8929 / https://www.hotpepper.jp/strJ000836019/
+- **選定理由**: 旭川観光コンベンション協会の会員リスト「焼肉・ジンギスカン・しゃぶしゃぶ」に一条本店が掲載される地元の定番店。公式サイトは自ら「地元に愛される焼肉屋」と掲げ、2026年9月16日付で「秋の味覚フェア」を告知しており営業中と確認できる。旭川のローカルブログ「たるビートのラーメンblog from 旭川」が『旭川で人気の焼肉店に初潜入！』として牛サガリ・塩ホルモンを高評価。既収録の炭や・馬場ホルモン・七輪屋は豚の塩ホルモン、大黒屋・ひつじ家は生ラムで、牛の炭火焼肉（とりわけ牛たん）を担う店が抜けていたため、この章の穴を埋められる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E3%81%8D%E8%82%89%20%E9%87%91%E8%8A%B1%E9%83%8E%20%E4%B8%80%E6%9D%A1%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%821%E6%9D%A1%E9%80%9A4%E4%B8%81%E7%9B%AE2043-2)
+- **参照元**: [炭火焼き肉 金花郎 公式サイト（店舗情報・営業時間・お知らせ 26/9/16）](https://www.kinkarou.jp/) / [一般社団法人 旭川観光コンベンション協会 会員情報「焼肉 金花郎 一条本店」](https://www.atca.jp/menberinfo/%E7%84%BC%E8%82%89%E3%80%80%E9%87%91%E8%8A%B1%E9%83%8E%E3%80%80%E4%B8%80%E6%9D%A1%E6%9C%AC%E5%BA%97/) / [旭川観光コンベンション協会 会員リスト・焼肉・ジンギスカン・しゃぶしゃぶ](https://www.atca.jp/category/memberlist/member-food/food-yakiniku/?post_type=menberinfo) / [ホットペッパーグルメ 焼肉金花郎一条店（席数・設備・営業時間）](https://www.hotpepper.jp/strJ000836019/) / [たるビートのラーメンblog from 旭川「炭火焼き肉 金花郎 一条本店 〜旭川で人気の焼肉店に初潜入！〜」](https://ameblo.jp/tarubeat/entry-12849183583.html)
+
 ## 洋食・イタリアン・カレー
 
-### 28. 自由軒（じゆうけん）
+### 29. 自由軒（じゆうけん）
 
 @@IMG:japan/hokkaido/img/asahikawa/jiyuken.jpg@@
 
@@ -155,7 +172,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E7%94%B1%E8%BB%92%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%E5%B7%A62%E5%8F%B7)
 - **参照元**: [もぐとりっぷ(旭川在住者グルメサイト)](https://akj.mogtrip.jp/jiyuken-asahikawa/) / [旭川観光コンベンション協会](https://www.atca.jp/jiyuken/)
 
-### 29. 立喰いそば屋 天勇（たちぐいそばや てんゆう）
+### 30. 立喰いそば屋 天勇（たちぐいそばや てんゆう）
 
 @@IMG:japan/hokkaido/img/asahikawa/tenyu.jpg@@
 
@@ -172,7 +189,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%AB%8B%E5%96%B0%E3%81%84%E3%81%9D%E3%81%B0%E5%B1%8B%20%E5%A4%A9%E5%8B%87%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%91%EF%BC%98%EF%BC%97%E2%88%92%EF%BC%97)
 - **参照元**: [もぐとりっぷ(旭川在住者グルメサイト)](https://akj.mogtrip.jp/tenyu-asahikawa/) / [ライナーウェブ(旭川ローカルニュース)](https://www.liner.jp/news/2019100222469/)
 
-### 30. 大雪地ビール館（たいせつじビールかん）
+### 31. 大雪地ビール館（たいせつじビールかん）
 
 @@IMG:japan/hokkaido/img/asahikawa/taisetsujibeer.jpg@@
 
@@ -189,7 +206,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%9B%AA%E5%9C%B0%E3%83%93%E3%83%BC%E3%83%AB%E9%A4%A8%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%AE%AE%E4%B8%8B%E9%80%9A%EF%BC%91%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%96%EF%BC%90%EF%BC%94%E2%88%92%EF%BC%91)
 - **参照元**: [大雪地ビール 公式サイト](https://ji-beer.com/) / [旭川しょうゆ焼きそば公式サイト](http://www.asahikawa-shouyuyakisoba.com/shop/)
 
-### 31. ル・ビストロ メランジェ（ル・ビストロ メランジェ）
+### 32. ル・ビストロ メランジェ（ル・ビストロ メランジェ）
 
 @@IMG:japan/hokkaido/img/asahikawa/melanger.jpg@@
 
@@ -206,7 +223,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%AB%E3%83%BB%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%83%A1%E3%83%A9%E3%83%B3%E3%82%B8%E3%82%A7%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%97%EF%BC%91%EF%BC%91%E2%88%92%EF%BC%91%20%E3%81%A4%E3%81%8B%E3%81%95%E3%83%93%E3%83%AB%20%EF%BC%91F)
 - **参照元**: [メランジェ 公式サイト](https://melanger.jp/) / [楽天ぐるなび](https://r.gnavi.co.jp/sk5r2cyw0000/)
 
-### 32. ビストロ ポ・プーレ（ビストロ ポ・プーレ）
+### 33. ビストロ ポ・プーレ（ビストロ ポ・プーレ）
 
 @@IMG:japan/hokkaido/img/asahikawa/porcpoulet.jpg@@
 
@@ -223,7 +240,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%83%9D%E3%83%BB%E3%83%97%E3%83%BC%E3%83%AC%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%94%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%EF%BC%94%EF%BC%93%E2%88%92%EF%BC%95%20%E8%B2%B7%E7%89%A9%E5%85%AC%E5%9C%92%E9%80%9A)
 - **参照元**: [ビストロ ポ・プーレ 公式サイト](https://bistroporcpoulet.com/) / [ヒトサラ](https://hitosara.com/0006067275/)
 
-### 33. オステリア キャニオンベース（オステリア キャニオンベース）
+### 34. オステリア キャニオンベース（オステリア キャニオンベース）
 
 @@IMG:japan/hokkaido/img/asahikawa/canyonbase.jpg@@
 
@@ -242,7 +259,7 @@
 
 ## カフェ・パン・スイーツ
 
-### 34. 珈琲亭ちろる（こーひーてい ちろる）
+### 35. 珈琲亭ちろる（こーひーてい ちろる）
 
 @@IMG:japan/hokkaido/img/asahikawa/kohitei-tirol.jpg@@
 
@@ -259,7 +276,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E4%BA%AD%E3%81%A1%E3%82%8D%E3%82%8B%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%93%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%97)
 - **参照元**: [珈琲亭ちろる公式サイト](https://cafe-tirol.com/) / [北海道Likers](https://hokkaidolikers.com/archives/50917) / [もぐトリップ(道民ブログ)](https://akj.mogtrip.jp/cafe-tirol/)
 
-### 35. 旭川珈琲 カフェ・ドゥ・コリンズ（あさひかわこーひー かふぇ・どぅ・こりんず）
+### 36. 旭川珈琲 カフェ・ドゥ・コリンズ（あさひかわこーひー かふぇ・どぅ・こりんず）
 
 @@IMG:japan/hokkaido/img/asahikawa/cafe-de-collins.jpg@@
 
@@ -276,7 +293,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%97%AD%E5%B7%9D%E7%8F%88%E7%90%B2%20%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%83%89%E3%82%A5%E3%83%BB%E3%82%B3%E3%83%AA%E3%83%B3%E3%82%BA%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%91%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%20%E5%9C%B0%E4%B8%8B1%E9%9A%8E)
 - **参照元**: [楽天ぐるなび](https://r.gnavi.co.jp/c6y5xseu0000/) / [あさひかわ新聞ONLINE](https://www.asahikawa-np.com/keroko/2025/03/012037097/)
 
-### 36. ブンカフェー（ぶんかふぇー）
+### 37. ブンカフェー（ぶんかふぇー）
 
 @@IMG:japan/hokkaido/img/asahikawa/buncafe.jpg@@
 
@@ -293,7 +310,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%96%E3%83%B3%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BC%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%95%E6%9D%A1%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%EF%BC%98%EF%BC%96%20%E6%97%AD%E5%B7%9D%E3%83%95%E3%83%BC%E3%83%89%E3%83%86%E3%83%A9%E3%82%B9%201%E9%9A%8E)
 - **参照元**: [もぐトリップ(道民ブログ)](https://akj.mogtrip.jp/buncafe/) / [旭川平和通商店街振興組合](https://www.kaimonokouen.com/shop/4503) / [楽天ぐるなび](https://r.gnavi.co.jp/c43nna1c0000/)
 
-### 37. COFFEE STAND CONTAINER（こーひーすたんど こんてな）
+### 38. COFFEE STAND CONTAINER（こーひーすたんど こんてな）
 
 @@IMG:japan/hokkaido/img/asahikawa/coffee-stand-container.jpg@@
 
@@ -309,37 +326,3 @@
 - **選定理由**: 地元メディアasatanの買物公園カフェ特集で紹介される人気スタンド。オーナーインタビュー記事でも実店舗情報を確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=COFFEE%20STAND%20CONTAINER%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%97%E6%9D%A1%E9%80%9A%EF%BC%98%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%99)
 - **参照元**: [asatan(旭川ローカルメディア)](https://asatan.com/articles/7406) / [MOJANEインタビュー](https://mojane.com/interview/container)
-
-### 38. salon de bois(サロンドボア)（さろん・ど・ぼあ）
-
-@@IMG:japan/hokkaido/img/asahikawa/salon-de-bois.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-駅前のフレンチレストラン「ル アン」がプロデュースするビル3階の隠れ家カフェ。そば粉のクレープであるガレットのランチや、レストラン仕込みのケーキ・スイーツが楽しめる。駅チカながら落ち着いた穴場的存在。
-
-- **一皿**: ガレットランチ(そば粉のクレープに卵やチーズをのせた食事系クレープ)
-- **営業時間**: 水・木・金・土・日 11:00〜17:00
-- **定休日**: 月・火曜
-- **住所**: 北海道旭川市宮下通７丁目２３９９−１ 明治屋ビル 3階 Le Ann横
-- **予約**: 要確認 — ☎ 080-3290-1642 ／ [公式サイト](https://www.instagram.com/salondebois77?igshid=MTNiYzNiMzkwZA%3D%3D&utm_source=qr)
-- **選定理由**: 道民ブログもぐトリップが「駅チカの超穴場」として詳細レポート、asatanの駅前カフェ特集でも紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=salon%20de%20bois%28%E3%82%B5%E3%83%AD%E3%83%B3%E3%83%89%E3%83%9C%E3%82%A2%29%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%AE%AE%E4%B8%8B%E9%80%9A%EF%BC%97%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%93%EF%BC%99%EF%BC%99%E2%88%92%EF%BC%91%20%E6%98%8E%E6%B2%BB%E5%B1%8B%E3%83%93%E3%83%AB%203%E9%9A%8E%20Le%20Ann%E6%A8%AA)
-- **参照元**: [もぐトリップ(道民ブログ)](https://akj.mogtrip.jp/salon-de-bois/) / [asatan(旭川ローカルメディア)](https://asatan.com/articles/8985)
-
-### 39. 福吉カフェ 旭橋本店（ふくよしかふぇ あさひばしほんてん）
-
-@@IMG:japan/hokkaido/img/asahikawa/fukuyoshi-cafe.jpg@@
-
-`地元密着` `老舗・歴史` `口コミ突出`
-
-大正13年建築の旧北島製粉所をリノベーションした、昭和レトロな外観の和風カフェ。名物は旭橋をかたどった「トキワ焼き」で、クロワッサン生地で餡やクリームを包んで焼くサクサク食感のおやき。ほうじ茶ラテ系の「福吉らて」と合わせる地元客が多い。
-
-- **一皿**: トキワ焼き(旭橋モチーフ・クロワッサン生地のおやき、つぶあんやクリーム等5種)
-- **営業時間**: 月・火・水・木・金・土・日 10:00〜21:30
-- **定休日**: なし(要最終確認)
-- **住所**: 北海道旭川市常盤通２丁目１９７０−１
-- **予約**: 要確認 — ☎ 0166-85-6014 ／ [公式サイト](https://fukuyoshicafe.com/)
-- **選定理由**: 歴史的建造物を活かした旭川発祥カフェとして道民ブログやローカル誌slowびよりで紹介。公式サイトで営業情報を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%90%89%E3%82%AB%E3%83%95%E3%82%A7%20%E6%97%AD%E6%A9%8B%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E9%80%9A%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%99%EF%BC%97%EF%BC%90%E2%88%92%EF%BC%91)
-- **参照元**: [福吉カフェ公式サイト](https://www.fukuyoshicafe.com/) / [slowびより](https://slowbiyori.com/article-fukuyoshicafe/) / [もぐトリップ(道民ブログ)](https://akj.mogtrip.jp/asahikawa-cafe/)

@@ -51,6 +51,10 @@ JAPAN / SUITA・北摂 🇯🇵
 
 ### 2. 旬菜 神その（しゅんさい かみその）
 
+@@IMG:japan/osaka/img/suita/kamisono.jpg@@
+
+@@IMG:japan/osaka/img/suita/kamisono_exterior.jpg@@
+
 `ブログ推薦` `地元密着`
 
 地元メディア「吹チャン！」で「職人技が光る美しすぎる和食ランチ」と紹介された住宅街の割烹。八寸（少量ずつ盛り込む前菜盛り合わせ）・造り・焼物・茶碗蒸しなどが付く予約制ランチコースが人気。無添加・旬の素材にこだわる体に優しい和食。
@@ -62,7 +66,7 @@ JAPAN / SUITA・北摂 🇯🇵
 - **予約**: 可 — ☎ 06-6831-0370 ／ [公式サイト](https://www.kamisono.jp/)
 - **選定理由**: 住宅街にありながらローカルメディアが職人技を絶賛する本格割烹で、日常使いできる上質和食として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E8%8F%9C%20%E7%A5%9E%E3%81%9D%E3%81%AE%20%E5%A4%A7%E9%98%AA%E5%BA%9C%E5%90%B9%E7%94%B0%E5%B8%82%E9%AB%98%E9%87%8E%E5%8F%B0%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%91)
-- **参照元**: [公式サイト](https://www.kamisono.jp/) / [食べログ](https://tabelog.com/osaka/A2706/A270602/27013668/)
+- **参照元**: [公式サイト](https://www.kamisono.jp/) / [食べログ](https://tabelog.com/osaka/A2706/A270602/27013668/)／写真: [suichan.jp](https://suichan.jp/gourmet/2026/07/p=109549)
 
 ### 3. 鮨こにし（すしこにし）
 
