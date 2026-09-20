@@ -87,6 +87,20 @@
   .toc a::after{content:" ›"; color:var(--ink3);}
   .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
     border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+
+/* --- 店舗マップ（2026-09-20 追加・規約 §7 [2026-08-02] の標準装備を遡及適用） --- */
+.mapsec{break-inside:avoid; margin:0 0 3mm;}
+.mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+/* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+   角丸は画像側に付け、wrapper は overflow:visible のままにする（規約 §2 の落とし穴 2b）。 */
+.mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+         break-inside:avoid; margin-left:auto; margin-right:auto;}
+.mapwrap img{display:block; width:100%; border-radius:2mm;}
+.mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+           min-width:4.6mm; min-height:4.6mm;}
+.mapnote{font-size:7.5pt; color:#75736d; margin-top:1mm;}
+.tn{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.2mm;}
 </style>
 <style id="rwd">
 @media screen and (max-width:640px){
@@ -102,7 +116,8 @@ html:not(.vm-pc) .desc{font-size:11pt}
 html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
 html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
 html:not(.vm-pc) .info th{width:auto;white-space:normal}
-html:not(.vm-pc) .gnav{font-size:11pt;gap:10px}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
 
 }
 @media screen{
@@ -118,7 +133,8 @@ html.vm-phone .desc{font-size:11pt}
 html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
 html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
 html.vm-phone .info th{width:auto;white-space:normal}
-html.vm-phone .gnav{font-size:11pt;gap:10px}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
 
 }
 
@@ -131,20 +147,85 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 </head>
 <body>
 <style>
-.gnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;
-      padding:8px 12px;margin:0 0 10px;border-bottom:1px solid #e4e2dc;
-      font-size:9.5pt;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
-.gnav a{color:#8a2b16;text-decoration:none}
-.gnav a:hover{text-decoration:underline}
-.gnav span{color:#8a8880}
-@media print{.gnav{display:none}}
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
 </style>
-<div class="gnav">
-  <button type="button" class="vmsw">表示: 自動</button>
-  <a href="../../map/frankfurt.html">🗺️ フランクフルトの地図で見る</a>
-  <a href="../../index.html">📖 全66都市の一覧</a>
-  <span>37店</span>
-</div>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">フランクフルト美食ガイド<span class="sn-n">37店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/frankfurt.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="フランクフルトガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">フランクフルトガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/frankfurt.html"><span class="sn-e">🗺️</span>フランクフルトの地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-lo"><span class="sn-e">・</span>アプフェルヴァイン酒場・ヘッセン郷土料理</a><a href="#s-st"><span class="sn-e">・</span>食べ歩き — ソーセージ・市場グルメ</a><a href="#s-rt"><span class="sn-e">・</span>半日モデルルート</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全66都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全66都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+</script>
+
+
 
 
 <div class="cover">
@@ -160,59 +241,232 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
   <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列が突出<br>
   <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
   <span class="chip street">食の専門街・市場</span>食の専門街・市場の立地<br>
-  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真、© Google)。<b>予約</b>は各カードの「予約」欄(電話/予約サイトのリンク)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>です。出典は各カードの「参照元」に記載（多くは Google Maps 投稿写真 © Google。一部は店の公式サイト・観光局・地域メディア）。<b>予約</b>は各カードの「予約」欄(電話/予約サイトのリンク)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
 </div>
 
+<div class="mapsec">
+  <div class="mapttl">🗺️ 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+  <div class="mapwrap" style="width:105.5mm;">
+    <img src="img/frankfurt/_map.png" alt="全域マップ">
+    <a href="#c-apfelwein-wagner" style="left:69.82%;top:77.06%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-zum-gemalten-haus" style="left:69.80%;top:76.68%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-fichtekraenzi" style="left:74.68%;top:67.65%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-atschel" style="left:74.48%;top:67.40%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-dauth-schneider" style="left:75.38%;top:67.34%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-lorsbacher-thal" style="left:76.04%;top:65.85%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-ebbelwoi-unser" style="left:74.27%;top:68.22%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-best-worscht-in-town" style="left:62.59%;top:30.90%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-gref-voelsings" style="left:90.32%;top:52.78%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-wursthelden" style="left:56.94%;top:60.85%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-metzgerei-schreiber" style="left:70.83%;top:49.90%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-kaese-thomas" style="left:70.44%;top:49.96%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-das-persienhaus" style="left:70.94%;top:49.54%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-frankfurter-kaffeeroesterei" style="left:70.94%;top:49.54%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-zeit-fuer-brot" style="left:68.23%;top:34.86%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-rauschs-konditorei" style="left:85.31%;top:18.83%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-cafe-weidenweber" style="left:72.94%;top:44.61%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-bitter-und-zart" style="left:71.08%;top:52.46%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-kelterei-possmann" style="left:9.68%;top:9.68%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-rollanderhof-weinterrasse" style="left:70.10%;top:50.04%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-carmelo-greco" style="left:70.21%;top:90.33%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-megaron" style="left:75.98%;top:15.62%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-tapas-locas" style="left:74.62%;top:72.40%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-mon-amie-maxi" style="left:59.82%;top:41.70%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-nefis-kebap-haus" style="left:59.50%;top:62.87%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-du-liban" style="left:61.48%;top:59.69%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-babam" style="left:62.59%;top:60.31%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-erta-ale" style="left:45.45%;top:28.08%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-im-herzen-afrikas" style="left:62.88%;top:61.64%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-ramen-muku" style="left:76.93%;top:64.76%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-iwase" style="left:72.76%;top:40.66%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-goc-pho" style="left:69.67%;top:48.04%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-toh-thong" style="left:55.98%;top:57.50%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-sonamu" style="left:86.17%;top:22.08%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-saravanaa-bhavan" style="left:59.25%;top:60.22%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-la-cevi" style="left:73.06%;top:16.79%;width:4.36%;height:9.28%;"></a>
+    <a href="#c-la-sonora-taqueria" style="left:75.78%;top:17.67%;width:4.36%;height:9.28%;"></a>
+  </div>
+  <div class="mapnote">Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ</div>
+</div>
 <div class="toc">
-  <div class="th">目次</div>
-  <div class="sec be"><a href="#s-lo" style="all:unset;cursor:pointer;">アプフェルヴァイン酒場・ヘッセン郷土料理</a></div>
-<div class="links"><a href="#c-apfelwein-wagner">Apfelwein Wagner</a>
-<a href="#c-zum-gemalten-haus">Zum Gemalten Haus</a>
-<a href="#c-fichtekraenzi">Apfelwein-Wirtschaft Fichtekränzi</a>
-<a href="#c-atschel">Apfelweinwirtschaft Atschel</a>
-<a href="#c-dauth-schneider">Apfelweinwirtschaft Dauth-Schneider</a>
-<a href="#c-lorsbacher-thal">Apfelweinwirtschaft Lorsbacher Thal</a>
-<a href="#c-ebbelwoi-unser">Ebbelwoi Unser</a>
-</div><div class="sec fr"><a href="#s-st" style="all:unset;cursor:pointer;">食べ歩き — ソーセージ・市場グルメ</a></div>
-<div class="links"><a href="#c-best-worscht-in-town">Best Worscht in Town</a>
-<a href="#c-gref-voelsings">Gref-Völsings Rindswurst</a>
-<a href="#c-wursthelden">Wursthelden</a>
-</div><div class="sec ch"><a href="#s-ch" style="all:unset;cursor:pointer;">チーズ・加工肉・惣菜・市場</a></div>
-<div class="links"><a href="#c-metzgerei-schreiber">Metzgerei Schreiber (Kleinmarkthalle)</a>
-<a href="#c-kaese-thomas">Käse Thomas (Kleinmarkthalle)</a>
-<a href="#c-das-persienhaus">Das Persienhaus (Kleinmarkthalle)</a>
-<a href="#c-frankfurter-kaffeeroesterei">Frankfurter Kaffeerösterei Cafébar (Kleinmarkthalle)</a>
-</div><div class="sec sw"><a href="#s-sw" style="all:unset;cursor:pointer;">パン・スイーツ</a></div>
-<div class="links"><a href="#c-zeit-fuer-brot">Zeit für Brot</a>
-<a href="#c-rauschs-konditorei">Rausch's Konditorei &amp; Bäckerei</a>
-<a href="#c-cafe-weidenweber">Café Weidenweber (Erste Frankfurter Zeilbäckerei)</a>
-<a href="#c-bitter-und-zart">Bitter &amp; Zart Chocolaterie</a>
-</div><div class="sec bi"><a href="#s-dr" style="all:unset;cursor:pointer;">アプフェルヴァイン・ワイン</a></div>
-<div class="links"><a href="#c-kelterei-possmann">Kelterei Possmann</a>
-<a href="#c-rollanderhof-weinterrasse">Weingut Rollanderhof Weinterrasse (Kleinmarkthalle)</a>
-</div><div class="sec wd"><a href="#s-eu" style="all:unset;cursor:pointer;">非ドイツ欧州料理</a></div>
-<div class="links"><a href="#c-carmelo-greco">Ristorante Carmelo Greco</a>
-<a href="#c-megaron">Megaron</a>
-<a href="#c-tapas-locas">Tapas Locas - Bar de Tapas</a>
-<a href="#c-mon-amie-maxi">Mon Amie Maxi</a>
-</div><div class="sec wd"><a href="#s-me" style="all:unset;cursor:pointer;">中東・トルコ料理</a></div>
-<div class="links"><a href="#c-nefis-kebap-haus">Nefis Kebap Haus</a>
-<a href="#c-du-liban">Du Liban - Libanon Restaurant</a>
-<a href="#c-babam">Babam</a>
-</div><div class="sec wd"><a href="#s-af" style="all:unset;cursor:pointer;">アフリカ料理</a></div>
-<div class="links"><a href="#c-erta-ale">Erta Ale - Afrikanisches Restaurant</a>
-<a href="#c-im-herzen-afrikas">Im Herzen Afrikas</a>
-</div><div class="sec wd"><a href="#s-as" style="all:unset;cursor:pointer;">アジア料理</a></div>
-<div class="links"><a href="#c-ramen-muku">Ramen Muku</a>
-<a href="#c-iwase">Iwase</a>
-<a href="#c-goc-pho">Góc Phố - Vietnamese Street Food</a>
-<a href="#c-toh-thong">Toh-Thong Thai Cuisine</a>
-<a href="#c-sonamu">Sonamu | Casual Korean Dining</a>
-<a href="#c-saravanaa-bhavan">Saravanaa Bhavan Frankfurt</a>
-</div><div class="sec wd"><a href="#s-la" style="all:unset;cursor:pointer;">中南米料理</a></div>
-<div class="links"><a href="#c-la-cevi">La Cevi</a>
-<a href="#c-la-sonora-taqueria">La Sonora Taquería</a>
-</div><div class="sec be"><a href="#s-rt" style="all:unset;cursor:pointer;">半日モデルルート</a></div>
+  <div class="th">この地図の店（37店・番号はピンと同じ）</div>
+  <div class="sec lo"><a href="#s-lo" style="all:unset;cursor:pointer;">アプフェルヴァイン酒場・ヘッセン郷土料理</a></div>
+  <div class="links">
+    <a href="#c-apfelwein-wagner"><span class="tn" style="background:#2a78d6;">1</span>Apfelwein Wagner</a>
+    <a href="#c-zum-gemalten-haus"><span class="tn" style="background:#2a78d6;">2</span>Zum Gemalten Haus</a>
+    <a href="#c-fichtekraenzi"><span class="tn" style="background:#2a78d6;">3</span>Apfelwein-Wirtschaft Fichtekränzi</a>
+    <a href="#c-atschel"><span class="tn" style="background:#2a78d6;">4</span>Apfelweinwirtschaft Atschel</a>
+    <a href="#c-dauth-schneider"><span class="tn" style="background:#2a78d6;">5</span>Apfelweinwirtschaft Dauth-Schneider</a>
+    <a href="#c-lorsbacher-thal"><span class="tn" style="background:#2a78d6;">6</span>Apfelweinwirtschaft Lorsbacher Thal</a>
+    <a href="#c-ebbelwoi-unser"><span class="tn" style="background:#2a78d6;">7</span>Ebbelwoi Unser</a>
+  </div>
+  <div class="sec st"><a href="#s-st" style="all:unset;cursor:pointer;">食べ歩き — ソーセージ・市場グルメ</a></div>
+  <div class="links">
+    <a href="#c-best-worscht-in-town"><span class="tn" style="background:#2a78d6;">8</span>Best Worscht in Town</a>
+    <a href="#c-gref-voelsings"><span class="tn" style="background:#2a78d6;">9</span>Gref-Völsings Rindswurst</a>
+    <a href="#c-wursthelden"><span class="tn" style="background:#2a78d6;">10</span>Wursthelden</a>
+  </div>
+  <div class="sec ch"><a href="#s-ch" style="all:unset;cursor:pointer;">チーズ・加工肉・惣菜・市場</a></div>
+  <div class="links">
+    <a href="#c-metzgerei-schreiber"><span class="tn" style="background:#1baf7a;">11</span>Metzgerei Schreiber (Kleinmarkthalle)</a>
+    <a href="#c-kaese-thomas"><span class="tn" style="background:#1baf7a;">12</span>Käse Thomas (Kleinmarkthalle)</a>
+    <a href="#c-das-persienhaus"><span class="tn" style="background:#1baf7a;">13</span>Das Persienhaus (Kleinmarkthalle)</a>
+    <a href="#c-frankfurter-kaffeeroesterei"><span class="tn" style="background:#1baf7a;">14</span>Frankfurter Kaffeerösterei Cafébar (Kleinmarkthalle)</a>
+  </div>
+  <div class="sec sw"><a href="#s-sw" style="all:unset;cursor:pointer;">パン・スイーツ</a></div>
+  <div class="links">
+    <a href="#c-zeit-fuer-brot"><span class="tn" style="background:#eda100;">15</span>Zeit für Brot</a>
+    <a href="#c-rauschs-konditorei"><span class="tn" style="background:#eda100;">16</span>Rausch's Konditorei &amp; Bäckerei</a>
+    <a href="#c-cafe-weidenweber"><span class="tn" style="background:#eda100;">17</span>Café Weidenweber (Erste Frankfurter Zeilbäckerei)</a>
+    <a href="#c-bitter-und-zart"><span class="tn" style="background:#eda100;">18</span>Bitter &amp; Zart Chocolaterie</a>
+  </div>
+  <div class="sec dr"><a href="#s-dr" style="all:unset;cursor:pointer;">アプフェルヴァイン・ワイン</a></div>
+  <div class="links">
+    <a href="#c-kelterei-possmann"><span class="tn" style="background:#2a78d6;">19</span>Kelterei Possmann</a>
+    <a href="#c-rollanderhof-weinterrasse"><span class="tn" style="background:#2a78d6;">20</span>Weingut Rollanderhof Weinterrasse (Kleinmarkthalle)</a>
+  </div>
+  <div class="sec eu"><a href="#s-eu" style="all:unset;cursor:pointer;">非ドイツ欧州料理</a></div>
+  <div class="links">
+    <a href="#c-carmelo-greco"><span class="tn" style="background:#2a78d6;">21</span>Ristorante Carmelo Greco</a>
+    <a href="#c-megaron"><span class="tn" style="background:#2a78d6;">22</span>Megaron</a>
+    <a href="#c-tapas-locas"><span class="tn" style="background:#2a78d6;">23</span>Tapas Locas - Bar de Tapas</a>
+    <a href="#c-mon-amie-maxi"><span class="tn" style="background:#2a78d6;">24</span>Mon Amie Maxi</a>
+  </div>
+  <div class="sec me"><a href="#s-me" style="all:unset;cursor:pointer;">中東・トルコ料理</a></div>
+  <div class="links">
+    <a href="#c-nefis-kebap-haus"><span class="tn" style="background:#1baf7a;">25</span>Nefis Kebap Haus</a>
+    <a href="#c-du-liban"><span class="tn" style="background:#1baf7a;">26</span>Du Liban - Libanon Restaurant</a>
+    <a href="#c-babam"><span class="tn" style="background:#1baf7a;">27</span>Babam</a>
+  </div>
+  <div class="sec af"><a href="#s-af" style="all:unset;cursor:pointer;">アフリカ料理</a></div>
+  <div class="links">
+    <a href="#c-erta-ale"><span class="tn" style="background:#eda100;">28</span>Erta Ale - Afrikanisches Restaurant</a>
+    <a href="#c-im-herzen-afrikas"><span class="tn" style="background:#eda100;">29</span>Im Herzen Afrikas</a>
+  </div>
+  <div class="sec as"><a href="#s-as" style="all:unset;cursor:pointer;">アジア料理</a></div>
+  <div class="links">
+    <a href="#c-ramen-muku"><span class="tn" style="background:#4a3aa7;">30</span>Ramen Muku</a>
+    <a href="#c-iwase"><span class="tn" style="background:#4a3aa7;">31</span>Iwase</a>
+    <a href="#c-goc-pho"><span class="tn" style="background:#4a3aa7;">32</span>Góc Phố - Vietnamese Street Food</a>
+    <a href="#c-toh-thong"><span class="tn" style="background:#4a3aa7;">33</span>Toh-Thong Thai Cuisine</a>
+    <a href="#c-sonamu"><span class="tn" style="background:#4a3aa7;">34</span>Sonamu | Casual Korean Dining</a>
+    <a href="#c-saravanaa-bhavan"><span class="tn" style="background:#4a3aa7;">35</span>Saravanaa Bhavan Frankfurt</a>
+  </div>
+  <div class="sec la"><a href="#s-la" style="all:unset;cursor:pointer;">中南米料理</a></div>
+  <div class="links">
+    <a href="#c-la-cevi"><span class="tn" style="background:#e34948;">36</span>La Cevi</a>
+    <a href="#c-la-sonora-taqueria"><span class="tn" style="background:#e34948;">37</span>La Sonora Taquería</a>
+  </div>
+  <div class="sec rt"><a href="#s-rt" style="all:unset;cursor:pointer;">半日モデルルート</a></div>
+</div>
+<div class="mapsec">
+  <div class="mapttl">🗺️ 店舗マップ — 中心部拡大（ピンをタップで各店のページへ）</div>
+  <div class="mapwrap" style="width:105.5mm;">
+    <img src="img/frankfurt/_map2.png" alt="中心部拡大">
+    <a href="#c-apfelwein-wagner" style="left:46.65%;top:76.01%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-zum-gemalten-haus" style="left:46.59%;top:75.60%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-fichtekraenzi" style="left:59.63%;top:65.84%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-atschel" style="left:59.10%;top:65.57%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-dauth-schneider" style="left:61.49%;top:65.51%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-lorsbacher-thal" style="left:63.25%;top:63.90%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-ebbelwoi-unser" style="left:58.54%;top:66.46%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-best-worscht-in-town" style="left:27.35%;top:26.18%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-wursthelden" style="left:12.26%;top:58.51%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-metzgerei-schreiber" style="left:49.36%;top:46.68%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-kaese-thomas" style="left:48.30%;top:46.75%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-das-persienhaus" style="left:49.65%;top:46.30%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-frankfurter-kaffeeroesterei" style="left:49.65%;top:46.30%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-zeit-fuer-brot" style="left:42.40%;top:30.45%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-rauschs-konditorei" style="left:88.03%;top:13.14%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-cafe-weidenweber" style="left:54.98%;top:40.97%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-bitter-und-zart" style="left:50.02%;top:49.44%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-rollanderhof-weinterrasse" style="left:47.41%;top:46.83%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-carmelo-greco" style="left:47.68%;top:90.33%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-megaron" style="left:63.10%;top:9.68%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-tapas-locas" style="left:59.46%;top:70.98%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-mon-amie-maxi" style="left:19.94%;top:37.83%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-nefis-kebap-haus" style="left:19.09%;top:60.68%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-du-liban" style="left:24.38%;top:57.25%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-babam" style="left:27.33%;top:57.92%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-im-herzen-afrikas" style="left:28.12%;top:59.36%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-ramen-muku" style="left:65.65%;top:62.73%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-iwase" style="left:54.50%;top:36.71%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-goc-pho" style="left:46.24%;top:44.68%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-toh-thong" style="left:9.68%;top:54.88%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-sonamu" style="left:90.32%;top:16.65%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-saravanaa-bhavan" style="left:18.43%;top:57.82%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-la-cevi" style="left:55.31%;top:10.93%;width:4.36%;height:3.75%;"></a>
+    <a href="#c-la-sonora-taqueria" style="left:62.58%;top:11.89%;width:4.36%;height:3.75%;"></a>
+  </div>
+  <div class="mapnote">Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ</div>
+</div>
+<div class="toc">
+  <div class="th">この地図の店（34店・番号はピンと同じ）</div>
+  <div class="sec lo"><a href="#s-lo" style="all:unset;cursor:pointer;">アプフェルヴァイン酒場・ヘッセン郷土料理</a></div>
+  <div class="links">
+    <a href="#c-apfelwein-wagner"><span class="tn" style="background:#2a78d6;">1</span>Apfelwein Wagner</a>
+    <a href="#c-zum-gemalten-haus"><span class="tn" style="background:#2a78d6;">2</span>Zum Gemalten Haus</a>
+    <a href="#c-fichtekraenzi"><span class="tn" style="background:#2a78d6;">3</span>Apfelwein-Wirtschaft Fichtekränzi</a>
+    <a href="#c-atschel"><span class="tn" style="background:#2a78d6;">4</span>Apfelweinwirtschaft Atschel</a>
+    <a href="#c-dauth-schneider"><span class="tn" style="background:#2a78d6;">5</span>Apfelweinwirtschaft Dauth-Schneider</a>
+    <a href="#c-lorsbacher-thal"><span class="tn" style="background:#2a78d6;">6</span>Apfelweinwirtschaft Lorsbacher Thal</a>
+    <a href="#c-ebbelwoi-unser"><span class="tn" style="background:#2a78d6;">7</span>Ebbelwoi Unser</a>
+  </div>
+  <div class="sec st"><a href="#s-st" style="all:unset;cursor:pointer;">食べ歩き — ソーセージ・市場グルメ</a></div>
+  <div class="links">
+    <a href="#c-best-worscht-in-town"><span class="tn" style="background:#2a78d6;">8</span>Best Worscht in Town</a>
+    <a href="#c-wursthelden"><span class="tn" style="background:#2a78d6;">10</span>Wursthelden</a>
+  </div>
+  <div class="sec ch"><a href="#s-ch" style="all:unset;cursor:pointer;">チーズ・加工肉・惣菜・市場</a></div>
+  <div class="links">
+    <a href="#c-metzgerei-schreiber"><span class="tn" style="background:#1baf7a;">11</span>Metzgerei Schreiber (Kleinmarkthalle)</a>
+    <a href="#c-kaese-thomas"><span class="tn" style="background:#1baf7a;">12</span>Käse Thomas (Kleinmarkthalle)</a>
+    <a href="#c-das-persienhaus"><span class="tn" style="background:#1baf7a;">13</span>Das Persienhaus (Kleinmarkthalle)</a>
+    <a href="#c-frankfurter-kaffeeroesterei"><span class="tn" style="background:#1baf7a;">14</span>Frankfurter Kaffeerösterei Cafébar (Kleinmarkthalle)</a>
+  </div>
+  <div class="sec sw"><a href="#s-sw" style="all:unset;cursor:pointer;">パン・スイーツ</a></div>
+  <div class="links">
+    <a href="#c-zeit-fuer-brot"><span class="tn" style="background:#eda100;">15</span>Zeit für Brot</a>
+    <a href="#c-rauschs-konditorei"><span class="tn" style="background:#eda100;">16</span>Rausch's Konditorei &amp; Bäckerei</a>
+    <a href="#c-cafe-weidenweber"><span class="tn" style="background:#eda100;">17</span>Café Weidenweber (Erste Frankfurter Zeilbäckerei)</a>
+    <a href="#c-bitter-und-zart"><span class="tn" style="background:#eda100;">18</span>Bitter &amp; Zart Chocolaterie</a>
+  </div>
+  <div class="sec dr"><a href="#s-dr" style="all:unset;cursor:pointer;">アプフェルヴァイン・ワイン</a></div>
+  <div class="links">
+    <a href="#c-rollanderhof-weinterrasse"><span class="tn" style="background:#2a78d6;">20</span>Weingut Rollanderhof Weinterrasse (Kleinmarkthalle)</a>
+  </div>
+  <div class="sec eu"><a href="#s-eu" style="all:unset;cursor:pointer;">非ドイツ欧州料理</a></div>
+  <div class="links">
+    <a href="#c-carmelo-greco"><span class="tn" style="background:#2a78d6;">21</span>Ristorante Carmelo Greco</a>
+    <a href="#c-megaron"><span class="tn" style="background:#2a78d6;">22</span>Megaron</a>
+    <a href="#c-tapas-locas"><span class="tn" style="background:#2a78d6;">23</span>Tapas Locas - Bar de Tapas</a>
+    <a href="#c-mon-amie-maxi"><span class="tn" style="background:#2a78d6;">24</span>Mon Amie Maxi</a>
+  </div>
+  <div class="sec me"><a href="#s-me" style="all:unset;cursor:pointer;">中東・トルコ料理</a></div>
+  <div class="links">
+    <a href="#c-nefis-kebap-haus"><span class="tn" style="background:#1baf7a;">25</span>Nefis Kebap Haus</a>
+    <a href="#c-du-liban"><span class="tn" style="background:#1baf7a;">26</span>Du Liban - Libanon Restaurant</a>
+    <a href="#c-babam"><span class="tn" style="background:#1baf7a;">27</span>Babam</a>
+  </div>
+  <div class="sec af"><a href="#s-af" style="all:unset;cursor:pointer;">アフリカ料理</a></div>
+  <div class="links">
+    <a href="#c-im-herzen-afrikas"><span class="tn" style="background:#eda100;">29</span>Im Herzen Afrikas</a>
+  </div>
+  <div class="sec as"><a href="#s-as" style="all:unset;cursor:pointer;">アジア料理</a></div>
+  <div class="links">
+    <a href="#c-ramen-muku"><span class="tn" style="background:#4a3aa7;">30</span>Ramen Muku</a>
+    <a href="#c-iwase"><span class="tn" style="background:#4a3aa7;">31</span>Iwase</a>
+    <a href="#c-goc-pho"><span class="tn" style="background:#4a3aa7;">32</span>Góc Phố - Vietnamese Street Food</a>
+    <a href="#c-toh-thong"><span class="tn" style="background:#4a3aa7;">33</span>Toh-Thong Thai Cuisine</a>
+    <a href="#c-sonamu"><span class="tn" style="background:#4a3aa7;">34</span>Sonamu | Casual Korean Dining</a>
+    <a href="#c-saravanaa-bhavan"><span class="tn" style="background:#4a3aa7;">35</span>Saravanaa Bhavan Frankfurt</a>
+  </div>
+  <div class="sec la"><a href="#s-la" style="all:unset;cursor:pointer;">中南米料理</a></div>
+  <div class="links">
+    <a href="#c-la-cevi"><span class="tn" style="background:#e34948;">36</span>La Cevi</a>
+    <a href="#c-la-sonora-taqueria"><span class="tn" style="background:#e34948;">37</span>La Sonora Taquería</a>
+  </div>
+  <div class="sec rt"><a href="#s-rt" style="all:unset;cursor:pointer;">半日モデルルート</a></div>
 </div>
 
 <h2 id="s-lo">アプフェルヴァイン酒場・ヘッセン郷土料理</h2>
@@ -546,6 +800,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 </div><h2 class="c-beer" id="s-dr">アプフェルヴァイン・ワイン</h2>
 
 <div class="card" id="c-kelterei-possmann">
+  <img class="hero" src="img/frankfurt/kelterei-possmann.jpg" alt="kelterei-possmann 料理・店内写真">
 <div style="height:30mm;background:#eef1f0;display:flex;align-items:center;justify-content:center;color:#8a8880;font-size:9pt;">📷 料理・店内写真は準備中</div>
 <div class="body">
   <div class="nm">Kelterei Possmann<span class="yomi">ケルタライ・ポスマン</span></div>
@@ -560,10 +815,11 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
   </table>
   <div class="reason"><b>選定理由:</b>公式サイトが1881年創業・敷地内食堂・見学ツアーを明記。「作り手を訪ねる」体験ができる市内唯一級のスポットとしてドリンク枠に選定(ザクセンハウゼンの酒場とは重複しない)。</div>
   <a class="map" href="https://www.google.com/maps/search/?api=1&query=Kelterei%20Possmann%20Eschborner%20Landstra%C3%9Fe%20156-162%2C%2060489%20Frankfurt%20am%20Main%20%28R%C3%B6delheim%29">Googleマップで開く</a>
-  <div class="src">参照元: <a href="https://www.possmann.de/english/our-family-winery/">possmann.de</a> / <a href="https://www.possmann.de/english/our-family-winery/guided-tours/">possmann.de(見学)</a></div>
+  <div class="src">参照元: <a href="https://www.possmann.de/english/our-family-winery/">possmann.de</a> / <a href="https://www.possmann.de/english/our-family-winery/guided-tours/">possmann.de(見学)</a>／写真: <a href="https://www.visitfrankfurt.travel/gastro/kelterei-possmann-und-frankfurter-aepfelwein-botschaft">visitfrankfurt.travel</a></div>
 </div>
 </div>
 <div class="card" id="c-rollanderhof-weinterrasse">
+  <img class="hero" src="img/frankfurt/rollanderhof-weinterrasse.jpg" alt="rollanderhof-weinterrasse 料理・店内写真">
 <div style="height:30mm;background:#eef1f0;display:flex;align-items:center;justify-content:center;color:#8a8880;font-size:9pt;">📷 料理・店内写真は準備中</div>
 <div class="body">
   <div class="nm">Weingut Rollanderhof Weinterrasse (Kleinmarkthalle)<span class="yomi">ロランダーホーフ・ヴァインテラッセ</span></div>
@@ -578,7 +834,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
   </table>
   <div class="reason"><b>選定理由:</b>ワイナリー公式サイトがテラスの存在を明記し、Genussmagazin Frankfurt が「土曜昼に地元の社交界が集う」名物スポットとして紹介。市場観光と組み合わせられるドリンク枠として選定。</div>
   <a class="map" href="https://www.google.com/maps/search/?api=1&query=Weingut%20Rollanderhof%20Weinterrasse%20%28Kleinmarkthalle%29%20Kleinmarkthalle%20%28%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC%E9%9A%8E%29%2C%20Hasengasse%205-7%2C%2060311%20Frankfurt%20am%20Main">Googleマップで開く</a>
-  <div class="src">参照元: <a href="https://www.weingut-rollanderhof.de/pages/weinterrasse">weingut-rollanderhof.de</a> / <a href="https://www.genussmagazin-frankfurt.de/gastro_service/Kulinarische-Fuehrungen-109/Kleinmarkthalle-Frankfurt-1417.html">genussmagazin-frankfurt.de</a></div>
+  <div class="src">参照元: <a href="https://www.weingut-rollanderhof.de/pages/weinterrasse">weingut-rollanderhof.de</a> / <a href="https://www.genussmagazin-frankfurt.de/gastro_service/Kulinarische-Fuehrungen-109/Kleinmarkthalle-Frankfurt-1417.html">genussmagazin-frankfurt.de</a>／写真: <a href="https://www.weingut-rollanderhof.de/pages/wochenmarkte">weingut-rollanderhof.de</a></div>
 </div>
 </div><h2 class="c-world" id="s-eu">非ドイツ欧州料理</h2>
 

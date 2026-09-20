@@ -106,7 +106,8 @@ html:not(.vm-pc) .desc{font-size:11pt}
 html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
 html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
 html:not(.vm-pc) .info th{width:auto;white-space:normal}
-html:not(.vm-pc) .gnav{font-size:11pt;gap:10px}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
 
 }
 @media screen{
@@ -122,7 +123,8 @@ html.vm-phone .desc{font-size:11pt}
 html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
 html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
 html.vm-phone .info th{width:auto;white-space:normal}
-html.vm-phone .gnav{font-size:11pt;gap:10px}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
 
 }
 
@@ -135,20 +137,85 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 </head>
 <body>
 <style>
-.gnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;
-      padding:8px 12px;margin:0 0 10px;border-bottom:1px solid #e4e2dc;
-      font-size:9.5pt;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
-.gnav a{color:#8a2b16;text-decoration:none}
-.gnav a:hover{text-decoration:underline}
-.gnav span{color:#8a8880}
-@media print{.gnav{display:none}}
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
 </style>
-<div class="gnav">
-  <button type="button" class="vmsw">表示: 自動</button>
-  <a href="../../map/ichinoseki.html">🗺️ 一関の地図で見る</a>
-  <a href="../../index.html">📖 全66都市の一覧</a>
-  <span>40店</span>
-</div>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">一関美食ガイド<span class="sn-n">45店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/ichinoseki.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="一関ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">一関ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/ichinoseki.html"><span class="sn-e">🗺️</span>一関の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-washoku"><span class="sn-e">・</span>もち・郷土料理・和食・寿司</a><a href="#s-men"><span class="sn-e">・</span>そば・ラーメン・うどん</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・焼肉・焼鳥</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・イタリアン・カレー</a><a href="#s-cafe"><span class="sn-e">・</span>カフェ・喫茶・パン・スイーツ</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全66都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全66都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+</script>
+
+
 
 
 <div class="cover">
@@ -167,187 +234,206 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
   <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
   <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
 </div>
-
-<div class="mapsec">
-<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
-<div class="mapwrap">
-<img src="img/ichinoseki/_map.png" alt="全域マップ">
-<a href="#c-fujisei" style="left:47.32%;top:40.92%;width:2.62%;height:4.66%;"></a>
-<a href="#c-sekinoichi" style="left:46.16%;top:39.15%;width:2.62%;height:4.66%;"></a>
-<a href="#c-pettankun" style="left:28.18%;top:31.49%;width:2.62%;height:4.66%;"></a>
-<a href="#c-kakkoudango" style="left:26.81%;top:32.32%;width:2.62%;height:4.66%;"></a>
-<a href="#c-shouchiku" style="left:47.22%;top:41.51%;width:2.62%;height:4.66%;"></a>
-<a href="#c-jiraiya" style="left:47.06%;top:41.89%;width:2.62%;height:4.66%;"></a>
-<a href="#c-tomizawa" style="left:47.05%;top:40.35%;width:2.62%;height:4.66%;"></a>
-<a href="#c-janomesushi" style="left:46.83%;top:42.5%;width:2.62%;height:4.66%;"></a>
-<a href="#c-ichiriki" style="left:47.52%;top:39.42%;width:2.62%;height:4.66%;"></a>
-<a href="#c-unryu" style="left:46.83%;top:39.89%;width:2.62%;height:4.66%;"></a>
-<a href="#c-daifukuya" style="left:47.2%;top:39.6%;width:2.62%;height:4.66%;"></a>
-<a href="#c-shoeidoh" style="left:46.6%;top:38.87%;width:2.62%;height:4.66%;"></a>
-<a href="#c-geibiresthouse" style="left:73.85%;top:7.97%;width:2.62%;height:4.66%;"></a>
-<a href="#c-honkenaotoshian" style="left:47.46%;top:39.41%;width:2.62%;height:4.66%;"></a>
-<a href="#c-aobanaotoshian" style="left:45.44%;top:38.7%;width:2.62%;height:4.66%;"></a>
-<a href="#c-sobaya90" style="left:89.63%;top:56.4%;width:2.62%;height:4.66%;"></a>
-<a href="#c-sukawa" style="left:16.21%;top:20.45%;width:2.62%;height:4.66%;"></a>
-<a href="#c-marucho" style="left:47.27%;top:41.33%;width:2.62%;height:4.66%;"></a>
-<a href="#c-nijisora" style="left:48.97%;top:42.54%;width:2.62%;height:4.66%;"></a>
-<a href="#c-zerosen" style="left:90.75%;top:48.47%;width:2.62%;height:4.66%;"></a>
-<a href="#c-kurobei" style="left:43.03%;top:39.37%;width:2.62%;height:4.66%;"></a>
-<a href="#c-takashi" style="left:55.5%;top:32.08%;width:2.62%;height:4.66%;"></a>
-<a href="#c-marukan" style="left:46.95%;top:41.34%;width:2.62%;height:4.66%;"></a>
-<a href="#c-cafe_monte" style="left:47.93%;top:41.77%;width:2.62%;height:4.66%;"></a>
-<a href="#c-donguri" style="left:48.39%;top:41.57%;width:2.62%;height:4.66%;"></a>
-<a href="#c-asahiya" style="left:93.06%;top:43.79%;width:2.62%;height:4.66%;"></a>
-<a href="#c-fiore" style="left:58.23%;top:92.05%;width:2.62%;height:4.66%;"></a>
-<a href="#c-komatsu" style="left:47.09%;top:39.72%;width:2.62%;height:4.66%;"></a>
-<a href="#c-yamahei" style="left:47.07%;top:40.88%;width:2.62%;height:4.66%;"></a>
-<a href="#c-michinoku" style="left:46.96%;top:40.85%;width:2.62%;height:4.66%;"></a>
-<a href="#c-kakunoshin" style="left:77.91%;top:55.76%;width:2.62%;height:4.66%;"></a>
-<a href="#c-basie" style="left:46.57%;top:38.61%;width:2.62%;height:4.66%;"></a>
-<a href="#c-joshuen" style="left:47.14%;top:40.14%;width:2.62%;height:4.66%;"></a>
-<a href="#c-friend" style="left:47.06%;top:40.86%;width:2.62%;height:4.66%;"></a>
-<a href="#c-comesta" style="left:47.31%;top:41.91%;width:2.62%;height:4.66%;"></a>
-<a href="#c-shoeido_nakano" style="left:42.09%;top:37.38%;width:2.62%;height:4.66%;"></a>
-<a href="#c-hikousen" style="left:45.83%;top:35.48%;width:2.62%;height:4.66%;"></a>
-<a href="#c-umemoto_unagi" style="left:46.61%;top:39.28%;width:2.62%;height:4.66%;"></a>
-<a href="#c-wakamikotei" style="left:6.94%;top:17.91%;width:2.62%;height:4.66%;"></a>
-<a href="#c-chuka_nakamura" style="left:49.16%;top:41.91%;width:2.62%;height:4.66%;"></a>
-</div>
-</div>
-<div class="toc">
-<div class="th">この地図の店（40店・番号はピンと同じ）</div>
-<div class="sec blue">もち・郷土料理・和食・寿司</div>
-<div class="links">
-<a href="#c-fujisei"><span class="tn" style="background:#2a78d6;">1</span>ふじせい(ひと口もち膳)</a>
-<a href="#c-sekinoichi"><span class="tn" style="background:#2a78d6;">2</span>せきのいち(蔵の郷土食)</a>
-<a href="#c-pettankun"><span class="tn" style="background:#2a78d6;">3</span>ペッタンくん(つきたて餅)</a>
-<a href="#c-kakkoudango"><span class="tn" style="background:#2a78d6;">4</span>郭公だんご(空飛ぶ団子)</a>
-<a href="#c-shouchiku"><span class="tn" style="background:#2a78d6;">5</span>松竹(大正創業のカツ丼)</a>
-<a href="#c-jiraiya"><span class="tn" style="background:#2a78d6;">6</span>自雷也(特選牛すき焼き)</a>
-<a href="#c-tomizawa"><span class="tn" style="background:#2a78d6;">7</span>富澤(魚屋直営の海鮮)</a>
-<a href="#c-janomesushi"><span class="tn" style="background:#2a78d6;">8</span>蛇の目寿司(昭和24年創業)</a>
-<a href="#c-ichiriki"><span class="tn" style="background:#2a78d6;">9</span>一力(寿司と割烹の店)</a>
-<a href="#c-unryu"><span class="tn" style="background:#2a78d6;">10</span>雲龍(前沢牛の焼肉)</a>
-<a href="#c-daifukuya"><span class="tn" style="background:#2a78d6;">11</span>大福屋(百年続く餅屋)</a>
-<a href="#c-shoeidoh"><span class="tn" style="background:#2a78d6;">12</span>松栄堂(ごま摺り団子)</a>
-<a href="#c-geibiresthouse"><span class="tn" style="background:#2a78d6;">13</span>げいび(猊鼻渓のもち膳)</a>
-<a href="#c-umemoto_unagi"><span class="tn" style="background:#2a78d6;">38</span>梅茂登(活鰻の炭火焼)</a>
-<a href="#c-wakamikotei"><span class="tn" style="background:#2a78d6;">39</span>若神子亭(荘園の農家めし)</a>
-</div>
-<div class="sec aqua">そば・ラーメン・うどん</div>
-<div class="links">
-<a href="#c-honkenaotoshian"><span class="tn" style="background:#1baf7a;">14</span>本家直利庵(明治のそば)</a>
-<a href="#c-aobanaotoshian"><span class="tn" style="background:#1baf7a;">15</span>青葉直利庵(極太そば)</a>
-<a href="#c-sobaya90"><span class="tn" style="background:#1baf7a;">16</span>そば家90(蔵の十割そば)</a>
-<a href="#c-sukawa"><span class="tn" style="background:#1baf7a;">17</span>須川(韃靼そばの店)</a>
-<a href="#c-marucho"><span class="tn" style="background:#1baf7a;">18</span>丸長(魚介つけ麺の店)</a>
-<a href="#c-nijisora"><span class="tn" style="background:#1baf7a;">19</span>虹ソラ(行列の旨味そば)</a>
-<a href="#c-zerosen"><span class="tn" style="background:#1baf7a;">20</span>零SEN(濃厚な鶏白湯)</a>
-<a href="#c-kurobei"><span class="tn" style="background:#1baf7a;">21</span>くろべい(山目の中華そば)</a>
-<a href="#c-takashi"><span class="tn" style="background:#1baf7a;">22</span>たか志(白豚骨の博多系)</a>
-<a href="#c-marukan"><span class="tn" style="background:#1baf7a;">23</span>マル寛(深夜の中華そば)</a>
-<a href="#c-chuka_nakamura"><span class="tn" style="background:#1baf7a;">40</span>中村(住宅街の町中華)</a>
-</div>
-<div class="sec red">居酒屋・焼肉・焼鳥</div>
-<div class="links">
-<a href="#c-komatsu"><span class="tn" style="background:#e34948;">28</span>こまつ(蔵を改装した居酒屋)</a>
-<a href="#c-yamahei"><span class="tn" style="background:#e34948;">29</span>山平(駅近の老舗焼鳥)</a>
-<a href="#c-michinoku"><span class="tn" style="background:#e34948;">30</span>みちのく(大町の焼鳥酒場)</a>
-<a href="#c-kakunoshin"><span class="tn" style="background:#e34948;">31</span>格之進(門崎熟成肉の総本店)</a>
-</div>
-<div class="sec violet">洋食・イタリアン・カレー</div>
-<div class="links">
-<a href="#c-cafe_monte"><span class="tn" style="background:#4a3aa7;">24</span>カフェ・モンテ(駅直結洋食)</a>
-<a href="#c-donguri"><span class="tn" style="background:#4a3aa7;">25</span>団栗(大人のお子様ランチ)</a>
-<a href="#c-asahiya"><span class="tn" style="background:#4a3aa7;">26</span>あさひや(千厩の老舗洋食)</a>
-<a href="#c-fiore"><span class="tn" style="background:#4a3aa7;">27</span>フィオーレ(花泉の伊食堂)</a>
-</div>
-<div class="sec yellow">カフェ・喫茶・パン・スイーツ</div>
-<div class="links">
-<a href="#c-basie"><span class="tn" style="background:#eda100;">32</span>ベイシー(伝説のジャズ喫茶)</a>
-<a href="#c-joshuen"><span class="tn" style="background:#eda100;">33</span>常州園(明治創業の茶舗)</a>
-<a href="#c-friend"><span class="tn" style="background:#eda100;">34</span>フレンド(昭和レトロ喫茶)</a>
-<a href="#c-comesta"><span class="tn" style="background:#eda100;">35</span>コメスタ(駅1Fのレトロプリン)</a>
-<a href="#c-shoeido_nakano"><span class="tn" style="background:#eda100;">36</span>松栄堂中野店(明治創業の菓子)</a>
-<a href="#c-hikousen"><span class="tn" style="background:#eda100;">37</span>飛行船(街のパンとケーキ)</a>
-</div>
-</div>
-<div class="mapsec">
-<div class="mapttl">🗾 店舗マップ — 中心部拡大(一ノ関駅〜大町・地主町)（ピンをタップで各店のページへ）</div>
-<div class="mapwrap">
-<img src="img/ichinoseki/_map2.png" alt="中心部拡大(一ノ関駅〜大町・地主町)">
-<a href="#c-fujisei" style="left:67.61%;top:87.2%;width:3.14%;height:3.50%;"></a>
-<a href="#c-sekinoichi" style="left:45.36%;top:65.94%;width:3.14%;height:3.50%;"></a>
-<a href="#c-shouchiku" style="left:65.68%;top:94.31%;width:3.14%;height:3.50%;"></a>
-<a href="#c-jiraiya" style="left:62.57%;top:97.56%;width:3.14%;height:3.50%;"></a>
-<a href="#c-tomizawa" style="left:62.43%;top:80.37%;width:3.14%;height:3.50%;"></a>
-<a href="#c-ichiriki" style="left:71.41%;top:69.1%;width:3.14%;height:3.50%;"></a>
-<a href="#c-unryu" style="left:58.09%;top:74.8%;width:3.14%;height:3.50%;"></a>
-<a href="#c-daifukuya" style="left:65.12%;top:71.33%;width:3.14%;height:3.50%;"></a>
-<a href="#c-shoeidoh" style="left:53.7%;top:62.56%;width:3.14%;height:3.50%;"></a>
-<a href="#c-honkenaotoshian" style="left:70.23%;top:69.09%;width:3.14%;height:3.50%;"></a>
-<a href="#c-aobanaotoshian" style="left:31.58%;top:60.43%;width:3.14%;height:3.50%;"></a>
-<a href="#c-marucho" style="left:66.5%;top:92.13%;width:3.14%;height:3.50%;"></a>
-<a href="#c-marukan" style="left:60.48%;top:92.31%;width:3.14%;height:3.50%;"></a>
-<a href="#c-cafe_monte" style="left:79.14%;top:97.43%;width:3.14%;height:3.50%;"></a>
-<a href="#c-donguri" style="left:88.08%;top:95.02%;width:3.14%;height:3.50%;"></a>
-<a href="#c-komatsu" style="left:63.11%;top:72.75%;width:3.14%;height:3.50%;"></a>
-<a href="#c-yamahei" style="left:62.69%;top:86.75%;width:3.14%;height:3.50%;"></a>
-<a href="#c-michinoku" style="left:60.7%;top:86.36%;width:3.14%;height:3.50%;"></a>
-<a href="#c-basie" style="left:53.23%;top:59.44%;width:3.14%;height:3.50%;"></a>
-<a href="#c-joshuen" style="left:64.1%;top:77.77%;width:3.14%;height:3.50%;"></a>
-<a href="#c-friend" style="left:62.55%;top:86.53%;width:3.14%;height:3.50%;"></a>
-<a href="#c-comesta" style="left:67.27%;top:97.56%;width:3.14%;height:3.50%;"></a>
-<a href="#c-hikousen" style="left:39.02%;top:21.73%;width:3.14%;height:3.50%;"></a>
-<a href="#c-umemoto_unagi" style="left:53.82%;top:67.49%;width:3.14%;height:3.50%;"></a>
-</div>
-<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
-</div>
-<div class="toc">
-<div class="th">この地図の店（24店・番号はピンと同じ）</div>
-<div class="sec blue">もち・郷土料理・和食・寿司</div>
-<div class="links">
-<a href="#c-fujisei"><span class="tn" style="background:#2a78d6;">1</span>ふじせい(ひと口もち膳)</a>
-<a href="#c-sekinoichi"><span class="tn" style="background:#2a78d6;">2</span>せきのいち(蔵の郷土食)</a>
-<a href="#c-shouchiku"><span class="tn" style="background:#2a78d6;">5</span>松竹(大正創業のカツ丼)</a>
-<a href="#c-jiraiya"><span class="tn" style="background:#2a78d6;">6</span>自雷也(特選牛すき焼き)</a>
-<a href="#c-tomizawa"><span class="tn" style="background:#2a78d6;">7</span>富澤(魚屋直営の海鮮)</a>
-<a href="#c-ichiriki"><span class="tn" style="background:#2a78d6;">9</span>一力(寿司と割烹の店)</a>
-<a href="#c-unryu"><span class="tn" style="background:#2a78d6;">10</span>雲龍(前沢牛の焼肉)</a>
-<a href="#c-daifukuya"><span class="tn" style="background:#2a78d6;">11</span>大福屋(百年続く餅屋)</a>
-<a href="#c-shoeidoh"><span class="tn" style="background:#2a78d6;">12</span>松栄堂(ごま摺り団子)</a>
-<a href="#c-umemoto_unagi"><span class="tn" style="background:#2a78d6;">38</span>梅茂登(活鰻の炭火焼)</a>
-</div>
-<div class="sec aqua">そば・ラーメン・うどん</div>
-<div class="links">
-<a href="#c-honkenaotoshian"><span class="tn" style="background:#1baf7a;">14</span>本家直利庵(明治のそば)</a>
-<a href="#c-aobanaotoshian"><span class="tn" style="background:#1baf7a;">15</span>青葉直利庵(極太そば)</a>
-<a href="#c-marucho"><span class="tn" style="background:#1baf7a;">18</span>丸長(魚介つけ麺の店)</a>
-<a href="#c-marukan"><span class="tn" style="background:#1baf7a;">23</span>マル寛(深夜の中華そば)</a>
-</div>
-<div class="sec red">居酒屋・焼肉・焼鳥</div>
-<div class="links">
-<a href="#c-komatsu"><span class="tn" style="background:#e34948;">28</span>こまつ(蔵を改装した居酒屋)</a>
-<a href="#c-yamahei"><span class="tn" style="background:#e34948;">29</span>山平(駅近の老舗焼鳥)</a>
-<a href="#c-michinoku"><span class="tn" style="background:#e34948;">30</span>みちのく(大町の焼鳥酒場)</a>
-</div>
-<div class="sec violet">洋食・イタリアン・カレー</div>
-<div class="links">
-<a href="#c-cafe_monte"><span class="tn" style="background:#4a3aa7;">24</span>カフェ・モンテ(駅直結洋食)</a>
-<a href="#c-donguri"><span class="tn" style="background:#4a3aa7;">25</span>団栗(大人のお子様ランチ)</a>
-</div>
-<div class="sec yellow">カフェ・喫茶・パン・スイーツ</div>
-<div class="links">
-<a href="#c-basie"><span class="tn" style="background:#eda100;">32</span>ベイシー(伝説のジャズ喫茶)</a>
-<a href="#c-joshuen"><span class="tn" style="background:#eda100;">33</span>常州園(明治創業の茶舗)</a>
-<a href="#c-friend"><span class="tn" style="background:#eda100;">34</span>フレンド(昭和レトロ喫茶)</a>
-<a href="#c-comesta"><span class="tn" style="background:#eda100;">35</span>コメスタ(駅1Fのレトロプリン)</a>
-<a href="#c-hikousen"><span class="tn" style="background:#eda100;">37</span>飛行船(街のパンとケーキ)</a>
-</div>
-</div>
-
-
 <div class="note"><b>回り方のコツ:</b>餅本膳や郷土料理のコースは予約制の店が多いので事前連絡が確実。中心街(大町・地主町)は徒歩圏だが厳美渓など郊外は車推奨。個人店は日曜休みも多く、訪問前にマップで最終確認を。</div>
+
+<div class="mapsec">
+  <div class="mapttl">🗺️ 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+  <div class="mapwrap" style="width:105.5mm;">
+    <img src="img/ichinoseki/_map.png" alt="全域マップ">
+    <a href="#c-fujisei" style="left:54.21%;top:41.29%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-sekinoichi" style="left:53.29%;top:39.60%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-pettankun" style="left:39.09%;top:32.25%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-kakkoudango" style="left:38.01%;top:33.05%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-shouchiku" style="left:54.13%;top:41.86%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-jiraiya" style="left:54.00%;top:42.22%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-tomizawa" style="left:54.00%;top:40.75%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-janomesushi" style="left:53.82%;top:42.81%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-ichiriki" style="left:54.37%;top:39.85%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-unryu" style="left:53.82%;top:40.30%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-daifukuya" style="left:54.11%;top:40.03%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-shoeidoh" style="left:53.64%;top:39.33%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-geibiresthouse" style="left:75.16%;top:9.69%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-umemoto_unagi" style="left:53.64%;top:39.72%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-wakamikotei" style="left:22.32%;top:19.22%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-honkenaotoshian" style="left:54.32%;top:39.85%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-aobanaotoshian" style="left:52.72%;top:39.16%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-sobaya90" style="left:87.61%;top:56.14%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-sukawa" style="left:29.64%;top:21.66%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-marucho" style="left:54.16%;top:41.69%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-nijisora" style="left:55.51%;top:42.84%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-zerosen" style="left:88.49%;top:48.54%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-kurobei" style="left:50.82%;top:39.81%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-takashi" style="left:60.66%;top:32.81%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-marukan" style="left:53.92%;top:41.70%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-chuka_nakamura" style="left:55.66%;top:42.24%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-komatsu" style="left:54.02%;top:40.14%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-yamahei" style="left:54.01%;top:41.26%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-michinoku" style="left:53.92%;top:41.23%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-kakunoshin" style="left:78.35%;top:55.52%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-yakiniku-tonchan" style="left:54.07%;top:41.96%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-yakiniku-isshin" style="left:54.18%;top:41.66%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-izakaya-myogatei" style="left:89.75%;top:45.76%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-cafe_monte" style="left:54.68%;top:42.11%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-donguri" style="left:55.05%;top:41.92%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-asahiya" style="left:90.32%;top:44.05%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-fiore" style="left:62.82%;top:90.33%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-soratoki" style="left:44.47%;top:41.50%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-kamikura-restaurant-on" style="left:9.68%;top:14.22%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-basie" style="left:53.62%;top:39.08%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-joshuen" style="left:54.06%;top:40.54%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-friend" style="left:54.00%;top:41.24%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-comesta" style="left:54.20%;top:42.24%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-shoeido_nakano" style="left:50.07%;top:37.90%;width:4.36%;height:9.43%;"></a>
+    <a href="#c-hikousen" style="left:53.03%;top:36.08%;width:4.36%;height:9.43%;"></a>
+  </div>
+  <div class="mapnote">Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ</div>
+</div>
+<div class="toc">
+  <div class="th">この地図の店（45店・番号はピンと同じ）</div>
+  <div class="sec washoku"><a href="#s-washoku" style="all:unset;cursor:pointer;">もち・郷土料理・和食・寿司</a></div>
+  <div class="links">
+    <a href="#c-fujisei"><span class="tn" style="background:#2a78d6;">1</span>1三彩館ふじせい</a>
+    <a href="#c-sekinoichi"><span class="tn" style="background:#2a78d6;">2</span>2蔵元レストラン せきのいち</a>
+    <a href="#c-pettankun"><span class="tn" style="background:#2a78d6;">3</span>3道の駅 厳美渓 レストランペッタンくん</a>
+    <a href="#c-kakkoudango"><span class="tn" style="background:#2a78d6;">4</span>4郭公だんご(郭公屋)</a>
+    <a href="#c-shouchiku"><span class="tn" style="background:#2a78d6;">5</span>5割烹・和風レストラン 松竹</a>
+    <a href="#c-jiraiya"><span class="tn" style="background:#2a78d6;">6</span>6牛肉割烹 あじな店 自雷也</a>
+    <a href="#c-tomizawa"><span class="tn" style="background:#2a78d6;">7</span>7鮮魚・割烹 富澤</a>
+    <a href="#c-janomesushi"><span class="tn" style="background:#2a78d6;">8</span>8蛇の目寿司</a>
+    <a href="#c-ichiriki"><span class="tn" style="background:#2a78d6;">9</span>9寿し割烹 一力</a>
+    <a href="#c-unryu"><span class="tn" style="background:#2a78d6;">10</span>10焼肉レストラン 雲龍</a>
+    <a href="#c-daifukuya"><span class="tn" style="background:#2a78d6;">11</span>11大福屋</a>
+    <a href="#c-shoeidoh"><span class="tn" style="background:#2a78d6;">12</span>12菓匠 松栄堂 総本店</a>
+    <a href="#c-geibiresthouse"><span class="tn" style="background:#2a78d6;">13</span>13げいびレストハウス</a>
+    <a href="#c-umemoto_unagi"><span class="tn" style="background:#2a78d6;">14</span>14梅茂登</a>
+    <a href="#c-wakamikotei"><span class="tn" style="background:#2a78d6;">15</span>15骨寺村荘園交流館 若神子亭</a>
+  </div>
+  <div class="sec men"><a href="#s-men" style="all:unset;cursor:pointer;">そば・ラーメン・うどん</a></div>
+  <div class="links">
+    <a href="#c-honkenaotoshian"><span class="tn" style="background:#2a78d6;">16</span>16本家直利庵</a>
+    <a href="#c-aobanaotoshian"><span class="tn" style="background:#2a78d6;">17</span>17青葉直利庵</a>
+    <a href="#c-sobaya90"><span class="tn" style="background:#2a78d6;">18</span>18そば家90</a>
+    <a href="#c-sukawa"><span class="tn" style="background:#2a78d6;">19</span>19山のそば屋 須川</a>
+    <a href="#c-marucho"><span class="tn" style="background:#2a78d6;">20</span>20丸長ラーメン</a>
+    <a href="#c-nijisora"><span class="tn" style="background:#2a78d6;">21</span>21UMAMI SOUP Noodles 虹ソラ</a>
+    <a href="#c-zerosen"><span class="tn" style="background:#2a78d6;">22</span>22鶏だしらーめん 零SEN</a>
+    <a href="#c-kurobei"><span class="tn" style="background:#2a78d6;">23</span>23らぁー麺や くろべい</a>
+    <a href="#c-takashi"><span class="tn" style="background:#2a78d6;">24</span>24麺家 たか志</a>
+    <a href="#c-marukan"><span class="tn" style="background:#2a78d6;">25</span>25マル寛そばや 一関大町店</a>
+    <a href="#c-chuka_nakamura"><span class="tn" style="background:#2a78d6;">26</span>26中華料理 中村</a>
+  </div>
+  <div class="sec izakaya"><a href="#s-izakaya" style="all:unset;cursor:pointer;">居酒屋・焼肉・焼鳥</a></div>
+  <div class="links">
+    <a href="#c-komatsu"><span class="tn" style="background:#2a78d6;">27</span>27居酒屋 こまつ</a>
+    <a href="#c-yamahei"><span class="tn" style="background:#2a78d6;">28</span>28やきとり山平</a>
+    <a href="#c-michinoku"><span class="tn" style="background:#2a78d6;">29</span>29やきとり道場 みちのく</a>
+    <a href="#c-kakunoshin"><span class="tn" style="background:#2a78d6;">30</span>30丑舎 格之進 総本店</a>
+    <a href="#c-yakiniku-tonchan"><span class="tn" style="background:#2a78d6;">31</span>31焼肉とんちゃん</a>
+    <a href="#c-yakiniku-isshin"><span class="tn" style="background:#2a78d6;">32</span>32一新</a>
+    <a href="#c-izakaya-myogatei"><span class="tn" style="background:#2a78d6;">33</span>33茗荷亭</a>
+  </div>
+  <div class="sec yoshoku"><a href="#s-yoshoku" style="all:unset;cursor:pointer;">洋食・イタリアン・カレー</a></div>
+  <div class="links">
+    <a href="#c-cafe_monte"><span class="tn" style="background:#2a78d6;">34</span>34カフェ・モンテ</a>
+    <a href="#c-donguri"><span class="tn" style="background:#2a78d6;">35</span>35cafe dining 団栗</a>
+    <a href="#c-asahiya"><span class="tn" style="background:#2a78d6;">36</span>36レストランあさひや</a>
+    <a href="#c-fiore"><span class="tn" style="background:#2a78d6;">37</span>37イタリア食堂フィオーレ</a>
+    <a href="#c-soratoki"><span class="tn" style="background:#2a78d6;">38</span>38空と樹</a>
+    <a href="#c-kamikura-restaurant-on"><span class="tn" style="background:#2a78d6;">39</span>39祭畤温泉 かみくら Restaurant ON</a>
+  </div>
+  <div class="sec cafe"><a href="#s-cafe" style="all:unset;cursor:pointer;">カフェ・喫茶・パン・スイーツ</a></div>
+  <div class="links">
+    <a href="#c-basie"><span class="tn" style="background:#2a78d6;">40</span>40ジャズ喫茶 ベイシー</a>
+    <a href="#c-joshuen"><span class="tn" style="background:#2a78d6;">41</span>41常州園</a>
+    <a href="#c-friend"><span class="tn" style="background:#2a78d6;">42</span>42フレンド</a>
+    <a href="#c-comesta"><span class="tn" style="background:#2a78d6;">43</span>43caffe ComeSta</a>
+    <a href="#c-shoeido_nakano"><span class="tn" style="background:#2a78d6;">44</span>44松栄堂 中野店</a>
+    <a href="#c-hikousen"><span class="tn" style="background:#2a78d6;">45</span>45ベーカリー飛行船</a>
+  </div>
+</div>
+<div class="mapsec">
+  <div class="mapttl">🗺️ 店舗マップ — 中心部拡大(一ノ関駅〜大町・地主町)（ピンをタップで各店のページへ）</div>
+  <div class="mapwrap" style="width:105.5mm;">
+    <img src="img/ichinoseki/_map2.png" alt="中心部拡大(一ノ関駅〜大町・地主町)">
+    <a href="#c-fujisei" style="left:50.53%;top:70.91%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-sekinoichi" style="left:25.39%;top:51.58%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-shouchiku" style="left:48.35%;top:77.38%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-jiraiya" style="left:44.84%;top:81.56%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-tomizawa" style="left:44.67%;top:64.70%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-janomesushi" style="left:39.81%;top:88.22%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-ichiriki" style="left:54.82%;top:54.45%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-unryu" style="left:39.77%;top:59.64%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-daifukuya" style="left:47.72%;top:56.48%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-shoeidoh" style="left:34.81%;top:48.51%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-umemoto_unagi" style="left:34.95%;top:52.99%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-honkenaotoshian" style="left:53.49%;top:54.44%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-aobanaotoshian" style="left:9.82%;top:46.57%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-marucho" style="left:49.27%;top:75.40%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-nijisora" style="left:86.22%;top:88.63%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-marukan" style="left:42.48%;top:75.56%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-chuka_nakamura" style="left:90.18%;top:81.75%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-komatsu" style="left:45.45%;top:57.77%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-yamahei" style="left:44.97%;top:70.51%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-michinoku" style="left:42.72%;top:70.15%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-yakiniku-tonchan" style="left:46.67%;top:78.53%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-yakiniku-isshin" style="left:49.60%;top:75.13%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-cafe_monte" style="left:63.56%;top:80.22%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-donguri" style="left:73.66%;top:78.03%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-basie" style="left:34.29%;top:45.67%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-joshuen" style="left:46.57%;top:62.34%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-friend" style="left:44.81%;top:70.30%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-comesta" style="left:50.15%;top:81.75%;width:4.36%;height:3.92%;"></a>
+    <a href="#c-hikousen" style="left:18.22%;top:11.37%;width:4.36%;height:3.92%;"></a>
+  </div>
+  <div class="mapnote">Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ</div>
+</div>
+<div class="toc">
+  <div class="th">この地図の店（29店・番号はピンと同じ）</div>
+  <div class="sec washoku"><a href="#s-washoku" style="all:unset;cursor:pointer;">もち・郷土料理・和食・寿司</a></div>
+  <div class="links">
+    <a href="#c-fujisei"><span class="tn" style="background:#2a78d6;">1</span>1三彩館ふじせい</a>
+    <a href="#c-sekinoichi"><span class="tn" style="background:#2a78d6;">2</span>2蔵元レストラン せきのいち</a>
+    <a href="#c-shouchiku"><span class="tn" style="background:#2a78d6;">5</span>5割烹・和風レストラン 松竹</a>
+    <a href="#c-jiraiya"><span class="tn" style="background:#2a78d6;">6</span>6牛肉割烹 あじな店 自雷也</a>
+    <a href="#c-tomizawa"><span class="tn" style="background:#2a78d6;">7</span>7鮮魚・割烹 富澤</a>
+    <a href="#c-janomesushi"><span class="tn" style="background:#2a78d6;">8</span>8蛇の目寿司</a>
+    <a href="#c-ichiriki"><span class="tn" style="background:#2a78d6;">9</span>9寿し割烹 一力</a>
+    <a href="#c-unryu"><span class="tn" style="background:#2a78d6;">10</span>10焼肉レストラン 雲龍</a>
+    <a href="#c-daifukuya"><span class="tn" style="background:#2a78d6;">11</span>11大福屋</a>
+    <a href="#c-shoeidoh"><span class="tn" style="background:#2a78d6;">12</span>12菓匠 松栄堂 総本店</a>
+    <a href="#c-umemoto_unagi"><span class="tn" style="background:#2a78d6;">14</span>14梅茂登</a>
+  </div>
+  <div class="sec men"><a href="#s-men" style="all:unset;cursor:pointer;">そば・ラーメン・うどん</a></div>
+  <div class="links">
+    <a href="#c-honkenaotoshian"><span class="tn" style="background:#2a78d6;">16</span>16本家直利庵</a>
+    <a href="#c-aobanaotoshian"><span class="tn" style="background:#2a78d6;">17</span>17青葉直利庵</a>
+    <a href="#c-marucho"><span class="tn" style="background:#2a78d6;">20</span>20丸長ラーメン</a>
+    <a href="#c-nijisora"><span class="tn" style="background:#2a78d6;">21</span>21UMAMI SOUP Noodles 虹ソラ</a>
+    <a href="#c-marukan"><span class="tn" style="background:#2a78d6;">25</span>25マル寛そばや 一関大町店</a>
+    <a href="#c-chuka_nakamura"><span class="tn" style="background:#2a78d6;">26</span>26中華料理 中村</a>
+  </div>
+  <div class="sec izakaya"><a href="#s-izakaya" style="all:unset;cursor:pointer;">居酒屋・焼肉・焼鳥</a></div>
+  <div class="links">
+    <a href="#c-komatsu"><span class="tn" style="background:#2a78d6;">27</span>27居酒屋 こまつ</a>
+    <a href="#c-yamahei"><span class="tn" style="background:#2a78d6;">28</span>28やきとり山平</a>
+    <a href="#c-michinoku"><span class="tn" style="background:#2a78d6;">29</span>29やきとり道場 みちのく</a>
+    <a href="#c-yakiniku-tonchan"><span class="tn" style="background:#2a78d6;">31</span>31焼肉とんちゃん</a>
+    <a href="#c-yakiniku-isshin"><span class="tn" style="background:#2a78d6;">32</span>32一新</a>
+  </div>
+  <div class="sec yoshoku"><a href="#s-yoshoku" style="all:unset;cursor:pointer;">洋食・イタリアン・カレー</a></div>
+  <div class="links">
+    <a href="#c-cafe_monte"><span class="tn" style="background:#2a78d6;">34</span>34カフェ・モンテ</a>
+    <a href="#c-donguri"><span class="tn" style="background:#2a78d6;">35</span>35cafe dining 団栗</a>
+  </div>
+  <div class="sec cafe"><a href="#s-cafe" style="all:unset;cursor:pointer;">カフェ・喫茶・パン・スイーツ</a></div>
+  <div class="links">
+    <a href="#c-basie"><span class="tn" style="background:#2a78d6;">40</span>40ジャズ喫茶 ベイシー</a>
+    <a href="#c-joshuen"><span class="tn" style="background:#2a78d6;">41</span>41常州園</a>
+    <a href="#c-friend"><span class="tn" style="background:#2a78d6;">42</span>42フレンド</a>
+    <a href="#c-comesta"><span class="tn" style="background:#2a78d6;">43</span>43caffe ComeSta</a>
+    <a href="#c-hikousen"><span class="tn" style="background:#2a78d6;">45</span>45ベーカリー飛行船</a>
+  </div>
+</div>
 
 <h2 id="s-washoku">もち・郷土料理・和食・寿司</h2>
 <div class="card" id="c-fujisei">
@@ -574,7 +660,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-umemoto_unagi">
 <img class="hero" src="img/ichinoseki/umemoto_unagi.jpg" alt="梅茂登 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">38</span>梅茂登<span class="yomi">うめもと</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>梅茂登<span class="yomi">うめもと</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">国産の活うなぎを注文後にさばいて焼き上げる、一関では数少ないうなぎ専門の和食店。白焼きしてから継ぎ足しのタレで仕上げるため提供に20分以上かかるが、香ばしさと甘辛のバランスで長年通う常連が多い。落ち着いた和室で観光客も利用しやすく駐車場も完備。</div>
 <div class="sig"><b>一皿:</b>秀衡椀うなぎめし（平泉の伝統漆器・秀衡椀に盛るうなぎめし。4,015円）</div>
@@ -589,9 +675,9 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://umaten.jp/iwate/ume-moto-ichinoseki-unagi/">ウマ店 梅茂登（うめもと）</a> / <a href="https://tabelog.com/iwate/A0303/A030301/3000724/">食べログ 梅茂登</a> / <a href="https://retty.me/area/PRE03/ARE365/SUB29303/100000333400/">Retty 梅茂登</a></div>
 </div></div>
 <div class="card" id="c-wakamikotei">
-<div class="hero-pending">写真準備中<span>候補が外観/展示のみで基準適合写真なし</span></div>
+  <img class="hero" src="img/ichinoseki/wakamikotei.jpg" alt="wakamikotei 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">39</span>骨寺村荘園交流館 若神子亭<span class="yomi">ほねでらむらしょうえんこうりゅうかん わかみこてい</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>骨寺村荘園交流館 若神子亭<span class="yomi">ほねでらむらしょうえんこうりゅうかん わかみこてい</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">中世の荘園景観が残る骨寺村荘園遺跡の拠点施設で、レストランと産直コーナーを併設。厨房に立つのは本寺地区の農家のお母さんたちで、地元産の南部一郎かぼちゃを練り込んだうどんや、小麦粉を練って薄くのばし汁で煮る郷土料理「はっと」を提供する。骨寺村荘園米や地場野菜の直売も行う。</div>
 <div class="sig"><b>一皿:</b>南部一郎かぼちゃうどん（特産のかぼちゃを練り込んだ黄色い自家製うどん。720円）</div>
@@ -603,13 +689,13 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 </table>
 <div class="reason"><b>選定理由:</b>一関市および骨寺村荘園遺跡の公式サイトに掲載される公共の観光拠点で、観光地の食事処と直売所という手薄な枠を同時に満たす。地元農家が調理する点も他店と重複しない。</div>
 <a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AA%A8%E5%AF%BA%E6%9D%91%E8%8D%98%E5%9C%92%E4%BA%A4%E6%B5%81%E9%A4%A8%20%E8%8B%A5%E7%A5%9E%E5%AD%90%E4%BA%AD%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E5%8E%B3%E7%BE%8E%E7%94%BA%E8%8B%A5%E7%A5%9E%E5%AD%90%EF%BC%92%EF%BC%94%EF%BC%91%E2%88%92%EF%BC%92">Googleマップで開く</a>
-<div class="src">写真: 準備中 / 参照元: <a href="https://www.honedera.jp/facility/wakamiko.html">骨寺村荘園遺跡 公式 若神子亭レストランメニュー</a> / <a href="https://www.city.ichinoseki.iwate.jp/index.cfm/6,65984,186,html">一関市 骨寺村荘園交流館</a></div>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.honedera.jp/facility/wakamiko.html">骨寺村荘園遺跡 公式 若神子亭レストランメニュー</a> / <a href="https://www.city.ichinoseki.iwate.jp/index.cfm/6,65984,186,html">一関市 骨寺村荘園交流館</a>／写真: <a href="https://www.hotpepper.jp/strJ001093573/">hotpepper.jp</a></div>
 </div></div>
 <h2 id="s-men" class="c-aqua">そば・ラーメン・うどん</h2>
 <div class="card" id="c-honkenaotoshian">
 <img class="hero" src="img/ichinoseki/honkenaotoshian.jpg" alt="本家直利庵 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">14</span>本家直利庵<span class="yomi">ほんけなおとしあん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>本家直利庵<span class="yomi">ほんけなおとしあん</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
 <div class="desc">明治17年創業という一関屈指の歴史を持つそば店です。具材が8種以上のせられるボリューム満点の天ざるが看板で、予約制のわんこそば(小分けの椀に次々そばを入れていく岩手の名物)も受け付けています。</div>
 <div class="sig"><b>一皿:</b>天ざるそば(8種以上の天ぷらが付く名物の天ざる/1,100円)</div>
@@ -626,7 +712,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-aobanaotoshian">
 <img class="hero" src="img/ichinoseki/aobanaotoshian.jpg" alt="青葉直利庵 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">15</span>青葉直利庵<span class="yomi">あおばなおとしあん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">17</span>青葉直利庵<span class="yomi">あおばなおとしあん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">遠方からも客が訪れる一関の人気そば店です。極太で長いそばと、甘めで濃いつゆという他にない組み合わせが特徴で、量もたっぷりあります。大ぶりの海老天が付く天ざるが定番です。</div>
 <div class="sig"><b>一皿:</b>天ざる(極太そばに大きな海老天ぷらを添えた看板メニュー/1,280円)</div>
@@ -643,7 +729,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-sobaya90">
 <img class="hero" src="img/ichinoseki/sobaya90.jpg" alt="そば家90 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>そば家90<span class="yomi">そばやきゅうじゅう</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>そば家90<span class="yomi">そばやきゅうじゅう</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">古い蔵を移築した風情ある建物で営業する十割そば店です。地元産のそば粉を使い、つなぎを一切使わない手打ちの十割そばを打ちます。はっと文化の色濃い藤沢エリアの食の目印になっている一軒です。</div>
 <div class="sig"><b>一皿:</b>十割そば(地元産そば粉をつなぎなしで打つせいろ)</div>
@@ -660,7 +746,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-sukawa">
 <img class="hero" src="img/ichinoseki/sukawa.jpg" alt="山のそば屋 須川 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">17</span>山のそば屋 須川<span class="yomi">やまのそばや すかわ</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>山のそば屋 須川<span class="yomi">やまのそばや すかわ</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">厳美渓から須川高原へ向かう道沿いの山のそば屋です。ルチンが豊富で独特の風味を持つ「韃靼(だったん)そば」と、もちもちした田舎そばが名物になっています。季節ごとに変わる山菜の天ぷらも評判です。</div>
 <div class="sig"><b>一皿:</b>韃靼天ざるそば(韃靼そばに山菜天ぷらを合わせた看板/1,020円・税別)</div>
@@ -677,7 +763,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-marucho">
 <img class="hero" src="img/ichinoseki/marucho.jpg" alt="丸長ラーメン 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>丸長ラーメン<span class="yomi">まるちょうらーめん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>丸長ラーメン<span class="yomi">まるちょうらーめん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">駅前で長く続くラーメン・つけ麺の店です。魚介だしの香るスープとやや太めの麺が特徴で、深夜まで営業しているため飲んだあとの締めにも使われます。生ビールと餃子が付く晩酌セットも人気です。</div>
 <div class="sig"><b>一皿:</b>つけ麺(魚介だしの効いた濃いつけ汁とやや太麺/700円)</div>
@@ -694,7 +780,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-nijisora">
 <img class="hero" src="img/ichinoseki/nijisora.jpg" alt="UMAMI SOUP Noodles 虹ソラ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>UMAMI SOUP Noodles 虹ソラ<span class="yomi">うまみすーぷぬーどるす にじそら</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>UMAMI SOUP Noodles 虹ソラ<span class="yomi">うまみすーぷぬーどるす にじそら</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">開店前から行列ができる一関随一の人気ラーメン店です。鶏・魚介・野菜の旨味を重ねたスープが看板で、土産用の商品が道の駅やスーパー、観光物産館でも売られるほど地元に定着しています。スープがなくなり次第終了します。</div>
 <div class="sig"><b>一皿:</b>醤油そば(鶏と魚介の旨味を重ねた澄んだスープの一杯)</div>
@@ -711,7 +797,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-zerosen">
 <img class="hero" src="img/ichinoseki/zerosen.jpg" alt="鶏だしらーめん 零SEN 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>鶏だしらーめん 零SEN<span class="yomi">とりだしらーめん ぜろせん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>鶏だしらーめん 零SEN<span class="yomi">とりだしらーめん ぜろせん</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">一関東部・千厩の鶏だし専門ラーメン店です。濃厚ながら重すぎずまろやかに飲める鶏白湯スープが評判で、旧店名「麺匠 田舎もん」から屋号を改めて続いています。市東部でラーメンを食べるならまずここという一軒です。</div>
 <div class="sig"><b>一皿:</b>鶏白湯らーめん(濃厚だがまろやかな鶏スープの看板)</div>
@@ -728,7 +814,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-kurobei">
 <img class="hero" src="img/ichinoseki/kurobei.jpg" alt="らぁー麺や くろべい 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>らぁー麺や くろべい<span class="yomi">らぁーめんや くろべい</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>らぁー麺や くろべい<span class="yomi">らぁーめんや くろべい</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">山目地区にある人気のラーメン店です。鶏ガラ主体のあっさりしたスープに中細ストレート麺を合わせた、昔ながらの中華そばが看板です。昼夜ともに営業し、地元客の日常使いの店になっています。</div>
 <div class="sig"><b>一皿:</b>中華そば(鶏ガラベースの澄んだスープと中細ストレート麺)</div>
@@ -745,7 +831,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-takashi">
 <img class="hero" src="img/ichinoseki/takashi.jpg" alt="麺家 たか志 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>麺家 たか志<span class="yomi">めんや たかし</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>麺家 たか志<span class="yomi">めんや たかし</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">一関では珍しい本格的な白濁豚骨、いわゆる博多系のラーメンを出す店です。濃厚な豚骨スープに細麺を合わせ、替玉で二杯目を楽しめます。通し営業に近い長めの営業時間で使いやすいのも魅力です。</div>
 <div class="sig"><b>一皿:</b>博多ラーメン(白濁した豚骨スープと細麺、替玉あり)</div>
@@ -762,7 +848,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-marukan">
 <img class="hero" src="img/ichinoseki/marukan.jpg" alt="マル寛そばや 一関大町店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>マル寛そばや 一関大町店<span class="yomi">まるかんそばや いちのせきおおまちてん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">25</span>マル寛そばや 一関大町店<span class="yomi">まるかんそばや いちのせきおおまちてん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">一関の飲食街・大町で深夜3時まで営業する中華そば店です。あっさりした鶏ガラの中華そばに自家製ワンタンを合わせた一杯が定番で、飲んだあとの締めとして地元にすっかり定着しています。</div>
 <div class="sig"><b>一皿:</b>ワンタン中華そば(あっさり中華そばにつるりとしたワンタンを浮かべた一杯)</div>
@@ -779,7 +865,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-chuka_nakamura">
 <img class="hero" src="img/ichinoseki/chuka_nakamura.jpg" alt="中華料理 中村 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">40</span>中華料理 中村<span class="yomi">ちゅうかりょうり なかむら</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">26</span>中華料理 中村<span class="yomi">ちゅうかりょうり なかむら</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
 <div class="desc">一関市散田の住宅地にある町中華で、開店と同時に地元客の車が次々に入る人気店。油控えめであっさりした味付けが持ち味で、五目焼きそばや餃子、細麺に醤油スープの麺類、定食類が揃う。相席なし・カウンターなしの方針で、縦長の店内にテーブル席と個室がある。</div>
 <div class="sig"><b>一皿:</b>五目焼きそば（野菜と魚介を炒めた餡を焼きそばにかけた看板の一皿）</div>
@@ -797,7 +883,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-komatsu">
 <img class="hero" src="img/ichinoseki/komatsu.jpg" alt="居酒屋 こまつ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#e34948;">28</span>居酒屋 こまつ<span class="yomi">いざかや こまつ</span></div>
+<div class="nm"><span class="pinno" style="background:#e34948;">27</span>居酒屋 こまつ<span class="yomi">いざかや こまつ</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
 <div class="desc">百年以上前に建てられた蔵を改装した、大町の飲み屋街を代表する居酒屋。気仙沼市唐桑の「水山牡蠣」を通年で扱い、三陸産の鮮魚の刺身盛りや岩がき鍋、岩手県産牛のステーキなどを出す。オリジナルの日本酒と約80種の本格焼酎が揃い、一関の夜を落ち着いて過ごせる一軒。</div>
 <div class="sig"><b>一皿:</b>季節のお刺身の盛り合わせ（三陸から届く旬の魚介を数種盛り合わせた看板の一皿）</div>
@@ -814,7 +900,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-yamahei">
 <img class="hero" src="img/ichinoseki/yamahei.jpg" alt="やきとり山平 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#e34948;">29</span>やきとり山平<span class="yomi">やきとり やまへい</span></div>
+<div class="nm"><span class="pinno" style="background:#e34948;">28</span>やきとり山平<span class="yomi">やきとり やまへい</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">一ノ関駅から歩いて5分ほど、大町にある老舗の焼鳥店。カウンターなら1本単位で頼め、しっとりと柔らかく焼き上げた串を一人でも気軽に楽しめる。地元客の常連比率が高く、飲み屋街をはしごする一軒目にも締めにも使われる店。</div>
 <div class="sig"><b>一皿:</b>焼鳥（もも・レバーなどを一本ずつ注文できる、しっとり焼き上げた定番の串）</div>
@@ -829,9 +915,9 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://hitosara.com/0031485105/">ヒトサラ やきとり山平</a> / <a href="https://retty.me/area/PRE03/ARE365/SUB29303/LCAT12/CAT80/">Retty 一関の人気焼き鳥</a></div>
 </div></div>
 <div class="card" id="c-michinoku">
-<div class="hero-pending">写真準備中<span>Places写真なし・媒体掲載も外観のみ</span></div>
+  <img class="hero" src="img/ichinoseki/michinoku.jpg" alt="michinoku 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#e34948;">30</span>やきとり道場 みちのく<span class="yomi">やきとりどうじょう みちのく</span></div>
+<div class="nm"><span class="pinno" style="background:#e34948;">29</span>やきとり道場 みちのく<span class="yomi">やきとりどうじょう みちのく</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">大町の路地に構えるカウンター主体の小さな焼鳥屋。夜18時から24時までという遅い時間帯の営業で、仕事帰りや二軒目の客が集まる。派手さはないが串と酒だけで完結する地元感の濃い一軒で、一関の飲み屋街の空気を味わうならここ。</div>
 <div class="sig"><b>一皿:</b>焼鳥盛り合わせ（定番部位を炭で焼き上げた盛り合わせ、カウンターで一本ずつ追加も可）</div>
@@ -843,12 +929,12 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 </table>
 <div class="reason"><b>選定理由:</b>Retty・食べログの一関焼鳥で名前が挙がる地元密着店。深夜まで開く大町の飲み屋街らしい店として、駅前の大箱とは異なる選択肢に選定。</div>
 <a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%8D%E3%81%A8%E3%82%8A%E9%81%93%E5%A0%B4%20%E3%81%BF%E3%81%A1%E3%81%AE%E3%81%8F%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E5%A4%A7%E7%94%BA%EF%BC%93%E2%88%92%EF%BC%91">Googleマップで開く</a>
-<div class="src">写真: 準備中 / 参照元: <a href="https://retty.me/area/PRE03/ARE365/SUB29303/100000855164/">Retty やきとり道場 みちのく</a> / <a href="https://www.ekiten.jp/shop_2397202/">エキテン やきとり道場みちのく</a></div>
+<div class="src">写真: 準備中 / 参照元: <a href="https://retty.me/area/PRE03/ARE365/SUB29303/100000855164/">Retty やきとり道場 みちのく</a> / <a href="https://www.ekiten.jp/shop_2397202/">エキテン やきとり道場みちのく</a>／写真: <a href="https://retty.me/area/PRE03/ARE365/SUB29303/100000855164/">retty.me</a></div>
 </div></div>
 <div class="card" id="c-kakunoshin">
 <img class="hero" src="img/ichinoseki/kakunoshin.jpg" alt="丑舎 格之進 総本店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#e34948;">31</span>丑舎 格之進 総本店<span class="yomi">うしや かくのしん そうほんてん</span></div>
+<div class="nm"><span class="pinno" style="background:#e34948;">30</span>丑舎 格之進 総本店<span class="yomi">うしや かくのしん そうほんてん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">全国区の知名度を持つ「門崎熟成肉 格之進」の発祥の店で、2004年に一関市川崎町の田園地帯に開いた総本店。生産者の近くで牛と向き合うことを掲げ、熟成させた黒毛和牛を焼肉やステーキ、すき焼き、しゃぶしゃぶ、さらにハンバーグやメンチカツの定食まで幅広い形で出す。東京の店より落ち着いた価格で本流の熟成肉が味わえる。</div>
 <div class="sig"><b>一皿:</b>門崎熟成肉の焼肉（自社で熟成させた黒毛和牛を部位ごとに焼いて味わう総本店の看板）</div>
@@ -862,11 +948,62 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%91%E8%88%8E%20%E6%A0%BC%E4%B9%8B%E9%80%B2%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E5%B7%9D%E5%B4%8E%E7%94%BA%E8%96%84%E8%A1%A3%E6%B3%95%E9%81%93%E5%9C%B0%EF%BC%92%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%96">Googleマップで開く</a>
 <div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://kakunosh.in/restaurant/wagyu-ushiya-kakunoshin/">格之進 公式サイト 丑舎 格之進 総本店</a> / <a href="https://www.hotpepper.jp/strJ001287465/">ホットペッパーグルメ 丑舎格之進総本店</a></div>
 </div></div>
+<div class="card" id="c-yakiniku-tonchan">
+  <img class="hero" src="img/ichinoseki/yakiniku-tonchan.jpg" alt="焼肉とんちゃん 料理・店内写真">
+  <div class="body">
+    <div class="nm"><span class="pinno" style="background:#e34948;">31</span>焼肉とんちゃん<span class="yomi">やきにくとんちゃん</span></div>
+    <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+    <div class="desc">JR一ノ関駅から徒歩1分、駅前ビル1階の大衆焼肉店。カルビやハラミ（牛の横隔膜の肉。赤身のうまみが強い部位）に加え、ホルモン（牛の胃や腸などの内臓肉）の品揃えが厚い。座敷・掘りごたつもあり、深夜2時まで開いている地元の飲みの定番。</div>
+    <div class="sig"><b>一皿:</b>一皿: ホルモン（牛の胃や腸などの内臓肉を炭で焼く一品。口コミで真っ先に挙がる看板／ディナー予算3,001〜4,000円）</div>
+    <table class="info">
+      <tr><th>営業時間</th><td>月〜土・祝日・祝前日 11:30〜16:59（料理L.O.13:30）／17:00〜翌2:00（料理・ドリンクL.O.翌1:15）※14:00〜17:00はドリンク・デザートのみ</td></tr>
+      <tr><th>定休日</th><td class="off">日曜（ほか毎月1回月曜休みあり）</td></tr>
+      <tr><th>住所</th><td>岩手県一関市駅前48 カントウビル1F</td></tr>
+      <tr><th>予約</th><td>可（ネット予約可）0191-21-2911 / https://www.hotpepper.jp/strJ004440001/</td></tr>
+    </table>
+    <div class="reason"><b>選定理由:</b>ホットペッパーグルメの店舗ページが2025年9月更新で、2026年5月来店の口コミも入っており営業が確認できる。地元メディアや焼肉レビューでも『一ノ関駅近くで地元の人が通う愛すべき店。予約しないと入れないことも』と紹介され、駅前1分という立地が旅行者にも使いやすい。薄い居酒屋・焼肉章に『駅前の大衆焼肉』という欠けていた型を足せる。</div>
+    <a class="map" href="https://www.google.com/maps/search/?api=1&amp;query=%E7%84%BC%E8%82%89%E3%81%A8%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E9%A7%85%E5%89%8D48%20%E3%82%AB%E3%83%B3%E3%83%88%E3%82%A6%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+    <div class="src">写真: <a href="https://www.hotpepper.jp/strJ004440001/photo/">hotpepper.jp</a> / 参照元: <a href="https://www.hotpepper.jp/strJ004440001/">ホットペッパーグルメ 焼肉とんちゃん（2025/09/19更新）</a> / <a href="https://www.yakiniku-zukan.com/entry/tonchan-ichinoseki-iwate">焼肉図鑑「岩手県一関市 とんちゃん」</a></div>
+  </div></div>
+<div class="card" id="c-yakiniku-isshin">
+  <img class="hero" src="img/ichinoseki/yakiniku-isshin.jpg" alt="一新 料理・店内写真">
+  <div class="body">
+    <div class="nm"><span class="pinno" style="background:#e34948;">32</span>一新<span class="yomi">いっしん</span></div>
+    <div class="chips"><span class="chip local">地元密着</span></div>
+    <div class="desc">一ノ関駅から徒歩1分、16席だけの小さな焼肉店。和牛を店内で熟成（一定の温度で寝かせてうまみを引き出す手法）させ、ワインセラーの銘柄と合わせて出す。前日までの予約制で、1人焼肉から贅沢コースまで受ける大人向けの一軒。</div>
+    <div class="sig"><b>一皿:</b>一皿: 牛まるごと贅沢コース（焼肉7種にホルモンを組み合わせたコース。看板の新東牛サーロイン＝黒毛和牛の背側の霜降り肉も含む／6,000円・1名）</div>
+    <table class="info">
+      <tr><th>営業時間</th><td>夜 16:00〜23:00（料理L.O.22:00／ドリンクL.O.22:30）、昼の部 12:00〜15:00（月・火・木〜日、前日までの予約で完全予約制）</td></tr>
+      <tr><th>定休日</th><td class="off">水曜</td></tr>
+      <tr><th>住所</th><td>岩手県一関市上大槻街2-34 マルチョウビル1F</td></tr>
+      <tr><th>予約</th><td>要（前日までの予約で完全予約制。当日は仕込み・空席次第）050-5486-4674 / https://r.gnavi.co.jp/pmhyp0k90000/</td></tr>
+    </table>
+    <div class="reason"><b>選定理由:</b>ぐるなびの店舗公式ページが2026年9月19日更新で『9月ランチ開始』を告知しており、現在も動いている店だと一次的に確認できる。既載の焼肉が前沢牛の雲龍・熟成肉の格之進と大箱寄りなので、駅前・16席・ワインと熟成肉という別の軸が入る。ホットペッパー／ヒトサラ／じゃらんの一関焼肉一覧でも一ノ関駅前の代表格として扱われている。</div>
+    <a class="map" href="https://www.google.com/maps/search/?api=1&amp;query=%E4%B8%80%E6%96%B0%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E4%B8%8A%E5%A4%A7%E6%A7%BB%E8%A1%972-34%20%E3%83%9E%E3%83%AB%E3%83%81%E3%83%A7%E3%82%A6%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+    <div class="src">写真: <a href="https://r.gnavi.co.jp/pmhyp0k90000/photo/">r.gnavi.co.jp</a> / 参照元: <a href="https://r.gnavi.co.jp/pmhyp0k90000/">楽天ぐるなび 一新 店舗ページ（2026/09/19更新）</a> / <a href="https://ta9k900.gorp.jp/">一新 公式ページ「一ノ関駅前の焼肉店」</a> / <a href="https://hitosara.com/0031751796/">ヒトサラ 一新</a></div>
+  </div></div>
+<div class="card" id="c-izakaya-myogatei">
+  <img class="hero" src="img/ichinoseki/izakaya-myogatei.jpg" alt="茗荷亭 料理・店内写真">
+  <div class="body">
+    <div class="nm"><span class="pinno" style="background:#e34948;">33</span>茗荷亭<span class="yomi">みょうがてい</span></div>
+    <div class="chips"><span class="chip local">地元密着</span></div>
+    <div class="desc">千厩の町なかにある、和食が主軸の居酒屋。魚は気仙沼産、野菜は地場産、米は自家製米と食材にこだわる。昼は小鉢を詰め合わせた御膳、夜はふぐちり鍋（とらふぐの身と野菜を炊く鍋）や刺身盛り、地元いわい鶏の料理を落ち着いた和室で出す。</div>
+    <div class="sig"><b>一皿:</b>一皿: 茗荷御膳（揚げ物・煮物などの小鉢を彩りよく組んだ昼の人気御膳。好みで刺身の追加も可／1,200円）</div>
+    <table class="info">
+      <tr><th>営業時間</th><td>昼 11:30〜14:00（L.O.13:30）／夜 17:00〜22:00（L.O.21:30）</td></tr>
+      <tr><th>定休日</th><td class="off">不定休（ホットペッパーでは日曜定休の記載あり。訪問前に要確認）</td></tr>
+      <tr><th>住所</th><td>岩手県一関市千厩町千厩町浦10-1</td></tr>
+      <tr><th>予約</th><td>推奨（個室・宴会は要予約）0191-52-2289</td></tr>
+    </table>
+    <div class="reason"><b>選定理由:</b>一関市公式観光サイト「いち旅」が千厩エリアの居酒屋として掲載し、千厩まちづくり株式会社の飲食店案内にも現役で載っている二重の地元推し。既載の居酒屋が一関中心部の4軒に偏っているところへ、千厩エリアの夜の一軒を足せる。公式Instagramで料理写真を出し続けている点も、いち旅の紹介文で触れられている。</div>
+    <a class="map" href="https://www.google.com/maps/search/?api=1&amp;query=%E8%8C%97%E8%8D%B7%E4%BA%AD%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E5%8D%83%E5%8E%A9%E7%94%BA%E5%8D%83%E5%8E%A9%E7%94%BA%E6%B5%A610-1">Googleマップで開く</a>
+    <div class="src">写真: <a href="https://www.ichitabi.jp/gourmet/data.php?p=56">ichitabi.jp</a> / 参照元: <a href="https://www.ichitabi.jp/gourmet/data.php?p=56">いち旅（一関市公式観光サイト）茗荷亭</a> / <a href="https://sakenokura.com/wp/food/">千厩まちづくり株式会社「食べる」一覧</a> / <a href="https://www.hotpepper.jp/strJ000272075/">ホットペッパーグルメ 茗荷亭</a> / <a href="https://www.instagram.com/myougatei/">茗荷亭 公式Instagram</a></div>
+  </div></div>
 <h2 id="s-yoshoku" class="c-violet">洋食・イタリアン・カレー</h2>
 <div class="card" id="c-cafe_monte">
 <img class="hero" src="img/ichinoseki/cafe_monte.jpg" alt="カフェ・モンテ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">24</span>カフェ・モンテ<span class="yomi">カフェ・モンテ</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>カフェ・モンテ<span class="yomi">カフェ・モンテ</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">JR一ノ関駅東口の交流センター2階にあり、改札から数十秒で入れる手作り洋食とスイーツの店。一関黄金の豚やいわて南牛、気仙沼大島産の牡蠣など県内・三陸の食材を使った定食やグラタン、カレーが揃う。列車待ちの休憩にも夕方のティータイムにも使える、駅前で最も気軽な洋食店。</div>
 <div class="sig"><b>一皿:</b>一関黄金の豚のロースカツカレー（地元ブランド豚のロースカツをのせた欧風カレー・1,100円）</div>
@@ -883,7 +1020,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-donguri">
 <img class="hero" src="img/ichinoseki/donguri.jpg" alt="cafe dining 団栗 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">25</span>cafe dining 団栗<span class="yomi">カフェダイニング どんぐり</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>cafe dining 団栗<span class="yomi">カフェダイニング どんぐり</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">白壁の教会風の外観が目印の、女性シェフが切り盛りする洋食ダイニング。看板の「大人のお子様ランチ」は、ハンバーグやオムライスなど洋食の定番を一皿に少しずつ盛り合わせたプレートで、手作りトマトソースの団栗レッド、デミグラスソースの団栗ブラウンなど色の名前でソースを選べる。自家製スイーツも評判。</div>
 <div class="sig"><b>一皿:</b>大人のお子様ランチ（いわて門崎丑などを使ったハンバーグやオムライスを一皿に盛り合わせた名物プレート）</div>
@@ -900,7 +1037,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-asahiya">
 <img class="hero" src="img/ichinoseki/asahiya.jpg" alt="レストランあさひや 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">26</span>レストランあさひや<span class="yomi">レストランあさひや</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>レストランあさひや<span class="yomi">レストランあさひや</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">昭和29年に「あさひや食堂」として創業し、昭和53年から現シェフが洋食レストランとして再出発した千厩の老舗。ポピュラーな洋食から本格的なフランス料理までを一軒でまかない、いわて南牛・いわい鶏・館ヶ森ポークや地元野菜を使う。「三大名物ライス」と呼ばれる看板ご飯ものが地元で親しまれている。</div>
 <div class="sig"><b>一皿:</b>オムハヤシライス（ケチャップライスをとろとろのオムレツで包み、牛の旨みが溶けたデミグラス系ハヤシソースをかけた名物ライス）</div>
@@ -917,7 +1054,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-fiore">
 <img class="hero" src="img/ichinoseki/fiore.jpg" alt="イタリア食堂フィオーレ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">27</span>イタリア食堂フィオーレ<span class="yomi">イタリアしょくどう フィオーレ</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>イタリア食堂フィオーレ<span class="yomi">イタリアしょくどう フィオーレ</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">一関市南部・花泉町涌津にある地元密着のイタリア食堂。旬の地元野菜や三陸の牡蠣、県産アスパラなどを使った日替わりパスタが看板で、平日ランチセットは価格の割に品数が多い。夜は遅めまで営業し、家族連れから一人客まで幅広く受け止める旧町域の実力店。</div>
 <div class="sig"><b>一皿:</b>本日のパスタランチセット（地元野菜や三陸産牡蠣など旬の食材を使った日替わりパスタにサラダ・スープが付く）</div>
@@ -931,11 +1068,45 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E9%A3%9F%E5%A0%82%E3%83%95%E3%82%A3%E3%82%AA%E3%83%BC%E3%83%AC%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E8%8A%B1%E6%B3%89%E7%94%BA%E6%B6%8C%E6%B4%A5%E4%BA%8C%E3%83%8E%E7%94%BA28%E2%88%92%EF%BC%94">Googleマップで開く</a>
 <div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://www.center-i.org/2016/05/16/%E4%B8%80%E9%96%A2%E3%81%AE%E3%81%8A%E5%BA%97%E7%B4%B9%E4%BB%8B-part-7-%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E9%A3%9F%E5%A0%82%E3%83%95%E3%82%A3%E3%82%AA%E3%83%BC%E3%83%AC-%E3%81%95%E3%82%93/">いちのせき市民活動センター 一関のお店紹介</a> / <a href="https://tabelog.com/iwate/A0303/A030301/3009243/">食べログ イタリア食堂フィオーレ</a></div>
 </div></div>
+<div class="card" id="c-soratoki">
+  <img class="hero" src="img/ichinoseki/soratoki.jpg" alt="空と樹 料理・店内写真">
+  <div class="body">
+    <div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>空と樹<span class="yomi">そらとき</span></div>
+    <div class="chips"><span class="chip pop">口コミ突出</span></div>
+    <div class="desc">一関ICから車で5分のイタリアンカフェレストラン。店内に据えた500℃の石窯で焼く本格ピッツァと、もちもちの生パスタが看板。ブリュッセルワッフル（角が立つベルギー式の軽いワッフル）やパフェも通年で出す。テラス20席、全席禁煙・ノンアルコール。</div>
+    <div class="sig"><b>一皿:</b>一皿: 石窯焼きピッツァ（店内の500℃の石窯で一気に焼く薄焼きピッツァ。トマト系とチーズ系のハーフ＆ハーフも可、テイクアウト可）</div>
+    <table class="info">
+      <tr><th>営業時間</th><td>11:00〜16:00（料理・ドリンクL.O.15:30）／17:30〜21:00（料理L.O.20:00）</td></tr>
+      <tr><th>定休日</th><td class="off">水曜（公式サイトは「水曜日、他」と表記）</td></tr>
+      <tr><th>住所</th><td>岩手県一関市萩荘字古内241</td></tr>
+      <tr><th>予約</th><td>推奨（夜は予約優先、ネット予約可）0191-34-5656 / https://www.hotpepper.jp/strJ001295315/</td></tr>
+    </table>
+    <div class="reason"><b>選定理由:</b>公式サイトが現役で、ホットペッパーグルメでは口コミ61件・評点4.8（2026年9月の投稿あり）と一関のイタリアンでは突出した評価。薄い洋食・イタリアン章に、既載のフィオーレとは違う「石窯ピッツァ＋生パスタ＋テラス」という型を足せる。テイクアウト対応で使い勝手もよい。</div>
+    <a class="map" href="https://www.google.com/maps/search/?api=1&amp;query=%E7%A9%BA%E3%81%A8%E6%A8%B9%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E8%90%A9%E8%8D%98%E5%AD%97%E5%8F%A4%E5%86%85241">Googleマップで開く</a>
+    <div class="src">写真: <a href="https://cafeterrace-soratoki.com/gallery.html">cafeterrace-soratoki.com</a> / 参照元: <a href="https://cafeterrace-soratoki.com/">空と樹 公式サイト</a> / <a href="https://www.hotpepper.jp/strJ001295315/">ホットペッパーグルメ 空と樹（口コミ61件・4.8／2026/06/03更新）</a></div>
+  </div></div>
+<div class="card" id="c-kamikura-restaurant-on">
+  <img class="hero" src="img/ichinoseki/kamikura-restaurant-on.jpg" alt="祭畤温泉 かみくら Restaurant ON 料理・店内写真">
+  <div class="body">
+    <div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>祭畤温泉 かみくら Restaurant ON<span class="yomi">まつるべおんせん かみくら れすとらん おん</span></div>
+    <div class="chips"><span class="chip local">地元密着</span></div>
+    <div class="desc">栗駒山の麓、祭畤温泉の宿にあるレストラン。味噌や醤油も取り入れた「ジャパニーズフレンチ」（和の調味料を使うフランス料理）を出し、宿泊しなくても日帰りで温泉とランチを組み合わせて使える。門崎丑や八幡平サーモンなど県産食材が主役。</div>
+    <div class="sig"><b>一皿:</b>一皿: 日帰り入浴ランチセット（門崎丑のローストビーフ丼・八幡平サーモン丼・月替わり生パスタ・ベジカレー・サラダプレートの5種から選ぶアラカルト＋ハーブティー＋入浴／大人3,300円）</div>
+    <table class="info">
+      <tr><th>営業時間</th><td>日帰りランチ 11:00〜（L.O.13:00）、大浴場 11:00〜15:00</td></tr>
+      <tr><th>定休日</th><td class="off">火曜（全館休館）。2026年9月以降は月曜・水曜も日帰り利用（入浴・ランチ）を休業</td></tr>
+      <tr><th>住所</th><td>岩手県一関市厳美町字祭畤32</td></tr>
+      <tr><th>予約</th><td>推奨（日帰りランチセットは予約なしでも可、ランチコース・ディナーは要予約）0120-150268 / https://m-kamikura.com</td></tr>
+    </table>
+    <div class="reason"><b>選定理由:</b>一関市公式観光サイト「いち旅」が2026年に新しく掲載した一軒で、公式サイトも2026年9月8日に秋のコースを更新しており営業状況がはっきりしている。洋食章が駅前の洋食・イタリアンに偏っていたところへ、厳美渓・栗駒山方面の観光ルート上で使える『温泉＋ジャパニーズフレンチ』という別の選択肢を足せる。</div>
+    <a class="map" href="https://www.google.com/maps/search/?api=1&amp;query=%E7%A5%AD%E7%95%A4%E6%B8%A9%E6%B3%89%20%E3%81%8B%E3%81%BF%E3%81%8F%E3%82%89%20Restaurant%20ON%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E5%8E%B3%E7%BE%8E%E7%94%BA%E5%AD%97%E7%A5%AD%E7%95%A432">Googleマップで開く</a>
+    <div class="src">写真: <a href="https://www.ichitabi.jp/gourmet/data.php?p=1">ichitabi.jp</a> / 参照元: <a href="https://www.ichitabi.jp/gourmet/data.php?p=1">いち旅（一関市公式観光サイト）祭畤温泉 かみくら Restaurant ON</a> / <a href="https://m-kamikura.com/">祭畤温泉かみくら 公式サイト（2026/09/08更新）</a></div>
+  </div></div>
 <h2 id="s-cafe" class="c-yellow">カフェ・喫茶・パン・スイーツ</h2>
 <div class="card" id="c-basie">
 <img class="hero" src="img/ichinoseki/basie.jpg" alt="ジャズ喫茶 ベイシー 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">32</span>ジャズ喫茶 ベイシー<span class="yomi">ジャズきっさ ベイシー</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">40</span>ジャズ喫茶 ベイシー<span class="yomi">ジャズきっさ ベイシー</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">1970年に菅原正二氏が菅原家の土蔵を改装して開いた、世界のジャズファンが音を聴きに訪れる一関の象徴。カウント・ベイシー本人やJBLの社長も足を運び、渡辺貞夫らのライブも行われてきた。薄暗い蔵の中で大音量のLPが鳴り続ける空間そのものが目的地で、営業は土日祝に限られる。</div>
 <div class="sig"><b>一皿:</b>コーヒー（オーディオの鳴る蔵の中で一杯を長く過ごすための一品・1,000円、学割あり）</div>
@@ -952,7 +1123,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-joshuen">
 <img class="hero" src="img/ichinoseki/joshuen.jpg" alt="常州園 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">33</span>常州園<span class="yomi">じょうしゅうえん</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>常州園<span class="yomi">じょうしゅうえん</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">明治19年(1886年)創業、大町に店を構える茶とコーヒーの老舗。店内の一角が小さな喫茶スペースになっており、抹茶のソフトクリームやコーヒーをその場で楽しめる。一ノ関駅構内のカフェにも豆と茶葉を卸しており、一関の喫茶文化の土台を支えてきた存在。</div>
 <div class="sig"><b>一皿:</b>抹茶ソフトクリーム／抹茶あずきもなかアイス（自家の抹茶を使った濃い緑茶の甘味）</div>
@@ -969,7 +1140,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-friend">
 <img class="hero" src="img/ichinoseki/friend.jpg" alt="フレンド 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">34</span>フレンド<span class="yomi">フレンド</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>フレンド<span class="yomi">フレンド</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">大町のビル2階にある昭和の空気をそのまま残した喫茶店。ナポリタンやピラフといった軽食とコーヒーが中心だが、名物は器からあふれるほどの「ドでか盛り」パフェで、SNSやブログで驚きとともに紹介され続けている。時間の止まったような店内と過剰な盛りのギャップが楽しい一軒。</div>
 <div class="sig"><b>一皿:</b>ドでか盛りパフェ（背の高いグラスにアイスとフルーツを山盛りにした名物パフェ）</div>
@@ -986,7 +1157,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-comesta">
 <img class="hero" src="img/ichinoseki/comesta.jpg" alt="caffe ComeSta 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">35</span>caffe ComeSta<span class="yomi">カフェ コメスタ</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>caffe ComeSta<span class="yomi">カフェ コメスタ</span></div>
 <div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
 <div class="desc">JR一ノ関駅1階、改札を通らず西口側からも入れる白基調のカフェ。コーヒー豆と紅茶は一関市大町の老舗「常州園」、パンは大東町の「けやきベーカリー」から仕入れるなど地元の作り手でメニューを組む。昔ながらの喫茶店のプリンを再現した「レトロプリン」が看板で、多くはテイクアウトもできる。</div>
 <div class="sig"><b>一皿:</b>レトロプリン（卵の風味とほろ苦いカラメルで昔の喫茶店のプリンを再現した固めのプリン）</div>
@@ -1003,7 +1174,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-shoeido_nakano">
 <img class="hero" src="img/ichinoseki/shoeido_nakano.jpg" alt="松栄堂 中野店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">36</span>松栄堂 中野店<span class="yomi">しょうえいどう なかのてん</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>松栄堂 中野店<span class="yomi">しょうえいどう なかのてん</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
 <div class="desc">明治36年(1903年)創業の一関の菓子舗・松栄堂の店舗のうち、洋菓子工房を併設するのは千厩店とこの中野店だけ。20席ほどの喫茶コーナーがあり、店内の和菓子・洋菓子をその場で味わえる。ケーキセットを頼むとコーヒーが割引になるなど、買い物ついでに一服する使い方が定着している。</div>
 <div class="sig"><b>一皿:</b>ごま摺り団子（噛むと中から黒ごま蜜があふれるもちもちの一口団子・一関を代表する土産菓子）</div>
@@ -1020,7 +1191,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-hikousen">
 <img class="hero" src="img/ichinoseki/hikousen.jpg" alt="ベーカリー飛行船 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">37</span>ベーカリー飛行船<span class="yomi">ベーカリーひこうせん</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>ベーカリー飛行船<span class="yomi">ベーカリーひこうせん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">地元で長く親しまれている街のベーカリー。定番の食パンから菓子パン、ボリュームのある惣菜パンまで幅広く揃い、素材の味を活かしたやさしい焼き上がりが持ち味。ショーケースには魚の形をしたフルーツのケーキなど見た目にも楽しい洋菓子が並び、パンと菓子の両方を目当てに通う客が多い。</div>
 <div class="sig"><b>一皿:</b>魚の形のフルーツケーキ（フルーツをのせたユニークな造形のショーケースの看板ケーキ）</div>

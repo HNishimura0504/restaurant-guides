@@ -47,7 +47,8 @@ MOBILE = """
 @@ .reason,@@ .src{font-size:9.5pt}
 @@ .chip{font-size:9pt;padding:.6mm 3mm}
 @@ .info th{width:auto;white-space:normal}
-@@ .gnav{font-size:11pt;gap:10px}
+@@ .snav{font-size:12.5px}
+@@ .snav .sn-t{min-width:0}
 """
 
 BLOCK = """<style id="rwd">
@@ -86,7 +87,10 @@ def main():
         # **有無の判定に `vmsw` を使わない**＝②で差し込んだCSSにも `.vmsw` が入っているので、
         # 素朴に `"vmsw" not in s` と書くと**必ず偽になり、ボタンが一度も入らない**（実測で踏んだ）。
         # 判定はボタンの literal そのもので行う。
-        if '<div class="gnav">' in s and TOGGLE_HTML not in s:
+        # 2026-09-20 以降は貼りつくバー（`.snav`）がボタンを持つので、ここでは足さない。
+        if 'class="snav"' in s:
+            pass
+        elif '<div class="gnav">' in s and TOGGLE_HTML not in s:
             i = s.index('<div class="gnav">')
             j = s.index(">", i) + 1
             s = s[:j] + "\n  " + TOGGLE_HTML + s[j:]

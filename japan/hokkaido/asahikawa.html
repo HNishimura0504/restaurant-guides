@@ -106,7 +106,8 @@ html:not(.vm-pc) .desc{font-size:11pt}
 html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
 html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
 html:not(.vm-pc) .info th{width:auto;white-space:normal}
-html:not(.vm-pc) .gnav{font-size:11pt;gap:10px}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
 
 }
 @media screen{
@@ -122,7 +123,8 @@ html.vm-phone .desc{font-size:11pt}
 html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
 html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
 html.vm-phone .info th{width:auto;white-space:normal}
-html.vm-phone .gnav{font-size:11pt;gap:10px}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
 
 }
 
@@ -135,20 +137,85 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 </head>
 <body>
 <style>
-.gnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;
-      padding:8px 12px;margin:0 0 10px;border-bottom:1px solid #e4e2dc;
-      font-size:9.5pt;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
-.gnav a{color:#8a2b16;text-decoration:none}
-.gnav a:hover{text-decoration:underline}
-.gnav span{color:#8a8880}
-@media print{.gnav{display:none}}
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
 </style>
-<div class="gnav">
-  <button type="button" class="vmsw">表示: 自動</button>
-  <a href="../../map/asahikawa.html">🗺️ 旭川の地図で見る</a>
-  <a href="../../index.html">📖 全66都市の一覧</a>
-  <span>44店</span>
-</div>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">旭川美食ガイド<span class="sn-n">45店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/asahikawa.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="旭川ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">旭川ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/asahikawa.html"><span class="sn-e">🗺️</span>旭川の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-washoku"><span class="sn-e">・</span>和食・寿司・居酒屋</a><a href="#s-men"><span class="sn-e">・</span>旭川ラーメン・そば・うどん</a><a href="#s-yakiniku"><span class="sn-e">・</span>焼肉・ジンギスカン・郷土</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・イタリアン・カレー</a><a href="#s-cafe"><span class="sn-e">・</span>カフェ・パン・スイーツ</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全66都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全66都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+</script>
+
+
 
 
 <div class="cover">
@@ -167,221 +234,224 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
   <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
   <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(Google Maps投稿写真)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
 </div>
-
-<div class="mapsec">
-<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
-<div class="mapwrap">
-<img src="img/asahikawa/_map.png" alt="全域マップ">
-<a href="#c-hachiya" style="left:41.11%;top:60.59%;width:3.52%;height:4.88%;"></a>
-<a href="#c-aoba" style="left:41.4%;top:64.38%;width:3.52%;height:4.88%;"></a>
-<a href="#c-tenkinramen" style="left:42.66%;top:63.12%;width:3.52%;height:4.88%;"></a>
-<a href="#c-baikoken" style="left:40.49%;top:65.05%;width:3.52%;height:4.88%;"></a>
-<a href="#c-santoka" style="left:40.71%;top:66.56%;width:3.52%;height:4.88%;"></a>
-<a href="#c-yoshino" style="left:57.78%;top:75.8%;width:3.52%;height:4.88%;"></a>
-<a href="#c-tsuruya" style="left:52.43%;top:67.62%;width:3.52%;height:4.88%;"></a>
-<a href="#c-mizuno" style="left:41.82%;top:54.35%;width:3.52%;height:4.88%;"></a>
-<a href="#c-seiichi" style="left:46.53%;top:10.26%;width:3.52%;height:4.88%;"></a>
-<a href="#c-udonsugi" style="left:8.29%;top:46.93%;width:3.52%;height:4.88%;"></a>
-<a href="#c-konishizushi" style="left:39.52%;top:62.5%;width:3.52%;height:4.88%;"></a>
-<a href="#c-sushiminato" style="left:38.91%;top:61.86%;width:3.52%;height:4.88%;"></a>
-<a href="#c-dokushaku" style="left:38.5%;top:62.67%;width:3.52%;height:4.88%;"></a>
-<a href="#c-ginneko" style="left:41.22%;top:60.47%;width:3.52%;height:4.88%;"></a>
-<a href="#c-onoki" style="left:91.71%;top:59.61%;width:3.52%;height:4.88%;"></a>
-<a href="#c-kantaro" style="left:45.6%;top:66.08%;width:3.52%;height:4.88%;"></a>
-<a href="#c-tenkinizakaya" style="left:40.91%;top:61.83%;width:3.52%;height:4.88%;"></a>
-<a href="#c-bungalow" style="left:39.99%;top:61.4%;width:3.52%;height:4.88%;"></a>
-<a href="#c-yukara" style="left:41.06%;top:61.56%;width:3.52%;height:4.88%;"></a>
-<a href="#c-oribe" style="left:39.97%;top:63.5%;width:3.52%;height:4.88%;"></a>
-<a href="#c-yururi" style="left:39.65%;top:63.0%;width:3.52%;height:4.88%;"></a>
-<a href="#c-sumiya" style="left:41.82%;top:61.14%;width:3.52%;height:4.88%;"></a>
-<a href="#c-babahorumon" style="left:42.59%;top:58.63%;width:3.52%;height:4.88%;"></a>
-<a href="#c-daikokuya" style="left:39.01%;top:61.2%;width:3.52%;height:4.88%;"></a>
-<a href="#c-hitsujiya" style="left:39.77%;top:61.86%;width:3.52%;height:4.88%;"></a>
-<a href="#c-shichirinya" style="left:41.24%;top:60.69%;width:3.52%;height:4.88%;"></a>
-<a href="#c-sanshiro" style="left:38.5%;top:62.67%;width:3.52%;height:4.88%;"></a>
-<a href="#c-jiyuken" style="left:41.95%;top:60.18%;width:3.52%;height:4.88%;"></a>
-<a href="#c-tenyu" style="left:41.16%;top:60.93%;width:3.52%;height:4.88%;"></a>
-<a href="#c-taisetsujibeer" style="left:43.04%;top:69.24%;width:3.52%;height:4.88%;"></a>
-<a href="#c-melanger" style="left:40.11%;top:63.35%;width:3.52%;height:4.88%;"></a>
-<a href="#c-porcpoulet" style="left:41.37%;top:61.22%;width:3.52%;height:4.88%;"></a>
-<a href="#c-canyonbase" style="left:41.94%;top:60.09%;width:3.52%;height:4.88%;"></a>
-<a href="#c-kohitei-tirol" style="left:41.66%;top:63.0%;width:3.52%;height:4.88%;"></a>
-<a href="#c-cafe-de-collins" style="left:40.11%;top:65.47%;width:3.52%;height:4.88%;"></a>
-<a href="#c-buncafe" style="left:41.57%;top:60.31%;width:3.52%;height:4.88%;"></a>
-<a href="#c-coffee-stand-container" style="left:42.42%;top:58.28%;width:3.52%;height:4.88%;"></a>
-<a href="#c-salon-de-bois" style="left:39.82%;top:66.48%;width:3.52%;height:4.88%;"></a>
-<a href="#c-fukuyoshi-cafe" style="left:42.02%;top:54.03%;width:3.52%;height:4.88%;"></a>
-<a href="#c-tsuboya-kibananomori" style="left:48.6%;top:81.13%;width:3.52%;height:4.88%;"></a>
-<a href="#c-thesun-kurando" style="left:41.52%;top:85.28%;width:3.52%;height:4.88%;"></a>
-<a href="#c-ezokaffe" style="left:62.65%;top:89.75%;width:3.52%;height:4.88%;"></a>
-<a href="#c-bakery-hiro" style="left:22.15%;top:33.33%;width:3.52%;height:4.88%;"></a>
-<a href="#c-etude-yogashiten" style="left:34.71%;top:38.93%;width:3.52%;height:4.88%;"></a>
-</div>
-</div>
-<div class="toc">
-<div class="th">この地図の店（44店・番号はピンと同じ）</div>
-<div class="sec blue">和食・寿司・居酒屋</div>
-<div class="links">
-<a href="#c-konishizushi"><span class="tn" style="background:#2a78d6;">11</span>小西鮨(さんろくの名門)</a>
-<a href="#c-sushiminato"><span class="tn" style="background:#2a78d6;">12</span>鮨みなと(蝦夷前鮨)</a>
-<a href="#c-dokushaku"><span class="tn" style="background:#2a78d6;">13</span>独酌三四郎(孤独のグルメ)</a>
-<a href="#c-ginneko"><span class="tn" style="background:#2a78d6;">14</span>ぎんねこ(新子焼き元祖格)</a>
-<a href="#c-onoki"><span class="tn" style="background:#2a78d6;">15</span>小野木(鶏料理の老舗)</a>
-<a href="#c-kantaro"><span class="tn" style="background:#2a78d6;">16</span>かん太郎(秘伝てり焼き)</a>
-<a href="#c-tenkinizakaya"><span class="tn" style="background:#2a78d6;">17</span>居酒屋天金(赤提灯割烹)</a>
-<a href="#c-bungalow"><span class="tn" style="background:#2a78d6;">18</span>バンガロー(炉端郷土料理)</a>
-<a href="#c-yukara"><span class="tn" style="background:#2a78d6;">19</span>ユーカラ(炭火炉端)</a>
-<a href="#c-oribe"><span class="tn" style="background:#2a78d6;">20</span>おりべ(創作和食居酒屋)</a>
-<a href="#c-yururi"><span class="tn" style="background:#2a78d6;">21</span>ゆるり(さんろくの隠れ家)</a>
-</div>
-<div class="sec aqua">旭川ラーメン・そば・うどん</div>
-<div class="links">
-<a href="#c-hachiya"><span class="tn" style="background:#1baf7a;">1</span>蜂屋(焦がしラード醤油)</a>
-<a href="#c-aoba"><span class="tn" style="background:#1baf7a;">2</span>青葉(継ぎ足し伝統スープ)</a>
-<a href="#c-tenkinramen"><span class="tn" style="background:#1baf7a;">3</span>天金(こってり正油)</a>
-<a href="#c-baikoken"><span class="tn" style="background:#1baf7a;">4</span>梅光軒(Wスープの王道)</a>
-<a href="#c-santoka"><span class="tn" style="background:#1baf7a;">5</span>山頭火(まろやか塩)</a>
-<a href="#c-yoshino"><span class="tn" style="background:#1baf7a;">6</span>よし乃(ピリ辛味噌)</a>
-<a href="#c-tsuruya"><span class="tn" style="background:#1baf7a;">7</span>つるや(百名店の正油)</a>
-<a href="#c-mizuno"><span class="tn" style="background:#1baf7a;">8</span>みづの(名物・生姜正油)</a>
-<a href="#c-seiichi"><span class="tn" style="background:#1baf7a;">9</span>せい一(幌加内そば)</a>
-<a href="#c-udonsugi"><span class="tn" style="background:#1baf7a;">10</span>杉(道産小麦の手打ち)</a>
-</div>
-<div class="sec red">焼肉・ジンギスカン・郷土</div>
-<div class="links">
-<a href="#c-sumiya"><span class="tn" style="background:#e34948;">22</span>炭や(塩ホルモン発祥)</a>
-<a href="#c-babahorumon"><span class="tn" style="background:#e34948;">23</span>馬場ホルモン(一品勝負)</a>
-<a href="#c-daikokuya"><span class="tn" style="background:#e34948;">24</span>大黒屋(生ラムの聖地)</a>
-<a href="#c-hitsujiya"><span class="tn" style="background:#e34948;">25</span>ひつじ家(3・6のラム)</a>
-<a href="#c-shichirinya"><span class="tn" style="background:#e34948;">26</span>七輪屋(小路のホルモン)</a>
-<a href="#c-sanshiro"><span class="tn" style="background:#e34948;">27</span>三四郎(郷土居酒屋)</a>
-</div>
-<div class="sec violet">洋食・イタリアン・カレー</div>
-<div class="links">
-<a href="#c-jiyuken"><span class="tn" style="background:#4a3aa7;">28</span>自由軒(昭和の洋食)</a>
-<a href="#c-tenyu"><span class="tn" style="background:#4a3aa7;">29</span>天勇(ゲソ丼発祥)</a>
-<a href="#c-taisetsujibeer"><span class="tn" style="background:#4a3aa7;">30</span>地ビール館(赤レンガ)</a>
-<a href="#c-melanger"><span class="tn" style="background:#4a3aa7;">31</span>メランジェ(蝦夷フレンチ)</a>
-<a href="#c-porcpoulet"><span class="tn" style="background:#4a3aa7;">32</span>ポ・プーレ(仏ビストロ)</a>
-<a href="#c-canyonbase"><span class="tn" style="background:#4a3aa7;">33</span>キャニオンベース(伊)</a>
-</div>
-<div class="sec yellow">カフェ・パン・スイーツ</div>
-<div class="links">
-<a href="#c-kohitei-tirol"><span class="tn" style="background:#eda100;">34</span>ちろる(旭川最古の喫茶)</a>
-<a href="#c-cafe-de-collins"><span class="tn" style="background:#eda100;">35</span>コリンズ(駅前レトロ喫茶)</a>
-<a href="#c-buncafe"><span class="tn" style="background:#eda100;">36</span>ブンカフェー(パフェと洋食)</a>
-<a href="#c-coffee-stand-container"><span class="tn" style="background:#eda100;">37</span>コンテナ(街角の珈琲店)</a>
-<a href="#c-salon-de-bois"><span class="tn" style="background:#eda100;">38</span>サロンドボア(仏カフェ)</a>
-<a href="#c-fukuyoshi-cafe"><span class="tn" style="background:#eda100;">39</span>福吉カフェ(和風リノベ)</a>
-<a href="#c-tsuboya-kibananomori"><span class="tn" style="background:#eda100;">40</span>き花の杜(壺屋の旗艦店)</a>
-<a href="#c-thesun-kurando"><span class="tn" style="background:#eda100;">41</span>蔵人(石蔵の菓子本店)</a>
-<a href="#c-ezokaffe"><span class="tn" style="background:#eda100;">42</span>EZOKAFFE(東光の人気店)</a>
-<a href="#c-bakery-hiro"><span class="tn" style="background:#eda100;">43</span>ベーカリー寛(欧風パン)</a>
-<a href="#c-etude-yogashiten"><span class="tn" style="background:#eda100;">44</span>エチュード(お昼ねプリン)</a>
-</div>
-</div>
-<div class="mapsec">
-<div class="mapttl">🗾 店舗マップ — 中心部拡大(駅前〜さんろく街)（ピンをタップで各店のページへ）</div>
-<div class="mapwrap">
-<img src="img/asahikawa/_map2.png" alt="中心部拡大(駅前〜さんろく街)">
-<a href="#c-hachiya" style="left:52.99%;top:34.95%;width:3.00%;height:2.26%;"></a>
-<a href="#c-aoba" style="left:54.98%;top:49.0%;width:3.00%;height:2.26%;"></a>
-<a href="#c-tenkinramen" style="left:63.54%;top:44.33%;width:3.00%;height:2.26%;"></a>
-<a href="#c-baikoken" style="left:48.77%;top:51.49%;width:3.00%;height:2.26%;"></a>
-<a href="#c-santoka" style="left:50.26%;top:57.08%;width:3.00%;height:2.26%;"></a>
-<a href="#c-mizuno" style="left:57.81%;top:11.83%;width:3.00%;height:2.26%;"></a>
-<a href="#c-konishizushi" style="left:42.17%;top:42.04%;width:3.00%;height:2.26%;"></a>
-<a href="#c-sushiminato" style="left:38.02%;top:39.67%;width:3.00%;height:2.26%;"></a>
-<a href="#c-dokushaku" style="left:35.25%;top:42.66%;width:3.00%;height:2.26%;"></a>
-<a href="#c-ginneko" style="left:53.77%;top:34.51%;width:3.00%;height:2.26%;"></a>
-<a href="#c-kantaro" style="left:83.6%;top:55.31%;width:3.00%;height:2.26%;"></a>
-<a href="#c-tenkinizakaya" style="left:51.65%;top:39.55%;width:3.00%;height:2.26%;"></a>
-<a href="#c-bungalow" style="left:45.4%;top:37.98%;width:3.00%;height:2.26%;"></a>
-<a href="#c-yukara" style="left:52.68%;top:38.54%;width:3.00%;height:2.26%;"></a>
-<a href="#c-oribe" style="left:45.25%;top:45.75%;width:3.00%;height:2.26%;"></a>
-<a href="#c-yururi" style="left:43.06%;top:43.89%;width:3.00%;height:2.26%;"></a>
-<a href="#c-sumiya" style="left:57.81%;top:36.99%;width:3.00%;height:2.26%;"></a>
-<a href="#c-babahorumon" style="left:63.1%;top:27.7%;width:3.00%;height:2.26%;"></a>
-<a href="#c-daikokuya" style="left:38.67%;top:37.2%;width:3.00%;height:2.26%;"></a>
-<a href="#c-hitsujiya" style="left:43.84%;top:39.67%;width:3.00%;height:2.26%;"></a>
-<a href="#c-shichirinya" style="left:53.88%;top:35.35%;width:3.00%;height:2.26%;"></a>
-<a href="#c-sanshiro" style="left:35.25%;top:42.66%;width:3.00%;height:2.26%;"></a>
-<a href="#c-jiyuken" style="left:58.71%;top:33.43%;width:3.00%;height:2.26%;"></a>
-<a href="#c-tenyu" style="left:53.31%;top:36.23%;width:3.00%;height:2.26%;"></a>
-<a href="#c-taisetsujibeer" style="left:66.11%;top:67.01%;width:3.00%;height:2.26%;"></a>
-<a href="#c-melanger" style="left:46.19%;top:45.18%;width:3.00%;height:2.26%;"></a>
-<a href="#c-porcpoulet" style="left:54.77%;top:37.3%;width:3.00%;height:2.26%;"></a>
-<a href="#c-canyonbase" style="left:58.67%;top:33.1%;width:3.00%;height:2.26%;"></a>
-<a href="#c-kohitei-tirol" style="left:56.71%;top:43.9%;width:3.00%;height:2.26%;"></a>
-<a href="#c-cafe-de-collins" style="left:46.16%;top:53.03%;width:3.00%;height:2.26%;"></a>
-<a href="#c-buncafe" style="left:56.14%;top:33.9%;width:3.00%;height:2.26%;"></a>
-<a href="#c-coffee-stand-container" style="left:61.93%;top:26.42%;width:3.00%;height:2.26%;"></a>
-<a href="#c-salon-de-bois" style="left:44.23%;top:56.78%;width:3.00%;height:2.26%;"></a>
-<a href="#c-fukuyoshi-cafe" style="left:59.19%;top:10.64%;width:3.00%;height:2.26%;"></a>
-</div>
-<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
-</div>
-<div class="toc">
-<div class="th">この地図の店（34店・番号はピンと同じ）</div>
-<div class="sec blue">和食・寿司・居酒屋</div>
-<div class="links">
-<a href="#c-konishizushi"><span class="tn" style="background:#2a78d6;">11</span>小西鮨(さんろくの名門)</a>
-<a href="#c-sushiminato"><span class="tn" style="background:#2a78d6;">12</span>鮨みなと(蝦夷前鮨)</a>
-<a href="#c-dokushaku"><span class="tn" style="background:#2a78d6;">13</span>独酌三四郎(孤独のグルメ)</a>
-<a href="#c-ginneko"><span class="tn" style="background:#2a78d6;">14</span>ぎんねこ(新子焼き元祖格)</a>
-<a href="#c-kantaro"><span class="tn" style="background:#2a78d6;">16</span>かん太郎(秘伝てり焼き)</a>
-<a href="#c-tenkinizakaya"><span class="tn" style="background:#2a78d6;">17</span>居酒屋天金(赤提灯割烹)</a>
-<a href="#c-bungalow"><span class="tn" style="background:#2a78d6;">18</span>バンガロー(炉端郷土料理)</a>
-<a href="#c-yukara"><span class="tn" style="background:#2a78d6;">19</span>ユーカラ(炭火炉端)</a>
-<a href="#c-oribe"><span class="tn" style="background:#2a78d6;">20</span>おりべ(創作和食居酒屋)</a>
-<a href="#c-yururi"><span class="tn" style="background:#2a78d6;">21</span>ゆるり(さんろくの隠れ家)</a>
-</div>
-<div class="sec aqua">旭川ラーメン・そば・うどん</div>
-<div class="links">
-<a href="#c-hachiya"><span class="tn" style="background:#1baf7a;">1</span>蜂屋(焦がしラード醤油)</a>
-<a href="#c-aoba"><span class="tn" style="background:#1baf7a;">2</span>青葉(継ぎ足し伝統スープ)</a>
-<a href="#c-tenkinramen"><span class="tn" style="background:#1baf7a;">3</span>天金(こってり正油)</a>
-<a href="#c-baikoken"><span class="tn" style="background:#1baf7a;">4</span>梅光軒(Wスープの王道)</a>
-<a href="#c-santoka"><span class="tn" style="background:#1baf7a;">5</span>山頭火(まろやか塩)</a>
-<a href="#c-mizuno"><span class="tn" style="background:#1baf7a;">8</span>みづの(名物・生姜正油)</a>
-</div>
-<div class="sec red">焼肉・ジンギスカン・郷土</div>
-<div class="links">
-<a href="#c-sumiya"><span class="tn" style="background:#e34948;">22</span>炭や(塩ホルモン発祥)</a>
-<a href="#c-babahorumon"><span class="tn" style="background:#e34948;">23</span>馬場ホルモン(一品勝負)</a>
-<a href="#c-daikokuya"><span class="tn" style="background:#e34948;">24</span>大黒屋(生ラムの聖地)</a>
-<a href="#c-hitsujiya"><span class="tn" style="background:#e34948;">25</span>ひつじ家(3・6のラム)</a>
-<a href="#c-shichirinya"><span class="tn" style="background:#e34948;">26</span>七輪屋(小路のホルモン)</a>
-<a href="#c-sanshiro"><span class="tn" style="background:#e34948;">27</span>三四郎(郷土居酒屋)</a>
-</div>
-<div class="sec violet">洋食・イタリアン・カレー</div>
-<div class="links">
-<a href="#c-jiyuken"><span class="tn" style="background:#4a3aa7;">28</span>自由軒(昭和の洋食)</a>
-<a href="#c-tenyu"><span class="tn" style="background:#4a3aa7;">29</span>天勇(ゲソ丼発祥)</a>
-<a href="#c-taisetsujibeer"><span class="tn" style="background:#4a3aa7;">30</span>地ビール館(赤レンガ)</a>
-<a href="#c-melanger"><span class="tn" style="background:#4a3aa7;">31</span>メランジェ(蝦夷フレンチ)</a>
-<a href="#c-porcpoulet"><span class="tn" style="background:#4a3aa7;">32</span>ポ・プーレ(仏ビストロ)</a>
-<a href="#c-canyonbase"><span class="tn" style="background:#4a3aa7;">33</span>キャニオンベース(伊)</a>
-</div>
-<div class="sec yellow">カフェ・パン・スイーツ</div>
-<div class="links">
-<a href="#c-kohitei-tirol"><span class="tn" style="background:#eda100;">34</span>ちろる(旭川最古の喫茶)</a>
-<a href="#c-cafe-de-collins"><span class="tn" style="background:#eda100;">35</span>コリンズ(駅前レトロ喫茶)</a>
-<a href="#c-buncafe"><span class="tn" style="background:#eda100;">36</span>ブンカフェー(パフェと洋食)</a>
-<a href="#c-coffee-stand-container"><span class="tn" style="background:#eda100;">37</span>コンテナ(街角の珈琲店)</a>
-<a href="#c-salon-de-bois"><span class="tn" style="background:#eda100;">38</span>サロンドボア(仏カフェ)</a>
-<a href="#c-fukuyoshi-cafe"><span class="tn" style="background:#eda100;">39</span>福吉カフェ(和風リノベ)</a>
-</div>
-</div>
-
-
 <div class="note"><b>回り方のコツ:</b>ラーメンの老舗は昼中心・スープ切れ終了あり。夜はさんろく街(3条通6丁目界隈)に店が集中。買物公園周辺は徒歩で回れるが郊外店は車推奨。冬期の臨時休業に注意し訪問前にマップで最終確認を。</div>
+
+<div class="mapsec">
+  <div class="mapttl">🗺️ 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+  <div class="mapwrap" style="width:105.5mm;">
+    <img src="img/asahikawa/_map.png" alt="全域マップ">
+    <a href="#c-konishizushi" style="left:39.87%;top:62.68%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-sushiminato" style="left:39.28%;top:62.03%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-dokushaku" style="left:38.89%;top:62.85%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-ginneko" style="left:41.52%;top:60.62%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-onoki" style="left:90.32%;top:59.75%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-kantaro" style="left:45.75%;top:66.32%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-tenkinizakaya" style="left:41.22%;top:62.00%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-bungalow" style="left:40.33%;top:61.57%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-yukara" style="left:41.36%;top:61.72%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-oribe" style="left:40.31%;top:63.70%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-yururi" style="left:40.00%;top:63.19%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-hachiya" style="left:41.40%;top:60.74%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-aoba" style="left:41.56%;top:62.48%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-tenkinramen" style="left:42.90%;top:63.31%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-baikoken" style="left:40.81%;top:65.27%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-santoka" style="left:41.02%;top:66.80%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-yoshino" style="left:57.52%;top:76.18%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-tsuruya" style="left:52.35%;top:67.88%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-mizuno" style="left:42.09%;top:54.41%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-seiichi" style="left:46.64%;top:9.68%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-udonsugi" style="left:9.68%;top:46.88%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-sumiya" style="left:42.09%;top:61.30%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-babahorumon" style="left:42.84%;top:58.76%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-daikokuya" style="left:39.37%;top:61.36%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-hitsujiya" style="left:40.11%;top:62.03%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-shichirinya" style="left:41.53%;top:60.85%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-sanshiro" style="left:38.89%;top:62.85%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-kinkarou" style="left:37.45%;top:63.79%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-jiyuken" style="left:42.22%;top:60.32%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-tenyu" style="left:41.45%;top:61.09%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-taisetsujibeer" style="left:43.27%;top:69.52%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-melanger" style="left:40.44%;top:63.54%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-porcpoulet" style="left:41.66%;top:61.38%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-canyonbase" style="left:42.21%;top:60.24%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-kohitei-tirol" style="left:41.93%;top:63.19%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-cafe-de-collins" style="left:40.44%;top:65.69%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-buncafe" style="left:41.85%;top:60.46%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-coffee-stand-container" style="left:42.67%;top:58.41%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-salon-de-bois" style="left:40.16%;top:66.72%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-fukuyoshi-cafe" style="left:42.29%;top:54.08%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-tsuboya-kibananomori" style="left:48.65%;top:81.59%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-thesun-kurando" style="left:41.80%;top:85.80%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-ezokaffe" style="left:62.23%;top:90.33%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-bakery-hiro" style="left:23.08%;top:33.08%;width:4.36%;height:6.33%;"></a>
+    <a href="#c-etude-yogashiten" style="left:35.22%;top:38.77%;width:4.36%;height:6.33%;"></a>
+  </div>
+  <div class="mapnote">Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ</div>
+</div>
+<div class="toc">
+  <div class="th">この地図の店（45店・番号はピンと同じ）</div>
+  <div class="sec washoku"><a href="#s-washoku" style="all:unset;cursor:pointer;">和食・寿司・居酒屋</a></div>
+  <div class="links">
+    <a href="#c-konishizushi"><span class="tn" style="background:#2a78d6;">1</span>1小西鮨</a>
+    <a href="#c-sushiminato"><span class="tn" style="background:#2a78d6;">2</span>2鮨みなと</a>
+    <a href="#c-dokushaku"><span class="tn" style="background:#2a78d6;">3</span>3独酌三四郎</a>
+    <a href="#c-ginneko"><span class="tn" style="background:#2a78d6;">4</span>4焼鳥専門 ぎんねこ</a>
+    <a href="#c-onoki"><span class="tn" style="background:#2a78d6;">5</span>5鳥料理 小野木</a>
+    <a href="#c-kantaro"><span class="tn" style="background:#2a78d6;">6</span>6三代目 かん太郎</a>
+    <a href="#c-tenkinizakaya"><span class="tn" style="background:#2a78d6;">7</span>7居酒屋 天金</a>
+    <a href="#c-bungalow"><span class="tn" style="background:#2a78d6;">8</span>8郷土料理の店 居酒屋 バンガロー</a>
+    <a href="#c-yukara"><span class="tn" style="background:#2a78d6;">9</span>9炉端のユーカラ</a>
+    <a href="#c-oribe"><span class="tn" style="background:#2a78d6;">10</span>10和菜酒房 おりべ</a>
+    <a href="#c-yururi"><span class="tn" style="background:#2a78d6;">11</span>11ゆるり</a>
+  </div>
+  <div class="sec men"><a href="#s-men" style="all:unset;cursor:pointer;">旭川ラーメン・そば・うどん</a></div>
+  <div class="links">
+    <a href="#c-hachiya"><span class="tn" style="background:#2a78d6;">12</span>12蜂屋 五条創業店</a>
+    <a href="#c-aoba"><span class="tn" style="background:#2a78d6;">13</span>13旭川らぅめん青葉 本店</a>
+    <a href="#c-tenkinramen"><span class="tn" style="background:#2a78d6;">14</span>14らーめんや天金 四条店</a>
+    <a href="#c-baikoken"><span class="tn" style="background:#2a78d6;">15</span>15梅光軒 本店</a>
+    <a href="#c-santoka"><span class="tn" style="background:#2a78d6;">16</span>16らーめん山頭火 旭川本店</a>
+    <a href="#c-yoshino"><span class="tn" style="background:#2a78d6;">17</span>17みそラーメンのよし乃 本店</a>
+    <a href="#c-tsuruya"><span class="tn" style="background:#2a78d6;">18</span>18ラーメン専門 つるや</a>
+    <a href="#c-mizuno"><span class="tn" style="background:#2a78d6;">19</span>19生姜ラーメン みづの</a>
+    <a href="#c-seiichi"><span class="tn" style="background:#2a78d6;">20</span>20幌加内伝承手打ち蕎麦 せい一</a>
+    <a href="#c-udonsugi"><span class="tn" style="background:#2a78d6;">21</span>21手作りうどん 杉</a>
+  </div>
+  <div class="sec yakiniku"><a href="#s-yakiniku" style="all:unset;cursor:pointer;">焼肉・ジンギスカン・郷土</a></div>
+  <div class="links">
+    <a href="#c-sumiya"><span class="tn" style="background:#2a78d6;">22</span>22旭川塩ホルモン 炭や 本店</a>
+    <a href="#c-babahorumon"><span class="tn" style="background:#2a78d6;">23</span>23馬場ホルモン</a>
+    <a href="#c-daikokuya"><span class="tn" style="background:#2a78d6;">24</span>24旭川成吉思汗 大黒屋 五丁目支店</a>
+    <a href="#c-hitsujiya"><span class="tn" style="background:#2a78d6;">25</span>25旭川成吉思汗 ひつじ家</a>
+    <a href="#c-shichirinya"><span class="tn" style="background:#2a78d6;">26</span>26炭火焼肉 旭川ほるもん 七輪屋</a>
+    <a href="#c-sanshiro"><span class="tn" style="background:#2a78d6;">27</span>27独酌 三四郎</a>
+    <a href="#c-kinkarou"><span class="tn" style="background:#2a78d6;">28</span>28炭火焼き肉 金花郎 一条本店</a>
+  </div>
+  <div class="sec yoshoku"><a href="#s-yoshoku" style="all:unset;cursor:pointer;">洋食・イタリアン・カレー</a></div>
+  <div class="links">
+    <a href="#c-jiyuken"><span class="tn" style="background:#2a78d6;">29</span>29自由軒</a>
+    <a href="#c-tenyu"><span class="tn" style="background:#2a78d6;">30</span>30立喰いそば屋 天勇</a>
+    <a href="#c-taisetsujibeer"><span class="tn" style="background:#2a78d6;">31</span>31大雪地ビール館</a>
+    <a href="#c-melanger"><span class="tn" style="background:#2a78d6;">32</span>32ル・ビストロ メランジェ</a>
+    <a href="#c-porcpoulet"><span class="tn" style="background:#2a78d6;">33</span>33ビストロ ポ・プーレ</a>
+    <a href="#c-canyonbase"><span class="tn" style="background:#2a78d6;">34</span>34オステリア キャニオンベース</a>
+  </div>
+  <div class="sec cafe"><a href="#s-cafe" style="all:unset;cursor:pointer;">カフェ・パン・スイーツ</a></div>
+  <div class="links">
+    <a href="#c-kohitei-tirol"><span class="tn" style="background:#2a78d6;">35</span>35珈琲亭ちろる</a>
+    <a href="#c-cafe-de-collins"><span class="tn" style="background:#2a78d6;">36</span>36旭川珈琲 カフェ・ドゥ・コリンズ</a>
+    <a href="#c-buncafe"><span class="tn" style="background:#2a78d6;">37</span>37ブンカフェー</a>
+    <a href="#c-coffee-stand-container"><span class="tn" style="background:#2a78d6;">38</span>38COFFEE STAND CONTAINER</a>
+    <a href="#c-salon-de-bois"><span class="tn" style="background:#2a78d6;">39</span>39salon de bois(サロンドボア)</a>
+    <a href="#c-fukuyoshi-cafe"><span class="tn" style="background:#2a78d6;">40</span>40福吉カフェ 旭橋本店</a>
+    <a href="#c-tsuboya-kibananomori"><span class="tn" style="background:#2a78d6;">41</span>41壺屋 き花の杜</a>
+    <a href="#c-thesun-kurando"><span class="tn" style="background:#2a78d6;">42</span>42The Sun 蔵人 本店</a>
+    <a href="#c-ezokaffe"><span class="tn" style="background:#2a78d6;">43</span>43EZOKAFFE</a>
+    <a href="#c-bakery-hiro"><span class="tn" style="background:#2a78d6;">44</span>44欧風パン ベーカリー寛</a>
+    <a href="#c-etude-yogashiten"><span class="tn" style="background:#2a78d6;">45</span>45エチュード洋菓子店 旭町店(本店)</a>
+  </div>
+</div>
+<div class="mapsec">
+  <div class="mapttl">🗺️ 店舗マップ — 中心部拡大(駅前〜さんろく街)（ピンをタップで各店のページへ）</div>
+  <div class="mapwrap" style="width:105.5mm;">
+    <img src="img/asahikawa/_map2.png" alt="中心部拡大(駅前〜さんろく街)">
+    <a href="#c-konishizushi" style="left:33.76%;top:54.37%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-sushiminato" style="left:28.24%;top:51.15%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-dokushaku" style="left:24.54%;top:55.21%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-ginneko" style="left:49.21%;top:44.16%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-kantaro" style="left:88.91%;top:72.35%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-tenkinizakaya" style="left:46.39%;top:50.98%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-bungalow" style="left:38.05%;top:48.86%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-yukara" style="left:47.75%;top:49.62%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-oribe" style="left:37.87%;top:59.39%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-yururi" style="left:34.94%;top:56.87%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-hachiya" style="left:48.16%;top:44.75%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-aoba" style="left:49.66%;top:53.34%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-tenkinramen" style="left:62.21%;top:57.47%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-baikoken" style="left:42.54%;top:67.18%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-santoka" style="left:44.54%;top:74.75%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-mizuno" style="left:54.58%;top:13.41%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-sumiya" style="left:54.58%;top:47.52%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-babahorumon" style="left:61.62%;top:34.92%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-daikokuya" style="left:29.10%;top:47.81%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-hitsujiya" style="left:35.98%;top:51.15%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-shichirinya" style="left:49.34%;top:45.29%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-sanshiro" style="left:24.54%;top:55.21%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-kinkarou" style="left:11.09%;top:59.84%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-jiyuken" style="left:55.78%;top:42.69%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-tenyu" style="left:48.60%;top:46.49%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-taisetsujibeer" style="left:65.63%;top:88.21%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-melanger" style="left:39.12%;top:58.62%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-porcpoulet" style="left:50.53%;top:47.93%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-canyonbase" style="left:55.72%;top:42.25%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-kohitei-tirol" style="left:53.12%;top:56.88%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-cafe-de-collins" style="left:39.08%;top:69.26%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-buncafe" style="left:52.35%;top:43.33%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-coffee-stand-container" style="left:60.07%;top:33.19%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-salon-de-bois" style="left:36.51%;top:74.34%;width:4.36%;height:3.35%;"></a>
+    <a href="#c-fukuyoshi-cafe" style="left:56.42%;top:11.79%;width:4.36%;height:3.35%;"></a>
+  </div>
+  <div class="mapnote">Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ</div>
+</div>
+<div class="toc">
+  <div class="th">この地図の店（35店・番号はピンと同じ）</div>
+  <div class="sec washoku"><a href="#s-washoku" style="all:unset;cursor:pointer;">和食・寿司・居酒屋</a></div>
+  <div class="links">
+    <a href="#c-konishizushi"><span class="tn" style="background:#2a78d6;">1</span>1小西鮨</a>
+    <a href="#c-sushiminato"><span class="tn" style="background:#2a78d6;">2</span>2鮨みなと</a>
+    <a href="#c-dokushaku"><span class="tn" style="background:#2a78d6;">3</span>3独酌三四郎</a>
+    <a href="#c-ginneko"><span class="tn" style="background:#2a78d6;">4</span>4焼鳥専門 ぎんねこ</a>
+    <a href="#c-kantaro"><span class="tn" style="background:#2a78d6;">6</span>6三代目 かん太郎</a>
+    <a href="#c-tenkinizakaya"><span class="tn" style="background:#2a78d6;">7</span>7居酒屋 天金</a>
+    <a href="#c-bungalow"><span class="tn" style="background:#2a78d6;">8</span>8郷土料理の店 居酒屋 バンガロー</a>
+    <a href="#c-yukara"><span class="tn" style="background:#2a78d6;">9</span>9炉端のユーカラ</a>
+    <a href="#c-oribe"><span class="tn" style="background:#2a78d6;">10</span>10和菜酒房 おりべ</a>
+    <a href="#c-yururi"><span class="tn" style="background:#2a78d6;">11</span>11ゆるり</a>
+  </div>
+  <div class="sec men"><a href="#s-men" style="all:unset;cursor:pointer;">旭川ラーメン・そば・うどん</a></div>
+  <div class="links">
+    <a href="#c-hachiya"><span class="tn" style="background:#2a78d6;">12</span>12蜂屋 五条創業店</a>
+    <a href="#c-aoba"><span class="tn" style="background:#2a78d6;">13</span>13旭川らぅめん青葉 本店</a>
+    <a href="#c-tenkinramen"><span class="tn" style="background:#2a78d6;">14</span>14らーめんや天金 四条店</a>
+    <a href="#c-baikoken"><span class="tn" style="background:#2a78d6;">15</span>15梅光軒 本店</a>
+    <a href="#c-santoka"><span class="tn" style="background:#2a78d6;">16</span>16らーめん山頭火 旭川本店</a>
+    <a href="#c-mizuno"><span class="tn" style="background:#2a78d6;">19</span>19生姜ラーメン みづの</a>
+  </div>
+  <div class="sec yakiniku"><a href="#s-yakiniku" style="all:unset;cursor:pointer;">焼肉・ジンギスカン・郷土</a></div>
+  <div class="links">
+    <a href="#c-sumiya"><span class="tn" style="background:#2a78d6;">22</span>22旭川塩ホルモン 炭や 本店</a>
+    <a href="#c-babahorumon"><span class="tn" style="background:#2a78d6;">23</span>23馬場ホルモン</a>
+    <a href="#c-daikokuya"><span class="tn" style="background:#2a78d6;">24</span>24旭川成吉思汗 大黒屋 五丁目支店</a>
+    <a href="#c-hitsujiya"><span class="tn" style="background:#2a78d6;">25</span>25旭川成吉思汗 ひつじ家</a>
+    <a href="#c-shichirinya"><span class="tn" style="background:#2a78d6;">26</span>26炭火焼肉 旭川ほるもん 七輪屋</a>
+    <a href="#c-sanshiro"><span class="tn" style="background:#2a78d6;">27</span>27独酌 三四郎</a>
+    <a href="#c-kinkarou"><span class="tn" style="background:#2a78d6;">28</span>28炭火焼き肉 金花郎 一条本店</a>
+  </div>
+  <div class="sec yoshoku"><a href="#s-yoshoku" style="all:unset;cursor:pointer;">洋食・イタリアン・カレー</a></div>
+  <div class="links">
+    <a href="#c-jiyuken"><span class="tn" style="background:#2a78d6;">29</span>29自由軒</a>
+    <a href="#c-tenyu"><span class="tn" style="background:#2a78d6;">30</span>30立喰いそば屋 天勇</a>
+    <a href="#c-taisetsujibeer"><span class="tn" style="background:#2a78d6;">31</span>31大雪地ビール館</a>
+    <a href="#c-melanger"><span class="tn" style="background:#2a78d6;">32</span>32ル・ビストロ メランジェ</a>
+    <a href="#c-porcpoulet"><span class="tn" style="background:#2a78d6;">33</span>33ビストロ ポ・プーレ</a>
+    <a href="#c-canyonbase"><span class="tn" style="background:#2a78d6;">34</span>34オステリア キャニオンベース</a>
+  </div>
+  <div class="sec cafe"><a href="#s-cafe" style="all:unset;cursor:pointer;">カフェ・パン・スイーツ</a></div>
+  <div class="links">
+    <a href="#c-kohitei-tirol"><span class="tn" style="background:#2a78d6;">35</span>35珈琲亭ちろる</a>
+    <a href="#c-cafe-de-collins"><span class="tn" style="background:#2a78d6;">36</span>36旭川珈琲 カフェ・ドゥ・コリンズ</a>
+    <a href="#c-buncafe"><span class="tn" style="background:#2a78d6;">37</span>37ブンカフェー</a>
+    <a href="#c-coffee-stand-container"><span class="tn" style="background:#2a78d6;">38</span>38COFFEE STAND CONTAINER</a>
+    <a href="#c-salon-de-bois"><span class="tn" style="background:#2a78d6;">39</span>39salon de bois(サロンドボア)</a>
+    <a href="#c-fukuyoshi-cafe"><span class="tn" style="background:#2a78d6;">40</span>40福吉カフェ 旭橋本店</a>
+  </div>
+</div>
 
 <h2 id="s-washoku">和食・寿司・居酒屋</h2>
 <div class="card" id="c-konishizushi">
 <img class="hero" src="img/asahikawa/konishizushi.jpg" alt="小西鮨 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>小西鮨<span class="yomi">こにしずし</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">1</span>小西鮨<span class="yomi">こにしずし</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">1976年創業、繁華街さんろくを代表する寿司の名門。大将自ら厳選する道産中心の旬魚と、旭川有数の品揃えを誇る日本酒で知られる。かしこまりすぎない雰囲気で上質な鮨を楽しめる。</div>
 <div class="sig"><b>一皿:</b>おまかせ握り(道産を中心に全国の旬ネタを握るコース)</div>
@@ -398,7 +468,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-sushiminato">
 <img class="hero" src="img/asahikawa/sushiminato.jpg" alt="鮨みなと 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>鮨みなと<span class="yomi">すしみなと</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">2</span>鮨みなと<span class="yomi">すしみなと</span></div>
 <div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">江戸前の仕込みと北海道の魚を融合させた「蝦夷前鮨」で全国の鮨好きが訪れる名店。道内の旬魚に加え札幌・豊洲の魚河岸からも仕入れ、マグロやぼたん海老、赤貝などが評判。予約必須の人気店。</div>
 <div class="sig"><b>一皿:</b>おまかせ握りコース(江戸前仕事を施した蝦夷前鮨)</div>
@@ -415,7 +485,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-dokushaku">
 <img class="hero" src="img/asahikawa/dokushaku.jpg" alt="独酌三四郎 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>独酌三四郎<span class="yomi">どくしゃくさんしろう</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">3</span>独酌三四郎<span class="yomi">どくしゃくさんしろう</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
 <div class="desc">1946年創業、昭和の風情が残る旭川屈指の老舗居酒屋。ミシュランガイド北海道掲載、ドラマ「孤独のグルメ」にも登場した。新子焼き(若鶏半身の炭火焼)や創業以来の酢大豆を、利き酒師の女将が選ぶ日本酒とともに。</div>
 <div class="sig"><b>一皿:</b>新子焼き(若鶏半身を炭火でじっくり焼いた旭川名物)</div>
@@ -432,7 +502,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-ginneko">
 <img class="hero" src="img/asahikawa/ginneko.jpg" alt="焼鳥専門 ぎんねこ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>焼鳥専門 ぎんねこ<span class="yomi">やきとりせんもん ぎんねこ</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">4</span>焼鳥専門 ぎんねこ<span class="yomi">やきとりせんもん ぎんねこ</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">1950年(昭和25年)創業、昭和の横丁「5・7小路ふらりーと」の入口に立つ焼鳥の老舗。名物の新子焼き(若鶏半身の炭火焼)は皮パリパリ・身はふっくらジューシー。豚肉を秘伝ダレで焼く「ちゃっぷ焼き」も人気で、13時から通し営業。</div>
 <div class="sig"><b>一皿:</b>新子焼き(若鶏半身をタレで香ばしく焼き上げる旭川名物の看板)</div>
@@ -449,7 +519,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-onoki">
 <img class="hero" src="img/asahikawa/onoki.jpg" alt="鳥料理 小野木 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>鳥料理 小野木<span class="yomi">とりりょうり おのき</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">5</span>鳥料理 小野木<span class="yomi">とりりょうり おのき</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
 <div class="desc">旭山動物園へ向かう通り沿いに暖簾を掲げて80余年の鶏料理専門店で、ミシュランガイド北海道掲載店。甘さ控えめのタレでジューシーに焼く新子焼きと、衣サクサクの唐揚げ「千鳥揚げ」が二大名物。鶏すき焼きや鳥鍋も供する。</div>
 <div class="sig"><b>一皿:</b>新子焼きと千鳥揚げ(若鶏半身焼きと名物唐揚げの二枚看板)</div>
@@ -466,7 +536,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-kantaro">
 <img class="hero" src="img/asahikawa/kantaro.jpg" alt="三代目 かん太郎 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>三代目 かん太郎<span class="yomi">さんだいめ かんたろう</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">6</span>三代目 かん太郎<span class="yomi">さんだいめ かんたろう</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">1947年創業の新子焼き老舗を三代で受け継ぐ店。創業時から継ぎ足す秘伝のタレをまとわせた「新子てり焼き」は皮サクサク・中ふっくらの仕上がり。深夜まで営業しており、飲みの締めにも使える。</div>
 <div class="sig"><b>一皿:</b>新子てり焼き(継ぎ足し秘伝ダレの若鶏半身てり焼き)</div>
@@ -483,7 +553,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-tenkinizakaya">
 <img class="hero" src="img/asahikawa/tenkinizakaya.jpg" alt="居酒屋 天金 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>居酒屋 天金<span class="yomi">いざかや てんきん</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">7</span>居酒屋 天金<span class="yomi">いざかや てんきん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">四条本通に赤提灯を掲げる大衆割烹。老舗天金の流れをくみ、活魚介の刺身や寿司・天ぷらなど職人仕事の和食を居酒屋価格で楽しめる。15時開店で早飲みできるのも地元に愛される理由。じゃがバターやうにぎりなど北海道らしい肴も揃う。</div>
 <div class="sig"><b>一皿:</b>活魚介の刺身盛り(道産鮮魚を中心にした看板の盛り合わせ)</div>
@@ -500,7 +570,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-bungalow">
 <img class="hero" src="img/asahikawa/bungalow.jpg" alt="郷土料理の店 居酒屋 バンガロー 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>郷土料理の店 居酒屋 バンガロー<span class="yomi">きょうどりょうりのみせ いざかや ばんがろー</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">8</span>郷土料理の店 居酒屋 バンガロー<span class="yomi">きょうどりょうりのみせ いざかや ばんがろー</span></div>
 <div class="chips"><span class="chip local">地元密着</span></div>
 <div class="desc">白樺の木が飾られたログハウス風の店内で北海道の郷土料理を味わえる居酒屋。焼き物はすべて炭火の炉端で香ばしく焼き上げ、特製みそのおでんや鮮魚の刺身、かつおのタタキも評判。宴会利用でも人気。</div>
 <div class="sig"><b>一皿:</b>炉端の炭火焼き(ホッケなど道産魚介を炭火でじっくり焼く名物)</div>
@@ -517,7 +587,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-yukara">
 <img class="hero" src="img/asahikawa/yukara.jpg" alt="炉端のユーカラ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>炉端のユーカラ<span class="yomi">ろばたのゆーから</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">9</span>炉端のユーカラ<span class="yomi">ろばたのゆーから</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">北海道の旬素材を目の前の炭火で焼き上げる炉端焼きの人気店。脂ののった真ホッケの開きや蝦夷鹿ロースの炭焼きなど、道北らしい山海の幸が揃う。上川アイヌの文化紹介サイトでも取り上げられる旭川の炉端の代表格。</div>
 <div class="sig"><b>一皿:</b>真ホッケの炭火焼き(肉厚の道産ホッケを炭火でふっくら焼いた看板)</div>
@@ -534,7 +604,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-oribe">
 <img class="hero" src="img/asahikawa/oribe.jpg" alt="和菜酒房 おりべ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>和菜酒房 おりべ<span class="yomi">わさいしゅぼう おりべ</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">10</span>和菜酒房 おりべ<span class="yomi">わさいしゅぼう おりべ</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">全国から取り寄せた旬素材を使う創作和食の居酒屋で、地元客から絶大な支持を受ける。ふわふわのだし巻き玉子(注文後に焼き上げる出汁たっぷりの玉子焼き)や湯葉揚げなど、丁寧な仕事の肴と日本酒が揃う。</div>
 <div class="sig"><b>一皿:</b>だし巻き玉子(出汁をたっぷり含ませ注文後に焼き上げる名物)</div>
@@ -551,7 +621,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-yururi">
 <img class="hero" src="img/asahikawa/yururi.jpg" alt="ゆるり 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>ゆるり<span class="yomi">ゆるり</span></div>
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>ゆるり<span class="yomi">ゆるり</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
 <div class="desc">さんろく街の雑居ビルに潜む地元密着の大衆居酒屋。リーズナブルな価格で気の利いた手料理と充実したお通しが楽しめ、一見客にも温かいと評判。150円のおにぎりで締めるのが地元流。</div>
 <div class="sig"><b>一皿:</b>日替わりの手料理とおにぎり(家庭的な肴と締めの塩むすび)</div>
@@ -569,7 +639,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-hachiya">
 <img class="hero" src="img/asahikawa/hachiya.jpg" alt="蜂屋 五条創業店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">1</span>蜂屋 五条創業店<span class="yomi">はちや ごじょうそうぎょうてん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">12</span>蜂屋 五条創業店<span class="yomi">はちや ごじょうそうぎょうてん</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">1947年創業、旭川ラーメン草分けの老舗。豚骨とアジ煮干しを合わせたWスープに焦がしラードを浮かべた、香ばしくスモーキーな唯一無二の醤油ラーメンで知られる。食べログ ラーメンHOKKAIDO百名店にも選出。</div>
 <div class="sig"><b>一皿:</b>しょうゆラーメン(焦がしラードが香る豚骨×煮干しWスープの一杯)</div>
@@ -586,7 +656,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-aoba">
 <img class="hero" src="img/asahikawa/aoba.jpg" alt="旭川らぅめん青葉 本店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">2</span>旭川らぅめん青葉 本店<span class="yomi">あさひかわらぅめんあおば ほんてん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">13</span>旭川らぅめん青葉 本店<span class="yomi">あさひかわらぅめんあおば ほんてん</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">1947年に屋台から始まった旭川ラーメンの代表格。豚骨・鶏ガラに煮干しなど海産物を合わせたWスープを創業以来継ぎ足しで守り、あっさりながらコク深い正統派の醤油ラーメンを朝から提供する。</div>
 <div class="sig"><b>一皿:</b>醤油ラぅめん(創業から継ぎ足す伝統Wスープの正統派醤油味)</div>
@@ -603,7 +673,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-tenkinramen">
 <img class="hero" src="img/asahikawa/tenkinramen.jpg" alt="らーめんや天金 四条店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">3</span>らーめんや天金 四条店<span class="yomi">らーめんやてんきん よじょうてん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">14</span>らーめんや天金 四条店<span class="yomi">らーめんやてんきん よじょうてん</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">1952年創業の老舗で、行列の絶えない人気店。豚骨主体の濃厚スープに背脂とラードを合わせた、旭川らしい「こってり系正油」の代表格。醤油ダレの旨味の濃さと低加水縮れ麺の相性が抜群。</div>
 <div class="sig"><b>一皿:</b>正油ラーメン(豚骨ベースの濃厚スープにラードが層をなすこってり醤油)</div>
@@ -620,7 +690,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-baikoken">
 <img class="hero" src="img/asahikawa/baikoken.jpg" alt="梅光軒 本店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">4</span>梅光軒 本店<span class="yomi">ばいこうけん ほんてん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">15</span>梅光軒 本店<span class="yomi">ばいこうけん ほんてん</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">1969年(昭和44年)創業。豚骨・鶏ガラの動物系と魚介系を合わせたWスープに自家製低加水縮れ麺という旭川ラーメンの教科書的一杯を守る名店。第1回旭川ラーメン大賞グランプリ受賞、海外にも展開する。</div>
 <div class="sig"><b>一皿:</b>醤油ラーメン(動物系×魚介系Wスープの王道旭川醤油)</div>
@@ -637,7 +707,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-santoka">
 <img class="hero" src="img/asahikawa/santoka.jpg" alt="らーめん山頭火 旭川本店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">5</span>らーめん山頭火 旭川本店<span class="yomi">らーめんさんとうか あさひかわほんてん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>らーめん山頭火 旭川本店<span class="yomi">らーめんさんとうか あさひかわほんてん</span></div>
 <div class="chips"><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">1988年に旭川で誕生し世界へ広がった塩とんこつの本店。臭みを徹底的に除いた白濁豚骨スープはまろやかでクリーミー、丼に小梅をあしらう盛り付けも名物。醤油文化の旭川に新風を吹き込んだ存在。</div>
 <div class="sig"><b>一皿:</b>しおらーめん(小梅がのる、まろやかな白濁豚骨塩)</div>
@@ -654,7 +724,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-yoshino">
 <img class="hero" src="img/asahikawa/yoshino.jpg" alt="みそラーメンのよし乃 本店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">6</span>みそラーメンのよし乃 本店<span class="yomi">みそらーめんのよしの ほんてん</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">17</span>みそラーメンのよし乃 本店<span class="yomi">みそらーめんのよしの ほんてん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">1968年(昭和43年)創業、旭川市民のソウルフードと呼ばれる味噌ラーメン専門の老舗。豚骨・鶏ガラの濃厚スープに数種の味噌とニンニク、唐辛子を利かせたピリ辛スープと山盛りのもやしが特徴。</div>
 <div class="sig"><b>一皿:</b>味噌ラーメン(ニンニクと唐辛子が利いたピリ辛味噌にもやしたっぷり)</div>
@@ -671,7 +741,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-tsuruya">
 <img class="hero" src="img/asahikawa/tsuruya.jpg" alt="ラーメン専門 つるや 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">7</span>ラーメン専門 つるや<span class="yomi">らーめんせんもん つるや</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>ラーメン専門 つるや<span class="yomi">らーめんせんもん つるや</span></div>
 <div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
 <div class="desc">1972年(昭和47年)創業。動物系と魚介系のバランスが良い、澄んだ王道の旭川正油ラーメンを守り続け、食べログ ラーメンHOKKAIDO百名店に連続選出される実力店。地元客で賑わう住宅街寄りの単独店。</div>
 <div class="sig"><b>一皿:</b>正油ラーメン(澄んだスープの「ザ・旭川ラーメン」といえる一杯)</div>
@@ -688,7 +758,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-mizuno">
 <img class="hero" src="img/asahikawa/mizuno.jpg" alt="生姜ラーメン みづの 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">8</span>生姜ラーメン みづの<span class="yomi">しょうがらーめん みづの</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>生姜ラーメン みづの<span class="yomi">しょうがらーめん みづの</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">旭橋のたもとで長年愛される生姜ラーメン専門の老舗食堂。醤油スープにたっぷりのおろし生姜を合わせた体の芯から温まる一杯は旭川冬の名物で、藤原製麺からインスタント版が発売されるほどの知名度。食べログ百名店にも選出。</div>
 <div class="sig"><b>一皿:</b>生姜ラーメン(醤油スープにおろし生姜が利いた温活系の一杯)</div>
@@ -705,7 +775,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-seiichi">
 <img class="hero" src="img/asahikawa/seiichi.jpg" alt="幌加内伝承手打ち蕎麦 せい一 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">9</span>幌加内伝承手打ち蕎麦 せい一<span class="yomi">ほろかないでんしょうてうちそば せいいち</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>幌加内伝承手打ち蕎麦 せい一<span class="yomi">ほろかないでんしょうてうちそば せいいち</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">そば産地・幌加内町で人気を博し旭川へ移った手打ちそば店。幌加内産そば粉を使った香り高い蕎麦はミシュランガイド北海道2017ビブグルマン選出。丼からそびえ立つ「ミニ鳥天丼」(名ばかりミニの鶏天丼)も名物。</div>
 <div class="sig"><b>一皿:</b>もりそば+ミニ鳥天丼(幌加内産そば粉の手打ちそばと巨大鶏天丼のセット)</div>
@@ -722,7 +792,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-udonsugi">
 <img class="hero" src="img/asahikawa/udonsugi.jpg" alt="手作りうどん 杉 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#1baf7a;">10</span>手作りうどん 杉<span class="yomi">てづくりうどん すぎ</span></div>
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>手作りうどん 杉<span class="yomi">てづくりうどん すぎ</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
 <div class="desc">札幌で16年営んだ後、2017年に旭川へ移転した手打ちうどん専門店。道産小麦「きたほなみ」を手ごね・手切りし、化学調味料無添加の出汁と合わせる。注文後にゆで上げるもっちりとした麺が評判。</div>
 <div class="sig"><b>一皿:</b>ぶっかけ梅自慢うどん(道産小麦の手打ち麺に梅と出汁を合わせた看板うどん)</div>
@@ -839,11 +909,28 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8B%AC%E9%85%8C%20%E4%B8%89%E5%9B%9B%E9%83%8E%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%82%EF%BC%92%E6%9D%A1%E9%80%9A%EF%BC%95%E4%B8%81%E7%9B%AE%E5%B7%A6%EF%BC%97">Googleマップで開く</a>
 <div class="src">写真: Google Maps投稿写真 / 参照元: <a href="https://akj.mogtrip.jp/sanshiro-asahikawa/">もぐとりっぷ(旭川在住者グルメサイト)</a> / <a href="https://www.hotpepper.jp/strJ000782007/">ホットペッパーグルメ</a></div>
 </div></div>
+<div class="card" id="c-kinkarou">
+  <img class="hero" src="img/asahikawa/kinkarou.jpg" alt="炭火焼き肉 金花郎 一条本店 料理・店内写真">
+  <div class="body">
+    <div class="nm"><span class="pinno" style="background:#e34948;">28</span>炭火焼き肉 金花郎 一条本店<span class="yomi">すみびやきにく きんかろう いちじょうほんてん</span></div>
+    <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+    <div class="desc">旭川駅から歩けるビル街の炭火焼肉店で、創業28年。名物のネギ塩牛たん＝厚切りの牛タンに、ごま油と塩だれで和えた刻みネギをのせ、巻いて食べる一品。塩ホルモン（豚の腸などを塩だれで焼く旭川定番の焼肉）や国産牛サガリ（横隔膜の赤身肉）も揃い、昼は1,300円台のランチセットがある。</div>
+    <div class="sig"><b>一皿:</b>一皿: ネギ塩牛たん（厚切り牛タンで、ごま油の効いた塩だれの刻みネギを包んで食べる看板メニュー。昼の「タン尽くしセット」1,980円税込／単品は牛タン379円〜）</div>
+    <table class="info">
+      <tr><th>営業時間</th><td>昼11:30〜14:30(L.O.14:00／全日昼営業、ランチセットは平日のみ)、夜 月〜金17:00〜22:00・土日祝16:00〜22:00(L.O.21:30)</td></tr>
+      <tr><th>定休日</th><td class="off">不定休</td></tr>
+      <tr><th>住所</th><td>北海道旭川市1条通4丁目2043-2</td></tr>
+      <tr><th>予約</th><td>可(夜は混むため推奨): 0166-22-8929 / https://www.hotpepper.jp/strJ000836019/</td></tr>
+    </table>
+    <div class="reason"><b>選定理由:</b>旭川観光コンベンション協会の会員リスト「焼肉・ジンギスカン・しゃぶしゃぶ」に一条本店が掲載される地元の定番店。公式サイトは自ら「地元に愛される焼肉屋」と掲げ、2026年9月16日付で「秋の味覚フェア」を告知しており営業中と確認できる。旭川のローカルブログ「たるビートのラーメンblog from 旭川」が『旭川で人気の焼肉店に初潜入！』として牛サガリ・塩ホルモンを高評価。既収録の炭や・馬場ホルモン・七輪屋は豚の塩ホルモン、大黒屋・ひつじ家は生ラムで、牛の炭火焼肉（とりわけ牛たん）を担う店が抜けていたため、この章の穴を埋められる。</div>
+    <a class="map" href="https://www.google.com/maps/search/?api=1&amp;query=%E7%82%AD%E7%81%AB%E7%84%BC%E3%81%8D%E8%82%89%20%E9%87%91%E8%8A%B1%E9%83%8E%20%E4%B8%80%E6%9D%A1%E6%9C%AC%E5%BA%97%20%E5%8C%97%E6%B5%B7%E9%81%93%E6%97%AD%E5%B7%9D%E5%B8%821%E6%9D%A1%E9%80%9A4%E4%B8%81%E7%9B%AE2043-2">Googleマップで開く</a>
+    <div class="src">写真: <a href="https://www.kinkarou.jp/">kinkarou.jp</a> / 参照元: <a href="https://www.kinkarou.jp/">炭火焼き肉 金花郎 公式サイト（店舗情報・営業時間・お知らせ 26/9/16）</a> / <a href="https://www.atca.jp/menberinfo/%E7%84%BC%E8%82%89%E3%80%80%E9%87%91%E8%8A%B1%E9%83%8E%E3%80%80%E4%B8%80%E6%9D%A1%E6%9C%AC%E5%BA%97/">一般社団法人 旭川観光コンベンション協会 会員情報「焼肉 金花郎 一条本店」</a> / <a href="https://www.atca.jp/category/memberlist/member-food/food-yakiniku/?post_type=menberinfo">旭川観光コンベンション協会 会員リスト・焼肉・ジンギスカン・しゃぶしゃぶ</a> / <a href="https://www.hotpepper.jp/strJ000836019/">ホットペッパーグルメ 焼肉金花郎一条店（席数・設備・営業時間）</a> / <a href="https://ameblo.jp/tarubeat/entry-12849183583.html">たるビートのラーメンblog from 旭川「炭火焼き肉 金花郎 一条本店 〜旭川で人気の焼肉店に初潜入！〜」</a></div>
+  </div></div>
 <h2 id="s-yoshoku" class="c-violet">洋食・イタリアン・カレー</h2>
 <div class="card" id="c-jiyuken">
 <img class="hero" src="img/asahikawa/jiyuken.jpg" alt="自由軒 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">28</span>自由軒<span class="yomi">じゆうけん</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">29</span>自由軒<span class="yomi">じゆうけん</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">昭和24年(1949年)創業の老舗洋食店。カツライスやライスカレー(昔ながらの黄色いカレーライス)、ビーフシチュー、クリームコロッケなど昭和の洋食が揃う。「孤独のグルメ」旭川編に登場した「五郎セット」(塩ホルモンとたまご焼きの定食)でも有名。</div>
 <div class="sig"><b>一皿:</b>五郎セット(塩ホルモン焼きとたまご焼きの定食、ドラマ登場で名物化)</div>
@@ -860,7 +947,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-tenyu">
 <img class="hero" src="img/asahikawa/tenyu.jpg" alt="立喰いそば屋 天勇 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">29</span>立喰いそば屋 天勇<span class="yomi">たちぐいそばや てんゆう</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">30</span>立喰いそば屋 天勇<span class="yomi">たちぐいそばや てんゆう</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">旭川のソウルフード「ゲソ丼」(イカゲソの天ぷらをご飯にのせタレをかけた丼)発祥の店。昭和56年に姉妹店の寿司屋で余ったゲソを天ぷらにしたのが始まりで、朝9時から営業する立ち食いスタイルの安さと早さも魅力。</div>
 <div class="sig"><b>一皿:</b>ゲソ丼(カリッと揚げたイカゲソ天をのせた甘辛だれの丼)</div>
@@ -877,7 +964,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-taisetsujibeer">
 <img class="hero" src="img/asahikawa/taisetsujibeer.jpg" alt="大雪地ビール館 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">30</span>大雪地ビール館<span class="yomi">たいせつじビールかん</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">31</span>大雪地ビール館<span class="yomi">たいせつじビールかん</span></div>
 <div class="chips"><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">1996年創業、明治期の赤レンガ倉庫を利用したブルワリーレストラン。醸造所直送のクラフトビール「大雪ピルスナー」等と共に、生ラムジンギスカンや旭川産米粉麺を使う「旭川しょうゆ焼きそば」(醤油だれのご当地焼きそば)が味わえる。</div>
 <div class="sig"><b>一皿:</b>大雪地ビール飲み比べ(併設醸造所直送のクラフトビール各種)</div>
@@ -894,7 +981,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-melanger">
 <img class="hero" src="img/asahikawa/melanger.jpg" alt="ル・ビストロ メランジェ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">31</span>ル・ビストロ メランジェ<span class="yomi">ル・ビストロ メランジェ</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">32</span>ル・ビストロ メランジェ<span class="yomi">ル・ビストロ メランジェ</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">北海道産食材にこだわった「蝦夷フレンチ」を掲げるビストロ。道北の魚介や旭川近郊野菜を使ったコースを、肩肘張らないカジュアルな空間で楽しめる。ミシュランガイド北海道掲載歴のある地元密着フレンチ。</div>
 <div class="sig"><b>一皿:</b>蝦夷フレンチコース(道産魚介と近郊野菜を使う季節のコース)</div>
@@ -911,7 +998,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-porcpoulet">
 <img class="hero" src="img/asahikawa/porcpoulet.jpg" alt="ビストロ ポ・プーレ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">32</span>ビストロ ポ・プーレ<span class="yomi">ビストロ ポ・プーレ</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">33</span>ビストロ ポ・プーレ<span class="yomi">ビストロ ポ・プーレ</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">北海道の豊富な食材を彩り豊かなフランス料理に仕立てるビストロ。名物はシェフおまかせの「気まぐれコース」で、フランス産中心の有機ワインとの相性も良い。深夜まで開いており飲んだ後の一皿にも使える。</div>
 <div class="sig"><b>一皿:</b>シェフ気まぐれコース(道産食材を使った日替わり構成のおまかせフレンチ)</div>
@@ -928,7 +1015,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-canyonbase">
 <img class="hero" src="img/asahikawa/canyonbase.jpg" alt="オステリア キャニオンベース 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#4a3aa7;">33</span>オステリア キャニオンベース<span class="yomi">オステリア キャニオンベース</span></div>
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>オステリア キャニオンベース<span class="yomi">オステリア キャニオンベース</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">上川町の渓谷味豚(層雲峡近くで育つブランド豚)や旭川・上川地方の地場野菜を使うカジュアルイタリアン。パスタやピッツァ、道産食材のグリルをランチからディナーまで楽しめる。</div>
 <div class="sig"><b>一皿:</b>渓谷味豚のグリル(上川産ブランド豚を使った炭火グリル)</div>
@@ -946,7 +1033,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-kohitei-tirol">
 <img class="hero" src="img/asahikawa/kohitei-tirol.jpg" alt="珈琲亭ちろる 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">34</span>珈琲亭ちろる<span class="yomi">こーひーてい ちろる</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">35</span>珈琲亭ちろる<span class="yomi">こーひーてい ちろる</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
 <div class="desc">昭和14(1939)年創業、旭川で最も歴史のある喫茶店。三浦綾子の小説『氷点』ゆかりの店としても知られ、一度閉店後に若いオーナーが暖簾を継いで再開した。自家焙煎のスペシャルティコーヒーと、銅板でじっくり焼くリコッタパンケーキ(ふわふわのチーズ入りパンケーキ)が名物。</div>
 <div class="sig"><b>一皿:</b>銅板焼きふわふわリコッタパンケーキ(比布町産卵使用、自家製ハニーナッツバター添え)</div>
@@ -963,7 +1050,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-cafe-de-collins">
 <img class="hero" src="img/asahikawa/cafe-de-collins.jpg" alt="旭川珈琲 カフェ・ドゥ・コリンズ 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">35</span>旭川珈琲 カフェ・ドゥ・コリンズ<span class="yomi">あさひかわこーひー かふぇ・どぅ・こりんず</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">36</span>旭川珈琲 カフェ・ドゥ・コリンズ<span class="yomi">あさひかわこーひー かふぇ・どぅ・こりんず</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">旭川駅前のビル地下にある、どこか懐かしいレトロな空間の喫茶店。自家焙煎コーヒーが自慢で、オムライスやパスタ、カレーなど喫茶洋食も充実しランチ利用も多い。通し営業で使い勝手が良く、地元客に長く親しまれている。</div>
 <div class="sig"><b>一皿:</b>自家焙煎ブレンドコーヒー(オムライスなど喫茶洋食とのセットが人気)</div>
@@ -980,7 +1067,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-buncafe">
 <img class="hero" src="img/asahikawa/buncafe.jpg" alt="ブンカフェー 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">36</span>ブンカフェー<span class="yomi">ぶんかふぇー</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">37</span>ブンカフェー<span class="yomi">ぶんかふぇー</span></div>
 <div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
 <div class="desc">旧市民文化会館内の喫茶をルーツに持ち、現在は買物公園沿いの旭川フードテラスに店を構えるカフェ。自家製ケーキやパフェ、ソフトクリームなどスイーツの完成度が高く、鉄板焼オムライス(鉄板で提供する熱々のオムライス)など食事も本格派。週末は夜営業もありシメパフェ利用もできる。</div>
 <div class="sig"><b>一皿:</b>季節のパフェ(自家製ソフトクリームとケーキ素材を重ねた本格パフェ)</div>
@@ -997,7 +1084,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-coffee-stand-container">
 <img class="hero" src="img/asahikawa/coffee-stand-container.jpg" alt="COFFEE STAND CONTAINER 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">37</span>COFFEE STAND CONTAINER<span class="yomi">こーひーすたんど こんてな</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">38</span>COFFEE STAND CONTAINER<span class="yomi">こーひーすたんど こんてな</span></div>
 <div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">買物公園通り北寄りにある、海外のカフェを思わせるアーティスティックな空間のコーヒースタンド。エスプレッソ系ドリンクのカフェラテと、マフィンやスコーンなどの手作り焼き菓子が看板。散策途中のテイクアウトにも使いやすい。</div>
 <div class="sig"><b>一皿:</b>カフェラテ(エスプレッソにスチームミルクを合わせた看板ドリンク)</div>
@@ -1014,7 +1101,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-salon-de-bois">
 <img class="hero" src="img/asahikawa/salon-de-bois.jpg" alt="salon de bois(サロンドボア) 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">38</span>salon de bois(サロンドボア)<span class="yomi">さろん・ど・ぼあ</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">39</span>salon de bois(サロンドボア)<span class="yomi">さろん・ど・ぼあ</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">駅前のフレンチレストラン「ル アン」がプロデュースするビル3階の隠れ家カフェ。そば粉のクレープであるガレットのランチや、レストラン仕込みのケーキ・スイーツが楽しめる。駅チカながら落ち着いた穴場的存在。</div>
 <div class="sig"><b>一皿:</b>ガレットランチ(そば粉のクレープに卵やチーズをのせた食事系クレープ)</div>
@@ -1031,7 +1118,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-fukuyoshi-cafe">
 <img class="hero" src="img/asahikawa/fukuyoshi-cafe.jpg" alt="福吉カフェ 旭橋本店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">39</span>福吉カフェ 旭橋本店<span class="yomi">ふくよしかふぇ あさひばしほんてん</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">40</span>福吉カフェ 旭橋本店<span class="yomi">ふくよしかふぇ あさひばしほんてん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">大正13年建築の旧北島製粉所をリノベーションした、昭和レトロな外観の和風カフェ。名物は旭橋をかたどった「トキワ焼き」で、クロワッサン生地で餡やクリームを包んで焼くサクサク食感のおやき。ほうじ茶ラテ系の「福吉らて」と合わせる地元客が多い。</div>
 <div class="sig"><b>一皿:</b>トキワ焼き(旭橋モチーフ・クロワッサン生地のおやき、つぶあんやクリーム等5種)</div>
@@ -1048,7 +1135,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-tsuboya-kibananomori">
 <img class="hero" src="img/asahikawa/tsuboya-kibananomori.jpg" alt="壺屋 き花の杜 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">40</span>壺屋 き花の杜<span class="yomi">つぼや きばなのもり</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>壺屋 き花の杜<span class="yomi">つぼや きばなのもり</span></div>
 <div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">旭川銘菓「き花」で知られる壺屋総本店のコンセプトショップ。レンガと木の建物に約1000坪のガーデンが広がり、工場見学窓や限定菓子売場のほか、本を読みながら過ごせる「CAFE文欒」を併設。き花は霧氷をイメージした、アーモンドガレットでホワイトチョコを挟んだ銘菓。</div>
 <div class="sig"><b>一皿:</b>き花(アーモンドガレットにホワイトチョコを挟んだ旭川銘菓。カフェでは特製ケーキも)</div>
@@ -1065,7 +1152,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-thesun-kurando">
 <img class="hero" src="img/asahikawa/thesun-kurando.jpg" alt="The Sun 蔵人 本店 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">41</span>The Sun 蔵人 本店<span class="yomi">ざ・さん くらんど ほんてん</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>The Sun 蔵人 本店<span class="yomi">ざ・さん くらんど ほんてん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
 <div class="desc">プラタナス並木沿いの石蔵造りの建物が印象的な、旭川の菓子ブランド「The Sun 蔵人」の本店。看板菓子「蔵生」は生チョコを挟んだしっとり食感のサブレ。売店では旭川の水と道産素材を使ったソフトクリームもその場で味わえる。</div>
 <div class="sig"><b>一皿:</b>蔵生(生チョコ入りのしっとり生サブレ。売店ではソフトクリームも人気)</div>
@@ -1082,7 +1169,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-ezokaffe">
 <img class="hero" src="img/asahikawa/ezokaffe.jpg" alt="EZOKAFFE 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">42</span>EZOKAFFE<span class="yomi">えぞかふぇ</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>EZOKAFFE<span class="yomi">えぞかふぇ</span></div>
 <div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">東光の住宅街にある一軒家風カフェで、地元客のリピーターが多い。固めの食感でホイップをたっぷりのせた自家製カスタードプリンや、アールグレイを使った季節スイーツが評判。食事メニューもあり、週末は夜まで営業する。</div>
 <div class="sig"><b>一皿:</b>自家製カスタードプリン(固め食感にたっぷりのホイップクリーム)</div>
@@ -1099,7 +1186,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-bakery-hiro">
 <img class="hero" src="img/asahikawa/bakery-hiro.jpg" alt="欧風パン ベーカリー寛 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">43</span>欧風パン ベーカリー寛<span class="yomi">おうふうぱん べーかりーひろ</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>欧風パン ベーカリー寛<span class="yomi">おうふうぱん べーかりーひろ</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
 <div class="desc">錦町の住宅街で長年地元に愛される欧風パンの名店。職人が早朝から焼き上げるハード系(バゲットなど皮の香ばしい欧風パン)から、ふわふわの食パン、リーズナブルな惣菜パン・菓子パンまで幅広く揃い、売り切れ次第閉店となる。</div>
 <div class="sig"><b>一皿:</b>ハード系欧風パン(バゲット等。ふわふわ食パンも定番人気)</div>
@@ -1116,7 +1203,7 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 <div class="card" id="c-etude-yogashiten">
 <img class="hero" src="img/asahikawa/etude-yogashiten.jpg" alt="エチュード洋菓子店 旭町店(本店) 料理・店内写真">
 <div class="body">
-<div class="nm"><span class="pinno" style="background:#eda100;">44</span>エチュード洋菓子店 旭町店(本店)<span class="yomi">えちゅーどようがしてん あさひまちてん</span></div>
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>エチュード洋菓子店 旭町店(本店)<span class="yomi">えちゅーどようがしてん あさひまちてん</span></div>
 <div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
 <div class="desc">1984年創業、旭川市民に長く親しまれる洋菓子店の本店。名物「お昼ねプリン」は道産の牛乳と卵で作るとろける柔らかさのカスタードプリンで、手土産の定番。ケーキや焼き菓子も揃い、市内に複数店舗を展開する。</div>
 <div class="sig"><b>一皿:</b>お昼ねプリン(道産牛乳と卵のとろけるカスタードプリン)</div>

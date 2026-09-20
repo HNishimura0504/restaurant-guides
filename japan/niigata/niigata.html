@@ -108,7 +108,8 @@ html:not(.vm-pc) .desc{font-size:11pt}
 html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
 html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
 html:not(.vm-pc) .info th{width:auto;white-space:normal}
-html:not(.vm-pc) .gnav{font-size:11pt;gap:10px}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
 
 }
 @media screen{
@@ -124,7 +125,8 @@ html.vm-phone .desc{font-size:11pt}
 html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
 html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
 html.vm-phone .info th{width:auto;white-space:normal}
-html.vm-phone .gnav{font-size:11pt;gap:10px}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
 
 }
 
@@ -137,20 +139,85 @@ html.vm-phone .gnav{font-size:11pt;gap:10px}
 </head>
 <body>
 <style>
-.gnav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;
-      padding:8px 12px;margin:0 0 10px;border-bottom:1px solid #e4e2dc;
-      font-size:9.5pt;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
-.gnav a{color:#8a2b16;text-decoration:none}
-.gnav a:hover{text-decoration:underline}
-.gnav span{color:#8a8880}
-@media print{.gnav{display:none}}
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
 </style>
-<div class="gnav">
-  <button type="button" class="vmsw">表示: 自動</button>
-  <a href="../../map/niigata.html">🗺️ 新潟の地図で見る</a>
-  <a href="../../index.html">📖 全66都市の一覧</a>
-  <span>67店</span>
-</div>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">新潟美食ガイド<span class="sn-n">67店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/niigata.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="新潟ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">新潟ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/niigata.html"><span class="sn-e">🗺️</span>新潟の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-niigata"><span class="sn-e">・</span>新潟のご当地(タレカツ丼・イタリアン)</a><a href="#s-sushi"><span class="sn-e">・</span>寿司・海鮮</a><a href="#s-men"><span class="sn-e">・</span>ラーメン・そば</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・日本酒</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>カフェ・パン・菓子</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全66都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全66都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+</script>
+
+
 
 
 <div class="cover">

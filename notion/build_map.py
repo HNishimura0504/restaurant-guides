@@ -37,6 +37,7 @@ from html import escape
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from rwd import TOGGLE_CSS, TOGGLE_HTML, TOGGLE_JS, dual   # noqa: E402
+from sitenav import BURGER, NAV_CSS, NAV_JS, menu_html, nav_html  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STORES = os.path.join(ROOT, "notion", "stores.json")
@@ -162,15 +163,22 @@ CSS = """
   ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
   ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
   ul.cities .cl a{margin-left:10px}
-""" + TOGGLE_CSS + dual("""
+""" + TOGGLE_CSS + NAV_CSS + """
+  .bar{align-items:center}
+""" + dual("""
   /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
      狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
      （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
      ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
      ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
-  @@ .bar{padding:6px 10px;gap:6px}
-  @@ .bar h1{font-size:14px;width:100%}
-  @@ .bar nav{margin-left:0;width:100%;gap:6px}
+  @@ .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  @@ .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @@ .bar .n{margin-left:4px}
+  @@ .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
   @@ .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
   @@ .chip{flex:0 0 auto}
   @@ .leaflet-popup-content{width:min(74vw,250px)!important}
@@ -210,15 +218,14 @@ def head(title, leaflet_css=""):
 
 CITY_BODY = """<body style="display:flex;flex-direction:column">
 <header class="bar">
+  {{BURGER}}
   <h1>{{CITY}} の食べ歩き地図<span class="n">{{COUNTS}}</span></h1>
   <nav>
     <button id="b-map" class="on">地図</button>
     <button id="b-list">一覧</button>
-    {{TOGGLE}}
-    <a href="index.html">都市一覧</a>
-    <a href="{{GUIDE}}">ガイド記事</a>
   </nav>
 </header>
+{{MENU}}
 <div class="chips" id="chips"></div>
 <main>
   <div id="map"></div>
@@ -343,12 +350,15 @@ grps.onclick=e=>{
   view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
 };
 refresh(); view('map');
+{{NAVJS}}
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('{{SLUG}}', {{CITYJS}});
 {{TOGGLEJS}}
 </script>
 """
 
 
-def city_page(city, stores, prefix="../"):
+def city_page(city, stores, prefix="../", ncities=0):
     pts = [s for s in stores if s.get("lat") is not None and s.get("lng") is not None]
     lat = sum(s["lat"] for s in pts) / len(pts) if pts else 35.0
     lng = sum(s["lng"] for s in pts) / len(pts) if pts else 135.0
@@ -365,6 +375,7 @@ def city_page(city, stores, prefix="../"):
             "food": (prefix + food) if food else "",
             "ext": (prefix + ext) if ext else "",
         })
+    slug = city_slug(stores[0])
     counts = "%d店" % len(data)
     if len(pts) != len(data):
         counts += "（地図に出るのは %d店・残りは一覧に）" % len(pts)
@@ -376,6 +387,18 @@ def city_page(city, stores, prefix="../"):
             .replace("{{CATMETA}}", json.dumps(CATEGORY, ensure_ascii=False))
             .replace("{{DATA}}", json.dumps(data, ensure_ascii=False))
             .replace("{{LAT}}", "%f" % lat).replace("{{LNG}}", "%f" % lng)
+            .replace("{{BURGER}}", BURGER)
+            .replace("{{MENU}}", menu_html([
+                ("この都市", None, ""),
+                ("📄", "%sのガイド記事" % escape(city), escape(prefix + stores[0]["path"])),
+                ("ほかの都市", None, ""),
+                ("📖", "都市の一覧（%d都市）" % ncities, "index.html"),
+                ("表示", None, ""),
+                ("", "", TOGGLE_HTML),
+            ], "%s の地図 メニュー" % escape(city)))
+            .replace("{{SLUG}}", slug)
+            .replace("{{CITYJS}}", json.dumps(city, ensure_ascii=False))
+            .replace("{{NAVJS}}", NAV_JS)
             .replace("{{TOGGLE}}", TOGGLE_HTML).replace("{{TOGGLEJS}}", TOGGLE_JS))
     return head("%s の食べ歩き地図" % city,
                 '<link rel="stylesheet" href="vendor/leaflet.css">\n') + body
@@ -398,12 +421,14 @@ def index_page(cities, prefix=""):
     def pkey(p):
         return (PREF_ORDER.index(p) if p in PREF_ORDER else len(PREF_ORDER), p)
 
-    nav, secs = [], []
+    nav, secs, mrows = [], [], []
     for r in sorted(tree, key=rkey):
         rid = "r-" + str(rkey(r)[0])
         n = sum(c["n"] for p in tree[r] for c in tree[r][p])
         nav.append('<a href="#%s">%s <b>%d都市 / %d店</b></a>'
                    % (rid, escape(r), sum(len(v) for v in tree[r].values()), n))
+        mrows.append(("・", "%s（%d都市）" % (escape(r), sum(len(v) for v in tree[r].values())),
+                      "#" + rid))
         secs.append('<h2 id="%s">%s</h2>' % (rid, escape(r)))
         for p in sorted(tree[r], key=pkey):
             secs.append("<h3>%s</h3><ul class=\"cities\">" % escape(p))
@@ -418,11 +443,29 @@ def index_page(cities, prefix=""):
             secs.append("</ul>")
 
     total = sum(c["n"] for c in cities)
+
+    # 一覧の先頭に「地図へ行く」ボタンを置く（2026-09-20 依頼）。
+    # **どの都市の地図か**という情報が一覧には無いので、地図ページ側で覚えた
+    # 「直前に見た地図」へ向ける。覚えが無ければ都市の検索窓へ案内する。
+    rows = [("地図を開く", None, ""),
+            ("", "", '<a href="#" id="sn-lastm" style="display:none">'
+                     '<span class="sn-e">🗺️</span><span class="sn-l"></span></a>'),
+            ("", "", '<a href="#" id="sn-pick">'
+                     '<span class="sn-e">🔎</span>都市を選んで地図を開く</a>'),
+            ("地方へ移動", None, "")] + mrows + [
+            ("表示", None, ""), ("", "", TOGGLE_HTML)]
+    snav = nav_html("美食ガイド", "%d都市 / %d店" % (len(cities), total),
+                    ['<a class="sn-btn" id="sn-last" href="#">🗺️ 地図を開く</a>'],
+                    rows, "美食ガイド メニュー")
+
     return head("美食ガイド 都市一覧") + """<body>
-<header class="bar">
-  <h1>美食ガイド<span class="n">%(nc)d都市 / %(nt)d店</span></h1>
-  <nav style="margin-left:auto">%(toggle)s</nav>
-</header>
+<style>
+/* 都市一覧は縦に長い頁。地図ページと同じ `html,body{height:100%%}` のままだと、
+   **貼りつくバーの容れ物（body）が画面1枚ぶんしか無く、バーが本文と一緒に流れて消える**
+   （実測＝3000px 送ると y=-2199）。一覧の2枚だけ高さの縛りを外す。 */
+html,body{height:auto;min-height:100%%}
+</style>
+%(snav)s
 <div class="wrap">
 <p class="lead">都市ごとに、店をカテゴリで色分けした地図と、全店の一覧・ガイド記事があります。
 地図のピンをタップすると料理と外観の写真、名物の一皿、記事とGoogleマップへのリンクが出ます。</p>
@@ -453,11 +496,33 @@ q.oninput=()=>{
     h2.style.display=any?'':'none';
   }
 };
+%(navjs)s
+/* 先頭の「地図を開く」を、直前に見た地図へ向ける。
+   覚えが無い端末では、押すと検索窓へ移る（押して何も起きない状態を作らない）。 */
+(function(){
+  var MAPDIR=%(mapdir)s;
+  var last=window.__snLast(), b=document.getElementById('sn-last'),
+      m=document.getElementById('sn-lastm'), pick=document.getElementById('sn-pick');
+  function toQ(e){
+    e.preventDefault();
+    var q=document.getElementById('q');
+    if(q){ q.scrollIntoView({block:'center'}); q.focus(); }
+  }
+  if(last){
+    var href=MAPDIR+last.s+'.html';
+    b.href=href; b.textContent='🗺️ '+last.c+'の地図';
+    m.href=href; m.style.display=''; m.querySelector('.sn-l').textContent=last.c+'の地図へ戻る';
+  }else{
+    b.addEventListener('click', toQ);
+  }
+  pick.addEventListener('click', toQ);
+})();
 %(togglejs)s
 </script>
 """ % {"nc": len(cities), "nt": total, "nav": "".join(nav), "secs": "".join(secs),
+       "snav": snav, "mapdir": json.dumps(mapdir),
        # 既存の <script> の中へ入れるので、タグでは包まない（包むと </script> が二重になる）
-       "toggle": TOGGLE_HTML, "togglejs": TOGGLE_JS}
+       "navjs": NAV_JS, "toggle": TOGGLE_HTML, "togglejs": TOGGLE_JS}
 
 
 def main():
@@ -486,7 +551,7 @@ def main():
             continue
         slug = city_slug(sub[0])
         open(os.path.join(SITE, slug + ".html"), "w", encoding="utf-8").write(
-            city_page(city, sub))
+            city_page(city, sub, ncities=len(CITIES or order)))
         cities.append({"city": city, "slug": slug, "n": len(sub),
                        "path": sub[0]["path"], "region": sub[0].get("地方") or "その他",
                        "pref": sub[0].get("国・都道府県") or "—",
