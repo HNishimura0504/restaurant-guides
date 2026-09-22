@@ -193,6 +193,9 @@ def guide_meta(path, s):
     else:
         country = {"belgium": "ベルギー", "france": "フランス", "germany": "ドイツ",
                    "netherlands": "オランダ", "nepal": "ネパール",
+                   "luxembourg": "ルクセンブルク",
+                   # 2026-09-22: ハワイ島3冊（ヒロ／コナ／ワイメア）を足した。
+                   # 既存のホノルル3冊と同じ「アメリカ（ハワイ）」でまとめる。
                    "usa": "アメリカ（ハワイ）"}
         pref = country.get(seg[1] if len(seg) > 1 else "", "")
     return title, city, pref, region
