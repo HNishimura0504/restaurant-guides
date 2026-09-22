@@ -1,21 +1,4 @@
-### 42. 喫茶クレオパトラ（きっさくれおぱとら）
-
-@@IMG:japan/aomori/img/aomori/cleopatra.jpg@@
-
-`老舗・歴史` `地元密着`
-
-新町通り沿いで創業50年を超える昭和レトロ喫茶。朝7時から開き、コーヒーのほかサンドウィッチなどの軽食やケーキも揃う。カップの上で炎を灯す名物の炎のコーヒーでも知られる。
-
-- **一皿**: 炎のコーヒー(ブランデーに火を灯す演出付きコーヒー)
-- **営業時間**: 月・火・水・木・金・土・日 9:00〜16:00
-- **定休日**: なし(要最終確認)
-- **住所**: 青森県青森市新町２丁目８−４ タカヤビル
-- **予約**: 要確認 — ☎ 017-722-7778
-- **選定理由**: しんまち商店街公式サイト掲載の老舗で、純喫茶巡りのブログでも人気。商店街サイト・旅色で営業を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%AF%E3%83%AC%E3%82%AA%E3%83%91%E3%83%88%E3%83%A9%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%94%20%E3%82%BF%E3%82%AB%E3%83%A4%E3%83%93%E3%83%AB)
-- **参照元**: [青森市新町商店街](http://shinmachi.aomori.jp/shopinfo/cleopatra/) / [純喫茶ブログ](https://tinnbae.com/kureopatora/)
-
-### 43. 赤い林檎 本店（あかいりんご ほんてん）
+### 42. 赤い林檎 本店（あかいりんご ほんてん）
 
 @@IMG:japan/aomori/img/aomori/akairingo.jpg@@
 
@@ -32,7 +15,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E8%B5%A4%E3%81%84%E6%9E%97%E6%AA%8E%20%E6%9C%AC%E5%BA%97%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%95)
 - **参照元**: [るるぶ&more.](https://rurubu.jp/andmore/spot/80001986) / [在住者ブログ(はてな)](https://yumeusagiyukiusagi.hatenablog.com/entry/2022/06/03/164917)
 
-### 44. ウィーン菓子 シュトラウス（うぃーんがし しゅとらうす）
+### 43. ウィーン菓子 シュトラウス（うぃーんがし しゅとらうす）
 
 @@IMG:japan/aomori/img/aomori/strauss.jpg@@
 
@@ -49,7 +32,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%A6%E3%82%A3%E3%83%BC%E3%83%B3%E8%8F%93%E5%AD%90%20%E3%82%B7%E3%83%A5%E3%83%88%E3%83%A9%E3%82%A6%E3%82%B9%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%93%E2%88%92%EF%BC%92%EF%BC%91)
 - **参照元**: [公式サイト](https://www.strauss.jp/) / [ことりっぷ](https://co-trip.jp/article/666420)
 
-### 45. 食パン工房 三ッ星製パン（しょくぱんこうぼう みつぼしせいぱん）
+### 44. 食パン工房 三ッ星製パン（しょくぱんこうぼう みつぼしせいぱん）
 
 @@IMG:japan/aomori/img/aomori/mitsuboshi.jpg@@
 
@@ -66,7 +49,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E3%83%91%E3%83%B3%E5%B7%A5%E6%88%BF%20%E4%B8%89%E3%83%83%E6%98%9F%E8%A3%BD%E3%83%91%E3%83%B3%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%93%EF%BC%95)
 - **参照元**: [ホットペッパーグルメ](https://www.hotpepper.jp/strJ004130180/) / [SweetsVillage(パン特集)](https://sweetsvillage.com/blog/bread/aomori-bread/)
 
-### 46. パン&フロマージュ モンドール（ぱんあんどふろまーじゅ もんどーる）
+### 45. パン&フロマージュ モンドール（ぱんあんどふろまーじゅ もんどーる）
 
 @@IMG:japan/aomori/img/aomori/montdor.jpg@@
 

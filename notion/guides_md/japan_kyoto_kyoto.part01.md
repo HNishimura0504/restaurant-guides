@@ -207,6 +207,10 @@ JAPAN / KYOTO 🇯🇵
 
 ### 24. ぎおん 天ぷら 天周（ぎおん てんぷら てんしゅう）
 
+@@IMG:japan/kyoto/img/kyoto/tenshu.jpg@@
+
+@@IMG:japan/kyoto/img/kyoto/tenshu_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 昼の名物「穴子天丼」（丼からはみ出すほど大きなふわふわの穴子天と海老天を甘辛ダレで載せた丼）で連日大行列の人気店。夜はカウンターで揚げたて天ぷらコースが楽しめる。
@@ -218,7 +222,7 @@ JAPAN / KYOTO 🇯🇵
 - **予約**: 要確認
 - **選定理由**: 祇園で行列のできる天ぷら店としてキョウトピ等ローカルメディアで定番紹介される人気店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%8E%E3%81%8A%E3%82%93%20%E5%A4%A9%E3%81%B7%E3%82%89%20%E5%A4%A9%E5%91%A8%20%E4%BA%AC%E9%83%BD%E5%BA%9C%E4%BA%AC%E9%83%BD%E5%B8%82%E6%9D%B1%E5%B1%B1%E5%8C%BA%E7%A5%87%E5%9C%92%E7%94%BA%E5%8C%97%E5%81%B4%E3%81%8E%E3%81%8A%E3%82%93%E5%A4%A9%E3%81%B7%E3%82%89%E5%A4%A9%E5%91%A8)
-- **参照元**: [キョウトピ](https://kyotopi.jp/articles/aLNqV) / [公式サイト](http://tensyu.jp/)
+- **参照元**: [キョウトピ](https://kyotopi.jp/articles/aLNqV) / [公式サイト](http://tensyu.jp/)／写真: [kyotopi.jp](https://kyotopi.jp/articles/aLNqV)
 
 ### 34. 祢ざめ家（ねざめや）
 

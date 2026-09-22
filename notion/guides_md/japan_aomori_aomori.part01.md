@@ -22,13 +22,13 @@ JAPAN / AOMORI・青森県 🇯🇵
 
 @@IMG:japan/aomori/img/aomori/_map.png@@
 
-@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46@@
+@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45@@
 
 **中心部拡大(青森駅〜本町)**
 
 @@IMG:japan/aomori/img/aomori/_map2.png@@
 
-@@MAPTOC:1,2,3,4,5,6,7,8,11,12,13,14,15,17,19,20,22,24,25,26,27,28,29,31,32,33,34,35,40,41,42,43,44,45,46@@
+@@MAPTOC:1,2,3,4,5,6,7,10,11,12,13,14,16,18,19,21,23,24,25,26,27,28,30,31,32,33,34,39,40,41,42,43,44,45@@
 
 > ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
@@ -155,22 +155,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%81%A1%E3%81%AE%E3%81%8F%E6%96%99%E7%90%86%20%E8%A5%BF%E3%82%80%E3%82%89%20%E3%82%A2%E3%82%B9%E3%83%91%E3%83%A0%E5%BA%97%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%AE%89%E6%96%B9%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%94%EF%BC%90%20%E3%82%A2%E3%82%B9%E3%83%91%E3%83%A0%2010F)
 - **参照元**: [公式サイト](https://www.michinokunishimura.com/) / [アスパム公式](https://www.aomori-kanko.or.jp/aspam/shop16.html)
 
-### 8. 津軽三味線ライヴ 甚太古（じんたこ）
-
-`老舗・歴史` `地元密着`
-
-囲炉裏を囲む店内で毎晩津軽三味線の生演奏が聴ける老舗郷土居酒屋。ホタテ貝焼き味噌や旬魚の炉端焼きなど津軽の酒肴と地酒を、迫力ある演奏とともに味わえる。
-
-- **一皿**: ほたて貝焼き味噌（貝殻ごと焼く陸奥湾ホタテの郷土料理）
-- **営業時間**: 18:00〜22:30（演奏19:00頃〜）
-- **定休日**: 第1・3日曜日
-- **住所**: 青森県青森市安方１丁目６−１６ ホテルふじた
-- **予約**: 要確認
-- **選定理由**: 観光ガイド・ローカルメディアで津軽三味線ライブ居酒屋の代表として長年紹介される名物店。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%B4%A5%E8%BB%BD%E4%B8%89%E5%91%B3%E7%B7%9A%E3%83%A9%E3%82%A4%E3%83%B4%20%E7%94%9A%E5%A4%AA%E5%8F%A4%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%AE%89%E6%96%B9%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%91%EF%BC%96%20%E3%83%9B%E3%83%86%E3%83%AB%E3%81%B5%E3%81%98%E3%81%9F)
-- **参照元**: [tripnote](https://tripnote.jp/aomori-shi/restaurant-jintako) / [Yahoo!マップ](https://map.yahoo.co.jp/v3/place/dt-BIUr5aCE)
-
-### 9. 魚っ喰いの田 新青森駅店（さかなっくいのでん しんあおもりえきてん）
+### 8. 魚っ喰いの田 新青森駅店（さかなっくいのでん しんあおもりえきてん）
 
 @@IMG:japan/aomori/img/aomori/sakanakuinoda.jpg@@
 
@@ -187,7 +172,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E3%81%A3%E5%96%B0%E3%81%84%E3%81%AE%E7%94%B0%20%E6%96%B0%E9%9D%92%E6%A3%AE%E9%A7%85%E5%BA%97%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E7%9F%B3%E6%B1%9F%E9%AB%98%E9%96%93%EF%BC%91%EF%BC%94%EF%BC%90%E2%88%92%EF%BC%92)
 - **参照元**: [ポみっと！](https://www.pomit.jp/%E3%83%A9%E3%83%B3%E3%83%81/%E9%AD%9A%E3%81%A3%E5%96%B0%E3%81%84%E3%81%AE%E7%94%B0-jr%E6%96%B0%E9%9D%92%E6%A3%AE%E9%A7%85%E5%BA%97/) / [Retty](https://retty.me/area/PRE02/ARE159/SUB15901/100000004423/)
 
-### 10. 鶴亀屋食堂（つるかめやしょくどう）
+### 9. 鶴亀屋食堂（つるかめやしょくどう）
 
 @@IMG:japan/aomori/img/aomori/tsurukameya.jpg@@
 
@@ -204,7 +189,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%B6%B4%E4%BA%80%E5%B1%8B%E9%A3%9F%E5%A0%82%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%B5%85%E8%99%AB%E8%9B%8D%E8%B0%B7%EF%BC%92%EF%BC%99%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%94)
 - **参照元**: [るるぶ&more.](https://rurubu.jp/andmore/spot/80001976) / [Yahoo!ニュース](https://news.yahoo.co.jp/expert/articles/6ecfe2c46b9db679739f9ddec863482463d25960)
 
-### 11. 酒肴旬 三ッ石（しゅこうしゅん みついし）
+### 10. 酒肴旬 三ッ石（しゅこうしゅん みついし）
 
 @@IMG:japan/aomori/img/aomori/mitsuishi.jpg@@
 
@@ -221,7 +206,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%82%B4%E6%97%AC%20%E4%B8%89%E3%83%83%E7%9F%B3%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%AE%89%E6%96%B9%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%93%EF%BC%93)
 - **参照元**: [公式サイト](https://www.mitsuishi-aomori.jp/) / [ホットペッパー](https://www.hotpepper.jp/strJ000100642/)
 
-### 12. うなぎ料理 川よし（うなぎりょうり かわよし）
+### 11. うなぎ料理 川よし（うなぎりょうり かわよし）
 
 @@IMG:japan/aomori/img/aomori/kawayoshi.jpg@@
 
@@ -238,7 +223,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E6%96%99%E7%90%86%20%E5%B7%9D%E3%82%88%E3%81%97%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%9C%AC%E7%94%BA%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%94)
 - **参照元**: [青森グルメディア](https://aomori-food.com/kawayoshi-230720/) / [楽天ぐるなび](https://r.gnavi.co.jp/24w08mu70000/)
 
-### 13. 青森港 海の食堂 大福丸（あおもりこう うみのしょくどう だいふくまる）
+### 12. 青森港 海の食堂 大福丸（あおもりこう うみのしょくどう だいふくまる）
 
 @@IMG:japan/aomori/img/aomori/daifukumaru.jpg@@
 
@@ -255,7 +240,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%9D%92%E6%A3%AE%E6%B8%AF%20%E6%B5%B7%E3%81%AE%E9%A3%9F%E5%A0%82%20%E5%A4%A7%E7%A6%8F%E4%B8%B8%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%AE%89%E6%96%B9%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%91)
 - **参照元**: [公式サイト](https://daifukumaru.owst.jp/) / [あおもり案内名人](https://www.atca.info/detail.html?oid=14588)
 
-### 14. 市場食堂（アウガ新鮮市場）（いちばしょくどう（あうがしんせんいちば））
+### 13. 市場食堂（アウガ新鮮市場）（いちばしょくどう（あうがしんせんいちば））
 
 @@IMG:japan/aomori/img/aomori/ichibashokudo.jpg@@
 
@@ -274,7 +259,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 
 ## ラーメン・そば・うどん
 
-### 15. 味の札幌 大西（あじのさっぽろ おおにし）
+### 14. 味の札幌 大西（あじのさっぽろ おおにし）
 
 @@IMG:japan/aomori/img/aomori/onishi.jpg@@
 
@@ -291,7 +276,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E3%81%AE%E6%9C%AD%E5%B9%8C%20%E5%A4%A7%E8%A5%BF%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%8F%A4%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%96%20%E5%A4%A7%E8%A5%BF%E3%82%AF%E3%83%AA%E3%82%A8%E3%82%A4%E3%83%88%E3%83%93%E3%83%AB%20%EF%BC%91%EF%BC%A6)
 - **参照元**: [昭和通り商店街](https://www.showadori.net/%E5%91%B3%E3%81%AE%E6%9C%AD%E5%B9%8C%E3%80%80%E5%A4%A7%E8%A5%BF/) / [あおもり案内名人](https://www.atca.info/food/interview05/)
 
-### 16. 札幌館（さっぽろかん）
+### 15. 札幌館（さっぽろかん）
 
 @@IMG:japan/aomori/img/aomori/sapporokan.jpg@@
 
@@ -308,7 +293,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%9C%AD%E5%B9%8C%E9%A4%A8%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E7%9F%B3%E6%B1%9F%E5%B2%A1%E9%83%A8%EF%BC%95%EF%BC%96%E2%88%92%EF%BC%93)
 - **参照元**: [Amazing AOMORI特集](https://aomori-tourism.com/feature/detail_205.html) / [ラーメンデータベース](https://ramendb.supleks.jp/s/97357.html)
 
-### 17. 長尾中華そば 青森駅前店（ながおちゅうかそば あおもりえきまえてん）
+### 16. 長尾中華そば 青森駅前店（ながおちゅうかそば あおもりえきまえてん）
 
 @@IMG:japan/aomori/img/aomori/nagao.jpg@@
 
@@ -325,7 +310,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B0%BE%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E9%9D%92%E6%A3%AE%E9%A7%85%E5%89%8D%E5%BA%97%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%9F%B3%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%93)
 - **参照元**: [公式サイト](https://naga-chu.com/ekimae/) / [ラーメンデータベース](https://ramendb.supleks.jp/s/99671.html)
 
-### 18. 津軽煮干 ひらこ屋 本店（つがるにぼし ひらこや ほんてん）
+### 17. 津軽煮干 ひらこ屋 本店（つがるにぼし ひらこや ほんてん）
 
 @@IMG:japan/aomori/img/aomori/hirakoya.jpg@@
 
@@ -342,7 +327,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%B4%A5%E8%BB%BD%E7%85%AE%E5%B9%B2%20%E3%81%B2%E3%82%89%E3%81%93%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E5%9F%8E%E5%B1%B1%E7%94%B0%EF%BC%95%EF%BC%98%EF%BC%98%E2%88%92%EF%BC%91%EF%BC%96)
 - **参照元**: [公式サイト](https://hirakoya.net/hirakoya/) / [ブランドサイト](https://hirakoya.net/)
 
-### 19. くどうラーメン（くどうらーめん）
+### 18. くどうラーメン（くどうらーめん）
 
 @@IMG:japan/aomori/img/aomori/kudo.jpg@@
 
@@ -359,7 +344,7 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%A9%E3%81%86%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%94)
 - **参照元**: [ポみっと！](https://www.pomit.jp/%E3%83%A9%E3%83%B3%E3%83%81/%E3%81%8F%E3%81%A9%E3%81%86%E3%82%89%E3%83%BC%E3%82%81%E3%82%93/) / [在住者ブログikuzoblog](https://ikuzoblog.com/kudo)
 
-### 20. まるかいラーメン（まるかいらーめん）
+### 19. まるかいラーメン（まるかいらーめん）
 
 @@IMG:japan/aomori/img/aomori/marukai.jpg@@
 
@@ -375,3 +360,20 @@ JAPAN / AOMORI・青森県 🇯🇵
 - **選定理由**: 全国メディアGOTRIP!や在住者ブログが「市民が愛する老舗」として紹介する津軽ラーメンの代表店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%82%8B%E3%81%8B%E3%81%84%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%AE%89%E6%96%B9%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91%EF%BC%96)
 - **参照元**: [GOTRIP!](https://gotrip.jp/2019/12/109963/) / [在住者ブログikuzoblog](https://ikuzoblog.com/marukai)
+
+### 20. あさ利（あさり）
+
+@@IMG:japan/aomori/img/aomori/asari.jpg@@
+
+`地元密着` `ブログ推薦`
+
+地元で行列の絶えないネギラーメン専門的存在の老舗。辛味を効かせたスープに炒めた大量のネギをのせ、辛さを6段階から選べる。締めにライスを入れる食べ方も地元流。
+
+- **一皿**: ネギラーメン（辛口スープに炒めネギを山盛りした名物）
+- **営業時間**: 月・水・金 10:30〜14:30 ／ 火・木・土 10:30〜14:30, 17:00〜20:00
+- **定休日**: 日曜
+- **住所**: 青森県青森市栄町１丁目６−８ パンション あさり
+- **予約**: 要確認 — ☎ 017-741-2748
+- **選定理由**: 在住者の食べ歩きブログで繰り返し取り上げられる地元密着の人気店。エリア分散（東部住宅街）も担う。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%95%E5%88%A9%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%98%20%E3%83%91%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%20%E3%81%82%E3%81%95%E3%82%8A)
+- **参照元**: [青森食べ歩きブログ](https://tabearukimasutango.blog.jp/archives/32694660.html) / [ホットペッパー](https://www.hotpepper.jp/strJ000269355/)

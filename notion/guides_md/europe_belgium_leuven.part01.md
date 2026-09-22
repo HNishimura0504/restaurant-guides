@@ -15,6 +15,18 @@ BELGIUM / LEUVEN 🇧🇪
 
 @@TOC@@
 
+## 🗾 店舗マップ
+
+**🗺️ 店舗マップ — 全域マップ**
+
+@@IMG:europe/belgium/img/leuven/_map.png@@
+
+**🗺️ 店舗マップ — 中心部拡大**
+
+@@IMG:europe/belgium/img/leuven/_map2.png@@
+
+> Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+
 ---
 
 ## ベルギー料理・レストラン
@@ -100,6 +112,8 @@ BELGIUM / LEUVEN 🇧🇪
 
 ### Notre Dame（ノートルダム）
 
+@@IMG:europe/belgium/img/leuven/notre-dame.jpg@@
+
 `老舗・歴史`
 
 グローテ・マルクト（市庁舎前の大広場）に面したベルギー料理店。クロック・ムッシュからシャトーブリアンまで幅広く、ムール貝とウィトロフ（チコリのベシャメル包み焼き）といったフランドルの定番も置く。
@@ -111,9 +125,11 @@ BELGIUM / LEUVEN 🇧🇪
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部が学会参加者向けに編んだ公式レストランガイドが、ベルギー料理の筆頭格として掲載。市庁舎前という最も分かりやすい立地で、初日の一軒に向く。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Notre%20Dame%20Grote%20Markt%2011%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)／写真: [gcnotredame.be](https://www.gcnotredame.be/en/)
 
 ### Den Beiaard（デン・ベイアード）
+
+@@IMG:europe/belgium/img/leuven/den-beiaard.jpg@@
 
 `口コミ突出`
 
@@ -126,7 +142,7 @@ BELGIUM / LEUVEN 🇧🇪
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部の公式ガイドが「トレンディなブラッスリー」として掲載。大学図書館前という学生街の中心にあり、観光の動線と重なる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Den%20Beiaard%20Mgr.%20Ladeuzeplein%208%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)／写真: [denbeiaard.com](https://denbeiaard.com/)
 
 ### De Kansel（デ・カンセル）
 
@@ -145,6 +161,8 @@ BELGIUM / LEUVEN 🇧🇪
 
 ### Het Moorinneken（ヘット・モーリンネケン）
 
+@@IMG:europe/belgium/img/leuven/het-moorinneken.jpg@@
+
 `地元密着`
 
 グローテ・マルクトに面したフランス＝ベルギー料理のレストラン兼パブ。季節で大きく変わる献立で、自家製のチーズコロッケ・エビコロッケ、ステーキタルタルが看板。
@@ -156,9 +174,11 @@ BELGIUM / LEUVEN 🇧🇪
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部の公式ガイドが「自家製で新鮮な素材ばかりの献立」と評価。ベルギーの前菜の代表であるコロッケを自家製で出す点を採った。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Het%20Moorinneken%20Grote%20Markt%2010%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)／写真: [moorinneken.be](https://moorinneken.be/)
 
 ### De Troubadour（デ・トゥルバドゥール）
+
+@@IMG:europe/belgium/img/leuven/de-troubadour.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -171,7 +191,7 @@ BELGIUM / LEUVEN 🇧🇪
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部の公式ガイドが「ルーベンのレストランの中では見逃しようのない象徴的存在」と記載。ムール貝を確実に食べたいときの一軒。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Troubadour%20Tiensestraat%2032%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-ix/leuvenrestaurants)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-ix/leuvenrestaurants)／写真: [en.resto.be](https://en.resto.be/restaurant/leuven/3000-louvain/164867-troubadour/)
 
 ### Meating Room（ミーティング・ルーム）
 
@@ -190,6 +210,8 @@ BELGIUM / LEUVEN 🇧🇪
 
 ### Otomat（オトマット）
 
+@@IMG:europe/belgium/img/leuven/otomat.jpg@@
+
 `ブログ推薦` `ベジ対応`
 
 ベルギー産の素材を載せた大皿ピザを取り分けて食べる店。ベルギービールの酵母を生地に使うのが特徴で、菜食の選択肢も置く。
@@ -201,7 +223,7 @@ BELGIUM / LEUVEN 🇧🇪
 - **予約**: 要確認
 - **選定理由**: KU Leuven 神学部の公式ガイドが「ベルギー料理をシェアするピザ店」として掲載。ベルギー食材とビール文化を一皿に落とし込んだ現代的な一軒。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Otomat%20Tiensestraat%2033%2C%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)
+- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xii/restaurant-guide)／写真: [otomat.be](https://otomat.be/nl/locations/leuven)
 
 ### Lukemieke（ルケミーケ）
 
@@ -324,6 +346,8 @@ Margarethaplein の人気ワッフル＆ジェラート店。名物は焼きた�
 
 ### Luc's Friet（リュックス・フリート）
 
+@@IMG:europe/belgium/img/leuven/luc-s-friet.jpg@@
+
 `口コミ突出`
 
 地元で「ルーベン最良のフリッツ店」を掲げる一軒。
@@ -354,6 +378,8 @@ Margarethaplein の人気ワッフル＆ジェラート店。名物は焼きた�
 
 ### Stuffed（スタッフト）
 
+@@IMG:europe/belgium/img/leuven/stuffed.jpg@@
+
 `ブログ推薦`
 
 具を詰めたパンの店。クッキー生地やケーキ生地をそのまま買えるのが特徴で、注文をオンラインで組み立てて受け取り時刻を指定できる。
@@ -365,7 +391,7 @@ Margarethaplein の人気ワッフル＆ジェラート店。名物は焼きた�
 - **予約**: 要確認
 - **選定理由**: 地域の飲食情報が「生地をそのまま買える」点を特徴として紹介。甘い食べ歩きの選択肢として、フリッツ一辺倒の章を補える。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Stuffed%203000%20Leuven)
-- **参照元**: [stuffed-leuven.be](https://stuffed-leuven.be/)
+- **参照元**: [stuffed-leuven.be](https://stuffed-leuven.be/)／写真: [stuffed-3000.be](https://www.stuffed-3000.be/)
 
 ## チーズ・加工肉・惣菜
 
@@ -446,6 +472,8 @@ Stella Artois醸造所の旧鍛冶場を改装した屋内市場(2017年開業�
 
 ### De Walvis（デ・ワルヴィス）
 
+@@IMG:europe/belgium/img/leuven/de-walvis.jpg@@
+
 `食の専門街・市場`
 
 メヘルセストラートの鮮魚店兼惣菜店。市場に出る鮮魚・貝・甲殻類の上位の等級を扱うことを掲げる。買って帰る惣菜も置く。
@@ -457,7 +485,7 @@ Stella Artois醸造所の旧鍛冶場を改装した屋内市場(2017年開業�
 - **予約**: 要確認
 - **選定理由**: 公式サイトで「ルーベン中心部の鮮魚店兼惣菜店」と所在・方針を確認。既収録のチーズ・精肉に対して魚介の系統を足せる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Walvis%20Mechelsestraat%2023%2C%203000%20Leuven)
-- **参照元**: [walvis.be](https://www.walvis.be/)
+- **参照元**: [walvis.be](https://www.walvis.be/)／写真: [culinaireambiance.com](https://culinaireambiance.com/nl/articles/de-walvis)
 
 ### Gigi（ジジ）
 
@@ -488,33 +516,3 @@ Stella Artois醸造所の旧鍛冶場を改装した屋内市場(2017年開業�
 - **選定理由**: 地域の商店情報でフィスマルクト4番地の所在を確認。既収録の Vrijdagmarkt と合わせ、広場まわりの買い出しの動線を作れる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Louise%20%26%20Co.%20Vismarkt%204%2C%203000%20Leuven)
 - **参照元**: [cylex-belgie.be](https://www.cylex-belgie.be/leuven/delicatessenwinkel.html)
-
-### Temmerman（テメルマン）
-
-`食の専門街・市場`
-
-地域の産品と贈答用の詰め合わせを扱う専門店。土産の買い出しに向く。
-
-- **一皿**: ベルギーの地域産品の詰め合わせ
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: 公式サイトで地域産品・贈答品の専門店であることを確認。持ち帰りの土産をまとめて揃えたいときの一軒。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Temmerman%203000%20Leuven)
-- **参照元**: [temmermanleuven.be](https://www.temmermanleuven.be/producten/delicatessen)
-
-### Coup de Soup（クー・ド・スープ）
-
-`地元密着`
-
-スープとパスタの持ち帰り店。席数は少なく、買って外で食べる使い方が中心。安価。
-
-- **一皿**: 日替わりのスープ
-- **営業時間**: 要確認(訪問前にGoogleマップで最終確認)
-- **定休日**: 要確認
-- **住所**: 3000 Leuven
-- **予約**: 要確認
-- **選定理由**: KU Leuven 神学部の公式ガイドが「非常に安価、持ち帰りに向く」と掲載。天候の悪い日の昼の受け皿になる。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Coup%20de%20Soup%203000%20Leuven)
-- **参照元**: [theo.kuleuven.be](https://theo.kuleuven.be/en/lest/lest-xi/Food_site)

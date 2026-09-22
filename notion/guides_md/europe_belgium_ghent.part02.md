@@ -1,3 +1,21 @@
+### Osteria Delicati（オステリア・デリカーティ）
+
+@@IMG:europe/belgium/img/ghent/osteria-delicati.jpg@@
+
+`口コミ突出`
+
+イタリア料理。レイエ川近くのDrabstraatにある本格オステリアで、パスタ・チーズ・ワインなどの食材をイタリアから直輸入し、古典イタリア料理を現代的に仕上げる。ワインリストはキャンティやトスカーナを中心に100種以上。
+
+- **一皿**: 自家製手打ちパスタ(ウンブリア産の肉や羊乳チーズなど直輸入食材を合わせた手打ちパスタ。デザートのティラミスはRestaurant Guruの「ヘント最優秀ティラミス」受賞。)
+- **営業時間**: 月・水・木 18:00-22:00、金・土 12:00-14:00/18:00-22:30、日 12:00-14:00/18:00-22:00
+- **定休日**: 火曜(夏季休業あり: 8/17-9/3)
+- **住所**: Drabstraat 17, 9000 Gent
+- **予約**: 可(推奨) — ☎ 電話で予約 +32 9 391 80 50 ／ [公式サイト](https://www.osteriadelicati.be/)
+- **公式**: [公式サイト](https://www.osteriadelicati.be/)
+- **選定理由**: 公式サイトで営業情報を確認。Restaurant Guruで「ヘント最優秀イタリアン・最優秀サービス・最優秀ティラミス」を受賞したと公式に掲げる実力店で、検索でも本格イタリアンの筆頭として挙がる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Osteria%20Delicati%20Drabstraat%2017%2C%209000%20Gent)
+- **参照元**: [osteriadelicati.be](https://www.osteriadelicati.be/eng/)
+
 ### Firenze（フィレンツェ）
 
 @@IMG:europe/belgium/img/ghent/firenze.jpg@@

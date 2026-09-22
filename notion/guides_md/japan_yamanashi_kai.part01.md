@@ -18,19 +18,19 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 
 ## 🗾 店舗マップ
 
-**全域マップ**
+**🗺️ 店舗マップ — 全域マップ**
 
 @@IMG:japan/yamanashi/img/kai/_map.png@@
 
-@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40@@
+@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45@@
 
-**中心部拡大(竜王駅〜国道20号沿い)**
+**🗺️ 店舗マップ — 中心部拡大(竜王駅〜国道20号沿い)**
 
 @@IMG:japan/yamanashi/img/kai/_map2.png@@
 
-@@MAPTOC:1,5,8,9,18,20,21,23,29,31,32,35,40@@
+@@MAPTOC:1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,32,33,34,35,36,37,38,39,40,41,42,43,44,45@@
 
-> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+> Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
@@ -138,9 +138,43 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%97%E3%82%92%E9%87%8C%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%89%9B%E5%8F%A5%EF%BC%93%EF%BC%92%EF%BC%96%EF%BC%98%E2%88%92%EF%BC%93)
 - **参照元**: [食べログ しを里](https://tabelog.com/yamanashi/A1901/A190101/19005261/)
 
+### 7. 升亭（ますてい）
+
+@@IMG:japan/yamanashi/img/kai/masutei.jpg@@
+
+`老舗・歴史` `地元密着`
+
+甲斐市竜王の老舗。国産うなぎを伝統のたれで焼くうな重と、注文後に炊く釜めし（具材を米と一緒に小釜で炊き上げる炊き込みご飯）が二枚看板。「山梨のＢ級グルメセット」もあり、鳥もつ煮（鶏の砂肝・レバー・きんかんを砂糖と醤油で煮からめた甲府発祥の郷土料理）など県の味をまとめて味わえる。
+
+- **一皿**: 一皿: 山梨のＢ級グルメセット（鳥もつ煮など山梨の郷土の味を集めた膳/1,300円）
+- **営業時間**: 11:30〜L.O.14:00／17:00〜L.O.21:00
+- **定休日**: 火曜
+- **住所**: 山梨県甲斐市竜王1044-1
+- **予約**: 可（仕出し・松花堂弁当あり）— ☎ 055-276-8961
+- **選定理由**: 山梨県公式観光サイトが升亭のジャンルを「そば/うどん・ほうとう・郷土料理・和食」として掲載し、PORTAも甲斐市の『ほうとう・郷土料理』カテゴリに置いている。PORTAには現在も有効な特典クーポンが載っており営業が確認できる。小作以外で市内の郷土の味を押さえられる老舗として、ご当地の章に加えた。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%8D%87%E4%BA%AD%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AB%9C%E7%8E%8B1044-1)
+- **参照元**: [富士の国やまなし観光ネット（山梨県公式観光情報） 升亭](https://www.yamanashi-kankou.jp/taste/gourmet/porta/43982.html) / [PORTA 升亭（マステイ） 甲斐市](https://www.porta-y.jp/gourmet/43982)
+
+### 8. 金精軒 韮崎店（きんせいけん にらさきてん）
+
+@@IMG:japan/yamanashi/img/kai/kinseiken-nirasaki.jpg@@
+
+`老舗・歴史` `隣接市`
+
+明治35年創業、北杜市白州の台ヶ原宿に本店を置く金精軒の直営店。2018年に改装した清里ライン（国道141号）沿いの大きな看板が目印で、信玄餅（きな粉をまぶした求肥餅に黒蜜をかけて食べる山梨の銘菓）と、日持ちのしない生信玄餅、季節の生菓子を売る。甲斐市から車で20分ほど。
+
+- **一皿**: 一皿: 信玄餅（きな粉をまぶした求肥餅に黒蜜をかける山梨の銘菓）／数量限定の生信玄餅
+- **営業時間**: 9:00〜17:00
+- **定休日**: 火曜、1月1日（元旦）
+- **住所**: 山梨県韮崎市中田町小田川154
+- **予約**: 不要 — ☎ 0551-25-1033 ／ https://kinseiken.co.jp/store-information/
+- **選定理由**: 甲斐市内に信玄餅の作り手がないため、隣接する韮崎市から補った。金精軒の公式サイト『店舗案内』が韮崎店を現行の直営店として掲げ（明治35年創業、2018年リニューアル）、韮崎市観光協会の公式サイトも和洋菓子の項で紹介、山梨県公式観光サイトにも店舗ページがある。ご当地の章の「信玄餅」を市外の老舗で押さえる一軒。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%87%91%E7%B2%BE%E8%BB%92%20%E9%9F%AE%E5%B4%8E%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E9%9F%AE%E5%B4%8E%E5%B8%82%E4%B8%AD%E7%94%B0%E7%94%BA%E5%B0%8F%E7%94%B0%E5%B7%9D154)
+- **参照元**: [金精軒 公式サイト 店舗案内（韮崎店）](https://kinseiken.co.jp/store-information/) / [韮崎市観光協会 公式サイト 金精軒 韮崎店](https://www.nirasaki-kankou.jp/syukuhaku_onsen_tokusanbutsu_osyokujidokoro/omiyage/wayougashi/6570.html) / [富士の国やまなし観光ネット（山梨県公式観光情報） 金精軒 韮崎店](https://www.yamanashi-kankou.jp/taste/gourmet/porta/10388.html)
+
 ## 寿司・和食
 
-### 7. 礎（いしずえ）
+### 9. 礎（いしずえ）
 
 @@IMG:japan/yamanashi/img/kai/ishizue_shimoimai.jpg@@
 
@@ -157,7 +191,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%A4%8E%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%8B%E4%BB%8A%E4%BA%95%EF%BC%92%EF%BC%97%EF%BC%96%EF%BC%93)
 - **参照元**: [食べログ 礎](https://tabelog.com/yamanashi/A1901/A190101/19000002/)
 
-### 8. 市場寿し（いちばずし）
+### 10. 市場寿し（いちばずし）
 
 @@IMG:japan/yamanashi/img/kai/ichibazushi_shinohara.jpg@@
 
@@ -174,7 +208,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%B8%82%E5%A0%B4%E5%AF%BF%E3%81%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AF%A0%E5%8E%9F)
 - **参照元**: [食べログ 市場寿し](https://tabelog.com/yamanashi/A1901/A190101/19009443/)
 
-### 9. 菊寿し 玉幡店（きくずし たまはたてん）
+### 11. 菊寿し 玉幡店（きくずし たまはたてん）
 
 @@IMG:japan/yamanashi/img/kai/kikuzushi_tamahata.jpg@@
 
@@ -191,7 +225,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E8%8F%8A%E5%AF%BF%E3%81%97%20%E7%8E%89%E5%B9%A1%E5%BA%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E8%A5%BF%E5%85%AB%E5%B9%A1%EF%BC%91%EF%BC%91%EF%BC%98%EF%BC%97%E2%88%92%EF%BC%91%EF%BC%94)
 - **参照元**: [食べログ 菊寿し 玉幡店](https://tabelog.com/yamanashi/A1901/A190101/19003963/)
 
-### 10. ふたばすし（ふたばすし）
+### 12. ふたばすし（ふたばすし）
 
 @@IMG:japan/yamanashi/img/kai/futabazushi_ryuji.jpg@@
 
@@ -208,7 +242,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%9F%E3%81%B0%E3%81%99%E3%81%97%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%BE%8D%E5%9C%B0%EF%BC%96%EF%BC%96%EF%BC%96%EF%BC%95)
 - **参照元**: [食べログ ふたばすし](https://tabelog.com/yamanashi/A1901/A190101/19001816/)
 
-### 11. すずこう 鈴木幸廣（すずこう すずきさちひろ）
+### 13. すずこう 鈴木幸廣（すずこう すずきさちひろ）
 
 @@IMG:japan/yamanashi/img/kai/suzukou_nagatsuka.jpg@@
 
@@ -225,7 +259,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%9A%E3%81%93%E3%81%86%20%E9%88%B4%E6%9C%A8%E5%B9%B8%E5%BB%A3%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%95%B7%E5%A1%9A%EF%BC%98%EF%BC%91%E2%88%92%EF%BC%97)
 - **参照元**: [食べログ すずこう 鈴木幸廣](https://tabelog.com/yamanashi/A1901/A190101/19003304/)
 
-### 12. 和ダイニング 青山（わだいにんぐ あおやま）
+### 14. 和ダイニング 青山（わだいにんぐ あおやま）
 
 @@IMG:japan/yamanashi/img/kai/wadining_aoyama_nagatsuka.jpg@@
 
@@ -242,7 +276,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E9%9D%92%E5%B1%B1%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%95%B7%E5%A1%9A%EF%BC%92%EF%BC%96%EF%BC%91%E2%88%92%EF%BC%96)
 - **参照元**: [食べログ 和ダイニング 青山](https://tabelog.com/yamanashi/A1901/A190101/19003307/)
 
-### 13. うな竹（うなたけ）
+### 15. うな竹（うなたけ）
 
 @@IMG:japan/yamanashi/img/kai/unatake_natori.jpg@@
 
@@ -259,7 +293,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E7%AB%B9%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E5%90%8D%E5%8F%96%EF%BC%93%EF%BC%96%EF%BC%99%E2%88%92%EF%BC%91)
 - **参照元**: [食べログ うな竹](https://tabelog.com/yamanashi/A1901/A190101/19011079/) / [食べログ 甲斐市のうなぎ一覧](https://tabelog.com/yamanashi/C19210/rstLst/unagi/)
 
-### 14. 藤義（ふじよし）
+### 16. 藤義（ふじよし）
 
 @@IMG:japan/yamanashi/img/kai/fujiyoshi_tomitakeshinden.jpg@@
 
@@ -278,7 +312,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 
 ## そば・うどん・ラーメン・町中華
 
-### 15. うどんのみち（うどんのみち）
+### 17. うどんのみち（うどんのみち）
 
 @@IMG:japan/yamanashi/img/kai/udon_no_michi_ryuo.jpg@@
 
@@ -295,7 +329,7 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E3%81%AE%E3%81%BF%E3%81%A1%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E7%AB%9C%E7%8E%8B%EF%BC%91%EF%BC%90%EF%BC%94%EF%BC%95%E2%88%92%EF%BC%91)
 - **参照元**: [食べログ うどんのみち](https://tabelog.com/yamanashi/A1901/A190101/19013429/)
 
-### 16. カレーうどん屋 咲々（かれーうどんや ささ）
+### 18. カレーうどん屋 咲々（かれーうどんや ささ）
 
 @@IMG:japan/yamanashi/img/kai/sasa_curry_udon_futaba.jpg@@
 
@@ -311,37 +345,3 @@ JAPAN / YAMANASHI・山梨県 🇯🇵
 - **選定理由**: 公式サイトが2026年時点で営業カレンダーを更新しており営業を確認。カレーうどん専門という希少な業態で山梨のグルメ検索でも上位に挙がる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%AC%E3%83%BC%E3%81%86%E3%81%A9%E3%82%93%E5%B1%8B%20%E5%92%B2%E3%80%85%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E9%BE%8D%E5%9C%B0%EF%BC%93%EF%BC%92%EF%BC%99%EF%BC%96%E2%88%92%EF%BC%93%20%E3%82%B3%E3%82%A2%E9%9F%BF%E3%83%B6%E4%B8%98)
 - **参照元**: [咲々 公式サイト](https://r.goope.jp/sasa/)
-
-### 17. 麺屋 しん道（めんや しんどう）
-
-@@IMG:japan/yamanashi/img/kai/menya_shindo_kai.jpg@@
-
-`口コミ突出` `ブログ推薦` `地元密着`
-
-2019年12月開店。山梨のつけ麺の名店として知られる昭和町「つけそばさんぷく」で修業した店主が独立して開いた店。豚と鶏の2種類のチャーシューをのせたつけそばと、すっきりした醤油らぁ麺が二枚看板で、材料がなくなり次第終了になる日もある。カウンターだけのオープンキッチンという開放感のある造りで、ヘアゴムや荷物置きを備えるなど一人客や女性客への気配りも評判。甲斐市のラーメン店では食べログ評価で頭一つ抜けた存在になっている。
-
-- **一皿**: つけそば（豚と鶏の2種チャーシュー）
-- **営業時間**: 月・火・水・金 11:30〜14:30, 17:30〜20:30 ／ 木 11:30〜14:30 ／ 土 11:00〜14:30
-- **定休日**: 日曜
-- **住所**: 山梨県甲斐市下今井２７０７−１
-- **予約**: 要確認 — ☎ 0551-35-9498 ／ [公式サイト](https://www.instagram.com/sindo_menya?igsh=MW5pbGxpam5iMmRyNA==)
-- **選定理由**: 地元ライターの「山梨ラーメンBEST20」2025年版に取り上げられ、食べログでも甲斐市のラーメン店で最上位の評価（3.5超）を得ている。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E3%81%97%E3%82%93%E9%81%93%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E4%B8%8B%E4%BB%8A%E4%BA%95%EF%BC%92%EF%BC%97%EF%BC%90%EF%BC%97%E2%88%92%EF%BC%91)
-- **参照元**: [PORTA（山梨のグルメ） 麺屋しん道](https://www.porta-y.jp/gourmet/91138) / [いとログ 山梨ラーメンランキング2025](https://webdesign-gourmet.com/yamanashi-ramen-itolog-ranking-2025)
-
-### 18. 麺や壱進（めんや いっしん）
-
-@@IMG:japan/yamanashi/img/kai/menya_isshin_kai.jpg@@
-
-`ブログ推薦` `地元密着`
-
-2025年8月5日、西八幡の廃軌道沿いに開店したラーメン店。甲斐市の人気焼き鳥店「鳥かん」の韓国出身オーナーが、東京の名店で修業したうえで開いた2店舗目にあたる。澄んだ鶏清湯の醤油らぁ麺（900円）を主軸に、白濁した濃厚クリーミーな鶏白湯塩、味噌、濃厚つけ麺までそろえ、麺は東京・蒲田の菅野製麺所の特製麺を使う。テーブル10席・カウンター6席に駐車場22台と郊外仕様で、開店直後から地元グルメメディアが相次いで取り上げる注目株。
-
-- **一皿**: 醤油らぁ麺（鶏清湯スープ）
-- **営業時間**: 月・火・水・木・金・土・日 11:00〜14:30, 18:00〜21:30
-- **定休日**: なし(要最終確認)
-- **住所**: 山梨県甲斐市西八幡１８６１
-- **予約**: 要確認 — ☎ 070-4722-0805 ／ [公式サイト](https://www.instagram.com/menyaissin/)
-- **選定理由**: 2025年8月開店の新店で、山梨の地域メディアPORTAやラーメン系ブログが開店直後に相次いで紹介。焼き鳥店発のラーメンという経緯も話題。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%82%84%E5%A3%B1%E9%80%B2%20%E5%B1%B1%E6%A2%A8%E7%9C%8C%E7%94%B2%E6%96%90%E5%B8%82%E8%A5%BF%E5%85%AB%E5%B9%A1%EF%BC%91%EF%BC%98%EF%BC%96%EF%BC%91)
-- **参照元**: [PORTA（山梨のグルメ） 麺や壱進](https://www.porta-y.jp/gourmet/183162)

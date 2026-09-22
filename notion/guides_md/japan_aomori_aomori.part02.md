@@ -1,21 +1,4 @@
-### 21. あさ利（あさり）
-
-@@IMG:japan/aomori/img/aomori/asari.jpg@@
-
-`地元密着` `ブログ推薦`
-
-地元で行列の絶えないネギラーメン専門的存在の老舗。辛味を効かせたスープに炒めた大量のネギをのせ、辛さを6段階から選べる。締めにライスを入れる食べ方も地元流。
-
-- **一皿**: ネギラーメン（辛口スープに炒めネギを山盛りした名物）
-- **営業時間**: 月・水・金 10:30〜14:30 ／ 火・木・土 10:30〜14:30, 17:00〜20:00
-- **定休日**: 日曜
-- **住所**: 青森県青森市栄町１丁目６−８ パンション あさり
-- **予約**: 要確認 — ☎ 017-741-2748
-- **選定理由**: 在住者の食べ歩きブログで繰り返し取り上げられる地元密着の人気店。エリア分散（東部住宅街）も担う。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%95%E5%88%A9%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%98%20%E3%83%91%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%20%E3%81%82%E3%81%95%E3%82%8A)
-- **参照元**: [青森食べ歩きブログ](https://tabearukimasutango.blog.jp/archives/32694660.html) / [ホットペッパー](https://www.hotpepper.jp/strJ000269355/)
-
-### 22. 煮干し中華専門店 つじ製麺所（にぼしちゅうかせんもんてん つじせいめんじょ）
+### 21. 煮干し中華専門店 つじ製麺所（にぼしちゅうかせんもんてん つじせいめんじょ）
 
 @@IMG:japan/aomori/img/aomori/tsuji.jpg@@
 
@@ -32,7 +15,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%85%AE%E5%B9%B2%E3%81%97%E4%B8%AD%E8%8F%AF%E5%B0%82%E9%96%80%E5%BA%97%20%E3%81%A4%E3%81%98%E8%A3%BD%E9%BA%BA%E6%89%80%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%8F%A4%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%99%E2%88%92%EF%BC%91)
 - **参照元**: [nokmog](https://nokmog.com/2020/06/29/aomorishi-tsujiseimenjo/) / [楽天ぐるなび](https://r.gnavi.co.jp/rsf6hkgs0000/)
 
-### 23. 手打ちうどん まるなお（てうちうどん まるなお）
+### 22. 手打ちうどん まるなお（てうちうどん まるなお）
 
 @@IMG:japan/aomori/img/aomori/marunao.jpg@@
 
@@ -51,7 +34,7 @@
 
 ## 居酒屋・焼鳥・焼肉
 
-### 24. 炭火焼 鳥うお（すみびやき とりうお）
+### 23. 炭火焼 鳥うお（すみびやき とりうお）
 
 @@IMG:japan/aomori/img/aomori/toriuo.jpg@@
 
@@ -68,7 +51,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%20%E9%B3%A5%E3%81%86%E3%81%8A%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%8F%A4%E5%B7%9D%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%99%E2%88%92%EF%BC%96)
 - **参照元**: [食べログまとめ(炭火焼き12選)](https://tabelog.com/matome/24195/) / [楽天ぐるなび](https://r.gnavi.co.jp/j1fnj41z0000/)
 
-### 25. 炭火焼淳晴（すみびやき あっぱれ）
+### 24. 炭火焼淳晴（すみびやき あっぱれ）
 
 @@IMG:japan/aomori/img/aomori/appare.jpg@@
 
@@ -85,7 +68,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E6%B7%B3%E6%99%B4%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%AE%89%E6%96%B9%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%90%E2%88%92%EF%BC%98)
 - **参照元**: [食べログまとめ(炭火焼き12選)](https://tabelog.com/matome/24195/) / [ヒトサラ](https://hitosara.com/0032006541/tel.html)
 
-### 26. もつ焼 もつ煮込 一直（もつやき もつにこみ いっちょく）
+### 25. もつ焼 もつ煮込 一直（もつやき もつにこみ いっちょく）
 
 @@IMG:japan/aomori/img/aomori/itchoku.jpg@@
 
@@ -102,7 +85,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%81%A4%E7%84%BC%20%E3%82%82%E3%81%A4%E7%85%AE%E8%BE%BC%20%E4%B8%80%E7%9B%B4%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%AE%89%E6%96%B9%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%97)
 - **参照元**: [ヒトサラ](https://hitosara.com/0005036741/) / [あおもり案内名人](https://www.atca.info/spot/spot-2685/)
 
-### 27. 炉ばた居酒屋 炭ばか一代（ろばたいざかや すみばかいちだい）
+### 26. 炉ばた居酒屋 炭ばか一代（ろばたいざかや すみばかいちだい）
 
 @@IMG:japan/aomori/img/aomori/sumibakaichidai.jpg@@
 
@@ -119,7 +102,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%82%89%E3%81%B0%E3%81%9F%E5%B1%85%E9%85%92%E5%B1%8B%20%E7%82%AD%E3%81%B0%E3%81%8B%E4%B8%80%E4%BB%A3%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%9C%AC%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%99)
 - **参照元**: [食べログまとめ(炭火焼き12選)](https://tabelog.com/matome/24195/) / [つかまえ太郎の美味礼讃(ブログ)](https://tukamaetarou.com/%E7%82%AD%E7%81%AB%E8%B6%8A%E3%81%97%E3%81%AE%E3%82%AB%E3%82%A6%E3%83%B3%E3%82%BF%E3%83%BC%E5%B8%AD%E3%81%A7%E6%84%89%E3%81%97%E3%82%80%E5%9C%B0%E9%85%92%E3%81%A8%E6%B5%B7%E9%AE%AE-%E9%9D%92%E6%A3%AE/)
 
-### 28. 鮮魚・創作Dining ほいど家（せんぎょ・そうさくだいにんぐ ほいどや）
+### 27. 鮮魚・創作Dining ほいど家（せんぎょ・そうさくだいにんぐ ほいどや）
 
 @@IMG:japan/aomori/img/aomori/hoidoya.jpg@@
 
@@ -136,7 +119,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%AE%AE%E9%AD%9A%E3%83%BB%E5%89%B5%E4%BD%9CDining%20%E3%81%BB%E3%81%84%E3%81%A9%E5%AE%B6%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%A9%8B%E6%9C%AC%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%E2%88%92%EF%BC%91%EF%BC%93)
 - **参照元**: [ホットペッパーグルメ](https://www.hotpepper.jp/strJ004469013/) / [ヒトサラ](https://hitosara.com/0006116484/)
 
-### 29. 炭火焼ホルモンたつや（すみびやきほるもん たつや）
+### 28. 炭火焼ホルモンたつや（すみびやきほるもん たつや）
 
 @@IMG:japan/aomori/img/aomori/tatsuya.jpg@@
 
@@ -153,7 +136,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E3%81%9F%E3%81%A4%E3%82%84%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%99)
 - **参照元**: [食べログまとめ(炭火焼き12選)](https://tabelog.com/matome/24195/) / [ハイボールマンは今日も呑む。(ブログ)](https://highballman.com/2020/07/26/tatsuya/)
 
-### 30. 炭火焼肉 だいじゅん（すみびやきにく だいじゅん）
+### 29. 炭火焼肉 だいじゅん（すみびやきにく だいじゅん）
 
 @@IMG:japan/aomori/img/aomori/daijun.jpg@@
 
@@ -170,7 +153,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E8%82%89%20%E3%81%A0%E3%81%84%E3%81%98%E3%82%85%E3%82%93%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%A0%A4%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%92%E2%88%92%EF%BC%93%EF%BC%92)
 - **参照元**: [食べログまとめ(焼肉13選)](https://tabelog.com/matome/15437/) / [楽天ぐるなび](https://r.gnavi.co.jp/d6n54w9d0000/)
 
-### 31. 七輪焼肉・ホルモン 新世界（しちりんやきにく・ほるもん しんせかい）
+### 30. 七輪焼肉・ホルモン 新世界（しちりんやきにく・ほるもん しんせかい）
 
 @@IMG:japan/aomori/img/aomori/shinsekai.jpg@@
 
@@ -187,7 +170,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E4%B8%83%E8%BC%AA%E7%84%BC%E8%82%89%E3%83%BB%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%20%E6%96%B0%E4%B8%96%E7%95%8C%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%9C%AC%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%92%E2%88%92%EF%BC%91)
 - **参照元**: [食べログまとめ(焼肉13選)](https://tabelog.com/matome/15437/) / [楽天ぐるなび](https://r.gnavi.co.jp/b276mmcj0000/)
 
-### 32. ホルモン焼 天狗 本町店（ほるもんやき てんぐ ほんちょうてん）
+### 31. ホルモン焼 天狗 本町店（ほるもんやき てんぐ ほんちょうてん）
 
 @@IMG:japan/aomori/img/aomori/tengu.jpg@@
 
@@ -206,7 +189,7 @@
 
 ## 洋食・イタリアン・カレー
 
-### 33. AL CENTRO(アル・チェントロ)（あるちぇんとろ）
+### 32. AL CENTRO(アル・チェントロ)（あるちぇんとろ）
 
 @@IMG:japan/aomori/img/aomori/alcentro.jpg@@
 
@@ -223,7 +206,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=AL%20CENTRO%28%E3%82%A2%E3%83%AB%E3%83%BB%E3%83%81%E3%82%A7%E3%83%B3%E3%83%88%E3%83%AD%29%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E9%95%B7%E5%B3%B6%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%95%E2%88%92%EF%BC%92)
 - **参照元**: [公式サイト](https://www.al-centro.jp/) / [ゴ・エ・ミヨ](https://gaultmillau-japan.info/restaurants/tohoku003/)
 
-### 34. ワイン&グリル ピエモンテ（わいんあんどぐりる ぴえもんて）
+### 33. ワイン&グリル ピエモンテ（わいんあんどぐりる ぴえもんて）
 
 @@IMG:japan/aomori/img/aomori/piemonte.jpg@@
 
@@ -240,7 +223,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%AF%E3%82%A4%E3%83%B3%26%E3%82%B0%E3%83%AA%E3%83%AB%20%E3%83%94%E3%82%A8%E3%83%A2%E3%83%B3%E3%83%86%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%9C%AC%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%EF%BC%95)
 - **参照元**: [楽天ぐるなび](https://r.gnavi.co.jp/b89jex1d0000/) / [ヒトサラ](https://hitosara.com/0031115523/)
 
-### 35. レストラン エヴィエ（れすとらん えゔぃえ）
+### 34. レストラン エヴィエ（れすとらん えゔぃえ）
 
 @@IMG:japan/aomori/img/aomori/evie.jpg@@
 
@@ -257,7 +240,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%A8%E3%83%B4%E3%82%A3%E3%82%A8%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%9C%AC%E7%94%BA%EF%BC%95%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91%20%E3%81%9F%E3%81%8B%E3%81%BF%E3%81%A4%E3%83%93%E3%83%AB%20%E9%AB%98%E5%85%89%E3%83%93%E3%83%AB%20%EF%BC%91F)
 - **参照元**: [公式サイト](https://evie-french.com/) / [ヒトサラ](https://hitosara.com/0031043316/)
 
-### 36. シェフズテーブル カワムラ（しぇふずてーぶる かわむら）
+### 35. シェフズテーブル カワムラ（しぇふずてーぶる かわむら）
 
 @@IMG:japan/aomori/img/aomori/kawamura.jpg@@
 
@@ -274,7 +257,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%82%A7%E3%83%95%E3%82%BA%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB%20%E3%82%AB%E3%83%AF%E3%83%A0%E3%83%A9%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%A9%8B%E6%9C%AC%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%97%E2%88%92%EF%BC%91)
 - **参照元**: [公式サイト](https://chefs-table-kawamura.jp/)
 
-### 37. レストラン カシー（れすとらん かしー）
+### 36. レストラン カシー（れすとらん かしー）
 
 @@IMG:japan/aomori/img/aomori/cassis.jpg@@
 
@@ -291,7 +274,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%AB%E3%82%B7%E3%83%BC%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%9D%BE%E6%A3%AE%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%92%EF%BC%90%E2%88%92%EF%BC%95%EF%BC%92)
 - **参照元**: [公式サイト](https://www.restaurant-cassis.jp/)
 
-### 38. ネパールスープカレー ビハニ 青森店（ねぱーるすーぷかれー びはに あおもりてん）
+### 37. ネパールスープカレー ビハニ 青森店（ねぱーるすーぷかれー びはに あおもりてん）
 
 @@IMG:japan/aomori/img/aomori/bihani.jpg@@
 
@@ -308,7 +291,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%83%8D%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B9%E3%83%BC%E3%83%97%E3%82%AB%E3%83%AC%E3%83%BC%20%E3%83%93%E3%83%8F%E3%83%8B%20%E9%9D%92%E6%A3%AE%E5%BA%97%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%9D%B1%E9%80%A0%E9%81%93%EF%BC%93%E4%B8%81%E7%9B%AE%EF%BC%93%E2%88%92%EF%BC%91)
 - **参照元**: [青森食べ歩きブログ@マスタンゴ](https://tabearukimasutango.blog.jp/archives/7086502.html) / [公式サイト](https://curry-bihani.com/)
 
-### 39. カレーとコーヒー king（かれーとこーひー きんぐ）
+### 38. カレーとコーヒー king（かれーとこーひー きんぐ）
 
 @@IMG:japan/aomori/img/aomori/king.jpg@@
 
@@ -327,7 +310,7 @@
 
 ## カフェ・パン・アップルパイ
 
-### 40. 珈琲茶館 麦藁帽子（こーひーさかん むぎわらぼうし）
+### 39. 珈琲茶館 麦藁帽子（こーひーさかん むぎわらぼうし）
 
 @@IMG:japan/aomori/img/aomori/mugiwaraboshi.jpg@@
 
@@ -344,7 +327,7 @@
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E8%8C%B6%E9%A4%A8%20%E9%BA%A6%E8%97%81%E5%B8%BD%E5%AD%90%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE%EF%BC%91%EF%BC%94%E2%88%92%EF%BC%91%EF%BC%93%20%E5%B7%A5%E8%97%A4%E3%83%93%E3%83%AB%201%E9%9A%8E)
 - **参照元**: [公式サイト](https://sites.google.com/view/mugiwaraboshi-coffee) / [旅ブログ(アメブロ)](https://ameblo.jp/choco-daisuki2/entry-12957068400.html)
 
-### 41. 喫茶マロン（きっさまろん）
+### 40. 喫茶マロン（きっさまろん）
 
 @@IMG:japan/aomori/img/aomori/maron.jpg@@
 
@@ -360,3 +343,20 @@
 - **選定理由**: 純喫茶ファンのnote記事やことりっぷ等メディアで繰り返し取り上げられる青森市民の憩いの老舗。営業情報を複数ブログで確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%83%9E%E3%83%AD%E3%83%B3%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E5%AE%89%E6%96%B9%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%96%E2%88%92%EF%BC%97)
 - **参照元**: [note(純喫茶保存協会)](https://note.com/kotorisu/n/n5626242e36d1) / [ことりっぷ](https://co-trip.jp/article/384015)
+
+### 41. 喫茶クレオパトラ（きっさくれおぱとら）
+
+@@IMG:japan/aomori/img/aomori/cleopatra.jpg@@
+
+`老舗・歴史` `地元密着`
+
+新町通り沿いで創業50年を超える昭和レトロ喫茶。朝7時から開き、コーヒーのほかサンドウィッチなどの軽食やケーキも揃う。カップの上で炎を灯す名物の炎のコーヒーでも知られる。
+
+- **一皿**: 炎のコーヒー(ブランデーに火を灯す演出付きコーヒー)
+- **営業時間**: 月・火・水・木・金・土・日 9:00〜16:00
+- **定休日**: なし(要最終確認)
+- **住所**: 青森県青森市新町２丁目８−４ タカヤビル
+- **予約**: 要確認 — ☎ 017-722-7778
+- **選定理由**: しんまち商店街公式サイト掲載の老舗で、純喫茶巡りのブログでも人気。商店街サイト・旅色で営業を確認。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%AF%E3%83%AC%E3%82%AA%E3%83%91%E3%83%88%E3%83%A9%20%E9%9D%92%E6%A3%AE%E7%9C%8C%E9%9D%92%E6%A3%AE%E5%B8%82%E6%96%B0%E7%94%BA%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%98%E2%88%92%EF%BC%94%20%E3%82%BF%E3%82%AB%E3%83%A4%E3%83%93%E3%83%AB)
+- **参照元**: [青森市新町商店街](http://shinmachi.aomori.jp/shopinfo/cleopatra/) / [純喫茶ブログ](https://tinnbae.com/kureopatora/)

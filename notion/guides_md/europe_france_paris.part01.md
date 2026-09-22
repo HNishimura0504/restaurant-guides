@@ -15,6 +15,18 @@ FRANCE / PARIS 🇫🇷
 
 @@TOC@@
 
+## 🗾 店舗マップ
+
+**🗺️ 店舗マップ — 全域マップ**
+
+@@IMG:europe/france/img/paris/_map.png@@
+
+**🗺️ 店舗マップ — 中心部拡大**
+
+@@IMG:europe/france/img/paris/_map2.png@@
+
+> Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+
 ---
 
 ## ビストロ・ブラッスリー

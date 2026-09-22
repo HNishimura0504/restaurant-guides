@@ -18,19 +18,19 @@ JAPAN / ICHINOSEKI・岩手県 🇯🇵
 
 ## 🗾 店舗マップ
 
-**全域マップ**
+**🗺️ 店舗マップ — 全域マップ**
 
 @@IMG:japan/iwate/img/ichinoseki/_map.png@@
 
-@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40@@
+@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45@@
 
-**中心部拡大(一ノ関駅〜大町・地主町)**
+**🗺️ 店舗マップ — 中心部拡大(一ノ関駅〜大町・地主町)**
 
 @@IMG:japan/iwate/img/ichinoseki/_map2.png@@
 
-@@MAPTOC:1,2,5,6,7,9,10,11,12,14,15,18,23,24,25,28,29,30,32,33,34,35,37,38@@
+@@MAPTOC:1,2,5,6,7,8,9,10,11,12,14,16,17,20,21,25,26,27,28,29,31,32,34,35,40,41,42,43,45@@
 
-> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+> Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
@@ -257,7 +257,7 @@ JAPAN / ICHINOSEKI・岩手県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%92%E3%81%84%E3%81%B3%E3%83%AC%E3%82%B9%E3%83%88%E3%83%8F%E3%82%A6%E3%82%B9%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E6%9D%B1%E5%B1%B1%E7%94%BA%E9%95%B7%E5%9D%82%E7%94%BA%E7%94%BA%EF%BC%93%EF%BC%97%EF%BC%96)
 - **参照元**: [いち旅(一関市公式観光サイト)](https://www.ichitabi.jp/gourmet/data.php?p=31) / [げいび観光グループ 公式サイト](http://www.geibikei.co.jp/gourmet/)
 
-### 38. 梅茂登（うめもと）
+### 14. 梅茂登（うめもと）
 
 @@IMG:japan/iwate/img/ichinoseki/umemoto_unagi.jpg@@
 
@@ -274,7 +274,9 @@ JAPAN / ICHINOSEKI・岩手県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E8%8C%82%E7%99%BB%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E7%94%B0%E6%9D%91%E7%94%BA%EF%BC%98%E2%88%92%EF%BC%98)
 - **参照元**: [ウマ店 梅茂登（うめもと）](https://umaten.jp/iwate/ume-moto-ichinoseki-unagi/) / [食べログ 梅茂登](https://tabelog.com/iwate/A0303/A030301/3000724/) / [Retty 梅茂登](https://retty.me/area/PRE03/ARE365/SUB29303/100000333400/)
 
-### 39. 骨寺村荘園交流館 若神子亭（ほねでらむらしょうえんこうりゅうかん わかみこてい）
+### 15. 骨寺村荘園交流館 若神子亭（ほねでらむらしょうえんこうりゅうかん わかみこてい）
+
+@@IMG:japan/iwate/img/ichinoseki/wakamikotei.jpg@@
 
 `地元密着` `口コミ突出`
 
@@ -287,11 +289,11 @@ JAPAN / ICHINOSEKI・岩手県 🇯🇵
 - **予約**: 要確認 — ☎ 0191-33-5022 ／ [公式サイト](http://www.honedera.jp/index.html)
 - **選定理由**: 一関市および骨寺村荘園遺跡の公式サイトに掲載される公共の観光拠点で、観光地の食事処と直売所という手薄な枠を同時に満たす。地元農家が調理する点も他店と重複しない。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%AA%A8%E5%AF%BA%E6%9D%91%E8%8D%98%E5%9C%92%E4%BA%A4%E6%B5%81%E9%A4%A8%20%E8%8B%A5%E7%A5%9E%E5%AD%90%E4%BA%AD%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E5%8E%B3%E7%BE%8E%E7%94%BA%E8%8B%A5%E7%A5%9E%E5%AD%90%EF%BC%92%EF%BC%94%EF%BC%91%E2%88%92%EF%BC%92)
-- **参照元**: [骨寺村荘園遺跡 公式 若神子亭レストランメニュー](https://www.honedera.jp/facility/wakamiko.html) / [一関市 骨寺村荘園交流館](https://www.city.ichinoseki.iwate.jp/index.cfm/6,65984,186,html)
+- **参照元**: [骨寺村荘園遺跡 公式 若神子亭レストランメニュー](https://www.honedera.jp/facility/wakamiko.html) / [一関市 骨寺村荘園交流館](https://www.city.ichinoseki.iwate.jp/index.cfm/6,65984,186,html)／写真: [hotpepper.jp](https://www.hotpepper.jp/strJ001093573/)
 
 ## そば・ラーメン・うどん
 
-### 14. 本家直利庵（ほんけなおとしあん）
+### 16. 本家直利庵（ほんけなおとしあん）
 
 @@IMG:japan/iwate/img/ichinoseki/honkenaotoshian.jpg@@
 
@@ -308,7 +310,7 @@ JAPAN / ICHINOSEKI・岩手県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E5%AE%B6%E7%9B%B4%E5%88%A9%E5%BA%B5%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E6%9D%B1%E5%9C%B0%E4%B8%BB%E7%94%BA%EF%BC%97%EF%BC%92)
 - **参照元**: [いち旅(一関市公式観光サイト)](https://www.ichitabi.jp/gourmet/data.php?p=10)
 
-### 15. 青葉直利庵（あおばなおとしあん）
+### 17. 青葉直利庵（あおばなおとしあん）
 
 @@IMG:japan/iwate/img/ichinoseki/aobanaotoshian.jpg@@
 
@@ -325,7 +327,7 @@ JAPAN / ICHINOSEKI・岩手県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E9%9D%92%E8%91%89%E7%9B%B4%E5%88%A9%E5%BA%B5%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E9%9D%92%E8%91%89%EF%BC%92%E4%B8%81%E7%9B%AE%EF%BC%99%E2%88%92%EF%BC%91%EF%BC%91)
 - **参照元**: [いち旅(一関市公式観光サイト)](https://www.ichitabi.jp/gourmet/data.php?p=35)
 
-### 16. そば家90（そばやきゅうじゅう）
+### 18. そば家90（そばやきゅうじゅう）
 
 @@IMG:japan/iwate/img/ichinoseki/sobaya90.jpg@@
 
@@ -342,7 +344,7 @@ JAPAN / ICHINOSEKI・岩手県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%AE%B690%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E8%97%A4%E6%B2%A2%E7%94%BA%E5%A2%97%E6%B2%A2%E4%B9%9D%E5%8D%81%E6%9D%91%EF%BC%91%EF%BC%92%EF%BC%97%E2%88%92%EF%BC%91)
 - **参照元**: [そば家90 公式サイト](https://www.sobaya90.com/shop) / [岩手日日新聞 そば家90](https://www.iwanichi.co.jp/2020/05/15/2044815/)
 
-### 17. 山のそば屋 須川（やまのそばや すかわ）
+### 19. 山のそば屋 須川（やまのそばや すかわ）
 
 @@IMG:japan/iwate/img/ichinoseki/sukawa.jpg@@
 
@@ -359,7 +361,7 @@ JAPAN / ICHINOSEKI・岩手県 🇯🇵
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E3%81%AE%E3%81%9D%E3%81%B0%E5%B1%8B%20%E9%A0%88%E5%B7%9D%20%E5%B2%A9%E6%89%8B%E7%9C%8C%E4%B8%80%E9%96%A2%E5%B8%82%E5%8E%B3%E7%BE%8E%E7%94%BA%E5%85%A5%E9%81%93%EF%BC%91%EF%BC%97%EF%BC%98%E2%88%92%EF%BC%94)
 - **参照元**: [ホットペッパーグルメ 山のそば屋 須川](https://www.hotpepper.jp/strJ000100851/) / [じゃらんnet 山のそば屋 須川 口コミ](https://www.jalan.net/gourmet/grm_alikejpB000133739/)
 
-### 18. 丸長ラーメン（まるちょうらーめん）
+### 20. 丸長ラーメン（まるちょうらーめん）
 
 @@IMG:japan/iwate/img/ichinoseki/marucho.jpg@@
 

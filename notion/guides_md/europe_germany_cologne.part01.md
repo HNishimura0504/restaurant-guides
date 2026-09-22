@@ -15,6 +15,18 @@ GERMANY / COLOGNE / KOLN 🇩🇪
 
 @@TOC@@
 
+## 🗾 店舗マップ
+
+**🗺️ 店舗マップ — 全域マップ**
+
+@@IMG:europe/germany/img/cologne/_map.png@@
+
+**🗺️ 店舗マップ — 中心部拡大**
+
+@@IMG:europe/germany/img/cologne/_map2.png@@
+
+> Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+
 ---
 
 ## ブラウハウス・ライン郷土料理
