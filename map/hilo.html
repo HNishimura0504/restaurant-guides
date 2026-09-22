@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ヒロ の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>ヒロ の食べ歩き地図<span class="n">45店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="ヒロ の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">ヒロ の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../north_america/usa/hilo.html"><span class="sn-e">📄</span>ヒロのガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（71都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "Cafe 100", "c": ["和食・郷土料理"], "lat": 19.7144103, "lng": -155.0771326, "d": "ロコモコ（ご飯にハンバーグと目玉焼きを載せ、グレイビーをかけた一皿）", "a": "969 Kīlauea Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Cafe%20100%20969%20K%C4%ABlauea%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-cafe-100", "food": "../north_america/usa/img/hilo/cafe-100.jpg", "ext": ""}, {"i": 1, "n": "Hawaiian Style Cafe", "c": ["和食・郷土料理"], "lat": 19.7130977, "lng": -155.0699571, "d": "ティタ・モク・ロコモコ（大盛りご飯にハンバーグと卵を重ねた特大ロコモコ）", "a": "681 Manono St #101, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Hawaiian%20Style%20Cafe%20681%20Manono%20St%20%23101%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-hawaiian-style-cafe", "food": "", "ext": ""}, {"i": 2, "n": "Ken's House of Pancakes", "c": ["和食・郷土料理"], "lat": 19.722315, "lng": -155.0647509, "d": "マカダミアナッツ・パンケーキ（島産ナッツとココナッツシロップを添えた朝食の定番）", "a": "1730 Kamehameha Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Ken%27s%20House%20of%20Pancakes%201730%20Kamehameha%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-kens-house-of-pancakes", "food": "../north_america/usa/img/hilo/kens-house-of-pancakes.jpg", "ext": ""}, {"i": 3, "n": "Kuhio Grille", "c": ["和食・郷土料理"], "lat": 19.7202811, "lng": -155.0795739, "d": "一ポンド・ラウラウ（タロの葉で豚肉を包み長時間蒸したハワイの伝統料理）", "a": "80 Pauahi St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Kuhio%20Grille%2080%20Pauahi%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-kuhio-grille", "food": "../north_america/usa/img/hilo/kuhio-grille.jpg", "ext": ""}, {"i": 4, "n": "Suisan Fish Market", "c": ["和食・郷土料理"], "lat": 19.7239605, "lng": -155.0701964, "d": "ポケボウル（ご飯の上に醤油やリムなどで和えたアヒの刺身を載せた丼）", "a": "93 Lihiwai St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Suisan%20Fish%20Market%2093%20Lihiwai%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-suisan-fish-market", "food": "../north_america/usa/img/hilo/suisan-fish-market.jpg", "ext": ""}, {"i": 5, "n": "Poke Market", "c": ["和食・郷土料理"], "lat": 19.7261358, "lng": -155.0873083, "d": "ポケボウル（当日仕入れのアヒを数種の味で和え、白飯に載せた丼）", "a": "41 Waiānuenue Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Poke%20Market%2041%20Wai%C4%81nuenue%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-poke-market", "food": "", "ext": ""}, {"i": 6, "n": "Puka Puka Kitchen", "c": ["和食・郷土料理"], "lat": 19.7241779, "lng": -155.0856532, "d": "アヒ丼（生のアヒを醤油だれで和え、白飯に敷き詰めた丼）", "a": "270 Kamehameha Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Puka%20Puka%20Kitchen%20270%20Kamehameha%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-puka-puka-kitchen", "food": "", "ext": ""}, {"i": 7, "n": "Pineapples Island Fresh Cuisine", "c": ["和食・郷土料理"], "lat": 19.7227649, "lng": -155.0861514, "d": "フレッシュ・フィッシュ（当日入荷の島魚を焼き、島産の素材でソースを合わせた一皿）", "a": "332 Keawe St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Pineapples%20Island%20Fresh%20Cuisine%20332%20Keawe%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-pineapples-hilo", "food": "../north_america/usa/img/hilo/pineapples-hilo.jpg", "ext": ""}, {"i": 8, "n": "Bull Shed Hilo", "c": ["和食・郷土料理"], "lat": 19.7280635, "lng": -155.0667489, "d": "プライムリブ（低温でじっくり焼いた厚切りの牛リブロースをオージュで供する）", "a": "71 Banyan Dr, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Bull%20Shed%20Hilo%2071%20Banyan%20Dr%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-bull-shed-hilo", "food": "../north_america/usa/img/hilo/bull-shed-hilo.jpg", "ext": ""}, {"i": 9, "n": "Kaleo's Bar & Grill", "c": ["和食・郷土料理"], "lat": 19.494118, "lng": -154.9446736, "d": "ココナッツ・クラステッド・フィッシュ（ココナッツ衣で揚げた島魚にトロピカルソース）", "a": "15-2969 Pahoa Village Rd, Pāhoa, HI 96778", "m": "https://www.google.com/maps/search/?api=1&query=Kaleo%27s%20Bar%20%26%20Grill%2015-2969%20Pahoa%20Village%20Rd%2C%20P%C4%81hoa%2C%20HI%2096778", "u": "../north_america/usa/hilo.html#c-kaleos-bar-grill", "food": "../north_america/usa/img/hilo/kaleos-bar-grill.jpg", "ext": ""}, {"i": 10, "n": "Nori's Saimin & Snacks", "c": ["アジア・エスニック"], "lat": 19.7174714, "lng": -155.0847945, "d": "ワンタン・サイミン（澄んだ出汁にヒロ式の細い卵麺とワンタンを入れた一杯）", "a": "688 Kinoole St #124, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Nori%27s%20Saimin%20%26%20Snacks%20688%20Kinoole%20St%20%23124%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-noris-saimin", "food": "", "ext": ""}, {"i": 11, "n": "Miyo's Restaurant", "c": ["アジア・エスニック"], "lat": 19.7130933, "lng": -155.0688799, "d": "てんぷら定食（海老と野菜の天ぷらに味噌汁と小鉢を添えた定食）", "a": "564 Hinano St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Miyo%27s%20Restaurant%20564%20Hinano%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-miyos", "food": "", "ext": ""}, {"i": 12, "n": "Restaurant Miwa", "c": ["アジア・エスニック"], "lat": 19.7104403, "lng": -155.075559, "d": "ローカル・アヒの握り（ヒロ港に揚がったキハダマグロを使う寿司）", "a": "1261 Kilauea Ave #230, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Miwa%201261%20Kilauea%20Ave%20%23230%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-restaurant-miwa", "food": "", "ext": ""}, {"i": 13, "n": "Hilo Lunch Shop", "c": ["アジア・エスニック"], "lat": 19.7166679, "lng": -155.0654248, "d": "組み合わせ弁当（惣菜を一品ずつ選んで詰めてもらう、オカズヤ式の弁当）", "a": "421 Kalanikoa St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Hilo%20Lunch%20Shop%20421%20Kalanikoa%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-hilo-lunch-shop", "food": "", "ext": ""}, {"i": 14, "n": "Kawamoto Store", "c": ["アジア・エスニック"], "lat": 19.7163914, "lng": -155.0789502, "d": "ミックス弁当（いなり、天ぷら、煮物などを詰め合わせたオカズヤ弁当）", "a": "784 Kilauea Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Kawamoto%20Store%20784%20Kilauea%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-kawamoto-store", "food": "../north_america/usa/img/hilo/kawamoto-store.jpg", "ext": ""}, {"i": 15, "n": "Kum Yo's Okazuya", "c": ["アジア・エスニック"], "lat": 19.6999871, "lng": -155.0845188, "d": "韓国風ミックス弁当（カルビやチャプチェなどを白飯に添えた弁当）", "a": "399 E Kawili St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Kum%20Yo%27s%20Okazuya%20399%20E%20Kawili%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-kum-yos-okazuya", "food": "", "ext": ""}, {"i": 16, "n": "Naung Mai Thai Kitchen", "c": ["アジア・エスニック"], "lat": 19.7228138, "lng": -155.0865407, "d": "グリーンカレー（ココナッツミルクと青唐辛子で煮込むタイのカレー）", "a": "86 Kilauea Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Naung%20Mai%20Thai%20Kitchen%2086%20Kilauea%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-naung-mai-thai", "food": "", "ext": ""}, {"i": 17, "n": "New Chiang Mai Thai Cuisine", "c": ["アジア・エスニック"], "lat": 19.7252477, "lng": -155.087945, "d": "パッタイ（タマリンドの甘酸っぱいたれで炒めたタイの米麺）", "a": "110 Kalakaua St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=New%20Chiang%20Mai%20Thai%20Cuisine%20110%20Kalakaua%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-new-chiang-mai", "food": "../north_america/usa/img/hilo/new-chiang-mai.jpg", "ext": ""}, {"i": 18, "n": "Hilo Rice Noodle Soup", "c": ["アジア・エスニック"], "lat": 19.690452, "lng": -155.0705631, "d": "フォー（牛骨スープに平たい米麺と薄切り肉を合わせたベトナムの麺）", "a": "1990 Kinoole St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Hilo%20Rice%20Noodle%20Soup%201990%20Kinoole%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-hilo-rice-noodle-soup", "food": "", "ext": ""}, {"i": 19, "n": "Moon and Turtle", "c": ["和食・郷土料理"], "lat": 19.7254178, "lng": -155.087151, "d": "本日の魚介（ヒロ港に揚がった魚を仕立てる、日替わりの一皿）", "a": "51 Kalakaua St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Moon%20and%20Turtle%2051%20Kalakaua%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-moon-and-turtle", "food": "", "ext": ""}, {"i": 20, "n": "Hilo Bay Cafe", "c": ["和食・郷土料理"], "lat": 19.725126, "lng": -155.0705102, "d": "キャッチ・オブ・ザ・デイ（島近海の魚を季節の付け合わせで仕立てる一皿）", "a": "123 Lihiwai St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Hilo%20Bay%20Cafe%20123%20Lihiwai%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-hilo-bay-cafe", "food": "../north_america/usa/img/hilo/hilo-bay-cafe.jpg", "ext": ""}, {"i": 21, "n": "Ponds Hilo", "c": ["和食・郷土料理"], "lat": 19.723893, "lng": -155.061857, "d": "フレッシュ・カツ（島の魚や豚を衣揚げにして供する、地元向けの一皿）", "a": "135 Kalanianaole Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Ponds%20Hilo%20135%20Kalanianaole%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-ponds-hilo", "food": "", "ext": ""}, {"i": 22, "n": "Cafe Pesto Hilo Bay", "c": ["和食・郷土料理"], "lat": 19.723717, "lng": -155.0850108, "d": "石窯ピザ（島の野菜やハワイ産チーズを載せ、薪の窯で焼くピザ）", "a": "308 Kamehameha Ave #101, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Cafe%20Pesto%20Hilo%20Bay%20308%20Kamehameha%20Ave%20%23101%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-cafe-pesto", "food": "../north_america/usa/img/hilo/cafe-pesto.jpg", "ext": ""}, {"i": 23, "n": "Jackie Rey's Ohana Grill", "c": ["和食・郷土料理"], "lat": 19.725958, "lng": -155.0881816, "d": "フレッシュ・キャッチ（島近海の魚をグリルし、季節の付け合わせを添える）", "a": "64 Keawe St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Jackie%20Rey%27s%20Ohana%20Grill%2064%20Keawe%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-jackie-reys-hilo", "food": "../north_america/usa/img/hilo/jackie-reys-hilo.jpg", "ext": ""}, {"i": 24, "n": "Pi'ilani Kitchen", "c": ["和食・郷土料理"], "lat": 19.7163807, "lng": -155.0685248, "d": "カルーアポーク・タコス（島産のウコンや生姜で漬けた自家製ピクルスを添える）", "a": "28-1114 Old Māmalahoa Hwy, Pēpēʻekeo, HI 96783", "m": "https://www.google.com/maps/search/?api=1&query=Pi%27ilani%20Kitchen%2028-1114%20Old%20M%C4%81malahoa%20Hwy%2C%20P%C4%93p%C4%93%CA%BBekeo%2C%20HI%2096783", "u": "../north_america/usa/hilo.html#c-piilani-kitchen", "food": "../north_america/usa/img/hilo/piilani-kitchen.jpg", "ext": ""}, {"i": 25, "n": "Sweet Cane Cafe", "c": ["和食・郷土料理"], "lat": 19.7101756, "lng": -155.0779668, "d": "ケーンジュース（島産のサトウキビをその場で搾った素朴な甘さの搾り汁）", "a": "48 Kamana St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Sweet%20Cane%20Cafe%2048%20Kamana%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-sweet-cane-cafe", "food": "../north_america/usa/img/hilo/sweet-cane-cafe.jpg", "ext": ""}, {"i": 26, "n": "Two Ladies Kitchen", "c": ["カフェ・パン・スイーツ"], "lat": 19.7210128, "lng": -155.0842343, "d": "苺大福（丸ごとの苺を潰しあんで包み、手作りの柔らかな餅でくるんだ和菓子）", "a": "274 Kilauea Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Two%20Ladies%20Kitchen%20274%20Kilauea%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-two-ladies-kitchen", "food": "../north_america/usa/img/hilo/two-ladies-kitchen.jpg", "ext": ""}, {"i": 27, "n": "Big Island Candies", "c": ["カフェ・パン・スイーツ"], "lat": 19.712515, "lng": -155.0677604, "d": "ショートブレッド・チョコ掛け（バターのクッキーの端をチョコで覆した定番土産）", "a": "585 Hinano St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Big%20Island%20Candies%20585%20Hinano%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-big-island-candies", "food": "", "ext": ""}, {"i": 28, "n": "Short N Sweet Bakery & Cafe", "c": ["カフェ・パン・スイーツ"], "lat": 19.7163807, "lng": -155.0787231, "d": "レイヤーケーキ（受賞歴を持つ、しっとりしたスポンジのケーキ）", "a": "1263 Kilauea Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Short%20N%20Sweet%20Bakery%20%26%20Cafe%201263%20Kilauea%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-short-n-sweet", "food": "", "ext": ""}, {"i": 29, "n": "Wilson's by the Bay", "c": ["カフェ・パン・スイーツ"], "lat": 19.7223926, "lng": -155.0862541, "d": "シェイブアイス（ふわりと削った氷に島の果実シロップをかけた氷菓）", "a": "141 Mamo St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Wilson%27s%20by%20the%20Bay%20141%20Mamo%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-wilsons-by-the-bay", "food": "", "ext": ""}, {"i": 30, "n": "Kozmic Cones", "c": ["カフェ・パン・スイーツ"], "lat": 19.7240055, "lng": -155.0906133, "d": "シェイブアイス・アイス添え（削り氷にアイスクリームを合わせた定番の一杯）", "a": "317 Waianuenue Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Kozmic%20Cones%20317%20Waianuenue%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-kozmic-cones", "food": "../north_america/usa/img/hilo/kozmic-cones.jpg", "ext": ""}, {"i": 31, "n": "Tex Drive In", "c": ["カフェ・パン・スイーツ"], "lat": 20.0718978, "lng": -155.464551, "d": "マラサダ（砂糖をまぶした四角い揚げパン。餡入りも選べる）", "a": "45-690 Pakalana St, Honokaʻa, HI 96727", "m": "https://www.google.com/maps/search/?api=1&query=Tex%20Drive%20In%2045-690%20Pakalana%20St%2C%20Honoka%CA%BBa%2C%20HI%2096727", "u": "../north_america/usa/hilo.html#c-tex-drive-in", "food": "", "ext": ""}, {"i": 32, "n": "Puna Chocolate Company", "c": ["カフェ・パン・スイーツ"], "lat": 19.7235837, "lng": -155.0863534, "d": "シングルオリジン板チョコ（プナ産カカオから一貫して仕上げたチョコレート）", "a": "277 Keawe St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Puna%20Chocolate%20Company%20277%20Keawe%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-puna-chocolate", "food": "", "ext": ""}, {"i": 33, "n": "Big Island Coffee Roasters Hilo Cafe", "c": ["カフェ・パン・スイーツ"], "lat": 19.7228798, "lng": -155.0625332, "d": "バニララテ（島産の豆と自家製バニラシロップで淹れるラテ）", "a": "76 Kalanianaʻole St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Big%20Island%20Coffee%20Roasters%20Hilo%20Cafe%2076%20Kalaniana%CA%BBole%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-big-island-coffee-roasters", "food": "", "ext": ""}, {"i": 34, "n": "Hilo Coffee Mill", "c": ["カフェ・パン・スイーツ"], "lat": 19.5641549, "lng": -155.0882686, "d": "ハワイアン・ブレンド（島の畑から集めた豆を合わせた中煎りコーヒー）", "a": "17-995 Volcano Rd, Mountain View, HI 96771", "m": "https://www.google.com/maps/search/?api=1&query=Hilo%20Coffee%20Mill%2017-995%20Volcano%20Rd%2C%20Mountain%20View%2C%20HI%2096771", "u": "../north_america/usa/hilo.html#c-hilo-coffee-mill", "food": "", "ext": ""}, {"i": 35, "n": "Just Cruisin Coffee", "c": ["カフェ・パン・スイーツ"], "lat": 19.7162328, "lng": -155.0782273, "d": "アイスラテ（朝から車で立ち寄れる、ドライブスルーの一杯）", "a": "835 Kilauea Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Just%20Cruisin%20Coffee%20835%20Kilauea%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-just-cruisin-coffee", "food": "", "ext": ""}, {"i": 36, "n": "The Booch Bar (Conscious Culture Cafe)", "c": ["カフェ・パン・スイーツ"], "lat": 19.7255294, "lng": -155.0878868, "d": "コンブチャ（島の素材で仕込む自家製の発酵飲料）", "a": "110 Keawe St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=The%20Booch%20Bar%20%28Conscious%20Culture%20Cafe%29%20110%20Keawe%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-the-booch-bar", "food": "", "ext": ""}, {"i": 37, "n": "The Tiki Turtle Cafe", "c": ["カフェ・パン・スイーツ"], "lat": 19.7173375, "lng": -155.110206, "d": "ドールウィップ（パイナップルのソフトクリーム。毎週味が変わる）", "a": "1099 Waiānuenue Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=The%20Tiki%20Turtle%20Cafe%201099%20Wai%C4%81nuenue%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-tiki-turtle-cafe", "food": "", "ext": ""}, {"i": 38, "n": "What's Shakin", "c": ["カフェ・パン・スイーツ"], "lat": 19.8243005, "lng": -155.0952891, "d": "トロピカルスムージー（自家農園のバナナやパパイヤを使った濃厚な一杯）", "a": "27-999 Old Mamalahoa Hwy, Pēpēʻekeo, HI 96783", "m": "https://www.google.com/maps/search/?api=1&query=What%27s%20Shakin%2027-999%20Old%20Mamalahoa%20Hwy%2C%20P%C4%93p%C4%93%CA%BBekeo%2C%20HI%2096783", "u": "../north_america/usa/hilo.html#c-whats-shakin", "food": "", "ext": ""}, {"i": 39, "n": "Laniākea Café", "c": ["カフェ・パン・スイーツ"], "lat": 19.7145478, "lng": -155.0397134, "d": "島産コーヒー（コナやコホラ・ロカヒの豆で淹れる一杯）", "a": "2450 Kekūanāoʻa St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Lani%C4%81kea%20Caf%C3%A9%202450%20Kek%C5%ABan%C4%81o%CA%BBa%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-laniakea-cafe", "food": "../north_america/usa/img/hilo/laniakea-cafe.jpg", "ext": ""}, {"i": 40, "n": "Hale Kanikapila", "c": ["ビール・バー", "居酒屋・焼肉"], "lat": 19.7248171, "lng": -155.0876145, "d": "生ビール一六種（島の地ビールを含む、長いカウンターの樽生）", "a": "168 Keawe St, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Hale%20Kanikapila%20168%20Keawe%20St%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-hale-kanikapila", "food": "../north_america/usa/img/hilo/hale-kanikapila.jpg", "ext": ""}, {"i": 41, "n": "Cronies Bar & Grill", "c": ["ビール・バー"], "lat": 19.7263563, "lng": -155.086931, "d": "バーガー＆ビール（ボリュームあるハンバーガーに冷えたビールを合わせる）", "a": "11 Waianuenue Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Cronies%20Bar%20%26%20Grill%2011%20Waianuenue%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-cronies-bar-grill", "food": "../north_america/usa/img/hilo/cronies-bar-grill.jpg", "ext": ""}, {"i": 42, "n": "Ola Brew - Hilo Taproom", "c": ["ビール・バー"], "lat": 19.7116104, "lng": -155.0767169, "d": "ハワイ産クラフトビール（島の素材を取り入れた樽生のラインナップ）", "a": "1177 Kilauea Ave, Hilo, HI 96720", "m": "https://www.google.com/maps/search/?api=1&query=Ola%20Brew%20-%20Hilo%20Taproom%201177%20Kilauea%20Ave%2C%20Hilo%2C%20HI%2096720", "u": "../north_america/usa/hilo.html#c-ola-brew-hilo", "food": "", "ext": ""}, {"i": 43, "n": "Wailuku Brew Works", "c": ["ビール・バー"], "lat": 19.63716, "lng": -155.04406, "d": "回転タップの島クラフトビール（二四本から選べる、その時々の樽生）", "a": "16-205 Wiliama Pl, Keaʻau, HI 96749", "m": "https://www.google.com/maps/search/?api=1&query=Wailuku%20Brew%20Works%2016-205%20Wiliama%20Pl%2C%20Kea%CA%BBau%2C%20HI%2096749", "u": "../north_america/usa/hilo.html#c-wailuku-brew-works", "food": "", "ext": ""}, {"i": 44, "n": "Lanikai Brewing Volcano Taphouse", "c": ["ビール・バー"], "lat": 19.4283249, "lng": -155.23552, "d": "小ロット限定ビール（この地のタップハウスだけで出す特別醸造）", "a": "19-4005 Haunani Rd, Volcano, HI 96785", "m": "https://www.google.com/maps/search/?api=1&query=Lanikai%20Brewing%20Volcano%20Taphouse%2019-4005%20Haunani%20Rd%2C%20Volcano%2C%20HI%2096785", "u": "../north_america/usa/hilo.html#c-lanikai-brewing-volcano", "food": "", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([19.712391,-155.087244],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('hilo', "ヒロ");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

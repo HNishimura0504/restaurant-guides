@@ -69,8 +69,12 @@ def ask(q, lat, lng, limit=5):
         return json.loads(r.read().decode("utf-8")).get("features", [])
 
 
-def accept(feat, name, addr, lat0, lng0, radius):
-    """①距離 ②名前か住所の一致、の2つ両方を満たすか。満たせば (lat, lng, 理由)。"""
+def accept(feat, name, addr, lat0, lng0, radius, loose=False):
+    """①距離 ②名前か住所の一致、の2つ両方を満たすか。満たせば (lat, lng, 理由)。
+
+    `loose=True` のときだけ、②を**町レベルの一致**まで緩める（規約の LOWCONF）。
+    緩めた結果は理由に `LOWCONF` と刻み、呼び出し側が別扱いできるようにする。
+    **既定では緩めない**＝厳密な2条件で採れなかった店は未解決のまま残す。"""
     c = feat.get("geometry", {}).get("coordinates")
     if not c or len(c) != 2:
         return None
@@ -95,6 +99,18 @@ def accept(feat, name, addr, lat0, lng0, radius):
                 hit = "番地一致"
             elif not num:
                 hit = "通り一致"
+    if not hit and loose:
+        # 町（city/county/state）が一致していれば、通りの中点でも受ける。
+        # **番地の精度は落ちる**ので LOWCONF と刻み、あとで目視できるようにする。
+        town = norm(re.sub(r"^\s*\d+[-\w]*\s*,?\s*", "", addr or "").split(",")[-2]
+                    if (addr or "").count(",") >= 2 else "")
+        for k in ("city", "county", "district", "locality"):
+            v = norm(p.get(k, ""))
+            if v and (not town or v in town or town in v):
+                hit = "LOWCONF(町一致:%s)" % p.get(k)
+                break
+        if not hit and d <= radius:
+            hit = "LOWCONF(距離のみ)"
     if not hit:
         return None                                   # ②で落ちる
     return (lat, lng, "%s / %.1fkm" % (hit, d))
@@ -107,10 +123,21 @@ def main():
     lat0, lng0 = float(sys.argv[3]), float(sys.argv[4])
     radius = float(sys.argv[5]) if len(sys.argv) > 5 else 30.0
 
+    loose = "--loose" in sys.argv
+    only = None
+    for a in sys.argv:
+        if a.startswith("--only="):
+            only = set(a[len("--only="):].split(","))
     data = json.load(io.open(src, encoding="utf-8"))
     stores = data["stores"] if isinstance(data, dict) else data
-    got, miss = {}, []
+    got, miss, low = {}, [], []
+    try:                                   # 追記モード（--only で足すとき）
+        got = json.load(io.open(out, encoding="utf-8"))
+    except Exception:
+        got = {}
     for s in stores:
+        if only is not None and s["id"] not in only:
+            continue
         sid, name, addr = s["id"], s["name"], s.get("address", "")
         res = None
         for q in ("%s, %s" % (name, addr), addr, name):
@@ -123,13 +150,15 @@ def main():
                 feats = []
             time.sleep(1.1)
             for f in feats:
-                res = accept(f, name, addr, lat0, lng0, radius)
+                res = accept(f, name, addr, lat0, lng0, radius, loose)
                 if res:
                     break
             if res:
                 break
         if res:
             got[sid] = {"lat": round(res[0], 7), "lng": round(res[1], 7)}
+            if "LOWCONF" in res[2]:
+                low.append(sid)
             print("%-28s %.5f, %.5f  (%s)" % (sid, res[0], res[1], res[2]))
         else:
             miss.append(sid)
@@ -139,6 +168,8 @@ def main():
         json.dumps(got, ensure_ascii=False, indent=1))
     print("\n解決 %d / %d 件。未解決 %d 件: %s"
           % (len(got), len(stores), len(miss), ", ".join(miss) or "なし"))
+    if low:
+        print("LOWCONF（町レベル一致・目視で確かめる）%d 件: %s" % (len(low), ", ".join(low)))
     return 0
 
 
