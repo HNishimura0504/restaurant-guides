@@ -81,10 +81,11 @@
 | 大阪府 | 大阪市 | 72 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 吹田市 | 49 | [japan/osaka/](japan/osaka/) |
 | 大阪府 | 藤井寺市 | 45 | [japan/osaka/](japan/osaka/) |
+| 大阪府 | 堺市 | 72 | [japan/osaka/](japan/osaka/) |
 | 京都府 | 京都市 | 71 | [japan/kyoto/](japan/kyoto/) |
 | 京都府 | 宇治市 | 45 | [japan/kyoto/](japan/kyoto/) |
 
-小計 55冊 / 3071店
+小計 56冊 / 3143店
 
 ## 欧州
 
@@ -119,7 +120,7 @@
 
 小計 3冊 / 141店
 
-**合計 67冊 / 3566店**（2026-09-22 時点）
+**合計 68冊 / 3638店**（2026-09-23 時点）
 
 ## 進行中の発注
 
