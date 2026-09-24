@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>姫路 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>姫路 の食べ歩き地図<span class="n">72店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="姫路 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">姫路 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/hyogo/himeji.html"><span class="sn-e">📄</span>姫路のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（75都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "えきそば 在来線下り店（まねき食品）", "c": ["麺類", "ご当地名物"], "lat": 34.827621, "lng": 134.690842, "d": "天ぷらえきそば（かんすい入りの中華麺を和風だしで食べる姫路駅の名物そば。上に揚げた天ぷらをのせる）", "a": "兵庫県姫路市駅前町188-1 JR姫路駅 山陽本線下りホーム", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%88%E3%81%8D%E3%81%9D%E3%81%B0%20%E5%9C%A8%E6%9D%A5%E7%B7%9A%E4%B8%8B%E3%82%8A%E5%BA%97%EF%BC%88%E3%81%BE%E3%81%AD%E3%81%8D%E9%A3%9F%E5%93%81%EF%BC%89%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A7%85%E5%89%8D%E7%94%BA188-1%20JR%E5%A7%AB%E8%B7%AF%E9%A7%85%20%E5%B1%B1%E9%99%BD%E6%9C%AC%E7%B7%9A%E4%B8%8B%E3%82%8A%E3%83%9B%E3%83%BC%E3%83%A0", "u": "../japan/hyogo/himeji.html#c-ekisoba-maneki-zairaisen", "food": "../japan/hyogo/img/himeji/ekisoba-maneki-zairaisen.jpg", "ext": ""}, {"i": 1, "n": "たけだの穴子めし まねき本店", "c": ["ご当地名物"], "lat": 34.827621, "lng": 134.690842, "d": "穴子めし（播磨灘でとれる穴子をたれで焼き、飯にのせた姫路の定番。焼き穴子の香ばしさとたれの甘辛さが軸）", "a": "兵庫県姫路市駅前町363-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%91%E3%81%A0%E3%81%AE%E7%A9%B4%E5%AD%90%E3%82%81%E3%81%97%20%E3%81%BE%E3%81%AD%E3%81%8D%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A7%85%E5%89%8D%E7%94%BA363-1", "u": "../japan/hyogo/himeji.html#c-takeda-anagomeshi-maneki", "food": "../japan/hyogo/img/himeji/takeda-anagomeshi-maneki.jpg", "ext": ""}, {"i": 2, "n": "喃風 姫路本店", "c": ["ご当地名物"], "lat": 34.828747, "lng": 134.693069, "d": "どろ焼（ゆるい生地を鉄板で半熟に焼き、だしにつけて食べる姫路発祥の粉もん。明石焼きと鉄板焼きの中間）", "a": "兵庫県姫路市東駅前町57 あらきビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%83%E9%A2%A8%20%E5%A7%AB%E8%B7%AF%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E6%9D%B1%E9%A7%85%E5%89%8D%E7%94%BA57%20%E3%81%82%E3%82%89%E3%81%8D%E3%83%93%E3%83%AB1F", "u": "../japan/hyogo/himeji.html#c-nanpuu-himeji-honten", "food": "../japan/hyogo/img/himeji/nanpuu-himeji-honten.jpg", "ext": ""}, {"i": 3, "n": "炭焼あなご やま義", "c": ["ご当地名物"], "lat": 34.829098, "lng": 134.692093, "d": "わっぱめし・あなごめし（播磨灘の穴子を炭火で一尾ずつ焼き、飯にのせた姫路の代表的な食べ方）", "a": "兵庫県姫路市駅前町301", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%82%E3%81%AA%E3%81%94%20%E3%82%84%E3%81%BE%E7%BE%A9%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A7%85%E5%89%8D%E7%94%BA301", "u": "../japan/hyogo/himeji.html#c-yamayoshi-sumiyaki-anago", "food": "../japan/hyogo/img/himeji/yamayoshi-sumiyaki-anago.jpg", "ext": ""}, {"i": 4, "n": "あなご料理 柊 本店", "c": ["ご当地名物"], "lat": 34.830769, "lng": 134.6866, "d": "穴子ひつまむし（播磨灘の穴子をそのまま・薬味・だし茶漬けと三通りで食べる）", "a": "兵庫県姫路市十二所前町88", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%AA%E3%81%94%E6%96%99%E7%90%86%20%E6%9F%8A%20%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%8D%81%E4%BA%8C%E6%89%80%E5%89%8D%E7%94%BA88", "u": "../japan/hyogo/himeji.html#c-hiiragi-anago-honten", "food": "../japan/hyogo/img/himeji/hiiragi-anago-honten.jpg", "ext": ""}, {"i": 5, "n": "すし一", "c": ["ご当地名物"], "lat": 34.833492, "lng": 134.68634, "d": "瀬戸内天然穴子のにぎり寿司（播磨灘の天然穴子を寿司種として握ったもの）", "a": "兵庫県姫路市坂元町35", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E4%B8%80%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%9D%82%E5%85%83%E7%94%BA35", "u": "../japan/hyogo/himeji.html#c-sushiichi-himeji", "food": "../japan/hyogo/img/himeji/sushiichi-himeji.jpg", "ext": ""}, {"i": 6, "n": "あなご飯 津田", "c": ["ご当地名物"], "lat": 34.794533, "lng": 134.582153, "d": "あなご釜飯・津田御膳（播磨灘の穴子を釜飯や御膳仕立てにしたもの。網干の港町の穴子文化に連なる）", "a": "兵庫県姫路市網干区津市場564", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%AA%E3%81%94%E9%A3%AF%20%E6%B4%A5%E7%94%B0%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B6%B2%E5%B9%B2%E5%8C%BA%E6%B4%A5%E5%B8%82%E5%A0%B4564", "u": "../japan/hyogo/himeji.html#c-anago-tsuda-aboshi", "food": "../japan/hyogo/img/himeji/anago-tsuda-aboshi.jpg", "ext": ""}, {"i": 7, "n": "カフェ・ド・ムッシュ 姫路店", "c": ["ご当地名物"], "lat": 34.828957, "lng": 134.716049, "d": "アーモンドトースト（アーモンドの粉と油脂・砂糖を練ったペーストを食パンに塗って焼く姫路の喫茶の定番）", "a": "兵庫県姫路市市川台1-7", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%83%89%E3%83%BB%E3%83%A0%E3%83%83%E3%82%B7%E3%83%A5%20%E5%A7%AB%E8%B7%AF%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%B8%82%E5%B7%9D%E5%8F%B01-7", "u": "../japan/hyogo/himeji.html#c-cafe-de-monsieur-himeji", "food": "../japan/hyogo/img/himeji/cafe-de-monsieur-himeji.jpg", "ext": ""}, {"i": 8, "n": "茶房 大陸 本店", "c": ["ご当地名物"], "lat": 34.83218, "lng": 134.693069, "d": "アーモンドトースト（アーモンドの粉と油脂・砂糖を練ったペーストを塗って焼く姫路の喫茶の定番）／焼きミートスパ", "a": "兵庫県姫路市綿町89", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E6%88%BF%20%E5%A4%A7%E9%99%B8%20%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B6%BF%E7%94%BA89", "u": "../japan/hyogo/himeji.html#c-sabo-tairiku-honten", "food": "../japan/hyogo/img/himeji/sabo-tairiku-honten.jpg", "ext": ""}, {"i": 9, "n": "伊勢屋本店", "c": ["ご当地名物"], "lat": 34.823513, "lng": 134.682098, "d": "玉椿（白小豆の黄身餡を薄紅色の求肥で包み、椿の花に見立てた姫路の城下町の銘菓）", "a": "兵庫県姫路市延末3-5（本店）", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BC%8A%E5%8B%A2%E5%B1%8B%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%BB%B6%E6%9C%AB3-5%EF%BC%88%E6%9C%AC%E5%BA%97%EF%BC%89", "u": "../japan/hyogo/himeji.html#c-iseya-honten-tamatsubaki", "food": "../japan/hyogo/img/himeji/iseya-honten-tamatsubaki.jpg", "ext": ""}, {"i": 10, "n": "杵屋 二階町本店", "c": ["麺類"], "lat": 34.831627, "lng": 134.693939, "d": "書写千年杉（書写山圓教寺の千年杉に見立てた棒状のバウムクーヘン。中に小倉クリームと柚子餡が入る）", "a": "兵庫県姫路市二階町95", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9D%B5%E5%B1%8B%20%E4%BA%8C%E9%9A%8E%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%BA%8C%E9%9A%8E%E7%94%BA95", "u": "../japan/hyogo/himeji.html#c-kineya-nikaimachi", "food": "../japan/hyogo/img/himeji/kineya-nikaimachi.jpg", "ext": ""}, {"i": 11, "n": "酒饌亭 灘菊かっぱ亭", "c": ["ご当地名物"], "lat": 34.828747, "lng": 134.693069, "d": "姫路おでん（関西風の薄味おでんに生姜醤油をかけて食べる。生姜の辛みで魚介の練り物の匂いを切るのが要）", "a": "兵庫県姫路市東駅前町58", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E9%A5%8C%E4%BA%AD%20%E7%81%98%E8%8F%8A%E3%81%8B%E3%81%A3%E3%81%B1%E4%BA%AD%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E6%9D%B1%E9%A7%85%E5%89%8D%E7%94%BA58", "u": "../japan/hyogo/himeji.html#c-nadagiku-kappatei", "food": "../japan/hyogo/img/himeji/nadagiku-kappatei.jpg", "ext": ""}, {"i": 12, "n": "姫路の地酒と姫路おでん本舗", "c": ["ご当地名物"], "lat": 34.826965, "lng": 134.688904, "d": "姫路おでん（関西風の薄味おでんに生姜醤油をかけて食べる。2006年に姫路の食でまちおこしをする団体が命名した）", "a": "兵庫県姫路市豆腐町222 ピオレ姫路おみやげ館1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A7%AB%E8%B7%AF%E3%81%AE%E5%9C%B0%E9%85%92%E3%81%A8%E5%A7%AB%E8%B7%AF%E3%81%8A%E3%81%A7%E3%82%93%E6%9C%AC%E8%88%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E8%B1%86%E8%85%90%E7%94%BA222%20%E3%83%94%E3%82%AA%E3%83%AC%E5%A7%AB%E8%B7%AF%E3%81%8A%E3%81%BF%E3%82%84%E3%81%92%E9%A4%A81%E9%9A%8E", "u": "../japan/hyogo/himeji.html#c-himeji-oden-honpo", "food": "../japan/hyogo/img/himeji/himeji-oden-honpo.jpg", "ext": ""}, {"i": 13, "n": "森重", "c": ["寿司・海鮮"], "lat": 34.83205, "lng": 134.6884, "d": "うな重（蒸さずに焼く関西風の鰻をタレで焼き上げ、重箱のご飯にのせたもの）／かき鍋（冬季限定。味噌仕立ての鍋で牡蠣を煮る、2人前からの予約制）", "a": "兵庫県姫路市魚町126番地", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E9%87%8D%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%AD%9A%E7%94%BA126%E7%95%AA%E5%9C%B0", "u": "../japan/hyogo/himeji.html#c-himeji-moriju", "food": "../japan/hyogo/img/himeji/himeji-moriju.jpg", "ext": ""}, {"i": 14, "n": "穴子料理 一張羅", "c": ["寿司・海鮮"], "lat": 34.829659, "lng": 134.691422, "d": "伝助穴子のお造り（大型の穴子を刺身にした一品。コリコリとした食感。1日10食限定）／姫路伝助穴子のおもてなしコース 全6品 4,400円", "a": "兵庫県姫路市駅前町345 みき正駅前ビル地下1階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A9%B4%E5%AD%90%E6%96%99%E7%90%86%20%E4%B8%80%E5%BC%B5%E7%BE%85%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A7%85%E5%89%8D%E7%94%BA345%20%E3%81%BF%E3%81%8D%E6%AD%A3%E9%A7%85%E5%89%8D%E3%83%93%E3%83%AB%E5%9C%B0%E4%B8%8B1%E9%9A%8E", "u": "../japan/hyogo/himeji.html#c-himeji-icchoura", "food": "../japan/hyogo/img/himeji/himeji-icchoura.jpg", "ext": ""}, {"i": 15, "n": "料亭 川飛", "c": ["和食・郷土料理", "寿司・海鮮"], "lat": 34.816254, "lng": 134.681763, "d": "季節の会席料理（播磨の旬の魚と野菜を先付から甘味まで組み立てる献立）／てっちりコース（冬季のふぐ鍋を中心にした献立）", "a": "兵庫県姫路市栗山町167", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%20%E5%B7%9D%E9%A3%9B%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E6%A0%97%E5%B1%B1%E7%94%BA167", "u": "../japan/hyogo/himeji.html#c-himeji-kawatobi", "food": "../japan/hyogo/img/himeji/himeji-kawatobi.jpg", "ext": ""}, {"i": 16, "n": "割烹 白瀬", "c": ["和食・郷土料理"], "lat": 34.830467, "lng": 134.694519, "d": "季節の日本料理コース（先付から甘味までを季節替わりで組み立てる献立）／平日限定の酒肴アラカルト（酒に合わせる小皿を単品で選べる）", "a": "兵庫県姫路市呉服町3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E7%99%BD%E7%80%AC%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%91%89%E6%9C%8D%E7%94%BA3", "u": "../japan/hyogo/himeji.html#c-himeji-shirase", "food": "../japan/hyogo/img/himeji/himeji-shirase.jpg", "ext": ""}, {"i": 17, "n": "樹 割烹", "c": ["和食・郷土料理"], "lat": 34.825653, "lng": 134.738403, "d": "樹コース 全10品（初めての客に勧める基本のコース。季節の食材を一皿ずつ出す）／大将のおまかせコース 全11品（その日の最良の食材で組む特別コース）", "a": "兵庫県姫路市御国野町国分寺776-2", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A8%B9%20%E5%89%B2%E7%83%B9%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%BE%A1%E5%9B%BD%E9%87%8E%E7%94%BA%E5%9B%BD%E5%88%86%E5%AF%BA776-2", "u": "../japan/hyogo/himeji.html#c-himeji-tatsuki-kappo", "food": "../japan/hyogo/img/himeji/himeji-tatsuki-kappo.jpg", "ext": ""}, {"i": 18, "n": "おもてなしダイニング 福亭", "c": ["寿司・海鮮", "和食・郷土料理"], "lat": 34.830044, "lng": 134.692398, "d": "鯛・穴子の土鍋御飯（土鍋で炊き上げるご飯に鯛や穴子をのせたもの）／播磨灘の前どれ鮮魚のお造り", "a": "兵庫県姫路市亀井町75番地", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%82%82%E3%81%A6%E3%81%AA%E3%81%97%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E7%A6%8F%E4%BA%AD%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%BA%80%E4%BA%95%E7%94%BA75%E7%95%AA%E5%9C%B0", "u": "../japan/hyogo/himeji.html#c-himeji-fukutei", "food": "../japan/hyogo/img/himeji/himeji-fukutei.jpg", "ext": ""}, {"i": 19, "n": "和ダイニング 三日潮", "c": ["和食・郷土料理"], "lat": 34.833775, "lng": 134.697052, "d": "お膳料理 1,800円（造り・煮物・焼物などを一膳に組んだ昼の定番）／ミニ会席 2,200円〜（季節の食材で構成する小ぶりの会席）", "a": "兵庫県姫路市総社本町190番地", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E4%B8%89%E6%97%A5%E6%BD%AE%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B7%8F%E7%A4%BE%E6%9C%AC%E7%94%BA190%E7%95%AA%E5%9C%B0", "u": "../japan/hyogo/himeji.html#c-himeji-mikashio", "food": "../japan/hyogo/img/himeji/himeji-mikashio.jpg", "ext": ""}, {"i": 20, "n": "JFぼうぜ 姫路まえどれ市場", "c": ["寿司・海鮮", "和食・郷土料理"], "lat": 34.775135, "lng": 134.699371, "d": "旬の海鮮丼（その日に水揚げされた魚を数種のせた丼）／ぼうぜ鯖（兵庫県認証食品の地域ブランド鯖。販売・料理の両方で扱う）", "a": "兵庫県姫路市白浜町912-18 妻鹿漁港フィッシュモール内", "m": "https://www.google.com/maps/search/?api=1&query=JF%E3%81%BC%E3%81%86%E3%81%9C%20%E5%A7%AB%E8%B7%AF%E3%81%BE%E3%81%88%E3%81%A9%E3%82%8C%E5%B8%82%E5%A0%B4%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%99%BD%E6%B5%9C%E7%94%BA912-18%20%E5%A6%BB%E9%B9%BF%E6%BC%81%E6%B8%AF%E3%83%95%E3%82%A3%E3%83%83%E3%82%B7%E3%83%A5%E3%83%A2%E3%83%BC%E3%83%AB%E5%86%85", "u": "../japan/hyogo/himeji.html#c-himeji-maedore", "food": "../japan/hyogo/img/himeji/himeji-maedore.jpg", "ext": ""}, {"i": 21, "n": "西村屋 白鷺館", "c": ["和食・郷土料理"], "lat": 34.830448, "lng": 134.688843, "d": "かにすき（松葉がにを西村屋家伝のすき出しで煮る鍋。11月初旬〜3月末）／播磨灘産の穴子・鱧を使った会席（春〜秋）", "a": "兵庫県姫路市十二所前町23", "m": "https://www.google.com/maps/search/?api=1&query=%E8%A5%BF%E6%9D%91%E5%B1%8B%20%E7%99%BD%E9%B7%BA%E9%A4%A8%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%8D%81%E4%BA%8C%E6%89%80%E5%89%8D%E7%94%BA23", "u": "../japan/hyogo/himeji.html#c-himeji-nishimuraya-hakurokan", "food": "../japan/hyogo/img/himeji/himeji-nishimuraya-hakurokan.jpg", "ext": ""}, {"i": 22, "n": "鰻昇 飾磨本店", "c": ["寿司・海鮮"], "lat": 34.805981, "lng": 134.664246, "d": "うな重（並）1,500円（蒲焼をご飯にのせた重箱。量に対して価格を抑えた看板商品）／うな重（祭）3,980円（鰻を増量した最上位）", "a": "兵庫県姫路市飾磨区構1-85", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B0%BB%E6%98%87%20%E9%A3%BE%E7%A3%A8%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A3%BE%E7%A3%A8%E5%8C%BA%E6%A7%8B1-85", "u": "../japan/hyogo/himeji.html#c-himeji-unaginobori", "food": "../japan/hyogo/img/himeji/himeji-unaginobori.jpg", "ext": ""}, {"i": 23, "n": "海鮮丼ぶり 海幸", "c": ["寿司・海鮮"], "lat": 34.772884, "lng": 134.590164, "d": "しらす丼（釜揚げしらすを丼一面に盛る看板メニュー）／海鮮丼（地場の鮮魚を数種のせた丼）", "a": "兵庫県姫路市網干区興浜2093-133 網干じばさんひろば 魚吹津内", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E4%B8%BC%E3%81%B6%E3%82%8A%20%E6%B5%B7%E5%B9%B8%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B6%B2%E5%B9%B2%E5%8C%BA%E8%88%88%E6%B5%9C2093-133%20%E7%B6%B2%E5%B9%B2%E3%81%98%E3%81%B0%E3%81%95%E3%82%93%E3%81%B2%E3%82%8D%E3%81%B0%20%E9%AD%9A%E5%90%B9%E6%B4%A5%E5%86%85", "u": "../japan/hyogo/himeji.html#c-himeji-umisachi-aboshi", "food": "../japan/hyogo/img/himeji/himeji-umisachi-aboshi.jpg", "ext": ""}, {"i": 24, "n": "津田宇水産 レストラン", "c": ["寿司・海鮮"], "lat": 34.764309, "lng": 134.503555, "d": "室津産の牡蠣料理（自社養殖の牡蠣を生・焼き・フライなどで出す。通年提供）／しらす丼", "a": "兵庫県たつの市御津町室津850", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%A5%E7%94%B0%E5%AE%87%E6%B0%B4%E7%94%A3%20%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E3%81%9F%E3%81%A4%E3%81%AE%E5%B8%82%E5%BE%A1%E6%B4%A5%E7%94%BA%E5%AE%A4%E6%B4%A5850", "u": "../japan/hyogo/himeji.html#c-murotsu-tsudau-suisan", "food": "../japan/hyogo/img/himeji/murotsu-tsudau-suisan.jpg", "ext": ""}, {"i": 25, "n": "ど豚骨 虎砲", "c": ["麺類"], "lat": 34.829254, "lng": 134.689682, "d": "ど豚骨ラーメン（全粒粉入りの太麺に超濃厚な豚骨スープを合わせた一杯）", "a": "兵庫県姫路市南町41", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A9%E8%B1%9A%E9%AA%A8%20%E8%99%8E%E7%A0%B2%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%8D%97%E7%94%BA41", "u": "../japan/hyogo/himeji.html#c-kohou-dotonkotsu", "food": "../japan/hyogo/img/himeji/kohou-dotonkotsu.jpg", "ext": ""}, {"i": 26, "n": "カレーうどん専門 進", "c": ["麺類"], "lat": 34.831394, "lng": 134.687271, "d": "カツカレーうどん（とんかつをのせたカレーうどん）", "a": "兵庫県姫路市塩町205 クリスタル横丁東館106 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%AC%E3%83%BC%E3%81%86%E3%81%A9%E3%82%93%E5%B0%82%E9%96%80%20%E9%80%B2%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%A1%A9%E7%94%BA205%20%E3%82%AF%E3%83%AA%E3%82%B9%E3%82%BF%E3%83%AB%E6%A8%AA%E4%B8%81%E6%9D%B1%E9%A4%A8106%201F", "u": "../japan/hyogo/himeji.html#c-sin-curry-udon", "food": "../japan/hyogo/img/himeji/sin-curry-udon.jpg", "ext": ""}, {"i": 27, "n": "MAZE MARU", "c": ["麺類", "アジア・エスニック"], "lat": 34.829205, "lng": 134.687088, "d": "台湾まぜそば（汁なしの麺に台湾ミンチや卵黄をのせ、混ぜて食べる一杯）", "a": "兵庫県姫路市忍町23", "m": "https://www.google.com/maps/search/?api=1&query=MAZE%20MARU%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%BF%8D%E7%94%BA23", "u": "../japan/hyogo/himeji.html#c-maze-maru-himeji", "food": "../japan/hyogo/img/himeji/maze-maru-himeji.jpg", "ext": ""}, {"i": 28, "n": "らぁ麺上杉", "c": ["麺類"], "lat": 34.835476, "lng": 134.680984, "d": "特製鶏醤油らぁ麺（龍野産しょうゆと但馬地鶏の澄んだスープに、雪姫ポークのチャーシューを合わせた一杯）", "a": "兵庫県姫路市元町113-1 元町西ビル102", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%81%E9%BA%BA%E4%B8%8A%E6%9D%89%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%85%83%E7%94%BA113-1%20%E5%85%83%E7%94%BA%E8%A5%BF%E3%83%93%E3%83%AB102", "u": "../japan/hyogo/himeji.html#c-raamen-uesugi", "food": "../japan/hyogo/img/himeji/raamen-uesugi.jpg", "ext": ""}, {"i": 29, "n": "お食事処 白浜かどや 姫路店", "c": ["麺類"], "lat": 34.830315, "lng": 134.69339, "d": "名物 鍋焼きうどん（土鍋で供するうどん。並うどんと細うどんが選べる）", "a": "兵庫県姫路市紺屋町78 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E7%99%BD%E6%B5%9C%E3%81%8B%E3%81%A9%E3%82%84%20%E5%A7%AB%E8%B7%AF%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA78%201F", "u": "../japan/hyogo/himeji.html#c-shirahama-kadoya-himeji", "food": "../japan/hyogo/img/himeji/shirahama-kadoya-himeji.jpg", "ext": ""}, {"i": 30, "n": "麺dining だいふく", "c": ["麺類"], "lat": 34.848728, "lng": 134.671051, "d": "まろやか豚骨ラーメン（マイルドに仕上げた豚骨スープのラーメン。麺量2倍のDXもある）", "a": "兵庫県姫路市辻井1-12-28", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BAdining%20%E3%81%A0%E3%81%84%E3%81%B5%E3%81%8F%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E8%BE%BB%E4%BA%951-12-28", "u": "../japan/hyogo/himeji.html#c-mendining-daifuku", "food": "../japan/hyogo/img/himeji/mendining-daifuku.jpg", "ext": ""}, {"i": 31, "n": "山形の肉そば 福姫", "c": ["麺類", "アジア・エスニック"], "lat": 34.839348, "lng": 134.712677, "d": "肉そば（山形の郷土料理。鶏のだしとひね鳥の肉をのせた、冷やしでも食べるそば）", "a": "兵庫県姫路市野里73-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E5%BD%A2%E3%81%AE%E8%82%89%E3%81%9D%E3%81%B0%20%E7%A6%8F%E5%A7%AB%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%87%8E%E9%87%8C73-1", "u": "../japan/hyogo/himeji.html#c-fukuhime-nikusoba", "food": "../japan/hyogo/img/himeji/fukuhime-nikusoba.jpg", "ext": ""}, {"i": 32, "n": "らーめん八角 広畑店", "c": ["麺類", "アジア・エスニック"], "lat": 34.799126, "lng": 134.62587, "d": "八角らーめん（玉ねぎの甘みを効かせたスープのラーメン。元祖八角らーめん、八角中華そばなどの系統がある）", "a": "兵庫県姫路市広畑区高浜町1-82", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E5%85%AB%E8%A7%92%20%E5%BA%83%E7%95%91%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%BA%83%E7%95%91%E5%8C%BA%E9%AB%98%E6%B5%9C%E7%94%BA1-82", "u": "../japan/hyogo/himeji.html#c-hakkaku-hirohata", "food": "../japan/hyogo/img/himeji/hakkaku-hirohata.jpg", "ext": ""}, {"i": 33, "n": "ぐり虎 製麺食堂 姫路", "c": ["麺類"], "lat": 34.806019, "lng": 134.679565, "d": "特製鶏塩らぁ麺（鶏だしの塩スープに、店内で石臼から挽いた小麦の自家製麺を合わせた一杯）", "a": "兵庫県姫路市飾磨区中野田1丁目12", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%90%E3%82%8A%E8%99%8E%20%E8%A3%BD%E9%BA%BA%E9%A3%9F%E5%A0%82%20%E5%A7%AB%E8%B7%AF%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A3%BE%E7%A3%A8%E5%8C%BA%E4%B8%AD%E9%87%8E%E7%94%B01%E4%B8%81%E7%9B%AE12", "u": "../japan/hyogo/himeji.html#c-guriko-seimen-shokudo", "food": "../japan/hyogo/img/himeji/guriko-seimen-shokudo.jpg", "ext": ""}, {"i": 34, "n": "お好み焼き 一丁目", "c": ["麺類"], "lat": 34.857372, "lng": 134.656586, "d": "豚玉（ジャガイモとコンニャクを生地に入れる、この店の系統のお好み焼き）", "a": "兵庫県姫路市東夢前台1丁目", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E4%B8%80%E4%B8%81%E7%9B%AE%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E6%9D%B1%E5%A4%A2%E5%89%8D%E5%8F%B01%E4%B8%81%E7%9B%AE", "u": "../japan/hyogo/himeji.html#c-okonomi-itchome", "food": "../japan/hyogo/img/himeji/okonomi-itchome.jpg", "ext": ""}, {"i": 35, "n": "たこ研", "c": ["麺類"], "lat": 34.796703, "lng": 134.616287, "d": "極（きわみ）（坊勢島の生ダコを使う数量限定のたこ焼き。6個入り800円）", "a": "兵庫県姫路市大津区天神町1丁目41-5 天満屋ハイツ", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%93%E7%A0%94%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%A4%A7%E6%B4%A5%E5%8C%BA%E5%A4%A9%E7%A5%9E%E7%94%BA1%E4%B8%81%E7%9B%AE41-5%20%E5%A4%A9%E6%BA%80%E5%B1%8B%E3%83%8F%E3%82%A4%E3%83%84", "u": "../japan/hyogo/himeji.html#c-tako-ken-temma", "food": "../japan/hyogo/img/himeji/tako-ken-temma.jpg", "ext": ""}, {"i": 36, "n": "お好み村 こめはち", "c": ["アジア・エスニック", "麺類"], "lat": 34.790989, "lng": 134.596039, "d": "こめはち一口焼（エビ・イカ・タコ・すじ・豚などを小さく焼き分け、一度に何種類も味わえるお好み焼き）", "a": "兵庫県姫路市網干区大江島寺前町102", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E6%9D%91%20%E3%81%93%E3%82%81%E3%81%AF%E3%81%A1%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B6%B2%E5%B9%B2%E5%8C%BA%E5%A4%A7%E6%B1%9F%E5%B3%B6%E5%AF%BA%E5%89%8D%E7%94%BA102", "u": "../japan/hyogo/himeji.html#c-komehachi-aboshi", "food": "../japan/hyogo/img/himeji/komehachi-aboshi.jpg", "ext": ""}, {"i": 37, "n": "手打そば武蔵", "c": ["麺類"], "lat": 34.82935, "lng": 134.707153, "d": "せいろそば（手打ちのそばをつゆで食べる基本の品。季節限定のそばも出る）", "a": "兵庫県姫路市市川橋通2-38", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%9D%E3%81%B0%E6%AD%A6%E8%94%B5%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%B8%82%E5%B7%9D%E6%A9%8B%E9%80%9A2-38", "u": "../japan/hyogo/himeji.html#c-teuchisoba-musashi", "food": "../japan/hyogo/img/himeji/teuchisoba-musashi.jpg", "ext": ""}, {"i": 38, "n": "stand GREGORY（スタンドグレゴリー）", "c": ["居酒屋・焼肉"], "lat": 34.828747, "lng": 134.693069, "d": "刺身盛り合わせ（中央市場から仕入れた瀬戸内の鮮魚を日替わりで盛る造りの盛り合わせ・1,580円）", "a": "兵庫県姫路市東駅前町61 めがやビル1F", "m": "https://www.google.com/maps/search/?api=1&query=stand%20GREGORY%EF%BC%88%E3%82%B9%E3%82%BF%E3%83%B3%E3%83%89%E3%82%B0%E3%83%AC%E3%82%B4%E3%83%AA%E3%83%BC%EF%BC%89%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E6%9D%B1%E9%A7%85%E5%89%8D%E7%94%BA61%20%E3%82%81%E3%81%8C%E3%82%84%E3%83%93%E3%83%AB1F", "u": "../japan/hyogo/himeji.html#c-stand-gregory-himeji", "food": "../japan/hyogo/img/himeji/stand-gregory-himeji.jpg", "ext": ""}, {"i": 39, "n": "創作居酒屋 遊膳 おみぞ店", "c": ["居酒屋・焼肉"], "lat": 34.830044, "lng": 134.692398, "d": "鯛の釜めし（注文後に土釜で炊き上げる鯛の炊き込みご飯・1,628円）", "a": "兵庫県姫路市亀井町84", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%B1%85%E9%85%92%E5%B1%8B%20%E9%81%8A%E8%86%B3%20%E3%81%8A%E3%81%BF%E3%81%9E%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%BA%80%E4%BA%95%E7%94%BA84", "u": "../japan/hyogo/himeji.html#c-yuzen-omizo", "food": "../japan/hyogo/img/himeji/yuzen-omizo.jpg", "ext": ""}, {"i": 40, "n": "Backyard Kitchen（バックヤード・キッチン）", "c": ["居酒屋・焼肉"], "lat": 34.831043, "lng": 134.690979, "d": "静岡おでん7種盛り合わせ（黒はんぺんなどを濃い色のだしで煮て、だし粉と青のりをかける静岡式のおでん・1,210円）", "a": "兵庫県姫路市白銀町53", "m": "https://www.google.com/maps/search/?api=1&query=Backyard%20Kitchen%EF%BC%88%E3%83%90%E3%83%83%E3%82%AF%E3%83%A4%E3%83%BC%E3%83%89%E3%83%BB%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%EF%BC%89%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%99%BD%E9%8A%80%E7%94%BA53", "u": "../japan/hyogo/himeji.html#c-backyard-kitchen-himeji", "food": "../japan/hyogo/img/himeji/backyard-kitchen-himeji.jpg", "ext": ""}, {"i": 41, "n": "貝と炭 ラッコ", "c": ["居酒屋・焼肉"], "lat": 34.829605, "lng": 134.687729, "d": "牡蠣の土手鍋（鍋の縁に塗った味噌を溶かしながら牡蠣と野菜を煮る広島発祥の鍋・1,980円）", "a": "兵庫県姫路市忍町46", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B2%9D%E3%81%A8%E7%82%AD%20%E3%83%A9%E3%83%83%E3%82%B3%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%BF%8D%E7%94%BA46", "u": "../japan/hyogo/himeji.html#c-kai-to-sumi-rakko", "food": "../japan/hyogo/img/himeji/kai-to-sumi-rakko.jpg", "ext": ""}, {"i": 42, "n": "路地裏JAP（ジャップ）", "c": ["居酒屋・焼肉"], "lat": 34.828812, "lng": 134.686569, "d": "豚玉（鉄板で焼く豚肉入りのお好み焼き・880円）", "a": "兵庫県姫路市久保町78", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B7%AF%E5%9C%B0%E8%A3%8FJAP%EF%BC%88%E3%82%B8%E3%83%A3%E3%83%83%E3%83%97%EF%BC%89%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%B9%85%E4%BF%9D%E7%94%BA78", "u": "../japan/hyogo/himeji.html#c-rojiura-jap", "food": "../japan/hyogo/img/himeji/rojiura-jap.jpg", "ext": ""}, {"i": 43, "n": "楽呑食堂 あむす", "c": ["居酒屋・焼肉"], "lat": 34.830883, "lng": 134.689743, "d": "土釜ご飯（注文ごとに土釜で炊き上げる白ごはん・1合770円）", "a": "兵庫県姫路市立町14 第17立町クリスタルビル6階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A5%BD%E5%91%91%E9%A3%9F%E5%A0%82%20%E3%81%82%E3%82%80%E3%81%99%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%AB%8B%E7%94%BA14%20%E7%AC%AC17%E7%AB%8B%E7%94%BA%E3%82%AF%E3%83%AA%E3%82%B9%E3%82%BF%E3%83%AB%E3%83%93%E3%83%AB6%E9%9A%8E", "u": "../japan/hyogo/himeji.html#c-rakunomi-amusu", "food": "../japan/hyogo/img/himeji/rakunomi-amusu.jpg", "ext": ""}, {"i": 44, "n": "居酒屋 茜屋", "c": ["居酒屋・焼肉"], "lat": 34.827621, "lng": 134.690842, "d": "芋煮（里芋と牛肉を醤油仕立てで煮込む山形の郷土鍋・748円）", "a": "兵庫県姫路市駅前町242 IMAGE21ビル2階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E8%8C%9C%E5%B1%8B%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A7%85%E5%89%8D%E7%94%BA242%20IMAGE21%E3%83%93%E3%83%AB2%E9%9A%8E", "u": "../japan/hyogo/himeji.html#c-akaneya-himeji", "food": "../japan/hyogo/img/himeji/akaneya-himeji.jpg", "ext": ""}, {"i": 45, "n": "魚路裏。（ぎょろり）", "c": ["居酒屋・焼肉"], "lat": 34.824463, "lng": 134.691177, "d": "銀鱈の最強焼き（脂の乗った銀鱈を囲炉裏の炭火で焼き上げる一品・520円）", "a": "兵庫県姫路市豊沢町170 中野ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E8%B7%AF%E8%A3%8F%E3%80%82%EF%BC%88%E3%81%8E%E3%82%87%E3%82%8D%E3%82%8A%EF%BC%89%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E8%B1%8A%E6%B2%A2%E7%94%BA170%20%E4%B8%AD%E9%87%8E%E3%83%93%E3%83%AB1F", "u": "../japan/hyogo/himeji.html#c-gyorori-himeji", "food": "../japan/hyogo/img/himeji/gyorori-himeji.jpg", "ext": ""}, {"i": 46, "n": "鈴や", "c": ["居酒屋・焼肉"], "lat": 34.82885, "lng": 134.702118, "d": "鈴や膳（旬の造り・揚げ物・小鉢・椀を一膳に組んだ昼の御膳・2,200円）", "a": "兵庫県姫路市神屋町3-27-1 ピュア東姫路101", "m": "https://www.google.com/maps/search/?api=1&query=%E9%88%B4%E3%82%84%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%A5%9E%E5%B1%8B%E7%94%BA3-27-1%20%E3%83%94%E3%83%A5%E3%82%A2%E6%9D%B1%E5%A7%AB%E8%B7%AF101", "u": "../japan/hyogo/himeji.html#c-suzuya-higashihimeji", "food": "../japan/hyogo/img/himeji/suzuya-higashihimeji.jpg", "ext": ""}, {"i": 47, "n": "ときわや金次郎", "c": ["居酒屋・焼肉"], "lat": 34.842182, "lng": 134.658859, "d": "本がつお わら焼 たたき（藁を燃やした高温の炎で表面だけを炙る鰹のたたき・1,180円）", "a": "兵庫県姫路市西今宿2-1-34", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%81%8D%E3%82%8F%E3%82%84%E9%87%91%E6%AC%A1%E9%83%8E%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E8%A5%BF%E4%BB%8A%E5%AE%BF2-1-34", "u": "../japan/hyogo/himeji.html#c-tokiwaya-kinjiro", "food": "../japan/hyogo/img/himeji/tokiwaya-kinjiro.jpg", "ext": ""}, {"i": 48, "n": "姫路やきとり 喜鳥家 飾磨構店", "c": ["居酒屋・焼肉"], "lat": 34.805981, "lng": 134.664246, "d": "ひねたたき（歯ごたえの強い親鶏（ひね）を炙り、薬味とポン酢で食べる播州でなじみの一品）", "a": "兵庫県姫路市飾磨区構1丁目86", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A7%AB%E8%B7%AF%E3%82%84%E3%81%8D%E3%81%A8%E3%82%8A%20%E5%96%9C%E9%B3%A5%E5%AE%B6%20%E9%A3%BE%E7%A3%A8%E6%A7%8B%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A3%BE%E7%A3%A8%E5%8C%BA%E6%A7%8B1%E4%B8%81%E7%9B%AE86", "u": "../japan/hyogo/himeji.html#c-kidoriya-kamae", "food": "../japan/hyogo/img/himeji/kidoriya-kamae.jpg", "ext": ""}, {"i": 49, "n": "洋食屋 料理番", "c": ["洋食・各国料理"], "lat": 34.819099, "lng": 134.667389, "d": "本日のフライパンランチ（その日仕入れた肉か魚を鉄のフライパンごと熱々で出す日替わりの主菜。1,980円）", "a": "兵庫県姫路市中地283-2", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E6%96%99%E7%90%86%E7%95%AA%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%B8%AD%E5%9C%B0283-2", "u": "../japan/hyogo/himeji.html#c-yoshokuya-ryouriban", "food": "../japan/hyogo/img/himeji/yoshokuya-ryouriban.jpg", "ext": ""}, {"i": 50, "n": "洋食屋ワタナベ", "c": ["洋食・各国料理"], "lat": 34.83305, "lng": 134.688705, "d": "ビーフカツレツ（牛肉に衣をつけて揚げ、自家製デミグラスソースを合わせた看板料理）", "a": "兵庫県姫路市本町174 アネスティ七番館102", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%E3%83%AF%E3%82%BF%E3%83%8A%E3%83%99%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E6%9C%AC%E7%94%BA174%20%E3%82%A2%E3%83%8D%E3%82%B9%E3%83%86%E3%82%A3%E4%B8%83%E7%95%AA%E9%A4%A8102", "u": "../japan/hyogo/himeji.html#c-yoshokuya-watanabe", "food": "../japan/hyogo/img/himeji/yoshokuya-watanabe.jpg", "ext": ""}, {"i": 51, "n": "SALSA curry", "c": ["洋食・各国料理"], "lat": 34.800648, "lng": 134.681931, "d": "サルサカレー（チキンとえびなど2種のカレーを玄米にあいがけした看板の一皿。1,300円）", "a": "兵庫県姫路市飾磨区下野田3-275-4", "m": "https://www.google.com/maps/search/?api=1&query=SALSA%20curry%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A3%BE%E7%A3%A8%E5%8C%BA%E4%B8%8B%E9%87%8E%E7%94%B03-275-4", "u": "../japan/hyogo/himeji.html#c-salsa-curry-shikama", "food": "../japan/hyogo/img/himeji/salsa-curry-shikama.jpg", "ext": ""}, {"i": 52, "n": "極楽イタリアン Girrolamo!", "c": ["洋食・各国料理"], "lat": 34.801678, "lng": 134.655731, "d": "生ハムとトリュフソースのピザ（焼き上げた生地に生ハムを重ね、トリュフの香りのソースを合わせたピッツァ。2,200円〜）", "a": "兵庫県姫路市飾磨区今在家3-48-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A5%B5%E6%A5%BD%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E3%83%B3%20Girrolamo%21%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A3%BE%E7%A3%A8%E5%8C%BA%E4%BB%8A%E5%9C%A8%E5%AE%B63-48-1", "u": "../japan/hyogo/himeji.html#c-girrolamo-shikama", "food": "../japan/hyogo/img/himeji/girrolamo-shikama.jpg", "ext": ""}, {"i": 53, "n": "pasta sorriso", "c": ["洋食・各国料理"], "lat": 34.90778, "lng": 134.785721, "d": "トルテリーニ（姫路産の豚肉とチーズを生地で包んだ小さな詰め物パスタ）", "a": "兵庫県姫路市山田町南山田105-3", "m": "https://www.google.com/maps/search/?api=1&query=pasta%20sorriso%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%B1%B1%E7%94%B0%E7%94%BA%E5%8D%97%E5%B1%B1%E7%94%B0105-3", "u": "../japan/hyogo/himeji.html#c-pasta-sorriso-yamada", "food": "../japan/hyogo/img/himeji/pasta-sorriso-yamada.jpg", "ext": ""}, {"i": 54, "n": "carbonaio", "c": ["洋食・各国料理"], "lat": 34.818089, "lng": 134.683609, "d": "ランチセット（前菜・自家製パン・手打ちパスタかリゾット・デザート・飲み物が付く昼の定番。2,000円）", "a": "兵庫県姫路市安田3-100", "m": "https://www.google.com/maps/search/?api=1&query=carbonaio%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%AE%89%E7%94%B03-100", "u": "../japan/hyogo/himeji.html#c-carbonaio-yasuda", "food": "../japan/hyogo/img/himeji/carbonaio-yasuda.jpg", "ext": ""}, {"i": 55, "n": "しずくとまる", "c": ["洋食・各国料理"], "lat": 34.829372, "lng": 134.684433, "d": "チキンスープカレー（骨付きの鶏肉と素揚げ野菜を、小麦粉を使わないさらりとしたスープで食べる看板。1,600円・数量限定）", "a": "兵庫県姫路市久保町151 シャトー姫路1階-A", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%97%E3%81%9A%E3%81%8F%E3%81%A8%E3%81%BE%E3%82%8B%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%B9%85%E4%BF%9D%E7%94%BA151%20%E3%82%B7%E3%83%A3%E3%83%88%E3%83%BC%E5%A7%AB%E8%B7%AF1%E9%9A%8E-A", "u": "../japan/hyogo/himeji.html#c-shizukutomaru-soupcurry", "food": "../japan/hyogo/img/himeji/shizukutomaru-soupcurry.jpg", "ext": ""}, {"i": 56, "n": "アジアンダイニング 金魚蘭", "c": ["洋食・各国料理"], "lat": 34.830376, "lng": 134.693542, "d": "トムヤムクンのフォー（えびと香草の酸味と辛みのスープで食べるベトナムの米麺。1,375円）", "a": "兵庫県姫路市紺屋町77 KJビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%82%B8%E3%82%A2%E3%83%B3%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E9%87%91%E9%AD%9A%E8%98%AD%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA77%20KJ%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/hyogo/himeji.html#c-kingyoran-asian", "food": "../japan/hyogo/img/himeji/kingyoran-asian.jpg", "ext": ""}, {"i": 57, "n": "TACOBURGER", "c": ["洋食・各国料理"], "lat": 34.772884, "lng": 134.590164, "d": "タコバーガー（ゆでだこを使った当店名物のハンバーガー。具材を自分で重ねて仕上げる。1,500円）", "a": "兵庫県姫路市網干区興浜2093-133 網干じばさんひろば 魚吹津B", "m": "https://www.google.com/maps/search/?api=1&query=TACOBURGER%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B6%B2%E5%B9%B2%E5%8C%BA%E8%88%88%E6%B5%9C2093-133%20%E7%B6%B2%E5%B9%B2%E3%81%98%E3%81%B0%E3%81%95%E3%82%93%E3%81%B2%E3%82%8D%E3%81%B0%20%E9%AD%9A%E5%90%B9%E6%B4%A5B", "u": "../japan/hyogo/himeji.html#c-tacoburger-aboshi", "food": "../japan/hyogo/img/himeji/tacoburger-aboshi.jpg", "ext": ""}, {"i": 58, "n": "特選肉 徳侍郎", "c": ["居酒屋・焼肉"], "lat": 34.810318, "lng": 134.674789, "d": "姫路城タン（厚切りの牛タンを城の天守のように積み上げて出す名物。1皿4,900円）", "a": "兵庫県姫路市亀山2-182-2", "m": "https://www.google.com/maps/search/?api=1&query=%E7%89%B9%E9%81%B8%E8%82%89%20%E5%BE%B3%E4%BE%8D%E9%83%8E%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%BA%80%E5%B1%B12-182-2", "u": "../japan/hyogo/himeji.html#c-tokujiro-kameyama", "food": "../japan/hyogo/img/himeji/tokujiro-kameyama.jpg", "ext": ""}, {"i": 59, "n": "French Dining ママン", "c": ["洋食・各国料理"], "lat": 34.864361, "lng": 134.634521, "d": "Aランチ（主菜に前菜とパンなどが付く、いちばん手ごろな昼のコース。1,700円）", "a": "兵庫県姫路市飾西41-1", "m": "https://www.google.com/maps/search/?api=1&query=French%20Dining%20%E3%83%9E%E3%83%9E%E3%83%B3%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A3%BE%E8%A5%BF41-1", "u": "../japan/hyogo/himeji.html#c-french-maman-shikinai", "food": "../japan/hyogo/img/himeji/french-maman-shikinai.jpg", "ext": ""}, {"i": 60, "n": "モッキンバード", "c": ["洋食・各国料理"], "lat": 34.891857, "lng": 134.718262, "d": "ハンバーグセット（ハンバーグにスープ・サラダ・ライスかパン・コーヒーかソフトクリームが付く定番。1,628円）", "a": "兵庫県姫路市香寺町須加院2-187", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A2%E3%83%83%E3%82%AD%E3%83%B3%E3%83%90%E3%83%BC%E3%83%89%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A6%99%E5%AF%BA%E7%94%BA%E9%A0%88%E5%8A%A0%E9%99%A22-187", "u": "../japan/hyogo/himeji.html#c-mockingbird-koudera", "food": "../japan/hyogo/img/himeji/mockingbird-koudera.jpg", "ext": ""}, {"i": 61, "n": "Align Coffee Roaster", "c": ["カフェ・パン・スイーツ"], "lat": 34.832458, "lng": 134.698257, "d": "バスクチーズケーキ（フィラデルフィア産クリームチーズを使い、表面をしっかり焼き付けた背の高いチーズケーキ）", "a": "兵庫県姫路市坂田町40", "m": "https://www.google.com/maps/search/?api=1&query=Align%20Coffee%20Roaster%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%9D%82%E7%94%B0%E7%94%BA40", "u": "../japan/hyogo/himeji.html#c-align-coffee-roaster", "food": "../japan/hyogo/img/himeji/align-coffee-roaster.jpg", "ext": ""}, {"i": 62, "n": "水屋珈琲", "c": ["カフェ・パン・スイーツ"], "lat": 34.841343, "lng": 134.688141, "d": "フルーツサンドイッチ（自家製のプラム漬けやバナナ、パイン、オレンジ、チェリーをたっぷり挟んだサンドイッチ）", "a": "兵庫県姫路市山野井町84 姫路文学館 南館", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B0%B4%E5%B1%8B%E7%8F%88%E7%90%B2%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%B1%B1%E9%87%8E%E4%BA%95%E7%94%BA84%20%E5%A7%AB%E8%B7%AF%E6%96%87%E5%AD%A6%E9%A4%A8%20%E5%8D%97%E9%A4%A8", "u": "../japan/hyogo/himeji.html#c-mizuya-coffee", "food": "../japan/hyogo/img/himeji/mizuya-coffee.jpg", "ext": ""}, {"i": 63, "n": "碧い風", "c": ["カフェ・パン・スイーツ"], "lat": 34.895485, "lng": 134.7341, "d": "ローストポーク（しっとり柔らかく焼き上げた豚肉に、その日のソースを合わせるランチの看板料理）", "a": "兵庫県姫路市香寺町犬飼570", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A2%A7%E3%81%84%E9%A2%A8%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A6%99%E5%AF%BA%E7%94%BA%E7%8A%AC%E9%A3%BC570", "u": "../japan/hyogo/himeji.html#c-aoi-kaze-kissa", "food": "../japan/hyogo/img/himeji/aoi-kaze-kissa.jpg", "ext": ""}, {"i": 64, "n": "Piece by Piece coffee", "c": ["カフェ・パン・スイーツ"], "lat": 34.810104, "lng": 134.659912, "d": "バスクチーズケーキ（店主イチオシの自家製チーズケーキ。直径15cmのホールでも買える）", "a": "兵庫県姫路市飾磨区構2-209-1", "m": "https://www.google.com/maps/search/?api=1&query=Piece%20by%20Piece%20coffee%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A3%BE%E7%A3%A8%E5%8C%BA%E6%A7%8B2-209-1", "u": "../japan/hyogo/himeji.html#c-piece-by-piece-coffee", "food": "../japan/hyogo/img/himeji/piece-by-piece-coffee.jpg", "ext": ""}, {"i": 65, "n": "-RECORD-／coffeeBOOTH", "c": ["カフェ・パン・スイーツ"], "lat": 34.780918, "lng": 134.587891, "d": "スティックシュガーバタークレープ（ミックス粉を使わず粉から配合した生地を棒状に巻いた、ドリンクに添えられるクレープ）", "a": "兵庫県姫路市網干区新在家569", "m": "https://www.google.com/maps/search/?api=1&query=-RECORD-%EF%BC%8FcoffeeBOOTH%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E7%B6%B2%E5%B9%B2%E5%8C%BA%E6%96%B0%E5%9C%A8%E5%AE%B6569", "u": "../japan/hyogo/himeji.html#c-record-coffee-booth", "food": "../japan/hyogo/img/himeji/record-coffee-booth.jpg", "ext": ""}, {"i": 66, "n": "ブーランジェリー はっくるべりー 矢倉店", "c": ["カフェ・パン・スイーツ"], "lat": 34.808685, "lng": 134.638519, "d": "しあわせメロンパン（カリカリのクッキー生地とふんわりした生地を重ねた看板のメロンパン。1個276円）", "a": "兵庫県姫路市飾磨区矢倉町2丁目8", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%96%E3%83%BC%E3%83%A9%E3%83%B3%E3%82%B8%E3%82%A7%E3%83%AA%E3%83%BC%20%E3%81%AF%E3%81%A3%E3%81%8F%E3%82%8B%E3%81%B9%E3%82%8A%E3%83%BC%20%E7%9F%A2%E5%80%89%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E9%A3%BE%E7%A3%A8%E5%8C%BA%E7%9F%A2%E5%80%89%E7%94%BA2%E4%B8%81%E7%9B%AE8", "u": "../japan/hyogo/himeji.html#c-huckleberry-yagura", "food": "../japan/hyogo/img/himeji/huckleberry-yagura.jpg", "ext": ""}, {"i": 67, "n": "Komel", "c": ["カフェ・パン・スイーツ"], "lat": 34.829372, "lng": 134.684433, "d": "紅茶苺ミルククリームチーズ（紅茶生地にイチゴとミルク風味のクリームチーズを合わせたベーグル。370円）", "a": "兵庫県姫路市久保町151 シャトー姫路1階-B", "m": "https://www.google.com/maps/search/?api=1&query=Komel%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%B9%85%E4%BF%9D%E7%94%BA151%20%E3%82%B7%E3%83%A3%E3%83%88%E3%83%BC%E5%A7%AB%E8%B7%AF1%E9%9A%8E-B", "u": "../japan/hyogo/himeji.html#c-komel-bagel", "food": "../japan/hyogo/img/himeji/komel-bagel.jpg", "ext": ""}, {"i": 68, "n": "小嶋パン工房", "c": ["カフェ・パン・スイーツ"], "lat": 34.845551, "lng": 134.677856, "d": "プレミアム角食（バター・練乳・生クリームなど乳脂肪分の高い材料を使った、中までしっとりした角食パン。1斤560円）", "a": "兵庫県姫路市東辻井4丁目1-52 ドミール東辻井1F-E", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E5%B6%8B%E3%83%91%E3%83%B3%E5%B7%A5%E6%88%BF%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E6%9D%B1%E8%BE%BB%E4%BA%954%E4%B8%81%E7%9B%AE1-52%20%E3%83%89%E3%83%9F%E3%83%BC%E3%83%AB%E6%9D%B1%E8%BE%BB%E4%BA%951F-E", "u": "../japan/hyogo/himeji.html#c-kojima-pan-koubou", "food": "../japan/hyogo/img/himeji/kojima-pan-koubou.jpg", "ext": ""}, {"i": 69, "n": "御菓子司 福壽堂本店", "c": ["カフェ・パン・スイーツ"], "lat": 34.802155, "lng": 134.63623, "d": "姫路銘菓 ひろはた（全国菓子博覧会で総裁賞を受けた、姫路の風土を表した同店の代表銘菓）", "a": "兵庫県姫路市広畑区本町6丁目696（広栄橋西詰）", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E7%A6%8F%E5%A3%BD%E5%A0%82%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%BA%83%E7%95%91%E5%8C%BA%E6%9C%AC%E7%94%BA6%E4%B8%81%E7%9B%AE696%EF%BC%88%E5%BA%83%E6%A0%84%E6%A9%8B%E8%A5%BF%E8%A9%B0%EF%BC%89", "u": "../japan/hyogo/himeji.html#c-fukujudo-honten", "food": "../japan/hyogo/img/himeji/fukujudo-honten.jpg", "ext": ""}, {"i": 70, "n": "姫路和菓子の江戸屋 和 夢前本店", "c": ["カフェ・パン・スイーツ"], "lat": 34.85104, "lng": 134.651276, "d": "元祖ぷりん大福（昔ながらの焼きプリンを丸ごと大福で包んだ菓子）", "a": "兵庫県姫路市下手野4丁目11-14", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A7%AB%E8%B7%AF%E5%92%8C%E8%8F%93%E5%AD%90%E3%81%AE%E6%B1%9F%E6%88%B8%E5%B1%8B%20%E5%92%8C%20%E5%A4%A2%E5%89%8D%E6%9C%AC%E5%BA%97%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E4%B8%8B%E6%89%8B%E9%87%8E4%E4%B8%81%E7%9B%AE11-14", "u": "../japan/hyogo/himeji.html#c-edoya-nagomi-yumesaki", "food": "../japan/hyogo/img/himeji/edoya-nagomi-yumesaki.jpg", "ext": ""}, {"i": 71, "n": "パティスリー ル・プティブルー", "c": ["カフェ・パン・スイーツ"], "lat": 34.777988, "lng": 134.759018, "d": "塩レモンケーキ（家島産の天然塩を使った丸いレモンケーキ。焼きたてはシャリっと、時間が経つとしっとりする）", "a": "兵庫県姫路市大塩町宮前17", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%86%E3%82%A3%E3%82%B9%E3%83%AA%E3%83%BC%20%E3%83%AB%E3%83%BB%E3%83%97%E3%83%86%E3%82%A3%E3%83%96%E3%83%AB%E3%83%BC%20%E5%85%B5%E5%BA%AB%E7%9C%8C%E5%A7%AB%E8%B7%AF%E5%B8%82%E5%A4%A7%E5%A1%A9%E7%94%BA%E5%AE%AE%E5%89%8D17", "u": "../japan/hyogo/himeji.html#c-le-petit-bleu-oshio", "food": "../japan/hyogo/img/himeji/le-petit-bleu-oshio.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([34.824676,134.677014],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('himeji', "姫路");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
