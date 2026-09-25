@@ -101,8 +101,11 @@
 | ドイツ | ケルン | 37 | [europe/germany/](europe/germany/) |
 | ドイツ | フランクフルト | 35 | [europe/germany/](europe/germany/) |
 | フランス | パリ | 36 | [europe/france/](europe/france/) |
+| ドイツ | フュッセン・ノイシュヴァンシュタイン（ホーエンシュヴァンガウ／シュヴァンガウ） | 35 | [europe/germany/](europe/germany/) |
+| ドイツ | オーバーヴェーゼル・ライン渓谷（ザンクト・ゴアール／バッハラッハ） | 27 | [europe/germany/](europe/germany/) |
+| クロアチア | ドブロブニク | 36 | [europe/croatia/](europe/croatia/) |
 
-小計 8冊 / 291店
+小計 11冊 / 389店
 
 ## アジア（日本以外）
 
@@ -122,7 +125,7 @@
 
 小計 3冊 / 141店
 
-**合計 70冊 / 3782店**（2026-09-24 時点）
+**合計 73冊 / 3880店**（2026-09-25 時点）
 
 ## 進行中の発注
 
