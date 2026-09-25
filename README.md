@@ -97,12 +97,14 @@
 | ベルギー | ヘント | 37 | [europe/belgium/](europe/belgium/) |
 | ベルギー | ルーベン | 36 | [europe/belgium/](europe/belgium/) |
 | ベルギー | リエージュ | 37 | [europe/belgium/](europe/belgium/) |
+| ベルギー | ブルージュ | 37 | [europe/belgium/](europe/belgium/) |
+| ベルギー | アントワープ | 38 | [europe/belgium/](europe/belgium/) |
 | オランダ | アムステルダム | 37 | [europe/netherlands/](europe/netherlands/) |
 | ドイツ | ケルン | 37 | [europe/germany/](europe/germany/) |
 | ドイツ | フランクフルト | 35 | [europe/germany/](europe/germany/) |
 | フランス | パリ | 36 | [europe/france/](europe/france/) |
 
-小計 8冊 / 291店
+小計 10冊 / 366店
 
 ## アジア（日本以外）
 
@@ -122,7 +124,7 @@
 
 小計 3冊 / 141店
 
-**合計 70冊 / 3782店**（2026-09-24 時点）
+**合計 72冊 / 3857店**（2026-09-25 時点）
 
 ## 進行中の発注
 
