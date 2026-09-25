@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>デルフト の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>デルフト の食べ歩き地図<span class="n">36店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="デルフト の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">デルフト の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../europe/netherlands/delft.html"><span class="sn-e">📄</span>デルフトのガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（75都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "Spijshuis De Dis", "c": ["ご当地名物"], "lat": 52.0115939, "lng": 4.3630592, "d": "季節のオランダ料理プロフェイライ（proeverij＝少量ずつ数品を味わう試食コース）", "a": "Beestenmarkt 36, 2611 GC Delft", "m": "https://www.google.com/maps/search/?api=1&query=Spijshuis%20De%20Dis%20Beestenmarkt%2036%2C%202611%20GC%20Delft", "u": "../europe/netherlands/delft.html#c-spijshuis-de-dis", "food": "../europe/netherlands/img/delft/spijshuis-de-dis.jpg", "ext": ""}, {"i": 1, "n": "Restaurant Le Vieux Jean", "c": ["ご当地名物"], "lat": 52.0122404, "lng": 4.355942, "d": "オランダ産仔牛のロースト（ミディアムレアの仔牛に、クリーム煮の仔牛シチュー・グリーンアスパラ・モリーユ茸・ローズマリー風味のジュを添える）", "a": "Heilige Geestkerkhof 3, 2611 HP Delft", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Le%20Vieux%20Jean%20Heilige%20Geestkerkhof%203%2C%202611%20HP%20Delft", "u": "../europe/netherlands/delft.html#c-le-vieux-jean", "food": "../europe/netherlands/img/delft/le-vieux-jean.jpg", "ext": ""}, {"i": 2, "n": "Stadsherberg De Mol", "c": ["ご当地名物"], "lat": 52.0107891, "lng": 4.362307, "d": "中世風の肉料理の大皿（スペアリブやポークチョップを手づかみで食べる宴会料理）", "a": "Molslaan 104, 2611 RP Delft", "m": "https://www.google.com/maps/search/?api=1&query=Stadsherberg%20De%20Mol%20Molslaan%20104%2C%202611%20RP%20Delft", "u": "../europe/netherlands/delft.html#c-stadsherberg-de-mol", "food": "", "ext": ""}, {"i": 3, "n": "Loetje Delft", "c": ["ご当地名物"], "lat": 52.0067009, "lng": 4.3605247, "d": "ビーフステーキ（biefstuk＝テンダーロインを焼き、バターベースの濃いジュをかけ、白パンを浸して食べるオランダの定番）", "a": "Korte Geer 1A, 2611 CA Delft", "m": "https://www.google.com/maps/search/?api=1&query=Loetje%20Delft%20Korte%20Geer%201A%2C%202611%20CA%20Delft", "u": "../europe/netherlands/delft.html#c-loetje-delft", "food": "../europe/netherlands/img/delft/loetje-delft.jpg", "ext": ""}, {"i": 4, "n": "Stads-Koffyhuis", "c": ["ご当地名物"], "lat": 52.0108259, "lng": 4.3563988, "d": "オランダ式パンケーキ（pannenkoek＝薄く大きなクレープ状の生地にベーコン・チーズ・リンゴなどを焼き込み、シロップ（stroop）をかけて食べる）とポッフェルチェス（poffertjes＝専用鉄板で焼く一口サイズのふわふわパンケーキ。バターと粉砂糖で）", "a": "Oude Delft 133, 2611 BE Delft", "m": "https://www.google.com/maps/search/?api=1&query=Stads-Koffyhuis%20Oude%20Delft%20133%2C%202611%20BE%20Delft", "u": "../europe/netherlands/delft.html#c-stads-koffyhuis", "food": "../europe/netherlands/img/delft/stads-koffyhuis.jpg", "ext": ""}, {"i": 5, "n": "Café Restaurant de V", "c": ["ご当地名物"], "lat": 52.0131659, "lng": 4.3561432, "d": "サテ（saté＝豚や鶏の串焼きに甘辛いピーナッツソースをかけた、インドネシア由来でオランダの定番になった料理。フライドポテト添え）", "a": "Voorstraat 9, 2611 JJ Delft", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Restaurant%20de%20V%20Voorstraat%209%2C%202611%20JJ%20Delft", "u": "../europe/netherlands/delft.html#c-cafe-restaurant-de-v", "food": "", "ext": ""}, {"i": 6, "n": "Café de Oude Jan", "c": ["ご当地名物"], "lat": 52.0122585, "lng": 4.3560008, "d": "ビターバレン（bitterballen＝とろみのある牛肉ラグーを丸めて揚げた一口コロッケ。マスタードをつけてビールと食べる）", "a": "Heilige Geestkerkhof 4, 2611 HP Delft", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20de%20Oude%20Jan%20Heilige%20Geestkerkhof%204%2C%202611%20HP%20Delft", "u": "../europe/netherlands/delft.html#c-cafe-de-oude-jan", "food": "", "ext": ""}, {"i": 7, "n": "Grand Café 't Boterhuis", "c": ["ご当地名物"], "lat": 52.0111395, "lng": 4.3581679, "d": "パッチェ・ストーフフレース（patatje stoofvlees＝フライドポテトに、ビールなどで柔らかく煮込んだ牛肉シチューをかけた料理）", "a": "Markt 15-17a, 2611 GP Delft", "m": "https://www.google.com/maps/search/?api=1&query=Grand%20Caf%C3%A9%20%27t%20Boterhuis%20Markt%2015-17a%2C%202611%20GP%20Delft", "u": "../europe/netherlands/delft.html#c-t-boterhuis", "food": "../europe/netherlands/img/delft/t-boterhuis.jpg", "ext": ""}, {"i": 8, "n": "'t Postkantoor", "c": ["ご当地名物"], "lat": 52.0122934, "lng": 4.3572062, "d": "ガルナーレンクロケッチェス（garnalenkroketjes＝北海の小エビを入れたクリームコロッケ。グリーンカレー風味マヨネーズ添え）", "a": "Hippolytusbuurt 14, 2611 HN Delft", "m": "https://www.google.com/maps/search/?api=1&query=%27t%20Postkantoor%20Hippolytusbuurt%2014%2C%202611%20HN%20Delft", "u": "../europe/netherlands/delft.html#c-t-postkantoor", "food": "../europe/netherlands/img/delft/t-postkantoor.jpg", "ext": ""}, {"i": 9, "n": "Simonis op de Markt（デルフト木曜市）", "c": ["屋台・食べ歩き"], "lat": 52.0103258, "lng": 4.3603488, "d": "ハーリング（haring＝軽く塩漬けした生ニシン。刻み玉ねぎとピクルスを添え、尾をつまんで丸ごと食べる。パンに挟む broodje haring も）とキベリング（kibbeling＝白身魚のひと口フライ。タルタル系ソース添え）", "a": "Markt & Brabantse Turfmarkt, 2611 HM Delft（木曜市内）", "m": "https://www.google.com/maps/search/?api=1&query=Simonis%20op%20de%20Markt%EF%BC%88%E3%83%87%E3%83%AB%E3%83%95%E3%83%88%E6%9C%A8%E6%9B%9C%E5%B8%82%EF%BC%89%20Markt%20%26%20Brabantse%20Turfmarkt%2C%202611%20HM%20Delft%EF%BC%88%E6%9C%A8%E6%9B%9C%E5%B8%82%E5%86%85%EF%BC%89", "u": "../europe/netherlands/delft.html#c-simonis-markt-delft", "food": "../europe/netherlands/img/delft/simonis-markt-delft.jpg", "ext": ""}, {"i": 10, "n": "Stroopwafels Vergunst（デルフト木曜市）", "c": ["屋台・食べ歩き"], "lat": 52.0117085, "lng": 4.3591943, "d": "焼きたてストロープワッフル（stroopwafel＝薄く焼いた2枚のワッフルに、黒砂糖・バター・シロップのキャラメルを挟んだゴーダ発祥の菓子。屋台では温かいまま）", "a": "Markt, Delft（木曜市内）", "m": "https://www.google.com/maps/search/?api=1&query=Stroopwafels%20Vergunst%EF%BC%88%E3%83%87%E3%83%AB%E3%83%95%E3%83%88%E6%9C%A8%E6%9B%9C%E5%B8%82%EF%BC%89%20Markt%2C%20Delft%EF%BC%88%E6%9C%A8%E6%9B%9C%E5%B8%82%E5%86%85%EF%BC%89", "u": "../europe/netherlands/delft.html#c-stroopwafels-vergunst", "food": "", "ext": ""}, {"i": 11, "n": "House of Frites", "c": ["屋台・食べ歩き"], "lat": 52.0109105, "lng": 4.3601411, "d": "パッチェ・オールログ（patatje oorlog＝フリッツにマヨネーズ・サテ用ピーナッツソース・生の刻み玉ねぎを全部のせたオランダの定番）", "a": "Jacob Gerritstraat 4, 2611 ES Delft", "m": "https://www.google.com/maps/search/?api=1&query=House%20of%20Frites%20Jacob%20Gerritstraat%204%2C%202611%20ES%20Delft", "u": "../europe/netherlands/delft.html#c-house-of-frites-delft", "food": "", "ext": ""}, {"i": 12, "n": "Frietplein", "c": ["市場・食材店"], "lat": 52.0117606, "lng": 4.3585342, "d": "フリッツとクロケット（kroket＝牛肉ラグーにパン粉をつけて揚げた棒状コロッケ。マスタードで、またはパンに挟んで broodje kroket に）", "a": "Markt 16a, 2611 GT Delft", "m": "https://www.google.com/maps/search/?api=1&query=Frietplein%20Markt%2016a%2C%202611%20GT%20Delft", "u": "../europe/netherlands/delft.html#c-frietplein-delft", "food": "../europe/netherlands/img/delft/frietplein-delft.jpg", "ext": ""}, {"i": 13, "n": "Bram Ladage Delft Centrum", "c": ["屋台・食べ歩き"], "lat": 52.0101997, "lng": 4.3620189, "d": "フリッツ（patat＝太めに切ったジャガイモの二度揚げ。紙コーンで）", "a": "Paradijspoort 8, 2611 MB Delft", "m": "https://www.google.com/maps/search/?api=1&query=Bram%20Ladage%20Delft%20Centrum%20Paradijspoort%208%2C%202611%20MB%20Delft", "u": "../europe/netherlands/delft.html#c-bram-ladage-delft-centrum", "food": "../europe/netherlands/img/delft/bram-ladage-delft-centrum.jpg", "ext": ""}, {"i": 14, "n": "Stadsbakkerij De Diamanten Ring", "c": ["市場・食材店", "屋台・食べ歩き"], "lat": 52.0128174, "lng": 4.3574765, "d": "オントバイトクーク（ontbijtkoek＝ライ麦粉にシナモン・クローブ・ジンジャーなどを効かせたしっとりした蘭式スパイスケーキ。バターを塗って朝食に）", "a": "Choorstraat 9, 2611 JD Delft", "m": "https://www.google.com/maps/search/?api=1&query=Stadsbakkerij%20De%20Diamanten%20Ring%20Choorstraat%209%2C%202611%20JD%20Delft", "u": "../europe/netherlands/delft.html#c-stadsbakkerij-de-diamanten-ring", "food": "", "ext": ""}, {"i": 15, "n": "Wafels en Zoenen", "c": ["市場・食材店"], "lat": 52.0112211, "lng": 4.3587984, "d": "ブリュッセル風ワッフル（軽く四角い生地にビスコフ（スパイスクッキー）とキャラメルソースをのせたもの）", "a": "Markt 37B, 2611 GR Delft", "m": "https://www.google.com/maps/search/?api=1&query=Wafels%20en%20Zoenen%20Markt%2037B%2C%202611%20GR%20Delft", "u": "../europe/netherlands/delft.html#c-wafels-en-zoenen", "food": "", "ext": ""}, {"i": 16, "n": "Klein Seinpost", "c": ["屋台・食べ歩き"], "lat": 51.9969568, "lng": 4.3521581, "d": "ポッフェルチェス（poffertjes＝専用の丸いくぼみの鉄板で焼く一口大のふわふわパンケーキ。溶かしバターと粉砂糖をたっぷり）", "a": "Martinus Nijhofflaan 476, 2624 MH Delft（De Hoven Passage）", "m": "https://www.google.com/maps/search/?api=1&query=Klein%20Seinpost%20Martinus%20Nijhofflaan%20476%2C%202624%20MH%20Delft%EF%BC%88De%20Hoven%20Passage%EF%BC%89", "u": "../europe/netherlands/delft.html#c-klein-seinpost", "food": "../europe/netherlands/img/delft/klein-seinpost.jpg", "ext": ""}, {"i": 17, "n": "Bakker Suikerbuik", "c": ["屋台・食べ歩き"], "lat": 52.0124381, "lng": 4.3570881, "d": "ボッケプーチェス（bokkepootjes＝『山羊の足』の意。細長いアーモンドメレンゲ2枚でバタークリームを挟み、両端をチョコにつけたオランダの伝統菓子）", "a": "Hippolytusbuurt 22-24, 2611 HN Delft", "m": "https://www.google.com/maps/search/?api=1&query=Bakker%20Suikerbuik%20Hippolytusbuurt%2022-24%2C%202611%20HN%20Delft", "u": "../europe/netherlands/delft.html#c-bakker-suikerbuik", "food": "../europe/netherlands/img/delft/bakker-suikerbuik.jpg", "ext": ""}, {"i": 18, "n": "J.H. Beaart IJs", "c": ["屋台・食べ歩き"], "lat": 52.0098922, "lng": 4.3705865, "d": "アイス・トゥッセン・トゥヴェー・ワーフェルス（ijs tussen twee wafels＝バニラアイスを2枚の薄いウエハースで挟んだオランダの昔ながらのアイス）", "a": "Julianalaan 37, 2628 BB Delft", "m": "https://www.google.com/maps/search/?api=1&query=J.H.%20Beaart%20IJs%20Julianalaan%2037%2C%202628%20BB%20Delft", "u": "../europe/netherlands/delft.html#c-jh-beaart-ijs", "food": "", "ext": ""}, {"i": 19, "n": "Kobus Kuch", "c": ["カフェ・パン・スイーツ", "ビール・バー"], "lat": 52.0113636, "lng": 4.361978, "d": "アップルタールト（appeltaart＝オランダ式の深型アップルパイ。格子状の生地にリンゴ・レーズン・シナモンを詰め、ホイップクリーム（slagroom）を添える）", "a": "Beestenmarkt 1, 2611 GA Delft", "m": "https://www.google.com/maps/search/?api=1&query=Kobus%20Kuch%20Beestenmarkt%201%2C%202611%20GA%20Delft", "u": "../europe/netherlands/delft.html#c-kobus-kuch", "food": "../europe/netherlands/img/delft/kobus-kuch.jpg", "ext": ""}, {"i": 20, "n": "Kek – De koffiebar van Delft", "c": ["ビール・バー", "カフェ・パン・スイーツ"], "lat": 52.0125705, "lng": 4.3599088, "d": "キャロットケーキ（carrot cake＝すりおろした人参とスパイス入りの生地にクリームチーズのフロスティングを重ねたケーキ）とラテ", "a": "Voldersgracht 27, 2611 EV Delft", "m": "https://www.google.com/maps/search/?api=1&query=Kek%20%E2%80%93%20De%20koffiebar%20van%20Delft%20Voldersgracht%2027%2C%202611%20EV%20Delft", "u": "../europe/netherlands/delft.html#c-kek-delft", "food": "", "ext": ""}, {"i": 21, "n": "Miss Morrison Koffiebranderij", "c": ["カフェ・パン・スイーツ"], "lat": 52.0131274, "lng": 4.3561659, "d": "自家焙煎のシングルオリジン（例：スマトラ・マンデリン＝スパイシーで土っぽい重厚な味わいのインドネシア産豆）で淹れるカプチーノ", "a": "Voorstraat 7, 2611 JJ Delft", "m": "https://www.google.com/maps/search/?api=1&query=Miss%20Morrison%20Koffiebranderij%20Voorstraat%207%2C%202611%20JJ%20Delft", "u": "../europe/netherlands/delft.html#c-miss-morrison-delft", "food": "", "ext": ""}, {"i": 22, "n": "Stadsbrouwerij De Koperen Kat", "c": ["ビール・バー"], "lat": 51.9949489, "lng": 4.3674282, "d": "オーストポーター（Oostporter＝ロースト麦芽の黒ビール。ウイスキー樽熟成版もある）とテイスティング", "a": "Schieweg 15M, 2627 AN Delft", "m": "https://www.google.com/maps/search/?api=1&query=Stadsbrouwerij%20De%20Koperen%20Kat%20Schieweg%2015M%2C%202627%20AN%20Delft", "u": "../europe/netherlands/delft.html#c-stadsbrouwerij-de-koperen-kat", "food": "../europe/netherlands/img/delft/stadsbrouwerij-de-koperen-kat.jpg", "ext": ""}, {"i": 23, "n": "Delfts Brouwhuis", "c": ["ビール・バー"], "lat": 52.0123485, "lng": 4.3567164, "d": "ボレルプランク（borrelplank＝チーズ・ソーセージ・揚げ物などを板に盛ったオランダ流のビールのつまみ盛り合わせ）とビアテイスティング", "a": "Hippolytusbuurt 43, 2611 HM Delft", "m": "https://www.google.com/maps/search/?api=1&query=Delfts%20Brouwhuis%20Hippolytusbuurt%2043%2C%202611%20HM%20Delft", "u": "../europe/netherlands/delft.html#c-delfts-brouwhuis", "food": "../europe/netherlands/img/delft/delfts-brouwhuis.jpg", "ext": ""}, {"i": 24, "n": "Locus Publicus", "c": ["カフェ・パン・スイーツ", "ビール・バー"], "lat": 52.0102413, "lng": 4.3603997, "d": "トースティ（tosti＝チーズやハムをはさんだホットサンド。ここでは玉ねぎ・トマト入り、ブリー・洋梨・蜂蜜など種類が多い）", "a": "Brabantse Turfmarkt 67, 2611 CM Delft", "m": "https://www.google.com/maps/search/?api=1&query=Locus%20Publicus%20Brabantse%20Turfmarkt%2067%2C%202611%20CM%20Delft", "u": "../europe/netherlands/delft.html#c-locus-publicus", "food": "../europe/netherlands/img/delft/locus-publicus.jpg", "ext": ""}, {"i": 25, "n": "Bierhuis De Klomp", "c": ["カフェ・パン・スイーツ", "ビール・バー"], "lat": 52.0095105, "lng": 4.3563093, "d": "ビッテルバレン（bitterballen＝とろみのある牛肉ラグーを丸めて揚げたオランダの酒のつまみ。マスタードを付けて食べる）とジュネヴァ「Delfts Zwart」", "a": "Binnenwatersloot 5, 2611 BJ Delft", "m": "https://www.google.com/maps/search/?api=1&query=Bierhuis%20De%20Klomp%20Binnenwatersloot%205%2C%202611%20BJ%20Delft", "u": "../europe/netherlands/delft.html#c-bierhuis-de-klomp", "food": "../europe/netherlands/img/delft/bierhuis-de-klomp.jpg", "ext": ""}, {"i": 26, "n": "Restaurant & Toko Redjeki", "c": ["アジア・エスニック"], "lat": 52.0133691, "lng": 4.3586236, "d": "リスターフェル（rijsttafel＝白飯を中心に、サテ（甘辛いタレの串焼き）・ルンダン（牛肉のココナッツ煮込み）・野菜の和え物など十数皿を一度に並べるオランダ発祥のインドネシア式コース）", "a": "Choorstraat 50-56, 2611 JH Delft", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20%26%20Toko%20Redjeki%20Choorstraat%2050-56%2C%202611%20JH%20Delft", "u": "../europe/netherlands/delft.html#c-restaurant-toko-redjeki", "food": "../europe/netherlands/img/delft/restaurant-toko-redjeki.jpg", "ext": ""}, {"i": 27, "n": "Toko Idola", "c": ["アジア・エスニック"], "lat": 52.0093737, "lng": 4.3614167, "d": "ナシ・ランス（nasi rames＝ご飯に牛肉のスパイス煮・卵のバラド（辛いチリソース煮）・インゲンのピリ辛炒めなど数種のおかずを盛り合わせる一皿）", "a": "Brabantse Turfmarkt 32a, 2611 CN Delft", "m": "https://www.google.com/maps/search/?api=1&query=Toko%20Idola%20Brabantse%20Turfmarkt%2032a%2C%202611%20CN%20Delft", "u": "../europe/netherlands/delft.html#c-toko-idola", "food": "", "ext": ""}, {"i": 28, "n": "Restaurant Klein Maar Fijn", "c": ["アジア・エスニック", "洋食・各国料理"], "lat": 52.0095374, "lng": 4.3563539, "d": "ロティ（roti＝スリナムのインド系移民料理。薄い豆粉入りクレープ状のパンに、鶏肉・じゃがいも・長豆のカレー煮込みを添え、手でちぎって包んで食べる）", "a": "Binnenwatersloot 7, 2611 BJ Delft", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Klein%20Maar%20Fijn%20Binnenwatersloot%207%2C%202611%20BJ%20Delft", "u": "../europe/netherlands/delft.html#c-restaurant-klein-maar-fijn", "food": "../europe/netherlands/img/delft/restaurant-klein-maar-fijn.jpg", "ext": ""}, {"i": 29, "n": "Restaurant Rossio", "c": ["洋食・各国料理"], "lat": 52.0101707, "lng": 4.3573628, "d": "ロシオの前菜盛り合わせ（Rossio delicacies platter＝生ハム・チーズ・オリーブ・ディップなどスペインとポルトガルの小皿を一枚に盛った前菜）と自家製パン", "a": "Oude Delft 78, 2611 CD Delft", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Rossio%20Oude%20Delft%2078%2C%202611%20CD%20Delft", "u": "../europe/netherlands/delft.html#c-restaurant-rossio", "food": "", "ext": ""}, {"i": 30, "n": "Settebello", "c": ["洋食・各国料理"], "lat": 52.0111909, "lng": 4.3587203, "d": "ピッツァ・アル・taglio（pizza al taglio＝長方形の天板で焼き、好きな大きさに切って売るローマ式ピザ。生地は気泡が多く軽い）", "a": "Markt 33, 2611 GR Delft", "m": "https://www.google.com/maps/search/?api=1&query=Settebello%20Markt%2033%2C%202611%20GR%20Delft", "u": "../europe/netherlands/delft.html#c-settebello-delft", "food": "../europe/netherlands/img/delft/settebello-delft.jpg", "ext": ""}, {"i": 31, "n": "GRK&ZO", "c": ["アジア・エスニック"], "lat": 52.0139112, "lng": 4.3585578, "d": "グリル・プレート（ギリシャ風の豚・鶏の串焼きスブラキやビフテキ（ハンバーグ）を、フライドポテト・ザジキ（ヨーグルトときゅうりのソース）と盛り合わせた一皿）", "a": "Verwersdijk 32, 2611 NH Delft", "m": "https://www.google.com/maps/search/?api=1&query=GRK%26ZO%20Verwersdijk%2032%2C%202611%20NH%20Delft", "u": "../europe/netherlands/delft.html#c-grk-en-zo-delft", "food": "../europe/netherlands/img/delft/grk-en-zo-delft.jpg", "ext": ""}, {"i": 32, "n": "HUmmUS Delft", "c": ["アジア・エスニック"], "lat": 52.0106716, "lng": 4.3626831, "d": "フムス・オリジナル（hummus＝ひよこ豆・練りごま・レモン・にんにくのなめらかなペースト。オリーブオイルをかけ、焼きたてのピタと紫キャベツのサラダを添える）", "a": "Molslaan 39, 2611 RJ Delft", "m": "https://www.google.com/maps/search/?api=1&query=HUmmUS%20Delft%20Molslaan%2039%2C%202611%20RJ%20Delft", "u": "../europe/netherlands/delft.html#c-hummus-delft", "food": "../europe/netherlands/img/delft/hummus-delft.jpg", "ext": ""}, {"i": 33, "n": "Ramen Nikkou", "c": ["アジア・エスニック"], "lat": 52.0121727, "lng": 4.3632619, "d": "鶏白湯ラーメン（toripaitan＝鶏ガラを長時間煮出した白濁スープのラーメン。塩味で、チャーシュー・味玉・ねぎをのせる）", "a": "Oosteinde 199, 2611 VE Delft", "m": "https://www.google.com/maps/search/?api=1&query=Ramen%20Nikkou%20Oosteinde%20199%2C%202611%20VE%20Delft", "u": "../europe/netherlands/delft.html#c-ramen-nikkou-delft", "food": "../europe/netherlands/img/delft/ramen-nikkou-delft.jpg", "ext": ""}, {"i": 34, "n": "Maharaja", "c": ["洋食・各国料理", "アジア・エスニック"], "lat": 52.0133467, "lng": 4.3642667, "d": "チキン・ティッカ・マサラ（chicken tikka masala＝タンドール窯で焼いた鶏肉を、トマトとクリームのまろやかなカレーソースで煮込んだ料理）とココナッツ・ナン", "a": "Nieuwe Langendijk 59, 2611 VJ Delft", "m": "https://www.google.com/maps/search/?api=1&query=Maharaja%20Nieuwe%20Langendijk%2059%2C%202611%20VJ%20Delft", "u": "../europe/netherlands/delft.html#c-maharaja-delft", "food": "../europe/netherlands/img/delft/maharaja-delft.jpg", "ext": ""}, {"i": 35, "n": "Hermanos", "c": ["アジア・エスニック"], "lat": 52.0123627, "lng": 4.3531221, "d": "チョリパン（choripán＝炭火で焼いたチョリソー（豚のスパイスソーセージ）をパンにはさみ、香草ソースのチミチュリをかけたアルゼンチンの屋台料理）", "a": "Phoenixstraat 54, 2611 AM Delft", "m": "https://www.google.com/maps/search/?api=1&query=Hermanos%20Phoenixstraat%2054%2C%202611%20AM%20Delft", "u": "../europe/netherlands/delft.html#c-hermanos-delft", "food": "", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([52.010540,4.359316],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('delft', "デルフト");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
