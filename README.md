@@ -97,6 +97,8 @@
 | ベルギー | ヘント | 37 | [europe/belgium/](europe/belgium/) |
 | ベルギー | ルーベン | 99 | [europe/belgium/](europe/belgium/) |
 | ベルギー | リエージュ | 37 | [europe/belgium/](europe/belgium/) |
+| ベルギー | ブルージュ | 37 | [europe/belgium/](europe/belgium/) |
+| ベルギー | アントワープ | 38 | [europe/belgium/](europe/belgium/) |
 | オランダ | アムステルダム | 36 | [europe/netherlands/](europe/netherlands/) |
 | オランダ | デルフト | 36 | [europe/netherlands/](europe/netherlands/) |
 | オランダ | ロッテルダム（巻末に「キンデルダイク風車群周辺」の節・6店を含む） | 51 | [europe/netherlands/](europe/netherlands/) |
@@ -109,7 +111,7 @@
 | ドイツ | オーバーヴェーゼル・ライン渓谷（ザンクト・ゴアール／バッハラッハ） | 27 | [europe/germany/](europe/germany/) |
 | クロアチア | ドブロブニク | 36 | [europe/croatia/](europe/croatia/) |
 
-小計 15冊 / 629店
+小計 17冊 / 704店
 
 ## アジア（日本以外）
 
