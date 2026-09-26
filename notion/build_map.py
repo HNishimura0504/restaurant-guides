@@ -100,8 +100,32 @@ def img_paths(s):
     rel = "%s/img/%s" % (d, fn[:-5])
     food = "%s/%s.jpg" % (rel, s["slug"])
     ext = "%s/%s_exterior.jpg" % (rel, s["slug"])
-    return (food if os.path.exists(os.path.join(ROOT, food)) else None,
-            ext if os.path.exists(os.path.join(ROOT, ext)) else None)
+    return (food if _tracked_or_exists(food) else None,
+            ext if _tracked_or_exists(ext) else None)
+
+
+_TRACKED = None
+
+
+def _tracked_or_exists(rel):
+    """写真の有無は「作業ツリーに在る」か「git の索引に在る」かで見る（2026-09-26・B-595）。
+
+    sparse checkout（`!/**/img/`）の作業ツリーでは他都市の写真が無く、`os.path.exists` だけだと
+    **全都市のポップアップから写真参照が消える**（2026-09-25 の #39 で実際に起き、公開された）。
+    索引（`git ls-files`）は sparse でも全ファイルを持つ。git が無い環境ではこれまでどおり作業ツリーだけを見る。
+    """
+    global _TRACKED
+    if os.path.exists(os.path.join(ROOT, rel)):
+        return True
+    if _TRACKED is None:
+        try:
+            import subprocess
+            out = subprocess.run(["git", "-C", ROOT, "ls-files", "--", "*/img/*"],
+                                 capture_output=True, text=True, check=True).stdout
+            _TRACKED = set(out.split("\n"))
+        except Exception:
+            _TRACKED = set()
+    return rel in _TRACKED
 
 
 CSS = """

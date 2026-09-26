@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ブルージュ美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="tocname">
+/* 目次の1行を「番号＋店名」＋その下に小さい灰色の一言、の2段にする（2026-09-21 依頼）。
+   副題は番号バッジ（min-width 4.6mm ＋ 右余白 1.2mm）のぶんだけ字下げして、店名の頭に揃える。 */
+.toc a{line-height:1.3;}
+.toc a .tnm{font-weight:600;}
+.toc a .tsub{display:block; margin-left:5.8mm; margin-top:.2mm;
+  font-size:7.4pt; font-weight:400; color:var(--ink3); line-height:1.25;}
+/* 既存の `.toc a::after{content:" ›"}` はアンカーの末尾に付くので、副題を足すと
+   **3行目に矢印だけが残る**（実測）。矢印は店名の後ろへ移す。 */
+.toc a::after{content:none;}
+.toc a .tnm::after{content:" A"; color:var(--ink3); font-weight:400;}
+</style>
+<style id="pcread">
+/* --- PCの広い画面向け（画面のみ・紙面は不変） -------------------------------
+   WCAG 2.2 達成基準 1.4.8（AAA）＝日本語は**全角40字**が1行の上限。
+   変更前の実測は 1280px で約99字・1920px で約149字だった。
+   段に上限を付けると、幅いっぱいに伸びていた写真も一緒に収まる。
+   字の見かけの大きさは `zoom` で別に上げる（字数は段の幅と字の大きさの比でしか決まらないので、
+   `zoom` では字数は変わらない＝両方を別々に決められる）。 */
+/* 段の上限と `zoom` は**広い画面だけ**に当てる。スマホ（幅 640px 以下、または
+   「スマホ表示に固定」）には 2026-09-19 に調整した別の規則が既に当たっており、
+   そこへ `zoom` を重ねると字が大きくなりすぎる（実測＝390px で 11.5pt が実質 13.8pt）。 */
+@media screen and (min-width:700px){
+  html:not(.vm-phone) body{max-width:540px; margin-left:auto; margin-right:auto; zoom:1.2;}
+}
+@media screen{
+  /* 高さ固定のままだと、窓が広いほど写真が横長に切り取られる（1280px で 5:1）。
+     紙面と同じ比を保たせる。 */
+  .hero{height:auto; aspect-ratio:105.5 / 68;}
+  .hero-pending{height:auto; aspect-ratio:105.5 / 40;}
+  /* 地図と目次も段の中に収まる。地図は紙面と同じ比を保つ。 */
+  .mapwrap img,.mapsec img{height:auto;}
+}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">ブルージュ美食ガイド<span class="sn-n">37店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/brugge.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="ブルージュガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">ブルージュガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/brugge.html"><span class="sn-e">🗺️</span>ブルージュの地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-local"><span class="sn-e">・</span>フランドル郷土料理・ビストロ・ブラッスリー</a><a href="#s-street"><span class="sn-e">・</span>フリッツ・ワッフル・食べ歩き・市場</a><a href="#s-sweets"><span class="sn-e">・</span>チョコレート・スイーツ・パン</a><a href="#s-beer"><span class="sn-e">・</span>ビール・醸造所・ビアカフェ（料理あり）</a><a href="#s-world"><span class="sn-e">・</span>カフェ・ブランチ・世界の料理（乳児連れ向き含む）</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全77都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全77都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">EUROPE / BELGIUM・ブルージュ（Brugge） 🇧🇪</div>
+  <h1>ブルージュ美食ガイド</h1>
+  <div class="sub">運河と中世の家並みが世界遺産の「北のヴェネツィア」。北海の灰色小エビのコロッケ（ガルナール・クロケット）、ビールで煮込む牛肉の郷土料理ストーフフレース、市内醸造所のビール、チョコレート、ワッフルとフリッツまで、乳児連れの1泊2日で回れる厳選37スポット。各店に営業時間・定休日・予約・乳児連れ情報・味の証拠・参照元・Googleマップリンク付き。</div>
+  <div class="meta">2026年9月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(各店の公式サイト・観光局・在住者ブログ等から引用。出典は各カードに記載)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（旧市街・マルクト広場〜ベギン会院）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/brugge/_map.png" alt="全域マップ（旧市街・マルクト広場〜ベギン会院）">
+<a href="#c-breydel-de-coninc" style="left:53.7%;top:47.4%;width:2.4%;height:2.26%;"></a>
+<a href="#c-t-nieuw-walnutje" style="left:48.49%;top:76.88%;width:2.4%;height:2.26%;"></a>
+<a href="#c-bistro-refter" style="left:73.64%;top:40.28%;width:2.4%;height:2.26%;"></a>
+<a href="#c-assiette-blanche" style="left:54.45%;top:41.79%;width:2.4%;height:2.26%;"></a>
+<a href="#c-t-bagientje" style="left:33.69%;top:90.76%;width:2.4%;height:2.26%;"></a>
+<a href="#c-den-amand" style="left:44.56%;top:47.2%;width:2.4%;height:2.26%;"></a>
+<a href="#c-de-middenstand" style="left:28.62%;top:65.54%;width:2.4%;height:2.26%;"></a>
+<a href="#c-sans-cravate" style="left:93.62%;top:28.05%;width:2.4%;height:2.26%;"></a>
+<a href="#c-franco-belge" style="left:87.94%;top:33.26%;width:2.4%;height:2.26%;"></a>
+<a href="#c-otto-waffle-atelier" style="left:49.16%;top:70.78%;width:2.4%;height:2.26%;"></a>
+<a href="#c-house-of-waffles" style="left:54.26%;top:52.08%;width:2.4%;height:2.26%;"></a>
+<a href="#c-chez-albert" style="left:52.82%;top:47.5%;width:2.4%;height:2.26%;"></a>
+<a href="#c-the-potato-bar" style="left:40.21%;top:48.28%;width:2.4%;height:2.26%;"></a>
+<a href="#c-frituur-de-gentpoorte" style="left:78.64%;top:73.34%;width:2.4%;height:2.26%;"></a>
+<a href="#c-frietmuseum" style="left:45.87%;top:34.58%;width:2.4%;height:2.26%;"></a>
+<a href="#c-zaterdagmarkt-t-zand" style="left:24.6%;top:60.25%;width:2.4%;height:2.26%;"></a>
+<a href="#c-vismarkt" style="left:61.04%;top:50.4%;width:2.4%;height:2.26%;"></a>
+<a href="#c-the-chocolate-line" style="left:41.31%;top:57.34%;width:2.4%;height:2.26%;"></a>
+<a href="#c-chocolatier-dumon" style="left:43.37%;top:42.96%;width:2.4%;height:2.26%;"></a>
+<a href="#c-depla-chocolatier" style="left:43.88%;top:62.9%;width:2.4%;height:2.26%;"></a>
+<a href="#c-chocolaterie-sukerbuyc" style="left:49.49%;top:71.66%;width:2.4%;height:2.26%;"></a>
+<a href="#c-the-old-chocolate-house" style="left:43.58%;top:59.7%;width:2.4%;height:2.26%;"></a>
+<a href="#c-de-halve-maan" style="left:46.47%;top:79.13%;width:2.4%;height:2.26%;"></a>
+<a href="#c-bourgogne-des-flandres" style="left:54.39%;top:56.36%;width:2.4%;height:2.26%;"></a>
+<a href="#c-cambrinus" style="left:53.81%;top:41.85%;width:2.4%;height:2.26%;"></a>
+<a href="#c-cafe-vlissinghe" style="left:67.4%;top:25.47%;width:2.4%;height:2.26%;"></a>
+<a href="#c-de-garre" style="left:52.9%;top:48.37%;width:2.4%;height:2.26%;"></a>
+<a href="#c-rose-red" style="left:53.15%;top:39.44%;width:2.4%;height:2.26%;"></a>
+<a href="#c-t-brugs-beertje" style="left:38.99%;top:55.76%;width:2.4%;height:2.26%;"></a>
+<a href="#c-thats-toast" style="left:30.75%;top:57.97%;width:2.4%;height:2.26%;"></a>
+<a href="#c-blackbird" style="left:52.92%;top:30.79%;width:2.4%;height:2.26%;"></a>
+<a href="#c-sanseveria-bagelsalon" style="left:68.53%;top:47.75%;width:2.4%;height:2.26%;"></a>
+<a href="#c-kaffee-kamiel" style="left:33.56%;top:55.81%;width:2.4%;height:2.26%;"></a>
+<a href="#c-nomad-brugge" style="left:27.13%;top:61.2%;width:2.4%;height:2.26%;"></a>
+<a href="#c-tanuki" style="left:52.84%;top:75.57%;width:2.4%;height:2.26%;"></a>
+<a href="#c-less-eatery" style="left:28.58%;top:66.13%;width:2.4%;height:2.26%;"></a>
+<a href="#c-atelier-flori" style="left:64.92%;top:55.62%;width:2.4%;height:2.26%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（37店・番号はピンと同じ）</div>
+<div class="sec blue">フランドル郷土料理・ビストロ・ブラッスリー</div>
+<div class="links">
+<a href="#c-breydel-de-coninc"><span class="tn" style="background:#2a78d6;">1</span><span class="tnm">Restaurant Breydel De Coninc</span><span class="tsub">老舗のムール貝と伊勢海老</span></a>
+<a href="#c-t-nieuw-walnutje"><span class="tn" style="background:#2a78d6;">2</span><span class="tnm">&#x27;t Nieuw Walnutje</span><span class="tsub">ワル広場の家族的ビストロ</span></a>
+<a href="#c-bistro-refter"><span class="tn" style="background:#2a78d6;">3</span><span class="tnm">Bistro Refter</span><span class="tsub">三つ星シェフ系の庶民派</span></a>
+<a href="#c-assiette-blanche"><span class="tn" style="background:#2a78d6;">4</span><span class="tnm">Assiette Blanche</span><span class="tsub">手剥き小エビのビブ店</span></a>
+<a href="#c-t-bagientje"><span class="tn" style="background:#2a78d6;">5</span><span class="tnm">&#x27;t Bagientje</span><span class="tsub">ストーフフレースの推し店</span></a>
+<a href="#c-den-amand"><span class="tn" style="background:#2a78d6;">6</span><span class="tnm">Bistro Den Amand</span><span class="tsub">地元客も通う小ビストロ</span></a>
+<a href="#c-de-middenstand"><span class="tn" style="background:#2a78d6;">7</span><span class="tnm">De Middenstand</span><span class="tsub">&#x27;t Zand広場の家族食堂</span></a>
+<a href="#c-sans-cravate"><span class="tn" style="background:#2a78d6;">8</span><span class="tnm">Sans Cravate</span><span class="tsub">肩肘張らない一つ星</span></a>
+<a href="#c-franco-belge"><span class="tn" style="background:#2a78d6;">9</span><span class="tnm">Franco Belge</span><span class="tsub">仏白料理の現代版</span></a>
+</div>
+<div class="sec aqua">フリッツ・ワッフル・食べ歩き・市場</div>
+<div class="links">
+<a href="#c-otto-waffle-atelier"><span class="tn" style="background:#1baf7a;">10</span><span class="tnm">Otto Waffle Atelier</span><span class="tsub">レース型ブルージュワッフル</span></a>
+<a href="#c-house-of-waffles"><span class="tn" style="background:#1baf7a;">11</span><span class="tnm">The House of Waffles</span><span class="tsub">座って食べるワッフル店</span></a>
+<a href="#c-chez-albert"><span class="tn" style="background:#1baf7a;">12</span><span class="tnm">Chez Albert (Breidelstraat)</span><span class="tsub">マルクト脇の行列ワッフル</span></a>
+<a href="#c-the-potato-bar"><span class="tn" style="background:#1baf7a;">13</span><span class="tnm">The Potato Bar</span><span class="tsub">トッピングで遊ぶフリッツ</span></a>
+<a href="#c-frituur-de-gentpoorte"><span class="tn" style="background:#1baf7a;">14</span><span class="tnm">Frituur de Gentpoorte</span><span class="tsub">シェフ推薦のフリッツ店</span></a>
+<a href="#c-frietmuseum"><span class="tn" style="background:#1baf7a;">15</span><span class="tnm">Frietmuseum</span><span class="tsub">博物館地下でフリッツ</span></a>
+<a href="#c-zaterdagmarkt-t-zand"><span class="tn" style="background:#1baf7a;">16</span><span class="tnm">Zaterdagmarkt (&#x27;t Zand)</span><span class="tsub">土曜朝の大きな市</span></a>
+<a href="#c-vismarkt"><span class="tn" style="background:#1baf7a;">17</span><span class="tnm">Vismarkt</span><span class="tsub">1820年の列柱の魚市場</span></a>
+</div>
+<div class="sec yellow">チョコレート・スイーツ・パン</div>
+<div class="links">
+<a href="#c-the-chocolate-line"><span class="tn" style="background:#eda100;">18</span><span class="tnm">The Chocolate Line</span><span class="tsub">奇才ペルソーネの店</span></a>
+<a href="#c-chocolatier-dumon"><span class="tn" style="background:#eda100;">19</span><span class="tnm">Chocolatier Dumon (Eiermarkt)</span><span class="tsub">絵になる家族経営の人気店</span></a>
+<a href="#c-depla-chocolatier"><span class="tn" style="background:#eda100;">20</span><span class="tnm">Depla Chocolatier (Pol Depla)</span><span class="tsub">名物スワーンチェの製造元</span></a>
+<a href="#c-chocolaterie-sukerbuyc"><span class="tn" style="background:#eda100;">21</span><span class="tnm">Chocolaterie Sukerbuyc</span><span class="tsub">G&amp;amp;M掲載の三代目老舗</span></a>
+<a href="#c-the-old-chocolate-house"><span class="tn" style="background:#eda100;">22</span><span class="tnm">The Old Chocolate House</span><span class="tsub">ホットチョコの喫茶室</span></a>
+</div>
+<div class="sec beer">ビール・醸造所・ビアカフェ（料理あり）</div>
+<div class="links">
+<a href="#c-de-halve-maan"><span class="tn" style="background:#0d366b;">23</span><span class="tnm">Brouwerij De Halve Maan</span><span class="tsub">市内唯一の老舗醸造所</span></a>
+<a href="#c-bourgogne-des-flandres"><span class="tn" style="background:#0d366b;">24</span><span class="tnm">Brouwerij Bourgogne des Flandres</span><span class="tsub">運河沿いの赤ビール蔵</span></a>
+<a href="#c-cambrinus"><span class="tn" style="background:#0d366b;">25</span><span class="tnm">Bierbrasserie Cambrinus</span><span class="tsub">ビール煮込みの本命</span></a>
+<a href="#c-cafe-vlissinghe"><span class="tn" style="background:#0d366b;">26</span><span class="tnm">Café Vlissinghe</span><span class="tsub">1515年創業の最古の酒場</span></a>
+<a href="#c-de-garre"><span class="tn" style="background:#0d366b;">27</span><span class="tnm">Staminee De Garre</span><span class="tsub">路地奥の名物トリペル</span></a>
+<a href="#c-rose-red"><span class="tn" style="background:#0d366b;">28</span><span class="tnm">Café Rose Red</span><span class="tsub">トラピストと料理の夜</span></a>
+<a href="#c-t-brugs-beertje"><span class="tn" style="background:#0d366b;">29</span><span class="tnm">&#x27;t Brugs Beertje</span><span class="tsub">300種のビール聖地</span></a>
+</div>
+<div class="sec red">カフェ・ブランチ・世界の料理（乳児連れ向き含む）</div>
+<div class="links">
+<a href="#c-thats-toast"><span class="tn" style="background:#e34948;">30</span><span class="tnm">That&#x27;s Toast</span><span class="tsub">毎日朝8時半からの朝食</span></a>
+<a href="#c-blackbird"><span class="tn" style="background:#e34948;">31</span><span class="tnm">Blackbird</span><span class="tsub">段々皿のブランチ人気店</span></a>
+<a href="#c-sanseveria-bagelsalon"><span class="tn" style="background:#e34948;">32</span><span class="tnm">Sanseveria Bagelsalon</span><span class="tsub">NY風ベーグルの朝食</span></a>
+<a href="#c-kaffee-kamiel"><span class="tn" style="background:#e34948;">33</span><span class="tnm">Kaffee Kamiel</span><span class="tsub">車の来ない中庭の朝食</span></a>
+<a href="#c-nomad-brugge"><span class="tn" style="background:#e34948;">34</span><span class="tnm">Nomad</span><span class="tsub">自家農園野菜の朝食</span></a>
+<a href="#c-tanuki"><span class="tn" style="background:#e34948;">35</span><span class="tnm">Tanuki</span><span class="tsub">35年超の本格和食</span></a>
+<a href="#c-less-eatery"><span class="tn" style="background:#e34948;">36</span><span class="tnm">L.E.S.S. Eatery</span><span class="tsub">アジア風シェア皿の人気店</span></a>
+<a href="#c-atelier-flori"><span class="tn" style="background:#e34948;">37</span><span class="tnm">Atelier Flori</span><span class="tsub">植物性タパスの段々皿</span></a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>旧市街は東西1.5km・徒歩で回れるが<b>石畳が多いのでベビーカーは大径タイヤかキャリアが楽</b>。土曜午前はマルクト広場と<b>'t Zand の朝市</b>、日曜は旧市街の多くのチョコレート店・ワッフル店が開く一方、<b>郷土料理店は月・火休みが多い</b>。ランチは12時前に入ると待たずに済む。市内の醸造所 De Halve Maan は見学が人気なので予約を。5月はアスパラガス（witte asperges）の旬。</div>
+
+<h2 id="s-local">フランドル郷土料理・ビストロ・ブラッスリー</h2>
+<div class="card" id="c-breydel-de-coninc">
+<img class="hero" src="img/brugge/breydel-de-coninc.jpg" alt="Restaurant Breydel De Coninc 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">1</span>Restaurant Breydel De Coninc<span class="yomi">ブレイデル・デ・コニンク</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">マルクト広場とブルグ広場の間、同じ一家が70年以上営むブルージュ最古の家族経営店。名物のムール貝のほか、ロブスター、ウナギ料理、自家製ガルナール・クロケットも。14歳未満向けの子ども料理あり。</div>
+<div class="sig"><b>一皿:</b>ムール・フリット（ムール貝の白ワイン蒸しなどをバケツ鍋で、フライドポテト添え）</div>
+<div class="taste"><b>味の証拠:</b>「The best Moules Frites in Bruges」（TripAdvisor 利用者レビューの見出し  （本文は403で未読。検索結果の見出しのみ確認） <a href="https://www.tripadvisor.com/ShowUserReviews-g188671-d741838-r114908544-Restaurant_Breydel_De_Coninc-Bruges_West_Flanders_Province.html">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>木〜火 11:30〜22:00（営業時間ポータル表記。公式は「水曜定休」のみ明記）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>Breidelstraat 24, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250339746">☎ +32 50 33 97 46</a> ／ <a href="https://www.restaurant-breydel.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges が「ブルージュ最古の家族経営店、名物はムール貝」と紹介（Gault&amp;Millau 12/20）。TripAdvisor に「ブルージュ一のムール・フリット」と題する投稿が複数。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Restaurant%20Breydel%20De%20Coninc%20Breidelstraat%2024%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Visit Bruges（www.visitbruges.be） / 参照元: <a href="https://www.restaurant-breydel.be/">公式サイト（定休日・メニュー）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/restaurant-breydel-de-coninc">Visit Bruges</a> / <a href="https://www.openingsuren.vlaanderen/breydel-de-coninc/8000-brugge/breidelstraat-24">openingsuren.vlaanderen（営業時間）</a></div>
+</div></div>
+<div class="card" id="c-t-nieuw-walnutje">
+<img class="hero" src="img/brugge/t-nieuw-walnutje.jpg" alt="'t Nieuw Walnutje 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">2</span>'t Nieuw Walnutje<span class="yomi">トゥ・ニュー・ワルニュッチェ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">ベギン会修道院近くの小広場 Walplein に面した兄妹経営のビストロ（2017年〜）。素朴な古い店内とテラスで、ビストロの定番料理とタパスを手頃に出す。地元客にも観光客にも長年人気。</div>
+<div class="sig"><b>一皿:</b>コート・ア・ロス（骨付き牛リブロースの炭火焼き、フリッツとベアルネーズソース添え・2人前）</div>
+<div class="taste"><b>味の証拠:</b>「We kiezen voor toast champignon en daarna côte à l’os voor twee. Daarbij komen smakelijke frieten, een knapperige salade en lobbige bearnaise waarvan geen drupje meer op ons bord overblijft.」（Gault&amp;Millau 評） <a href="https://www.gaultmillau.be/en/restaurants/t-nieuw-walnutje-brugge">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>金〜火 昼・夜営業（Gault&amp;Millau 表記。時刻は公式に記載なし）</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜</td></tr>
+<tr><th>住所</th><td>Walplein 3, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250341245">☎ +32 50 34 12 45</a> ／ <a href="https://www.tnieuwwalnutje.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Gault&amp;Millau 12.5/20、評者は「奇抜さはないが上手なビストロの定番」と評価。Visit Bruges の「Flavourite Bruges」で地元シェフがお気に入りに挙げる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%27t%20Nieuw%20Walnutje%20Walplein%203%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（static.wixstatic.com） / 参照元: <a href="https://www.tnieuwwalnutje.be/contact">公式サイト（定休日）</a> / <a href="https://www.gaultmillau.be/en/restaurants/t-nieuw-walnutje-brugge">Gault&amp;Millau（評・営業日）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/t-nieuw-walnutje">Visit Bruges</a></div>
+</div></div>
+<div class="card" id="c-bistro-refter">
+<img class="hero" src="img/brugge/bistro-refter.jpg" alt="Bistro Refter 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">3</span>Bistro Refter<span class="yomi">ビストロ・レフテル</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">元三つ星 De Karmeliet のヘールト・ファン・ヘッケ一家のビストロ。息子ルイが父のレシピを基に伝統料理を手頃に出す。屋内テラスのある現代的な店。子ども向けメニューあり。</div>
+<div class="sig"><b>一皿:</b>ローストした若鶏のタラゴンソース（フリッツとサラダ添え）／日替わりの魚料理</div>
+<div class="taste"><b>味の証拠:</b>「Perfect gebakken ganzenlever komt met chaud-froid van appel en een delicate kruidensaus, terwijl de krokante zwezerik wordt gegarneerd met een harmonieuze Luikse salade.」（Gault&amp;Millau 評） <a href="https://www.gaultmillau.be/en/restaurants/bistro-refter-brugge">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 12:00〜14:00／18:30〜22:00（公式・Gault&amp;Millauで昼夜営業）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜</td></tr>
+<tr><th>住所</th><td>Molenmeers 2, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250444900">☎ +32 50 44 49 00</a> ／ <a href="https://bistrorefter.be/en">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認 <a href="https://bistrorefter.be/en （子ども向けメニューあり。Visit Bruges に Child-friendly タグ。設備の明記なし）" style="color:var(--ink3)">出典</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Gault&amp;Millau 13.5/20、評者は「伝統料理の気前のよい味」と評価。Visit Bruges は「星付きに手が出なくても良い食事を」と紹介し Child-friendly タグを付与。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Bistro%20Refter%20Molenmeers%202%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（storage.googleapis.com） / 参照元: <a href="https://bistrorefter.be/en">公式サイト（メニュー・定休日）</a> / <a href="https://www.gaultmillau.be/en/restaurants/bistro-refter-brugge">Gault&amp;Millau</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/bistro-refter">Visit Bruges</a></div>
+</div></div>
+<div class="card" id="c-assiette-blanche">
+<img class="hero" src="img/brugge/assiette-blanche.jpg" alt="Assiette Blanche 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">4</span>Assiette Blanche<span class="yomi">アシエット・ブランシュ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">ブルグ広場の向かい、木の羽目板の温かいビストロ。フランス・ベルギーの定番と郷土料理を6週ごとに替わる品書きで出し、名物は自分たちで殻を剥く北海の灰色小エビ。ランチ35ユーロ、3皿コース60ユーロ。</div>
+<div class="sig"><b>一皿:</b>手剥きの灰色小エビのスムス（北海の灰色小エビに半熟卵とヘーゼルナッツバターを合わせた前菜）</div>
+<div class="taste"><b>味の証拠:</b>「Zijn smeus met handgepelde grijze garnalen, gepocheerd ei en hazelnootboter is echter onovertroffen en eerlijk gezegd een must.」（Gault&amp;Millau 評） <a href="https://www.gaultmillau.be/en/restaurants/assiette-blanche-brugge">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月 12:00〜13:00／18:30〜20:30、木 12:00〜13:00、金・土・日 12:00〜13:00／18:30〜20:30（入店時間）</td></tr>
+<tr><th>定休日</th><td class="off">火曜・水曜（木曜夜も休み）</td></tr>
+<tr><th>住所</th><td>Philipstockstraat 23-25, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250340094">☎ +32 50 34 00 94</a> ／ <a href="https://www.assietteblanche.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランのビブグルマン（公式に専用ページ）、Gault&amp;Millau 13/20。評者は小エビのスムスを「比類なく必食」と絶賛。Visit Bruges も信頼店として紹介。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Assiette%20Blanche%20Philipstockstraat%2023-25%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.assietteblanche.be） / 参照元: <a href="https://www.assietteblanche.be/">公式サイト（営業時間）</a> / <a href="https://www.gaultmillau.be/en/restaurants/assiette-blanche-brugge">Gault&amp;Millau</a> / <a href="https://guide.michelin.com/be/nl/west-vlaanderen/brugge/restaurant/assiette-blanche">Michelin Guide</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/assiette-blanche">Visit Bruges</a></div>
+</div></div>
+<div class="card" id="c-t-bagientje">
+<img class="hero" src="img/brugge/t-bagientje.jpg" alt="'t Bagientje 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">5</span>'t Bagientje<span class="yomi">トゥ・バギーンチェ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">旧市街南部 Oostmeers のホテル併設レストラン。「正直なフランドル料理」を掲げ、ストーフフレース、ヴォローヴァン、ウサギのプルーン煮、子羊の煮込みなどを出す。平日ランチ22.90ユーロ。テラス席あり。</div>
+<div class="sig"><b>一皿:</b>フラームス・ストーフェライ（牛ネック肉をトンゲルロー・ビールとスターアニス・クローブで煮込んだ牛肉のビール煮込み）</div>
+<div class="taste"><b>味の証拠:</b>「In Brugge eet je de lekkerste Vlaamse stoverij bij 't Babientje. Hij wordt er gemaakt van rundsnek met steranijs en kruidnagel, Tongerlo, kalfsfond en bruine fond, ui, bruine suiker en jonagold.」（Culinaire Ambiance 記事。店名は原文で誤記 Babientje） <a href="https://culinaireambiance.com/nl/articles/hier-eet-je-het-lekkerste-stoofvlees-van-belgie">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>水〜月 11:00〜22:00（料理は 12:00〜14:30／18:00〜22:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>Oostmeers 130, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+32468033787">☎ +32 468 03 37 87</a> ／ <a href="https://www.bagientje.be/nl/p/restaurant">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Culinaire Ambiance の「ベルギー一おいしいストーフフレース」特集でブルージュ代表。在住者ブログ Mr and Mrs Romance も町一番としたが、2026年4月更新で質の低下報告を追記。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%27t%20Bagientje%20Oostmeers%20130%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（cdn.stardekk.com） / 参照元: <a href="https://www.bagientje.be/nl/p/restaurant/openingsuren">公式サイト（営業時間）</a> / <a href="https://culinaireambiance.com/nl/articles/hier-eet-je-het-lekkerste-stoofvlees-van-belgie">Culinaire Ambiance</a> / <a href="https://mrandmrsromance.com/eat-in-bruges/">Mr and Mrs Romance</a></div>
+</div></div>
+<div class="card" id="c-den-amand">
+<img class="hero" src="img/brugge/den-amand.jpg" alt="Bistro Den Amand 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">6</span>Bistro Den Amand<span class="yomi">ビストロ・デン・アマンド</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">マルクト広場から一歩入った歩行者専用の小広場にある小さなビストロ。女性シェフのアンがオープンキッチンで季節の肉・魚・ベジ料理をたっぷりの野菜と作り、秋はジビエの煮込みも。公式に「小さな子にも独自の料理を用意」とある。</div>
+<div class="sig"><b>一皿:</b>季節の煮込み料理（秋はジビエのストーフポット＝野生肉の煮込み）／スカンピのハーブバターのパスタ</div>
+<div class="taste"><b>味の証拠:</b>「My main was the casarecce pasta with fried scampi in herb butter, zucchini, cherry tomatoes, mushrooms and parmesan shavings on top. I just loved the flavours and easily polished off this dish.」（フードブログ FoodPornJournal、2020年） <a href="https://foodpornjournal.com/2020/03/eating-in-belgium-bruges-part-4/">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 12:00〜14:00／18:00〜21:00（キッチン）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜</td></tr>
+<tr><th>住所</th><td>Sint-Amandsstraat 4, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250340122">☎ +32 50 34 01 22</a> ／ <a href="https://www.denamand.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認 <a href="https://www.denamand.be/ （子ども向け料理ありと記載。設備の明記なし）" style="color:var(--ink3)">出典</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式が「多くのブルージュ市民に知られ評価される」と記す地元系ビストロ。フードブログ FoodPornJournal が最終夜に選び料理を称賛。日曜休みなので土曜利用のみ。予約は電話のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Bistro%20Den%20Amand%20Sint-Amandsstraat%204%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.denamand.be） / 参照元: <a href="https://www.denamand.be/nl/verlofperiodes">公式サイト（営業時間）</a> / <a href="https://foodpornjournal.com/2020/03/eating-in-belgium-bruges-part-4/">FoodPornJournal</a></div>
+</div></div>
+<div class="card" id="c-de-middenstand">
+<img class="hero" src="img/brugge/de-middenstand.jpg" alt="De Middenstand 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">7</span>De Middenstand<span class="yomi">デ・ミデンスタント</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">'t Zand 広場に面した30年以上続く家族経営ブラッスリー。テラス席があり、ストーフフレース、ウナギの緑ソース煮、ムール貝、季節のアスパラガス料理など古典的フランドル料理が揃う。客の多くは地元民。</div>
+<div class="sig"><b>一皿:</b>ストーフフレース（牛肉のビール煮込み、揚げたてフリッツ添え）／アスパラガスのフランドル風（5月の旬）</div>
+<div class="taste"><b>味の証拠:</b>「The menu showcases Belgian gastronomy, fish and seafood. The shrimps and the scallops are truly delicious!」（旅行メディア Ulysses Travel 編集記事） <a href="https://www.ulysses.travel/en/restaurant-bruges/">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>公式: 日〜金 11:00〜21:30、土 8:00〜21:30（営業時間ポータルは火・水休みと表示し食い違い）</td></tr>
+<tr><th>定休日</th><td class="off">公式は無休表記／ポータルは火曜・水曜休（要確認）</td></tr>
+<tr><th>住所</th><td>'t Zand 20, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250341750">☎ +32 50 34 17 50</a> ／ <a href="https://www.demiddenstand.com/nl/home">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>旅行メディア Ulysses Travel が「客の大半が地元民のブラッスリー」とし小エビとホタテを絶賛。料理番組系メディア Njam! のストーフフレース名店リストでもブルージュ代表に選出。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=De%20Middenstand%20%27t%20Zand%2020%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.demiddenstand.com） / 参照元: <a href="https://www.demiddenstand.com/nl/home">公式サイト（営業時間）</a> / <a href="https://www.ulysses.travel/en/restaurant-bruges/">Ulysses Travel</a> / <a href="https://njam.tv/blog/njam-trekt-erop-uit-de-beste-adresjes-om-stoofvlees-te-eten">Njam!</a> / <a href="https://www.openingsuren.vlaanderen/de-middenstand/8000-brugge/t-zand-20">openingsuren.vlaanderen</a></div>
+</div></div>
+<div class="card" id="c-sans-cravate">
+<img class="hero" src="img/brugge/sans-cravate.jpg" alt="Sans Cravate 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">8</span>Sans Cravate<span class="yomi">サン・クラヴァット</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">ミシュラン一つ星（Gault&amp;Millau 16.5/20）。シェフ、ヘンク・ファン・オウデンホーフェの串焼き調理が看板で、最高級食材を気取らず出す。春はアスパラガスとロブスターの前菜など旬の皿。</div>
+<div class="sig"><b>一皿:</b>ホワイトアスパラガスとロブスターのサラダ（旬のアスパラと茹でたオマール海老の前菜・春の季節料理）</div>
+<div class="taste"><b>味の証拠:</b>「Met topproducten creëert de chef zeer verfijnde gerechten op het bord. Zoals salade van perfect gegaarde asperges en kreeft als voorgerecht.」（Gault&amp;Millau 評） <a href="https://www.gaultmillau.be/en/restaurants/sans-cravate-brugge">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金・土 12:00〜（LO 13:30）／19:00〜（LO 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜・日曜</td></tr>
+<tr><th>住所</th><td>Langestraat 159, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>要 — <a href="tel:+3250678310">☎ +32 50 67 83 10</a> ／ <a href="https://www.sanscravate.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュラン一つ星、Gault&amp;Millau 評は「完璧に火入れしたアスパラガスとロブスター」を例に精度を称賛。高級店枠で乳児連れは要事前相談（土曜のみ営業日）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Sans%20Cravate%20Langestraat%20159%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sanscravate.be） / 参照元: <a href="https://www.sanscravate.be/nl/contact">公式サイト（営業時間）</a> / <a href="https://www.gaultmillau.be/en/restaurants/sans-cravate-brugge">Gault&amp;Millau</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/sans-cravate">Visit Bruges</a></div>
+</div></div>
+<div class="card" id="c-franco-belge">
+<img class="hero" src="img/brugge/franco-belge.jpg" alt="Franco Belge 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">9</span>Franco Belge<span class="yomi">フランコ・ベルジュ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">ランゲストラートの人気店。シェフ、トマス・ペイプがフランス・ベルギーの伝統料理を現代的に解釈し、昔のブルージュの趣を残しつつ洗練された内装で出す。Gault&amp;Millau 14/20。</div>
+<div class="sig"><b>一皿:</b>ハドック（コダラ）のロースト、カリフラワーとレモングラスのジュ添え（季節により変わる魚料理）</div>
+<div class="taste"><b>味の証拠:</b>「De perfect gegaarde schelvis komt mooi tot zijn recht dankzij bloemkool in diverse texturen, witte selder en een geurige jus met citroengras en curryolie.」（Gault&amp;Millau 評） <a href="https://www.gaultmillau.be/en/restaurants/franco-belge-brugge">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・金・土 昼・夜、木 昼のみ（Gault&amp;Millau 表記。時刻は未確認）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜</td></tr>
+<tr><th>住所</th><td>Langestraat 109, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250695648">☎ +32 50 69 56 48</a> ／ <a href="https://www.restaurantfrancobelge.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Gault&amp;Millau 14/20、評者は魚の火入れの完璧さを称賛。Visit Bruges が Flemish タグ付きで「開店当初から遠方のファンを集める」と紹介。土曜は昼夜営業。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Franco%20Belge%20Langestraat%20109%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.restaurantfrancobelge.be） / 参照元: <a href="https://www.restaurantfrancobelge.be/">公式サイト</a> / <a href="https://www.gaultmillau.be/en/restaurants/franco-belge-brugge">Gault&amp;Millau（評・営業日）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/franco-belge">Visit Bruges</a></div>
+</div></div>
+<h2 id="s-street" class="c-aqua">フリッツ・ワッフル・食べ歩き・市場</h2>
+<div class="card" id="c-otto-waffle-atelier">
+<img class="hero" src="img/brugge/otto-waffle-atelier.jpg" alt="Otto Waffle Atelier 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">10</span>Otto Waffle Atelier<span class="yomi">オットー・ワッフル・アトリエ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">聖母教会近くの小さなワッフル工房。ブルージュ・レースを模した花形の型で焼くオーツ麦ワッフルに、季節の地元食材や自家製アイスを合わせる。グルテン・乳製品不使用で、軽い食感が特徴。店内は立食テーブルのみ。</div>
+<div class="sig"><b>一皿:</b>ブルージュワッフル（オーツ麦粉の生地をレース模様の特注型で焼き、ココナッツシュガーをまぶした軽いワッフル。ブリュッセル型・リエージュ型とは別の独自型）</div>
+<div class="taste"><b>味の証拠:</b>「After eating waffles for several days, I appreciated that Otto's waffles weren't as heavy or dense. The texture was light and not quite as sweet.」（Abroad with Ash／2025年8月更新） <a href="https://www.abroadwithash.com/best-waffles-in-bruges-belgium/（旅行ブログ">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 10:00〜18:00（公式サイト。臨時の変更は公式トップに告知）</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休。臨時休業は公式告知）</td></tr>
+<tr><th>住所</th><td>Katelijnestraat 1, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:+3250658175">☎ +32 50 65 81 75</a> ／ <a href="https://ottowaffleatelier.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges が紹介し、同サイトの「Flavourite Bruges」で地元シェフ Patrick Devos が推薦。旅行ブログ Abroad with Ash（2025年）もワッフル TOP5 に選出。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Otto%20Waffle%20Atelier%20Katelijnestraat%201%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（ottowaffleatelier.be） / 参照元: <a href="https://ottowaffleatelier.be/">公式サイト（営業時間）</a> / <a href="https://www.visitbruges.be/en/things-to-do/shopping/otto-waffle-atelier">Visit Bruges</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/flavourite-bruges/tips-patrick-devos-restaurant-patrick-devos">Visit Bruges Flavourite Bruges（シェフ Patrick Devos 推薦）</a> / <a href="https://www.abroadwithash.com/best-waffles-in-bruges-belgium/">Abroad with Ash</a></div>
+</div></div>
+<div class="card" id="c-house-of-waffles">
+<img class="hero" src="img/brugge/house-of-waffles.jpg" alt="The House of Waffles 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">11</span>The House of Waffles<span class="yomi">ハウス・オブ・ワッフルズ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鐘楼のすぐ近く、ヴォレ通りのワッフル専門店。持ち帰り窓口と店内席・テラスを併設し、リエージュ型とブリュッセル型の両方を注文ごとに焼く。サーモンなど食事系ワッフルもある。</div>
+<div class="sig"><b>一皿:</b>リエージュワッフル（パールシュガー入りの発酵生地を焼いた、表面がカラメル状で噛みごたえのあるワッフル）／ブリュッセルワッフル（軽く四角いワッフルにフルーツやクリームをのせる）</div>
+<div class="taste"><b>味の証拠:</b>「I tried one plain (my test to see how good the actual waffle is) and it was insanely good. This waffle had just the right amount of sweetness and had a major "melt in your mouth" factor.」（Abroad with Ash／2025年8月更新） <a href="https://www.abroadwithash.com/best-waffles-in-bruges-belgium/（旅行ブログ">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 11:30〜19:00（公式サイト）</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休・公式表記）</td></tr>
+<tr><th>住所</th><td>Wollestraat 31, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="https://thehouseofwaffles.com/brugge/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>米ブロガー Abroad with Ash（2025年8月更新）がブルージュのワッフル TOP5 の1位に選び「注文ごとに焼く」「プレーンが絶品」と評価。店内席があり、子連れでも座って食べられる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=The%20House%20of%20Waffles%20Wollestraat%2031%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Abroad with Ash（www.abroadwithash.com） / 参照元: <a href="https://thehouseofwaffles.com/brugge/">公式サイト（営業時間）</a> / <a href="https://www.abroadwithash.com/best-waffles-in-bruges-belgium/">Abroad with Ash</a></div>
+</div></div>
+<div class="card" id="c-chez-albert">
+<img class="hero" src="img/brugge/chez-albert.jpg" alt="Chez Albert (Breidelstraat) 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">12</span>Chez Albert (Breidelstraat)<span class="yomi">シェ・アルベール</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2011年にマルクト広場脇のブレイデル通りの窓口販売から始まったリエージュワッフル店。焼きたてを紙に包んで渡すスタイルで、行列が絶えない。現在はブルージュ市内4店のほかルーベン等にも展開。</div>
+<div class="sig"><b>一皿:</b>リエージュワッフル（パールシュガーを練り込んだ生地を焼き、砂糖がカラメル化した甘く香ばしいワッフル。まずはプレーンで）</div>
+<div class="taste"><b>味の証拠:</b>「These are some of the best plain Liege waffles in Bruges.」「So, when the waffles are fresh they are fantastic.」（Abroad with Ash／2025年8月更新） <a href="https://www.abroadwithash.com/best-waffles-in-bruges-belgium/（旅行ブログ">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 10:00〜22:00／金 10:00〜23:00／土 9:00〜23:00／日 9:00〜22:00（ブレイデル通り店・公式）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Breidelstraat 16, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="https://chezalbert.be/en">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Abroad with Ash（2025年更新）が「ブルージュで最高のプレーン・リエージュワッフルの一つ（焼きたてなら）」と特別賞に選出。マルクト至近で行列が絶えない人気店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Chez%20Albert%20%28Breidelstraat%29%20Breidelstraat%2016%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（chezalbert.be） / 参照元: <a href="https://chezalbert.be/en/locations">公式サイト（全店の営業時間）</a> / <a href="https://chezalbert.be/en/our-story">公式サイト（沿革）</a> / <a href="https://www.abroadwithash.com/best-waffles-in-bruges-belgium/">Abroad with Ash</a></div>
+</div></div>
+<div class="card" id="c-the-potato-bar">
+<img class="hero" src="img/brugge/the-potato-bar.jpg" alt="The Potato Bar 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">13</span>The Potato Bar<span class="yomi">ザ・ポテト・バー</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">シェフ2人が営むフリッツ専門のイートイン店。100%ベルギー産じゃがいもの二度揚げフリッツに自家製ソースや変わり種トッピングをのせ、地元風味のクロケットも揃う。テーブルサービスで座って食べられる。</div>
+<div class="sig"><b>一皿:</b>ローデッド・フリッツ（ベルギー式フリッツにトリュフマヨや煮込み肉などをのせた一皿）／クロケット（地元風味の自家製コロッケ）</div>
+<div class="taste"><b>味の証拠:</b>「Reviewers rave about the friendly service, delicious Farmer Sausage, perfectly cooked Belgian fries with Truffle Mayonnaise, unique croquettes like Squirt and Drunken Pig Croquet」（の口コミ要約。個人の一次レビューではない点に注意） <a href="https://wanderlog.com/place/details/1189570/the-potato-bar（Wanderlog">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 12:00〜21:00（公式サイト。キッチン通し営業）</td></tr>
+<tr><th>定休日</th><td class="off">なし（公式「every day」）</td></tr>
+<tr><th>住所</th><td>Sint-Amandsstraat 31, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:+3250339119">☎ +32 50 33 91 19</a> ／ <a href="https://www.thepotatobar.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>宿泊施設 YouStay の「ブルージュのベストフリッツ」、地元ガイド Best of Bruges（2025年版）で掲載。口コミ件数も多いが、専門媒体の味の評価は未取得。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=The%20Potato%20Bar%20Sint-Amandsstraat%2031%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（static.wixstatic.com） / 参照元: <a href="https://www.thepotatobar.be/">公式サイト（営業時間）</a> / <a href="https://youstay.be/best-fries-in-bruges/">YouStay（Best fries in Bruges）</a> / <a href="https://www.best-of-bruges.com/fries">Best of Bruges（2025 Guide）</a> / <a href="https://wanderlog.com/place/details/1189570/the-potato-bar">Wanderlog</a></div>
+</div></div>
+<div class="card" id="c-frituur-de-gentpoorte">
+<img class="hero" src="img/brugge/frituur-de-gentpoorte.jpg" alt="Frituur de Gentpoorte 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">14</span>Frituur de Gentpoorte<span class="yomi">フリトゥール・デ・ヘントポールト</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">中世の城門ヘントポールト近くにある家族経営のフリットコット（フリッツ店）。植物油で揚げるカリッとしたフリッツが評判で、持ち帰り専用。電話・オンラインで事前注文すれば待たずに受け取れ、門の脇の運河沿いで食べられる。</div>
+<div class="sig"><b>一皿:</b>フリッツ＋ストーフフレースソース（二度揚げのベルギー式フライドポテトに、牛肉のビール煮込みのソースをかけた定番の食べ方）</div>
+<div class="taste"><b>味の証拠:</b>「Ordered the groot size Belgian fries with the andalouse sauce. They were nice and crisp and delicious with the sauce.」（B.。店が選んだ転載である点に注意） <a href="https://www.frituurdegentpoorte.be/contact/（公式サイトに掲載された客のレビュー・Jeremy">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>木〜日 11:30〜13:30／17:00〜21:30（公式）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜・水曜</td></tr>
+<tr><th>住所</th><td>Gentpoortstraat 58, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250613443">☎ +32 50 61 34 43</a> ／ <a href="https://www.frituurdegentpoorte.be/">公式サイト</a> ／ <a href="https://mylightspeed.app/KIRRPBXN/C-ordering/menu">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges「Flavourite Bruges」で地元シェフ Patrick Devos が推薦。宿泊施設 YouStay の「ベストフリッツ」、Best of Bruges 2025年版にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Frituur%20de%20Gentpoorte%20Gentpoortstraat%2058%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（407a1c6e02.clvaw-cdnwnd.com） / 参照元: <a href="https://www.frituurdegentpoorte.be/contact/">公式サイト（営業時間）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/flavourite-bruges/tips-patrick-devos-restaurant-patrick-devos">Visit Bruges Flavourite Bruges（シェフ Patrick Devos 推薦）</a> / <a href="https://youstay.be/best-fries-in-bruges/">YouStay（Best fries in Bruges）</a></div>
+</div></div>
+<div class="card" id="c-frietmuseum">
+<img class="hero" src="img/brugge/frietmuseum.jpg" alt="Frietmuseum 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">15</span>Frietmuseum<span class="yomi">フリートミュージアム（フライドポテト博物館）</span></div>
+<div class="chips"><span class="chip kids">子連れ歓迎</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">中世の建物サーイハレにある世界唯一のフライドポテト博物館。じゃがいもとフリッツ、ソースの歴史を展示し、中世の地下室のフライショップで伝統的な方法で揚げたフリッツが食べられる。入場券提示でフリッツ割引あり。</div>
+<div class="sig"><b>一皿:</b>フリッツ（伝統的な二度揚げのベルギー式フライドポテト。スナックやキッズメニューも）</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 10:00〜17:00（最終入場16:15。公式）</td></tr>
+<tr><th>定休日</th><td class="off">12/25・1/1（ほか年初に数日休館）</td></tr>
+<tr><th>住所</th><td>Vlamingstraat 33, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250612237">☎ +32 50 61 22 37</a> ／ <a href="https://frietmuseum-brugge.be/en/home-en/">公式サイト</a> ／ <a href="https://frietmuseum-brugge.be/en/tickets-2/">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 可／ハイチェア 未確認／おむつ替え台 未確認 <a href="https://www.visitbruges.be/en/things-to-do/culture-and-heritage/frietmuseum-belgian-fries-museum" style="color:var(--ink3)">出典</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges 公式が「子ども向け」施設として紹介し、地下でフリッツを買えると明記。宿泊施設 YouStay の「ベストフリッツ」にも掲載。味の評価ではなく体験・子連れ向きの枠。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Frietmuseum%20Vlamingstraat%2033%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Visit Bruges（www.visitbruges.be） / 参照元: <a href="https://frietmuseum-brugge.be/en/information/">公式サイト（営業時間・料金）</a> / <a href="https://www.visitbruges.be/en/things-to-do/culture-and-heritage/frietmuseum-belgian-fries-museum">Visit Bruges</a> / <a href="https://frietmuseum-brugge.be/en/restaurant/">公式サイト（フライショップ）</a></div>
+</div></div>
+<div class="card" id="c-zaterdagmarkt-t-zand">
+<img class="hero" src="img/brugge/zaterdagmarkt-t-zand.jpg" alt="Zaterdagmarkt ('t Zand) 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>Zaterdagmarkt ('t Zand)<span class="yomi">ザーテルダフマルクト（土曜市）</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">ブルージュ最大の広場 't Zand とその周辺で毎週土曜の午前に開かれる大規模な市。食料品・衣料・日用品の露店が並び、地元客の買い出しでにぎわう。屋台の軽食をつまみながら歩ける。</div>
+<div class="sig"><b>一皿:</b>市場の屋台めぐり（青果・チーズ・惣菜など食料品の露店。特定の一皿はなし）</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>土 8:00〜13:30（12/25・1/1 除く）</td></tr>
+<tr><th>定休日</th><td class="off">土曜以外（市は土曜のみ）</td></tr>
+<tr><th>住所</th><td>'t Zand, 8000 Brugge（'t Zand・Vrijdagmarkt・Hauwerstraat 一帯）</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250448000">☎ +32 50 44 80 00</a> ／ <a href="https://www.brugge.be/vrije-tijd/markten-kermissen-herdenkingen-braderieen/markten-brugge">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ブルージュ市と Visit Bruges 公式が「食料・衣料・一般の大きな市」として案内。土曜の午前に行ける週末唯一の大型食品市。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Zaterdagmarkt%20%28%27t%20Zand%29%20%27t%20Zand%2C%208000%20Brugge%EF%BC%88%27t%20Zand%E3%83%BBVrijdagmarkt%E3%83%BBHauwerstraat%20%E4%B8%80%E5%B8%AF%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: Visit Bruges（www.visitbruges.be） / 参照元: <a href="https://www.brugge.be/vrije-tijd/markten-kermissen-herdenkingen-braderieen/markten-brugge">ブルージュ市（開催日時）</a> / <a href="https://www.visitbruges.be/en/things-to-do/shopping/markets-in-bruges">Visit Bruges</a> / <a href="https://www.brugge.be/locatie/zaterdagmarkt">ブルージュ市（土曜市）</a></div>
+</div></div>
+<div class="card" id="c-vismarkt">
+<img class="hero" src="img/brugge/vismarkt.jpg" alt="Vismarkt 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">17</span>Vismarkt<span class="yomi">フィスマルクト（魚市場）</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1820年に建てられた古典様式の列柱が残る、ベルギーで最も古いとされる魚市場。水〜土の午前に北海の鮮魚・貝類・調理済みの魚介が並ぶ。日中は手工芸品の市も開かれ、周辺は運河沿いの散策路。</div>
+<div class="sig"><b>一皿:</b>北海の魚介の惣菜（魚屋の露店で売る加工・調理済みの魚介。具体的な名物の一品は未確認）</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水〜土 8:00〜13:30（魚市。12/25・1/1 除く）／手工芸市は毎日 9:30〜17:00（3/15〜11/15）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜・火曜（魚市）</td></tr>
+<tr><th>住所</th><td>Vismarkt, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250448000">☎ +32 50 44 80 00</a> ／ <a href="https://www.visitbruges.be/en/things-to-do/culture-and-heritage/vismarkt-fish-market">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges 公式が「ベルギー最古の魚市場」として紹介し、市公式も水〜土の開催を案内。土曜午前なら週末でも魚市が見られる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Vismarkt%20Vismarkt%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Visit Bruges（www.visitbruges.be） / 参照元: <a href="https://www.brugge.be/vrije-tijd/markten-kermissen-herdenkingen-braderieen/markten-brugge">ブルージュ市（開催日時）</a> / <a href="https://www.visitbruges.be/en/things-to-do/culture-and-heritage/vismarkt-fish-market">Visit Bruges（Vismarkt）</a> / <a href="https://www.visitbruges.be/en/things-to-do/shopping/markets-in-bruges">Visit Bruges（Markets）</a></div>
+</div></div>
+<h2 id="s-sweets" class="c-yellow">チョコレート・スイーツ・パン</h2>
+<div class="card" id="c-the-chocolate-line">
+<img class="hero" src="img/brugge/the-chocolate-line.jpg" alt="The Chocolate Line 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">18</span>The Chocolate Line<span class="yomi">ザ・チョコレート・ライン</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">「ブルージュのウィリー・ウォンカ」ドミニク・ペルソーネと息子ユリウスの店。自社農園のカカオから作るビーン・トゥ・バーで、定番プラリネから葉巻・日本酒・唐辛子など奇抜な味まで約80種。奥の工房も見える。</div>
+<div class="sig"><b>一皿:</b>プラリネ（薄いチョコの殻にガナッシュやプラリネ等を詰めた一口チョコ）。定番に加え、ハバナ葉巻やサケ風味など塩味系の創作プラリネが名物</div>
+<div class="taste"><b>味の証拠:</b>「Since they do bean to bar chocolates, when you bite into one of their pralines you don't just taste the high quality filling, but you taste the cocoa solids and fats in the chocolate, and the creaminess of the milk.」（Dame Cacao（チョコレート専門ブログ、ブルージュ20軒超食べ比べ） <a href="https://damecacao.com/bruges-chocolate-shops-in-brugge/">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 9:30〜18:30／日・月 10:30〜18:30</td></tr>
+<tr><th>定休日</th><td class="off">なし（年中無休表記）</td></tr>
+<tr><th>住所</th><td>Simon Stevinplein 19, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250341090">☎ +32 50 34 10 90</a> ／ <a href="https://www.thechocolateline.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 可／ハイチェア 未確認／おむつ替え台 未確認 <a href="https://www.visitbruges.be/en/things-to-do/shopping/chocolate-line" style="color:var(--ink3)">出典</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>G&amp;M Belgium掲載。Rick Stevesは「奇妙に聞こえる味も驚くほど美味しい」、チョコ専門ブログDame Cacaoは20軒超の食べ比べでトップ3に選び「完成度は一番」と評価。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=The%20Chocolate%20Line%20Simon%20Stevinplein%2019%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（cdn.stardekk.com） / 参照元: <a href="https://www.thechocolateline.be/nl/">公式サイト（営業時間）</a> / <a href="https://www.visitbruges.be/en/things-to-do/shopping/chocolate-line">Visit Bruges</a> / <a href="https://www.gaultmillau.be/nl/chocolatiers/the-chocolate-line-brugge">Gault&amp;Millau Belgium</a> / <a href="https://damecacao.com/bruges-chocolate-shops-in-brugge/">Dame Cacao（チョコ専門ブログ）</a></div>
+</div></div>
+<div class="card" id="c-chocolatier-dumon">
+<img class="hero" src="img/brugge/chocolatier-dumon.jpg" alt="Chocolatier Dumon (Eiermarkt) 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">19</span>Chocolatier Dumon (Eiermarkt)<span class="yomi">ショコラティエ・デュモン</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">1992年創業の家族経営ショコラティエ。マルクト広場裏エイエルマルクトの小さな古い家の店は「ブルージュで最も写真に撮られる店」の一つ。昔ながらのレシピの生クリーム系プラリネが中心で、マリア通り14番地にも新店舗。</div>
+<div class="sig"><b>一皿:</b>プラリネ（一口チョコ）の詰め合わせ。特にキャラメルや、種入りチェリーのリキュール漬けチョコ（チョコ殻にサクランボと酒を閉じ込めた一粒）が評判</div>
+<div class="taste"><b>味の証拠:</b>「The caramel almost made my tongue melt. The cherry ("be careful, it still has the stone inside") was bursting with a delicious cherry liqueur.」（NeverStopTraveling（旅行ブログ） <a href="https://www.neverstoptraveling.com/chocolate-in-bruges">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 10:00〜18:00／日 12:00〜17:00（Eiermarkt店）。Mariastraat 14店：月〜金 10:00〜18:00・土 10:00〜18:30・日 10:00〜18:00／Walstraat 6店：毎日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Eiermarkt 6, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250346282">☎ +32 50 34 62 82</a> ／ <a href="https://www.chocolatierdumon.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Rick Stevesが「ブルージュで最もなめらかでクリーミー」、NeverStopTravelingは食べ歩きの末「街で最高」と評価。Dame Cacaoは「話題ほどではない」と辛口。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Chocolatier%20Dumon%20%28Eiermarkt%29%20Eiermarkt%206%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.chocolatierdumon.be） / 参照元: <a href="https://www.chocolatierdumon.be/nl/shops">公式サイト（店舗・営業時間）</a> / <a href="https://www.visitbruges.be/en/things-to-do/shopping/dumon-chocolaterie-eiermarkt">Visit Bruges</a> / <a href="https://www.ricksteves.com/watch-read-listen/read/articles/belgian-chocolicks">Rick Steves</a> / <a href="https://www.neverstoptraveling.com/chocolate-in-bruges">NeverStopTraveling（ブログ）</a></div>
+</div></div>
+<div class="card" id="c-depla-chocolatier">
+<img class="hero" src="img/brugge/depla-chocolatier.jpg" alt="Depla Chocolatier (Pol Depla) 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">20</span>Depla Chocolatier (Pol Depla)<span class="yomi">デプラ・ショコラティエ（ポル・デプラ）</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">1958年創業、G&amp;Mが「ブルージュ最古の職人系ショコラティエ」と紹介する老舗。現代的な店内に甘さ控えめの定番プラリネが並び、名物プラリネ「ブルッフス・スワーンチェ」の公式製造元。</div>
+<div class="sig"><b>一皿:</b>ブルッフス・スワーンチェ Brugs Swaentje（アーモンドのプラリネに中世ビール用ハーブ「グルート」と薄焼きアーモンド菓子クレッツコップの砕片を合わせたブルージュ名物プラリネ）</div>
+<div class="taste"><b>味の証拠:</b>「Pol Depla, lid van de Gilde van de Brugse Chocolatiers, kiest resoluut voor klassieke pralines: verfijnd, verzorgd en aangenaam uitgebalanceerd, zonder overdreven zoetheid.」（Gault&amp;Millau Belgium 評） <a href="https://www.gaultmillau.be/nl/chocolatiers/depla-chocolatier-brugge">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>毎日 10:00〜18:00（公式サイト「7/7」表記。サイトは2020年表記で要再確認）</td></tr>
+<tr><th>定休日</th><td class="off">なし（要再確認）</td></tr>
+<tr><th>住所</th><td>Mariastraat 20, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250347412">☎ +32 50 34 74 12</a> ／ <a href="http://www.poldepla.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 可／ハイチェア 未確認／おむつ替え台 未確認 <a href="https://www.visitbruges.be/en/things-to-do/shopping/depla-chocolaterie" style="color:var(--ink3)">出典</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>G&amp;M Belgiumが「洗練され丁寧、甘すぎずバランスが良い」と評価。Visit Brugesも「多くの市民の長年のお気に入り」と紹介。Dame Cacaoは「可もなく不可もなし」。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Depla%20Chocolatier%20%28Pol%20Depla%29%20Mariastraat%2020%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Gault&amp;Millau Belgium（cdn.gaultmillau.be） / 参照元: <a href="http://www.poldepla.be/">公式サイト（営業時間）</a> / <a href="https://www.gaultmillau.be/nl/chocolatiers/depla-chocolatier-brugge">Gault&amp;Millau Belgium</a> / <a href="https://www.visitbruges.be/en/things-to-do/shopping/depla-chocolaterie">Visit Bruges</a> / <a href="https://damecacao.com/bruges-chocolate-shops-in-brugge/">Dame Cacao（チョコ専門ブログ）</a></div>
+</div></div>
+<div class="card" id="c-chocolaterie-sukerbuyc">
+<img class="hero" src="img/brugge/chocolaterie-sukerbuyc.jpg" alt="Chocolaterie Sukerbuyc 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">21</span>Chocolaterie Sukerbuyc<span class="yomi">ショコラトリー・スケルバイク</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1977年創業の家族経営チョコ店で現在は三代目。カテリネ通りの赤い日よけが目印で、窓越しに工房も覗ける。向かいの英国風ティールーム「De Proeverie」で自家製プラリネやホットチョコを味わえる。</div>
+<div class="sig"><b>一皿:</b>プラリネ（一口チョコ）。柚子・カラマンシー・フルール・ド・セル（塩）など現代的な味と、洗練された定番の両方</div>
+<div class="taste"><b>味の証拠:</b>「Zo kregen tal van pralines met onder meer yuzu, kalamansi of fleur de sel een eigentijds smaakprofiel, terwijl het klassieke repertoire nog aan verfijning, nuance en elegantie won.」（Gault&amp;Millau Belgium 評） <a href="https://www.gaultmillau.be/nl/chocolatiers/chocolaterie-sukerbuyc-brugge">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>Katelijnestraat 5, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250330887">☎ +32 50 33 08 87</a> ／ <a href="https://www.sukerbuyc.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>G&amp;M Belgiumが三代目の刷新で「定番がさらに洗練され優雅に」と評価、Visit Brugesは「ブルージュの基準点」と紹介。NeverStopTravelingは大衆向けと辛口。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Chocolaterie%20Sukerbuyc%20Katelijnestraat%205%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（static.wixstatic.com） / 参照元: <a href="https://www.sukerbuyc.be/">公式サイト（営業時間）</a> / <a href="https://www.gaultmillau.be/nl/chocolatiers/chocolaterie-sukerbuyc-brugge">Gault&amp;Millau Belgium</a> / <a href="https://www.visitbruges.be/en/things-to-do/shopping/sukerbuyc-chocolaterie">Visit Bruges</a></div>
+</div></div>
+<div class="card" id="c-the-old-chocolate-house">
+<img class="hero" src="img/brugge/the-old-chocolate-house.jpg" alt="The Old Chocolate House 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">22</span>The Old Chocolate House<span class="yomi">ジ・オールド・チョコレート・ハウス</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">家族経営のチョコ店兼ティールーム。1階でプラリネや手作りクッキー、2階の屋根裏の喫茶室では約20種から選ぶホットチョコ（温めた牛乳にチョコ粒を溶かす）と薄焼きワッフルが名物。休憩にも便利。</div>
+<div class="sig"><b>一皿:</b>ホットチョコレート（熱い牛乳に好みのチョコのペレットを入れて自分で溶かす飲み物）とワッフル</div>
+<div class="taste"><b>味の証拠:</b>「Not only is the Old Chocolate House a chocolate shop, it is also a tea room where you can taste the sweets directly. Their hot chocolate is simply delicious.」（Destination(s) Europe（旅行ブログ） <a href="https://destinations-europe.com/en/the-three-best-chocolate-shops-in-bruges/">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>ショップ 10:00〜18:00／ティールーム 10:00〜17:30（水曜以外の毎日）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>Mariastraat 1, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250340102">☎ +32 50 34 01 02</a> ／ <a href="https://www.oldchocolatehouse.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 可／ハイチェア 未確認／おむつ替え台 未確認 <a href="https://www.visitbruges.be/en/things-to-do/shopping/old-chocolate-house" style="color:var(--ink3)">出典</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Rick Stevesが「地元民もここのホットチョコを飲みに来る」、Destination(s) Europeが「ホットチョコは実においしい」と推薦。Dame Cacaoはプラリネに辛口。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=The%20Old%20Chocolate%20House%20Mariastraat%201%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（usercontent.one） / 参照元: <a href="https://www.oldchocolatehouse.be/">公式サイト（営業時間）</a> / <a href="https://www.visitbruges.be/en/things-to-do/shopping/old-chocolate-house">Visit Bruges</a> / <a href="https://destinations-europe.com/en/the-three-best-chocolate-shops-in-bruges/">Destination(s) Europe（ブログ）</a> / <a href="https://www.ricksteves.com/watch-read-listen/read/articles/belgian-chocolicks">Rick Steves</a></div>
+</div></div>
+<h2 id="s-beer" class="c-beer">ビール・醸造所・ビアカフェ（料理あり）</h2>
+<div class="card" id="c-de-halve-maan">
+<img class="hero" src="img/brugge/de-halve-maan.jpg" alt="Brouwerij De Halve Maan 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">23</span>Brouwerij De Halve Maan<span class="yomi">ブラウウェライ・デ・ハルヴェ・マーン</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">1856年から6代続く家族経営の醸造所で、町のビール「ブルッグス・ゾット」の蔵元。約45分の見学ツアーのあと、中庭テラス付きのブラッスリーで無濾過ゾットとビールに合うフランドル料理が味わえる。</div>
+<div class="sig"><b>一皿:</b>ストーフフレース（牛肉をブルッグス・ゾット・ダブルで煮込んだフランドルのビール煮込み）€23.50。ほかにガルナール・クロケット（灰色小エビのコロッケ）も</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>レストラン：月〜水・日 12:00〜15:00／木〜土 12:00〜15:00・18:00〜21:00（バー：月〜水・日 11:00〜18:00、木〜土 11:00〜21:00）。見学ツアーは毎日（Visit Bruges 掲載の施設時間 月〜木・日 11:00〜18:00／金土 11:00〜22:00、1月は短縮）</td></tr>
+<tr><th>定休日</th><td class="off">なし（クリスマスイブ・大晦日は早仕舞い、1月は短縮営業）</td></tr>
+<tr><th>住所</th><td>Walplein 26, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250444222">☎ +32 50 44 42 22</a> ／ <a href="https://www.halvemaan.be/en">公式サイト</a> ／ <a href="https://halvemaan.smarteventmanager.com/book?LanguageCode=EN">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア あり／おむつ替え台 あり <a href="https://www.visitbruges.be/en/things-to-do/culture-and-heritage/brouwerij-de-halve-maan-brewery" style="color:var(--ink3)">出典</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges が市内の醸造所として紹介。The Discoveries Of（2026年8月）は「最も有名な醸造所ツアーで、それに値する」、Rebel Atlas は「歴史的で革新的、もてなし上手」と評価。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Brouwerij%20De%20Halve%20Maan%20Walplein%2026%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Visit Bruges（www.visitbruges.be） / 参照元: <a href="https://www.halvemaan.be/en/visit/restaurant">公式サイト（レストラン・営業時間）</a> / <a href="https://www.visitbruges.be/en/things-to-do/culture-and-heritage/brouwerij-de-halve-maan-brewery">Visit Bruges</a> / <a href="https://www.thediscoveriesof.com/best-beer-bars-bruges/">The Discoveries Of</a> / <a href="https://rebelatlas.com/destinations/europe/belgium/bruges/bruges-craft-beer-guide-best-breweries-taprooms-bars/">Rebel Atlas</a></div>
+</div></div>
+<div class="card" id="c-bourgogne-des-flandres">
+<img class="hero" src="img/brugge/bourgogne-des-flandres.jpg" alt="Brouwerij Bourgogne des Flandres 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">24</span>Brouwerij Bourgogne des Flandres<span class="yomi">ブルゴーニュ・デ・フランドル醸造所</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">1765年に遡る醸造家系の赤褐色ビールを2015年に市内へ復活させた小さな醸造所兼蒸留所。音声ガイド付き見学のあと、運河を望むテラスで樽生6種の飲み比べとチーズや生ハムの盛り合わせをつまめる。</div>
+<div class="sig"><b>一皿:</b>シェア用プラッター（チーズ・サラミ・生ハム・オリーブなどの盛り合わせとタパス。本格的な食事ではなく軽食）</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 10:30〜18:30（バー・テラス・見学受付とも）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（学校休暇中は月曜も営業）。1月後半は年次休業</td></tr>
+<tr><th>住所</th><td>Wollestraat 26, 8000 Brugge（醸造所本体は Kartuizerinnenstraat 6）</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:+3250335106">☎ +32 50 33 51 06</a> ／ <a href="https://www.bourgognedesflandres.be/en">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 可／ハイチェア 未確認／おむつ替え台 あり <a href="https://www.visitbruges.be/en/things-to-do/culture-and-heritage/brouwerij-bourgogne-des-flandres-brewery-and-distillery" style="color:var(--ink3)">出典</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges が子連れ向けの醸造所として掲載。The Discoveries Of（2026年8月）と Rebel Atlas がともに市内の見学先に挙げ、後者は「運河沿いの午後の一杯に」と勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Brouwerij%20Bourgogne%20des%20Flandres%20Wollestraat%2026%2C%208000%20Brugge%EF%BC%88%E9%86%B8%E9%80%A0%E6%89%80%E6%9C%AC%E4%BD%93%E3%81%AF%20Kartuizerinnenstraat%206%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.bourgognedesflandres.be） / 参照元: <a href="https://www.bourgognedesflandres.be/en/bar-terrasse">公式サイト（バー＆テラス・営業時間）</a> / <a href="https://www.visitbruges.be/en/things-to-do/culture-and-heritage/brouwerij-bourgogne-des-flandres-brewery-and-distillery">Visit Bruges</a> / <a href="https://www.thediscoveriesof.com/best-beer-bars-bruges/">The Discoveries Of</a> / <a href="https://rebelatlas.com/destinations/europe/belgium/bruges/bruges-craft-beer-guide-best-breweries-taprooms-bars/">Rebel Atlas</a></div>
+</div></div>
+<div class="card" id="c-cambrinus">
+<img class="hero" src="img/brugge/cambrinus.jpg" alt="Bierbrasserie Cambrinus 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>Bierbrasserie Cambrinus<span class="yomi">ビールブラッスリー・カンブリヌス</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">マルクト広場すぐの木の内装のビール・ブラッスリー。膨大なビールリストと、ハウスビールで煮込むストーフフレースやウサギの煮込みなどフランドル料理が看板。年中無休の通し営業でキッズメニューもある。</div>
+<div class="sig"><b>一皿:</b>フラームス・ストーフカルボナード（牛肉をハウスビールで煮込んだフランドル風ビール煮込み。りんごのコンポートとフリット付き）€24.90</div>
+<div class="taste"><b>味の証拠:</b>「I wanted Flemish Beef Stew. They had both and both were excellent」（Pat's Travel Reviews（米国の個人旅行ブログ） <a href="https://www.patstravelreviews.com/post/bierbrasserie-cambrinus-t-klokhuys-brasserie-review">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 11:00〜22:00（昼・夜とも営業）</td></tr>
+<tr><th>定休日</th><td class="off">なし（年中無休）</td></tr>
+<tr><th>住所</th><td>Philipstockstraat 19, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250332328">☎ +32 50 33 23 28</a> ／ <a href="https://www.bierbrasseriecambrinus.eu">公式サイト</a> ／ <a href="https://bookings.zenchef.com/results?rid=370417&amp;pid=1001">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>The Discoveries Of（2026年8月）が「とても良いビールととても良い料理。コスパ良く安定して素晴らしい」と評価。Rebel Atlas は「観光地価格のないビアホール」と推薦。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Bierbrasserie%20Cambrinus%20Philipstockstraat%2019%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（irp.cdn-website.com） / 参照元: <a href="https://www.bierbrasseriecambrinus.eu">公式サイト（営業時間）</a> / <a href="https://irp.cdn-website.com/cd9eb98e/files/uploaded/Menukaart+-+Cambrinus+Restaurant_2025.pdf">公式メニューPDF 2025</a> / <a href="https://www.thediscoveriesof.com/best-beer-bars-bruges/">The Discoveries Of</a> / <a href="https://www.patstravelreviews.com/post/bierbrasserie-cambrinus-t-klokhuys-brasserie-review">Pat's Travel Reviews</a></div>
+</div></div>
+<div class="card" id="c-cafe-vlissinghe">
+<img class="hero" src="img/brugge/cafe-vlissinghe.jpg" alt="Café Vlissinghe 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>Café Vlissinghe<span class="yomi">カフェ・フリシンゲ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1515年創業とされるブルージュ最古のカフェ。聖アンナ地区の路地にあり、梁天井と暖炉の残る店内と、夏はペタンクができる中庭が魅力。ハウスビールの樽生にスープやクロック、パスタなど素朴な軽食を合わせられる。</div>
+<div class="sig"><b>一皿:</b>オニオンスープ チーズトースト添え（店のおすすめ印付き）€9。ほかに魚のスープ（Vissoep）€15</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>毎日 11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし（公式では毎日営業）</td></tr>
+<tr><th>住所</th><td>Blekersstraat 2, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:+3250343737">☎ +32 50 34 37 37</a> ／ <a href="https://www.cafevlissinghe.be">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges が「Pub with food」として掲載。The Discoveries Of（2026年8月）は店内を「あるべき姿そのもの」と絶賛し、Rebel Atlas も「今も静かに素晴らしい」と推薦。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Vlissinghe%20Blekersstraat%202%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Visit Bruges（www.visitbruges.be） / 参照元: <a href="https://www.cafevlissinghe.be">公式サイト（営業時間）</a> / <a href="https://www.cafevlissinghe.be/menukaart.html">公式メニュー（2026年5月版画像）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/cafe-vlissinghe">Visit Bruges</a> / <a href="https://www.thediscoveriesof.com/best-beer-bars-bruges/">The Discoveries Of</a></div>
+</div></div>
+<div class="card" id="c-de-garre">
+<img class="hero" src="img/brugge/de-garre.jpg" alt="Staminee De Garre 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>Staminee De Garre<span class="yomi">スタミネー・デ・ハーレ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">マルクトとブルフ広場の間の細い路地奥にある1984年創業のビアカフェ。約140種の地ビールを揃え、名物の自家トリペル（11%）にはチーズのかけらが添えられる。軽食はチーズ・サラミの盛り合わせやクロックムッシュ程度。</div>
+<div class="sig"><b>一皿:</b>ポルシ・ヘメンヒド（チーズとサラミの盛り合わせ）やクロックムッシュ（ハムとチーズのホットサンド）。名物トリペルには小さなチーズが付く</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火 12:00〜19:00／水〜日 12:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし（毎日営業）</td></tr>
+<tr><th>住所</th><td>De Garre 1, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:+3250341029">☎ +32 50 34 10 29</a> ／ <a href="https://degarre.be">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>The Discoveries Of（2026年8月）が「探す価値あり」、Rebel Atlas が「何年経っても人が思い出すパブ」と推薦。食事は軽食のみで、ビール主体の立ち寄り候補。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Staminee%20De%20Garre%20De%20Garre%201%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（degarre.be） / 参照元: <a href="https://degarre.be/">公式サイト（営業時間）</a> / <a href="https://www.thediscoveriesof.com/best-beer-bars-bruges/">The Discoveries Of</a> / <a href="https://rebelatlas.com/destinations/europe/belgium/bruges/bruges-craft-beer-guide-best-breweries-taprooms-bars/">Rebel Atlas</a></div>
+</div></div>
+<div class="card" id="c-rose-red">
+<img class="hero" src="img/brugge/rose-red.jpg" alt="Café Rose Red 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>Café Rose Red<span class="yomi">カフェ・ローズ・レッド</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">マルクト裏の静かな通りにあるホテル併設のビアカフェ。天井に吊るした赤いバラが目印で、全トラピストビールやヴィンテージのグーズを揃える。料理にも力を入れ、ベルギーの定番から多国籍の小皿まで並ぶ。</div>
+<div class="sig"><b>一皿:</b>タルティフレット（ベーコン入りじゃがいものルブロションチーズ焼き）とヴィッテ・ペンス（白ソーセージ、赤い果実のコンフィ添え）</div>
+<div class="taste"><b>味の証拠:</b>「We settled on the tartiflette (potatoes with bacon gratinéed with Reblochon cheese) and the witte pens, a tasty white sausage meant to resemble a local white tripe dish, and served with red berry confit and pickled mayonnaise.」（A Tempest in a Tankard（ビールライターのブログ、2025-12-31） <a href="https://tempestinatankard.com/2025/12/31/beer-haunts-in-bruges-cafe-rose-red/">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 16:30〜24:00（ラストオーダーは閉店30分前）</td></tr>
+<tr><th>定休日</th><td class="off">なし（毎日営業）</td></tr>
+<tr><th>住所</th><td>Cordoeaniersstraat 16, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250339051">☎ +32 50 33 90 51</a> ／ <a href="https://www.rosered.be/nl/">公式サイト</a> ／ <a href="https://bookings.zenchef.com/results?rid=380435&amp;pid=1001">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges が「Pub with food」として掲載し地元シェフの推薦店にも選出。ビールブログ A Tempest in a Tankard（2025年12月）が「料理は平均より数段上」と評価。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Rose%20Red%20Cordoeaniersstraat%2016%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（cdn.stardekk.com） / 参照元: <a href="https://www.rosered.be/nl/">公式サイト（営業時間・予約）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/hotel-bar-rose-red">Visit Bruges</a> / <a href="https://tempestinatankard.com/2025/12/31/beer-haunts-in-bruges-cafe-rose-red/">A Tempest in a Tankard</a> / <a href="https://www.beerguidebrugge.com/pubs.php?IDKEY=3">Brugge Beer Guide</a></div>
+</div></div>
+<div class="card" id="c-t-brugs-beertje">
+<img class="hero" src="img/brugge/t-brugs-beertje.jpg" alt="'t Brugs Beertje 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>'t Brugs Beertje<span class="yomi">ト・ブルッグス・ベールチェ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">約300種のベルギービール（樽生5種）を揃える伝説的なブラウンカフェ。壁一面のビール看板や落書きに囲まれ、地元客と旅行者が隣り合って飲む。料理はチーズ盛り合わせやパテなどの冷菜が中心の軽食。</div>
+<div class="sig"><b>一皿:</b>ベルギーチーズの盛り合わせ（5種）やパテのパン添え（いずれも軽食。第三者情報で公式メニュー未確認）</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・日 16:00〜24:00／金・土 16:00〜翌1:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>Kemelstraat 5, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+3250339616">☎ +32 50 33 96 16</a> ／ <a href="https://brugsbeertje.be">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges が「世界のベストビアカフェ20に選出」と紹介。The Discoveries Of（2026年8月）は「多くの人が市内最高のバーと言う」、Rebel Atlas は「カルト的テイスティングカフェ」と評価。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%27t%20Brugs%20Beertje%20Kemelstraat%205%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（brugsbeertje.be） / 参照元: <a href="https://brugsbeertje.be/en/contact/">公式サイト（営業時間）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/t-brugs-beertje">Visit Bruges</a> / <a href="https://www.thediscoveriesof.com/best-beer-bars-bruges/">The Discoveries Of</a> / <a href="https://rebelatlas.com/destinations/europe/belgium/bruges/bruges-craft-beer-guide-best-breweries-taprooms-bars/">Rebel Atlas</a></div>
+</div></div>
+<h2 id="s-world" class="c-red">カフェ・ブランチ・世界の料理（乳児連れ向き含む）</h2>
+<div class="card" id="c-thats-toast">
+<img class="hero" src="img/brugge/thats-toast.jpg" alt="That's Toast 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">30</span>That's Toast<span class="yomi">ザッツ・トースト</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">ブルージュ中心部ドゥエールス通りの終日朝食カフェ。植物が吊られた明るい店内と中庭があり、アボカドトーストやエッグベネディクト、スイートポテト入りの朝食プレートを一日中出す。ベジ・ヴィーガン対応も多い。</div>
+<div class="sig"><b>一皿:</b>ビッグ・ブレックファスト・プレート（目玉焼き・ベーコン・2種のソーセージ・焼きトマト・ベイクドビーンズを盛り合わせた英国風の朝食皿）</div>
+<div class="taste"><b>味の証拠:</b>「The meat lovers will adore the other breakfast plate with tempting bacon, 2 different types of sausages, grilled tomato, beans in tomato sauce and the essential eggs.」（Elysian Moment） <a href="https://elysianmoment.com/never-ending-breakfast-at-thats-toast-in-bruges/（旅行ブログ">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 8:30〜16:00（公式に「7/7営業」と記載）</td></tr>
+<tr><th>定休日</th><td class="off">なし（年中無休と公式記載。祝日・休暇は未確認）</td></tr>
+<tr><th>住所</th><td>Dweersstraat 4, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:+3250688227">☎ +32 50 68 82 27</a> ／ <a href="https://www.thatstoast.com/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>旅行ブログ Het is de Merckx（2026年8月更新）の朝食特集と Elysian Moment の朝食特集で筆頭に挙がり、Visit Bruges も終日朝食の店として掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=That%27s%20Toast%20Dweersstraat%204%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Visit Bruges（www.visitbruges.be） / 参照元: <a href="https://www.thatstoast.com/">公式サイト（営業時間・予約不可）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/thats-toast">Visit Bruges</a> / <a href="https://hetisdemerckx.be/en/11-x-delicious-breakfasts-and-lunches-in-bruges/">Het is de Merckx</a> / <a href="https://elysianmoment.com/never-ending-breakfast-at-thats-toast-in-bruges/">Elysian Moment</a></div>
+</div></div>
+<div class="card" id="c-blackbird">
+<img class="hero" src="img/brugge/blackbird.jpg" alt="Blackbird 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">31</span>Blackbird<span class="yomi">ブラックバード</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">ヤン・ファン・エイク広場に面した古い建物の朝食・ランチ・コーヒーバー。植物性中心のカラフルな料理が特徴で、クロワッサンやボウルを段々のスタンドに盛ったブランチが名物。週末は予約なしでは入りにくい。</div>
+<div class="sig"><b>一皿:</b>ブランチ・エタジェール（クロワッサン、グラノーラ・ボウル、ディップ類などを段々皿に盛り合わせた植物性中心のブランチセット）</div>
+<div class="taste"><b>味の証拠:</b>未取得（料理名つきで味に触れた第三者の評を見つけられなかった。選定理由を参照）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水〜土 8:30〜16:00／日 9:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜</td></tr>
+<tr><th>住所</th><td>Jan van Eyckplein 7, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250347444">☎ +32 50 34 74 44</a> ／ <a href="https://www.blackbird-bruges.com/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges が「予約なしではまず座れない隠れ家」と紹介。同サイトの企画でシェフ David Demeyere が日曜朝の行きつけに挙げる。旅行ブログ2誌も推薦。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Blackbird%20Jan%20van%20Eyckplein%207%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（static.wixstatic.com） / 参照元: <a href="https://www.blackbird-bruges.com/">公式サイト（営業時間・予約推奨）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/blackbird">Visit Bruges</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/flavourite-bruges/tips-david-demeyere-laissez-faire">Visit Bruges Flavourite Bruges（シェフ推薦）</a> / <a href="https://hetisdemerckx.be/en/11-x-delicious-breakfasts-and-lunches-in-bruges/">Het is de Merckx</a></div>
+</div></div>
+<div class="card" id="c-sanseveria-bagelsalon">
+<img class="hero" src="img/brugge/sanseveria-bagelsalon.jpg" alt="Sanseveria Bagelsalon 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">32</span>Sanseveria Bagelsalon<span class="yomi">サンセヴェリア・ベーグルサロン</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">旧時計店の看板が残る建物に入るベーグル専門のカフェ。ヴィンテージ調の居間のような店内で、サーモンやラクレットを挟んだNY風ベーグル、ケーキ、ラテを朝食からランチまで出す。グルテンフリー・ヴィーガンのベーグルもある。</div>
+<div class="sig"><b>一皿:</b>ベーグル・サンド（スモークサーモンや溶かしたラクレットチーズなどを挟んだニューヨーク風ベーグル）</div>
+<div class="taste"><b>味の証拠:</b>「Liever een Amerikaanse bagel met Bourgondische twist als ontbijt? ... Geloof ons: je hoeft niet naar New York af te reizen voor de perfecte bagel.」（Magazine 編集部、2023年11月） <a href="https://www.jan-magazine.nl/hotspots/a45917091/ontbijt-brugge/（JAN">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 8:00〜17:00／日・祝 9:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">なし（1月上旬に冬季休暇あり）</td></tr>
+<tr><th>住所</th><td>Predikherenstraat 10/12, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250348143">☎ +32 50 34 81 43</a> ／ <a href="https://www.sanseveria.be/">公式サイト</a> ／ <a href="https://bookings.zenchef.com/results?rid=369916&amp;pid=1001">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>JAN Magazine の朝食5選と旅行ブログ2誌が推薦。Visit Bruges は「ほぼ誰もが行き着く店なので予約を」と書き、子連れ向きの表示もある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Sanseveria%20Bagelsalon%20Predikherenstraat%2010/12%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.sanseveria.be） / 参照元: <a href="https://www.sanseveria.be/locaties">公式サイト（営業時間）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/sanseveria-bagelsalon">Visit Bruges</a> / <a href="https://www.jan-magazine.nl/hotspots/a45917091/ontbijt-brugge/">JAN Magazine</a> / <a href="https://hetisdemerckx.be/en/11-x-delicious-breakfasts-and-lunches-in-bruges/">Het is de Merckx</a></div>
+</div></div>
+<div class="card" id="c-kaffee-kamiel">
+<img class="hero" src="img/brugge/kaffee-kamiel.jpg" alt="Kaffee Kamiel 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">33</span>Kaffee Kamiel<span class="yomi">カフェ・カミール</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">ショッピング街の歩行者専用中庭ジルヴェルパントにある終日朝食カフェ。ヨーグルトボウル、フレンチトースト、アメリカンパンケーキ、半熟卵やブランチボードに、昼は温かいランチやサンドも。雑貨ショップ併設。</div>
+<div class="sig"><b>一皿:</b>アメリカン・パンケーキ（ベリーやシロップを添えた厚めのパンケーキ。朝食メニューとして終日提供）</div>
+<div class="taste"><b>味の証拠:</b>「A beautifully kept place, with a delightful terrace where you have some lovely options for breakfast and lunch. Perfect for a quick bite, a tasty pasta or a late brunch.」（Belge シェフ Tomas Puype、Visit Bruges 掲載） <a href="https://www.visitbruges.be/en/eat-and-sleep/flavourite-bruges/tips-tomas-puype-franco-belge（Franco">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・金・土 8:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜・日曜（※日曜休み：訪問は土曜のみ可）</td></tr>
+<tr><th>住所</th><td>Zilverpand 7, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:+3250686660">☎ +32 50 68 66 60</a> ／ <a href="https://www.kaffeekamiel.be/">公式サイト</a> ／ <a href="https://book.restomanager.net/reservations/68b807dc7804ade003ac9b10">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Visit Bruges の企画で地元シェフ2組（Franco Belge、Kok au Vin）が子連れ向きと推薦。JAN Magazine の朝食5選、Het is de Merckx にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Kaffee%20Kamiel%20Zilverpand%207%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.kaffeekamiel.be） / 参照元: <a href="https://www.kaffeekamiel.be/">公式サイト（営業時間・予約）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/kaffee-kamiel">Visit Bruges</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/flavourite-bruges/tips-tomas-puype-franco-belge">Visit Bruges Flavourite Bruges（Tomas Puype 推薦）</a> / <a href="https://www.jan-magazine.nl/hotspots/a45917091/ontbijt-brugge/">JAN Magazine</a></div>
+</div></div>
+<div class="card" id="c-nomad-brugge">
+<img class="hero" src="img/brugge/nomad-brugge.jpg" alt="Nomad 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">34</span>Nomad<span class="yomi">ノマド</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">駅寄りの広場ト・ザントに面した北欧調のキッチン＆バー。店主が営むオーガニック農園の野菜を使い、アボカドトーストやクロワッサンの朝食、南アフリカ暮らしの経験を生かした世界の味のランチを出す。屋根付きテラスあり。</div>
+<div class="sig"><b>一皿:</b>ノマド・ブレックファスト（ゆで卵、パン、ヨーグルト、ジャムなどを一皿に盛った朝食プレート）</div>
+<div class="taste"><b>味の証拠:</b>「This farm is even a purveyor to the royal household of organic products! A guaranteed breakfast or lunch to lick off your fingers and thumbs!」（Het is de Merckx） <a href="https://hetisdemerckx.be/en/11-x-delicious-breakfasts-and-lunches-in-bruges/（在住者系旅行ブログ">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 9:00〜18:00／土 8:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（※日曜休み：訪問は土曜のみ可。2026年は5/14〜17など臨時休業あり）</td></tr>
+<tr><th>住所</th><td>'t Zand 12, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:+3250736488">☎ +32 50 73 64 88</a> ／ <a href="https://www.nomadbrugge.be/">公式サイト</a> ／ <a href="https://www.nomadbrugge.be/reserveren.html">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>JAN Magazine「ブルージュ朝食5選」と Het is de Merckx が推薦。Visit Bruges は自家農園の有機野菜を使う世界の料理と紹介し、地元シェフ推薦企画の対象店にも入る。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Nomad%20%27t%20Zand%2012%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.nomadbrugge.be） / 参照元: <a href="https://www.nomadbrugge.be/">公式サイト（営業時間・休業日）</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/nomad">Visit Bruges</a> / <a href="https://www.jan-magazine.nl/hotspots/a45917091/ontbijt-brugge/">JAN Magazine</a> / <a href="https://hetisdemerckx.be/en/11-x-delicious-breakfasts-and-lunches-in-bruges/">Het is de Merckx</a></div>
+</div></div>
+<div class="card" id="c-tanuki">
+<img class="hero" src="img/brugge/tanuki.jpg" alt="Tanuki 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">35</span>Tanuki<span class="yomi">タヌキ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">聖母教会近くで35年以上続く日本料理店。1984年に日本で修業したシェフ Ivan Verhelle と日本人副料理長が、オープンキッチンで刺身・寿司・天ぷら・鉄板焼きを作る。店内の一角で醤油や和食器も販売。</div>
+<div class="sig"><b>一皿:</b>鶴（Tsuru）コース（刺身、酢の物、焼き鳥、鉄板焼きの牛肉、もちアイスなどで日本料理を巡るコース。昼は40ユーロのランチコースあり）</div>
+<div class="taste"><b>味の証拠:</b>「Sashimi wordt versneden volgens de regels van de kunst en is een lust voor het oog. Versheid is primordiaal ... Eetlustopwekkende sunomono met komkommer, zeewier en in rijstazijn gemarineerde octopus, zeekwal en scampi.」（Belgium 評） <a href="https://www.gaultmillau.be/en/restaurants/tanuki-brugge（Gault&amp;Millau">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>水 昼のみ／木〜土 昼・夜／日 昼のみ（具体的な時刻は未確認）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜（日曜は夜休み）</td></tr>
+<tr><th>住所</th><td>Oude Gentweg 1, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250347512">☎ +32 50 34 75 12</a> ／ <a href="https://www.tanuki.be/">公式サイト</a> ／ <a href="https://www.tanuki.be/nl/reserveren">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Gault&amp;Millau Belgium が14/20点で「35年を経ても感嘆させる」と評価。Visit Bruges は「ブルージュの中の小さな日本」と紹介し、シェフ本人も特集。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Tanuki%20Oude%20Gentweg%201%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: Gault&amp;Millau（cdn.gaultmillau.be） / 参照元: <a href="https://www.gaultmillau.be/en/restaurants/tanuki-brugge">Gault&amp;Millau（評・営業日）</a> / <a href="https://www.tanuki.be/nl/index.html">公式サイト</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/tanuki">Visit Bruges</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/flavourite-bruges/tips-ivan-verhelle-tanuki">Visit Bruges Flavourite Bruges</a></div>
+</div></div>
+<div class="card" id="c-less-eatery">
+<img class="hero" src="img/brugge/less-eatery.jpg" alt="L.E.S.S. Eatery 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">36</span>L.E.S.S. Eatery<span class="yomi">レス・イータリー</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">ト・ザントに面したモダンなイータリー（旧三つ星 Hertog Jan のグループ）。韓国風タルタル、ペルー風セビーチェ、香港風の魚料理など、アジアを軸にした世界の味を小皿でシェアできる。家族連れも想定した気軽な雰囲気。</div>
+<div class="sig"><b>一皿:</b>セビーチェ（生の魚介を柑橘で締め、唐辛子を効かせたペルー風マリネ。ここではアジア風の味付けも加わる）</div>
+<div class="taste"><b>味の証拠:</b>「From steak tartare with a Korean kick and ceviche scattered with distinctive fresh, spicy, tangy Peruvian notes to Hong-Kong-style young turbot, the extensive menu is a treasure trove of premium produce and creativity.」（Guide 評） <a href="https://guide.michelin.com/en/west-vlaanderen/brugge/restaurant/l-e-s-s（MICHELIN">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 12:00〜14:00／18:00〜21:30（木〜土は14:00〜18:00もドリンク＆軽食）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜（※日曜休み：訪問は土曜のみ可）</td></tr>
+<tr><th>住所</th><td>'t Zand 21, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+3250699369">☎ +32 50 69 93 69</a> ／ <a href="https://lesseatery.be/">公式サイト</a> ／ <a href="https://www.sevenrooms.com/explore/lesseatery/reservations/create/search/">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランガイドが「ブルージュ屈指のフーディーの人気店」と掲載。Gault&amp;Millau 14/20。JAN Magazine（2025年10月）も選び「予約を」と勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=L.E.S.S.%20Eatery%20%27t%20Zand%2021%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（lesseatery.be） / 参照元: <a href="https://lesseatery.be/">公式サイト（営業時間・予約）</a> / <a href="https://guide.michelin.com/en/west-vlaanderen/brugge/restaurant/l-e-s-s">MICHELIN Guide</a> / <a href="https://www.visitbruges.be/en/eat-and-sleep/food-bars-cafes/less-eatery">Visit Bruges</a> / <a href="https://www.jan-magazine.nl/hotspots/g45917015/restaurants-brugge/">JAN Magazine</a></div>
+</div></div>
+<div class="card" id="c-atelier-flori">
+<img class="hero" src="img/brugge/atelier-flori.jpg" alt="Atelier Flori 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">37</span>Atelier Flori<span class="yomi">アトリエ・フローリ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">アートの展示も行う小さな店で、料理はすべて植物性。イタリアのアランチーニやスープ、サラダ、ナチョスなど世界の小皿を段々のエタジェールに盛って出すのが名物で、ワインや地元菓子店のケーキも。ベルギーのヴィーガン賞受賞歴あり。</div>
+<div class="sig"><b>一皿:</b>エタジェール（アランチーニ、スープ、サラダ、ナチョスなど温冷の植物性小皿を段々の皿に盛り合わせたシェアプレート。1人32ユーロ）</div>
+<div class="taste"><b>味の証拠:</b>「Het concept? Je bestelt etagères met allerlei lekkere plantaardige hapjes – van Italiaanse arancini en soepjes tot kleurrijke salades en nacho's – om samen van te genieten.」（Magazine 寄稿編集者 Emma van Egmond） <a href="https://www.jan-magazine.nl/hotspots/g45917015/restaurants-brugge/（JAN">出典</a></div>
+<table class="info">
+<tr><th>営業時間</th><td>木〜日 16:00〜24:00（キッチンは18:00から）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜・水曜</td></tr>
+<tr><th>住所</th><td>Jozef Suvéestraat 20, 8000 Brugge</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+32472824030">☎ +32 472 82 40 30</a> ／ <a href="https://www.atelierflori.be/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー入店 未確認／ハイチェア 未確認／おむつ替え台 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>オランダの女性誌 JAN Magazine（2025年10月）が「ブルージュの人気レストラン」に選び、編集者が植物性の小皿を段々皿でシェアする楽しさを推薦。土日とも夕方から営業。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Atelier%20Flori%20Jozef%20Suv%C3%A9estraat%2020%2C%208000%20Brugge">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.atelierflori.be） / 参照元: <a href="https://www.atelierflori.be/">公式サイト（営業時間・予約）</a> / <a href="https://www.jan-magazine.nl/hotspots/g45917015/restaurants-brugge/">JAN Magazine</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年9月時点の調査に基づく。写真出典: 各店の公式サイト・Visit Bruges・現地メディア・在住者ブログ（各カードの「写真:」に出典を記載）</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>
