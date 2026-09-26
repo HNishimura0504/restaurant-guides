@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>フュッセン・ノイシュヴァンシュタイン の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>フュッセン・ノイシュヴァンシュタイン の食べ歩き地図<span class="n">35店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="フュッセン・ノイシュヴァンシュタイン の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">フュッセン・ノイシュヴァンシュタイン の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../europe/germany/fuessen.html"><span class="sn-e">📄</span>フュッセン・ノイシュヴァンシュタインのガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（80都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "Gasthaus zum Schwanen", "c": ["ご当地名物"], "lat": 47.5670563, "lng": 10.7003364, "d": "Allgäuer Kässpatzen（手削りの卵麺に山のチーズを絡め、揚げ玉ねぎを載せたアルゴイ名物）", "a": "Brotmarkt 4, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Gasthaus%20zum%20Schwanen%20Brotmarkt%204%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-gasthaus-zum-schwanen", "food": "", "ext": ""}, {"i": 1, "n": "Altstadthotel & Restaurant Zum Hechten", "c": ["ご当地名物", "和食・郷土料理"], "lat": 47.5678186, "lng": 10.6985024, "d": "Allgäuer Kässpätzle（自家製ブイヨンで茹でたシュペッツレを熟成と若いベルクケーゼで和え、揚げ玉ねぎを載せる）", "a": "Ritterstraße 6, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Altstadthotel%20%26%20Restaurant%20Zum%20Hechten%20Ritterstra%C3%9Fe%206%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-zum-hechten", "food": "", "ext": ""}, {"i": 2, "n": "Restaurant im Hotel Hirsch", "c": ["ご当地名物"], "lat": 47.5691599, "lng": 10.7022862, "d": "猟獣料理（Wild。鹿肉の煮込みやロースト。季節の地元産）／Bachforelle（川マスのソテー）", "a": "Kaiser-Maximilian-Platz 7, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20im%20Hotel%20Hirsch%20Kaiser-Maximilian-Platz%207%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-hotel-hirsch", "food": "", "ext": ""}, {"i": 3, "n": "Frühlingsgarten", "c": ["ご当地名物", "和食・郷土料理"], "lat": 47.5656518, "lng": 10.6933226, "d": "Spinatknödel mit Bergkäse（ほうれん草の団子に地元の山のチーズとカレー風味マンゴーチャツネ。店の定番）", "a": "Alatseestraße 8, 87629 Füssen-Bad Faulenbach", "m": "https://www.google.com/maps/search/?api=1&query=Fr%C3%BChlingsgarten%20Alatseestra%C3%9Fe%208%2C%2087629%20F%C3%BCssen-Bad%20Faulenbach", "u": "../europe/germany/fuessen.html#c-fruehlingsgarten", "food": "", "ext": ""}, {"i": 4, "n": "Restaurant Maucher's", "c": ["ご当地名物"], "lat": 47.6043429, "lng": 10.683327, "d": "Zwiebelrostbraten（牛ロースのステーキに揚げ玉ねぎとグレービー。シュヴァーベン／アルゴイの定番）", "a": "Höhenstraße 2, 87629 Füssen-Hopfen am See", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Maucher%27s%20H%C3%B6henstra%C3%9Fe%202%2C%2087629%20F%C3%BCssen-Hopfen%20am%20See", "u": "../europe/germany/fuessen.html#c-mauchers", "food": "", "ext": ""}, {"i": 5, "n": "Restaurant Ritterstuben", "c": ["ご当地名物"], "lat": 47.5678114, "lng": 10.6986458, "d": "Käsespätzle mit regionalem Bergkäse & Röstzwiebeln（地元の山のチーズのシュペッツ…", "a": "Ritterstraße 4, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Ritterstuben%20Ritterstra%C3%9Fe%204%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-ritterstuben", "food": "", "ext": ""}, {"i": 6, "n": "Gasthof Krone", "c": ["ご当地名物"], "lat": 47.5685853, "lng": 10.7012485, "d": "Gegrillte Stelzen（皮をパリッと焼き上げた豚すね肉のグリル、ザワークラウトと団子添え）", "a": "Schrannengasse 17, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Gasthof%20Krone%20Schrannengasse%2017%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-gasthof-krone", "food": "", "ext": ""}, {"i": 7, "n": "Nostalgie-Restaurant Madame Plüsch", "c": ["ご当地名物"], "lat": 47.5688776, "lng": 10.701231, "d": "未確認（メニューは画像掲載のみで品名を確認できず。旅行ブログの夕食写真あり）", "a": "Drehergasse 48, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Nostalgie-Restaurant%20Madame%20Pl%C3%BCsch%20Drehergasse%2048%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-madame-pluesch", "food": "", "ext": ""}, {"i": 8, "n": "Haus der Gebirgsjäger", "c": ["ご当地名物"], "lat": 47.5685328, "lng": 10.6834034, "d": "Jägerschnitzel（きのこクリームソースのカツレツ）※クチコミで言及", "a": "Kemptener Straße 68, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Haus%20der%20Gebirgsj%C3%A4ger%20Kemptener%20Stra%C3%9Fe%2068%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-haus-der-gebirgsjaeger", "food": "", "ext": ""}, {"i": 9, "n": "Hotel & Restaurant Alatsee", "c": ["ご当地名物"], "lat": 47.5614778, "lng": 10.6437275, "d": "未確認（昼のランチメニュー中心。品名は出典で確認できず）", "a": "Am Alatsee 1, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Hotel%20%26%20Restaurant%20Alatsee%20Am%20Alatsee%201%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-hotel-alatsee", "food": "", "ext": ""}, {"i": 10, "n": "Lila Haus – Beim Ditsch", "c": ["ご当地名物"], "lat": 47.5688264, "lng": 10.7015595, "d": "Weißwurst mit Brezn（ミュンヘン風白ソーセージとブレッツェル。皮をむいて食べる）", "a": "Drehergasse 42, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Lila%20Haus%20%E2%80%93%20Beim%20Ditsch%20Drehergasse%2042%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-beim-ditsch", "food": "", "ext": ""}, {"i": 11, "n": "Restaurant Ludwigs（Hotel Ludwigs）", "c": ["ご当地名物", "和食・郷土料理"], "lat": 47.5684579, "lng": 10.6996561, "d": "Schwäbische Maultaschen（ひき肉とほうれん草を詰めたシュヴァーベン風の大きなパスタ。玉ねぎと卵で焼く）", "a": "Reichenstraße 17, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Ludwigs%EF%BC%88Hotel%20Ludwigs%EF%BC%89%20Reichenstra%C3%9Fe%2017%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-restaurant-ludwigs", "food": "", "ext": ""}, {"i": 12, "n": "Restaurant Müller（Hotel Müller Hohenschwangau）", "c": ["和食・郷土料理"], "lat": 47.5550113, "lng": 10.7386903, "d": "Rindergulasch mit Semmelknödel（牛肉のパプリカ煮込みにパン団子を添えた南ドイツの定番）", "a": "Alpseestraße 16, 87645 Schwangau-Hohenschwangau", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20M%C3%BCller%EF%BC%88Hotel%20M%C3%BCller%20Hohenschwangau%EF%BC%89%20Alpseestra%C3%9Fe%2016%2C%2087645%20Schwangau-Hohenschwangau", "u": "../europe/germany/fuessen.html#c-restaurant-mueller-hohenschwangau", "food": "", "ext": ""}, {"i": 13, "n": "Restaurant Schneiderhanser（Hotel Helmer）", "c": ["和食・郷土料理"], "lat": 47.5778548, "lng": 10.7366154, "d": "Zweierlei vom eigenen Ochs（自家農場の雄牛を2通りに調理。季節のきのこ添え）", "a": "Mitteldorf 10, 87645 Schwangau", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Schneiderhanser%EF%BC%88Hotel%20Helmer%EF%BC%89%20Mitteldorf%2010%2C%2087645%20Schwangau", "u": "../europe/germany/fuessen.html#c-schneiderhanser-hotel-helmer", "food": "", "ext": ""}, {"i": 14, "n": "s'Wirtshaus zum Weinbauer", "c": ["和食・郷土料理"], "lat": 47.5763811, "lng": 10.7364208, "d": "Böfflamott（宮廷料理人のレシピによる牛肉の赤ワイン漬けロースト。ブレッツェル団子と林檎入り赤キャベツ添え）", "a": "Füssener Straße 3, 87645 Schwangau", "m": "https://www.google.com/maps/search/?api=1&query=s%27Wirtshaus%20zum%20Weinbauer%20F%C3%BCssener%20Stra%C3%9Fe%203%2C%2087645%20Schwangau", "u": "../europe/germany/fuessen.html#c-wirtshaus-weinbauer", "food": "", "ext": ""}, {"i": 15, "n": "Louis II.（Hotel Das Rübezahl）", "c": ["和食・郷土料理"], "lat": 47.5730244, "lng": 10.7221085, "d": "Zwiebelrostbraten（牛ロースのステーキに揚げ玉ねぎ）", "a": "Am Ehberg 31, 87645 Schwangau-Horn", "m": "https://www.google.com/maps/search/?api=1&query=Louis%20II.%EF%BC%88Hotel%20Das%20R%C3%BCbezahl%EF%BC%89%20Am%20Ehberg%2031%2C%2087645%20Schwangau-Horn", "u": "../europe/germany/fuessen.html#c-louis-ii-ruebezahl", "food": "", "ext": ""}, {"i": 16, "n": "Schlossrestaurant Neuschwanstein", "c": ["和食・郷土料理"], "lat": 47.5581727, "lng": 10.748643, "d": "Allgäuer Käsespätzle（アルゴイ風チーズ入り卵麺）／Gulaschsuppe（パプリカ風味の牛肉スープ）", "a": "Neuschwansteinstraße 17, 87645 Schwangau-Hohenschwangau", "m": "https://www.google.com/maps/search/?api=1&query=Schlossrestaurant%20Neuschwanstein%20Neuschwansteinstra%C3%9Fe%2017%2C%2087645%20Schwangau-Hohenschwangau", "u": "../europe/germany/fuessen.html#c-schlossrestaurant-neuschwanstein", "food": "", "ext": ""}, {"i": 17, "n": "Berggasthaus Bleckenau", "c": ["和食・郷土料理"], "lat": 47.5386195, "lng": 10.7764406, "d": "Wildspezialitäten（地元の猟で獲れた鹿などの猟獣料理）", "a": "Bleckenau 2, 87645 Schwangau", "m": "https://www.google.com/maps/search/?api=1&query=Berggasthaus%20Bleckenau%20Bleckenau%202%2C%2087645%20Schwangau", "u": "../europe/germany/fuessen.html#c-berggasthaus-bleckenau", "food": "", "ext": ""}, {"i": 18, "n": "Restaurant Café Kainz", "c": ["和食・郷土料理"], "lat": 47.5562073, "lng": 10.7412641, "d": "Gulasch（牛肉のパプリカ煮込み）※クチコミで言及", "a": "Alpseestraße 5, 87645 Schwangau-Hohenschwangau", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Caf%C3%A9%20Kainz%20Alpseestra%C3%9Fe%205%2C%2087645%20Schwangau-Hohenschwangau", "u": "../europe/germany/fuessen.html#c-restaurant-cafe-kainz", "food": "", "ext": ""}, {"i": 19, "n": "Alpenrose am See（AMERON Neuschwanstein Alpsee Resort）", "c": ["和食・郷土料理"], "lat": 47.5535573, "lng": 10.7362242, "d": "自家レシピのアイスクリーム（Alpenrose 専用に製造）", "a": "Alpseestraße 27, 87645 Schwangau-Hohenschwangau", "m": "https://www.google.com/maps/search/?api=1&query=Alpenrose%20am%20See%EF%BC%88AMERON%20Neuschwanstein%20Alpsee%20Resort%EF%BC%89%20Alpseestra%C3%9Fe%2027%2C%2087645%20Schwangau-Hohenschwangau", "u": "../europe/germany/fuessen.html#c-alpenrose-am-see", "food": "", "ext": ""}, {"i": 20, "n": "Konditorei Kurcafé（Café-Restaurant Lumen / Hotel Schlosskrone）", "c": ["カフェ・パン・スイーツ"], "lat": 47.5698295, "lng": 10.6996697, "d": "Sissi-Torte（皇后エリーザベトのために作られたと伝わるトルテ。アーモンド入りウィーン風生地をジャマイカラムで湿らせ、トリ…", "a": "Prinzregentenplatz 2–4, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Konditorei%20Kurcaf%C3%A9%EF%BC%88Caf%C3%A9-Restaurant%20Lumen%20/%20Hotel%20Schlosskrone%EF%BC%89%20Prinzregentenplatz%202%E2%80%934%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-konditorei-kurcafe", "food": "", "ext": ""}, {"i": 21, "n": "Café FREIDAY", "c": ["カフェ・パン・スイーツ"], "lat": 47.5686943, "lng": 10.7005849, "d": "Crosswich（クロワッサンにペスト・サラダ・隣村産ハム・パルメザン・バルサミコを挟んだ看板サンド）", "a": "Schrannengasse 6, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20FREIDAY%20Schrannengasse%206%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-cafe-freiday", "food": "", "ext": ""}, {"i": 22, "n": "Caffè Lucca", "c": ["カフェ・パン・スイーツ"], "lat": 47.5675131, "lng": 10.6991636, "d": "Frühstücksset（カプチーノ・オレンジジュース・ピスタチオやバニラ入りクロワッサンの朝食セット）", "a": "Ritterstraße 9, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Caff%C3%A8%20Lucca%20Ritterstra%C3%9Fe%209%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-caffe-lucca", "food": "", "ext": ""}, {"i": 23, "n": "Bio Café Baumgarten", "c": ["カフェ・パン・スイーツ"], "lat": 47.5670981, "lng": 10.699315, "d": "Buchweizen-Galette（そば粉のガレット。キノコやオリーブ等の塩系具材で、グルテンフリー対応）", "a": "Magnusplatz 6, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Bio%20Caf%C3%A9%20Baumgarten%20Magnusplatz%206%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-bio-cafe-baumgarten", "food": "", "ext": ""}, {"i": 24, "n": "Café Bistro Seaside", "c": ["カフェ・パン・スイーツ"], "lat": 47.6077132, "lng": 10.6790323, "d": "Himbeerbaisertorte（ラズベリーとメレンゲのトルテ。店の定番クラシック）", "a": "Uferstraße 21, 87629 Füssen-Hopfen am See", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Bistro%20Seaside%20Uferstra%C3%9Fe%2021%2C%2087629%20F%C3%BCssen-Hopfen%20am%20See", "u": "../europe/germany/fuessen.html#c-cafe-bistro-seaside", "food": "", "ext": ""}, {"i": 25, "n": "Schlossbackstube Café & Eis", "c": ["カフェ・パン・スイーツ"], "lat": 47.5752278, "lng": 10.7348889, "d": "Butterbreze（石窯で焼くバイエルンのバター入りブレッツェル）", "a": "Füssener Straße 15, 87645 Schwangau", "m": "https://www.google.com/maps/search/?api=1&query=Schlossbackstube%20Caf%C3%A9%20%26%20Eis%20F%C3%BCssener%20Stra%C3%9Fe%2015%2C%2087645%20Schwangau", "u": "../europe/germany/fuessen.html#c-schlossbackstube-cafe-eis", "food": "", "ext": ""}, {"i": 26, "n": "Schwansee Kiosk", "c": ["カフェ・パン・スイーツ"], "lat": 47.5598023, "lng": 10.7204177, "d": "Mohnkuchen（ケシの実のケーキ。クチコミで繰り返し名前が挙がる自家製）", "a": "Königssträßchen 10, 87645 Schwangau", "m": "https://www.google.com/maps/search/?api=1&query=Schwansee%20Kiosk%20K%C3%B6nigsstr%C3%A4%C3%9Fchen%2010%2C%2087645%20Schwangau", "u": "../europe/germany/fuessen.html#c-schwansee-kiosk", "food": "", "ext": ""}, {"i": 27, "n": "Schlossbrauhaus Schwangau", "c": ["和食・郷土料理"], "lat": 47.5742494, "lng": 10.7351181, "d": "Brauhausbraten（豚肩ロースのロースト・自家ビールのソース）", "a": "Gipsmühlweg 5, 87645 Schwangau", "m": "https://www.google.com/maps/search/?api=1&query=Schlossbrauhaus%20Schwangau%20Gipsm%C3%BChlweg%205%2C%2087645%20Schwangau", "u": "../europe/germany/fuessen.html#c-schlossbrauhaus-schwangau", "food": "", "ext": ""}, {"i": 28, "n": "Markthalle Füssen", "c": ["和食・郷土料理"], "lat": 47.5684929, "lng": 10.7009125, "d": "Fischsuppe（魚屋カウンターの魚のスープ）", "a": "Schrannengasse 12, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Markthalle%20F%C3%BCssen%20Schrannengasse%2012%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-markthalle-fuessen", "food": "", "ext": ""}, {"i": 29, "n": "La Perla Ristorante Pizzeria", "c": ["和食・郷土料理"], "lat": 47.5688743, "lng": 10.7014192, "d": "Pizza（カリッと焼いた生地に具をたっぷり載せた窯焼きピッツァ）", "a": "Drehergasse 44, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=La%20Perla%20Ristorante%20Pizzeria%20Drehergasse%2044%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-la-perla-fuessen", "food": "", "ext": ""}, {"i": 30, "n": "Griechisches Restaurant Stego's", "c": ["和食・郷土料理"], "lat": 47.5682566, "lng": 10.7010739, "d": "Dolmadakia（米を葡萄の葉で包んだギリシャの前菜）", "a": "Brunnengasse 20, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Griechisches%20Restaurant%20Stego%27s%20Brunnengasse%2020%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-stegos-fuessen", "food": "", "ext": ""}, {"i": 31, "n": "Restaurant Annapurna", "c": ["和食・郷土料理"], "lat": 47.5682247, "lng": 10.6922, "d": "Karahi Chicken（鉄鍋カラヒで煮込むトマトと香辛料の鶏カレー）", "a": "Kemptener Straße 16, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Annapurna%20Kemptener%20Stra%C3%9Fe%2016%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-annapurna-fuessen", "food": "", "ext": ""}, {"i": 32, "n": "Wok In", "c": ["和食・郷土料理"], "lat": 47.5693037, "lng": 10.6996077, "d": "Duck Noodles（揚げた鴨を載せた焼きそば／汁そば）", "a": "Reichenstraße 33, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Wok%20In%20Reichenstra%C3%9Fe%2033%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-wok-in-fuessen", "food": "", "ext": ""}, {"i": 33, "n": "Il Pescatore", "c": ["和食・郷土料理"], "lat": 47.5675421, "lng": 10.7012683, "d": "Linguine all'astice（オマール海老のリングイネ。トマトソースで和える魚介パスタ）", "a": "Franziskanergasse 13, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=Il%20Pescatore%20Franziskanergasse%2013%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-il-pescatore-fuessen", "food": "", "ext": ""}, {"i": 34, "n": "KYŌDAI", "c": ["和食・郷土料理"], "lat": 47.5691808, "lng": 10.6988584, "d": "Phở bò（牛骨スープのベトナム米麺）", "a": "Luitpoldstraße 1, 87629 Füssen", "m": "https://www.google.com/maps/search/?api=1&query=KY%C5%8CDAI%20Luitpoldstra%C3%9Fe%201%2C%2087629%20F%C3%BCssen", "u": "../europe/germany/fuessen.html#c-kyodai-fuessen", "food": "", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([47.568727,10.708777],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('fuessen', "フュッセン・ノイシュヴァンシュタイン");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>オーバーヴェーゼル・ライン渓谷 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>オーバーヴェーゼル・ライン渓谷 の食べ歩き地図<span class="n">27店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="オーバーヴェーゼル・ライン渓谷 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">オーバーヴェーゼル・ライン渓谷 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../europe/germany/oberwesel.html"><span class="sn-e">📄</span>オーバーヴェーゼル・ライン渓谷のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（80都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類", "🍜"], "和食・郷土料理": ["和食", "🍱"], "寿司・海鮮": ["和食", "🍣"], "ご当地名物": ["和食", "🎏"], "洋食・各国料理": ["洋食・アジア", "🍝"], "アジア・エスニック": ["洋食・アジア", "🍛"], "カフェ・パン・スイーツ": ["カフェ・酒場", "☕"], "居酒屋・焼肉": ["カフェ・酒場", "🍺"], "ビール・バー": ["カフェ・酒場", "🍻"], "屋台・食べ歩き": ["カフェ・酒場", "🍢"], "市場・食材店": ["カフェ・酒場", "🛒"]}, DATA=[{"i": 0, "n": "Restaurant Zum Mundschenk Auf Schönburg", "c": ["ビール・バー"], "lat": 50.1011261, "lng": 7.7323604, "d": "Hunsrücker Wildbratwurst（フンスリュック産ジビエのソーセージ。リンゴと生姜のザワークラウト、マッシュポテト…", "a": "Schönburg 1, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Zum%20Mundschenk%20Auf%20Sch%C3%B6nburg%20Sch%C3%B6nburg%201%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-zum-mundschenk", "food": "", "ext": ""}, {"i": 1, "n": "Schönburger Weinstuben", "c": ["ビール・バー"], "lat": 50.1011822, "lng": 7.7322469, "d": "Schönburger Schlemmereien（冷・温・甘の小皿を全種類、3回に分けて出すおまかせ。1人 €57.50）", "a": "Schönburg 1, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=Sch%C3%B6nburger%20Weinstuben%20Sch%C3%B6nburg%201%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-schoenburger-weinstuben", "food": "", "ext": ""}, {"i": 2, "n": "Hotel Restaurant Weinhaus Weiler", "c": ["ビール・バー"], "lat": 50.108272, "lng": 7.7263367, "d": "タイ風スパイスのハクセ（ドイツ名物の豚すね肉のロースト（Haxe）をタイ風のスパイスで仕上げた料理）", "a": "Marktplatz 4, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=Hotel%20Restaurant%20Weinhaus%20Weiler%20Marktplatz%204%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-weinhaus-weiler", "food": "", "ext": ""}, {"i": 3, "n": "Weinhotel Goldener Pfropfenzieher", "c": ["ビール・バー"], "lat": 50.1111517, "lng": 7.7214009, "d": "Hunsrücker Spießbraten（フンスリュック地方名物の串焼きロースト。玉ねぎ入りの豚肩ロースを直火で焼く）とブラー…", "a": "Am Plan 1, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=Weinhotel%20Goldener%20Pfropfenzieher%20Am%20Plan%201%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-goldener-pfropfenzieher", "food": "", "ext": ""}, {"i": 4, "n": "Heimathafen 550", "c": ["ビール・バー"], "lat": 50.1076362, "lng": 7.72652, "d": "Forelle aus dem Wispertal（ライン川対岸ヴィスパー谷産のマス料理）", "a": "Rathausstr. 2（Hotel DAS WESEL 内）, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=Heimathafen%20550%20Rathausstr.%202%EF%BC%88Hotel%20DAS%20WESEL%20%E5%86%85%EF%BC%89%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-heimathafen-550", "food": "", "ext": ""}, {"i": 5, "n": "Günderodehaus（Günderodefilmhaus）", "c": ["ビール・バー"], "lat": 50.1156373, "lng": 7.7164001, "d": "Schabbacher（中に具を詰めたスパイシーなじゃがいも団子。公式サイトいわく客に一番人気）", "a": "Günderrodehaus 1（Siebenjungfrauenblick）, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=G%C3%BCnderodehaus%EF%BC%88G%C3%BCnderodefilmhaus%EF%BC%89%20G%C3%BCnderrodehaus%201%EF%BC%88Siebenjungfrauenblick%EF%BC%89%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-guenderodehaus", "food": "", "ext": ""}, {"i": 6, "n": "Oppermanns Restaurant im Landhotel Zum Kronprinzen", "c": ["ビール・バー"], "lat": 50.0890113, "lng": 7.7239296, "d": "日替わりコース（例：2026年6月2日＝地元産ホワイトアスパラとラヴェージのスープ、アイスランド産天然サーモンのコンフィ、イベリコ…", "a": "Rheinhöhenstraße 43-45, 55430 Oberwesel-Dellhofen", "m": "https://www.google.com/maps/search/?api=1&query=Oppermanns%20Restaurant%20im%20Landhotel%20Zum%20Kronprinzen%20Rheinh%C3%B6henstra%C3%9Fe%2043-45%2C%2055430%20Oberwesel-Dellhofen", "u": "../europe/germany/oberwesel.html#c-oppermanns-kronprinzen", "food": "", "ext": ""}, {"i": 7, "n": "Auf Scharffeneck（Schloss Rheinfels）", "c": ["和食・郷土料理"], "lat": 50.1536505, "lng": 7.7058723, "d": "Rinderfilet-Medaillon mit Kräuterkruste（牛フィレのハーブ衣焼き・ブルゴーニュソース。クチコ…", "a": "Schloßberg 47, 56329 St. Goar", "m": "https://www.google.com/maps/search/?api=1&query=Auf%20Scharffeneck%EF%BC%88Schloss%20Rheinfels%EF%BC%89%20Schlo%C3%9Fberg%2047%2C%2056329%20St.%20Goar", "u": "../europe/germany/oberwesel.html#c-schloss-rheinfels-auf-scharffeneck", "food": "", "ext": ""}, {"i": 8, "n": "Burgschänke „Der Landgraf“（Schloss Rheinfels）", "c": ["和食・郷土料理"], "lat": 50.1536505, "lng": 7.7058723, "d": "Flammkuchen（薄焼き生地にサワークリーム・玉ねぎ・ベーコンを載せたアルザス風ピザ）", "a": "Schloßberg 47, 56329 St. Goar", "m": "https://www.google.com/maps/search/?api=1&query=Burgsch%C3%A4nke%20%E2%80%9EDer%20Landgraf%E2%80%9C%EF%BC%88Schloss%20Rheinfels%EF%BC%89%20Schlo%C3%9Fberg%2047%2C%2056329%20St.%20Goar", "u": "../europe/germany/oberwesel.html#c-burgschaenke-der-landgraf", "food": "", "ext": ""}, {"i": 9, "n": "Gasthaus „Zur Krone“", "c": ["和食・郷土料理"], "lat": 50.1503331, "lng": 7.7152941, "d": "Rheinischer Sauerbraten（ワイン酢に漬けた牛肉を甘酸っぱいソースで煮込むライン地方の名物・シュペッツレ添え）", "a": "Oberstraße 38, 56329 St. Goar", "m": "https://www.google.com/maps/search/?api=1&query=Gasthaus%20%E2%80%9EZur%20Krone%E2%80%9C%20Oberstra%C3%9Fe%2038%2C%2056329%20St.%20Goar", "u": "../europe/germany/oberwesel.html#c-gasthaus-zur-krone-st-goar", "food": "", "ext": ""}, {"i": 10, "n": "Hotel-Restaurant-Café Keutmann", "c": ["和食・郷土料理"], "lat": 50.1400389, "lng": 7.7226798, "d": "Bratwurst mit Pommes（焼きソーセージとフライドポテト。クチコミで『ジューシーで味付けが完璧』）", "a": "An der Loreley 24, 56329 St. Goar", "m": "https://www.google.com/maps/search/?api=1&query=Hotel-Restaurant-Caf%C3%A9%20Keutmann%20An%20der%20Loreley%2024%2C%2056329%20St.%20Goar", "u": "../europe/germany/oberwesel.html#c-hotel-keutmann", "food": "", "ext": ""}, {"i": 11, "n": "Hotel Loreleyblick（Restaurant & Café）", "c": ["和食・郷土料理"], "lat": 50.1412711, "lng": 7.7215886, "d": "Hausgemachte Torten & Eis（館内の菓子職人が焼くチーズケーキ・ブルーベリーシュマント等と自家製アイス）", "a": "An der Loreley 37, 56329 St. Goar", "m": "https://www.google.com/maps/search/?api=1&query=Hotel%20Loreleyblick%EF%BC%88Restaurant%20%26%20Caf%C3%A9%EF%BC%89%20An%20der%20Loreley%2037%2C%2056329%20St.%20Goar", "u": "../europe/germany/oberwesel.html#c-hotel-loreleyblick", "food": "", "ext": ""}, {"i": 12, "n": "Café Restaurant Loreley（St. Goarshausen・対岸）", "c": ["和食・郷土料理"], "lat": 50.1403192, "lng": 7.7270544, "d": "Schnitzel mit Pilzrahmsoße（豚カツ風シュニッツェルのきのこクリームソース）", "a": "Rheinstraße 18, 56346 St. Goarshausen", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Restaurant%20Loreley%EF%BC%88St.%20Goarshausen%E3%83%BB%E5%AF%BE%E5%B2%B8%EF%BC%89%20Rheinstra%C3%9Fe%2018%2C%2056346%20St.%20Goarshausen", "u": "../europe/germany/oberwesel.html#c-cafe-restaurant-loreley-st-goarshausen", "food": "", "ext": ""}, {"i": 13, "n": "Altes Haus", "c": ["和食・郷土料理"], "lat": 50.0603615, "lng": 7.7679385, "d": "Wiener Schnitzel（仔牛の薄いカツレツ。ブロガーが『ドイツとオーストリアで一番』と評価）", "a": "Oberstraße 61, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Altes%20Haus%20Oberstra%C3%9Fe%2061%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-altes-haus-bacharach", "food": "", "ext": ""}, {"i": 14, "n": "Stübers Restaurant（Rhein-Hotel Bacharach）", "c": ["和食・郷土料理"], "lat": 50.0595977, "lng": 7.7688967, "d": "Riesling-Braten（リースリングで煮込んだロースト肉。2026年の公式写真で紹介される看板料理）", "a": "Langstraße 50, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=St%C3%BCbers%20Restaurant%EF%BC%88Rhein-Hotel%20Bacharach%EF%BC%89%20Langstra%C3%9Fe%2050%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-stuebers-restaurant", "food": "", "ext": ""}, {"i": 15, "n": "Restaurant „An der Stadtmauer“", "c": ["和食・郷土料理"], "lat": 50.0598733, "lng": 7.7688211, "d": "Königsberger Klopse（ケッパー入りクリームソースの肉団子・ビーツサラダ添え）", "a": "Marktstraße 3, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20%E2%80%9EAn%20der%20Stadtmauer%E2%80%9C%20Marktstra%C3%9Fe%203%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-an-der-stadtmauer-bacharach", "food": "", "ext": ""}, {"i": 16, "n": "Posthof Bacharach", "c": ["和食・郷土料理"], "lat": 50.0594532, "lng": 7.7679438, "d": "Wildschwein-Bratwurst mit Sauerkraut（イノシシ肉の焼きソーセージとザウアークラウト）", "a": "Oberstraße 45–49, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Posthof%20Bacharach%20Oberstra%C3%9Fe%2045%E2%80%9349%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-posthof-bacharach", "food": "", "ext": ""}, {"i": 17, "n": "Luz de Mar am Rhein", "c": ["和食・郷土料理"], "lat": 50.0581081, "lng": 7.7690406, "d": "Paella Marisco（魚介のパエリア。サフランライスに海老・ムール貝・アサリ）", "a": "Langstraße 18, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Luz%20de%20Mar%20am%20Rhein%20Langstra%C3%9Fe%2018%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-luz-de-mar-am-rhein", "food": "", "ext": ""}, {"i": 18, "n": "Pippo Bistro „Zur Alten Backstube“", "c": ["和食・郷土料理"], "lat": 50.0600139, "lng": 7.7669948, "d": "Pizza di Pippo（店名を冠した薄焼きクリスピーピッツァ）", "a": "Blücherstraße 16, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Pippo%20Bistro%20%E2%80%9EZur%20Alten%20Backstube%E2%80%9C%20Bl%C3%BCcherstra%C3%9Fe%2016%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-pippo-bistro-alt-backstub", "food": "", "ext": ""}, {"i": 19, "n": "Straußwirtschaft im VDP.Weingut Lanius-Knab", "c": ["ビール・バー", "居酒屋・焼肉"], "lat": 50.1042271, "lng": 7.7315267, "d": "Flammkuchen mit geräucherter Wispertal-Forelle（ヴィスパー谷産の燻製マス、青ねぎ、リ…", "a": "Mainzer Straße 38, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=Strau%C3%9Fwirtschaft%20im%20VDP.Weingut%20Lanius-Knab%20Mainzer%20Stra%C3%9Fe%2038%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-lanius-knab-strausswirtschaft", "food": "", "ext": ""}, {"i": 20, "n": "Weinstube Zum Grünen Baum（Weingut Friedrich Bastian）", "c": ["ビール・バー", "居酒屋・焼肉"], "lat": 50.0605827, "lng": 7.7680245, "d": "Soonwald-Wildsülze（フンスリュックのズーン森産ジビエの煮こごり。玉ねぎソース、温かいポテトサラダ添え）", "a": "Oberstraße 63, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Weinstube%20Zum%20Gr%C3%BCnen%20Baum%EF%BC%88Weingut%20Friedrich%20Bastian%EF%BC%89%20Oberstra%C3%9Fe%2063%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-bastian-zum-gruenen-baum", "food": "", "ext": ""}, {"i": 21, "n": "Weinstube „Zum Weinkrug“（Weinhaus Karl Heidrich）", "c": ["ビール・バー", "居酒屋・焼肉"], "lat": 50.0584573, "lng": 7.7682866, "d": "Hausgemachte Torten（醸造所の菓子職人エファが作る自家製トルテ）／Spundekäs' mit Laugenbr…", "a": "Oberstraße 16-18, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Weinstube%20%E2%80%9EZum%20Weinkrug%E2%80%9C%EF%BC%88Weinhaus%20Karl%20Heidrich%EF%BC%89%20Oberstra%C3%9Fe%2016-18%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-heidrich-weinkrug", "food": "", "ext": ""}, {"i": 22, "n": "Kurpfälzische Münze", "c": ["ビール・バー", "居酒屋・焼肉"], "lat": 50.0606947, "lng": 7.7682619, "d": "Flammkuchen（アルザス風の薄焼き生地にチーズや具をのせたもの。羊乳チーズとペペロンチーニのせのベジタリアン版がおすすめ）", "a": "Oberstraße 72/74, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Kurpf%C3%A4lzische%20M%C3%BCnze%20Oberstra%C3%9Fe%2072/74%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-kurpfaelzische-muenze", "food": "", "ext": ""}, {"i": 23, "n": "Café u. Bäcker St. Goar（Bäckerei-Konditorei Café St. Goar）", "c": ["カフェ・パン・スイーツ"], "lat": 50.1514034, "lng": 7.713654, "d": "Schwarzwälder Kirschtorte（キルシュ漬けサクランボと生クリームのチョコスポンジケーキ）", "a": "Heerstraße 95, 56329 St. Goar", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20u.%20B%C3%A4cker%20St.%20Goar%EF%BC%88B%C3%A4ckerei-Konditorei%20Caf%C3%A9%20St.%20Goar%EF%BC%89%20Heerstra%C3%9Fe%2095%2C%2056329%20St.%20Goar", "u": "../europe/germany/oberwesel.html#c-cafe-und-baecker-st-goar", "food": "", "ext": ""}, {"i": 24, "n": "Konditorei Café Bonsch", "c": ["カフェ・パン・スイーツ"], "lat": 50.1071104, "lng": 7.7269544, "d": "Joghurttorte mit Johannisbeeren und Kiwi（カシスとキウイのヨーグルトトルテ。クチコミで『こ…", "a": "Liebfrauenstraße 45–47, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=Konditorei%20Caf%C3%A9%20Bonsch%20Liebfrauenstra%C3%9Fe%2045%E2%80%9347%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-konditorei-cafe-bonsch", "food": "", "ext": ""}, {"i": 25, "n": "Eiscafé Italia 76 (Carpe Diem)", "c": ["カフェ・パン・スイーツ"], "lat": 50.059602, "lng": 7.7681504, "d": "Rieslingwein-Eis（地元リースリングワインを使ったジェラート）", "a": "Oberstraße 48, 55422 Bacharach", "m": "https://www.google.com/maps/search/?api=1&query=Eiscaf%C3%A9%20Italia%2076%20%28Carpe%20Diem%29%20Oberstra%C3%9Fe%2048%2C%2055422%20Bacharach", "u": "../europe/germany/oberwesel.html#c-eiscafe-italia-76-bacharach", "food": "", "ext": ""}, {"i": 26, "n": "Eiscafé La Dolce Vita", "c": ["カフェ・パン・スイーツ"], "lat": 50.1083179, "lng": 7.7253019, "d": "Eisbecher（自家製ジェラートを果物やソースで飾ったパフェ風カップ）", "a": "Rathausstraße 9, 55430 Oberwesel", "m": "https://www.google.com/maps/search/?api=1&query=Eiscaf%C3%A9%20La%20Dolce%20Vita%20Rathausstra%C3%9Fe%209%2C%2055430%20Oberwesel", "u": "../europe/germany/oberwesel.html#c-eiscafe-la-dolce-vita-oberwesel", "food": "", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([50.099299,7.739161],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('oberwesel', "オーバーヴェーゼル・ライン渓谷");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
