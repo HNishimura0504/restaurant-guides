@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>デルフト美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<style id="pcread">
+/* --- PCの広い画面向け（画面のみ・紙面は不変） -------------------------------
+   WCAG 2.2 達成基準 1.4.8（AAA）＝日本語は**全角40字**が1行の上限。
+   変更前の実測は 1280px で約99字・1920px で約149字だった。
+   段に上限を付けると、幅いっぱいに伸びていた写真も一緒に収まる。
+   字の見かけの大きさは `zoom` で別に上げる（字数は段の幅と字の大きさの比でしか決まらないので、
+   `zoom` では字数は変わらない＝両方を別々に決められる）。 */
+/* 段の上限と `zoom` は**広い画面だけ**に当てる。スマホ（幅 640px 以下、または
+   「スマホ表示に固定」）には 2026-09-19 に調整した別の規則が既に当たっており、
+   そこへ `zoom` を重ねると字が大きくなりすぎる（実測＝390px で 11.5pt が実質 13.8pt）。 */
+@media screen and (min-width:700px){
+  html:not(.vm-phone) body{max-width:540px; margin-left:auto; margin-right:auto; zoom:1.2;}
+}
+@media screen{
+  /* 高さ固定のままだと、窓が広いほど写真が横長に切り取られる（1280px で 5:1）。
+     紙面と同じ比を保たせる。 */
+  .hero{height:auto; aspect-ratio:105.5 / 68;}
+  .hero-pending{height:auto; aspect-ratio:105.5 / 40;}
+  /* 地図と目次も段の中に収まる。地図は紙面と同じ比を保つ。 */
+  .mapwrap img,.mapsec img{height:auto;}
+}
+</style>
+<style id="tocname">
+/* 目次の1行を「番号＋店名」＋その下に小さい灰色の一言、の2段にする（2026-09-21 依頼）。
+   副題は番号バッジ（min-width 4.6mm ＋ 右余白 1.2mm）のぶんだけ字下げして、店名の頭に揃える。 */
+.toc a{line-height:1.3;}
+.toc a .tnm{font-weight:600;}
+.toc a .tsub{display:block; margin-left:5.8mm; margin-top:.2mm;
+  font-size:7.4pt; font-weight:400; color:var(--ink3); line-height:1.25;}
+/* 既存の `.toc a::after{content:" ›"}` はアンカーの末尾に付くので、副題を足すと
+   **3行目に矢印だけが残る**（実測）。矢印は店名の後ろへ移す。 */
+.toc a::after{content:none;}
+.toc a .tnm::after{content:" A"; color:var(--ink3); font-weight:400;}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">デルフト美食ガイド<span class="sn-n">36店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/delft.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="デルフトガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">デルフトガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/delft.html"><span class="sn-e">🗺️</span>デルフトの地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-local"><span class="sn-e">・</span>オランダ郷土料理・現代オランダ料理</a><a href="#s-street"><span class="sn-e">・</span>食べ歩き・市場・チーズ(ハーリング・フリッツ・ストロープワッフル)</a><a href="#s-cafe"><span class="sn-e">・</span>パン・スイーツ・カフェ・ビール</a><a href="#s-world"><span class="sn-e">・</span>世界の料理(インドネシア・スリナム・アジア・欧州・中東)</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全75都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全75都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">NETHERLANDS / DELFT 🇳🇱</div>
+  <h1>デルフト美食ガイド</h1>
+  <div class="sub">フェルメールの生まれた運河の街デルフトは、デルフト焼と木曜・土曜のマルクト（市場）の町。旧市街のオランダ料理、市場のハーリングとストロープワッフル、醸造所カフェ、工科大学の街らしい世界の料理まで厳選36スポット。各店に営業時間・定休日・予約・乳児連れ設備・選定理由・味の証拠・参照元・Googleマップリンク付き。</div>
+  <div class="meta">2026年9月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  <span style="display:inline-block;margin-top:1mm;">🍼 各カードの<b>乳児連れ</b>欄は、ベビーカー入店・ハイチェア・おむつ替え台の有無を出典のある範囲で記載（出典が無い項目は「未確認」）。<b>味の証拠</b>欄は第三者（在住者ブログ・ローカル紙・格付け）が味そのものに言及した引用。</span><br>
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・観光局・ローカルメディア・在住者ブログ等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/delft/_map.png" alt="全域マップ">
+<a href="#c-spijshuis-de-dis" style="left:55.82%;top:25.82%;width:4.98%;height:3.0%;"></a>
+<a href="#c-le-vieux-jean" style="left:31.28%;top:23.63%;width:4.98%;height:3.0%;"></a>
+<a href="#c-stadsherberg-de-mol" style="left:53.22%;top:28.54%;width:4.98%;height:3.0%;"></a>
+<a href="#c-loetje-delft" style="left:47.08%;top:42.34%;width:4.98%;height:3.0%;"></a>
+<a href="#c-stads-koffyhuis" style="left:32.85%;top:28.41%;width:4.98%;height:3.0%;"></a>
+<a href="#c-cafe-restaurant-de-v" style="left:31.97%;top:20.51%;width:4.98%;height:3.0%;"></a>
+<a href="#c-cafe-de-oude-jan" style="left:31.48%;top:23.57%;width:4.98%;height:3.0%;"></a>
+<a href="#c-t-boterhuis" style="left:38.95%;top:27.35%;width:4.98%;height:3.0%;"></a>
+<a href="#c-t-postkantoor" style="left:35.64%;top:23.46%;width:4.98%;height:3.0%;"></a>
+<a href="#c-simonis-markt-delft" style="left:46.47%;top:30.1%;width:4.98%;height:3.0%;"></a>
+<a href="#c-stroopwafels-vergunst" style="left:42.49%;top:25.43%;width:4.98%;height:3.0%;"></a>
+<a href="#c-house-of-frites-delft" style="left:45.76%;top:28.13%;width:4.98%;height:3.0%;"></a>
+<a href="#c-frietplein-delft" style="left:40.22%;top:25.26%;width:4.98%;height:3.0%;"></a>
+<a href="#c-bram-ladage-delft-centrum" style="left:52.23%;top:30.53%;width:4.98%;height:3.0%;"></a>
+<a href="#c-stadsbakkerij-de-diamanten-ring" style="left:36.57%;top:21.69%;width:4.98%;height:3.0%;"></a>
+<a href="#c-wafels-en-zoenen" style="left:41.13%;top:27.08%;width:4.98%;height:3.0%;"></a>
+<a href="#c-klein-seinpost" style="left:18.24%;top:75.24%;width:4.98%;height:3.0%;"></a>
+<a href="#c-bakker-suikerbuik" style="left:35.23%;top:22.97%;width:4.98%;height:3.0%;"></a>
+<a href="#c-jh-beaart-ijs" style="left:81.76%;top:31.56%;width:4.98%;height:3.0%;"></a>
+<a href="#c-kobus-kuch" style="left:52.09%;top:26.6%;width:4.98%;height:3.0%;"></a>
+<a href="#c-kek-delft" style="left:44.95%;top:22.52%;width:4.98%;height:3.0%;"></a>
+<a href="#c-miss-morrison-delft" style="left:32.05%;top:20.64%;width:4.98%;height:3.0%;"></a>
+<a href="#c-stadsbrouwerij-de-koperen-kat" style="left:70.88%;top:82.02%;width:4.98%;height:3.0%;"></a>
+<a href="#c-delfts-brouwhuis" style="left:33.95%;top:23.27%;width:4.98%;height:3.0%;"></a>
+<a href="#c-locus-publicus" style="left:46.65%;top:30.39%;width:4.98%;height:3.0%;"></a>
+<a href="#c-bierhuis-de-klomp" style="left:32.55%;top:32.85%;width:4.98%;height:3.0%;"></a>
+<a href="#c-restaurant-toko-redjeki" style="left:40.52%;top:19.82%;width:4.98%;height:3.0%;"></a>
+<a href="#c-toko-idola" style="left:50.15%;top:33.32%;width:4.98%;height:3.0%;"></a>
+<a href="#c-restaurant-klein-maar-fijn" style="left:32.7%;top:32.76%;width:4.98%;height:3.0%;"></a>
+<a href="#c-restaurant-rossio" style="left:36.18%;top:30.62%;width:4.98%;height:3.0%;"></a>
+<a href="#c-settebello-delft" style="left:40.86%;top:27.18%;width:4.98%;height:3.0%;"></a>
+<a href="#c-grk-en-zo-delft" style="left:40.3%;top:17.99%;width:4.98%;height:3.0%;"></a>
+<a href="#c-hummus-delft" style="left:54.52%;top:28.93%;width:4.98%;height:3.0%;"></a>
+<a href="#c-ramen-nikkou-delft" style="left:56.51%;top:23.86%;width:4.98%;height:3.0%;"></a>
+<a href="#c-maharaja-delft" style="left:59.98%;top:19.9%;width:4.98%;height:3.0%;"></a>
+<a href="#c-hermanos-delft" style="left:21.56%;top:23.22%;width:4.98%;height:3.0%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（36店・番号はピンと同じ）</div>
+<div class="sec red">オランダ郷土料理・現代オランダ料理</div>
+<div class="links">
+<a href="#c-spijshuis-de-dis"><span class="tn" style="background:#e34948;">1</span><span class="tnm">Spijshuis De Dis</span><span class="tsub">広場の郷土料理店</span></a>
+<a href="#c-le-vieux-jean"><span class="tn" style="background:#e34948;">2</span><span class="tnm">Restaurant Le Vieux Jean</span><span class="tsub">旧教会脇のビブグルマン</span></a>
+<a href="#c-stadsherberg-de-mol"><span class="tn" style="background:#e34948;">3</span><span class="tnm">Stadsherberg De Mol</span><span class="tsub">1563年建築の中世宴会</span></a>
+<a href="#c-loetje-delft"><span class="tn" style="background:#e34948;">4</span><span class="tnm">Loetje Delft</span><span class="tsub">名物ビーフステーキ</span></a>
+<a href="#c-stads-koffyhuis"><span class="tn" style="background:#e34948;">5</span><span class="tnm">Stads-Koffyhuis</span><span class="tsub">運河沿いの蘭式朝昼</span></a>
+<a href="#c-cafe-restaurant-de-v"><span class="tn" style="background:#e34948;">6</span><span class="tnm">Café Restaurant de V</span><span class="tsub">40年続く運河の酒場</span></a>
+<a href="#c-cafe-de-oude-jan"><span class="tn" style="background:#e34948;">7</span><span class="tnm">Café de Oude Jan</span><span class="tsub">旧教会前のブラウンカフェ</span></a>
+<a href="#c-t-boterhuis"><span class="tn" style="background:#e34948;">8</span><span class="tnm">Grand Café &#x27;t Boterhuis</span><span class="tsub">マルクトの旧バター取引所</span></a>
+<a href="#c-t-postkantoor"><span class="tn" style="background:#e34948;">9</span><span class="tnm">&#x27;t Postkantoor</span><span class="tsub">旧郵便局の暖炉カフェ</span></a>
+</div>
+<div class="sec aqua">食べ歩き・市場・チーズ(ハーリング・フリッツ・ストロープワッフル)</div>
+<div class="links">
+<a href="#c-simonis-markt-delft"><span class="tn" style="background:#1baf7a;">10</span><span class="tnm">Simonis op de Markt（デルフト木曜市）</span><span class="tsub">木曜市のハーリング屋台</span></a>
+<a href="#c-stroopwafels-vergunst"><span class="tn" style="background:#1baf7a;">11</span><span class="tnm">Stroopwafels Vergunst（デルフト木曜市）</span><span class="tsub">焼きたてワッフル屋台</span></a>
+<a href="#c-house-of-frites-delft"><span class="tn" style="background:#1baf7a;">12</span><span class="tnm">House of Frites</span><span class="tsub">手切り有機フリッツ</span></a>
+<a href="#c-frietplein-delft"><span class="tn" style="background:#1baf7a;">13</span><span class="tnm">Frietplein</span><span class="tsub">マルクトの生ポテト店</span></a>
+<a href="#c-bram-ladage-delft-centrum"><span class="tn" style="background:#1baf7a;">14</span><span class="tnm">Bram Ladage Delft Centrum</span><span class="tsub">ロッテルダム名物フリッツ</span></a>
+<a href="#c-stadsbakkerij-de-diamanten-ring"><span class="tn" style="background:#1baf7a;">15</span><span class="tnm">Stadsbakkerij De Diamanten Ring</span><span class="tsub">歴史的建物のパン屋</span></a>
+<a href="#c-wafels-en-zoenen"><span class="tn" style="background:#1baf7a;">16</span><span class="tnm">Wafels en Zoenen</span><span class="tsub">マルクトのワッフル店</span></a>
+<a href="#c-klein-seinpost"><span class="tn" style="background:#1baf7a;">17</span><span class="tnm">Klein Seinpost</span><span class="tsub">家族向けパンケーキ店</span></a>
+<a href="#c-bakker-suikerbuik"><span class="tn" style="background:#1baf7a;">18</span><span class="tnm">Bakker Suikerbuik</span><span class="tsub">子連れ向けパン屋カフェ</span></a>
+<a href="#c-jh-beaart-ijs"><span class="tn" style="background:#1baf7a;">19</span><span class="tnm">J.H. Beaart IJs</span><span class="tsub">昔ながらのソフトクリーム</span></a>
+</div>
+<div class="sec yellow">パン・スイーツ・カフェ・ビール</div>
+<div class="links">
+<a href="#c-kobus-kuch"><span class="tn" style="background:#eda100;">20</span><span class="tnm">Kobus Kuch</span><span class="tsub">名物アップルパイ</span></a>
+<a href="#c-kek-delft"><span class="tn" style="background:#eda100;">21</span><span class="tnm">Kek – De koffiebar van Delft</span><span class="tsub">朝食の人気カフェ</span></a>
+<a href="#c-miss-morrison-delft"><span class="tn" style="background:#eda100;">22</span><span class="tnm">Miss Morrison Koffiebranderij</span><span class="tsub">自家焙煎の豆店</span></a>
+<a href="#c-stadsbrouwerij-de-koperen-kat"><span class="tn" style="background:#eda100;">23</span><span class="tnm">Stadsbrouwerij De Koperen Kat</span><span class="tsub">運河沿いの市営醸造所</span></a>
+<a href="#c-delfts-brouwhuis"><span class="tn" style="background:#eda100;">24</span><span class="tnm">Delfts Brouwhuis</span><span class="tsub">旧教会脇の醸造所</span></a>
+<a href="#c-locus-publicus"><span class="tn" style="background:#eda100;">25</span><span class="tnm">Locus Publicus</span><span class="tsub">200銘柄のビアカフェ</span></a>
+<a href="#c-bierhuis-de-klomp"><span class="tn" style="background:#eda100;">26</span><span class="tnm">Bierhuis De Klomp</span><span class="tsub">1652年創業の最古の酒場</span></a>
+</div>
+<div class="sec violet">世界の料理(インドネシア・スリナム・アジア・欧州・中東)</div>
+<div class="links">
+<a href="#c-restaurant-toko-redjeki"><span class="tn" style="background:#4a3aa7;">27</span><span class="tnm">Restaurant &amp; Toko Redjeki</span><span class="tsub">最古のインドネシア料理</span></a>
+<a href="#c-toko-idola"><span class="tn" style="background:#4a3aa7;">28</span><span class="tnm">Toko Idola</span><span class="tsub">家庭の味のインドネシア</span></a>
+<a href="#c-restaurant-klein-maar-fijn"><span class="tn" style="background:#4a3aa7;">29</span><span class="tnm">Restaurant Klein Maar Fijn</span><span class="tsub">スリナム＆中華の食堂</span></a>
+<a href="#c-restaurant-rossio"><span class="tn" style="background:#4a3aa7;">30</span><span class="tnm">Restaurant Rossio</span><span class="tsub">運河沿いのイベリア料理</span></a>
+<a href="#c-settebello-delft"><span class="tn" style="background:#4a3aa7;">31</span><span class="tnm">Settebello</span><span class="tsub">ローマ風切り売りピザ</span></a>
+<a href="#c-grk-en-zo-delft"><span class="tn" style="background:#4a3aa7;">32</span><span class="tnm">GRK&amp;ZO</span><span class="tsub">ギリシャ家庭料理</span></a>
+<a href="#c-hummus-delft"><span class="tn" style="background:#4a3aa7;">33</span><span class="tnm">HUmmUS Delft</span><span class="tsub">中東の菜食料理</span></a>
+<a href="#c-ramen-nikkou-delft"><span class="tn" style="background:#4a3aa7;">34</span><span class="tnm">Ramen Nikkou</span><span class="tsub">日本人店主のラーメン</span></a>
+<a href="#c-maharaja-delft"><span class="tn" style="background:#4a3aa7;">35</span><span class="tnm">Maharaja</span><span class="tsub">老舗インド料理</span></a>
+<a href="#c-hermanos-delft"><span class="tn" style="background:#4a3aa7;">36</span><span class="tnm">Hermanos</span><span class="tsub">中南米料理と中庭</span></a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大(Delft駅〜マルクト広場・旧市街)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/delft/_map2.png" alt="中心部拡大(Delft駅〜マルクト広場・旧市街)">
+<a href="#c-spijshuis-de-dis" style="left:75.3%;top:42.04%;width:3.6%;height:2.22%;"></a>
+<a href="#c-le-vieux-jean" style="left:39.71%;top:38.8%;width:3.6%;height:2.22%;"></a>
+<a href="#c-stadsherberg-de-mol" style="left:71.53%;top:46.06%;width:3.6%;height:2.22%;"></a>
+<a href="#c-loetje-delft" style="left:62.62%;top:66.5%;width:3.6%;height:2.22%;"></a>
+<a href="#c-stads-koffyhuis" style="left:41.99%;top:45.88%;width:3.6%;height:2.22%;"></a>
+<a href="#c-cafe-restaurant-de-v" style="left:40.72%;top:34.18%;width:3.6%;height:2.22%;"></a>
+<a href="#c-cafe-de-oude-jan" style="left:40.0%;top:38.71%;width:3.6%;height:2.22%;"></a>
+<a href="#c-t-boterhuis" style="left:50.84%;top:44.31%;width:3.6%;height:2.22%;"></a>
+<a href="#c-t-postkantoor" style="left:46.03%;top:38.54%;width:3.6%;height:2.22%;"></a>
+<a href="#c-simonis-markt-delft" style="left:61.74%;top:48.38%;width:3.6%;height:2.22%;"></a>
+<a href="#c-stroopwafels-vergunst" style="left:55.97%;top:41.46%;width:3.6%;height:2.22%;"></a>
+<a href="#c-house-of-frites-delft" style="left:60.71%;top:45.45%;width:3.6%;height:2.22%;"></a>
+<a href="#c-frietplein-delft" style="left:52.67%;top:41.2%;width:3.6%;height:2.22%;"></a>
+<a href="#c-bram-ladage-delft-centrum" style="left:70.09%;top:49.01%;width:3.6%;height:2.22%;"></a>
+<a href="#c-stadsbakkerij-de-diamanten-ring" style="left:47.38%;top:35.92%;width:3.6%;height:2.22%;"></a>
+<a href="#c-wafels-en-zoenen" style="left:53.99%;top:43.9%;width:3.6%;height:2.22%;"></a>
+<a href="#c-bakker-suikerbuik" style="left:45.44%;top:37.81%;width:3.6%;height:2.22%;"></a>
+<a href="#c-kobus-kuch" style="left:69.89%;top:43.19%;width:3.6%;height:2.22%;"></a>
+<a href="#c-kek-delft" style="left:59.54%;top:37.15%;width:3.6%;height:2.22%;"></a>
+<a href="#c-miss-morrison-delft" style="left:40.83%;top:34.37%;width:3.6%;height:2.22%;"></a>
+<a href="#c-delfts-brouwhuis" style="left:43.58%;top:38.26%;width:3.6%;height:2.22%;"></a>
+<a href="#c-locus-publicus" style="left:62.0%;top:48.8%;width:3.6%;height:2.22%;"></a>
+<a href="#c-bierhuis-de-klomp" style="left:41.55%;top:52.45%;width:3.6%;height:2.22%;"></a>
+<a href="#c-restaurant-toko-redjeki" style="left:53.12%;top:33.16%;width:3.6%;height:2.22%;"></a>
+<a href="#c-toko-idola" style="left:67.08%;top:53.14%;width:3.6%;height:2.22%;"></a>
+<a href="#c-restaurant-klein-maar-fijn" style="left:41.77%;top:52.32%;width:3.6%;height:2.22%;"></a>
+<a href="#c-restaurant-rossio" style="left:46.81%;top:49.15%;width:3.6%;height:2.22%;"></a>
+<a href="#c-settebello-delft" style="left:53.6%;top:44.05%;width:3.6%;height:2.22%;"></a>
+<a href="#c-grk-en-zo-delft" style="left:52.79%;top:30.45%;width:3.6%;height:2.22%;"></a>
+<a href="#c-hummus-delft" style="left:73.42%;top:46.65%;width:3.6%;height:2.22%;"></a>
+<a href="#c-ramen-nikkou-delft" style="left:76.31%;top:39.14%;width:3.6%;height:2.22%;"></a>
+<a href="#c-maharaja-delft" style="left:81.33%;top:33.27%;width:3.6%;height:2.22%;"></a>
+<a href="#c-hermanos-delft" style="left:25.61%;top:38.19%;width:3.6%;height:2.22%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（33店・番号はピンと同じ）</div>
+<div class="sec red">オランダ郷土料理・現代オランダ料理</div>
+<div class="links">
+<a href="#c-spijshuis-de-dis"><span class="tn" style="background:#e34948;">1</span><span class="tnm">Spijshuis De Dis</span><span class="tsub">広場の郷土料理店</span></a>
+<a href="#c-le-vieux-jean"><span class="tn" style="background:#e34948;">2</span><span class="tnm">Restaurant Le Vieux Jean</span><span class="tsub">旧教会脇のビブグルマン</span></a>
+<a href="#c-stadsherberg-de-mol"><span class="tn" style="background:#e34948;">3</span><span class="tnm">Stadsherberg De Mol</span><span class="tsub">1563年建築の中世宴会</span></a>
+<a href="#c-loetje-delft"><span class="tn" style="background:#e34948;">4</span><span class="tnm">Loetje Delft</span><span class="tsub">名物ビーフステーキ</span></a>
+<a href="#c-stads-koffyhuis"><span class="tn" style="background:#e34948;">5</span><span class="tnm">Stads-Koffyhuis</span><span class="tsub">運河沿いの蘭式朝昼</span></a>
+<a href="#c-cafe-restaurant-de-v"><span class="tn" style="background:#e34948;">6</span><span class="tnm">Café Restaurant de V</span><span class="tsub">40年続く運河の酒場</span></a>
+<a href="#c-cafe-de-oude-jan"><span class="tn" style="background:#e34948;">7</span><span class="tnm">Café de Oude Jan</span><span class="tsub">旧教会前のブラウンカフェ</span></a>
+<a href="#c-t-boterhuis"><span class="tn" style="background:#e34948;">8</span><span class="tnm">Grand Café &#x27;t Boterhuis</span><span class="tsub">マルクトの旧バター取引所</span></a>
+<a href="#c-t-postkantoor"><span class="tn" style="background:#e34948;">9</span><span class="tnm">&#x27;t Postkantoor</span><span class="tsub">旧郵便局の暖炉カフェ</span></a>
+</div>
+<div class="sec aqua">食べ歩き・市場・チーズ(ハーリング・フリッツ・ストロープワッフル)</div>
+<div class="links">
+<a href="#c-simonis-markt-delft"><span class="tn" style="background:#1baf7a;">10</span><span class="tnm">Simonis op de Markt（デルフト木曜市）</span><span class="tsub">木曜市のハーリング屋台</span></a>
+<a href="#c-stroopwafels-vergunst"><span class="tn" style="background:#1baf7a;">11</span><span class="tnm">Stroopwafels Vergunst（デルフト木曜市）</span><span class="tsub">焼きたてワッフル屋台</span></a>
+<a href="#c-house-of-frites-delft"><span class="tn" style="background:#1baf7a;">12</span><span class="tnm">House of Frites</span><span class="tsub">手切り有機フリッツ</span></a>
+<a href="#c-frietplein-delft"><span class="tn" style="background:#1baf7a;">13</span><span class="tnm">Frietplein</span><span class="tsub">マルクトの生ポテト店</span></a>
+<a href="#c-bram-ladage-delft-centrum"><span class="tn" style="background:#1baf7a;">14</span><span class="tnm">Bram Ladage Delft Centrum</span><span class="tsub">ロッテルダム名物フリッツ</span></a>
+<a href="#c-stadsbakkerij-de-diamanten-ring"><span class="tn" style="background:#1baf7a;">15</span><span class="tnm">Stadsbakkerij De Diamanten Ring</span><span class="tsub">歴史的建物のパン屋</span></a>
+<a href="#c-wafels-en-zoenen"><span class="tn" style="background:#1baf7a;">16</span><span class="tnm">Wafels en Zoenen</span><span class="tsub">マルクトのワッフル店</span></a>
+<a href="#c-bakker-suikerbuik"><span class="tn" style="background:#1baf7a;">18</span><span class="tnm">Bakker Suikerbuik</span><span class="tsub">子連れ向けパン屋カフェ</span></a>
+</div>
+<div class="sec yellow">パン・スイーツ・カフェ・ビール</div>
+<div class="links">
+<a href="#c-kobus-kuch"><span class="tn" style="background:#eda100;">20</span><span class="tnm">Kobus Kuch</span><span class="tsub">名物アップルパイ</span></a>
+<a href="#c-kek-delft"><span class="tn" style="background:#eda100;">21</span><span class="tnm">Kek – De koffiebar van Delft</span><span class="tsub">朝食の人気カフェ</span></a>
+<a href="#c-miss-morrison-delft"><span class="tn" style="background:#eda100;">22</span><span class="tnm">Miss Morrison Koffiebranderij</span><span class="tsub">自家焙煎の豆店</span></a>
+<a href="#c-delfts-brouwhuis"><span class="tn" style="background:#eda100;">24</span><span class="tnm">Delfts Brouwhuis</span><span class="tsub">旧教会脇の醸造所</span></a>
+<a href="#c-locus-publicus"><span class="tn" style="background:#eda100;">25</span><span class="tnm">Locus Publicus</span><span class="tsub">200銘柄のビアカフェ</span></a>
+<a href="#c-bierhuis-de-klomp"><span class="tn" style="background:#eda100;">26</span><span class="tnm">Bierhuis De Klomp</span><span class="tsub">1652年創業の最古の酒場</span></a>
+</div>
+<div class="sec violet">世界の料理(インドネシア・スリナム・アジア・欧州・中東)</div>
+<div class="links">
+<a href="#c-restaurant-toko-redjeki"><span class="tn" style="background:#4a3aa7;">27</span><span class="tnm">Restaurant &amp; Toko Redjeki</span><span class="tsub">最古のインドネシア料理</span></a>
+<a href="#c-toko-idola"><span class="tn" style="background:#4a3aa7;">28</span><span class="tnm">Toko Idola</span><span class="tsub">家庭の味のインドネシア</span></a>
+<a href="#c-restaurant-klein-maar-fijn"><span class="tn" style="background:#4a3aa7;">29</span><span class="tnm">Restaurant Klein Maar Fijn</span><span class="tsub">スリナム＆中華の食堂</span></a>
+<a href="#c-restaurant-rossio"><span class="tn" style="background:#4a3aa7;">30</span><span class="tnm">Restaurant Rossio</span><span class="tsub">運河沿いのイベリア料理</span></a>
+<a href="#c-settebello-delft"><span class="tn" style="background:#4a3aa7;">31</span><span class="tnm">Settebello</span><span class="tsub">ローマ風切り売りピザ</span></a>
+<a href="#c-grk-en-zo-delft"><span class="tn" style="background:#4a3aa7;">32</span><span class="tnm">GRK&amp;ZO</span><span class="tsub">ギリシャ家庭料理</span></a>
+<a href="#c-hummus-delft"><span class="tn" style="background:#4a3aa7;">33</span><span class="tnm">HUmmUS Delft</span><span class="tsub">中東の菜食料理</span></a>
+<a href="#c-ramen-nikkou-delft"><span class="tn" style="background:#4a3aa7;">34</span><span class="tnm">Ramen Nikkou</span><span class="tsub">日本人店主のラーメン</span></a>
+<a href="#c-maharaja-delft"><span class="tn" style="background:#4a3aa7;">35</span><span class="tnm">Maharaja</span><span class="tsub">老舗インド料理</span></a>
+<a href="#c-hermanos-delft"><span class="tn" style="background:#4a3aa7;">36</span><span class="tnm">Hermanos</span><span class="tsub">中南米料理と中庭</span></a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>旧市街は Delft 駅から北へ徒歩10分の範囲にほぼ収まる。中心はマルクト広場（新教会と市庁舎の間）で、木曜は食品・日用品の市、土曜は食品市と Brabantse Turfmarkt の花市。運河沿いの石畳はベビーカーでは揺れるので、幅の広い Oude Delft 沿いが歩きやすい。ロッテルダムから電車で約15分、デン・ハーグから約10分。オランダの食事どきは昼12〜14時・夜18〜20時で、夜は予約推奨の店が多い。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-local" class="c-red">オランダ郷土料理・現代オランダ料理</h2>
+<div class="card" id="c-spijshuis-de-dis">
+<img class="hero" src="img/delft/spijshuis-de-dis.jpg" alt="Spijshuis De Dis 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>Spijshuis De Dis<span class="yomi">スパイスハイス・デ・ディス</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">旧市街で最も雰囲気のある広場とされる Beestenmarkt に面した、オランダ料理を看板にする家庭的なレストラン。シェフ Chris のチームが地元の新鮮な食材で全品手作りし、定番メニューに加えてアスパラガス・ムール貝・ジビエなど季節料理を出す。燻製魚を含む魚料理や羊、ベジタリアン料理も揃い、デルフト焼きの木靴やチューリップを飾った温かい内装。ヴリーランド島のビール Fortuna も置く。夜のみ営業。</div>
+<div class="sig"><b>一皿:</b>季節のオランダ料理プロフェイライ（proeverij＝少量ずつ数品を味わう試食コース）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日・月</td></tr>
+<tr><th>住所</th><td>Beestenmarkt 36, 2611 GC Delft</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+31 15 213 1782">☎ +31 15 213 1782</a> ／ <a href="https://www.spijshuisdedis.com/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認 <a href="https://www.spijshuisdedis.com/" style="color:var(--ink3);">(出典)</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>市の観光系ガイド・Petit Futé 等が『オランダ料理の店』として紹介し、口コミ集約でも伝統料理の味が一貫して高評価。</div>
+<div class="taste"><b>味の証拠:</b>「Reviewers praise the traditional Dutch dishes with a twist, such as seafood, lamb, and vegetarian options. ... Overall, visitors enjoy the flavorful dishes presented beautifully at Spijshuis De Dis.」— <a href="https://wanderlog.com/place/details/102716/spijshuis-de-dis" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Spijshuis%20De%20Dis%20Beestenmarkt%2036%2C%202611%20GC%20Delft">Googleマップで開く</a>
+<div class="src">写真: cdn.website.dish.co の掲載写真より引用 / 参照元: <a href="https://www.spijshuisdedis.com/">公式サイト（営業時間・予約・料理紹介）</a> / <a href="https://www.fijnuit.nl/1585/spijshuis-de-dis">FijnUit（住所・電話・営業時間）</a> / <a href="https://wanderlog.com/place/details/102716/spijshuis-de-dis">Wanderlog（口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-le-vieux-jean">
+<img class="hero" src="img/delft/le-vieux-jean.jpg" alt="Restaurant Le Vieux Jean 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>Restaurant Le Vieux Jean<span class="yomi">ル・ヴュー・ジャン</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1974年から続く、旧教会（Oude Kerk）のたもとの小さなレストラン。ミシュランガイドは Bib Gourmand（価格以上の満足）に選定し、オランダ産の仔牛や羊など自国の食材が料理の個性だと評する。フランス料理の技法を土台に、濃厚なジュと季節の野菜を合わせる。チーズの品揃えと仏ワイン中心のリストも評価が高い。昼は金・土のみ。落ち着いた雰囲気のため乳児連れは早めの時間帯が無難。</div>
+<div class="sig"><b>一皿:</b>オランダ産仔牛のロースト（ミディアムレアの仔牛に、クリーム煮の仔牛シチュー・グリーンアスパラ・モリーユ茸・ローズマリー風味のジュを添える）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 金・土 12:00〜15:00／夜 水〜土 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日・月・火（夏季休暇あり）</td></tr>
+<tr><th>住所</th><td>Heilige Geestkerkhof 3, 2611 HP Delft</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+31 15 213 0433">☎ +31 15 213 0433</a> ／ <a href="https://www.levieuxjean.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認 <a href="https://guide.michelin.com/en/zuid-holland/delft/restaurant/le-vieux-jean" style="color:var(--ink3);">(出典)</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ミシュランガイド 2025 の Bib Gourmand、Lekker500 2026 にも掲載とされ、調査員が料理の味を具体的に記述。</div>
+<div class="taste"><b>味の証拠:</b>「The robust flavours, subtle undertones and timeless cooking methods are a testament to his culinary skill. A fine example is the Dutch veal, which is beautifully cooked medium-rare and served with a creamy veal stew, green asparagus with gremolata, morels and a rich rosemary veal jus. Dutch ingredients give the cuisine its own identity」— <a href="https://guide.michelin.com/en/zuid-holland/delft/restaurant/le-vieux-jean" style="color:var(--ink2);">MICHELIN Guide（Bib Gourmand）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Restaurant%20Le%20Vieux%20Jean%20Heilige%20Geestkerkhof%203%2C%202611%20HP%20Delft">Googleマップで開く</a>
+<div class="src">写真: prod-pics.guide.michelin.com の掲載写真より引用 / 参照元: <a href="https://guide.michelin.com/en/zuid-holland/delft/restaurant/le-vieux-jean">MICHELIN Guide（Bib Gourmand・審査文）</a> / <a href="https://www.levieuxjean.nl/">公式サイト（営業日・電話）</a> / <a href="https://wanderlog.com/place/details/1193458/restaurant-le-vieux-jean">Wanderlog（営業時間・口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-stadsherberg-de-mol">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>Stadsherberg De Mol<span class="yomi">スタッツヘルベルフ・デ・モル</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip warn">口コミ注意</span></div>
+<div class="desc">1563年に市の捨て子養育院（Stadsvondelinghenhuis）として建てられた建物で、ロウソクの灯りの下、給仕がデルフトの古いビール Kuyten Bier を大きな水差しで注ぎ、中世の作法どおり手で食べる『Maeltyd（食事）』を供する。吟遊詩人（トルバドゥール）の夜やブリューゲルの夜などテーマ夜が多く、所要は3.5〜4時間。料理より体験重視の店で、乳児連れには長丁場・薄暗い点に注意。</div>
+<div class="sig"><b>一皿:</b>中世風の肉料理の大皿（スペアリブやポークチョップを手づかみで食べる宴会料理）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・土・日 18:00〜／金 19:00〜（7〜8月は金土日のみ）</td></tr>
+<tr><th>定休日</th><td class="off">月・火</td></tr>
+<tr><th>住所</th><td>Molslaan 104, 2611 RP Delft</td></tr>
+<tr><th>予約</th><td>要 — <a href="tel:+31 15 212 1343">☎ +31 15 212 1343</a> ／ <a href="https://www.stadsherbergdemol.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>16世紀の建物そのものが体験になる店で、口コミ集約では肉料理を評価する声がある一方、料理は凡庸との指摘も併記。</div>
+<div class="note screen"><b>⚠ 凡庸との口コミあり:</b>「some mention that the food is not exceptional（Wanderlog 口コミ要約）」</div>
+<div class="taste"><b>味の証拠:</b>「While some mention that the food is not exceptional, they praise the tasty meat dishes like ribs and pork chops.」— <a href="https://wanderlog.com/place/details/1193507/stadsherberg-de-mol" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Stadsherberg%20De%20Mol%20Molslaan%20104%2C%202611%20RP%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.stadsherbergdemol.nl/">公式サイト（建物の由来・営業日・日程）</a> / <a href="https://wanderlog.com/place/details/1193507/stadsherberg-de-mol">Wanderlog（電話・口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-loetje-delft">
+<img class="hero" src="img/delft/loetje-delft.jpg" alt="Loetje Delft 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>Loetje Delft<span class="yomi">ルーチェ・デルフト</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1977年から続くチェーン Loetje のデルフト店で、Hotel Arsenaal 隣の修復された歴史的建物に入る。れんが壁と高い天井の店内で、看板は柔らかいテンダーロインに Loetje 特製のバター風味のジュ（肉汁ソース）をたっぷりかけ、パンで皿のソースをぬぐって食べるオランダ式ビーフステーキ。サテや子ども向けメニューもあり、昼から通しで営業するので家族連れの食事時間を合わせやすい。</div>
+<div class="sig"><b>一皿:</b>ビーフステーキ（biefstuk＝テンダーロインを焼き、バターベースの濃いジュをかけ、白パンを浸して食べるオランダの定番）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 16:00〜21:30／火〜木・日 11:30〜21:30／金・土 11:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Korte Geer 1A, 2611 CA Delft</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+31 15 666 7700">☎ +31 15 666 7700</a> ／ <a href="https://www.loetje.nl/locaties/delft/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認 <a href="https://www.loetje.nl/locaties/delft/" style="color:var(--ink3);">(出典)</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>デルフト在住ブロガーが『オランダ料理の質の高い選択肢』として推し、口コミ集約でもステーキの焼き加減が評価される。</div>
+<div class="taste"><b>味の証拠:</b>「Loetje is one of the best known sit-down restaurants in the Netherlands, known for their perfect steaks. It’s not the cheapest place, but for high-quality Dutch food, including sate, it is a great option for a nicer night out.」— <a href="https://www.wanderlustingk.com/travel-blog/where-to-eat-delft" style="color:var(--ink2);">Wanderlustingk（デルフト在住者ブログ）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Loetje%20Delft%20Korte%20Geer%201A%2C%202611%20CA%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（loetje.nl）より引用 / 参照元: <a href="https://www.loetje.nl/locaties/delft/">公式店舗ページ（営業時間・電話・子どもメニュー）</a> / <a href="https://www.wanderlustingk.com/travel-blog/where-to-eat-delft">Wanderlustingk（在住者ブログ）</a> / <a href="https://wanderlog.com/place/details/3467031/loetje-delft">Wanderlog（口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-stads-koffyhuis">
+<img class="hero" src="img/delft/stads-koffyhuis.jpg" alt="Stads-Koffyhuis 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>Stads-Koffyhuis<span class="yomi">スタッツ・コフィハイス</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">旧市街で最も古い運河 Oude Delft に面したコーヒーハウス。市観光サイトが『生粋のオランダの店（oer-Hollandse zaak）』と紹介し、具が25種類から選べるパンケーキと、地元農家・製粉所から仕入れる食材を使ったサンドイッチが名物。運河に係留した船の上にも席があり、朝9時から朝食・ランチ・ハイティーまで通しで営業。幼児向けの小さなパンケーキもある。</div>
+<div class="sig"><b>一皿:</b>オランダ式パンケーキ（pannenkoek＝薄く大きなクレープ状の生地にベーコン・チーズ・リンゴなどを焼き込み、シロップ（stroop）をかけて食べる）とポッフェルチェス（poffertjes＝専用鉄板で焼く一口サイズのふわふわパンケーキ。バターと粉砂糖で）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 9:00〜17:00／日 11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Oude Delft 133, 2611 BE Delft</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:+31 15 212 4625">☎ +31 15 212 4625</a> ／ <a href="https://www.stads-koffyhuis.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認 <a href="https://www.indelft.nl/nl/onze-tips/eten-drinken-borrelen/de-beste-pannenkoeken-in-delft（幼児向けパンケーキの記載のみ）" style="color:var(--ink3);">(出典)</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>デルフト在住ブロガーが『頼れる超オランダ的な朝食・昼食の店』と推し、市観光サイト In Delft もパンケーキの名店1位に挙げる。</div>
+<div class="taste"><b>味の証拠:</b>「For a reliable super-Dutch breakfast or lunch, you can drop by the Stads -Koffyhuis. ... This is one of the best spots in Delft to order pancakes that are both sweet and savory. You’ll also find delicious little Dutch pancakes called poffertjes」— <a href="https://www.wanderlustingk.com/travel-blog/where-to-eat-delft" style="color:var(--ink2);">Wanderlustingk（デルフト在住者ブログ）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Stads-Koffyhuis%20Oude%20Delft%20133%2C%202611%20BE%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（stads-koffyhuis.nl）より引用 / 参照元: <a href="https://www.wanderlustingk.com/travel-blog/where-to-eat-delft">Wanderlustingk（在住者ブログ）</a> / <a href="https://www.indelft.nl/nl/onze-tips/eten-drinken-borrelen/de-beste-pannenkoeken-in-delft">In Delft（パンケーキの店4選）</a> / <a href="https://www.stads-koffyhuis.nl/">公式サイト（住所・電話・予約）</a> / <a href="https://wanderlog.com/place/details/389479/stads-koffyhuis">Wanderlog（営業時間・口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-cafe-restaurant-de-v">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>Café Restaurant de V<span class="yomi">カフェ・レストラン・デ・フェー</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">『40年来デルフトの定番』を自任する運河沿いの店。茶色い木の内装のブラウンカフェ部分と明るいサンルーム（serre）があり、4月からは運河に浮かぶテラス船でも食事ができる。看板はピーナッツソースのサテ（串焼き）で、口コミ要約ではポークロール、ローストチキン、ステーキ、スペアリブなど家庭的な肉料理と自家製デザートが好評。平日は16時から、週末は13時から。</div>
+<div class="sig"><b>一皿:</b>サテ（saté＝豚や鶏の串焼きに甘辛いピーナッツソースをかけた、インドネシア由来でオランダの定番になった料理。フライドポテト添え）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 16:00〜23:00／金 16:00〜翌1:00／土 13:00〜翌1:00／日 13:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Voorstraat 9, 2611 JJ Delft</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+31 15 214 0916">☎ +31 15 214 0916</a> ／ <a href="https://www.cafe-de-v.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>40年続く地元のブラウンカフェで、口コミ集約が味付けと自家製デザートを具体的に評価。</div>
+<div class="taste"><b>味の証拠:</b>「Café Restaurant de V in Delft is a hidden gem offering delicious and well-seasoned dishes like pork rollade, roast chicken, steak, and ribs with ketchup marinade. The wine jus served with the meals is exceptional, as are the homemade desserts」— <a href="https://wanderlog.com/place/details/1193489/caf" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Restaurant%20de%20V%20Voorstraat%209%2C%202611%20JJ%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.cafedev.nl/">公式サイト（店の説明・営業時間）</a> / <a href="https://wanderlog.com/place/details/1193489/caf">Wanderlog（住所・電話・口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-cafe-de-oude-jan">
+<div class="hero-pending">写真準備中<span>公式サイトの画像が献立表のみだったため不採用</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>Café de Oude Jan<span class="yomi">カフェ・デ・アウデ・ヤン</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">『傾いた塔』で知られる旧教会（地元での愛称が Oude Jan）の真横にある、夜遅くまで開く居心地のよいカフェ。Brouwplein（醸造広場）のテラスは市内でも人気の席で、隣の Delfts Brouwhuis のデルフト産ビールや自家製レモネード、ジン Holy Spirit を出す。11時から21時半まで食事ができ、ランチのサンドイッチ、ボレル（夕方の一杯）のビターバレン、自家製アップルパイなどオランダのカフェ飯がそろう。</div>
+<div class="sig"><b>一皿:</b>ビターバレン（bitterballen＝とろみのある牛肉ラグーを丸めて揚げた一口コロッケ。マスタードをつけてビールと食べる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>毎日 11:00〜深夜（月〜翌1:00、金土〜翌3:00）／キッチン 11:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Heilige Geestkerkhof 4, 2611 HP Delft</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:+31 15 214 5363">☎ +31 15 214 5363</a> ／ <a href="https://oudejan.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>市観光サイトが Brouwplein の代表店として紹介し、口コミ集約でも料理とテラスが評価される。</div>
+<div class="taste"><b>味の証拠:</b>「The food menu offers fresh ingredients, including delicious sandwiches like pastrami made in a typical Dutch style. ... With tasty food named after locations in Delft and strong but not too bitter lattes, Café de Oude Jan is highly recommended」— <a href="https://wanderlog.com/place/details/1287687/cafe-de-oude-jan" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20de%20Oude%20Jan%20Heilige%20Geestkerkhof%204%2C%202611%20HP%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://oudejan.nl/">公式サイト（営業時間・店の説明）</a> / <a href="https://www.indelft.nl/nl/onze-tips/eten-drinken-borrelen">In Delft（Brouwplein の店）</a> / <a href="https://wanderlog.com/place/details/1287687/cafe-de-oude-jan">Wanderlog（住所・電話・口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-t-boterhuis">
+<img class="hero" src="img/delft/t-boterhuis.jpg" alt="Grand Café 't Boterhuis 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>Grand Café 't Boterhuis<span class="yomi">ト・ボーターハイス</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">かつて農家がバターを取引した建物に入る、Markt（マルクト広場）の市庁舎裏手のグランカフェ。新鮮な地元食材を使い、スモーカーで仕上げるプルドポークや、地元のパン屋 Bakker Jaap と共同開発したトマトパンが名物。月曜€10.75・他の曜日€11.75の週替わり料理（weekschotel）が手頃で、秋には patatje stoofvlees（牛肉の煮込みをかけたフライドポテト）も出る。4〜9月は運河のテラス船も使える。</div>
+<div class="sig"><b>一皿:</b>パッチェ・ストーフフレース（patatje stoofvlees＝フライドポテトに、ビールなどで柔らかく煮込んだ牛肉シチューをかけた料理）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 12:00〜24:00／金・土 11:00〜翌1:00／日 12:00〜23:00（Wanderlog掲載）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Markt 15-17a, 2611 GP Delft</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+31 15 213 4996">☎ +31 15 213 4996</a> ／ <a href="https://www.boterhuis.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>市観光サイトが Markt の店として挙げ、口コミ集約で料理の具体的な評価がある歴史的建物のカフェ。</div>
+<div class="taste"><b>味の証拠:</b>「Reviewers praise the varied menu with highlights like homemade lemonade and salmon en croûte. ... visitors appreciate the delicious food, good service, and comfortable seating both indoors and outdoors.」— <a href="https://wanderlog.com/place/details/1183863/grand-cafe-diner-t-boterhuis" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Grand%20Caf%C3%A9%20%27t%20Boterhuis%20Markt%2015-17a%2C%202611%20GP%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（boterhuis.nl）より引用 / 参照元: <a href="https://www.boterhuis.nl/weekschotels/">公式サイト（店の説明・週替わり料理）</a> / <a href="https://www.indelft.nl/nl/onze-tips/eten-drinken-borrelen">In Delft（Markt の店）</a> / <a href="https://wanderlog.com/place/details/1183863/grand-cafe-diner-t-boterhuis">Wanderlog（住所・電話・口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-t-postkantoor">
+<img class="hero" src="img/delft/t-postkantoor.jpg" alt="'t Postkantoor 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>'t Postkantoor<span class="yomi">ト・ポストカントール</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1890年から2005年まで町の郵便局だった保護建造物を、2013年4月からカフェレストランとして使う。アンティークの照明と木の家具、暖炉のある広い店内と運河側のテラスがあり、毎日9時半から朝食・ランチ・ボレル・夕食まで通しで営業。料理はオランダ風・東洋風・フレンチを混ぜた多国籍で、ボレル用のエビのクロケット（garnalenkroketjes）もある。子ども用メニュー（パンケーキ、サテ、クロケット＋ポテトなど）あり。</div>
+<div class="sig"><b>一皿:</b>ガルナーレンクロケッチェス（garnalenkroketjes＝北海の小エビを入れたクリームコロッケ。グリーンカレー風味マヨネーズ添え）</div>
+<table class="info">
+<tr><th>営業時間</th><td>日〜木 9:30〜23:30／金・土 9:30〜24:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Hippolytusbuurt 14, 2611 HN Delft</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+31 15 750 3243">☎ +31 15 750 3243</a> ／ <a href="https://postkantoordelft.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認 <a href="https://postkantoordelft.nl/（子ども用メニューの記載のみ）" style="color:var(--ink3);">(出典)</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>デルフトの観光サイト・食ブログ・在住者ブログが揃って推す地元の定番で、歴史的建物の居心地が評価される（ただし料理は多国籍寄り）。</div>
+<div class="taste"><b>味の証拠:</b>「De broodjes zijn lekker alleen mis ik bij mijn broodje wel iets van frisheid. ... De mayonaise van gepofte knoflook is erg lekker」— <a href="https://etenmetroos.nl/t-postkantoor-delft/" style="color:var(--ink2);">Eten met Roos（食ブログ・2017）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%27t%20Postkantoor%20Hippolytusbuurt%2014%2C%202611%20HN%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（postkantoordelft.nl）より引用 / 参照元: <a href="https://postkantoordelft.nl/">公式サイト（歴史・営業時間・メニュー）</a> / <a href="https://etenmetroos.nl/t-postkantoor-delft/">Eten met Roos（食ブログ）</a> / <a href="https://www.mytravelboektje.com/de-leukste-lunch-hotspots-in-delft">MyTravelBoektje（デルフトのランチ店・2026年5月更新）</a> / <a href="https://www.indelft.nl/nl/onze-tips/eten-drinken-borrelen">In Delft（市観光サイト）</a> / <a href="https://wanderlog.com/place/details/1196514/t-postkantoor">Wanderlog（口コミ要約）</a></div>
+</div></div>
+<h2 id="s-street" class="c-aqua">食べ歩き・市場・チーズ(ハーリング・フリッツ・ストロープワッフル)</h2>
+<div class="card" id="c-simonis-markt-delft">
+<img class="hero" src="img/delft/simonis-markt-delft.jpg" alt="Simonis op de Markt（デルフト木曜市） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">10</span>Simonis op de Markt（デルフト木曜市）<span class="yomi">シモニス（マルクトの魚屋台）</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">スヘフェニンゲンの老舗魚屋 Simonis が、毎週木曜にデルフトの市（Markt と Brabantse Turfmarkt）に出す屋台。TU Delft の学内誌 Delta は、全国紙 AD の食べ比べで2016年のハーリング1位になった店として紹介している。生のハーリングを刻み玉ねぎとともに尾を持って頭から食べるのがオランダ流で、揚げたての白身魚キベリングも定番。木曜限定なので週末の旅程では要注意。</div>
+<div class="sig"><b>一皿:</b>ハーリング（haring＝軽く塩漬けした生ニシン。刻み玉ねぎとピクルスを添え、尾をつまんで丸ごと食べる。パンに挟む broodje haring も）とキベリング（kibbeling＝白身魚のひと口フライ。タルタル系ソース添え）</div>
+<table class="info">
+<tr><th>営業時間</th><td>木 9:00〜17:00（デルフトの市）</td></tr>
+<tr><th>定休日</th><td class="off">木曜以外（デルフトでは）</td></tr>
+<tr><th>住所</th><td>Markt &amp; Brabantse Turfmarkt, 2611 HM Delft（木曜市内）</td></tr>
+<tr><th>予約</th><td>不要 — <a href="https://www.simonisvis.nl/vestigingen/op-de-markt">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元の大学メディア Delta が、AD 紙のハーリング食べ比べ1位の実績とともにデルフト木曜市の屋台として推奨。</div>
+<div class="taste"><b>味の証拠:</b>「At the Thursday market visit Simonis, who won first prize in 2016 for the best herring in the Netherlands in the famous Algemeen Dagblad (AD) taste test. “Without doubt the best herring of 2016,” said AD.」— <a href="https://delta.tudelft.nl/en/article/surviving-street-food" style="color:var(--ink2);">Delta（TU Delft 学内メディア・2016）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Simonis%20op%20de%20Markt%EF%BC%88%E3%83%87%E3%83%AB%E3%83%95%E3%83%88%E6%9C%A8%E6%9B%9C%E5%B8%82%EF%BC%89%20Markt%20%26%20Brabantse%20Turfmarkt%2C%202611%20HM%20Delft%EF%BC%88%E6%9C%A8%E6%9B%9C%E5%B8%82%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: delta.tudelft.nl の掲載写真より引用 / 参照元: <a href="https://delta.tudelft.nl/en/article/surviving-street-food">Delta（TU Delft・デルフトの屋台フード）</a> / <a href="https://www.simonisvis.nl/vestigingen/op-de-markt">Simonis 公式（市場出店日）</a> / <a href="https://www.delft.nl/markten-delft">Gemeente Delft（市場の案内）</a></div>
+</div></div>
+<div class="card" id="c-stroopwafels-vergunst">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">11</span>Stroopwafels Vergunst（デルフト木曜市）<span class="yomi">ストロープワッフル・フェルフンスト</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1951年から家族のレシピで焼き続けるストロープワッフル職人の屋台。毎週木曜、市の立つ Markt に Maico Vergunst が店を出し、その場で薄いワッフルを焼いてシロップを挟む。普通サイズ、屋台でつまむ人が多い特大サイズ、割れ端を袋詰めした kruimels（クルーメルス）などを売る。温かいうちに食べるのが一番。</div>
+<div class="sig"><b>一皿:</b>焼きたてストロープワッフル（stroopwafel＝薄く焼いた2枚のワッフルに、黒砂糖・バター・シロップのキャラメルを挟んだゴーダ発祥の菓子。屋台では温かいまま）</div>
+<table class="info">
+<tr><th>営業時間</th><td>木 8:00〜17:00（デルフトの市）</td></tr>
+<tr><th>定休日</th><td class="off">木曜以外（デルフトでは）</td></tr>
+<tr><th>住所</th><td>Markt, Delft（木曜市内）</td></tr>
+<tr><th>予約</th><td>不要 — <a href="https://stroopwafels-vergunst.nl/onze-markten/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>カナダの料理ブロガーがデルフト木曜市で実食し、温かい焼きたてを『Spectacular』と絶賛。学内メディア Delta も木曜市のストロープワッフルを推す。</div>
+<div class="taste"><b>味の証拠:</b>「The difference is that great between a room temperature stroopwafel and a warmed one. Spectacular. I am an addict. I was not hungry. At all. But ate the entire cookie, savoring each sugary, crunchy salty sweet bit and bite」— <a href="https://www.acanadianfoodie.com/2016/10/21/stroopwafels-maico-vergunst-delft/" style="color:var(--ink2);">A Canadian Foodie（料理ブログ・2016）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Stroopwafels%20Vergunst%EF%BC%88%E3%83%87%E3%83%AB%E3%83%95%E3%83%88%E6%9C%A8%E6%9B%9C%E5%B8%82%EF%BC%89%20Markt%2C%20Delft%EF%BC%88%E6%9C%A8%E6%9B%9C%E5%B8%82%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://stroopwafels-vergunst.nl/onze-markten/">公式サイト（出店市場・曜日）</a> / <a href="https://www.acanadianfoodie.com/2016/10/21/stroopwafels-maico-vergunst-delft/">A Canadian Foodie（実食記）</a> / <a href="https://delta.tudelft.nl/en/article/surviving-street-food">Delta（木曜市のストロープワッフル）</a></div>
+</div></div>
+<div class="card" id="c-house-of-frites-delft">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">12</span>House of Frites<span class="yomi">ハウス・オブ・フリッツ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">2017年12月開業の小さなフリッツ店。農家から直接仕入れたオーガニックのジャガイモを店主がその場で切って揚げ、ソースも自家製レシピ。普通のフリッツとベルギー風の中間の太さで、外はカリッと中はほっくり。ピーナッツソース・マヨネーズ・玉ねぎをのせた patatje oorlog（『戦争ポテト』）が名物で、さつまいもフリッツやフリカンデル、ビターバレンもある。テイクアウト中心。</div>
+<div class="sig"><b>一皿:</b>パッチェ・オールログ（patatje oorlog＝フリッツにマヨネーズ・サテ用ピーナッツソース・生の刻み玉ねぎを全部のせたオランダの定番）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水 11:30〜18:00／木・土 11:30〜18:30／金 11:30〜19:30／日 12:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月</td></tr>
+<tr><th>住所</th><td>Jacob Gerritstraat 4, 2611 ES Delft</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+31 6 81818725">☎ +31 6 81818725</a> ／ <a href="https://www.houseoffrites.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>口コミ集約で『焼き（揚げ）加減が絶妙』と具体的に評価され、Tripadvisor でも『デルフト一』とのレビューが並ぶ。</div>
+<div class="taste"><b>味の証拠:</b>「The fries are perfectly cooked, neither too hard nor too soft, and have a thickness between regular fries and Belgian ones. ... Patatje oorlog, their signature dish, stands out as the most authentic and flavorful in comparison to other places in the Netherlands.」— <a href="https://wanderlog.com/place/details/2619942/house-of-frites" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=House%20of%20Frites%20Jacob%20Gerritstraat%204%2C%202611%20ES%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.houseoffrites.nl/">公式サイト（開業年・営業時間）</a> / <a href="https://wanderlog.com/place/details/2619942/house-of-frites">Wanderlog（住所・電話・口コミ要約）</a> / <a href="https://www.tripadvisor.com/Restaurant_Review-g188626-d14029618-Reviews-House_of_Frites-Delft_South_Holland_Province.html">Tripadvisor（レビュー）</a></div>
+</div></div>
+<div class="card" id="c-frietplein-delft">
+<img class="hero" src="img/delft/frietplein-delft.jpg" alt="Frietplein 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">13</span>Frietplein<span class="yomi">フリートプレイン</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">新教会と市庁舎が向き合う Markt 広場に面したフリッツ店。毎日届く生のジャガイモを洗って皮をむき、店で切って不飽和脂肪酸の多い液体油で揚げ、昔ながらの紙の円錐（puntzak）で出す。10種以上から自分で注ぐセルフのソースバーが名物で、グルテン・乳糖不使用やヴィーガンのソースもある。クロケットやフリカンデルなどオランダのスナックも揃い、市場見物の合間に広場で食べられる。</div>
+<div class="sig"><b>一皿:</b>フリッツとクロケット（kroket＝牛肉ラグーにパン粉をつけて揚げた棒状コロッケ。マスタードで、またはパンに挟んで broodje kroket に）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・土・日 11:30〜19:00／金 11:30〜19:30（夏季・混雑時は延長）</td></tr>
+<tr><th>定休日</th><td class="off">火</td></tr>
+<tr><th>住所</th><td>Markt 16a, 2611 GT Delft</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+31 15 785 9932">☎ +31 15 785 9932</a> ／ <a href="https://www.frietplein.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Markt の真ん中で生ポテトから揚げる店で、2025年の利用者レビューがフリッツとクロケットの味を具体的に評価。</div>
+<div class="taste"><b>味の証拠:</b>「Ik vond het echt lekkere patat en een echte goede kipkroket!」— <a href="https://www.frietplein-delft.nl/review" style="color:var(--ink2);">Frietplein 注文サイトの利用者レビュー（2025-07-07）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Frietplein%20Markt%2016a%2C%202611%20GT%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（frietplein.nl）より引用 / 参照元: <a href="https://www.frietplein.nl/">公式サイト（住所・営業時間・製法）</a> / <a href="https://www.frietplein-delft.nl/review">利用者レビュー（2025年）</a></div>
+</div></div>
+<div class="card" id="c-bram-ladage-delft-centrum">
+<img class="hero" src="img/delft/bram-ladage-delft-centrum.jpg" alt="Bram Ladage Delft Centrum 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">14</span>Bram Ladage Delft Centrum<span class="yomi">ブラム・ラダーヘ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">ロッテルダム発祥の人気フリッツチェーン Bram Ladage のデルフト中心部店。駅から旧市街へ向かう途中の Zuidpoort 商業地区にあり、太めのフリッツを揚げたてで出す。口コミ要約では『外はカリッと中はふんわり』と揚げ方が高評価の一方、ソースは酸味が強いとの声もあり、まずは塩だけで味わうのが勧められている。デルフトには De Hoven にも店舗がある。</div>
+<div class="sig"><b>一皿:</b>フリッツ（patat＝太めに切ったジャガイモの二度揚げ。紙コーンで）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・土 11:00〜19:00／金 11:00〜20:00／日 12:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Paradijspoort 8, 2611 MB Delft</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+31 15 212 9544">☎ +31 15 212 9544</a> ／ <a href="https://bramladage.nl/vestigingen/delft-centrum/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>口コミ集約でフリッツの揚げ方が『immaculate』と具体的に評価される。</div>
+<div class="taste"><b>味の証拠:</b>「The standout feature is the immaculate French fries, crispy on the outside and fluffy inside.」— <a href="https://wanderlog.com/place/details/1193456/bram-ladage-delft-centrum" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Bram%20Ladage%20Delft%20Centrum%20Paradijspoort%208%2C%202611%20MB%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（bramladage.nl）より引用 / 参照元: <a href="https://bramladage.nl/vestigingen/delft-centrum/">公式店舗ページ（住所・営業時間）</a> / <a href="https://wanderlog.com/place/details/1193456/bram-ladage-delft-centrum">Wanderlog（口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-stadsbakkerij-de-diamanten-ring">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">15</span>Stadsbakkerij De Diamanten Ring<span class="yomi">スタッツバッケライ・デ・ディアマンテン・リング</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">新教会近くの Choorstraat にある町のパン屋で、建物は16世紀に宿屋『De Diamant』だった記念建造物。1584年にオラニエ公ウィレム暗殺犯バルタザール・ジェラールが前夜に泊まった場所として知られる。2015年から van Holsteijn 兄弟が営み、伝統製法のパンやハム＆チーズのクロワッサン、シナモンロール、オランダのスパイスケーキ ontbijtkoek などを朝8時から売る。店内に席はほぼなく、旧教会や運河を眺めながら食べ歩きに。</div>
+<div class="sig"><b>一皿:</b>オントバイトクーク（ontbijtkoek＝ライ麦粉にシナモン・クローブ・ジンジャーなどを効かせたしっとりした蘭式スパイスケーキ。バターを塗って朝食に）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 8:00〜18:00／日 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Choorstraat 9, 2611 JD Delft</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+31 15 212 3755">☎ +31 15 212 3755</a> ／ <a href="https://stadsbakkerijdediamantenring.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>デルフト在住ブロガーが『お気に入りの朝のパン屋』に挙げ、口コミ集約でもクロワッサンやパンの味が具体的に評価される。</div>
+<div class="taste"><b>味の証拠:</b>「One of my favorite places to stop off for a fresh pastry in Delft is De Diamanten Ring. This famous and historic bakery in Delft doesn’t have any seats」— <a href="https://www.wanderlustingk.com/travel-blog/where-to-eat-delft" style="color:var(--ink2);">Wanderlustingk（デルフト在住者ブログ）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Stadsbakkerij%20De%20Diamanten%20Ring%20Choorstraat%209%2C%202611%20JD%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://stadsbakkerijdediamantenring.nl/">公式サイト（建物の歴史・営業時間）</a> / <a href="https://www.wanderlustingk.com/travel-blog/where-to-eat-delft">Wanderlustingk（在住者ブログ）</a> / <a href="https://wanderlog.com/place/details/1159815/city-bakery-diamond-ring">Wanderlog（口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-wafels-en-zoenen">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>Wafels en Zoenen<span class="yomi">ワーフェルス・エン・ズーネン</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">Markt 広場に面した小さなワッフル店。軽いブリュッセル風と、あられ糖入りで噛みごたえのあるリエージュ風の2種を焼き、ロータスのビスコフ＋キャラメル、リンゴ＋シナモン、バナナ、ヌテラ、カリカリベーコンなどをのせる。グルテンフリーの生地もある。市場見物や新教会見学の合間の甘いおやつ向き。</div>
+<div class="sig"><b>一皿:</b>ブリュッセル風ワッフル（軽く四角い生地にビスコフ（スパイスクッキー）とキャラメルソースをのせたもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水〜日 10:00〜17:30</td></tr>
+<tr><th>定休日</th><td class="off">月・火</td></tr>
+<tr><th>住所</th><td>Markt 37B, 2611 GR Delft</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+31 15 364 9671">☎ +31 15 364 9671</a> ／ <a href="http://www.wafelsenzoenen.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>口コミ集約がブリュッセル風ワッフルの軽さと食感を具体的に評価。</div>
+<div class="taste"><b>味の証拠:</b>「Guests rave about the lightness of the Brussels waffles, which serve as a delightful base for toppings like Biscoff and caramel or apple and cinnamon.」— <a href="https://wanderlog.com/place/details/3276987/wafels-en-zoenen" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Wafels%20en%20Zoenen%20Markt%2037B%2C%202611%20GR%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://wanderlog.com/place/details/3276987/wafels-en-zoenen">Wanderlog（住所・電話・営業時間・口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-klein-seinpost">
+<img class="hero" src="img/delft/klein-seinpost.jpg" alt="Klein Seinpost 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">17</span>Klein Seinpost<span class="yomi">クライン・セインポスト</span></div>
+<div class="chips"><span class="chip kids">子連れ歓迎</span><span class="chip local">地元密着</span></div>
+<div class="desc">60年以上前に屋台から始まり、家族のレシピでパンケーキとポッフェルチェスを焼いてきた店で、現在は旧市街南西のショッピングセンター De Hoven Passage 内に常設店を構える。ベーコン＆リンゴの定番から、バニラアイス・温かいチェリー・アドヴォカート（卵リキュール）のせまで種類が多く、ポッフェルチェスはバター＆粉砂糖やブランデー漬けレーズン（boerenjongens）で。子ども用コーナー（Kinderhoek）があり、毎日9〜22時営業。センターは最初の3時間駐車無料。</div>
+<div class="sig"><b>一皿:</b>ポッフェルチェス（poffertjes＝専用の丸いくぼみの鉄板で焼く一口大のふわふわパンケーキ。溶かしバターと粉砂糖をたっぷり）</div>
+<table class="info">
+<tr><th>営業時間</th><td>毎日 9:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Martinus Nijhofflaan 476, 2624 MH Delft（De Hoven Passage）</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:+31 15 720 0809">☎ +31 15 720 0809</a> ／ <a href="https://klein-seinpost.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認 <a href="https://klein-seinpost.nl/（『Kinderhoek（キッズコーナー）』『Rolstoel toegankelijk（車椅子で入店可）』の記載。ベビーカー可否は明記なし）" style="color:var(--ink3);">(出典)</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>市観光サイト In Delft がデルフトのパンケーキ店4選に選び、家族連れ向けの設備（キッズコーナー）が公式に明記。</div>
+<div class="taste"><b>味の証拠:</b>「Het is namelijk een pannenkoekenhuis. Je kunt je dus wel bedenken hoe lekker de pannenkoeken hier zijn. ... Ze hebben ook hele kleine pannenkoeken, oftewel poffertjes. Deze kun je ook eten met de lekkerste toppings.」— <a href="https://www.indelft.nl/nl/onze-tips/eten-drinken-borrelen/de-beste-pannenkoeken-in-delft" style="color:var(--ink2);">In Delft（市観光サイト）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Klein%20Seinpost%20Martinus%20Nijhofflaan%20476%2C%202624%20MH%20Delft%EF%BC%88De%20Hoven%20Passage%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（klein-seinpost.nl）より引用 / 参照元: <a href="https://www.indelft.nl/nl/onze-tips/eten-drinken-borrelen/de-beste-pannenkoeken-in-delft">In Delft（パンケーキの店4選）</a> / <a href="https://klein-seinpost.nl/">公式サイト（営業時間・キッズコーナー）</a> / <a href="https://dehovenpassage.nl/ondernemers/klein-seinpost/">De Hoven Passage（店舗紹介・メニュー例）</a></div>
+</div></div>
+<div class="card" id="c-bakker-suikerbuik">
+<img class="hero" src="img/delft/bakker-suikerbuik.jpg" alt="Bakker Suikerbuik 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>Bakker Suikerbuik<span class="yomi">バッカー・サウケルバウク</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">旧市街の運河沿い Hippolytusbuurt にあるケーキ屋兼カフェ。オランダ伝統の小菓子 bokkepootjes（アーモンドメレンゲ）やシュークリーム、プチフールを並べたハイティーが名物で、朝食やサンドイッチも出す。口コミ要約では運河沿いのテラス席と、子ども用のおもちゃを揃えた広いプレイルームがあることが挙げられ、家族連れに勧められている。月曜休み。</div>
+<div class="sig"><b>一皿:</b>ボッケプーチェス（bokkepootjes＝『山羊の足』の意。細長いアーモンドメレンゲ2枚でバタークリームを挟み、両端をチョコにつけたオランダの伝統菓子）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 8:00〜17:00／日 12:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月</td></tr>
+<tr><th>住所</th><td>Hippolytusbuurt 22-24, 2611 HN Delft</td></tr>
+<tr><th>予約</th><td>可（ハイティーは推奨・未確認） — <a href="tel:+31 15 212 5726">☎ +31 15 212 5726</a> ／ <a href="http://www.bakkersuikerbuik.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認 <a href="https://wanderlog.com/place/details/102666/bakker-suikerbuik（口コミ要約に『a large kids playroom filled with toys for all ages』の記述。3点の設備は未確認）" style="color:var(--ink3);">(出典)</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>口コミ集約で焼き菓子・サンドイッチの味と、子連れ向けのプレイルームが具体的に挙がる。</div>
+<div class="taste"><b>味の証拠:</b>「Reviewers praise the tasty sandwiches, exquisite bakery items, and well-crafted coffee. ... With fresh homemade food, delightful pastries, and a warm ambiance that puts people first, Bakker Suikerbuik is highly recommended for families」— <a href="https://wanderlog.com/place/details/102666/bakker-suikerbuik" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Bakker%20Suikerbuik%20Hippolytusbuurt%2022-24%2C%202611%20HN%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（bakkersuikerbuik.nl）より引用 / 参照元: <a href="https://wanderlog.com/place/details/102666/bakker-suikerbuik">Wanderlog（住所・電話・営業時間・口コミ要約）</a></div>
+</div></div>
+<div class="card" id="c-jh-beaart-ijs">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>J.H. Beaart IJs<span class="yomi">ベアールト・アイス</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span><span class="chip warn">口コミ注意</span></div>
+<div class="desc">旧市街の東、Julianalaan にある老舗のアイス店。フレーバー数は多くないが、ミルク感の強い柔らかなアイスを丸く整えずにたっぷり盛るのが特徴で、2枚の薄いウエハースで挟む昔ながらの『ijs tussen twee wafels』が名物。コーンかカップを選べ、ホイップクリームやミルクセーキもある。毎日12:30〜20:30。旧市街の中心からは少し離れている。</div>
+<div class="sig"><b>一皿:</b>アイス・トゥッセン・トゥヴェー・ワーフェルス（ijs tussen twee wafels＝バニラアイスを2枚の薄いウエハースで挟んだオランダの昔ながらのアイス）</div>
+<table class="info">
+<tr><th>営業時間</th><td>毎日 12:30〜20:30（季節営業の可能性あり・未確認）</td></tr>
+<tr><th>定休日</th><td class="off">未確認（冬季休業の有無を要確認）</td></tr>
+<tr><th>住所</th><td>Julianalaan 37, 2628 BB Delft</td></tr>
+<tr><th>予約</th><td>不要</td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>口コミ集約でアイスの食感とウエハースサンドが具体的に評価される、長く続く地元のアイス店（ただし人工的な甘さとの否定的意見も併記）。</div>
+<div class="note screen"><b>⚠ 凡庸との口コミあり:</b>「others criticize it for tasting artificially flavored and overly sweet（Wanderlog 要約）」</div>
+<div class="taste"><b>味の証拠:</b>「J.H. Beaart ijs in Delft is praised for its super soft and milky texture, with the old-time favorite vanilla ice cream between two waffles being highly recommended.」— <a href="https://wanderlog.com/place/details/3536392/jh-beaart-ijs" style="color:var(--ink2);">Wanderlog（Google/Tripadvisor口コミの要約）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=J.H.%20Beaart%20IJs%20Julianalaan%2037%2C%202628%20BB%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://wanderlog.com/place/details/3536392/jh-beaart-ijs">Wanderlog（住所・営業時間・口コミ要約）</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">パン・スイーツ・カフェ・ビール</h2>
+<div class="card" id="c-kobus-kuch">
+<img class="hero" src="img/delft/kobus-kuch.jpg" alt="Kobus Kuch 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">20</span>Kobus Kuch<span class="yomi">コブス・クフ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip warn">口コミ注意</span></div>
+<div class="desc">1988年創業、旧市街の石畳の広場ベーステンマルクトに面した「リビングルームのような」老舗カフェ。2008年に隣に自家ベーカリー「Kobus &amp; Saartje」を開き、年間6万切れを焼くというアップルパイ（appeltaart）が看板。ヘーゼルナッツ・レーズン・シナモン入りで、ホイップクリーム添えが定番。昼はコーヒーとパイ、夜はビールやナチョスで地元客が集まる。広場のテラス席は晴れると満席になりやすい。</div>
+<div class="sig"><b>一皿:</b>アップルタールト（appeltaart＝オランダ式の深型アップルパイ。格子状の生地にリンゴ・レーズン・シナモンを詰め、ホイップクリーム（slagroom）を添える）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 9:00〜23:00／火〜木 9:00〜24:00／金土 9:00〜翌1:00／日 9:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休）</td></tr>
+<tr><th>住所</th><td>Beestenmarkt 1, 2611 GA Delft</td></tr>
+<tr><th>予約</th><td>不可（公式サイトに「予約より飛び込み歓迎」と記載） — <a href="tel:+31 15 212 4280">☎ +31 15 212 4280</a> ／ <a href="https://kobuskuch.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元ライフスタイル誌 Livv Magazine の実食レビュー（2025年3月）と Delft 公式観光サイト In Delft が「デルフトで一番おいしいアップルパイ」として紹介し、YourLittleBlackBook（2025年）もコーヒーとともに推す。</div>
+<div class="note screen"><b>⚠ 量が多すぎるとの口コミあり:</b>「erg royaal van formaat（Livv Magazine＝「かなり大ぶり」。食べきれないという記述ではない）」</div>
+<div class="taste"><b>味の証拠:</b>「tot onze verrassing was de appeltaart nog warm en erg royaal van formaat. Na de eerste hap waren we het meteen eens dat dit zonder twijfel dé lekkerste appeltaart van Delft is.」— <a href="https://www.livvmagazine.nl/nieuws/eten-drinken/106140/is-dit-de-lekkerste-appeltaart-van-delft-" style="color:var(--ink2);">Livv Magazine（2025-03-13）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Kobus%20Kuch%20Beestenmarkt%201%2C%202611%20GA%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kobuskuch.nl）より引用 / 参照元: <a href="https://kobuskuch.nl/">公式サイト（営業時間・住所・アップルパイ）</a> / <a href="https://kobuskuch.nl/taart-2/">公式サイト（ケーキ・ベーカリー Kobus &amp; Saartje）</a> / <a href="https://www.livvmagazine.nl/nieuws/eten-drinken/106140/is-dit-de-lekkerste-appeltaart-van-delft-">Livv Magazine 実食レビュー 2025</a> / <a href="https://www.indelft.nl/nl/echt-dellufs/top-10-bezienswaardigheden-in-delft/delftse-lekkernijen">In Delft（公式観光）デルフトの名物8選</a> / <a href="https://www.yourlittleblackbook.me/leuke-koffietentjes-delft/">YourLittleBlackBook コーヒー店8選 2025</a></div>
+</div></div>
+<div class="card" id="c-kek-delft">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">21</span>Kek – De koffiebar van Delft<span class="yomi">ケック</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">運河 Voldersgracht に面した、雑貨店を抜けた奥にある人気コーヒーバー。地元誌やブログの「デルフトのカフェ」記事にほぼ必ず登場する定番で、スペシャルティコーヒー（Giraffe Coffee のハウスブレンド）に加え、自家製ケーキ、グラノーラやサンドイッチなどの朝食・ランチを朝8時半から出す。店内は小さく混み合うため開店直後が狙い目。予約は受け付けない。</div>
+<div class="sig"><b>一皿:</b>キャロットケーキ（carrot cake＝すりおろした人参とスパイス入りの生地にクリームチーズのフロスティングを重ねたケーキ）とラテ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日 8:30〜16:30（キッチンとジュースバーは16:00まで）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>Voldersgracht 27, 2611 EV Delft</td></tr>
+<tr><th>予約</th><td>不可（公式：予約・グループ予約なし） — <a href="tel:+31 15 750 3253">☎ +31 15 750 3253</a> ／ <a href="https://www.kekdelft.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>YourLittleBlackBook（2025年）のコーヒー・朝食・ランチ記事3本すべてに選ばれ、旅行ブログ Global Belly も実食で味に言及。</div>
+<div class="taste"><b>味の証拠:</b>「naast heerlijke koffie hebben ze hier ook een groot assortiment aan net zo lekker ontbijt」— <a href="https://www.yourlittleblackbook.me/leuke-koffietentjes-delft/" style="color:var(--ink2);">YourLittleBlackBook（2025-08-01）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Kek%20%E2%80%93%20De%20koffiebar%20van%20Delft%20Voldersgracht%2027%2C%202611%20EV%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.kekdelft.nl/">公式サイト（営業時間・予約方針）</a> / <a href="https://www.yourlittleblackbook.me/leuke-koffietentjes-delft/">YourLittleBlackBook コーヒー店8選 2025</a> / <a href="https://www.yourlittleblackbook.me/leuke-ontbijt-hotspots-delft/">YourLittleBlackBook 朝食スポット7選 2025</a> / <a href="https://www.yourlittleblackbook.me/beste-lunch-delft-hotspots/">YourLittleBlackBook ランチ8選 2025</a> / <a href="https://globalbelly.bosschebuik.nl/48-uur-bourgondisch-historisch-delft/">Global Belly デルフト48時間（実食）</a> / <a href="https://www.jan-magazine.nl/hotspots/g45314181/koffie-delft/">JAN Magazine デルフトのコーヒー5選（2023）</a></div>
+</div></div>
+<div class="card" id="c-miss-morrison-delft">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">22</span>Miss Morrison Koffiebranderij<span class="yomi">ミス・モリソン</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">2014年開業、店内の焙煎機でその場で豆を煎るデルフト唯一級の小さな焙煎所。レトロな内装の店で焙煎を眺めながらエスプレッソやカプチーノが飲め、量り売りの豆（エチオピア、スマトラなど）や紅茶も買える。市内の人気カフェ Koffie &amp; Zo などもここの豆を使う。現在の営業は土曜日のみなので、週末の日帰りに合う。</div>
+<div class="sig"><b>一皿:</b>自家焙煎のシングルオリジン（例：スマトラ・マンデリン＝スパイシーで土っぽい重厚な味わいのインドネシア産豆）で淹れるカプチーノ</div>
+<table class="info">
+<tr><th>営業時間</th><td>土 9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">日〜金（In Delft 公式観光サイトの掲載時間。過去は水〜土営業）</td></tr>
+<tr><th>住所</th><td>Voorstraat 7, 2611 JJ Delft</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+31 15 241 0014">☎ +31 15 241 0014</a> ／ <a href="https://www.missmorrison.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>JAN Magazine（2023）が「焙煎を見ながら飲める」店としてデルフトのコーヒー5選に選び、Google 口コミで豆の品質に具体的な言及がある。</div>
+<div class="taste"><b>味の証拠:</b>「They are well roasted and nice quality. There's some fermented flavor in the beans I got (I know it comes more easily with a naturaly processed) which I'm not a fan of, but the coffee is otherwise pretty solid.」— <a href="https://wanderlog.com/place/details/1454297/miss-morrison-koffiebranderij-delft" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2019-09-14）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Miss%20Morrison%20Koffiebranderij%20Voorstraat%207%2C%202611%20JJ%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.indelft.nl/nl/locaties/65745886/miss-morrison">In Delft（公式観光）店舗ページ（住所・営業時間）</a> / <a href="https://www.jan-magazine.nl/hotspots/g45314181/koffie-delft/">JAN Magazine デルフトのコーヒー5選</a> / <a href="https://www.eefinthecity.com/nl/post/koffie-delft">eefinthecity デルフトのコーヒー11選（土曜営業の記載）</a> / <a href="https://wanderlog.com/place/details/1454297/miss-morrison-koffiebranderij-delft">Wanderlog（Google 口コミ）</a> / <a href="https://www.yourlittleblackbook.me/leuke-koffietentjes-delft/">YourLittleBlackBook（Koffie &amp; Zo が Miss Morrison の豆を使用）</a></div>
+</div></div>
+<div class="card" id="c-stadsbrouwerij-de-koperen-kat">
+<img class="hero" src="img/delft/stadsbrouwerij-de-koperen-kat.jpg" alt="Stadsbrouwerij De Koperen Kat 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">23</span>Stadsbrouwerij De Koperen Kat<span class="yomi">デ・コペレン・カット</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip warn">口コミ注意</span></div>
+<div class="desc">2011年創業、1922年以来途絶えていたデルフトの醸造を復活させた市営醸造所（stadsbrouwerij）。旧オランダ・ケーブル工場の建物で1,000リットルの設備と発酵タンクを使い、フェルメールの絵にちなむ「De Parel van Delft」、1.9％の軽いペールエール「Poeslief」、藻を使った「D-Al-G」など十数種を醸す。バーから銅色の仕込釜が見えるテイスティングルームとテラスがあり、2026年に15周年祭を開催。</div>
+<div class="sig"><b>一皿:</b>オーストポーター（Oostporter＝ロースト麦芽の黒ビール。ウイスキー樽熟成版もある）とテイスティング</div>
+<table class="info">
+<tr><th>営業時間</th><td>木 21:00〜翌3:00／金 16:00〜21:00／土日 14:00〜20:00（公式の proeflokaal 時間。夏季は木曜が15時から）</td></tr>
+<tr><th>定休日</th><td class="off">月〜水</td></tr>
+<tr><th>住所</th><td>Schieweg 15M, 2627 AN Delft</td></tr>
+<tr><th>予約</th><td>可（reserveringen@dekoperenkat.nl） — <a href="tel:+31 6 42 12 33 98">☎ +31 6 42 12 33 98</a> ／ <a href="https://www.dekoperenkat.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>デルフト唯一級の独立醸造所として In Delft 公式観光・Follow the Beer が紹介し、Untappd（6万件超の評価）で味の具体的言及がある。評価は賛否あり。</div>
+<div class="note screen"><b>⚠ 凡庸との口コミあり:</b>「Wel prima maar zeker niet de lekkerste die ik heb geproefd.（Untappd、D-Al-G）」</div>
+<div class="taste"><b>味の証拠:</b>「Lekker bier, volle en rijke smaak, goed in balans. De whisky is goed te proeven. Lekker bier!」— <a href="https://untappd.com/b/delft-city-brewery-de-koperen-kat-oostporter-tullibardine/5356372" style="color:var(--ink2);">Untappd チェックイン（Oostporter Tullibardine）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Stadsbrouwerij%20De%20Koperen%20Kat%20Schieweg%2015M%2C%202627%20AN%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（dekoperenkat.nl）より引用 / 参照元: <a href="https://www.dekoperenkat.nl/contact/">公式サイト（連絡先・proeflokaal 営業時間）</a> / <a href="https://www.dekoperenkat.nl/proeflokaal-t-clubhuis/">公式サイト（Proeflokaal）</a> / <a href="https://www.dekoperenkat.nl/15e-jaarfeest-bierfestival/">公式投稿 15周年祭 2026</a> / <a href="https://followthebeer.nl/stadsbrouwerij-de-koperen-kat-delft/">Follow the Beer（設備・歴史）</a> / <a href="https://untappd.com/DeKoperenKat">Untappd 醸造所ページ</a> / <a href="https://www.indelft.nl/nl/blijven-slapen/culinair">In Delft（公式観光）美食ガイド</a></div>
+</div></div>
+<div class="card" id="c-delfts-brouwhuis">
+<img class="hero" src="img/delft/delfts-brouwhuis.jpg" alt="Delfts Brouwhuis 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">24</span>Delfts Brouwhuis<span class="yomi">デルフツ・ブラウハウス</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">旧教会（Oude Jan）の足元、約700年前から醸造所があったとされる建物に2019年開業した市内醸造所兼レストラン。改装中に13世紀の丸天井の地下室が見つかり、現在はその地下室も客席。バーや客席からステンレスの仕込釜・熟成タンクが見え、地元醸造所 Delftse Brouwers の20種以上のタップが週替わりで並ぶ。ボレルプランク（つまみ盛り合わせ）から肉料理までキッチンは11時〜21時半、屋外ビアガーデンもある。</div>
+<div class="sig"><b>一皿:</b>ボレルプランク（borrelplank＝チーズ・ソーセージ・揚げ物などを板に盛ったオランダ流のビールのつまみ盛り合わせ）とビアテイスティング</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・日 11:00〜翌1:00／金土 11:00〜翌2:00（キッチン 11:00〜21:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休）</td></tr>
+<tr><th>住所</th><td>Hippolytusbuurt 43, 2611 HM Delft</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="https://delftsbrouwhuis.nl/">公式サイト</a> ／ <a href="https://delftsbrouwhuis.nl/en/reservations/">予約サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Bite Me Food Tours（2024/2025更新）が「デルフトのクラフトビール第1位」に挙げ、旅行ブログ Global Belly が実食でビールとつまみの味に言及。In Delft 公式観光サイトもプレッツェルを名物として紹介。</div>
+<div class="taste"><b>味の証拠:</b>「Ik ging dit keer voor een “Milde makaak” en de porter. Heerlijk. Goede borrelplank ook trouwens」— <a href="https://globalbelly.bosschebuik.nl/48-uur-bourgondisch-historisch-delft/" style="color:var(--ink2);">Global Belly（Bossche Buik）ブログ</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Delfts%20Brouwhuis%20Hippolytusbuurt%2043%2C%202611%20HM%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（delftsbrouwhuis.nl）より引用 / 参照元: <a href="https://delftsbrouwhuis.nl/">公式サイト（営業時間・アジェンダ）</a> / <a href="https://delftsbrouwhuis.nl/contact/">公式サイト（連絡先・キッチン時間）</a> / <a href="https://www.bitemefoodtours.com/nl/de-5-beste-plekken-voor-speciaalbier-liefhebbers-in-delft/">Bite Me Food Tours デルフトのクラフトビール5選</a> / <a href="https://globalbelly.bosschebuik.nl/48-uur-bourgondisch-historisch-delft/">Global Belly デルフト48時間（実食）</a> / <a href="https://followthebeer.nl/delfts-brouwhuis-delft/">Follow the Beer（醸造設備・歴史）</a> / <a href="https://www.indelft.nl/nl/blijven-slapen/culinair">In Delft（公式観光）美食ガイド</a></div>
+</div></div>
+<div class="card" id="c-locus-publicus">
+<img class="hero" src="img/delft/locus-publicus.jpg" alt="Locus Publicus 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">25</span>Locus Publicus<span class="yomi">ローカス・プブリクス</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1978年創業、細長い「パイプ（pijpenla）」型の古いブラウンカフェ（木の内装の伝統的な酒場）。タップ14本（うち8本は季節替わり）と瓶ビール約200種を揃えるデルフト屈指のビアカフェで、デルフトの醸造所 De Koperen Kat の初ビールもここのビール祭りで披露された。昼はトースティ（ホットサンド）やミートボールのパンなど軽食、夜はチーズとソーセージの盛り合わせやインドネシア風ミートボール。3〜10月はプラタナスの木陰のテラスが出る。</div>
+<div class="sig"><b>一皿:</b>トースティ（tosti＝チーズやハムをはさんだホットサンド。ここでは玉ねぎ・トマト入り、ブリー・洋梨・蜂蜜など種類が多い）</div>
+<table class="info">
+<tr><th>営業時間</th><td>未確認（公式サイトに記載なし。Wanderlog 掲載の Google 情報では毎日昼〜深夜）</td></tr>
+<tr><th>定休日</th><td class="off">未確認</td></tr>
+<tr><th>住所</th><td>Brabantse Turfmarkt 67, 2611 CM Delft</td></tr>
+<tr><th>予約</th><td>可（来店30分前から電話のみ） — <a href="tel:+31 15 213 4632">☎ +31 15 213 4632</a> ／ <a href="https://www.locuspublicus.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Bite Me Food Tours（2025更新）のクラフトビール5選に入り、In Delft 公式観光サイトも「本物のビアカフェ」と紹介。食事の味にも第三者が言及。</div>
+<div class="taste"><b>味の証拠:</b>「Dat Locus Publicus een speciaalbier lokaal is betekent ook zeker niet dat hier niet lekker gegeten kan worden. Je kan hier namelijk ook terecht voor de lekkerste tosti’s en broodjes!」— <a href="https://www.bitemefoodtours.com/nl/de-5-beste-plekken-voor-speciaalbier-liefhebbers-in-delft/" style="color:var(--ink2);">Bite Me Food Tours（2025-07-23更新）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Locus%20Publicus%20Brabantse%20Turfmarkt%2067%2C%202611%20CM%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（locuspublicus.nl）より引用 / 参照元: <a href="https://www.locuspublicus.nl/">公式サイト（タップ・キッチン・予約方法）</a> / <a href="https://www.bitemefoodtours.com/nl/de-5-beste-plekken-voor-speciaalbier-liefhebbers-in-delft/">Bite Me Food Tours デルフトのクラフトビール5選</a> / <a href="https://www.indelft.nl/nl/blijven-slapen/culinair">In Delft（公式観光）美食ガイド</a> / <a href="https://www.dekoperenkat.nl/de-koperen-kat-bier-in-cafe-locus-publicus-delft/">De Koperen Kat（Locus Publicus との関係）</a> / <a href="https://wanderlog.com/place/details/102732/locus-publicus">Wanderlog（Google 営業情報）</a></div>
+</div></div>
+<div class="card" id="c-bierhuis-de-klomp">
+<img class="hero" src="img/delft/bierhuis-de-klomp.jpg" alt="Bierhuis De Klomp 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">26</span>Bierhuis De Klomp<span class="yomi">ビールハウス・デ・クロンプ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1652年から続くとされるデルフト最古のカフェ。外からは小さく見えるが、中は最古の部分「フォールハウス」、デルフト焼きで埋め尽くされた「青の間」、ボードゲームが並ぶ「奥の間」と小部屋が続く。ビールは80種以上、デルフト産ジンの原型ジュネヴァ「Delfts Zwart」を最初に扱った店でもある。つまみは名物のビッテルバレン（1個から注文可）や、ギロチンで自分で切る熟成チーズ。予約・大人数不可。</div>
+<div class="sig"><b>一皿:</b>ビッテルバレン（bitterballen＝とろみのある牛肉ラグーを丸めて揚げたオランダの酒のつまみ。マスタードを付けて食べる）とジュネヴァ「Delfts Zwart」</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 16:00〜翌1:00（In Delft 掲載。Google 情報では水〜土は12:00から）</td></tr>
+<tr><th>定休日</th><td class="off">日・月</td></tr>
+<tr><th>住所</th><td>Binnenwatersloot 5, 2611 BJ Delft</td></tr>
+<tr><th>予約</th><td>不可（公式：予約・大人数不可） — <a href="tel:+31 6 5060 1946">☎ +31 6 5060 1946</a> ／ <a href="https://bierhuisdeklomp.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Delft 公式観光サイト In Delft が「デルフトの名物」として地元ジュネヴァの味を紹介し、Follow the Beer もデルフトのビアスポットに挙げる。Google 口コミでつまみの味に言及。</div>
+<div class="taste"><b>味の証拠:</b>「Deze jenever, ontwikkeld door Martin Kampings en Stephan Jacobs, heeft een volle geur, stevige body en een rokerige afdronk. De smaak balanceert tussen zoet en krachtig, wat hem uniek maakt.」— <a href="https://www.indelft.nl/nl/echt-dellufs/top-10-bezienswaardigheden-in-delft/delftse-lekkernijen" style="color:var(--ink2);">In Delft（Delft 公式観光サイト）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Bierhuis%20De%20Klomp%20Binnenwatersloot%205%2C%202611%20BJ%20Delft">Googleマップで開く</a>
+<div class="src">写真: assets.plaece.nl の掲載写真より引用 / 参照元: <a href="https://bierhuisdeklomp.nl/">公式サイト（歴史・ビール・予約方針）</a> / <a href="https://www.indelft.nl/nl/locaties/2882359461/bierhuis-de-klomp">In Delft（公式観光）店舗ページ（営業時間・写真）</a> / <a href="https://www.indelft.nl/nl/echt-dellufs/top-10-bezienswaardigheden-in-delft/delftse-lekkernijen">In Delft（公式観光）デルフトの名物8選</a> / <a href="https://wanderlog.com/place/details/1493473/bierhuis-de-klomp">Wanderlog（Google 口コミ）</a></div>
+</div></div>
+<h2 id="s-world" class="c-violet">世界の料理(インドネシア・スリナム・アジア・欧州・中東)</h2>
+<div class="card" id="c-restaurant-toko-redjeki">
+<img class="hero" src="img/delft/restaurant-toko-redjeki.jpg" alt="Restaurant &amp; Toko Redjeki 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">27</span>Restaurant &amp; Toko Redjeki<span class="yomi">レジェキ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">デルフトで最も古いインドネシア料理店とされる店。店内はオランダ流のインドネシア料理（旧植民地由来の「インディシュ」料理）の食堂で、看板はインドネシア各地の料理を小皿で並べるリスターフェル。隣の食材店（toko）では香辛料やインドネシア菓子、持ち帰り惣菜も買える。20名以上ならビュッフェも可。公式サイトは改装中だが「通常営業中」と告知。</div>
+<div class="sig"><b>一皿:</b>リスターフェル（rijsttafel＝白飯を中心に、サテ（甘辛いタレの串焼き）・ルンダン（牛肉のココナッツ煮込み）・野菜の和え物など十数皿を一度に並べるオランダ発祥のインドネシア式コース）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 12:00〜22:00／日 16:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>Choorstraat 50-56, 2611 JH Delft</td></tr>
+<tr><th>予約</th><td>推奨（電話） — <a href="tel:+31 15 212 5022">☎ +31 15 212 5022</a> ／ <a href="https://www.redjeki.com/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>In Delft 公式観光サイトと旧市街商店会 Historisch Centrum Delft が「デルフト最古のインドネシア料理店」と紹介し、2026年の宅配口コミで味に言及。</div>
+<div class="taste"><b>味の証拠:</b>「Fantastisch eten! Heel goed verpakt, en zeer smaakvol.」— <a href="https://www.redjekirestaurant-delft.nl/review" style="color:var(--ink2);">Thuisbezorgd.nl 利用者口コミ（2026-09-02）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Restaurant%20%26%20Toko%20Redjeki%20Choorstraat%2050-56%2C%202611%20JH%20Delft">Googleマップで開く</a>
+<div class="src">写真: itin-dev.wanderlogstatic.com の掲載写真より引用 / 参照元: <a href="https://www.redjeki.com/">公式サイト（営業中の告知・電話）</a> / <a href="https://www.indelft.nl/nl/locaties/3601704401/indonesisch-restaurant-toko-redjeki-1">In Delft（公式観光）店舗ページ（営業時間）</a> / <a href="https://historischcentrumdelft.nl/winkel/restaurant-toko-redjeki/">Historisch Centrum Delft（旧市街商店会）店舗紹介</a> / <a href="https://www.redjekirestaurant-delft.nl/review">Thuisbezorgd.nl 口コミ</a> / <a href="https://wanderlog.com/place/details/1418962/redjeki">Wanderlog（Google 写真・営業状況）</a></div>
+</div></div>
+<div class="card" id="c-toko-idola">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">28</span>Toko Idola<span class="yomi">トコ・イドラ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">旧市街南のブラバンツェ・トゥルフマルクトにある小さなインドネシア惣菜店兼食堂。共同経営者でシェフの Edo さんが母親のレシピを受け継ぎ、毎朝仕込んだ料理をショーケースに並べ、ご飯（またはナシゴレン）に好きな肉・野菜料理を選んで盛ってもらう方式。インドネシア語で話しかけられる気さくな店で、ベジタリアン向けの組み合わせも可能。内装は簡素だが Google 評価4.7と地元の支持が厚い。</div>
+<div class="sig"><b>一皿:</b>ナシ・ランス（nasi rames＝ご飯に牛肉のスパイス煮・卵のバラド（辛いチリソース煮）・インゲンのピリ辛炒めなど数種のおかずを盛り合わせる一皿）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 12:00〜20:00／日 15:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>Brabantse Turfmarkt 32a, 2611 CN Delft</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+31 6 20566755">☎ +31 6 20566755</a> ／ <a href="http://www.idola.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Wanderlog のデルフトのアジア料理上位（#5）で、2025〜2026年の Google 口コミが味（スパイス・肉の柔らかさ）に具体的に言及。</div>
+<div class="taste"><b>味の証拠:</b>「Alles smaakte vers en vol kruiden. Vooral het rundvlees was super mals en rijk van smaak, en die pittige boontjes maakten het helemaal af.」— <a href="https://wanderlog.com/nl/place/details/1196717" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2026-05-13）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Toko%20Idola%20Brabantse%20Turfmarkt%2032a%2C%202611%20CN%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://wanderlog.com/place/details/1196717/toko-idola">Wanderlog（Google 口コミ・営業時間）</a> / <a href="https://wanderlog.com/list/geoCategory/3222/best-asian-food-in-delft">Wanderlog デルフトのアジア料理ベスト</a></div>
+</div></div>
+<div class="card" id="c-restaurant-klein-maar-fijn">
+<img class="hero" src="img/delft/restaurant-klein-maar-fijn.jpg" alt="Restaurant Klein Maar Fijn 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">29</span>Restaurant Klein Maar Fijn<span class="yomi">クライン・マール・ファイン</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span><span class="chip warn">口コミ注意</span></div>
+<div class="desc">運河 Binnenwatersloot 沿い、最古の酒場 De Klomp の隣にある小さな食堂。南米スリナム（旧オランダ領）の料理と、スリナム系中華料理（Chinees-Surinaams）の両方を出し、ロティ、ナシ、サオト（スープ）、タウミン（焼きそば）、塩ダラや塩漬け肉をはさんだスリナム風サンドイッチが揃う。店名は「小さいけれど良い」の意。店内飲食・宅配とも可で、量は多めとの口コミ。</div>
+<div class="sig"><b>一皿:</b>ロティ（roti＝スリナムのインド系移民料理。薄い豆粉入りクレープ状のパンに、鶏肉・じゃがいも・長豆のカレー煮込みを添え、手でちぎって包んで食べる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 12:00〜20:30／日 15:00〜20:30（In Delft 掲載）</td></tr>
+<tr><th>定休日</th><td class="off">なし（他媒体では月曜休みの記載もあり、要確認）</td></tr>
+<tr><th>住所</th><td>Binnenwatersloot 7, 2611 BJ Delft</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:+31 15 302 00 00">☎ +31 15 302 00 00</a> ／ <a href="https://www.restaurantkleinmaarfijn-delft.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Delft 公式観光サイト In Delft が「スリナム料理を楽しめる店」として掲載し、Wanderlog の『デルフトのベストレストラン50』（#46）に入る。Google 口コミで料理の味に言及がある一方、辛口評価もある。</div>
+<div class="note screen"><b>⚠ 凡庸との口コミあり:</b>「Zoutvlees niet gevuld vettig en smaakloos. Bakkeljauw veelste zoet droog en niet gevuld.（Google 2026-04-02、1★）」</div>
+<div class="taste"><b>味の証拠:</b>「Top tent !!! Het eten is zoals het hoort. Wij komen uit Alphen aan den Rijn en we hebben het graag voor over om een kleine rit te maken voor een goed Surinaams-Chinees eten.」— <a href="https://wanderlog.com/nl/place/details/1193506" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2026-01-23）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Restaurant%20Klein%20Maar%20Fijn%20Binnenwatersloot%207%2C%202611%20BJ%20Delft">Googleマップで開く</a>
+<div class="src">写真: itin-dev.wanderlogstatic.com の掲載写真より引用 / 参照元: <a href="https://www.indelft.nl/nl/locaties/3853993149/restaurant-klein-maar-fijn">In Delft（公式観光）店舗ページ（営業時間・電話）</a> / <a href="https://www.indelft.nl/nl/blijven-slapen/culinair">In Delft（公式観光）美食ガイド</a> / <a href="https://wanderlog.com/place/details/1193506/restaurant-klein-maar-fijn">Wanderlog（Google 口コミ）</a> / <a href="https://www.restaurantkleinmaarfijn-delft.nl/">宅配・メニューサイト</a></div>
+</div></div>
+<div class="card" id="c-restaurant-rossio">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">30</span>Restaurant Rossio<span class="yomi">ロシオ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">運河 Oude Delft に面した歴史的建物のレストランで、スペインとポルトガルの家庭料理から着想した自家製料理を出す。オープンキッチンを見ながら食べる1階と、専用バーのある2階があり、ろうそくの灯りと木のテーブルの落ち着いた雰囲気。前菜盛り合わせ、ペリペリ海老、ポルトガル風魚介鍋カタプラーナなどが人気で、季節の食材を使う。ワインはイベリア産が中心。</div>
+<div class="sig"><b>一皿:</b>ロシオの前菜盛り合わせ（Rossio delicacies platter＝生ハム・チーズ・オリーブ・ディップなどスペインとポルトガルの小皿を一枚に盛った前菜）と自家製パン</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 16:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>Oude Delft 78, 2611 CD Delft</td></tr>
+<tr><th>予約</th><td>推奨（口コミに夕食は予約で埋まる記述） — <a href="tel:+31 15 212 0950">☎ +31 15 212 0950</a> ／ <a href="http://www.rossio.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Delft 公式観光サイト In Delft が「スペインとポルトガルの家庭料理」の店として掲載し、Wanderlog の『デルフトのベストレストラン50』で #17。2026年の Google 口コミで料理の味に具体的言及が多い。</div>
+<div class="taste"><b>味の証拠:</b>「The food is absolutely stunning. Every dish we had was delicious. We ordered a few dishes to share and I can highly recommend the mushroom starter, the Peri Peri prawns, the chicory side dish with Gorgonzola and the leek and goats cheese pie.」— <a href="https://wanderlog.com/place/details/2692656/restaurant-rossio" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2026-02-16）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Restaurant%20Rossio%20Oude%20Delft%2078%2C%202611%20CD%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="http://www.rossio.nl/">公式サイト（営業時間・コンセプト）</a> / <a href="https://www.indelft.nl/nl/blijven-slapen/culinair">In Delft（公式観光）美食ガイド</a> / <a href="https://wanderlog.com/place/details/2692656/restaurant-rossio">Wanderlog（Google 口コミ・営業時間）</a></div>
+</div></div>
+<div class="card" id="c-settebello-delft">
+<img class="hero" src="img/delft/settebello-delft.jpg" alt="Settebello 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">31</span>Settebello<span class="yomi">セッテベッロ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">マルクト広場に面した小さなイタリア料理店。ローマ式の四角いピザ「ピッツァ・アル・taglio」を軽くカリッとした生地で焼き、小さく切って数種類を食べ比べられる。生パスタのカルボナーラやアマトリチャーナ、6時間以上煮込むラグーのパッパルデッレ、ライスコロッケ「スップリ」などのアペリティーボも。広場のテラス席あり。2022〜2025年の口コミには昼のピザやケーキの記述もあるが、公式サイトの現行営業は夜のみ。</div>
+<div class="sig"><b>一皿:</b>ピッツァ・アル・taglio（pizza al taglio＝長方形の天板で焼き、好きな大きさに切って売るローマ式ピザ。生地は気泡が多く軽い）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 17:00〜22:00（キッチン21:30まで）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>Markt 33, 2611 GR Delft</td></tr>
+<tr><th>予約</th><td>可（公式サイトの Tebi 予約） — <a href="tel:+31 15 785 2492">☎ +31 15 785 2492</a> ／ <a href="http://www.settebellodelft.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>In Delft 公式観光サイトが「イタリアの太陽への旅」と紹介し、Wanderlog のデルフトのイタリア料理リストに入る。Google 口コミで料理の味に具体的言及。</div>
+<div class="taste"><b>味の証拠:</b>「Eten is meravigliosa. Zó lekker en mooi bereid. Niet al te grote kaart. Geweldige pizza's en lekkere wijntjes.」— <a href="https://wanderlog.com/nl/place/details/4383222" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2025-07-03）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Settebello%20Markt%2033%2C%202611%20GR%20Delft">Googleマップで開く</a>
+<div class="src">写真: static.wixstatic.com の掲載写真より引用 / 参照元: <a href="http://www.settebellodelft.nl/">公式サイト（メニュー・営業時間・予約）</a> / <a href="https://www.indelft.nl/nl/blijven-slapen/culinair">In Delft（公式観光）美食ガイド</a> / <a href="https://wanderlog.com/place/details/4383222/settebello">Wanderlog（Google 口コミ）</a> / <a href="https://wanderlog.com/list/geoCategory/53200/best-italian-restaurants-in-delft">Wanderlog デルフトのイタリア料理</a></div>
+</div></div>
+<div class="card" id="c-grk-en-zo-delft">
+<img class="hero" src="img/delft/grk-en-zo-delft.jpg" alt="GRK&amp;ZO 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">32</span>GRK&amp;ZO<span class="yomi">グリークエンゾー</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span><span class="chip warn">口コミ注意</span></div>
+<div class="desc">運河 Verwersdijk 沿い、テラスの並ぶドゥーレンプレイン広場に面したギリシャ料理の「キッチンバー」。世代を超えて受け継いだという自家製レシピで、窯焼きのムサカやグリル料理、メゼ（前菜の小皿）を出す。テラスは広場のプラタナスの木陰にあり、夏は特に気持ちよい。テーブルに無料の水差しが置かれるのも口コミで好評。ギリシャ音楽のライブの夜もある。</div>
+<div class="sig"><b>一皿:</b>グリル・プレート（ギリシャ風の豚・鶏の串焼きスブラキやビフテキ（ハンバーグ）を、フライドポテト・ザジキ（ヨーグルトときゅうりのソース）と盛り合わせた一皿）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 16:00〜22:00／土 12:00〜22:00／日 12:00〜21:00（Google 情報）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>Verwersdijk 32, 2611 NH Delft</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:+31 15 213 2982">☎ +31 15 213 2982</a> ／ <a href="https://grkenzo.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>In Delft 公式観光サイトが「自家製ギリシャ料理」の店として掲載し、Wanderlog の『デルフトのベストレストラン50』で #16。Google 口コミで料理の味に言及。</div>
+<div class="note screen"><b>⚠ 凡庸との口コミあり:</b>「Het restaurant ziet er mooi uit, maar de service en het eten viel erg tegen.（Google 2026-01-24、2★、Social Deal 利用時）」</div>
+<div class="taste"><b>味の証拠:</b>「Zoals Grieks eten hoort te zijn, bevestigd door mijn Griekse vriendin. We waren zeer onder de indruk.」— <a href="https://wanderlog.com/nl/place/details/1196515" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2025-10-03）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=GRK%26ZO%20Verwersdijk%2032%2C%202611%20NH%20Delft">Googleマップで開く</a>
+<div class="src">写真: itin-dev.wanderlogstatic.com の掲載写真より引用 / 参照元: <a href="https://grkenzo.nl/">公式サイト（紹介・アジェンダ2026）</a> / <a href="https://www.indelft.nl/nl/blijven-slapen/culinair">In Delft（公式観光）美食ガイド</a> / <a href="https://wanderlog.com/place/details/1196515/grk-zo">Wanderlog（Google 口コミ・営業時間）</a></div>
+</div></div>
+<div class="card" id="c-hummus-delft">
+<img class="hero" src="img/delft/hummus-delft.jpg" alt="HUmmUS Delft 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">33</span>HUmmUS Delft<span class="yomi">フムス</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip warn">口コミ注意</span></div>
+<div class="desc">4種のフムス（ひよこ豆のペースト）を自家製ピタと出す中東料理店。肉は使わず、ほぼ全品がベジタリアンかヴィーガン。ファラフェル、ババガヌーシュ（焼きナスのペースト）、シャクシュカ（トマトソースの落とし卵）、ドルマ（ブドウの葉の米詰め）などをメゼ（小皿）で分け合うスタイルで、サツマイモのフライも人気。植物の多い明るい店内とテラス席あり。</div>
+<div class="sig"><b>一皿:</b>フムス・オリジナル（hummus＝ひよこ豆・練りごま・レモン・にんにくのなめらかなペースト。オリーブオイルをかけ、焼きたてのピタと紫キャベツのサラダを添える）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 17:00〜22:00／金〜日 12:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>Molslaan 39, 2611 RJ Delft</td></tr>
+<tr><th>予約</th><td>推奨（土曜夜は混雑） — <a href="tel:+31 15 879 5252">☎ +31 15 879 5252</a> ／ <a href="http://www.ilovehummus.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>家族向けブログ Barts Boekje（Kids 欄）と旅行ブログ MyTravelBoektje が紹介し、Wanderlog の『デルフトのベストレストラン50』で #5。Google 口コミが味に具体的に言及。</div>
+<div class="note screen"><b>⚠ 量が多すぎるとの口コミあり:</b>「We werden nog even gewezen op de grote porties, maar alles was zo lekker dat het met gemak op ging.（Google 2025-02-24。量が多いと店から注意されたが完食）」</div>
+<div class="taste"><b>味の証拠:</b>「De hummus zelf was heerlijk romig」— <a href="https://wanderlog.com/nl/place/details/480244" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2025-02-24）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=HUmmUS%20Delft%20Molslaan%2039%2C%202611%20RJ%20Delft">Googleマップで開く</a>
+<div class="src">写真: images.squarespace-cdn.com の掲載写真より引用 / 参照元: <a href="http://www.ilovehummus.nl/">公式サイト（予約・メニュー）</a> / <a href="https://www.mytravelboektje.com/de-leukste-lunch-hotspots-in-delft">MyTravelBoektje デルフトのランチ</a> / <a href="https://www.bartsboekje.com/restaurant-hummus-delft-2/">Barts Boekje（家族向けブログ）</a> / <a href="https://wanderlog.com/place/details/480244/hummus-delft">Wanderlog（Google 口コミ・営業時間）</a></div>
+</div></div>
+<div class="card" id="c-ramen-nikkou-delft">
+<img class="hero" src="img/delft/ramen-nikkou-delft.jpg" alt="Ramen Nikkou 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>Ramen Nikkou<span class="yomi">ラーメン日光</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">日本人シェフが営むカウンター中心の小さなラーメン店。鶏白湯（toripaitan）や醤油・塩など伝統的なラーメンを出し、目の前で調理する様子が見える。ヴィーガン／ベジタリアン向けの一杯もある。予約不可で開店前から行列ができる。近くに豚骨専門の姉妹店と日本食材店も持つ（豚骨店は2026年時点で一時休業）。</div>
+<div class="sig"><b>一皿:</b>鶏白湯ラーメン（toripaitan＝鶏ガラを長時間煮出した白濁スープのラーメン。塩味で、チャーシュー・味玉・ねぎをのせる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水 17:00〜21:00／木〜土 12:00〜14:00・17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">日〜火</td></tr>
+<tr><th>住所</th><td>Oosteinde 199, 2611 VE Delft</td></tr>
+<tr><th>予約</th><td>不可（口コミ：walk-ins only） — <a href="https://www.ramennikkou.com/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認 <a href="https://wanderlog.com/nl/place/details/1459689" style="color:var(--ink3);">(出典)</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Delft 公式観光サイト In Delft が「本物の日本人シェフのラーメン」として推し、Wanderlog の『デルフトのベストレストラン50』に入る。2025〜2026年の Google 口コミでスープの味に具体的言及が多い。</div>
+<div class="taste"><b>味の証拠:</b>「the chicken broth ramen tastes so fresh and strong that the ramen noodles were infused with the savory flavor of the broth.」— <a href="https://wanderlog.com/nl/place/details/1459689" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2026-05-05）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Ramen%20Nikkou%20Oosteinde%20199%2C%202611%20VE%20Delft">Googleマップで開く</a>
+<div class="src">写真: itin-dev.wanderlogstatic.com の掲載写真より引用 / 参照元: <a href="https://www.ramennikkou.com/">公式サイト（店舗・姉妹店住所）</a> / <a href="https://www.indelft.nl/nl/blijven-slapen/culinair">In Delft（公式観光）美食ガイド</a> / <a href="https://wanderlog.com/place/details/1459689/ramen-nikkou">Wanderlog（Google 口コミ・営業時間）</a></div>
+</div></div>
+<div class="card" id="c-maharaja-delft">
+<img class="hero" src="img/delft/maharaja-delft.jpg" alt="Maharaja 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>Maharaja<span class="yomi">マハラジャ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip warn">口コミ注意</span></div>
+<div class="desc">ネパール出身の料理人が作るインド料理店。鶏・魚・肉のカレーやタンドリー料理に加え、ベジタリアン・ヴィーガン料理も多く、主菜にはご飯が付き、辛さは注文時に調整できる。ナンの種類が豊富で、ココナッツ入りナンが名物。18年通う常連がいるなど地元客の支持が長い。赤と黄色の内装の温かい店内で、夏は歩道側に数席のテラスが出る。</div>
+<div class="sig"><b>一皿:</b>チキン・ティッカ・マサラ（chicken tikka masala＝タンドール窯で焼いた鶏肉を、トマトとクリームのまろやかなカレーソースで煮込んだ料理）とココナッツ・ナン</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>Nieuwe Langendijk 59, 2611 VJ Delft</td></tr>
+<tr><th>予約</th><td>可（オンライン・電話） — <a href="tel:+31 15 212 8989">☎ +31 15 212 8989</a> ／ <a href="https://www.restaurantmaharajadelft.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Wanderlog の『デルフトのベストレストラン50』（#45）・家族向けレストランに入り、2025年の Google 口コミでカレーとナンの味に具体的言及が多い。</div>
+<div class="note screen"><b>⚠ 凡庸との口コミあり:</b>「Allereerst was het eten echt niet lekker: kleine porties, weinig smaak en absoluut veel te duur voor wat je krijgt.（Google 2025-10-04、2★）」</div>
+<div class="taste"><b>味の証拠:</b>「Begonnen met indiaase kaas als voorgerecht. Nog nooit gehad en zeker een aanrader. Daarna een heerlijke tika massala en een hete curry met kokos. Op aanraden van de vrouw des huizes een naan brood gevuld met kokos. Super combinatie.」— <a href="https://wanderlog.com/nl/place/details/1193500" style="color:var(--ink2);">Google 口コミ（Wanderlog 転載、2025-09-06）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Maharaja%20Nieuwe%20Langendijk%2059%2C%202611%20VJ%20Delft">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（restaurantmaharajadelft.nl）より引用 / 参照元: <a href="https://www.restaurantmaharajadelft.nl/">公式サイト（営業時間・予約・メニュー）</a> / <a href="https://wanderlog.com/place/details/1193500/maharaja-restaurant">Wanderlog（Google 口コミ・写真）</a> / <a href="https://wanderlog.com/list/geoCategory/33566/best-family-restaurants-in-delft">Wanderlog デルフトの家族向けレストラン</a></div>
+</div></div>
+<div class="card" id="c-hermanos-delft">
+<div class="hero-pending">写真準備中<span>出典ページに、大きさの条件（幅900px以上）を満たす料理・店内の実写が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>Hermanos<span class="yomi">エルマノス</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">2024年開店、「兄弟」を意味する名の小さなラテンアメリカ料理店。アルゼンチンのチョリパン（チョリソーのサンドイッチ）、メキシコのタコス、コロンビア料理などを新鮮な食材で作り、ベジタリアン料理も多い。ヴィンテージ家具と暖色の内装に、裏には緑の中庭があり天気の良い日は屋外で食べられる。ブラジル風レモネードが人気。7名以上はシェフのおまかせコース。</div>
+<div class="sig"><b>一皿:</b>チョリパン（choripán＝炭火で焼いたチョリソー（豚のスパイスソーセージ）をパンにはさみ、香草ソースのチミチュリをかけたアルゼンチンの屋台料理）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜木 17:00〜22:00／金土 11:00〜22:00（公式サイト。最新は Google を確認するよう注記あり）</td></tr>
+<tr><th>定休日</th><td class="off">日・月</td></tr>
+<tr><th>住所</th><td>Phoenixstraat 54, 2611 AM Delft</td></tr>
+<tr><th>予約</th><td>推奨（電話・メール） — <a href="tel:+31 6 27397534">☎ +31 6 27397534</a> ／ <a href="https://bijhermanos.nl/">公式サイト</a></td></tr>
+<tr><th>乳児連れ</th><td>ベビーカー: 未確認 ／ ハイチェア: 未確認 ／ おむつ替え台: 未確認</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>レストラン口コミサイト Restaurantreviews.nl で5件すべて5★、味に具体的な言及がある。駅から近く中庭があるラテン料理店として選定（中南米枠）。</div>
+<div class="taste"><b>味の証拠:</b>「De smaken namen me helemaal terug naar mijn reis door Zuid-Amerika! En de Braziliaanse limonade mag je zeker niet overslaan, zo lekker.」— <a href="https://restaurantreviews.nl/restaurant/22898/reviews/hermanos" style="color:var(--ink2);">Restaurantreviews.nl（2024-02-16）</a></div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Hermanos%20Phoenixstraat%2054%2C%202611%20AM%20Delft">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://bijhermanos.nl/">公式サイト（住所・営業時間・メニュー）</a> / <a href="https://restaurantreviews.nl/restaurant/22898/reviews/hermanos">Restaurantreviews.nl 口コミ</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年9月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、観光局、ローカルメディア・在住者ブログ等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>

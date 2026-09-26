@@ -95,19 +95,23 @@
 |---|---|---:|---|
 | ベルギー | ブリュッセル | 36 | [europe/belgium/](europe/belgium/) |
 | ベルギー | ヘント | 37 | [europe/belgium/](europe/belgium/) |
-| ベルギー | ルーベン | 36 | [europe/belgium/](europe/belgium/) |
+| ベルギー | ルーベン | 99 | [europe/belgium/](europe/belgium/) |
 | ベルギー | リエージュ | 37 | [europe/belgium/](europe/belgium/) |
 | ベルギー | ブルージュ | 37 | [europe/belgium/](europe/belgium/) |
 | ベルギー | アントワープ | 38 | [europe/belgium/](europe/belgium/) |
-| オランダ | アムステルダム | 37 | [europe/netherlands/](europe/netherlands/) |
+| オランダ | アムステルダム | 36 | [europe/netherlands/](europe/netherlands/) |
+| オランダ | デルフト | 36 | [europe/netherlands/](europe/netherlands/) |
+| オランダ | ロッテルダム（巻末に「キンデルダイク風車群周辺」の節・6店を含む） | 51 | [europe/netherlands/](europe/netherlands/) |
 | ドイツ | ケルン | 37 | [europe/germany/](europe/germany/) |
-| ドイツ | フランクフルト | 35 | [europe/germany/](europe/germany/) |
+| ドイツ | フランクフルト | 37 | [europe/germany/](europe/germany/) |
 | フランス | パリ | 36 | [europe/france/](europe/france/) |
+| フランス | モン・サン＝ミシェルと湾岸 | 44 | [europe/france/](europe/france/) |
+| ルクセンブルク | ルクセンブルク市 | 45 | [europe/luxembourg/](europe/luxembourg/) |
 | ドイツ | フュッセン・ノイシュヴァンシュタイン（ホーエンシュヴァンガウ／シュヴァンガウ） | 35 | [europe/germany/](europe/germany/) |
 | ドイツ | オーバーヴェーゼル・ライン渓谷（ザンクト・ゴアール／バッハラッハ） | 27 | [europe/germany/](europe/germany/) |
 | クロアチア | ドブロブニク | 36 | [europe/croatia/](europe/croatia/) |
 
-小計 13冊 / 464店
+小計 17冊 / 704店
 
 ## アジア（日本以外）
 
@@ -124,10 +128,13 @@
 | アメリカ（ハワイ州） | ホノルル・ワイキキ | 46 | [north_america/usa/](north_america/usa/) |
 | アメリカ（ハワイ州） | ホノルル・アラモアナ周辺（カカアコ・ワード・マッカリー） | 45 | [north_america/usa/](north_america/usa/) |
 | アメリカ（ハワイ州） | ホノルル・その他エリア（ダウンタウン・チャイナタウン・カパフル・カイムキ・カハラ・カリヒ ほか） | 50 | [north_america/usa/](north_america/usa/) |
+| アメリカ（ハワイ州） | ハワイ島・ヒロ | 45 | [north_america/usa/](north_america/usa/) |
+| アメリカ（ハワイ州） | ハワイ島・カイルア・コナ | 45 | [north_america/usa/](north_america/usa/) |
+| アメリカ（ハワイ州） | ハワイ島・ワイメア・コハラ | 41 | [north_america/usa/](north_america/usa/) |
 
-小計 3冊 / 141店
+小計 6冊 / 272店
 
-**合計 75冊 / 3955店**（2026-09-26 時点）
+**合計 80冊 / 4251店**（2026-09-26 時点。欧州・北米の店数は各冊の店カードを数え直した値。日本の小計は未検証のまま据え置き）
 
 ## 進行中の発注
 
