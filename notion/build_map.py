@@ -13,7 +13,7 @@
   （赤↔橙の通常視 ΔE 7.1・緑↔橙の色覚多様性 ΔE 3.2）。
   **全ペアで通るのは4色まで**（青 #2a78d6・橙 #eb6834・青緑 #1baf7a・菫 #4a3aa7、
   色覚多様性 ΔE 9.2・通常視 ΔE 16.3）。
-  そこで **11カテゴリを4つの系統に束ね、系統を色、カテゴリを絵文字で表す。**
+  そこで **12カテゴリ（2026-09-26 に和食と郷土料理を分けた）を4つの系統に束ね、系統を色で表す。絵文字は 2026-09-26 のユーザー指示で「業態」（VENUE・6種）の軸に移した。**
   ＝**識別は色だけに依存しない**（絞り込みチップにもカテゴリ名を出す）。
   地図の背景は常に明るいタイルなので、配色は明るい面用の1組に決め打ちする。
 
@@ -53,19 +53,33 @@ FAMILY_COLOR = {
     "洋食・アジア": "#1baf7a",
     "カフェ・酒場": "#4a3aa7",
 }
-# カテゴリ → (系統, 絵文字)。並び順がチップと目次の並び順になる。
+# 業態 → 絵文字（2026-09-26 ユーザー指示。ピン・ポップアップの絵文字はこの軸で決める。並び＝強弱の順で、
+# 複数に当たる店は stores_extract.py の venue_of が強い方を1つに決めて「業態」列に入れてくる）。
+# 「アイコンはレストラン（🍴）、カフェ（☕）、バーor居酒屋orパブ（🍺）、食べ歩き（🍢）、食材の店（🥩）、
+#   ベーカリーorパティスリー（🥐）…レストラン＞カフェ＞バーor居酒屋orパブ＞食材の店＞ベーカリーorパティスリー＞食べ歩き」
+VENUE = {
+    "レストラン": "🍴",
+    "カフェ": "☕",
+    "バー・居酒屋・パブ": "🍺",
+    "食材の店": "🥩",
+    "ベーカリー・パティスリー": "🥐",
+    "食べ歩き": "🍢",
+}
+# カテゴリ（料理の分類）→ 系統。色と絞り込みチップに使う。**絵文字は付けない**（絵文字は業態の軸＝上の VENUE）。
+# 並び順がチップと目次の並び順になる。
 CATEGORY = {
-    "麺類": ("麺類", "🍜"),
-    "和食・郷土料理": ("和食", "🍱"),
-    "寿司・海鮮": ("和食", "🍣"),
-    "ご当地名物": ("和食", "🎏"),
-    "洋食・各国料理": ("洋食・アジア", "🍝"),
-    "アジア・エスニック": ("洋食・アジア", "🍛"),
-    "カフェ・パン・スイーツ": ("カフェ・酒場", "☕"),
-    "居酒屋・焼肉": ("カフェ・酒場", "🍺"),
-    "ビール・バー": ("カフェ・酒場", "🍻"),
-    "屋台・食べ歩き": ("カフェ・酒場", "🍢"),
-    "市場・食材店": ("カフェ・酒場", "🛒"),
+    "麺類": ("麺類",),
+    "郷土料理": ("和食",),
+    "和食": ("和食",),
+    "寿司・海鮮": ("和食",),
+    "ご当地名物": ("和食",),
+    "洋食・各国料理": ("洋食・アジア",),
+    "アジア・エスニック": ("洋食・アジア",),
+    "カフェ・パン・スイーツ": ("カフェ・酒場",),
+    "居酒屋・焼肉": ("カフェ・酒場",),
+    "ビール・バー": ("カフェ・酒場",),
+    "屋台・食べ歩き": ("カフェ・酒場",),
+    "市場・食材店": ("カフェ・酒場",),
 }
 
 # 地方の並び（日本→近い順）。ここに無い地方は末尾へ。
@@ -148,6 +162,8 @@ CSS = """
   .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
   .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
   main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
   #map,#list{position:absolute;inset:0}
   #list{overflow:auto;display:none;background:var(--bg)}
   .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
@@ -253,13 +269,14 @@ CITY_BODY = """<body style="display:flex;flex-direction:column">
 </header>
 {{MENU}}
 <div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
 <main>
   <div id="map"></div>
   <div id="list"></div>
 </main>
 <script src="vendor/leaflet.js"></script>
 <script>
-const COLOR={{COLORS}}, CAT={{CATMETA}}, DATA={{DATA}};
+const COLOR={{COLORS}}, CAT={{CATMETA}}, VENUE={{VENUE}}, DATA={{DATA}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
@@ -273,8 +290,11 @@ chips.innerHTML=CATS.map(k=>{
   const n=DATA.filter(r=>r.c.includes(k)).length;
   return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
          `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
-         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${CAT[k][1]} ${esc(k)} <b>${n}</b></button>`;
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
 }).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
 
 /* ---- 地図 ---------------------------------------------------------------- */
 const pts=DATA.filter(r=>r.lat!=null);
@@ -283,10 +303,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
 const marks={};
 for(const r of pts){
-  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=CAT[r.c[0]]?CAT[r.c[0]][1]:'•';
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
   const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
     html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
-  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.c.join(' / '))}</p>`;
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
   if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
   if(r.food||r.ext){
     h+='<div class="imgs">';
@@ -324,10 +344,10 @@ function render(){
     const rows=rs.filter(r=>r.c.includes(k));
     if(!rows.length) continue;
     const id='g-'+CATS.indexOf(k);
-    tocp.push(`<a href="#${id}">${CAT[k][1]} ${esc(k)} <b>${rows.length}</b></a>`);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
     parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
-      `${CAT[k][1]} ${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
-      rows.map(r=>`<tr><td class="nm">${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
         (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
         `<a href="${esc(r.u)}">記事</a>`+
         (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
@@ -422,7 +442,7 @@ def city_page(city, stores, prefix="../", ncities=0):
         food, ext = img_paths(s)
         cats = s.get("カテゴリ群") or [s["カテゴリ"]]
         data.append({
-            "i": i, "n": s["店名"], "c": cats,
+            "i": i, "n": s["店名"], "c": cats, "v": s.get("業態") or "レストラン",
             "lat": s.get("lat"), "lng": s.get("lng"),
             "d": s.get("一皿") or "", "a": s.get("住所") or "",
             "m": s.get("Googleマップ") or "",
@@ -440,6 +460,7 @@ def city_page(city, stores, prefix="../", ncities=0):
             .replace("{{GUIDE}}", escape(prefix + stores[0]["path"]))
             .replace("{{COLORS}}", json.dumps(FAMILY_COLOR, ensure_ascii=False))
             .replace("{{CATMETA}}", json.dumps(CATEGORY, ensure_ascii=False))
+            .replace("{{VENUE}}", json.dumps(VENUE, ensure_ascii=False))
             .replace("{{DATA}}", json.dumps(data, ensure_ascii=False))
             .replace("{{LAT}}", "%f" % lat).replace("{{LNG}}", "%f" % lng)
             .replace("{{BURGER}}", BURGER)
