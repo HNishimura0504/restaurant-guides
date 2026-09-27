@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>奈良 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>奈良 の食べ歩き地図<span class="n">50店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="奈良 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">奈良 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/nara/nara.html"><span class="sn-e">📄</span>奈良のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（84都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "中谷堂", "c": ["ご当地名物"], "v": "ベーカリー・パティスリー", "lat": 34.681683, "lng": 135.828613, "d": "よもぎ餅(高速餅つきで仕上げる、こしと柔らかさを両立させた一品)", "a": "奈良県奈良市橋本町29", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%B0%B7%E5%A0%82%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%A9%8B%E6%9C%AC%E7%94%BA29", "u": "../japan/nara/nara.html#c-nakatanidou-sanjo", "food": "../japan/nara/img/nara/nakatanidou-sanjo.jpg", "ext": ""}, {"i": 1, "n": "天極堂 奈良本店", "c": ["ご当地名物"], "v": "レストラン", "lat": 34.687271, "lng": 135.8349, "d": "葛きり(吉野本葛を使った、つるつる・もちもちの食感が特徴の一品)", "a": "奈良県奈良市押上町1-6", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E6%A5%B5%E5%A0%82%20%E5%A5%88%E8%89%AF%E6%9C%AC%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%8A%BC%E4%B8%8A%E7%94%BA1-6", "u": "../japan/nara/nara.html#c-tengyokudo-nara-honten", "food": "../japan/nara/img/nara/tengyokudo-nara-honten.jpg", "ext": ""}, {"i": 2, "n": "柿の葉ずし 平宗 奈良店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.680099, "lng": 135.830322, "d": "柿の葉すし(鯖や鮭を一口大に切った酢飯にのせ、柿の葉で包んで一晩おいた押し寿司)", "a": "奈良県奈良市今御門町30-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9F%BF%E3%81%AE%E8%91%89%E3%81%9A%E3%81%97%20%E5%B9%B3%E5%AE%97%20%E5%A5%88%E8%89%AF%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E4%BB%8A%E5%BE%A1%E9%96%80%E7%94%BA30-1", "u": "../japan/nara/nara.html#c-hiraso-imamikado", "food": "../japan/nara/img/nara/hiraso-imamikado.jpg", "ext": ""}, {"i": 3, "n": "春鹿(今西清兵衛商店)", "c": ["ご当地名物"], "v": "食材の店", "lat": 34.676834, "lng": 135.834274, "d": "利き酒5種セット(季節替わりの春鹿5種を鹿柄のグラスで試飲)", "a": "奈良県奈良市福智院町24-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%98%A5%E9%B9%BF%28%E4%BB%8A%E8%A5%BF%E6%B8%85%E5%85%B5%E8%A1%9B%E5%95%86%E5%BA%97%29%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E7%A6%8F%E6%99%BA%E9%99%A2%E7%94%BA24-1", "u": "../japan/nara/nara.html#c-harushika-imanishiseibei", "food": "../japan/nara/img/nara/harushika-imanishiseibei.jpg", "ext": ""}, {"i": 4, "n": "春日荷茶屋", "c": ["ご当地名物"], "v": "カフェ", "lat": 34.682671, "lng": 135.844284, "d": "万葉粥(白味噌仕立てのお粥に、月替わりで万葉集ゆかりの食材を添えた一品)", "a": "奈良県奈良市春日野町160", "m": "https://www.google.com/maps/search/?api=1&query=%E6%98%A5%E6%97%A5%E8%8D%B7%E8%8C%B6%E5%B1%8B%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%98%A5%E6%97%A5%E9%87%8E%E7%94%BA160", "u": "../japan/nara/nara.html#c-kasuganiaijaya-todaiji", "food": "../japan/nara/img/nara/kasuganiaijaya-todaiji.jpg", "ext": ""}, {"i": 5, "n": "茶亭ゆうすい", "c": ["ご当地名物"], "v": "レストラン", "lat": 34.684265, "lng": 135.846161, "d": "奈良の恵ごはん(大和野菜をふんだんに使った郷土料理の御膳)", "a": "奈良県奈良市春日野町158-1", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E4%BA%AD%E3%82%86%E3%81%86%E3%81%99%E3%81%84%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%98%A5%E6%97%A5%E9%87%8E%E7%94%BA158-1", "u": "../japan/nara/nara.html#c-sateiyuusui-kasugano", "food": "../japan/nara/img/nara/sateiyuusui-kasugano.jpg", "ext": ""}, {"i": 6, "n": "森奈良漬店 本店", "c": ["ご当地名物"], "v": "食材の店", "lat": 34.684177, "lng": 135.839111, "d": "奈良漬(酒粕に漬け込んだ瓜などの奈良の伝統的な漬物)", "a": "奈良県奈良市春日野町23", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E5%A5%88%E8%89%AF%E6%BC%AC%E5%BA%97%20%E6%9C%AC%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%98%A5%E6%97%A5%E9%87%8E%E7%94%BA23", "u": "../japan/nara/nara.html#c-morinaraduke-todaiji", "food": "../japan/nara/img/nara/morinaraduke-todaiji.jpg", "ext": ""}, {"i": 7, "n": "山崎屋本店", "c": ["ご当地名物"], "v": "食材の店", "lat": 34.682663, "lng": 135.828918, "d": "奈良漬(酒粕に長期間漬け込んだ、瓜を中心とする奈良の伝統的な漬物)", "a": "奈良県奈良市東向南町5", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E5%B4%8E%E5%B1%8B%E6%9C%AC%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9D%B1%E5%90%91%E5%8D%97%E7%94%BA5", "u": "../japan/nara/nara.html#c-yamazakiya-honten-higashimuki", "food": "../japan/nara/img/nara/yamazakiya-honten-higashimuki.jpg", "ext": ""}, {"i": 8, "n": "ゐざさ中谷本舗 平城山店", "c": ["ご当地名物"], "v": "食材の店", "lat": 34.718105, "lng": 135.765869, "d": "柿の葉すし詰め合わせ(鯖・鮭など複数の柿の葉すしを詰め合わせた商品)", "a": "奈良県奈良市押熊町2141-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%90%E3%81%96%E3%81%95%E4%B8%AD%E8%B0%B7%E6%9C%AC%E8%88%97%20%E5%B9%B3%E5%9F%8E%E5%B1%B1%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%8A%BC%E7%86%8A%E7%94%BA2141-1", "u": "../japan/nara/nara.html#c-izasa-heijoyama", "food": "../japan/nara/img/nara/izasa-heijoyama.jpg", "ext": ""}, {"i": 9, "n": "竈(かまど)", "c": ["ご当地名物"], "v": "レストラン", "lat": 34.674202, "lng": 135.830917, "d": "季節の天ぷら定食(炊き立てご飯と大和野菜の天ぷらなどを合わせた定食)", "a": "奈良県奈良市井上町11「鹿の舟」内", "m": "https://www.google.com/maps/search/?api=1&query=%E7%AB%88%28%E3%81%8B%E3%81%BE%E3%81%A9%29%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E4%BA%95%E4%B8%8A%E7%94%BA11%E3%80%8C%E9%B9%BF%E3%81%AE%E8%88%9F%E3%80%8D%E5%86%85", "u": "../japan/nara/nara.html#c-kamado-shikanofune-kyobate", "food": "../japan/nara/img/nara/kamado-shikanofune-kyobate.jpg", "ext": ""}, {"i": 10, "n": "天ぷら はっとり", "c": ["和食"], "v": "レストラン", "lat": 34.676723, "lng": 135.820801, "d": "車海老の天ぷら（活きたまま仕入れる大ぶりの海老を揚げたもの）", "a": "奈良県奈良市大森町23-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E3%81%AF%E3%81%A3%E3%81%A8%E3%82%8A%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%A4%A7%E6%A3%AE%E7%94%BA23-1", "u": "../japan/nara/nara.html#c-tenpura-hattori-omori", "food": "../japan/nara/img/nara/tenpura-hattori-omori.jpg", "ext": ""}, {"i": 11, "n": "玄", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.676834, "lng": 135.834274, "d": "ざるそば・田舎そば（当日精挽きの十割そばで、来店前に枚数と種類を予約時に伝える）", "a": "奈良県奈良市福智院町23-2", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8E%84%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E7%A6%8F%E6%99%BA%E9%99%A2%E7%94%BA23-2", "u": "../japan/nara/nara.html#c-soba-gen-fukuchiin", "food": "../japan/nara/img/nara/soba-gen-fukuchiin.jpg", "ext": ""}, {"i": 12, "n": "旬彩ひより", "c": ["和食"], "v": "レストラン", "lat": 34.677631, "lng": 135.830673, "d": "大和の野菜会席（専属農園の大和伝統野菜を中心にした季節のコース）", "a": "奈良県奈良市中新屋町26 鶉屋倶楽部1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E5%BD%A9%E3%81%B2%E3%82%88%E3%82%8A%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E4%B8%AD%E6%96%B0%E5%B1%8B%E7%94%BA26%20%E9%B6%89%E5%B1%8B%E5%80%B6%E6%A5%BD%E9%83%A81F", "u": "../japan/nara/nara.html#c-shunsai-hiyori-naramachi", "food": "../japan/nara/img/nara/shunsai-hiyori-naramachi.jpg", "ext": ""}, {"i": 13, "n": "粟 ならまち店", "c": ["和食"], "v": "レストラン", "lat": 34.679066, "lng": 135.830688, "d": "ならまち店 昼のフルコース（大和牛のリブロースステーキと大和伝統野菜、天ぷら、デザート付き）", "a": "奈良県奈良市勝南院町1番地", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B2%9F%20%E3%81%AA%E3%82%89%E3%81%BE%E3%81%A1%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%8B%9D%E5%8D%97%E9%99%A2%E7%94%BA1%E7%95%AA%E5%9C%B0", "u": "../japan/nara/nara.html#c-awa-naramachiten", "food": "../japan/nara/img/nara/awa-naramachiten.jpg", "ext": ""}, {"i": 14, "n": "うな菊", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.680328, "lng": 135.83371, "d": "あいのせ重（白焼きと蒲焼を一つの重で味わえる名物メニュー）", "a": "奈良県奈良市高畑町1130 菊水楼内", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E8%8F%8A%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E9%AB%98%E7%95%91%E7%94%BA1130%20%E8%8F%8A%E6%B0%B4%E6%A5%BC%E5%86%85", "u": "../japan/nara/nara.html#c-unakiku-takahata", "food": "../japan/nara/img/nara/unakiku-takahata.jpg", "ext": ""}, {"i": 15, "n": "ごはん日和り", "c": ["寿司・海鮮"], "v": "食材の店", "lat": 34.685017, "lng": 135.828949, "d": "おでん・日替わりおばんざい", "a": "奈良県奈良市東向北町21-1 松山ビル1F-2 1階奥", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%94%E3%81%AF%E3%82%93%E6%97%A5%E5%92%8C%E3%82%8A%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9D%B1%E5%90%91%E5%8C%97%E7%94%BA21-1%20%E6%9D%BE%E5%B1%B1%E3%83%93%E3%83%AB1F-2%201%E9%9A%8E%E5%A5%A5", "u": "../japan/nara/nara.html#c-gohan-biyori-higashimuki", "food": "../japan/nara/img/nara/gohan-biyori-higashimuki.jpg", "ext": ""}, {"i": 16, "n": "日本料理 うえだ", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.69397, "lng": 135.78508, "d": "季節のおまかせコース", "a": "奈良県奈良市西大寺栄町3-12 サンワ栄町第二ビル102", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%86%E3%81%88%E3%81%A0%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E8%A5%BF%E5%A4%A7%E5%AF%BA%E6%A0%84%E7%94%BA3-12%20%E3%82%B5%E3%83%B3%E3%83%AF%E6%A0%84%E7%94%BA%E7%AC%AC%E4%BA%8C%E3%83%93%E3%83%AB102", "u": "../japan/nara/nara.html#c-nihonryori-ueda-saidaiji", "food": "../japan/nara/img/nara/nihonryori-ueda-saidaiji.jpg", "ext": ""}, {"i": 17, "n": "本城", "c": ["和食"], "v": "レストラン", "lat": 34.716953, "lng": 135.806427, "d": "季節の会席料理", "a": "奈良県奈良市左京4-2-7", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E5%9F%8E%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%B7%A6%E4%BA%AC4-2-7", "u": "../japan/nara/nara.html#c-honjo-sakyo", "food": "../japan/nara/img/nara/honjo-sakyo.jpg", "ext": ""}, {"i": 18, "n": "たろいも食堂", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.67371, "lng": 135.82254, "d": "お造り盛り合わせ（予約特典。カワハギの肝など季節の魚介を使用）", "a": "奈良県奈良市西木辻町94-1 日光ハイツ101号", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%82%8D%E3%81%84%E3%82%82%E9%A3%9F%E5%A0%82%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E8%A5%BF%E6%9C%A8%E8%BE%BB%E7%94%BA94-1%20%E6%97%A5%E5%85%89%E3%83%8F%E3%82%A4%E3%83%84101%E5%8F%B7", "u": "../japan/nara/nara.html#c-taroimo-shokudo-nishikitsuji", "food": "../japan/nara/img/nara/taroimo-shokudo-nishikitsuji.jpg", "ext": ""}, {"i": 19, "n": "麺屋NOROMA", "c": ["麺類"], "v": "レストラン", "lat": 34.693844, "lng": 135.782928, "d": "鶏そば（全粒粉の自家製麺に濃厚鶏白湯スープ）", "a": "奈良県奈良市西大寺国見町1-1-1 大和西大寺駅構内", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8BNOROMA%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E8%A5%BF%E5%A4%A7%E5%AF%BA%E5%9B%BD%E8%A6%8B%E7%94%BA1-1-1%20%E5%A4%A7%E5%92%8C%E8%A5%BF%E5%A4%A7%E5%AF%BA%E9%A7%85%E6%A7%8B%E5%86%85", "u": "../japan/nara/nara.html#c-noroma-saidaiji", "food": "../japan/nara/img/nara/noroma-saidaiji.jpg", "ext": ""}, {"i": 20, "n": "君の好きだった麺（もの）", "c": ["麺類"], "v": "レストラン", "lat": 34.685146, "lng": 135.809341, "d": "醤油ラーメン（前身「らーめん まがり」から引き継いだレシピ）", "a": "奈良県奈良市大宮町6丁目", "m": "https://www.google.com/maps/search/?api=1&query=%E5%90%9B%E3%81%AE%E5%A5%BD%E3%81%8D%E3%81%A0%E3%81%A3%E3%81%9F%E9%BA%BA%EF%BC%88%E3%82%82%E3%81%AE%EF%BC%89%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%A4%A7%E5%AE%AE%E7%94%BA6%E4%B8%81%E7%9B%AE", "u": "../japan/nara/nara.html#c-kimisukidatta-shinomiya", "food": "../japan/nara/img/nara/kimisukidatta-shinomiya.jpg", "ext": ""}, {"i": 21, "n": "うどん専門店 釜粋", "c": ["麺類"], "v": "レストラン", "lat": 34.682663, "lng": 135.828918, "d": "なべやきうどん（コシの強い自家製麺を熱々の鍋で）", "a": "奈良県奈良市東向南町13-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E5%B0%82%E9%96%80%E5%BA%97%20%E9%87%9C%E7%B2%8B%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9D%B1%E5%90%91%E5%8D%97%E7%94%BA13-2", "u": "../japan/nara/nara.html#c-kamaiki-higashimuki", "food": "../japan/nara/img/nara/kamaiki-higashimuki.jpg", "ext": ""}, {"i": 22, "n": "わらべ 喜庵", "c": ["麺類"], "v": "レストラン", "lat": 34.684177, "lng": 135.839111, "d": "なめこそば", "a": "奈良県奈良市春日野町16", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%8F%E3%82%89%E3%81%B9%20%E5%96%9C%E5%BA%B5%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%98%A5%E6%97%A5%E9%87%8E%E7%94%BA16", "u": "../japan/nara/nara.html#c-yorokobian-kasuganocho", "food": "../japan/nara/img/nara/yorokobian-kasuganocho.jpg", "ext": ""}, {"i": 23, "n": "たこ焼き八兵衛（奈良公園奈良三条通店）", "c": ["麺類"], "v": "食べ歩き", "lat": 34.682278, "lng": 135.827881, "d": "マヨだくたこ焼き（自家製マヨネーズをたっぷりと）", "a": "奈良県奈良市角振町39-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%93%E7%84%BC%E3%81%8D%E5%85%AB%E5%85%B5%E8%A1%9B%EF%BC%88%E5%A5%88%E8%89%AF%E5%85%AC%E5%9C%92%E5%A5%88%E8%89%AF%E4%B8%89%E6%9D%A1%E9%80%9A%E5%BA%97%EF%BC%89%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E8%A7%92%E6%8C%AF%E7%94%BA39-1", "u": "../japan/nara/nara.html#c-hachibe-sanjodori", "food": "../japan/nara/img/nara/hachibe-sanjodori.jpg", "ext": ""}, {"i": 24, "n": "大宮飯店", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 34.677418, "lng": 135.820724, "d": "海老チリ炒飯セット", "a": "奈良県奈良市杉ヶ町27-4 山本ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%AE%AE%E9%A3%AF%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9D%89%E3%83%B6%E7%94%BA27-4%20%E5%B1%B1%E6%9C%AC%E3%83%93%E3%83%AB1F", "u": "../japan/nara/nara.html#c-oomiyahanten-sugigacho", "food": "../japan/nara/img/nara/oomiyahanten-sugigacho.jpg", "ext": ""}, {"i": 25, "n": "麺闘庵", "c": ["麺類"], "v": "レストラン", "lat": 34.681683, "lng": 135.828613, "d": "カレーきんちゃくうどん（油揚げの中にうどんを詰めた名物）", "a": "奈良県奈良市橋本町30-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E9%97%98%E5%BA%B5%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%A9%8B%E6%9C%AC%E7%94%BA30-1", "u": "../japan/nara/nara.html#c-mentouan-hashimotocho", "food": "../japan/nara/img/nara/mentouan-hashimotocho.jpg", "ext": ""}, {"i": 26, "n": "奈良 肉とお好み焼き JUJU本店", "c": ["麺類"], "v": "レストラン", "lat": 34.681725, "lng": 135.825638, "d": "肉玉お好み焼き", "a": "奈良県奈良市上三条町12-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A5%88%E8%89%AF%20%E8%82%89%E3%81%A8%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20JUJU%E6%9C%AC%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E4%B8%8A%E4%B8%89%E6%9D%A1%E7%94%BA12-1", "u": "../japan/nara/nara.html#c-juju-okonomi-sanjo", "food": "../japan/nara/img/nara/juju-okonomi-sanjo.jpg", "ext": ""}, {"i": 27, "n": "蔵元 豊祝 奈良店", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.683777, "lng": 135.828506, "d": "豊祝名物どて煮（牛すじ・豆腐を酒粕入り味噌で煮込んだ一品）", "a": "奈良県奈良市東向中町28 奈良近鉄ビルB1", "m": "https://www.google.com/maps/search/?api=1&query=%E8%94%B5%E5%85%83%20%E8%B1%8A%E7%A5%9D%20%E5%A5%88%E8%89%AF%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9D%B1%E5%90%91%E4%B8%AD%E7%94%BA28%20%E5%A5%88%E8%89%AF%E8%BF%91%E9%89%84%E3%83%93%E3%83%ABB1", "u": "../japan/nara/nara.html#c-kuramoto-housyuku-kintetsunara", "food": "../japan/nara/img/nara/kuramoto-housyuku-kintetsunara.jpg", "ext": ""}, {"i": 28, "n": "たちのみ 睦月", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.682289, "lng": 135.827164, "d": "おでん盛り合わせ（こんにゃく・たまご・厚揚げなど全9種）", "a": "奈良県奈良市角振町24-4", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%A1%E3%81%AE%E3%81%BF%20%E7%9D%A6%E6%9C%88%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E8%A7%92%E6%8C%AF%E7%94%BA24-4", "u": "../japan/nara/nara.html#c-mutsuki-kadofurimachi", "food": "../japan/nara/img/nara/mutsuki-kadofurimachi.jpg", "ext": ""}, {"i": 29, "n": "旨い肴と地酒 野菜酒場 とんぼ", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.68293, "lng": 135.827957, "d": "奈良漬クリームチーズ", "a": "奈良県奈良市小西町5番地 アルテ館1階1-G", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A8%E3%81%84%E8%82%B4%E3%81%A8%E5%9C%B0%E9%85%92%20%E9%87%8E%E8%8F%9C%E9%85%92%E5%A0%B4%20%E3%81%A8%E3%82%93%E3%81%BC%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%B0%8F%E8%A5%BF%E7%94%BA5%E7%95%AA%E5%9C%B0%20%E3%82%A2%E3%83%AB%E3%83%86%E9%A4%A81%E9%9A%8E1-G", "u": "../japan/nara/nara.html#c-tonbo-konishisakura", "food": "../japan/nara/img/nara/tonbo-konishisakura.jpg", "ext": ""}, {"i": 30, "n": "大和西大寺酒場 豊祝万来", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.694023, "lng": 135.783539, "d": "海鮮刺し盛り（まぐろ・鰤・サーモンなど近海直送の魚介盛り合わせ）", "a": "奈良県奈良市西大寺東町2-1-63 サンワシティ西大寺B1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%92%8C%E8%A5%BF%E5%A4%A7%E5%AF%BA%E9%85%92%E5%A0%B4%20%E8%B1%8A%E7%A5%9D%E4%B8%87%E6%9D%A5%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E8%A5%BF%E5%A4%A7%E5%AF%BA%E6%9D%B1%E7%94%BA2-1-63%20%E3%82%B5%E3%83%B3%E3%83%AF%E3%82%B7%E3%83%86%E3%82%A3%E8%A5%BF%E5%A4%A7%E5%AF%BAB1F", "u": "../japan/nara/nara.html#c-houshuku-banrai-saidaiji", "food": "../japan/nara/img/nara/houshuku-banrai-saidaiji.jpg", "ext": ""}, {"i": 31, "n": "大衆酒場×串揚げ 奈良ism", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.682625, "lng": 135.828491, "d": "創作串揚げ盛り合わせ", "a": "奈良県奈良市東向南町23-2 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%C3%97%E4%B8%B2%E6%8F%9A%E3%81%92%20%E5%A5%88%E8%89%AFism%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9D%B1%E5%90%91%E5%8D%97%E7%94%BA23-2%201F", "u": "../japan/nara/nara.html#c-naraism-higashimuki", "food": "../japan/nara/img/nara/naraism-higashimuki.jpg", "ext": ""}, {"i": 32, "n": "個室居酒屋 大和野菜と地酒 大和乃山賊 奈良三条通り店", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.682484, "lng": 135.82103, "d": "奈良の食材を使用した釜飯（3種の食べ比べ）", "a": "奈良県奈良市油阪町11-4 第一中村ビル3階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%80%8B%E5%AE%A4%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%A4%A7%E5%92%8C%E9%87%8E%E8%8F%9C%E3%81%A8%E5%9C%B0%E9%85%92%20%E5%A4%A7%E5%92%8C%E4%B9%83%E5%B1%B1%E8%B3%8A%20%E5%A5%88%E8%89%AF%E4%B8%89%E6%9D%A1%E9%80%9A%E3%82%8A%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%B2%B9%E9%98%AA%E7%94%BA11-4%20%E7%AC%AC%E4%B8%80%E4%B8%AD%E6%9D%91%E3%83%93%E3%83%AB3%E9%9A%8E", "u": "../japan/nara/nara.html#c-yamatonosanzoku-sanjodori", "food": "../japan/nara/img/nara/yamatonosanzoku-sanjodori.jpg", "ext": ""}, {"i": 33, "n": "炭焼き とりっこ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.695053, "lng": 135.781158, "d": "炭火焼き鳥串盛り合わせ", "a": "奈良県奈良市西大寺本町2-24", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%8D%20%E3%81%A8%E3%82%8A%E3%81%A3%E3%81%93%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E8%A5%BF%E5%A4%A7%E5%AF%BA%E6%9C%AC%E7%94%BA2-24", "u": "../japan/nara/nara.html#c-torikko-saidaiji", "food": "../japan/nara/img/nara/torikko-saidaiji.jpg", "ext": ""}, {"i": 34, "n": "居酒屋 酒樂-SYURAKU-", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.681595, "lng": 135.821198, "d": "鮮魚の刺身盛り合わせ", "a": "奈良県奈良市三条町495 バナナビル3F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E9%85%92%E6%A8%82-SYURAKU-%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E4%B8%89%E6%9D%A1%E7%94%BA495%20%E3%83%90%E3%83%8A%E3%83%8A%E3%83%93%E3%83%AB3F", "u": "../japan/nara/nara.html#c-syuraku-sanjocho", "food": "../japan/nara/img/nara/syuraku-sanjocho.jpg", "ext": ""}, {"i": 35, "n": "洋食 春", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.677406, "lng": 135.83287, "d": "海老フライ&ハンバーグセット(天然有頭海老フライとハンバーグの盛り合わせ)", "a": "奈良県奈良市公納堂町14", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%20%E6%98%A5%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%85%AC%E7%B4%8D%E5%A0%82%E7%94%BA14", "u": "../japan/nara/nara.html#c-yoshoku-haru-naramachi", "food": "../japan/nara/img/nara/yoshoku-haru-naramachi.jpg", "ext": ""}, {"i": 36, "n": "LA TRACE(ラ トラス)", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.682007, "lng": 135.817108, "d": "奈良県産食材を使ったおまかせコース(白甘鯛の昆布締めなど季節替わり)", "a": "奈良県奈良市大宮町2-1-5 カーサヤマグチ1F", "m": "https://www.google.com/maps/search/?api=1&query=LA%20TRACE%28%E3%83%A9%20%E3%83%88%E3%83%A9%E3%82%B9%29%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%A4%A7%E5%AE%AE%E7%94%BA2-1-5%20%E3%82%AB%E3%83%BC%E3%82%B5%E3%83%A4%E3%83%9E%E3%82%B0%E3%83%811F", "u": "../japan/nara/nara.html#c-latrace-french-omiyacho", "food": "../japan/nara/img/nara/latrace-french-omiyacho.jpg", "ext": ""}, {"i": 37, "n": "町屋 kitchen nero(マチヤ キッチン ネロ)", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.682945, "lng": 135.825333, "d": "大和牛・大和ポークを使った窯焼き料理とパスタ", "a": "奈良県奈良市林小路町39", "m": "https://www.google.com/maps/search/?api=1&query=%E7%94%BA%E5%B1%8B%20kitchen%20nero%28%E3%83%9E%E3%83%81%E3%83%A4%20%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%20%E3%83%8D%E3%83%AD%29%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9E%97%E5%B0%8F%E8%B7%AF%E7%94%BA39", "u": "../japan/nara/nara.html#c-nero-italian-kintetsunara", "food": "../japan/nara/img/nara/nero-italian-kintetsunara.jpg", "ext": ""}, {"i": 38, "n": "VENTIMIGLIA(ヴァンティミリア)", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.688103, "lng": 135.752441, "d": "自家製前菜盛り合わせ、魚介と野菜のアヒージョ", "a": "奈良県奈良市学園大和町2-52 大和スーパーマンション1F", "m": "https://www.google.com/maps/search/?api=1&query=VENTIMIGLIA%28%E3%83%B4%E3%82%A1%E3%83%B3%E3%83%86%E3%82%A3%E3%83%9F%E3%83%AA%E3%82%A2%29%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%AD%A6%E5%9C%92%E5%A4%A7%E5%92%8C%E7%94%BA2-52%20%E5%A4%A7%E5%92%8C%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%83%9E%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B31F", "u": "../japan/nara/nara.html#c-ventimiglia-spanish-gakuen", "food": "../japan/nara/img/nara/ventimiglia-spanish-gakuen.jpg", "ext": ""}, {"i": 39, "n": "インドネパール料理 ルンビニ 近鉄奈良店", "c": ["アジア・エスニック", "洋食・各国料理"], "v": "レストラン", "lat": 34.68726, "lng": 135.826492, "d": "バターチキンカレー&ナンセット", "a": "奈良県奈良市北小路町1-11", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%83%91%E3%83%BC%E3%83%AB%E6%96%99%E7%90%86%20%E3%83%AB%E3%83%B3%E3%83%93%E3%83%8B%20%E8%BF%91%E9%89%84%E5%A5%88%E8%89%AF%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%8C%97%E5%B0%8F%E8%B7%AF%E7%94%BA1-11", "u": "../japan/nara/nara.html#c-lumbini-indo-kitamachi", "food": "../japan/nara/img/nara/lumbini-indo-kitamachi.jpg", "ext": ""}, {"i": 40, "n": "シャーン グルン(Chan Krung)", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 34.679241, "lng": 135.820557, "d": "ガパオライス(豚ミンチとホーリーバジルの炒め物)", "a": "奈良県奈良市杉ヶ町43-4", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%A3%E3%83%BC%E3%83%B3%20%E3%82%B0%E3%83%AB%E3%83%B3%28Chan%20Krung%29%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9D%89%E3%83%B6%E7%94%BA43-4", "u": "../japan/nara/nara.html#c-chankrung-thai-sugigacho", "food": "../japan/nara/img/nara/chankrung-thai-sugigacho.jpg", "ext": ""}, {"i": 41, "n": "京中華 飛天散華(ヒテンサンゲ)", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 34.681923, "lng": 135.803604, "d": "大和ポーク黒酢のミルフィーユ酢豚", "a": "奈良県奈良市三条大路1-1-47", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BA%AC%E4%B8%AD%E8%8F%AF%20%E9%A3%9B%E5%A4%A9%E6%95%A3%E8%8F%AF%28%E3%83%92%E3%83%86%E3%83%B3%E3%82%B5%E3%83%B3%E3%82%B2%29%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E4%B8%89%E6%9D%A1%E5%A4%A7%E8%B7%AF1-1-47", "u": "../japan/nara/nara.html#c-hitensange-chuka-shinomiya", "food": "../japan/nara/img/nara/hitensange-chuka-shinomiya.jpg", "ext": ""}, {"i": 42, "n": "タリカロ3.5", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.685017, "lng": 135.828949, "d": "カリープレート(ダール・海老・キーマ・辛口チキンの4種盛り)", "a": "奈良県奈良市東向北町22", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%BF%E3%83%AA%E3%82%AB%E3%83%AD3.5%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%9D%B1%E5%90%91%E5%8C%97%E7%94%BA22", "u": "../japan/nara/nara.html#c-tarikaro35-curry-higashimuki", "food": "../japan/nara/img/nara/tarikaro35-curry-higashimuki.jpg", "ext": ""}, {"i": 43, "n": "天迦久珈琲 -Roastery&Bread- 三条通り店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.682198, "lng": 135.826508, "d": "自家製カヌレ(外はカリッと中はもっちり、1個300円)", "a": "奈良県奈良市上三条町29-1 アパホテル〈近鉄奈良駅前〉1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E8%BF%A6%E4%B9%85%E7%8F%88%E7%90%B2%20-Roastery%26Bread-%20%E4%B8%89%E6%9D%A1%E9%80%9A%E3%82%8A%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E4%B8%8A%E4%B8%89%E6%9D%A1%E7%94%BA29-1%20%E3%82%A2%E3%83%91%E3%83%9B%E3%83%86%E3%83%AB%E3%80%88%E8%BF%91%E9%89%84%E5%A5%88%E8%89%AF%E9%A7%85%E5%89%8D%E3%80%891%E9%9A%8E", "u": "../japan/nara/nara.html#c-amenokaku-coffee-sanjodori", "food": "../japan/nara/img/nara/amenokaku-coffee-sanjodori.jpg", "ext": ""}, {"i": 44, "n": "カナカナ", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.677406, "lng": 135.83287, "d": "カナカナごはん(小鉢仕立ての和定食。食後のコーヒー・紅茶・ハーブティー付き)", "a": "奈良県奈良市公納堂町13", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%8A%E3%82%AB%E3%83%8A%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%85%AC%E7%B4%8D%E5%A0%82%E7%94%BA13", "u": "../japan/nara/nara.html#c-kanakana-naramachi", "food": "../japan/nara/img/nara/kanakana-naramachi.jpg", "ext": ""}, {"i": 45, "n": "お庭shaveice miracolo", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.677387, "lng": 135.836212, "d": "季節のフルーツかき氷(いちご・マスカット・柑橘など旬の果実を贅沢に使用)", "a": "奈良県奈良市高畑町974", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%BA%ADshaveice%20miracolo%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E9%AB%98%E7%95%91%E7%94%BA974", "u": "../japan/nara/nara.html#c-miracolo-takahatacho", "food": "../japan/nara/img/nara/miracolo-takahatacho.jpg", "ext": ""}, {"i": 46, "n": "kakigori ほうせき箱", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 34.680351, "lng": 135.82869, "d": "季節替わりの創作エスプーマかき氷(奈良モチーフの飾り付けが施されることも)", "a": "奈良県奈良市餅飯殿町47", "m": "https://www.google.com/maps/search/?api=1&query=kakigori%20%E3%81%BB%E3%81%86%E3%81%9B%E3%81%8D%E7%AE%B1%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E9%A4%85%E9%A3%AF%E6%AE%BF%E7%94%BA47", "u": "../japan/nara/nara.html#c-housekibako-mochiidono", "food": "../japan/nara/img/nara/housekibako-mochiidono.jpg", "ext": ""}, {"i": 47, "n": "萬御菓子誂處 樫舎", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.678661, "lng": 135.830917, "d": "葛焼き「みよしの」(求肥を求肥で包み炙った看板生菓子)", "a": "奈良県奈良市中院町22-3", "m": "https://www.google.com/maps/search/?api=1&query=%E8%90%AC%E5%BE%A1%E8%8F%93%E5%AD%90%E8%AA%82%E8%99%95%20%E6%A8%AB%E8%88%8E%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E4%B8%AD%E9%99%A2%E7%94%BA22-3", "u": "../japan/nara/nara.html#c-kashiya-nakain", "food": "../japan/nara/img/nara/kashiya-nakain.jpg", "ext": ""}, {"i": 48, "n": "千壽庵吉宗 奈良総本店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.688545, "lng": 135.834396, "d": "生わらび餅(黄粉と黒蜜でいただく、注文後に作る出来立てのわらび餅)", "a": "奈良県奈良市押上町39-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%83%E5%A3%BD%E5%BA%B5%E5%90%89%E5%AE%97%20%E5%A5%88%E8%89%AF%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E6%8A%BC%E4%B8%8A%E7%94%BA39-1", "u": "../japan/nara/nara.html#c-senjuan-yoshimune-oshiagecho", "food": "../japan/nara/img/nara/senjuan-yoshimune-oshiagecho.jpg", "ext": ""}, {"i": 49, "n": "シャトードール本店", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 34.68293, "lng": 135.827957, "d": "大仏あんぱん(奈良の大仏をかたどった看板商品のあんぱん)", "a": "奈良県奈良市小西町39", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%A3%E3%83%88%E3%83%BC%E3%83%89%E3%83%BC%E3%83%AB%E6%9C%AC%E5%BA%97%20%E5%A5%88%E8%89%AF%E7%9C%8C%E5%A5%88%E8%89%AF%E5%B8%82%E5%B0%8F%E8%A5%BF%E7%94%BA39", "u": "../japan/nara/nara.html#c-chateau-dor-konishicho", "food": "../japan/nara/img/nara/chateau-dor-konishicho.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([34.683946,135.821672],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('nara', "奈良");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
