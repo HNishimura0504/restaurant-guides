@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>田辺 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>田辺 の食べ歩き地図<span class="n">45店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="田辺 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">田辺 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/wakayama/tanabe.html"><span class="sn-e">📄</span>田辺のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（86都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "梅酒おたのしみ処 うめ子", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.732344, "lng": 135.383375, "d": "梅酒飲み放題(30分1,500円。味・色・香りの異なる紀州の梅酒を飲み比べる)／梅うどん(梅を練り込んだうどん)", "a": "和歌山県田辺市湊14-6", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E9%85%92%E3%81%8A%E3%81%9F%E3%81%AE%E3%81%97%E3%81%BF%E5%87%A6%20%E3%81%86%E3%82%81%E5%AD%90%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A14-6", "u": "../japan/wakayama/tanabe.html#c-umeko-tanabe-minato", "food": "../japan/wakayama/img/tanabe/umeko-tanabe-minato.jpg", "ext": ""}, {"i": 1, "n": "宝来寿司", "c": ["寿司・海鮮", "ご当地名物"], "v": "レストラン", "lat": 33.732344, "lng": 135.384685, "d": "ひとはめ定食(田辺湾など国内数か所でしか採れない海藻「ひろめ」を使ったオリジナル寿司の定食)／あがら丼(「あがら」は田辺の方言で「私たち」。地元食材を使ったご当地丼の総称)", "a": "和歌山県田辺市湊18-12", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AE%9D%E6%9D%A5%E5%AF%BF%E5%8F%B8%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A18-12", "u": "../japan/wakayama/tanabe.html#c-horai-zushi-tanabe", "food": "../japan/wakayama/img/tanabe/horai-zushi-tanabe.jpg", "ext": ""}, {"i": 2, "n": "銀ちろ 本店", "c": ["ご当地名物", "寿司・海鮮"], "v": "レストラン", "lat": 33.7333185, "lng": 135.38245, "d": "さざなみ弁当(口熊野名物の釜揚げしらす丼に刺身3種と煮ものを重箱で組んだ弁当)／鰹タタキ定食(紀州の鰹を藁の香りで炙ったタタキ)", "a": "和歌山県田辺市湊12-39", "m": "https://www.google.com/maps/search/?api=1&query=%E9%8A%80%E3%81%A1%E3%82%8D%20%E6%9C%AC%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A12-39", "u": "../japan/wakayama/tanabe.html#c-ginchiro-honten-tanabe", "food": "../japan/wakayama/img/tanabe/ginchiro-honten-tanabe.jpg", "ext": ""}, {"i": 3, "n": "秋津野ガルテン 農家レストラン みかん畑", "c": ["ご当地名物"], "v": "レストラン", "lat": 33.771656, "lng": 135.41092, "d": "スローフードバイキング(地元農家と直売所の食材で作る約30種。茶がゆ・高菜の煮物・紀州南高梅の梅紫蘇ごはん・さんまの干物など)／田辺のちゃんぽん(焼うどんと焼きそばを一緒に焼く田辺のご当地麺)", "a": "和歌山県田辺市上秋津4558-8", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A7%8B%E6%B4%A5%E9%87%8E%E3%82%AC%E3%83%AB%E3%83%86%E3%83%B3%20%E8%BE%B2%E5%AE%B6%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%BF%E3%81%8B%E3%82%93%E7%95%91%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8A%E7%A7%8B%E6%B4%A54558-8", "u": "../japan/wakayama/tanabe.html#c-akizuno-garten-mikanbatake", "food": "../japan/wakayama/img/tanabe/akizuno-garten-mikanbatake.jpg", "ext": ""}, {"i": 4, "n": "古道歩きの里 ちかつゆ（とろろや）", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.827766, "lng": 135.603424, "d": "めはり寿司(高菜の葉で包んだ握り飯。熊野の山仕事の弁当が起源。2個630円)／大和芋とろろ膳(麦ご飯にとろろを添えた、宿場町伝来の膳)", "a": "和歌山県田辺市中辺路町近露1810-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8F%A4%E9%81%93%E6%AD%A9%E3%81%8D%E3%81%AE%E9%87%8C%20%E3%81%A1%E3%81%8B%E3%81%A4%E3%82%86%EF%BC%88%E3%81%A8%E3%82%8D%E3%82%8D%E3%82%84%EF%BC%89%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%AD%E8%BE%BA%E8%B7%AF%E7%94%BA%E8%BF%91%E9%9C%B21810-1", "u": "../japan/wakayama/tanabe.html#c-chikatsuyu-tororoya-nakahechi", "food": "../japan/wakayama/img/tanabe/chikatsuyu-tororoya-nakahechi.jpg", "ext": ""}, {"i": 5, "n": "茶房 珍重庵 本宮店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.837376, "lng": 135.772093, "d": "あったかいめはり寿し(高菜の葉で包んだ握り飯を温かく供する)／熊野もうで餅(玄米のこうせんをまぶした、熊野詣に由来するこし餡の餅)", "a": "和歌山県田辺市本宮町本宮1110", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E6%88%BF%20%E7%8F%8D%E9%87%8D%E5%BA%B5%20%E6%9C%AC%E5%AE%AE%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE1110", "u": "../japan/wakayama/tanabe.html#c-chinchoan-hongu", "food": "../japan/wakayama/img/tanabe/chinchoan-hongu.jpg", "ext": ""}, {"i": 6, "n": "お食事しもじ 本宮店", "c": ["寿司・海鮮", "ご当地名物"], "v": "レストラン", "lat": 33.83587, "lng": 135.769596, "d": "さんま寿司(紀南で秋冬に獲れるサンマを酢で締め、棒状に押した姿寿司。季節限定)／熊野牛のメニュー／うすかわまんじゅう(皮の薄いこし餡まんじゅう)", "a": "和歌山県田辺市本宮町本宮283-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E3%81%97%E3%82%82%E3%81%98%20%E6%9C%AC%E5%AE%AE%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE283-1", "u": "../japan/wakayama/tanabe.html#c-shimoji-hongu", "food": "../japan/wakayama/img/tanabe/shimoji-hongu.jpg", "ext": ""}, {"i": 7, "n": "ほったて小屋", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.010525, "lng": 135.566833, "d": "山菜料理(龍神の山でとれる山菜を、山の水と天然だしで仕立てた家庭の味)", "a": "和歌山県田辺市龍神村龍神72-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BB%E3%81%A3%E3%81%9F%E3%81%A6%E5%B0%8F%E5%B1%8B%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E9%BE%8D%E7%A5%9E%E6%9D%91%E9%BE%8D%E7%A5%9E72-1", "u": "../japan/wakayama/tanabe.html#c-hottategoya-ryujin", "food": "../japan/wakayama/img/tanabe/hottategoya-ryujin.jpg", "ext": ""}, {"i": 8, "n": "割烹 ゑびす", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.732563, "lng": 135.373123, "d": "クエ鍋コース(紀伊水道の大型ハタ「クエ」を野菜と炊き、締めは雑炊にする冬の名物鍋)", "a": "和歌山県田辺市上屋敷1-16-5", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E3%82%91%E3%81%B3%E3%81%99%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8A%E5%B1%8B%E6%95%B71-16-5", "u": "../japan/wakayama/tanabe.html#c-tanabe-kappou-ebisu", "food": "../japan/wakayama/img/tanabe/tanabe-kappou-ebisu.jpg", "ext": ""}, {"i": 9, "n": "割烹 秋平", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.734116, "lng": 135.379242, "d": "お食い初め膳(鯛の姿焼きに煮物や椀物を添えた、祝い事向けの膳)", "a": "和歌山県田辺市北新町68番地", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E7%A7%8B%E5%B9%B3%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E5%8C%97%E6%96%B0%E7%94%BA68%E7%95%AA%E5%9C%B0", "u": "../japan/wakayama/tanabe.html#c-tanabe-kappou-akihei", "food": "../japan/wakayama/img/tanabe/tanabe-kappou-akihei.jpg", "ext": ""}, {"i": 10, "n": "創作割烹 柴田 心味", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.727314, "lng": 135.392624, "d": "創作懐石寿司コース(月替わりの懐石七品に、和歌山と全国から選んだ種の握り六貫が続く前日予約制のコース)", "a": "和歌山県田辺市東山1丁目18-12 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%89%B2%E7%83%B9%20%E6%9F%B4%E7%94%B0%20%E5%BF%83%E5%91%B3%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9D%B1%E5%B1%B11%E4%B8%81%E7%9B%AE18-12%201%E9%9A%8E", "u": "../japan/wakayama/tanabe.html#c-tanabe-shibata-shinmi", "food": "../japan/wakayama/img/tanabe/tanabe-shibata-shinmi.jpg", "ext": ""}, {"i": 11, "n": "酒菜処 sushihide", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.73203, "lng": 135.383274, "d": "炙り鯖の棒寿司(紀伊水道の鯖を炙って棒状に締めた、一本八貫の名物寿司)", "a": "和歌山県田辺市湊9-15", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%8F%9C%E5%87%A6%20sushihide%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A9-15", "u": "../japan/wakayama/tanabe.html#c-tanabe-sushihide", "food": "../japan/wakayama/img/tanabe/tanabe-sushihide.jpg", "ext": ""}, {"i": 12, "n": "味処 丸政", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.737427, "lng": 135.400574, "d": "日替わり定食(その日の仕入れで魚と揚げ物が替わる、量のある昼の定食)", "a": "和歌山県田辺市中万呂92", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%87%A6%20%E4%B8%B8%E6%94%BF%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%AD%E4%B8%87%E5%91%8292", "u": "../japan/wakayama/tanabe.html#c-tanabe-ajidokoro-marumasa", "food": "../japan/wakayama/img/tanabe/tanabe-ajidokoro-marumasa.jpg", "ext": ""}, {"i": 13, "n": "うなぎ料理 鹿六 本宮店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.837376, "lng": 135.769007, "d": "うな重(備長炭で手焼きしたうなぎを重に敷き、吸物を添えた店の看板)", "a": "和歌山県田辺市本宮町本宮251-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E6%96%99%E7%90%86%20%E9%B9%BF%E5%85%AD%20%E6%9C%AC%E5%AE%AE%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE251-1", "u": "../japan/wakayama/tanabe.html#c-tanabe-unagi-shikaroku-hongu", "food": "../japan/wakayama/img/tanabe/tanabe-unagi-shikaroku-hongu.jpg", "ext": ""}, {"i": 14, "n": "麺・寿司・食べ処 一吉 駅前店", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.73203, "lng": 135.384786, "d": "一吉贅沢寿司御膳(刺身・ミニステーキ・天ぷら・にぎり寿司5貫・サラダを一度に盛り合わせた看板のセット)", "a": "和歌山県田辺市湊2番11号", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%83%BB%E5%AF%BF%E5%8F%B8%E3%83%BB%E9%A3%9F%E3%81%B9%E5%87%A6%20%E4%B8%80%E5%90%89%20%E9%A7%85%E5%89%8D%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A2%E7%95%AA11%E5%8F%B7", "u": "../japan/wakayama/tanabe.html#c-ichiyoshi-ekimae", "food": "../japan/wakayama/img/tanabe/ichiyoshi-ekimae.jpg", "ext": ""}, {"i": 15, "n": "宮ずし", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.83587, "lng": 135.771504, "d": "寿司うどんセット(にぎり寿司に、細麺の関西風だしうどんを添えた昼の定番セット)", "a": "和歌山県田辺市本宮町本宮247-4", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AE%AE%E3%81%9A%E3%81%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE247-4", "u": "../japan/wakayama/tanabe.html#c-miyazushi-hongu", "food": "../japan/wakayama/img/tanabe/miyazushi-hongu.jpg", "ext": ""}, {"i": 16, "n": "らーめん幕末 田辺店", "c": ["麺類"], "v": "レストラン", "lat": 33.740646, "lng": 135.373352, "d": "豚骨ら～めん(10時間煮込んだあっさり後味の豚骨スープに、細ストレート麺と秘伝のタレで煮込んだ肉厚の自家製チャーシューをのせた看板の一杯)", "a": "和歌山県田辺市稲成町186-105", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E5%B9%95%E6%9C%AB%20%E7%94%B0%E8%BE%BA%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E7%A8%B2%E6%88%90%E7%94%BA186-105", "u": "../japan/wakayama/tanabe.html#c-bakumatsu-tanabe", "food": "../japan/wakayama/img/tanabe/bakumatsu-tanabe.jpg", "ext": ""}, {"i": 17, "n": "麺屋 神びれ", "c": ["麺類"], "v": "レストラン", "lat": 33.74612, "lng": 135.394424, "d": "ラーメン(毎日でも食べられる穏やかなバランスのスープに中細麺を合わせた一杯。餃子とごはんが付く定食にもできる)", "a": "和歌山県田辺市秋津町217-14", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E7%A5%9E%E3%81%B3%E3%82%8C%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E7%A7%8B%E6%B4%A5%E7%94%BA217-14", "u": "../japan/wakayama/tanabe.html#c-menya-kanbire", "food": "../japan/wakayama/img/tanabe/menya-kanbire.jpg", "ext": ""}, {"i": 18, "n": "りゅうちゃん飯店", "c": ["麺類"], "v": "レストラン", "lat": 33.718575, "lng": 135.386475, "d": "背脂ラーメンと焼き飯のセット(あっさりした醤油ベースに背脂のこくを重ねた一杯と、しっかりぱらぱらに炒めた焼き飯の組み合わせ)", "a": "和歌山県田辺市文里2丁目35-15（COMIC BUSTER 優悦館 和歌山田辺店の敷地内）", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%8A%E3%82%85%E3%81%86%E3%81%A1%E3%82%83%E3%82%93%E9%A3%AF%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%87%E9%87%8C2%E4%B8%81%E7%9B%AE35-15%EF%BC%88COMIC%20BUSTER%20%E5%84%AA%E6%82%A6%E9%A4%A8%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%94%B0%E8%BE%BA%E5%BA%97%E3%81%AE%E6%95%B7%E5%9C%B0%E5%86%85%EF%BC%89", "u": "../japan/wakayama/tanabe.html#c-ryuchan-hanten", "food": "../japan/wakayama/img/tanabe/ryuchan-hanten.jpg", "ext": ""}, {"i": 19, "n": "たこ焼き 蛸神", "c": ["麺類"], "v": "食べ歩き", "lat": 33.735249, "lng": 135.381485, "d": "たこ焼き(外は薄く焼き目、中はとろとろ。8個500円・10個550円・12個600円。塩はごま油を生地に塗り、塩を別添えで出す)", "a": "和歌山県田辺市高雄1丁目1-28", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%93%E7%84%BC%E3%81%8D%20%E8%9B%B8%E7%A5%9E%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E9%AB%98%E9%9B%841%E4%B8%81%E7%9B%AE1-28", "u": "../japan/wakayama/tanabe.html#c-takojin", "food": "../japan/wakayama/img/tanabe/takojin.jpg", "ext": ""}, {"i": 20, "n": "創作うどん・そば あそこ・まえだ", "c": ["麺類"], "v": "レストラン", "lat": 33.706528, "lng": 135.396667, "d": "手打ちうどん(うどん一徹の店主が打つ一杯。天ぷらやかき揚げ、丼物とのセットで頼む客が多い)", "a": "和歌山県田辺市新庄町2926-16", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E3%81%86%E3%81%A9%E3%82%93%E3%83%BB%E3%81%9D%E3%81%B0%20%E3%81%82%E3%81%9D%E3%81%93%E3%83%BB%E3%81%BE%E3%81%88%E3%81%A0%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E5%BA%84%E7%94%BA2926-16", "u": "../japan/wakayama/tanabe.html#c-asoko-maeda", "food": "../japan/wakayama/img/tanabe/asoko-maeda.jpg", "ext": ""}, {"i": 21, "n": "そばと農園 和わく", "c": ["麺類"], "v": "レストラン", "lat": 33.912891, "lng": 135.440887, "d": "ざるそば(龍神村の休耕田で栽培した地元産そば粉を使う手打ちそば。天ぷらを合わせたセットもある)", "a": "和歌山県田辺市龍神村甲斐ノ川443", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E3%81%A8%E8%BE%B2%E5%9C%92%20%E5%92%8C%E3%82%8F%E3%81%8F%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E9%BE%8D%E7%A5%9E%E6%9D%91%E7%94%B2%E6%96%90%E3%83%8E%E5%B7%9D443", "u": "../japan/wakayama/tanabe.html#c-soba-wawaku", "food": "../japan/wakayama/img/tanabe/soba-wawaku.jpg", "ext": ""}, {"i": 22, "n": "とりそば下地橋", "c": ["麺類"], "v": "レストラン", "lat": 33.812321, "lng": 135.800217, "d": "とりそば(羅臼昆布と丸鶏でとった澄んだスープに細麺、鶏チャーシューと味玉をのせた看板の一杯。醤油・塩・味噌から選べる)", "a": "和歌山県田辺市本宮町請川422-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%8A%E3%81%9D%E3%81%B0%E4%B8%8B%E5%9C%B0%E6%A9%8B%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E8%AB%8B%E5%B7%9D422-1", "u": "../japan/wakayama/tanabe.html#c-torisoba-shimojibashi", "food": "../japan/wakayama/img/tanabe/torisoba-shimojibashi.jpg", "ext": ""}, {"i": 23, "n": "季節料理 しんべ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.731401, "lng": 135.38403, "d": "エビ団子(熱々の油揚げの中にプリプリの海老を詰めて揚げた、この店の看板料理)", "a": "和歌山県田辺市湊12-45", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AD%A3%E7%AF%80%E6%96%99%E7%90%86%20%E3%81%97%E3%82%93%E3%81%B9%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A12-45", "u": "../japan/wakayama/tanabe.html#c-shinbe", "food": "../japan/wakayama/img/tanabe/shinbe.jpg", "ext": ""}, {"i": 24, "n": "立ち呑み屋 千", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 33.731716, "lng": 135.383375, "d": "おでん(店内でじっくり煮込む看板の煮込み料理)", "a": "和歌山県田辺市湊10-19", "m": "https://www.google.com/maps/search/?api=1&query=%E7%AB%8B%E3%81%A1%E5%91%91%E3%81%BF%E5%B1%8B%20%E5%8D%83%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A10-19", "u": "../japan/wakayama/tanabe.html#c-tachinomiya-sen", "food": "../japan/wakayama/img/tanabe/tachinomiya-sen.jpg", "ext": ""}, {"i": 25, "n": "炭火串焼 銀", "c": ["ビール・バー"], "v": "ベーカリー・パティスリー", "lat": 33.731485, "lng": 135.383652, "d": "自家製つくね(鶏ひき肉を団子状にまとめ、紀州備長炭で焼いたもの)", "a": "和歌山県田辺市湊6-12", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E4%B8%B2%E7%84%BC%20%E9%8A%80%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A6-12", "u": "../japan/wakayama/tanabe.html#c-sumibi-kushiyaki-gin", "food": "../japan/wakayama/img/tanabe/sumibi-kushiyaki-gin.jpg", "ext": ""}, {"i": 26, "n": "炉端屋 てるてるぼうず", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 33.731485, "lng": 135.384408, "d": "カツオの紅梅揚げ(紀伊水道のカツオを紀州の梅と合わせて揚げた一品)", "a": "和歌山県田辺市湊32-3", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E5%B1%8B%20%E3%81%A6%E3%82%8B%E3%81%A6%E3%82%8B%E3%81%BC%E3%81%86%E3%81%9A%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A32-3", "u": "../japan/wakayama/tanabe.html#c-robataya-teruterubozu", "food": "../japan/wakayama/img/tanabe/robataya-teruterubozu.jpg", "ext": ""}, {"i": 27, "n": "隠れ家 仁", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 33.731716, "lng": 135.384685, "d": "旬の地魚の刺身(その日に入った紀伊水道の魚を盛る。珍しい魚が入ればメニューに無い料理も出る)", "a": "和歌山県田辺市湊9-7 雨風倶楽部A号", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9A%A0%E3%82%8C%E5%AE%B6%20%E4%BB%81%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A9-7%20%E9%9B%A8%E9%A2%A8%E5%80%B6%E6%A5%BD%E9%83%A8A%E5%8F%B7", "u": "../japan/wakayama/tanabe.html#c-kakurega-jin", "food": "../japan/wakayama/img/tanabe/kakurega-jin.jpg", "ext": ""}, {"i": 28, "n": "クラフトビアバルNagi", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 33.733952, "lng": 135.380096, "d": "樽生クラフトビールの飲み比べセット(日替わりの地元・近郊の銘柄を並べ、香りと味の違いを比べる)", "a": "和歌山県田辺市北新町25", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AF%E3%83%A9%E3%83%95%E3%83%88%E3%83%93%E3%82%A2%E3%83%90%E3%83%ABNagi%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E5%8C%97%E6%96%B0%E7%94%BA25", "u": "../japan/wakayama/tanabe.html#c-craft-beer-bar-nagi", "food": "../japan/wakayama/img/tanabe/craft-beer-bar-nagi.jpg", "ext": ""}, {"i": 29, "n": "揚げ立て天ぷら 海鮮 よし平 田辺店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.709778, "lng": 135.401535, "d": "天ぷら勝浦生まぐろ漁師めし膳(揚げたての天ぷらと、ごま醤油だれに漬けた勝浦の生まぐろの漁師めしを組んだ膳)", "a": "和歌山県田辺市新庄町2062", "m": "https://www.google.com/maps/search/?api=1&query=%E6%8F%9A%E3%81%92%E7%AB%8B%E3%81%A6%E5%A4%A9%E3%81%B7%E3%82%89%20%E6%B5%B7%E9%AE%AE%20%E3%82%88%E3%81%97%E5%B9%B3%20%E7%94%B0%E8%BE%BA%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E5%BA%84%E7%94%BA2062", "u": "../japan/wakayama/tanabe.html#c-yoshihei-tanabe", "food": "../japan/wakayama/img/tanabe/yoshihei-tanabe.jpg", "ext": ""}, {"i": 30, "n": "旬彩居酒屋 膳", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 33.732575, "lng": 135.383652, "d": "手羽先唐揚げ（鶏の手羽先を揚げた看板の一品。田辺市熊野ツーリズムビューローが「オーダー必須」と紹介している）", "a": "和歌山県田辺市湊25-16", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E5%BD%A9%E5%B1%85%E9%85%92%E5%B1%8B%20%E8%86%B3%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A25-16", "u": "../japan/wakayama/tanabe.html#c-zen-minato", "food": "../japan/wakayama/img/tanabe/zen-minato.jpg", "ext": ""}, {"i": 31, "n": "居酒屋 かっぽう たか木", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.70932, "lng": 135.39621, "d": "造り盛り合わせ（その日に入った地魚を5品盛り合わせた刺身の皿。1,870円）", "a": "和歌山県田辺市新庄町2744-25", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%8B%E3%81%A3%E3%81%BD%E3%81%86%20%E3%81%9F%E3%81%8B%E6%9C%A8%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E5%BA%84%E7%94%BA2744-25", "u": "../japan/wakayama/tanabe.html#c-takagi-shinjo", "food": "../japan/wakayama/img/tanabe/takagi-shinjo.jpg", "ext": ""}, {"i": 32, "n": "フランス食堂Chilo", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.73682, "lng": 135.36795, "d": "おまかせのランチコース（地魚や地元野菜をバスク風に仕立てた昼のコース。2,500円〜）", "a": "和歌山県田辺市上の山1-5-12 ハイツエース1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%83%A9%E3%83%B3%E3%82%B9%E9%A3%9F%E5%A0%82Chilo%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8A%E3%81%AE%E5%B1%B11-5-12%20%E3%83%8F%E3%82%A4%E3%83%84%E3%82%A8%E3%83%BC%E3%82%B91F", "u": "../japan/wakayama/tanabe.html#c-france-shokudo-chilo", "food": "../japan/wakayama/img/tanabe/france-shokudo-chilo.jpg", "ext": ""}, {"i": 33, "n": "創作レストランMobo", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.733559, "lng": 135.395081, "d": "美熊野牛コース（美熊野牛のステーキと赤ワイン煮込みを一皿にした夜の要予約コース、12,000円）", "a": "和歌山県田辺市新万8-2", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3Mobo%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E4%B8%878-2", "u": "../japan/wakayama/tanabe.html#c-sousaku-restaurant-mobo", "food": "../japan/wakayama/img/tanabe/sousaku-restaurant-mobo.jpg", "ext": ""}, {"i": 34, "n": "Dining ILOHA", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.732575, "lng": 135.384408, "d": "鮮魚のカルパッチョ（その日の地魚を薄く引き、ケッパーとピンクペッパーを散らした前菜）", "a": "和歌山県田辺市湊6-16 スターヒルズ2 1F", "m": "https://www.google.com/maps/search/?api=1&query=Dining%20ILOHA%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A6-16%20%E3%82%B9%E3%82%BF%E3%83%BC%E3%83%92%E3%83%AB%E3%82%BA2%201F", "u": "../japan/wakayama/tanabe.html#c-dining-iloha", "food": "../japan/wakayama/img/tanabe/dining-iloha.jpg", "ext": ""}, {"i": 35, "n": "カフェレストラン NANCY", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.719196, "lng": 135.392624, "d": "NANCY特製オムライス（薄焼き卵で巻いた米にケチャップをかけた昼夜とも人気の看板皿）", "a": "和歌山県田辺市文里1-2-10-1 オズビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20NANCY%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%87%E9%87%8C1-2-10-1%20%E3%82%AA%E3%82%BA%E3%83%93%E3%83%AB1F", "u": "../japan/wakayama/tanabe.html#c-cafe-restaurant-nancy", "food": "../japan/wakayama/img/tanabe/cafe-restaurant-nancy.jpg", "ext": ""}, {"i": 36, "n": "パラダイス カフェ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.835075, "lng": 135.52002, "d": "ピッツァ（窓辺やテラスで食べる看板の一品。自家製ケーキと合わせるのが定番）", "a": "和歌山県田辺市中辺路町温川170", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%A9%E3%83%80%E3%82%A4%E3%82%B9%20%E3%82%AB%E3%83%95%E3%82%A7%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%AD%E8%BE%BA%E8%B7%AF%E7%94%BA%E6%B8%A9%E5%B7%9D170", "u": "../japan/wakayama/tanabe.html#c-paradise-cafe-nakahechi", "food": "../japan/wakayama/img/tanabe/paradise-cafe-nakahechi.jpg", "ext": ""}, {"i": 37, "n": "もんぺとくわ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.898338, "lng": 135.484787, "d": "天然酵母ナンと野菜カレー（自家農園の無農薬野菜のカレーに、手ごねの天然酵母ナンを添えた一皿）", "a": "和歌山県田辺市龍神村西258", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%82%93%E3%81%BA%E3%81%A8%E3%81%8F%E3%82%8F%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E9%BE%8D%E7%A5%9E%E6%9D%91%E8%A5%BF258", "u": "../japan/wakayama/tanabe.html#c-monpe-to-kuwa", "food": "../japan/wakayama/img/tanabe/monpe-to-kuwa.jpg", "ext": ""}, {"i": 38, "n": "鈴屋", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 33.7320121, "lng": 135.3825626, "d": "デラックスケーキ(カステラ生地に白あんのジャムをはさみ、全体をホワイトチョコで包んだ四角いケーキ。レトロな包み紙が目印)", "a": "和歌山県田辺市湊15-11", "m": "https://www.google.com/maps/search/?api=1&query=%E9%88%B4%E5%B1%8B%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A15-11", "u": "../japan/wakayama/tanabe.html#c-suzuya-tanabe", "food": "../japan/wakayama/img/tanabe/suzuya-tanabe.jpg", "ext": ""}, {"i": 39, "n": "喫茶と軽食 CARAVAN", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.732659, "lng": 135.38403, "d": "オムライス(薄焼き卵で包みケチャップをかけた、昔ながらの喫茶店仕立てのオムライス)", "a": "和歌山県田辺市湊15-7", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%81%A8%E8%BB%BD%E9%A3%9F%20CARAVAN%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A15-7", "u": "../japan/wakayama/tanabe.html#c-caravan-tanabe", "food": "../japan/wakayama/img/tanabe/caravan-tanabe.jpg", "ext": ""}, {"i": 40, "n": "菓匠 二宮", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.73061, "lng": 135.381058, "d": "回転焼(店頭の鉄板で焼き上げ、小豆あんをはさんだ今川焼き風の焼き菓子)", "a": "和歌山県田辺市下屋敷町27", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8F%93%E5%8C%A0%20%E4%BA%8C%E5%AE%AE%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8B%E5%B1%8B%E6%95%B7%E7%94%BA27", "u": "../japan/wakayama/tanabe.html#c-kasho-ninomiya", "food": "../japan/wakayama/img/tanabe/kasho-ninomiya.jpg", "ext": ""}, {"i": 41, "n": "Loro kitchen 天神崎", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 33.730572, "lng": 135.35202, "d": "ピンスかき氷(わたがしのような口どけの韓国風かき氷。いちご・マンゴー・ミルクなどのほか季節限定も。熊野古道弁当は要予約)", "a": "和歌山県田辺市目良19-15（田辺ダイビングサービス敷地内）", "m": "https://www.google.com/maps/search/?api=1&query=Loro%20kitchen%20%E5%A4%A9%E7%A5%9E%E5%B4%8E%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E7%9B%AE%E8%89%AF19-15%EF%BC%88%E7%94%B0%E8%BE%BA%E3%83%80%E3%82%A4%E3%83%93%E3%83%B3%E3%82%B0%E3%82%B5%E3%83%BC%E3%83%93%E3%82%B9%E6%95%B7%E5%9C%B0%E5%86%85%EF%BC%89", "u": "../japan/wakayama/tanabe.html#c-loro-kitchen-tenjinzaki", "food": "../japan/wakayama/img/tanabe/loro-kitchen-tenjinzaki.jpg", "ext": ""}, {"i": 42, "n": "cafe alma", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.838307, "lng": 135.77055, "d": "くまみつカステラ(熊野古道沿いで採れたニホンミツバチの蜂蜜「和みつ」を使ったカステラ)", "a": "和歌山県田辺市本宮町本宮195-3（熊野本宮大社 瑞鳳殿内）", "m": "https://www.google.com/maps/search/?api=1&query=cafe%20alma%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE195-3%EF%BC%88%E7%86%8A%E9%87%8E%E6%9C%AC%E5%AE%AE%E5%A4%A7%E7%A4%BE%20%E7%91%9E%E9%B3%B3%E6%AE%BF%E5%86%85%EF%BC%89", "u": "../japan/wakayama/tanabe.html#c-cafe-alma-hongu", "food": "../japan/wakayama/img/tanabe/cafe-alma-hongu.jpg", "ext": ""}, {"i": 43, "n": "morinopan KINOMI", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.719982, "lng": 135.401779, "d": "角食パン（耳までふんわりやわらかい、この店の一番人気の食パン）", "a": "和歌山県田辺市新庄町493-4", "m": "https://www.google.com/maps/search/?api=1&query=morinopan%20KINOMI%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E5%BA%84%E7%94%BA493-4", "u": "../japan/wakayama/tanabe.html#c-morinopan-kinomi", "food": "../japan/wakayama/img/tanabe/morinopan-kinomi.jpg", "ext": ""}, {"i": 44, "n": "Y's Cafe", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.767164, "lng": 135.41092, "d": "自家製シフォンケーキ（フルーツを添えた350円の定番。飲み物に250円足すとセットになる）", "a": "和歌山県田辺市上秋津2405-2", "m": "https://www.google.com/maps/search/?api=1&query=Y%27s%20Cafe%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8A%E7%A7%8B%E6%B4%A52405-2", "u": "../japan/wakayama/tanabe.html#c-ys-cafe-kamiakizu", "food": "../japan/wakayama/img/tanabe/ys-cafe-kamiakizu.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.763835,135.453566],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('tanabe', "田辺");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

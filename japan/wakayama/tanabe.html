@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>田辺美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">田辺美食ガイド<span class="sn-n">45店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/tanabe.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="田辺ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">田辺ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/tanabe.html"><span class="sn-e">🗺️</span>田辺の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-tanabe"><span class="sn-e">・</span>田辺・紀南のご当地（めはりずし・さんま寿司・あがら丼・梅）</a><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・紀伊水道の魚</a><a href="#s-men"><span class="sn-e">・</span>ラーメン・うどん・そば・粉もん</a><a href="#s-izakaya"><span class="sn-e">・</span>味光路の居酒屋・立ち飲み・地酒</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・各国料理・カレー</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・和菓子・スイーツ</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全86都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全86都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / TANABE・和歌山県田辺市 🇯🇵</div>
+  <h1>田辺美食ガイド</h1>
+  <div class="sub">熊野古道の入口、南高梅のふるさと、そして西日本有数の飲み屋街「味光路」を持つ紀南の中心。紀伊田辺駅前の路地、扇ヶ浜の魚、龍神・本宮の山里まで厳選45スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年9月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tanabe/_map.png" alt="全域マップ">
+<a href="#c-umeko-tanabe-minato" style="left:12.86%;top:85.61%;width:2.22%;height:2.7%;"></a>
+<a href="#c-horai-zushi-tanabe" style="left:13.11%;top:85.61%;width:2.22%;height:2.7%;"></a>
+<a href="#c-ginchiro-honten-tanabe" style="left:12.68%;top:85.34%;width:2.22%;height:2.7%;"></a>
+<a href="#c-akizuno-garten-mikanbatake" style="left:18.17%;top:74.54%;width:2.22%;height:2.7%;"></a>
+<a href="#c-chikatsuyu-tororoya-nakahechi" style="left:55.26%;top:58.73%;width:2.22%;height:2.7%;"></a>
+<a href="#c-chinchoan-hongu" style="left:87.76%;top:56.02%;width:2.22%;height:2.7%;"></a>
+<a href="#c-shimoji-hongu" style="left:87.28%;top:56.44%;width:2.22%;height:2.7%;"></a>
+<a href="#c-hottategoya-ryujin" style="left:48.21%;top:7.14%;width:2.22%;height:2.7%;"></a>
+<a href="#c-tanabe-kappou-ebisu" style="left:10.88%;top:85.55%;width:2.22%;height:2.7%;"></a>
+<a href="#c-tanabe-kappou-akihei" style="left:12.06%;top:85.12%;width:2.22%;height:2.7%;"></a>
+<a href="#c-tanabe-shibata-shinmi" style="left:14.64%;top:87.03%;width:2.22%;height:2.7%;"></a>
+<a href="#c-tanabe-sushihide" style="left:12.84%;top:85.7%;width:2.22%;height:2.7%;"></a>
+<a href="#c-tanabe-ajidokoro-marumasa" style="left:16.17%;top:84.18%;width:2.22%;height:2.7%;"></a>
+<a href="#c-tanabe-unagi-shikaroku-hongu" style="left:87.17%;top:56.02%;width:2.22%;height:2.7%;"></a>
+<a href="#c-ichiyoshi-ekimae" style="left:13.13%;top:85.7%;width:2.22%;height:2.7%;"></a>
+<a href="#c-miyazushi-hongu" style="left:87.65%;top:56.44%;width:2.22%;height:2.7%;"></a>
+<a href="#c-bakumatsu-tanabe" style="left:10.93%;top:83.28%;width:2.22%;height:2.7%;"></a>
+<a href="#c-menya-kanbire" style="left:14.99%;top:81.73%;width:2.22%;height:2.7%;"></a>
+<a href="#c-ryuchan-hanten" style="left:13.46%;top:89.49%;width:2.22%;height:2.7%;"></a>
+<a href="#c-takojin" style="left:12.49%;top:84.8%;width:2.22%;height:2.7%;"></a>
+<a href="#c-asoko-maeda" style="left:15.42%;top:92.88%;width:2.22%;height:2.7%;"></a>
+<a href="#c-soba-wawaku" style="left:23.94%;top:34.71%;width:2.22%;height:2.7%;"></a>
+<a href="#c-torisoba-shimojibashi" style="left:93.18%;top:63.08%;width:2.22%;height:2.7%;"></a>
+<a href="#c-shinbe" style="left:12.98%;top:85.88%;width:2.22%;height:2.7%;"></a>
+<a href="#c-tachinomiya-sen" style="left:12.86%;top:85.79%;width:2.22%;height:2.7%;"></a>
+<a href="#c-sumibi-kushiyaki-gin" style="left:12.91%;top:85.86%;width:2.22%;height:2.7%;"></a>
+<a href="#c-robataya-teruterubozu" style="left:13.06%;top:85.86%;width:2.22%;height:2.7%;"></a>
+<a href="#c-kakurega-jin" style="left:13.11%;top:85.79%;width:2.22%;height:2.7%;"></a>
+<a href="#c-craft-beer-bar-nagi" style="left:12.23%;top:85.16%;width:2.22%;height:2.7%;"></a>
+<a href="#c-yoshihei-tanabe" style="left:16.36%;top:91.97%;width:2.22%;height:2.7%;"></a>
+<a href="#c-zen-minato" style="left:12.91%;top:85.55%;width:2.22%;height:2.7%;"></a>
+<a href="#c-takagi-shinjo" style="left:15.33%;top:92.1%;width:2.22%;height:2.7%;"></a>
+<a href="#c-france-shokudo-chilo" style="left:9.89%;top:84.35%;width:2.22%;height:2.7%;"></a>
+<a href="#c-sousaku-restaurant-mobo" style="left:15.11%;top:85.27%;width:2.22%;height:2.7%;"></a>
+<a href="#c-dining-iloha" style="left:13.06%;top:85.55%;width:2.22%;height:2.7%;"></a>
+<a href="#c-cafe-restaurant-nancy" style="left:14.64%;top:89.32%;width:2.22%;height:2.7%;"></a>
+<a href="#c-paradise-cafe-nakahechi" style="left:39.19%;top:56.67%;width:2.22%;height:2.7%;"></a>
+<a href="#c-monpe-to-kuwa" style="left:32.4%;top:38.82%;width:2.22%;height:2.7%;"></a>
+<a href="#c-suzuya-tanabe" style="left:12.7%;top:85.71%;width:2.22%;height:2.7%;"></a>
+<a href="#c-caravan-tanabe" style="left:12.98%;top:85.53%;width:2.22%;height:2.7%;"></a>
+<a href="#c-kasho-ninomiya" style="left:12.41%;top:86.1%;width:2.22%;height:2.7%;"></a>
+<a href="#c-loro-kitchen-tenjinzaki" style="left:6.82%;top:86.11%;width:2.22%;height:2.7%;"></a>
+<a href="#c-cafe-alma-hongu" style="left:87.47%;top:55.75%;width:2.22%;height:2.7%;"></a>
+<a href="#c-morinopan-kinomi" style="left:16.4%;top:89.1%;width:2.22%;height:2.7%;"></a>
+<a href="#c-ys-cafe-kamiakizu" style="left:18.17%;top:75.81%;width:2.22%;height:2.7%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（45店・番号はピンと同じ）</div>
+<div class="sec red">田辺・紀南のご当地（めはりずし・さんま寿司・あがら丼・梅）</div>
+<div class="links">
+<a href="#c-umeko-tanabe-minato"><span class="tn" style="background:#e34948;">1</span>梅酒を飲み比べる駅前の店</a>
+<a href="#c-horai-zushi-tanabe"><span class="tn" style="background:#e34948;">2</span>田辺湾の海藻ひろめの寿司</a>
+<a href="#c-ginchiro-honten-tanabe"><span class="tn" style="background:#e34948;">3</span>味光路の1959年創業割烹</a>
+<a href="#c-akizuno-garten-mikanbatake"><span class="tn" style="background:#e34948;">4</span>廃校の木造校舎で郷土バイキング</a>
+<a href="#c-chikatsuyu-tororoya-nakahechi"><span class="tn" style="background:#e34948;">5</span>中辺路の宿場のとろろ膳</a>
+<a href="#c-chinchoan-hongu"><span class="tn" style="background:#e34948;">6</span>本宮大社の門前でめはり寿し</a>
+<a href="#c-shimoji-hongu"><span class="tn" style="background:#e34948;">7</span>三代続くうすかわまんじゅう</a>
+<a href="#c-hottategoya-ryujin"><span class="tn" style="background:#e34948;">8</span>龍神温泉の田舎料理の店</a>
+</div>
+<div class="sec blue">寿司・和食・紀伊水道の魚</div>
+<div class="links">
+<a href="#c-tanabe-kappou-ebisu"><span class="tn" style="background:#2a78d6;">9</span>紀州田辺のクエ料理専門店</a>
+<a href="#c-tanabe-kappou-akihei"><span class="tn" style="background:#2a78d6;">10</span>明治創業、田辺最古級の料理店</a>
+<a href="#c-tanabe-shibata-shinmi"><span class="tn" style="background:#2a78d6;">11</span>懐石と握りを一皿ずつ味わう</a>
+<a href="#c-tanabe-sushihide"><span class="tn" style="background:#2a78d6;">12</span>味光路の寿司と日本酒の店</a>
+<a href="#c-tanabe-ajidokoro-marumasa"><span class="tn" style="background:#2a78d6;">13</span>国道沿いの日替わり定食</a>
+<a href="#c-tanabe-unagi-shikaroku-hongu"><span class="tn" style="background:#2a78d6;">14</span>備長炭で焼く熊野本宮のうなぎ</a>
+<a href="#c-ichiyoshi-ekimae"><span class="tn" style="background:#2a78d6;">15</span>深夜4時まで開く駅前の寿司と麺</a>
+<a href="#c-miyazushi-hongu"><span class="tn" style="background:#2a78d6;">16</span>本宮大社門前の寿司と定食</a>
+</div>
+<div class="sec aqua">ラーメン・うどん・そば・粉もん</div>
+<div class="links">
+<a href="#c-bakumatsu-tanabe"><span class="tn" style="background:#1baf7a;">17</span>10時間煮込む豚骨、替玉あり</a>
+<a href="#c-menya-kanbire"><span class="tn" style="background:#1baf7a;">18</span>味光路から住宅街へ移った一杯</a>
+<a href="#c-ryuchan-hanten"><span class="tn" style="background:#1baf7a;">19</span>焼き飯が評判の飾らない町中華</a>
+<a href="#c-takojin"><span class="tn" style="background:#1baf7a;">20</span>大阪仕込みのとろとろたこ焼き</a>
+<a href="#c-asoko-maeda"><span class="tn" style="background:#1baf7a;">21</span>壁一面が手書きの手打ちうどん</a>
+<a href="#c-soba-wawaku"><span class="tn" style="background:#1baf7a;">22</span>廃園の保育所を継いだ蕎麦屋</a>
+<a href="#c-torisoba-shimojibashi"><span class="tn" style="background:#1baf7a;">23</span>本宮大社から車で5分のとりそば</a>
+</div>
+<div class="sec beer">味光路の居酒屋・立ち飲み・地酒</div>
+<div class="links">
+<a href="#c-shinbe"><span class="tn" style="background:#0d366b;">24</span>魚愛の大将と名物エビ団子</a>
+<a href="#c-tachinomiya-sen"><span class="tn" style="background:#0d366b;">25</span>田辺で唯一の立ち飲み</a>
+<a href="#c-sumibi-kushiyaki-gin"><span class="tn" style="background:#0d366b;">26</span>紀州備長炭で焼く朝びき鶏</a>
+<a href="#c-robataya-teruterubozu"><span class="tn" style="background:#0d366b;">27</span>紀土もそろう炉端の店</a>
+<a href="#c-kakurega-jin"><span class="tn" style="background:#0d366b;">28</span>カウンター7席の地魚</a>
+<a href="#c-craft-beer-bar-nagi"><span class="tn" style="background:#0d366b;">29</span>樽生が日替わりのビアバル</a>
+<a href="#c-yoshihei-tanabe"><span class="tn" style="background:#0d366b;">30</span>目の前で揚げる天ぷらと生まぐろ</a>
+<a href="#c-zen-minato"><span class="tn" style="background:#0d366b;">31</span>味光路の路地裏、地魚と手羽先</a>
+<a href="#c-takagi-shinjo"><span class="tn" style="background:#0d366b;">32</span>新庄の割烹居酒屋、地魚と熊野牛</a>
+</div>
+<div class="sec violet">洋食・各国料理・カレー</div>
+<div class="links">
+<a href="#c-france-shokudo-chilo"><span class="tn" style="background:#4a3aa7;">33</span>バスク仕込みの地産地消フレンチ</a>
+<a href="#c-sousaku-restaurant-mobo"><span class="tn" style="background:#4a3aa7;">34</span>丘の一軒家で味わう創作欧風料理</a>
+<a href="#c-dining-iloha"><span class="tn" style="background:#4a3aa7;">35</span>駅前の個室で味わう和洋の創作皿</a>
+<a href="#c-cafe-restaurant-nancy"><span class="tn" style="background:#4a3aa7;">36</span>文里湾を望むカリフォルニア風</a>
+<a href="#c-paradise-cafe-nakahechi"><span class="tn" style="background:#4a3aa7;">37</span>中辺路の山あいの一軒レストラン</a>
+<a href="#c-monpe-to-kuwa"><span class="tn" style="background:#4a3aa7;">38</span>龍神村の畑直送、野菜のカレー</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・スイーツ</div>
+<div class="links">
+<a href="#c-suzuya-tanabe"><span class="tn" style="background:#eda100;">39</span>デラックスケーキの老舗</a>
+<a href="#c-caravan-tanabe"><span class="tn" style="background:#eda100;">40</span>駅前商店街のレトロ喫茶</a>
+<a href="#c-kasho-ninomiya"><span class="tn" style="background:#eda100;">41</span>闘雞神社参道の甘党喫茶</a>
+<a href="#c-loro-kitchen-tenjinzaki"><span class="tn" style="background:#eda100;">42</span>天神崎のピンスかき氷</a>
+<a href="#c-cafe-alma-hongu"><span class="tn" style="background:#eda100;">43</span>熊野本宮大社境内のカフェ</a>
+<a href="#c-morinopan-kinomi"><span class="tn" style="background:#eda100;">44</span>紀伊新庄駅そばの小さなパン屋</a>
+<a href="#c-ys-cafe-kamiakizu"><span class="tn" style="background:#eda100;">45</span>みかん山の緑に囲まれた喫茶店</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 紀伊田辺駅前〜味光路(湊・南新町・栄町)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tanabe/_map2.png" alt="中心部拡大1 紀伊田辺駅前〜味光路(湊・南新町・栄町)">
+<a href="#c-umeko-tanabe-minato" style="left:69.89%;top:42.54%;width:3.28%;height:3.34%;"></a>
+<a href="#c-horai-zushi-tanabe" style="left:75.84%;top:42.54%;width:3.28%;height:3.34%;"></a>
+<a href="#c-ginchiro-honten-tanabe" style="left:65.68%;top:37.12%;width:3.28%;height:3.34%;"></a>
+<a href="#c-tanabe-kappou-ebisu" style="left:23.29%;top:41.32%;width:3.28%;height:3.34%;"></a>
+<a href="#c-tanabe-kappou-akihei" style="left:51.1%;top:32.69%;width:3.28%;height:3.34%;"></a>
+<a href="#c-tanabe-sushihide" style="left:69.43%;top:44.28%;width:3.28%;height:3.34%;"></a>
+<a href="#c-ichiyoshi-ekimae" style="left:76.3%;top:44.28%;width:3.28%;height:3.34%;"></a>
+<a href="#c-takojin" style="left:61.3%;top:26.4%;width:3.28%;height:3.34%;"></a>
+<a href="#c-shinbe" style="left:72.86%;top:47.77%;width:3.28%;height:3.34%;"></a>
+<a href="#c-tachinomiya-sen" style="left:69.89%;top:46.02%;width:3.28%;height:3.34%;"></a>
+<a href="#c-sumibi-kushiyaki-gin" style="left:71.15%;top:47.31%;width:3.28%;height:3.34%;"></a>
+<a href="#c-robataya-teruterubozu" style="left:74.58%;top:47.31%;width:3.28%;height:3.34%;"></a>
+<a href="#c-kakurega-jin" style="left:75.84%;top:46.02%;width:3.28%;height:3.34%;"></a>
+<a href="#c-craft-beer-bar-nagi" style="left:54.98%;top:33.6%;width:3.28%;height:3.34%;"></a>
+<a href="#c-zen-minato" style="left:71.15%;top:41.25%;width:3.28%;height:3.34%;"></a>
+<a href="#c-dining-iloha" style="left:74.58%;top:41.25%;width:3.28%;height:3.34%;"></a>
+<a href="#c-suzuya-tanabe" style="left:66.19%;top:44.38%;width:3.28%;height:3.34%;"></a>
+<a href="#c-caravan-tanabe" style="left:72.86%;top:40.79%;width:3.28%;height:3.34%;"></a>
+<a href="#c-kasho-ninomiya" style="left:59.35%;top:52.17%;width:3.28%;height:3.34%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（19店・番号はピンと同じ）</div>
+<div class="sec red">田辺・紀南のご当地（めはりずし・さんま寿司・あがら丼・梅）</div>
+<div class="links">
+<a href="#c-umeko-tanabe-minato"><span class="tn" style="background:#e34948;">1</span>梅酒を飲み比べる駅前の店</a>
+<a href="#c-horai-zushi-tanabe"><span class="tn" style="background:#e34948;">2</span>田辺湾の海藻ひろめの寿司</a>
+<a href="#c-ginchiro-honten-tanabe"><span class="tn" style="background:#e34948;">3</span>味光路の1959年創業割烹</a>
+</div>
+<div class="sec blue">寿司・和食・紀伊水道の魚</div>
+<div class="links">
+<a href="#c-tanabe-kappou-ebisu"><span class="tn" style="background:#2a78d6;">9</span>紀州田辺のクエ料理専門店</a>
+<a href="#c-tanabe-kappou-akihei"><span class="tn" style="background:#2a78d6;">10</span>明治創業、田辺最古級の料理店</a>
+<a href="#c-tanabe-sushihide"><span class="tn" style="background:#2a78d6;">12</span>味光路の寿司と日本酒の店</a>
+<a href="#c-ichiyoshi-ekimae"><span class="tn" style="background:#2a78d6;">15</span>深夜4時まで開く駅前の寿司と麺</a>
+</div>
+<div class="sec aqua">ラーメン・うどん・そば・粉もん</div>
+<div class="links">
+<a href="#c-takojin"><span class="tn" style="background:#1baf7a;">20</span>大阪仕込みのとろとろたこ焼き</a>
+</div>
+<div class="sec beer">味光路の居酒屋・立ち飲み・地酒</div>
+<div class="links">
+<a href="#c-shinbe"><span class="tn" style="background:#0d366b;">24</span>魚愛の大将と名物エビ団子</a>
+<a href="#c-tachinomiya-sen"><span class="tn" style="background:#0d366b;">25</span>田辺で唯一の立ち飲み</a>
+<a href="#c-sumibi-kushiyaki-gin"><span class="tn" style="background:#0d366b;">26</span>紀州備長炭で焼く朝びき鶏</a>
+<a href="#c-robataya-teruterubozu"><span class="tn" style="background:#0d366b;">27</span>紀土もそろう炉端の店</a>
+<a href="#c-kakurega-jin"><span class="tn" style="background:#0d366b;">28</span>カウンター7席の地魚</a>
+<a href="#c-craft-beer-bar-nagi"><span class="tn" style="background:#0d366b;">29</span>樽生が日替わりのビアバル</a>
+<a href="#c-zen-minato"><span class="tn" style="background:#0d366b;">31</span>味光路の路地裏、地魚と手羽先</a>
+</div>
+<div class="sec violet">洋食・各国料理・カレー</div>
+<div class="links">
+<a href="#c-dining-iloha"><span class="tn" style="background:#4a3aa7;">35</span>駅前の個室で味わう和洋の創作皿</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・スイーツ</div>
+<div class="links">
+<a href="#c-suzuya-tanabe"><span class="tn" style="background:#eda100;">39</span>デラックスケーキの老舗</a>
+<a href="#c-caravan-tanabe"><span class="tn" style="background:#eda100;">40</span>駅前商店街のレトロ喫茶</a>
+<a href="#c-kasho-ninomiya"><span class="tn" style="background:#eda100;">41</span>闘雞神社参道の甘党喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 扇ヶ浜〜新庄・上の山・国道42号沿い（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tanabe/_map3.png" alt="中心部拡大2 扇ヶ浜〜新庄・上の山・国道42号沿い">
+<a href="#c-umeko-tanabe-minato" style="left:68.03%;top:28.13%;width:2.78%;height:2.66%;"></a>
+<a href="#c-horai-zushi-tanabe" style="left:70.55%;top:28.13%;width:2.78%;height:2.66%;"></a>
+<a href="#c-ginchiro-honten-tanabe" style="left:66.25%;top:25.96%;width:2.78%;height:2.66%;"></a>
+<a href="#c-tanabe-kappou-ebisu" style="left:48.31%;top:27.64%;width:2.78%;height:2.66%;"></a>
+<a href="#c-tanabe-kappou-akihei" style="left:60.08%;top:24.19%;width:2.78%;height:2.66%;"></a>
+<a href="#c-tanabe-shibata-shinmi" style="left:85.82%;top:39.31%;width:2.78%;height:2.66%;"></a>
+<a href="#c-tanabe-sushihide" style="left:67.83%;top:28.83%;width:2.78%;height:2.66%;"></a>
+<a href="#c-ichiyoshi-ekimae" style="left:70.74%;top:28.83%;width:2.78%;height:2.66%;"></a>
+<a href="#c-bakumatsu-tanabe" style="left:48.75%;top:9.68%;width:2.78%;height:2.66%;"></a>
+<a href="#c-ryuchan-hanten" style="left:73.99%;top:58.73%;width:2.78%;height:2.66%;"></a>
+<a href="#c-takojin" style="left:64.39%;top:21.67%;width:2.78%;height:2.66%;"></a>
+<a href="#c-asoko-maeda" style="left:93.59%;top:85.5%;width:2.78%;height:2.66%;"></a>
+<a href="#c-shinbe" style="left:69.29%;top:30.23%;width:2.78%;height:2.66%;"></a>
+<a href="#c-tachinomiya-sen" style="left:68.03%;top:29.53%;width:2.78%;height:2.66%;"></a>
+<a href="#c-sumibi-kushiyaki-gin" style="left:68.56%;top:30.04%;width:2.78%;height:2.66%;"></a>
+<a href="#c-robataya-teruterubozu" style="left:70.02%;top:30.04%;width:2.78%;height:2.66%;"></a>
+<a href="#c-kakurega-jin" style="left:70.55%;top:29.53%;width:2.78%;height:2.66%;"></a>
+<a href="#c-craft-beer-bar-nagi" style="left:61.72%;top:24.56%;width:2.78%;height:2.66%;"></a>
+<a href="#c-zen-minato" style="left:68.56%;top:27.62%;width:2.78%;height:2.66%;"></a>
+<a href="#c-takagi-shinjo" style="left:92.71%;top:79.29%;width:2.78%;height:2.66%;"></a>
+<a href="#c-france-shokudo-chilo" style="left:38.37%;top:18.18%;width:2.78%;height:2.66%;"></a>
+<a href="#c-sousaku-restaurant-mobo" style="left:90.54%;top:25.43%;width:2.78%;height:2.66%;"></a>
+<a href="#c-dining-iloha" style="left:70.02%;top:27.62%;width:2.78%;height:2.66%;"></a>
+<a href="#c-cafe-restaurant-nancy" style="left:85.82%;top:57.35%;width:2.78%;height:2.66%;"></a>
+<a href="#c-suzuya-tanabe" style="left:66.47%;top:28.87%;width:2.78%;height:2.66%;"></a>
+<a href="#c-caravan-tanabe" style="left:69.29%;top:27.43%;width:2.78%;height:2.66%;"></a>
+<a href="#c-kasho-ninomiya" style="left:63.57%;top:31.98%;width:2.78%;height:2.66%;"></a>
+<a href="#c-loro-kitchen-tenjinzaki" style="left:7.73%;top:32.07%;width:2.78%;height:2.66%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（28店・番号はピンと同じ）</div>
+<div class="sec red">田辺・紀南のご当地（めはりずし・さんま寿司・あがら丼・梅）</div>
+<div class="links">
+<a href="#c-umeko-tanabe-minato"><span class="tn" style="background:#e34948;">1</span>梅酒を飲み比べる駅前の店</a>
+<a href="#c-horai-zushi-tanabe"><span class="tn" style="background:#e34948;">2</span>田辺湾の海藻ひろめの寿司</a>
+<a href="#c-ginchiro-honten-tanabe"><span class="tn" style="background:#e34948;">3</span>味光路の1959年創業割烹</a>
+</div>
+<div class="sec blue">寿司・和食・紀伊水道の魚</div>
+<div class="links">
+<a href="#c-tanabe-kappou-ebisu"><span class="tn" style="background:#2a78d6;">9</span>紀州田辺のクエ料理専門店</a>
+<a href="#c-tanabe-kappou-akihei"><span class="tn" style="background:#2a78d6;">10</span>明治創業、田辺最古級の料理店</a>
+<a href="#c-tanabe-shibata-shinmi"><span class="tn" style="background:#2a78d6;">11</span>懐石と握りを一皿ずつ味わう</a>
+<a href="#c-tanabe-sushihide"><span class="tn" style="background:#2a78d6;">12</span>味光路の寿司と日本酒の店</a>
+<a href="#c-ichiyoshi-ekimae"><span class="tn" style="background:#2a78d6;">15</span>深夜4時まで開く駅前の寿司と麺</a>
+</div>
+<div class="sec aqua">ラーメン・うどん・そば・粉もん</div>
+<div class="links">
+<a href="#c-bakumatsu-tanabe"><span class="tn" style="background:#1baf7a;">17</span>10時間煮込む豚骨、替玉あり</a>
+<a href="#c-ryuchan-hanten"><span class="tn" style="background:#1baf7a;">19</span>焼き飯が評判の飾らない町中華</a>
+<a href="#c-takojin"><span class="tn" style="background:#1baf7a;">20</span>大阪仕込みのとろとろたこ焼き</a>
+<a href="#c-asoko-maeda"><span class="tn" style="background:#1baf7a;">21</span>壁一面が手書きの手打ちうどん</a>
+</div>
+<div class="sec beer">味光路の居酒屋・立ち飲み・地酒</div>
+<div class="links">
+<a href="#c-shinbe"><span class="tn" style="background:#0d366b;">24</span>魚愛の大将と名物エビ団子</a>
+<a href="#c-tachinomiya-sen"><span class="tn" style="background:#0d366b;">25</span>田辺で唯一の立ち飲み</a>
+<a href="#c-sumibi-kushiyaki-gin"><span class="tn" style="background:#0d366b;">26</span>紀州備長炭で焼く朝びき鶏</a>
+<a href="#c-robataya-teruterubozu"><span class="tn" style="background:#0d366b;">27</span>紀土もそろう炉端の店</a>
+<a href="#c-kakurega-jin"><span class="tn" style="background:#0d366b;">28</span>カウンター7席の地魚</a>
+<a href="#c-craft-beer-bar-nagi"><span class="tn" style="background:#0d366b;">29</span>樽生が日替わりのビアバル</a>
+<a href="#c-zen-minato"><span class="tn" style="background:#0d366b;">31</span>味光路の路地裏、地魚と手羽先</a>
+<a href="#c-takagi-shinjo"><span class="tn" style="background:#0d366b;">32</span>新庄の割烹居酒屋、地魚と熊野牛</a>
+</div>
+<div class="sec violet">洋食・各国料理・カレー</div>
+<div class="links">
+<a href="#c-france-shokudo-chilo"><span class="tn" style="background:#4a3aa7;">33</span>バスク仕込みの地産地消フレンチ</a>
+<a href="#c-sousaku-restaurant-mobo"><span class="tn" style="background:#4a3aa7;">34</span>丘の一軒家で味わう創作欧風料理</a>
+<a href="#c-dining-iloha"><span class="tn" style="background:#4a3aa7;">35</span>駅前の個室で味わう和洋の創作皿</a>
+<a href="#c-cafe-restaurant-nancy"><span class="tn" style="background:#4a3aa7;">36</span>文里湾を望むカリフォルニア風</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・スイーツ</div>
+<div class="links">
+<a href="#c-suzuya-tanabe"><span class="tn" style="background:#eda100;">39</span>デラックスケーキの老舗</a>
+<a href="#c-caravan-tanabe"><span class="tn" style="background:#eda100;">40</span>駅前商店街のレトロ喫茶</a>
+<a href="#c-kasho-ninomiya"><span class="tn" style="background:#eda100;">41</span>闘雞神社参道の甘党喫茶</a>
+<a href="#c-loro-kitchen-tenjinzaki"><span class="tn" style="background:#eda100;">42</span>天神崎のピンスかき氷</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 中辺路・本宮・龍神(山間部)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tanabe/_map4.png" alt="中心部拡大3 中辺路・本宮・龍神(山間部)">
+<a href="#c-akizuno-garten-mikanbatake" style="left:2.73%;top:83.35%;width:2.88%;height:5.04%;"></a>
+<a href="#c-chikatsuyu-tororoya-nakahechi" style="left:50.86%;top:53.83%;width:2.88%;height:5.04%;"></a>
+<a href="#c-chinchoan-hongu" style="left:93.02%;top:48.78%;width:2.88%;height:5.04%;"></a>
+<a href="#c-shimoji-hongu" style="left:92.4%;top:49.57%;width:2.88%;height:5.04%;"></a>
+<a href="#c-tanabe-unagi-shikaroku-hongu" style="left:92.25%;top:48.78%;width:2.88%;height:5.04%;"></a>
+<a href="#c-miyazushi-hongu" style="left:92.88%;top:49.57%;width:2.88%;height:5.04%;"></a>
+<a href="#c-soba-wawaku" style="left:10.22%;top:9.01%;width:2.88%;height:5.04%;"></a>
+<a href="#c-paradise-cafe-nakahechi" style="left:30.0%;top:49.99%;width:2.88%;height:5.04%;"></a>
+<a href="#c-monpe-to-kuwa" style="left:21.2%;top:16.68%;width:2.88%;height:5.04%;"></a>
+<a href="#c-cafe-alma-hongu" style="left:92.64%;top:48.29%;width:2.88%;height:5.04%;"></a>
+<a href="#c-ys-cafe-kamiakizu" style="left:2.73%;top:85.72%;width:2.88%;height:5.04%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（11店・番号はピンと同じ）</div>
+<div class="sec red">田辺・紀南のご当地（めはりずし・さんま寿司・あがら丼・梅）</div>
+<div class="links">
+<a href="#c-akizuno-garten-mikanbatake"><span class="tn" style="background:#e34948;">4</span>廃校の木造校舎で郷土バイキング</a>
+<a href="#c-chikatsuyu-tororoya-nakahechi"><span class="tn" style="background:#e34948;">5</span>中辺路の宿場のとろろ膳</a>
+<a href="#c-chinchoan-hongu"><span class="tn" style="background:#e34948;">6</span>本宮大社の門前でめはり寿し</a>
+<a href="#c-shimoji-hongu"><span class="tn" style="background:#e34948;">7</span>三代続くうすかわまんじゅう</a>
+</div>
+<div class="sec blue">寿司・和食・紀伊水道の魚</div>
+<div class="links">
+<a href="#c-tanabe-unagi-shikaroku-hongu"><span class="tn" style="background:#2a78d6;">14</span>備長炭で焼く熊野本宮のうなぎ</a>
+<a href="#c-miyazushi-hongu"><span class="tn" style="background:#2a78d6;">16</span>本宮大社門前の寿司と定食</a>
+</div>
+<div class="sec aqua">ラーメン・うどん・そば・粉もん</div>
+<div class="links">
+<a href="#c-soba-wawaku"><span class="tn" style="background:#1baf7a;">22</span>廃園の保育所を継いだ蕎麦屋</a>
+</div>
+<div class="sec violet">洋食・各国料理・カレー</div>
+<div class="links">
+<a href="#c-paradise-cafe-nakahechi"><span class="tn" style="background:#4a3aa7;">37</span>中辺路の山あいの一軒レストラン</a>
+<a href="#c-monpe-to-kuwa"><span class="tn" style="background:#4a3aa7;">38</span>龍神村の畑直送、野菜のカレー</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・スイーツ</div>
+<div class="links">
+<a href="#c-cafe-alma-hongu"><span class="tn" style="background:#eda100;">43</span>熊野本宮大社境内のカフェ</a>
+<a href="#c-ys-cafe-kamiakizu"><span class="tn" style="background:#eda100;">45</span>みかん山の緑に囲まれた喫茶店</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>田辺市は2005年の合併で龍神村・中辺路町・大塔村・本宮町を含む和歌山県最大の面積になった。店は3つのかたまりに分かれる。①JR紀伊田辺駅前〜味光路＝約200軒が集まる飲み屋街で、紀南の夜はここ。徒歩圏に収まる ②湊・扇ヶ浜・新庄＝魚と食堂、国道42号沿いのロードサイド ③熊野本宮・中辺路・龍神＝山里の食事処。田辺の市街地から本宮まで車で約1時間、龍神温泉まで約1時間なので、熊野古道歩きと合わせて動く。田辺の名物＝南高梅（梅干し・梅酒）、めはりずし（高菜の葉で包む握り飯）、さんま寿司、あがら丼（田辺の丼グランプリ発の地魚丼）、紀州梅どり、イノブタ（すさみ・日置川発祥）、クエ、鮎（日高川・富田川）、龍神の山菜、熊野牛。訪問前にマップで最終確認を。 なお、味光路（湊）の12軒・熊野本宮の5軒・上秋津の2軒は、番地まで載った公開の座標データが無いため、地図のピンは町の代表点のまわりに並べた概略位置です（湊は半径70m、本宮は150m、上秋津は250m）。実際の場所は各カードの「Googleマップで開く」から確かめてください。</div>
+
+<h2 id="s-tanabe" class="c-red">田辺・紀南のご当地（めはりずし・さんま寿司・あがら丼・梅）</h2>
+<div class="card" id="c-umeko-tanabe-minato">
+<img class="hero" src="img/tanabe/umeko-tanabe-minato.jpg" alt="梅酒おたのしみ処 うめ子 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>梅酒おたのしみ処 うめ子<span class="yomi">うめしゅおたのしみどころ うめこ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">紀伊田辺駅の目の前、飲み屋街・味光路の入口にある梅酒専門の飲み処。棚に並ぶ多数の梅酒をグラスでも、30分1,500円の飲み放題でも味わえる。梅干しや梅うどん、梅パフェ、自家製の梅アイスなど食事とデザートまで梅づくしで、全国の梅の約2割を産する田辺らしい一軒。締めの麺類やご飯ものも揃う。</div>
+<div class="sig"><b>一皿:</b>梅酒飲み放題(30分1,500円。味・色・香りの異なる紀州の梅酒を飲み比べる)／梅うどん(梅を練り込んだうどん)</div>
+<table class="info">
+<tr><th>営業時間</th><td>15:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜、第1・第3水曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊14-6</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739222180">☎ 0739-22-2180</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺市熊野ツーリズムビューローの公式お店紹介に掲載され、同ページが2026-08-24に更新されており現在も営業中と確認できる。梅の産地・田辺で「梅」を正面から味わえる数少ない飲食店であることから、ご当地カテゴリの筆頭として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E9%85%92%E3%81%8A%E3%81%9F%E3%81%AE%E3%81%97%E3%81%BF%E5%87%A6%20%E3%81%86%E3%82%81%E5%AD%90%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A14-6">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/13955/">田辺市熊野ツーリズムビューロー 公式お店紹介(2026-08-24更新)</a> / <a href="https://www.city.tanabe.lg.jp/soshiki/shokokanko/2/6/1340.html">田辺市 公式サイト「食の観光」紀州の梅(2026-02-27更新)</a></div>
+</div></div>
+<div class="card" id="c-horai-zushi-tanabe">
+<img class="hero" src="img/tanabe/horai-zushi-tanabe.jpg" alt="宝来寿司 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>宝来寿司<span class="yomi">ほうらいずし</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1933年創業、三代続く町の寿司店。看板は田辺湾特産の海藻「ひろめ」を使ったオリジナル寿司に、刺身・茶碗蒸し・旬の野菜サラダを添えた「ひとはめ定食」。田辺のご当地丼企画「あがら丼」の一品として、カツオや釜揚げしらすの丼も出す。三代目は京都の日本料理店を経て家業を継いだ。</div>
+<div class="sig"><b>一皿:</b>ひとはめ定食(田辺湾など国内数か所でしか採れない海藻「ひろめ」を使ったオリジナル寿司の定食)／あがら丼(「あがら」は田辺の方言で「私たち」。地元食材を使ったご当地丼の総称)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 10:00〜15:00(L.O.14:40)／夜 17:00〜21:00(L.O.20:30)</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊18-12</td></tr>
+<tr><th>予約</th><td>予約可 — <a href="tel:0739220834">☎ 0739-22-0834</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺市熊野ツーリズムビューローの公式お店紹介に掲載され、同ページが2025-03-25に更新されており営業を確認。田辺市公式サイトが「ひろめ」と「あがら丼」を市の食の目玉として挙げており、その両方を1軒で出す店として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AE%9D%E6%9D%A5%E5%AF%BF%E5%8F%B8%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A18-12">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/2953/">田辺市熊野ツーリズムビューロー 公式お店紹介(2025-03-25更新)</a> / <a href="https://www.city.tanabe.lg.jp/soshiki/shokokanko/2/6/1340.html">田辺市 公式サイト「食の観光」ひろめ／あがら丼(2026-02-27更新)</a> / <a href="http://tabi2deru.com/hitohame-agaradon/">大阪食べ歩き＆旅 グルメ放浪記「紀州田辺 あがら丼＆ひとはめ寿司」</a></div>
+</div></div>
+<div class="card" id="c-ginchiro-honten-tanabe">
+<img class="hero" src="img/tanabe/ginchiro-honten-tanabe.jpg" alt="銀ちろ 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>銀ちろ 本店<span class="yomi">ぎんちろ ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1959年に夫婦の天ぷら屋として始まり、約200軒が集まる飲み屋街・味光路でいちばん古い格を持つ日本料理店。全室個室で、子連れでも一人でも落ち着いて食べられる。口熊野名物の釜揚げしらす丼に刺身3種と煮ものを重箱で組んだ「さざなみ弁当」が看板。鰹のタタキや山椒焼、うなぎも揃う。</div>
+<div class="sig"><b>一皿:</b>さざなみ弁当(口熊野名物の釜揚げしらす丼に刺身3種と煮ものを重箱で組んだ弁当)／鰹タタキ定食(紀州の鰹を藁の香りで炙ったタタキ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜14:00(L.O.13:45)／夜 17:00〜20:00(L.O.19:45)</td></tr>
+<tr><th>定休日</th><td class="off">不定休（店のInstagramで告知）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊12-39</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739223960">☎ 0739-22-3960</a> ／ <a href="http://www.ginchiro.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺市熊野ツーリズムビューローの公式お店紹介が2025-03-24に更新され、店の公式サイトにも2025年の料理写真と稼働中のInstagram投稿があり営業を確認。田辺の飲み屋街・味光路の歴史を代表する一軒として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%8A%80%E3%81%A1%E3%82%8D%20%E6%9C%AC%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A12-39">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/2959/">田辺市熊野ツーリズムビューロー 公式お店紹介(2025-03-24更新)</a> / <a href="http://www.ginchiro.jp/">銀ちろ 公式サイト</a></div>
+</div></div>
+<div class="card" id="c-akizuno-garten-mikanbatake">
+<img class="hero" src="img/tanabe/akizuno-garten-mikanbatake.jpg" alt="秋津野ガルテン 農家レストラン みかん畑 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>秋津野ガルテン 農家レストラン みかん畑<span class="yomi">あきづのがるてん のうかれすとらん みかんばたけ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">廃校になった旧上秋津小学校を地域住民が出資して買い取り、2008年に開いた交流施設のレストラン。地元の母たちが作る約30種の家庭料理をバイキングで出す。茶がゆや高菜の煮物、紀州南高梅の梅紫蘇ごはん、田辺のちゃんぽんなど郷土の味が並び、昭和の木造校舎と中庭を眺めながら食べられる。</div>
+<div class="sig"><b>一皿:</b>スローフードバイキング(地元農家と直売所の食材で作る約30種。茶がゆ・高菜の煮物・紀州南高梅の梅紫蘇ごはん・さんまの干物など)／田辺のちゃんぽん(焼うどんと焼きそばを一緒に焼く田辺のご当地麺)</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチバイキングのみ（時間は要確認・0739-35-1199）</td></tr>
+<tr><th>定休日</th><td class="off">要確認（0739-35-1199）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市上秋津4558-8</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739351199">☎ 0739-35-1199</a> ／ <a href="https://agarten.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトのお知らせが2026-09-15まで更新され、2026-06-09には梅の収穫期に合わせランチバイキングの定番ドリンクを梅ジュースへ変更したと告知しており、現在も営業中と確認できる。田辺の山手で郷土料理をまとめて味わえる場として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%A7%8B%E6%B4%A5%E9%87%8E%E3%82%AC%E3%83%AB%E3%83%86%E3%83%B3%20%E8%BE%B2%E5%AE%B6%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%BF%E3%81%8B%E3%82%93%E7%95%91%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8A%E7%A7%8B%E6%B4%A54558-8">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.agarten.jp）より引用 / 参照元: <a href="https://www.agarten.jp/news/">秋津野ガルテン 公式サイト お知らせ(2026-09-15)</a> / <a href="https://www.agarten.jp/mika/">秋津野ガルテン 公式サイト 農家レストラン みかん畑</a> / <a href="https://www.agarten.jp/mika/restaurantmenu/">秋津野ガルテン 公式サイト レストランメニュー</a> / <a href="https://www.tanabe-kanko.jp/member/3076/">田辺観光協会 会員紹介 秋津野ガルテン</a></div>
+</div></div>
+<div class="card" id="c-chikatsuyu-tororoya-nakahechi">
+<img class="hero" src="img/tanabe/chikatsuyu-tororoya-nakahechi.jpg" alt="古道歩きの里 ちかつゆ（とろろや） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>古道歩きの里 ちかつゆ（とろろや）<span class="yomi">こどうあるきのさと ちかつゆ とろろや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">熊野古道中辺路の宿場町として栄えた近露にある大型ドライブイン。食事処「とろろや」は、古道歩きの道中で昔から親しまれてきたとろろを主役に据え、めはり寿司や那智勝浦のマグロ、古座川の熊野うなぎ、鹿肉のジビエ料理まで紀南の食材を並べる。ベーカリーと土産店、川床テラスも併設する。</div>
+<div class="sig"><b>一皿:</b>めはり寿司(高菜の葉で包んだ握り飯。熊野の山仕事の弁当が起源。2個630円)／大和芋とろろ膳(麦ご飯にとろろを添えた、宿場町伝来の膳)</div>
+<table class="info">
+<tr><th>営業時間</th><td>とろろや 11:30〜18:30(L.O.18:00)／もちや 土日祝 11:00〜17:00(L.O.16:30)</td></tr>
+<tr><th>定休日</th><td class="off">火曜（祝日の場合は翌日）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市中辺路町近露1810-1</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739650707">☎ 0739-65-0707</a> ／ <a href="https://chikatsuyu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイトが2025-10-03に価格改定を告知しており営業を確認。田辺観光協会の会員でもある。熊野古道中辺路の歩き手が実際に立ち寄る位置にあり、めはり寿司を単品で確実に頼める数少ない店として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8F%A4%E9%81%93%E6%AD%A9%E3%81%8D%E3%81%AE%E9%87%8C%20%E3%81%A1%E3%81%8B%E3%81%A4%E3%82%86%EF%BC%88%E3%81%A8%E3%82%8D%E3%82%8D%E3%82%84%EF%BC%89%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%AD%E8%BE%BA%E8%B7%AF%E7%94%BA%E8%BF%91%E9%9C%B21810-1">Googleマップで開く</a>
+<div class="src">写真: 田辺観光協会（www.tanabe-kanko.jp）より引用 / 参照元: <a href="https://chikatsuyu.com/">古道歩きの里 ちかつゆ 公式サイト(2025-10-03 価格改定のお知らせ)</a> / <a href="https://www.tanabe-kanko.jp/member/5700/">田辺観光協会 会員紹介 古道歩きの里ちかつゆ</a></div>
+</div></div>
+<div class="card" id="c-chinchoan-hongu">
+<img class="hero" src="img/tanabe/chinchoan-hongu.jpg" alt="茶房 珍重庵 本宮店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>茶房 珍重庵 本宮店<span class="yomi">さぼう ちんちょうあん ほんぐうてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">熊野本宮大社のすぐ門前、瑞鳳殿の並びにある昭和26年創業の和菓子屋の茶房。温かいめはり寿しとそば・うどんのほか、熊野詣の巡礼者が神前に供えたことに由来する「熊野もうで餅」、栗ぜんざい、夏のくずもち氷などの甘味を出す。30席あり、古道を歩いたあとの一服に使いやすい。</div>
+<div class="sig"><b>一皿:</b>あったかいめはり寿し(高菜の葉で包んだ握り飯を温かく供する)／熊野もうで餅(玄米のこうせんをまぶした、熊野詣に由来するこし餡の餅)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜（夏・秋・GWは無休）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市本宮町本宮1110</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0735421648">☎ 0735-42-1648</a> ／ <a href="http://www.chinchoan.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>本店の公式サイトが2026-09-23付で臨時休業を告知し、店舗一覧に本宮店を掲載しているため営業中と確認。熊野本宮観光協会の食事処ページにも掲載されている。めはり寿しと熊野もうで餅という熊野の二大郷土食を門前で押さえられる点で採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E6%88%BF%20%E7%8F%8D%E9%87%8D%E5%BA%B5%20%E6%9C%AC%E5%AE%AE%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE1110">Googleマップで開く</a>
+<div class="src">写真: 熊野本宮観光協会（www.hongu.jp）より引用 / 参照元: <a href="http://www.chinchoan.com/">珍重庵 公式サイト(2026-09-23 臨時休業のお知らせ／店舗一覧に本宮店)</a> / <a href="https://www.hongu.jp/eat/">熊野本宮観光協会 食事処一覧</a></div>
+</div></div>
+<div class="card" id="c-shimoji-hongu">
+<img class="hero" src="img/tanabe/shimoji-hongu.jpg" alt="お食事しもじ 本宮店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>お食事しもじ 本宮店<span class="yomi">おしょくじ しもじ ほんぐうてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">熊野本宮大社の参道沿いに建つ、蔵を思わせる純和風の食事処。高い天井と木の温もりの店内に70席を備える。三代続く名物のうすかわまんじゅうは地元土産の定番で、食事では熊野牛を使ったメニューや、秋から冬の季節限定で出すさんま寿司が評判を集めている。食事は11時から。</div>
+<div class="sig"><b>一皿:</b>さんま寿司(紀南で秋冬に獲れるサンマを酢で締め、棒状に押した姿寿司。季節限定)／熊野牛のメニュー／うすかわまんじゅう(皮の薄いこし餡まんじゅう)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜14:00（食事は11:00から）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（月1回連休あり）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市本宮町本宮283-1</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0735420312">☎ 0735-42-0312</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>熊野本宮観光協会の公式食事処ページに掲載。同ページは2026年8月時点の更新が入っており、休業した店には「※休業中」と明記される運用のため、掲載自体が営業の裏づけになる。「〈店名〉 閉店」での検索でも閉店の報は無かった。紀南のさんま寿司を出す店として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E3%81%97%E3%82%82%E3%81%98%20%E6%9C%AC%E5%AE%AE%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE283-1">Googleマップで開く</a>
+<div class="src">写真: 熊野本宮観光協会（www.hongu.jp）より引用 / 参照元: <a href="https://www.hongu.jp/eat/">熊野本宮観光協会 食事処一覧</a> / <a href="https://www.city.tanabe.lg.jp/soshiki/shokokanko/2/6/1340.html">田辺市 公式サイト「食の観光」めはりずし・あがら丼(2026-02-27更新)</a></div>
+</div></div>
+<div class="card" id="c-hottategoya-ryujin">
+<img class="hero" src="img/tanabe/hottategoya-ryujin.jpg" alt="ほったて小屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>ほったて小屋<span class="yomi">ほったてごや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">日本三美人の湯で知られる龍神温泉の街なかにある、小さな田舎料理の店。清らかな山の水で仕込み、天然だしを効かせた山菜料理が看板で、おしゃべり好きなおかみが作る「お袋の味」として湯治客や古道歩きに親しまれている。昼の12時から夕方4時までの短い営業で、席数もごく少ない。</div>
+<div class="sig"><b>一皿:</b>山菜料理(龍神の山でとれる山菜を、山の水と天然だしで仕立てた家庭の味)</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜（祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市龍神村龍神72-1</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739790367">☎ 0739-79-0367</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>龍神観光協会の公式施設情報が2026-04-23に更新されており、現在も営業中と確認できる。田辺市は合併で近畿最大の面積になり龍神村も市域なので、山間部の郷土料理を代表する一軒として採用し、市街地への偏りを避けた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BB%E3%81%A3%E3%81%9F%E3%81%A6%E5%B0%8F%E5%B1%8B%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E9%BE%8D%E7%A5%9E%E6%9D%91%E9%BE%8D%E7%A5%9E72-1">Googleマップで開く</a>
+<div class="src">写真: 龍神観光協会（www.ryujin-kanko.jp）より引用 / 参照元: <a href="https://www.ryujin-kanko.jp/facility/1653/">龍神観光協会 公式サイト 施設情報(2026-04-23更新)</a> / <a href="https://www.ryujin-kanko.jp/shop/">龍神観光協会 公式サイト 食べる・買う</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・紀伊水道の魚</h2>
+<div class="card" id="c-tanabe-kappou-ebisu">
+<img class="hero" src="img/tanabe/tanabe-kappou-ebisu.jpg" alt="割烹 ゑびす 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">9</span>割烹 ゑびす<span class="yomi">かっぽう えびす</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">紀伊水道の高級魚クエを一年を通して出す、田辺でも数少ないクエ料理の専門店。瓦屋根に格子戸という純和風の構えで、坪庭を設けた座敷と個室を持つ。クエは希少なため来店の四〜五日前までの予約が基本で、鍋のほかに刺身や唐揚げ、煮付けまで組んだコースで供される。阪和自動車道の田辺インターからは車で五分ほど。</div>
+<div class="sig"><b>一皿:</b>クエ鍋コース(紀伊水道の大型ハタ「クエ」を野菜と炊き、締めは雑炊にする冬の名物鍋)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜21:00（料理L.O.20:00）／事前連絡があれば昼も営業</td></tr>
+<tr><th>定休日</th><td class="off">不定休（完全予約制・事前予約があれば日曜も営業）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市上屋敷1-16-5</td></tr>
+<tr><th>予約</th><td>要予約 — <a href="tel:0739220886">☎ 0739-22-0886</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺のクエを看板に据えた専門店で、市街地の和食店のなかでも性格がはっきりしている。ホットペッパーグルメの掲載ページが2026年9月1日にクーポン更新され、営業時間欄にも2026年9月の連休の予約受付が明記されているため、現在も営業中と確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E3%82%91%E3%81%B3%E3%81%99%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8A%E5%B1%8B%E6%95%B71-16-5">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000875491/">ホットペッパーグルメ 割烹 ゑびす(2026-09-01 クーポン更新)</a></div>
+</div></div>
+<div class="card" id="c-tanabe-kappou-akihei">
+<img class="hero" src="img/tanabe/tanabe-kappou-akihei.jpg" alt="割烹 秋平 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">10</span>割烹 秋平<span class="yomi">かっぽう あきへい</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">明治初期の創業と伝わる、田辺でも古い歴史を持つ料理店。寿司、刺身、鍋物といった昔ながらの和食を昼から夜まで通しで出し、昼は千円前後の御膳、夜は二千〜三千円台が目安になる。純和風の店内には二十人ほどまで使える座敷があり、仕出しや慶事の弁当も受ける。駅からは歩いて八分ほど。</div>
+<div class="sig"><b>一皿:</b>お食い初め膳(鯛の姿焼きに煮物や椀物を添えた、祝い事向けの膳)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:30（最終入店20:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市北新町68番地</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739220234">☎ 0739-22-0234</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>明治初期創業という田辺の商家町らしい老舗で、寿司も刺身も一軒で通せる。地元紙・紀伊民報が運営する地域情報サイトKiiLifeの店舗ページに2026年9月28日付のお知らせ（お食い初め膳）が掲載されており、現在も営業中と確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E7%A7%8B%E5%B9%B3%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E5%8C%97%E6%96%B0%E7%94%BA68%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: KiiLife（紀伊民報）（kiilife.jp）より引用 / 参照元: <a href="https://kiilife.jp/gourmet/302066/1708">KiiLife(紀伊民報) 割烹 秋平(2026-09-28 お知らせ)</a></div>
+</div></div>
+<div class="card" id="c-tanabe-shibata-shinmi">
+<img class="hero" src="img/tanabe/tanabe-shibata-shinmi.jpg" alt="創作割烹 柴田 心味 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>創作割烹 柴田 心味<span class="yomi">そうさくかっぽう しばた しんみ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">南紀白浜のホテルで二十四年間料理長を務めた柴田茂光さんが二〇二四年三月に開いた割烹。前日予約制の創作懐石寿司コース一本で、月替わりの七品に握り六貫、赤だし、甘味が付く。カウンター八席とテーブル個室二室のみの小さな店で、握りはカウンターなら一貫ずつ、醤油や塩を付けた状態で出される。</div>
+<div class="sig"><b>一皿:</b>創作懐石寿司コース(月替わりの懐石七品に、和歌山と全国から選んだ種の握り六貫が続く前日予約制のコース)</div>
+<table class="info">
+<tr><th>営業時間</th><td>水〜土 11:30〜14:00／17:30〜21:30、月・火・日 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市東山1丁目18-12 1階</td></tr>
+<tr><th>予約</th><td>要予約 — <a href="tel:0739332242">☎ 0739-33-2242</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺市街で懐石と江戸前の握りを一続きのコースで出す数少ない店で、寿司の担当としても和食の担当としても要になる。ホットペッパーグルメの掲載情報が2026年8月28日更新で、2026年10〜11月のネット予約枠も開いているため営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%89%B2%E7%83%B9%20%E6%9F%B4%E7%94%B0%20%E5%BF%83%E5%91%B3%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9D%B1%E5%B1%B11%E4%B8%81%E7%9B%AE18-12%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: KiiLife（紀伊民報）（kiilife.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003916343/">ホットペッパーグルメ 創作割烹 柴田 心味(2026-08-28)</a> / <a href="https://kiilife.jp/gourmet/302066/2193">KiiLife(紀伊民報) 創作割烹 柴田 心味</a></div>
+</div></div>
+<div class="card" id="c-tanabe-sushihide">
+<img class="hero" src="img/tanabe/tanabe-sushihide.jpg" alt="酒菜処 sushihide 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>酒菜処 sushihide<span class="yomi">しゅさいどころ すしひで</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">県内最大の飲食街「味光路」にある寿司と肴の店。炙り鯖の棒寿司や、その日の入荷で内容が変わる握りの盛り合わせを出し、十四代・而今・新政・紀土など全国の銘酒を月に二十〜三十種入れ替えて並べる。三十四席で座敷もあり、酒を軸に紀伊水道の地魚をつまむ使い方に向く。日曜が休み。</div>
+<div class="sig"><b>一皿:</b>炙り鯖の棒寿司(紀伊水道の鯖を炙って棒状に締めた、一本八貫の名物寿司)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜23:00（L.O.22:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊9-15</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739342613">☎ 0739-34-2613</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>味光路のなかで寿司を看板に掲げ、紀州の酒も含めた日本酒と地魚を合わせられる店として選んだ。KiiLife(紀伊民報)の店舗ページに2026年9月24日付の「10月1日は日本酒の日」の告知があり、現在も営業中と確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%8F%9C%E5%87%A6%20sushihide%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A9-15">Googleマップで開く</a>
+<div class="src">写真: KiiLife（紀伊民報）（kiilife.jp）より引用 / 参照元: <a href="https://kiilife.jp/gourmet/302066/786">KiiLife(紀伊民報) 酒菜処 sushihide(2026-09-24 お知らせ)</a></div>
+</div></div>
+<div class="card" id="c-tanabe-ajidokoro-marumasa">
+<img class="hero" src="img/tanabe/tanabe-ajidokoro-marumasa.jpg" alt="味処 丸政 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>味処 丸政<span class="yomi">あじどころ まるまさ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">市街を抜けた中万呂にある和風の食事処。昼はボリュームのある日替わり定食が千円前後で、土曜でも頼めるところが地元客に喜ばれている。夜は三千円台で一品料理と酒を合わせる使い方になる。四十席で全席禁煙、水曜が休み。駅前を離れて車で動く日や、熊野へ向かう道すがらに寄りやすい。</div>
+<div class="sig"><b>一皿:</b>日替わり定食(その日の仕入れで魚と揚げ物が替わる、量のある昼の定食)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜土・祝 11:00〜14:00／17:00〜22:30、日 17:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市中万呂92</td></tr>
+<tr><th>予約</th><td>予約可 — <a href="tel:0739223568">☎ 0739-22-3568</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前に集まりがちな田辺の和食のなかで、国道42号側に振った一軒として選んだ。ホットペッパーグルメの掲載情報が2026年8月15日更新で、同じ2026年8月15日に来店した利用者の口コミも投稿されているため、営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%87%A6%20%E4%B8%B8%E6%94%BF%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%AD%E4%B8%87%E5%91%8292">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（クラーレのランチ日記）（www.clarenet-lunch.com）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000504610/">ホットペッパーグルメ 味処 丸政(2026-08-15 更新／2026-08-15 来店の口コミ)</a></div>
+</div></div>
+<div class="card" id="c-tanabe-unagi-shikaroku-hongu">
+<img class="hero" src="img/tanabe/tanabe-unagi-shikaroku-hongu.jpg" alt="うなぎ料理 鹿六 本宮店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>うなぎ料理 鹿六 本宮店<span class="yomi">うなぎりょうり しかろく ほんぐうてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">新宮の老舗うなぎ店が熊野本宮大社のそばに構える支店。国内産のうなぎを井戸水に数日泳がせて泥を吐かせてから、紀州備長炭で一枚ずつ手焼きし、創業以来継ぎ足してきたタレにくぐらせる。白木のカウンターと二階の座敷があり、当日分がなくなり次第終了する昼だけの営業。持ち帰りの鰻弁当もある。</div>
+<div class="sig"><b>一皿:</b>うな重(備長炭で手焼きしたうなぎを重に敷き、吸物を添えた店の看板)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:00〜14:00／土日祝 11:00〜14:30（L.O.14:00）※当日分の鰻がなくなり次第終了</td></tr>
+<tr><th>定休日</th><td class="off">月曜（月曜が祝日の場合は翌火曜）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市本宮町本宮251-1</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0735388009">☎ 0735-38-8009</a> ／ <a href="https://unagi-shikaroku.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺市の山間部・本宮で、市の名産である紀州備長炭を使ううなぎ専門店という組み合わせが立っている。公式サイトのお知らせに2026年9月28日付の本宮店の臨時休業告知があり、メニューも2025年3月1日改定と明示されているため、営業継続を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E6%96%99%E7%90%86%20%E9%B9%BF%E5%85%AD%20%E6%9C%AC%E5%AE%AE%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE251-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（unagi-shikaroku.jp）より引用 / 参照元: <a href="https://unagi-shikaroku.jp/">うなぎ料理 鹿六 公式サイト(2026-09-28 本宮店 臨時休業のお知らせ)</a> / <a href="https://www.hongu.jp/eat/">熊野本宮観光協会 食べる</a></div>
+</div></div>
+<div class="card" id="c-ichiyoshi-ekimae">
+<img class="hero" src="img/tanabe/ichiyoshi-ekimae.jpg" alt="麺・寿司・食べ処 一吉 駅前店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>麺・寿司・食べ処 一吉 駅前店<span class="yomi">めん・すし・たべどころ いちよし えきまえてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">JR紀伊田辺駅のすぐ前、飲み屋街・味光路の入口に建つ和風の食事処。にぎり寿司や刺身、天ぷら、うどん・そば、丼や定食までを一枚のお品書きに載せ、夕方5時から深夜4時まで通しで営業する。座敷は2〜30名、ひとりで座れるテーブル席もあり、持ち帰りの折寿司や会席・鍋のコースも受ける。</div>
+<div class="sig"><b>一皿:</b>一吉贅沢寿司御膳(刺身・ミニステーキ・天ぷら・にぎり寿司5貫・サラダを一度に盛り合わせた看板のセット)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜翌4:00（ラストオーダー 3:50）</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊2番11号</td></tr>
+<tr><th>予約</th><td>予約可 — <a href="tel:0739228239">☎ 0739-22-8239</a> ／ <a href="http://1-yoshi.com/ekimae/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺市熊野ツーリズムビューローの公式店舗紹介に2025年3月24日付で新規掲載され、掲載写真も2025年3月アップロードのもの。店の公式サイトも2025年3月に画像を更新し「4月からメニューが新しくなりました」と告知しているため、現在も営業していると判断した。駅前で寿司と麺を深夜4時まで通しで出す店は田辺では貴重で、飲んだ後の〆にも、ひとり客の夕食にも使える点を評価した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%83%BB%E5%AF%BF%E5%8F%B8%E3%83%BB%E9%A3%9F%E3%81%B9%E5%87%A6%20%E4%B8%80%E5%90%89%20%E9%A7%85%E5%89%8D%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A2%E7%95%AA11%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/13587/">田辺市熊野ツーリズムビューロー 公式店舗紹介(2025-03-24掲載)</a> / <a href="http://1-yoshi.com/ekimae/">一吉 公式サイト 駅前店(2025-03更新)</a></div>
+</div></div>
+<div class="card" id="c-miyazushi-hongu">
+<img class="hero" src="img/tanabe/miyazushi-hongu.jpg" alt="宮ずし 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>宮ずし<span class="yomi">みやずし</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">熊野本宮大社の門前、旧本宮町の中心部に2022年1月に開いた寿司店。1階はカウンターとテーブル、2階は座敷で、にぎり寿司のほか天ぷら定食、造り定食、鉄火丼、うなぎ、細麺の関西風だしうどんまで揃う。昼で閉める店が多い本宮にあって夜も開けている数少ない一軒で、熊野古道を歩いた後の夕食にも使える。</div>
+<div class="sig"><b>一皿:</b>寿司うどんセット(にぎり寿司に、細麺の関西風だしうどんを添えた昼の定番セット)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜14:00（L.O.13:30）／夜 17:00〜21:00（L.O.20:45）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市本宮町本宮247-4</td></tr>
+<tr><th>予約</th><td>予約可 — <a href="tel:0735300288">☎ 0735-30-0288</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>熊野本宮観光協会の公式「食べる」ページに掲載が続いている。同ページは別の店について「2026年3月末頃から一時休業」と注記しており2026年時点で更新されているが、宮ずしには休業の注記が無い。加えて飲食店データベースHAMONIの店舗ページに2025年10月2日と2025年2月7日付の来店投稿がある。本宮側の担当店として、昼だけの店が多い門前で夜営業もある点と、熊野の山あいでは貴重な寿司専門店である点を評価した。なお価格は公開の料金表を確認できず、定食・セット中心という利用者投稿からの推定（未確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AE%AE%E3%81%9A%E3%81%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE247-4">Googleマップで開く</a>
+<div class="src">写真: 熊野本宮観光協会（www.hongu.jp）より引用 / 参照元: <a href="https://www.hongu.jp/eat/">熊野本宮観光協会 公式「食べる」(2026-09-30閲覧・2026年の休業情報を掲載)</a> / <a href="https://hamoni.jp/shop/qP0zaLxXcqVgX5ksDjFQ">HAMONI 宮ずし 店舗ページ(利用者投稿 2025-10-02・2025-02-07)</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">ラーメン・うどん・そば・粉もん</h2>
+<div class="card" id="c-bakumatsu-tanabe">
+<img class="hero" src="img/tanabe/bakumatsu-tanabe.jpg" alt="らーめん幕末 田辺店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">17</span>らーめん幕末 田辺店<span class="yomi">らーめんばくまつ たなべてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">御坊本店から和歌山県内に5店を広げた豚骨ラーメン店の田辺店で、2010年の開店。豚骨と鶏がら、野菜を10時間煮込んだ、こくがあって後味はあっさりのスープに細ストレート麺を合わせる。麺の硬さ調整と替え玉ができ、国道42号沿いで駐車場は100台を超える。</div>
+<div class="sig"><b>一皿:</b>豚骨ら～めん(10時間煮込んだあっさり後味の豚骨スープに、細ストレート麺と秘伝のタレで煮込んだ肉厚の自家製チャーシューをのせた看板の一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 11:00〜14:30／17:00〜21:00、日・祝 11:00〜15:00／17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市稲成町186-105</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739201364">☎ 0739-20-1364</a> ／ <a href="https://men-bakumatsu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>紀伊民報AGARAが2026年8月5日付で田辺店の「痛辛ら～めん」を店長名・営業時間つきで報じており、現在も営業していることを確認した。公式サイトの新着ニュースも2026年9月1日付、店舗案内ページは2026年9月24日更新。紀南で最も店舗数が多い地元発の豚骨ラーメン店として選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E5%B9%95%E6%9C%AB%20%E7%94%B0%E8%BE%BA%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E7%A8%B2%E6%88%90%E7%94%BA186-105">Googleマップで開く</a>
+<div class="src">写真: KiiLife（紀伊民報）（kiilife.jp）より引用 / 参照元: <a href="https://www.agara.co.jp/article/669348">紀伊民報AGARA「猛烈な辛さの一杯 和歌山県田辺のラーメン店『幕末』」(2026-08-05)</a> / <a href="https://men-bakumatsu.com/shop/">らーめん幕末 公式サイト 店舗案内(2026-09-24更新)</a> / <a href="https://kiilife.jp/gourmet/302066/9">KiiLife(紀伊民報)「幕末 田辺店」</a> / <a href="https://eiti.blog.jp/archives/79733516.html">EITIの主に和歌山関西食べ歩き「幕末ラーメン田辺店」(2019-07-25・写真出典)</a></div>
+</div></div>
+<div class="card" id="c-menya-kanbire">
+<img class="hero" src="img/tanabe/menya-kanbire.jpg" alt="麺屋 神びれ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>麺屋 神びれ<span class="yomi">めんや かんびれ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">もとは紀伊田辺駅前の飲み屋街・味光路にあった店で、新型コロナ禍を機に秋津町の住宅街へ移った。店主がひとりで切り盛りし、がつんとこない落ち着いた味のラーメンと、野菜の甘みが立つ餃子を出す。店の斜め前に駐車場があり、知らないと辿り着きにくい場所にある。</div>
+<div class="sig"><b>一皿:</b>ラーメン(毎日でも食べられる穏やかなバランスのスープに中細麺を合わせた一杯。餃子とごはんが付く定食にもできる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00／17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市秋津町217-14</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739245262">☎ 0739-24-5262</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2026年4月3日付の個人ブログ(note)の訪問記に、現在地での営業、店主ひとりでの切り盛り、味光路からの移転の経緯が書かれており営業を確認した。公式インスタグラム(@kanbire_913)のプロフィールにも営業時間と定休日が記載されている。味光路の人気店の味が今どこで食べられるかを示す一軒として選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E7%A5%9E%E3%81%B3%E3%82%8C%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E7%A7%8B%E6%B4%A5%E7%94%BA217-14">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（note）（assets.st-note.com）より引用 / 参照元: <a href="https://note.com/deft_tucan988/n/n0ee8555a1b22">note「【和歌山田辺】住宅街で出会う、やさしい一杯。麺屋神びれ」(2026-04-03)</a> / <a href="https://www.instagram.com/kanbire_913/">麺屋 神びれ 公式インスタグラム(@kanbire_913)</a></div>
+</div></div>
+<div class="card" id="c-ryuchan-hanten">
+<img class="hero" src="img/tanabe/ryuchan-hanten.jpg" alt="りゅうちゃん飯店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>りゅうちゃん飯店<span class="yomi">りゅうちゃんはんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">田辺市片町の中華料理店が2021年に文里へ移り、2023年4月に屋台風の店から現在の店舗へ建て替えた町中華。トタン張りに緑の柱という飾らない外観で、のれんには中華そば・焼き飯・天津飯と染め抜かれている。ラーメンに400円足すと小の焼き飯が付く。</div>
+<div class="sig"><b>一皿:</b>背脂ラーメンと焼き飯のセット(あっさりした醤油ベースに背脂のこくを重ねた一杯と、しっかりぱらぱらに炒めた焼き飯の組み合わせ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜13:30／17:00〜20:00（ラストオーダー）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・第3火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市文里2丁目35-15（COMIC BUSTER 優悦館 和歌山田辺店の敷地内）</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:09045643764">☎ 090-4564-3764</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>紀伊民報AGARAがリニューアル開業を報じた店で、地元の商いポータル「バウス」に2024年11月28日付で営業時間・定休日・価格が掲載されている。Yahoo!マップには2026年5月1日と2026年2月4日の来店クチコミ（写真付き）があり、現在も営業していることを確認した。片町時代の常連の声で天津飯を復活させた経緯があり、昔ながらの中華料理店として選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%8A%E3%82%85%E3%81%86%E3%81%A1%E3%82%83%E3%82%93%E9%A3%AF%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%87%E9%87%8C2%E4%B8%81%E7%9B%AE35-15%EF%BC%88COMIC%20BUSTER%20%E5%84%AA%E6%82%A6%E9%A4%A8%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%94%B0%E8%BE%BA%E5%BA%97%E3%81%AE%E6%95%B7%E5%9C%B0%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: バウス（紀南の地域情報サイト）（baus-ad.jp）より引用 / 参照元: <a href="https://www.agara.co.jp/article/268758">紀伊民報AGARA「中華料理店にリニューアル 田辺『りゅうちゃん飯店』」(2023-04-11)</a> / <a href="https://baus-ad.jp/inshoku_005/">紀南周辺の商いポータル バウス「りゅうちゃん飯店」(2024-11-28)</a> / <a href="https://map.yahoo.co.jp/v3/place/8BdbVLa6FAk/review">Yahoo!マップ りゅうちゃん飯店 クチコミ(最新2026-05-01)</a> / <a href="https://eat-wakayama.jp/ja/spot/detail/2300183">EATWAKAYAMA「りゅうちゃん飯店」(写真出典)</a></div>
+</div></div>
+<div class="card" id="c-takojin">
+<img class="hero" src="img/tanabe/takojin.jpg" alt="たこ焼き 蛸神 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>たこ焼き 蛸神<span class="yomi">たこやき たこじん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">大阪府出身の増尾夫婦が2024年7月に開いた持ち帰りのたこ焼き店。高火力で外に薄く焼き目を付け、中はとろりと仕上げる。生地にえび粉と出汁を利かせるので味を付けない素焼も人気で、甘口ソース・塩・ポン酢なども選べる。大阪名物のいか焼きもあり、注文を受けてから焼く。</div>
+<div class="sig"><b>一皿:</b>たこ焼き(外は薄く焼き目、中はとろとろ。8個500円・10個550円・12個600円。塩はごま油を生地に塗り、塩を別添えで出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜19:00（金曜は22:00、土曜は23:00まで／生地がなくなり次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市高雄1丁目1-28</td></tr>
+<tr><th>予約</th><td>予約可 — <a href="tel:09077664199">☎ 090-7766-4199</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>紀伊民報AGARAが開店（2024年8月7日）と1周年記念（2025年7月9日）の2本を掲載しており、2025年時点の営業と営業時間・定休日を確認した。田辺市街で作り置きをしない注文焼きのたこ焼きが食べられる数少ない店で、紀伊田辺駅周辺の粉もんとして選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%93%E7%84%BC%E3%81%8D%20%E8%9B%B8%E7%A5%9E%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E9%AB%98%E9%9B%841%E4%B8%81%E7%9B%AE1-28">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（takojin.web.fc2.com）より引用 / 参照元: <a href="https://www.agara.co.jp/article/515265">紀伊民報AGARA「たこ焼き店の周年祭 和歌山県田辺の『蛸神』」(2025-07-09)</a> / <a href="https://www.agara.co.jp/article/399769">紀伊民報AGARA「本場の味 楽しんで 和歌山県田辺市の『蛸神』」(2024-08-07)</a> / <a href="https://takojin.web.fc2.com/takojintakoyaki.html">たこ焼き 蛸神 旧公式サイト「蛸神の蛸焼き」</a></div>
+</div></div>
+<div class="card" id="c-asoko-maeda">
+<img class="hero" src="img/tanabe/asoko-maeda.jpg" alt="創作うどん・そば あそこ・まえだ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>創作うどん・そば あそこ・まえだ<span class="yomi">そうさくうどん・そば あそこ・まえだ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hist">老舗・歴史</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1977年創業と伝わる、田辺市新庄町の住宅地にある手打ちうどんとそばの店。店内の壁は一面が手書きのメッセージで埋め尽くされ、焼き物の人形が並ぶ独特の空間になっている。天丼や親子丼など丼物とのセットが豊富で、トッピングのアレンジにも応じてくれる。</div>
+<div class="sig"><b>一皿:</b>手打ちうどん(うどん一徹の店主が打つ一杯。天ぷらやかき揚げ、丼物とのセットで頼む客が多い)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:00〜15:00／17:30〜21:00、土日祝 11:00〜15:00／17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市新庄町2926-16</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739245765">☎ 0739-24-5765</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Yahoo!マップに2026年8月16日・2026年7月13日・2026年6月21日と直近の来店クチコミが続いており、現在も営業していることを確認した。田辺市街と白浜の間で手打ちうどんを出す数少ない店で、店内の雰囲気そのものが見どころになるため選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E3%81%86%E3%81%A9%E3%82%93%E3%83%BB%E3%81%9D%E3%81%B0%20%E3%81%82%E3%81%9D%E3%81%93%E3%83%BB%E3%81%BE%E3%81%88%E3%81%A0%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E5%BA%84%E7%94%BA2926-16">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（place-position）（place-position.net）より引用 / 参照元: <a href="https://map.yahoo.co.jp/v3/place/IihVBjKAHFg/review">Yahoo!マップ あそこ・まえだ クチコミ(最新2026-08-16)</a> / <a href="https://place-position.net/asoko-maeda/">ぷれぽじろぐ「【あそこまえだ】頑固おやじが打つ！創作うどんの店」(写真出典)</a> / <a href="https://naviwakayama.com/0739-24-5765/">なび和歌山「創作うどん・そば あそこ・まえだ」</a></div>
+</div></div>
+<div class="card" id="c-soba-wawaku">
+<img class="hero" src="img/tanabe/soba-wawaku.jpg" alt="そばと農園 和わく 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>そばと農園 和わく<span class="yomi">そばとのうえん わわく</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">廃園になった保育所を改装した蕎麦専門店。ウッドデッキの前には蕎麦畑と日高川が広がり、芝生には保育所だったころの遊具が残る。龍神村の休耕田で育てた地元産の蕎麦粉を使うのが特徴で、冬は薪ストーブが入る。龍神温泉へ向かう道すがらに立ち寄れる山里の一軒。</div>
+<div class="sig"><b>一皿:</b>ざるそば(龍神村の休耕田で栽培した地元産そば粉を使う手打ちそば。天ぷらを合わせたセットもある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（ラストオーダー14:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜・金曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市龍神村甲斐ノ川443</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739770677">☎ 0739-77-0677</a> ／ <a href="https://ja-jp.facebook.com/WawakuRyujinsoba">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>龍神観光協会（公益社団法人）の公式サイトの店舗ページが2026年4月24日更新で、営業時間と定休日を現行のまま掲載していることから営業を確認した。紀伊民報AGARAも休耕田栽培の蕎麦として取り上げている。地元産のそば粉を使う和歌山県内でも数少ない蕎麦屋として、山間部から選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E3%81%A8%E8%BE%B2%E5%9C%92%20%E5%92%8C%E3%82%8F%E3%81%8F%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E9%BE%8D%E7%A5%9E%E6%9D%91%E7%94%B2%E6%96%90%E3%83%8E%E5%B7%9D443">Googleマップで開く</a>
+<div class="src">写真: 龍神観光協会（www.ryujin-kanko.jp）より引用 / 参照元: <a href="https://www.ryujin-kanko.jp/facility/1733/">龍神観光協会 公式サイト「そばと農園 和わく」(2026-04-24更新)</a> / <a href="https://www.agara.co.jp/article/370372">紀伊民報AGARA「休耕田栽培のそば味わって 田辺市龍神村の『そばと農園 和わく』」</a></div>
+</div></div>
+<div class="card" id="c-torisoba-shimojibashi">
+<img class="hero" src="img/tanabe/torisoba-shimojibashi.jpg" alt="とりそば下地橋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>とりそば下地橋<span class="yomi">とりそば しもじばし</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2021年8月に本宮町請川で開いたとりそば専門店。羅臼昆布と丸鶏でとったスープに醤油・塩・味噌の三系統があり、細麺と合わせる。木を多用した店内からは山あいの景色が見え、券売機で食券を買う方式。熊野古道を歩いたあとの昼食にしやすい山里の一軒。</div>
+<div class="sig"><b>一皿:</b>とりそば(羅臼昆布と丸鶏でとった澄んだスープに細麺、鶏チャーシューと味玉をのせた看板の一杯。醤油・塩・味噌から選べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00／17:30〜20:00（夜営業は金・土・日のみ）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市本宮町請川422-1</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:07084842545">☎ 070-8484-2545</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>熊野エリア観光推進実行委員会（和歌山県東牟婁振興局）の公式サイトが2026年3月30日更新で営業時間・定休日を掲載しており、Yahoo!マップにも2026年9月7日・2026年8月30日の来店クチコミがあるため営業を確認した。熊野本宮大社周辺は飲食店が少なく、参拝客の昼食として実用性が高いため選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%8A%E3%81%9D%E3%81%B0%E4%B8%8B%E5%9C%B0%E6%A9%8B%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E8%AB%8B%E5%B7%9D422-1">Googleマップで開く</a>
+<div class="src">写真: おたびマップ（otabimap.com）より引用 / 参照元: <a href="https://www.kumano-area.jp/facility/1855/">和歌山県・熊野エリア観光「とりそば下地橋」(2026-03-30更新)</a> / <a href="https://map.yahoo.co.jp/v3/place/AA0bdsitgdk/review">Yahoo!マップ とりそば 下地橋 クチコミ(最新2026-09-07)</a> / <a href="https://otabimap.com/hongu-torisoba/">おたびマップ「本宮大社近くのラーメン店『とりそば下地橋』」(写真出典)</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">味光路の居酒屋・立ち飲み・地酒</h2>
+<div class="card" id="c-shinbe">
+<img class="hero" src="img/tanabe/shinbe.jpg" alt="季節料理 しんべ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">24</span>季節料理 しんべ<span class="yomi">きせつりょうり しんべ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">味光路で50年以上続く海鮮居酒屋。釣り好きの大将が毎朝自ら釣ってくる魚も安く並び、地の魚介が日替わりで入る。名物は熱々の揚げの中にプリプリの海老を詰めた「エビ団子」。春は和歌山の郷土料理もちガツオも出る。カウンター12席と座敷、個室もあり、「日々に感謝」を掲げる大将の話も楽しい。</div>
+<div class="sig"><b>一皿:</b>エビ団子(熱々の油揚げの中にプリプリの海老を詰めて揚げた、この店の看板料理)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜22:00(ラストオーダー21:30)</td></tr>
+<tr><th>定休日</th><td class="off">日曜・第1月曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊12-45</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739248845">☎ 0739-24-8845</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>味光路の老舗枠。田辺市熊野ツーリズムビューローの公式グルメガイドに掲載(2025-03-24更新)、講談社『現代ビジネス』の味光路特集(2025-01-25)でも「老舗の居酒屋」として名物えび団子とともに紹介されている。さらに地域情報サイトHAMONIの紀伊田辺・居酒屋ランキング(2026-09-29更新)で「営業中 17:00-22:00」と表示され、現在も営業していることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AD%A3%E7%AF%80%E6%96%99%E7%90%86%20%E3%81%97%E3%82%93%E3%81%B9%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A12-45">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/2958/">田辺市熊野ツーリズムビューロー 公式グルメガイド(2025-03-24更新)</a> / <a href="https://gendai.media/articles/-/145676">現代ビジネス「和歌山・味光路」(2025-01-25)</a> / <a href="https://hamoni.jp/area/wakayama/tanabe/kiitanabe/list/izakaya">HAMONI 紀伊田辺のおすすめ居酒屋(2026-09-29更新)</a></div>
+</div></div>
+<div class="card" id="c-tachinomiya-sen">
+<img class="hero" src="img/tanabe/tachinomiya-sen.jpg" alt="立ち呑み屋 千 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>立ち呑み屋 千<span class="yomi">たちのみや せん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">味光路をもっと盛り上げたいという店主が開いた、田辺では珍しい立ち飲みスタイルの居酒屋。看板は店内でじっくり煮込むおでんと、銘柄が入れ替わる全国各地のクラフトビールで、常時4種類を出す。店の奥にはパター練習用のミニグリーンがあり、地元客と旅行者がカウンターに肩を寄せ合って並ぶ。</div>
+<div class="sig"><b>一皿:</b>おでん(店内でじっくり煮込む看板の煮込み料理)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜26:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊10-19</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:09093977777">☎ 090-9397-7777</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>立ち飲み枠。田辺市熊野ツーリズムビューローの公式グルメガイドに2026-08-25更新で掲載され、「田辺で唯一の、立ち飲みスタイルの居酒屋」と明記されている。9店のなかで最も新しい日付の一次情報で営業を確認できた一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%AB%8B%E3%81%A1%E5%91%91%E3%81%BF%E5%B1%8B%20%E5%8D%83%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A10-19">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/17753/">田辺市熊野ツーリズムビューロー 公式グルメガイド(2026-08-25更新)</a></div>
+</div></div>
+<div class="card" id="c-sumibi-kushiyaki-gin">
+<img class="hero" src="img/tanabe/sumibi-kushiyaki-gin.jpg" alt="炭火串焼 銀 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>炭火串焼 銀<span class="yomi">すみびくしやき ぎん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">朝びきの鶏と旬の野菜を紀州備長炭で焼く、味光路の串焼き店。自家製つくねや、首まわりの希少部位せせりが看板で、鶏だし茶漬けや鶏スープなど焼き物以外も鶏づくし。日本酒やビールのほか、焼き鳥に合う赤ワインも置く。シャイな店主と妻が切り盛りする、カウンター7席と座敷12席の店。</div>
+<div class="sig"><b>一皿:</b>自家製つくね(鶏ひき肉を団子状にまとめ、紀州備長炭で焼いたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜23:00(料理ラストオーダー22:00、ドリンク22:30)</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊6-12</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739259215">☎ 0739-25-9215</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>焼き鳥枠。田辺市熊野ツーリズムビューローの公式グルメガイドに掲載(2025-06-03更新)され、紀州備長炭を使う味光路の焼き鳥店として料理・席数・営業時間まで載っている。味光路に焼き鳥専門店は多くないため、はしご酒の途中で肉をはさむ一軒として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E4%B8%B2%E7%84%BC%20%E9%8A%80%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A6-12">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/13589/">田辺市熊野ツーリズムビューロー 公式グルメガイド(2025-06-03更新)</a></div>
+</div></div>
+<div class="card" id="c-robataya-teruterubozu">
+<img class="hero" src="img/tanabe/robataya-teruterubozu.jpg" alt="炉端屋 てるてるぼうず 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>炉端屋 てるてるぼうず<span class="yomi">ろばたや てるてるぼうず</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">魚だけでなく野菜や肉の料理もそろえ、田辺の味をまとめて味わえる炉端の店。人気はカツオで、つくり、たたき、紅梅揚げと調理法を変えて出す。和歌山の紀土をはじめ八海山、醸し人九平次といった日本酒を手ごろな値段で置き、地酒を飲み比べたい夜に向く。カウンター11席と座敷8席。</div>
+<div class="sig"><b>一皿:</b>カツオの紅梅揚げ(紀伊水道のカツオを紀州の梅と合わせて揚げた一品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜23:00(ラストオーダー22:30)</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊32-3</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739339528">☎ 0739-33-9528</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地酒枠。田辺市熊野ツーリズムビューローの公式グルメガイド(2025-06-03更新)が「紀土(和歌山)や八海山(新潟)、醸し人九平次(愛知)など有名な日本酒もリーズナブル」と銘柄名まで挙げており、和歌山の地酒を置く店として裏が取れた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E5%B1%8B%20%E3%81%A6%E3%82%8B%E3%81%A6%E3%82%8B%E3%81%BC%E3%81%86%E3%81%9A%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A32-3">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/13584/">田辺市熊野ツーリズムビューロー 公式グルメガイド(2025-06-03更新)</a></div>
+</div></div>
+<div class="card" id="c-kakurega-jin">
+<img class="hero" src="img/tanabe/kakurega-jin.jpg" alt="隠れ家 仁 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>隠れ家 仁<span class="yomi">かくれが じん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">味光路の雨風倶楽部にある、カウンター7席だけの小さな居酒屋。地元の海鮮が料理の中心で、その日に入った旬の地魚の刺身のほか、自家製の牛スジ煮込みや牛スジカレー、串カツ盛り合わせ5本とビールのセットも人気。ひとりでも気兼ねなく入れる雰囲気で、金・土は深夜1時まで開いている。</div>
+<div class="sig"><b>一皿:</b>旬の地魚の刺身(その日に入った紀伊水道の魚を盛る。珍しい魚が入ればメニューに無い料理も出る)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 17:00〜22:00(ラストオーダー21:30)／金・土 17:00〜25:00(ラストオーダー24:30)</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊9-7 雨風倶楽部A号</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:09098830674">☎ 090-9883-0674</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地魚枠。田辺市熊野ツーリズムビューローの公式グルメガイド(2025-03-25更新)に掲載され、講談社『現代ビジネス』の味光路特集(2025-02-09)でも「旬の地魚を中心とした刺身」を出すカウンターの店として紹介されている。公式サイトとして案内されていた kakurega-zin.com は現在つながらないため、websiteは空欄にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9A%A0%E3%82%8C%E5%AE%B6%20%E4%BB%81%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A9-7%20%E9%9B%A8%E9%A2%A8%E5%80%B6%E6%A5%BD%E9%83%A8A%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/13583/">田辺市熊野ツーリズムビューロー 公式グルメガイド(2025-03-25更新)</a> / <a href="https://gendai.media/articles/-/146606">現代ビジネス「和歌山・味光路」(2025-02-09)</a></div>
+</div></div>
+<div class="card" id="c-craft-beer-bar-nagi">
+<img class="hero" src="img/tanabe/craft-beer-bar-nagi.jpg" alt="クラフトビアバルNagi 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>クラフトビアバルNagi<span class="yomi">くらふとびあばる なぎ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">駅から歩いて6分ほど、2階にゲストハウスを併設するクラフトビールのバル。全国から店主が選んだビールが並び、地元産や近郊の銘柄は日替わりで樽生を注ぐ。飲み比べセットもある。ソーセージ、生ハム、あさりのビール蒸しなど、ビールに合わせる料理もそろい、旅人と地元の客が同じ卓に着く。</div>
+<div class="sig"><b>一皿:</b>樽生クラフトビールの飲み比べセット(日替わりの地元・近郊の銘柄を並べ、香りと味の違いを比べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜23:00(ラストオーダー22:30)</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市北新町25</td></tr>
+<tr><th>予約</th><td>予約可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>味光路の外に行き先を散らすための一軒。田辺市熊野ツーリズムビューローの公式グルメガイドに2026-06-15更新で掲載され、営業時間・定休日・席数が現行の情報で載っている。日本酒・梅酒に偏らないよう、ビールの枠として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AF%E3%83%A9%E3%83%95%E3%83%88%E3%83%93%E3%82%A2%E3%83%90%E3%83%ABNagi%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E5%8C%97%E6%96%B0%E7%94%BA25">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/14390/">田辺市熊野ツーリズムビューロー 公式グルメガイド(2026-06-15更新)</a></div>
+</div></div>
+<div class="card" id="c-yoshihei-tanabe">
+<img class="hero" src="img/tanabe/yoshihei-tanabe.jpg" alt="揚げ立て天ぷら 海鮮 よし平 田辺店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>揚げ立て天ぷら 海鮮 よし平 田辺店<span class="yomi">あげたててんぷら かいせん よしへい たなべてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">田辺に本社を置くよし平グループが2008年に開いた天ぷらと海鮮の店。カウンター越しの調理場で注文を受けてから揚げ、二度に分けて出すので衣がさくさくのまま食べられる。米油で揚げるのが特徴で、那智勝浦から届く生まぐろの刺身や漁師めしも合わせられる。駐車場20台。</div>
+<div class="sig"><b>一皿:</b>天ぷら勝浦生まぐろ漁師めし膳(揚げたての天ぷらと、ごま醤油だれに漬けた勝浦の生まぐろの漁師めしを組んだ膳)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00(ラストオーダー14:30)／17:00〜21:00(ラストオーダー20:30) ※土日祝は15:30〜16:30休憩</td></tr>
+<tr><th>定休日</th><td class="off">月曜(祝日の場合は翌日)</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市新庄町2062</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0739810100">☎ 0739-81-0100</a> ／ <a href="https://www.yoshihei.jp/tenpura.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>味光路から離れた新庄町の枠として採用。公式サイトに田辺店の住所・電話・営業時間が現行の内容で載っており(表記はCopyright 2026)、同じページで岩出店の2025年11月5日オープンも告知されている。ホットペッパーグルメの同店ページには2026年2月15日・2月25日・5月30日付の客の投稿写真があり、今も営業していることを確認した。車で回る日の昼にも夜にも使える。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%8F%9A%E3%81%92%E7%AB%8B%E3%81%A6%E5%A4%A9%E3%81%B7%E3%82%89%20%E6%B5%B7%E9%AE%AE%20%E3%82%88%E3%81%97%E5%B9%B3%20%E7%94%B0%E8%BE%BA%E5%BA%97%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E5%BA%84%E7%94%BA2062">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.yoshihei.jp）より引用 / 参照元: <a href="https://www.yoshihei.jp/tenpura.html">よし平グループ公式サイト 揚げたて天ぷら・海鮮 よし平(2026年時点)</a> / <a href="https://www.hotpepper.jp/strJ000748572/">ホットペッパーグルメ よし平 田辺(客の投稿写真2026-05-30ほか)</a> / <a href="https://san-tatsu.jp/pressrelease/474715/">散歩の達人 プレスリリース「天ぷら海鮮よし平」(2025-10-31)</a></div>
+</div></div>
+<div class="card" id="c-zen-minato">
+<img class="hero" src="img/tanabe/zen-minato.jpg" alt="旬彩居酒屋 膳 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>旬彩居酒屋 膳<span class="yomi">しゅんさいいざかや ぜん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">JR紀伊田辺駅の東に広がる飲み屋街・味光路の路地裏にある小さな居酒屋。紀伊水道の地魚と旬の野菜を店主がひとりで調理し、名物の手羽先唐揚げ目当てに通う常連も多い。田辺の地ビールVOYAGERや地酒、自家製梅酒がそろい、英語メニューとビーガン対応があるため熊野古道を歩く外国人客の利用も目立つ。</div>
+<div class="sig"><b>一皿:</b>手羽先唐揚げ（鶏の手羽先を揚げた看板の一品。田辺市熊野ツーリズムビューローが「オーダー必須」と紹介している）</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:00（L.O.22:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊25-16</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739268551">☎ 0739-26-8551</a> ／ <a href="https://www.zen519.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺市熊野ツーリズムビューロー公式の飲食店一覧に2025-03-24更新で掲載され、営業時間・定休日・席数・電話番号まで公開されている一次情報がある。あわせて店の公式サイト（zen519.com）が2025-04-16に新商品「たなべぇサンド」の写真を掲載しており（画像のLast-Modifiedヘッダが2025-04-16と応答）、現在も営業していると判断した。味光路の中で英語メニューとビーガン対応まで備える数少ない店で、紙のガイドに載せる価値があると考えて採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E5%BD%A9%E5%B1%85%E9%85%92%E5%B1%8B%20%E8%86%B3%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A25-16">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/13586/">田辺市熊野ツーリズムビューロー 公式サイト 飲食店ガイド(2025-03-24更新)</a> / <a href="https://www.zen519.com/news.html">旬彩居酒屋 膳 公式サイト お知らせ(2025-04-16)</a> / <a href="https://www.zen519.com/">旬彩居酒屋 膳 公式サイト(店舗情報・営業時間)</a></div>
+</div></div>
+<div class="card" id="c-takagi-shinjo">
+<img class="hero" src="img/tanabe/takagi-shinjo.jpg" alt="居酒屋 かっぽう たか木 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>居酒屋 かっぽう たか木<span class="yomi">いざかや かっぽう たかき</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">白浜町寄りの新庄町にある、昼は定食、夜は会席と一品料理を出す割烹居酒屋。地元で揚がった魚の造りが看板で、造り盛り合わせは1,870円。熊野牛のステーキを組み込んだ会席（6,600円）や鍋料理は予約で用意する。カウンターと座敷があり駐車場も備えるので、車で回る紀南の旅の夕食に使いやすい。</div>
+<div class="sig"><b>一皿:</b>造り盛り合わせ（その日に入った地魚を5品盛り合わせた刺身の皿。1,870円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜13:30／18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜（祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市新庄町2744-25</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739262188">☎ 0739-26-2188</a> ／ <a href="https://www.kappou-takagi.info/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>紀伊民報が運営する地域情報サイトKiiLifeの田辺市グルメ登録店として、住所・電話・営業時間・定休日が掲載されている。公式サイト（kappou-takagi.info）のトップに載る「熊野牛ステーキ会席 6,600円」の写真は、画像のLast-Modifiedヘッダが2026-05-21と応答し、2026年に更新された一次情報として営業中を確認できた。味光路の外で、駐車場があり車で行け、紀伊水道の地魚と熊野牛の両方を出す店として採用した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%8B%E3%81%A3%E3%81%BD%E3%81%86%20%E3%81%9F%E3%81%8B%E6%9C%A8%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E5%BA%84%E7%94%BA2744-25">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（image.jimcdn.com）より引用 / 参照元: <a href="https://kiilife.jp/gourmet/302066/585">KiiLife(紀伊民報) 田辺市グルメ 居酒屋 かっぽう たか木</a> / <a href="https://www.kappou-takagi.info/">居酒屋・かっぽう たか木 公式サイト(トップ画像 2026-05-21更新)</a> / <a href="https://www.kappou-takagi.info/menu/alacarte/">居酒屋・かっぽう たか木 公式サイト 一品料理(価格)</a> / <a href="https://www.hotpepper.jp/strJ000504967/">ホットペッパーグルメ たか木(営業時間・夜の予算)</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理・カレー</h2>
+<div class="card" id="c-france-shokudo-chilo">
+<img class="hero" src="img/tanabe/france-shokudo-chilo.jpg" alt="フランス食堂Chilo 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">33</span>フランス食堂Chilo<span class="yomi">ふらんすしょくどうちろ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">フランスのバスク地方のホテルレストランで働いたシェフが一人で切り盛りする16席の食堂。和歌山県産の地元野菜と地魚を中心に、バスク仕立ての皿を組み立てる。ワインは自然派のみを扱い、生産数の限られた希少な銘柄も置く。ドレスコードはなく、昼は2,500円ほどから。駐車場8台。</div>
+<div class="sig"><b>一皿:</b>おまかせのランチコース（地魚や地元野菜をバスク風に仕立てた昼のコース。2,500円〜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00／18:00〜22:00（夜営業のみ要予約）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市上の山1-5-12 ハイツエース1F</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739241658">☎ 0739-24-1658</a> ／ <a href="https://franceshokudo-chilo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺市街で唯一の本格フレンチで、地元食材をバスク料理の技法で出す点が他店と重ならない。営業確認＝公式サイトのTOPICS欄に2026年9月10日付で「シルバーウィークの営業日のご案内」が投稿されており、9月21日の昼夜営業を告知している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%83%A9%E3%83%B3%E3%82%B9%E9%A3%9F%E5%A0%82Chilo%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8A%E3%81%AE%E5%B1%B11-5-12%20%E3%83%8F%E3%82%A4%E3%83%84%E3%82%A8%E3%83%BC%E3%82%B91F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（franceshokudo-chilo.com）より引用 / 参照元: <a href="https://franceshokudo-chilo.com/official/gourmet/s/310983/topics/">フランス食堂Chilo 公式サイト TOPICS(2026-09-10)</a> / <a href="https://franceshokudo-chilo.com/">フランス食堂Chilo 公式サイト 店舗情報</a></div>
+</div></div>
+<div class="card" id="c-sousaku-restaurant-mobo">
+<img class="hero" src="img/tanabe/sousaku-restaurant-mobo.jpg" alt="創作レストランMobo 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>創作レストランMobo<span class="yomi">そうさくれすとらんもぼ</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正後期から昭和初期に建てられ、のちに田辺市の小高い丘へ移築された一軒家を受け継いだ隠れ家レストラン。店名は建物の時代にちなむ。白浜町出身のシェフが和と洋の垣根を越えた創作料理を組み立て、唎酒師が日本酒を中心に合わせる。18席、駐車場あり。</div>
+<div class="sig"><b>一皿:</b>美熊野牛コース（美熊野牛のステーキと赤ワイン煮込みを一皿にした夜の要予約コース、12,000円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00（L.O.14:00）／17:30〜23:00（L.O.21:00）※水曜は夜のみ</td></tr>
+<tr><th>定休日</th><td class="off">火曜（水曜はランチ休み）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市新万8-2</td></tr>
+<tr><th>予約</th><td>要予約 — <a href="tel:0739202441">☎ 0739-20-2441</a> ／ <a href="https://mobo-restaurant.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>熊野牛を使った夜のコースと日本酒のペアリングという田辺ならではの組み立てで、昼は2,000円台から入れる懐の深さも買った。営業確認＝ホットペッパーグルメの店舗情報が2026年5月29日更新で、営業時間と定休日が現行のものになっている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3Mobo%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E4%B8%878-2">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（mobo-restaurant.com）より引用 / 参照元: <a href="https://mobo-restaurant.com/">創作レストランMobo 公式サイト</a> / <a href="https://www.hotpepper.jp/strJ001260765/">ホットペッパーグルメ(2026-05-29 更新)</a></div>
+</div></div>
+<div class="card" id="c-dining-iloha">
+<img class="hero" src="img/tanabe/dining-iloha.jpg" alt="Dining ILOHA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>Dining ILOHA<span class="yomi">だいにんぐいろは</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">紀伊田辺駅から田辺駅前郵便局の方向へ歩いて3分、飲食店が集まる味光路の一角にある夜だけの店。席はすべて掘りごたつの個室で、2名から20名まで使える。鮮魚のカルパッチョやローストビーフ、パスタといった洋皿と、炉ばた焼きや天ぷらの和皿が同じ品書きに並ぶ。注文はタブレット。</div>
+<div class="sig"><b>一皿:</b>鮮魚のカルパッチョ（その日の地魚を薄く引き、ケッパーとピンクペッパーを散らした前菜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜22:00（L.O.21:20）／金・土・祝前日は17:30〜23:00（L.O.22:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊6-16 スターヒルズ2 1F</td></tr>
+<tr><th>予約</th><td>予約推奨 — <a href="tel:0739260168">☎ 0739-26-0168</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前・味光路で洋皿をきちんと出す数少ない店で、個室なので旅先でも落ち着いて使える。営業確認＝ホットペッパーグルメの店舗情報が2026年6月28日更新、かつ2026年8月9〜10日来店の口コミが3件入っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Dining%20ILOHA%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A6-16%20%E3%82%B9%E3%82%BF%E3%83%BC%E3%83%92%E3%83%AB%E3%82%BA2%201F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001145471/">ホットペッパーグルメ(2026-06-28 更新／口コミ来店日 2026-08-10)</a></div>
+</div></div>
+<div class="card" id="c-cafe-restaurant-nancy">
+<img class="hero" src="img/tanabe/cafe-restaurant-nancy.jpg" alt="カフェレストラン NANCY 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>カフェレストラン NANCY<span class="yomi">かふぇれすとらんなんしー</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">文里湾の海沿いに建つカリフォルニア風のカフェレストラン。22席の店内は木のテーブルと写真や小物で埋まり、窓の外に海が見える。看板は特製オムライスで、パスタやグラタン、カレーもそろう。人気のパンケーキは14時30分から。昼から夜22時まで通しで営業。全席喫煙可。</div>
+<div class="sig"><b>一皿:</b>NANCY特製オムライス（薄焼き卵で巻いた米にケチャップをかけた昼夜とも人気の看板皿）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜22:00（L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（祝日の場合は翌火曜）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市文里1-2-10-1 オズビル1F</td></tr>
+<tr><th>予約</th><td>予約可 — <a href="tel:0739256088">☎ 0739-25-6088</a> ／ <a href="https://www.cafe-nancy.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>海の見える席で1,000円台のオムライスが食べられる気軽さが、他の5軒と役割が重ならない。営業確認＝ホットペッパーグルメの店舗情報が2025年1月14日更新で、2026年3月28日・4月23日・5月15日来店の口コミが入っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20NANCY%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%87%E9%87%8C1-2-10-1%20%E3%82%AA%E3%82%BA%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.cafe-nancy.com/">カフェ＆レストランNANCY 公式サイト</a> / <a href="https://www.hotpepper.jp/strJ000504906/">ホットペッパーグルメ(2025-01-14 更新／口コミ来店日 2026-05-15)</a></div>
+</div></div>
+<div class="card" id="c-paradise-cafe-nakahechi">
+<img class="hero" src="img/tanabe/paradise-cafe-nakahechi.jpg" alt="パラダイス カフェ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>パラダイス カフェ<span class="yomi">ぱらだいすかふぇ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">熊野古道・中辺路の山あいにある一軒レストラン。60席にテラス席とデッキを備え、窓の外は一面の緑。ピッツァや魚・肉のポワレといった洋皿と自家製ケーキが評判で、デッキ席はペット同伴もできる。2階は古道具屋になっている。昼だけの営業で、駐車場は広い。</div>
+<div class="sig"><b>一皿:</b>ピッツァ（窓辺やテラスで食べる看板の一品。自家製ケーキと合わせるのが定番）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00（L.O.15:30）／土・日・祝は11:00〜17:00（L.O.16:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜（祝日や連休前後は変更あり）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市中辺路町温川170</td></tr>
+<tr><th>予約</th><td>予約可 — <a href="tel:0739640888">☎ 0739-64-0888</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>熊野本宮へ向かう道中で、山の中にいきなり本格的な洋皿が出てくる意外性を買った。営業確認＝ホットペッパーグルメの店舗情報が2025年12月2日更新で、2026年8月14日・9月2日・9月12日来店の口コミが入っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%A9%E3%83%80%E3%82%A4%E3%82%B9%20%E3%82%AB%E3%83%95%E3%82%A7%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%AD%E8%BE%BA%E8%B7%AF%E7%94%BA%E6%B8%A9%E5%B7%9D170">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004049652/">ホットペッパーグルメ(2025-12-02 更新／口コミ来店日 2026-09-12)</a></div>
+</div></div>
+<div class="card" id="c-monpe-to-kuwa">
+<img class="hero" src="img/tanabe/monpe-to-kuwa.jpg" alt="もんぺとくわ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>もんぺとくわ<span class="yomi">もんぺとくわ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1993年に龍神村へ移住した夫婦が、自家農園「もんぺとくわファーム」の無農薬野菜を使って営む自然派カフェ。日高川を見下ろす窓際の席で、野菜カレーやピタパンサンド、十品目の定食が味わえる。併設のドミトリーで農家民泊もでき、田舎料理教室も開いている。駐車場3台。</div>
+<div class="sig"><b>一皿:</b>天然酵母ナンと野菜カレー（自家農園の無農薬野菜のカレーに、手ごねの天然酵母ナンを添えた一皿）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00（ランチL.O.14:00／カフェL.O.16:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜（月曜が祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市龍神村西258</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739782124">☎ 0739-78-2124</a> ／ <a href="https://monpetokuwa.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>龍神村まで足を延ばす価値のある一軒で、無農薬野菜のカレーという他の5軒にない軸を持つ。営業確認＝公式サイトのお知らせが2026年9月19日付「23日まで休まず営業いたします。」で、9月15日・9月14日にも投稿がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%82%93%E3%81%BA%E3%81%A8%E3%81%8F%E3%82%8F%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E9%BE%8D%E7%A5%9E%E6%9D%91%E8%A5%BF258">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（monpe-kuwa.com）より引用 / 参照元: <a href="https://monpetokuwa.com/">もんぺとくわ 公式サイト お知らせ(2026-09-19)</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・和菓子・スイーツ</h2>
+<div class="card" id="c-suzuya-tanabe">
+<img class="hero" src="img/tanabe/suzuya-tanabe.jpg" alt="鈴屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">39</span>鈴屋<span class="yomi">すずや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正13年創業、紀伊田辺駅前の湊に本店を構える菓子舗。カステラ生地に白あんのジャムをはさみ、全体をホワイトチョコで包んだ四角い「デラックスケーキ」で知られる。ほかに昭和天皇天覧の辨慶の釜、柚もなか、梅まんじゅう、梅たるとなど、紀州の素材を使った和菓子と洋菓子を製造販売している。</div>
+<div class="sig"><b>一皿:</b>デラックスケーキ(カステラ生地に白あんのジャムをはさみ、全体をホワイトチョコで包んだ四角いケーキ。レトロな包み紙が目印)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜18:00（元日のみ10:00〜15:00）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊15-11</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739220436">☎ 0739-22-0436</a> ／ <a href="http://dxcake.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺を代表する銘菓デラックスケーキの製造元で、本店が紀伊田辺駅前にあり徒歩で寄れる。営業確認＝公式オンラインショップ dxcake.jp のお知らせに2026/02/25・2026/02/10（デラックスケーキの和歌山一番星アワード準グランプリ受賞）・2025/10/12の更新があり稼働中。田辺観光協会の会員紹介ページ（更新日2026年6月11日）にも現会員として掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%88%B4%E5%B1%8B%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A15-11">Googleマップで開く</a>
+<div class="src">写真: 田辺観光協会（www.tanabe-kanko.jp）より引用 / 参照元: <a href="http://dxcake.jp/">鈴屋 公式オンラインショップ お知らせ(2026-02-25)</a> / <a href="https://www.tanabe-kanko.jp/member/3045/">田辺観光協会 会員紹介 鈴屋(2026-06-11 更新の会員一覧に掲載)</a></div>
+</div></div>
+<div class="card" id="c-caravan-tanabe">
+<img class="hero" src="img/tanabe/caravan-tanabe.jpg" alt="喫茶と軽食 CARAVAN 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">40</span>喫茶と軽食 CARAVAN<span class="yomi">きっさとけいしょく きゃらばん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">紀伊田辺駅前の商店街に面した、赤白ストライプの軒テントが目印のレトロな喫茶店。宮崎県出身の店主が神戸を経て田辺へ移り住み、その旅路を旅商人になぞらえて店名を付けた。映画のポスターやレコードが並ぶ店内で、オムライスやカレーライスなど昔懐かしい軽食と豊富なドリンクが味わえる。</div>
+<div class="sig"><b>一皿:</b>オムライス(薄焼き卵で包みケチャップをかけた、昔ながらの喫茶店仕立てのオムライス)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市湊15-7</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="https://www.instagram.com/caravan.tanabe/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前商店街に残る昔ながらの喫茶店で、赤白ストライプの軒テントと映画ポスターの内装が紙面映えする。営業確認＝田辺市熊野ツーリズムビューロー公式サイトの店舗紹介が2025年6月6日更新で、掲載写真も2025年6月撮影分に差し替わっている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%81%A8%E8%BB%BD%E9%A3%9F%20CARAVAN%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%B9%8A15-7">Googleマップで開く</a>
+<div class="src">写真: 田辺市熊野ツーリズムビューロー（www.tb-kumano.jp）より引用 / 参照元: <a href="https://www.tb-kumano.jp/cuisine_guide/13936/">田辺市熊野ツーリズムビューロー 食べる・飲む 喫茶と軽食CARAVAN(2025-06-06 更新)</a></div>
+</div></div>
+<div class="card" id="c-kasho-ninomiya">
+<img class="hero" src="img/tanabe/kasho-ninomiya.jpg" alt="菓匠 二宮 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>菓匠 二宮<span class="yomi">かしょう にのみや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和8年創業、世界遺産・闘雞神社の参道に面した和菓子店。店頭の鉄板で次々に焼き上がる回転焼やみたらしだんご、物語にちなんだ「田辺三大まんじゅう」などを商う。店内には甘党喫茶を併設し、買った菓子をその場で味わえる。参拝や町歩きの立ち寄り処として地元で長く親しまれてきた。</div>
+<div class="sig"><b>一皿:</b>回転焼(店頭の鉄板で焼き上げ、小豆あんをはさんだ今川焼き風の焼き菓子)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:30〜18:00（喫茶ラストオーダー16:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（火曜不定休）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市下屋敷町27</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739221001">☎ 0739-22-1001</a> ／ <a href="http://www.amato-ninomiya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前から闘雞神社へ歩く動線上にあり、菓子の持ち帰りと店内の甘党喫茶の両方が使える。創業昭和8年の老舗。営業確認＝公式サイトのお知らせが2026/08/31（9月の休業日）、ブログが2026/08/27と更新され続けており、定休日も水曜・火曜不定休と明記されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8F%93%E5%8C%A0%20%E4%BA%8C%E5%AE%AE%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8B%E5%B1%8B%E6%95%B7%E7%94%BA27">Googleマップで開く</a>
+<div class="src">写真: 田辺観光協会（www.tanabe-kanko.jp）より引用 / 参照元: <a href="http://www.amato-ninomiya.com/">菓匠 二宮 公式サイト お知らせ(2026-08-31)</a> / <a href="https://www.tanabe-kanko.jp/member/4391/">田辺観光協会 会員紹介 菓匠 二宮</a></div>
+</div></div>
+<div class="card" id="c-loro-kitchen-tenjinzaki">
+<img class="hero" src="img/tanabe/loro-kitchen-tenjinzaki.jpg" alt="Loro kitchen 天神崎 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>Loro kitchen 天神崎<span class="yomi">ろろきっちん てんじんざき</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">ウユニ塩湖のような風景で知られる天神崎から車で2分、くじらの看板が目印のテイクアウト専門店。わたがしのような口どけの韓国風かき氷「ピンス」を、いちごやマンゴー、ミルク、キャラメルなど季節の味で提供する。アイスをのせたソーダフラッペや手作り梅ジュースなど飲み物も揃い、熊野古道歩き向けの弁当も予約販売する。</div>
+<div class="sig"><b>一皿:</b>ピンスかき氷(わたがしのような口どけの韓国風かき氷。いちご・マンゴー・ミルクなどのほか季節限定も。熊野古道弁当は要予約)</div>
+<table class="info">
+<tr><th>営業時間</th><td>13:00〜17:30（季節により変動。休業日はInstagram @loro.kitchen で告知）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（大雨・台風時は休業）</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市目良19-15（田辺ダイビングサービス敷地内）</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:08057113777">☎ 080-5711-3777</a> ／ <a href="https://www.instagram.com/loro.kitchen/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>天神崎の景勝地とあわせて回れる海辺の甘味処で、ほかの6店と重ならない市街地西側（目良）をカバーできる。営業確認＝田辺市熊野ツーリズムビューローの予約サイトKUMANO TRAVELの当店ページに2025年10月付の利用者レビューが複数あり、熊野古道弁当の販売が継続中。「Loro kitchen 天神崎 閉店」で検索しても閉店の報は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Loro%20kitchen%20%E5%A4%A9%E7%A5%9E%E5%B4%8E%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E7%9B%AE%E8%89%AF19-15%EF%BC%88%E7%94%B0%E8%BE%BA%E3%83%80%E3%82%A4%E3%83%93%E3%83%B3%E3%82%B0%E3%82%B5%E3%83%BC%E3%83%93%E3%82%B9%E6%95%B7%E5%9C%B0%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 田辺観光協会（www.tanabe-kanko.jp）より引用 / 参照元: <a href="https://www.kumano-travel.com/ja/travel-services/loro-kitchen-tenjinzaki">KUMANO TRAVEL(田辺市熊野ツーリズムビューロー) Loro Kitchen 天神崎・2025年10月のレビュー掲載</a> / <a href="https://www.tanabe-kanko.jp/member/6969/">田辺観光協会 会員紹介 Loro kitchen 天神崎(2026-06-11 更新の会員一覧に掲載)</a></div>
+</div></div>
+<div class="card" id="c-cafe-alma-hongu">
+<img class="hero" src="img/tanabe/cafe-alma-hongu.jpg" alt="cafe alma 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>cafe alma<span class="yomi">かふぇ あるま</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">世界遺産・熊野本宮大社の境内、瑞鳳殿の一角にあるカフェ。ご神域の杜を目の前にした席で、自家焙煎のコーヒーが味わえる。熊野古道沿いで採れたニホンミツバチの蜂蜜「和みつ」を使う「くまみつカステラ」や、本宮名産の音無茶を使ったおとなしカステラが名物で、土産用のドリップコーヒーも並ぶ。</div>
+<div class="sig"><b>一皿:</b>くまみつカステラ(熊野古道沿いで採れたニホンミツバチの蜂蜜「和みつ」を使ったカステラ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜16:00（土日祝は9:00開店）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市本宮町本宮195-3（熊野本宮大社 瑞鳳殿内）</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:08095081125">☎ 080-9508-1125</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>熊野古道中辺路の終着点である熊野本宮大社の境内にあり、巡礼を終えた参拝者の休憩処になっている。屋内12席・屋外12席。営業確認＝熊野本宮観光協会の公式サイト「食べる」ページ（更新日2026年8月20日）に営業時間10:00〜16:00・土日祝9:00開店として掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=cafe%20alma%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%9C%AC%E5%AE%AE%E7%94%BA%E6%9C%AC%E5%AE%AE195-3%EF%BC%88%E7%86%8A%E9%87%8E%E6%9C%AC%E5%AE%AE%E5%A4%A7%E7%A4%BE%20%E7%91%9E%E9%B3%B3%E6%AE%BF%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 熊野本宮観光協会（www.hongu.jp）より引用 / 参照元: <a href="https://www.hongu.jp/eat/">熊野本宮観光協会 食べる(2026-08-20 更新)</a> / <a href="https://www.tanabe-kanko.jp/member/3926/">田辺観光協会 会員紹介 cafe alma</a></div>
+</div></div>
+<div class="card" id="c-morinopan-kinomi">
+<img class="hero" src="img/tanabe/morinopan-kinomi.jpg" alt="morinopan KINOMI 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>morinopan KINOMI<span class="yomi">もりのぱん きのみ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">JR紀伊新庄駅のすぐそばで、夫婦2人が営む小さなパン屋。食パン・総菜系・ハード系・菓子系がにぎやかに並び、季節ごとに新作が加わる。一番人気は耳までふんわりやわらかい「角食パン」。クッキーなどの焼き菓子も種類が多く、小さな贈り物にも向く。駐車場があり車でも立ち寄れる。</div>
+<div class="sig"><b>一皿:</b>角食パン（耳までふんわりやわらかい、この店の一番人気の食パン）</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市新庄町493-4</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739260606">☎ 0739-26-0606</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺駅前から離れた新庄町にありながら、JR紀伊新庄駅から徒歩約2分と鉄道でも立ち寄れるため選んだ。営業確認は、紀伊民報が運営するKiiLifeの店舗ページで、店自身が新商品と定休日をほぼ毎日投稿していること、とくに2026-09-27付「定休日のお知らせ」（9/28・9/29は定休）による。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=morinopan%20KINOMI%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E6%96%B0%E5%BA%84%E7%94%BA493-4">Googleマップで開く</a>
+<div class="src">写真: KiiLife（紀伊民報）（kiilife.jp）より引用 / 参照元: <a href="https://kiilife.jp/gourmet/302066/553">KiiLife（紀伊民報）morinopan KINOMI 店舗ページ(2026-09-27)</a> / <a href="https://kiilife.jp/gourmet/302066/553/info/54402">KiiLife（紀伊民報）お店からのお知らせ「定休日のお知らせ」(2026-09-27)</a> / <a href="https://kiilife.jp/gourmet/302066/553/info">KiiLife（紀伊民報）お知らせ一覧(2026-09-27)</a></div>
+</div></div>
+<div class="card" id="c-ys-cafe-kamiakizu">
+<img class="hero" src="img/tanabe/ys-cafe-kamiakizu.jpg" alt="Y's Cafe 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>Y's Cafe<span class="yomi">わいずかふぇ</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">みかん畑の広がる上秋津にある、木を基調とした隠れ家風の喫茶店。朝8時から開き、飲み物に250円を足すとトーストや卵料理などが付くモーニングが評判。昼は数量限定の日替わり松花堂（950円）、午後は自家製シフォンケーキやパフェ、クレープが並ぶ。8畳の座敷があり子ども連れでもくつろげる。</div>
+<div class="sig"><b>一皿:</b>自家製シフォンケーキ（フルーツを添えた350円の定番。飲み物に250円足すとセットになる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜16:00（モーニングは〜10:30、ランチは11:30〜14:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>和歌山県田辺市上秋津2405-2</td></tr>
+<tr><th>予約</th><td>予約不要 — <a href="tel:0739351478">☎ 0739-35-1478</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田辺駅前・味光路から離れた郊外のみかん山の中にあり、紙のガイドでドライブ先として機能するため選んだ。営業確認は、紀伊民報が運営するKiiLifeの店舗ページで、店自身が2026-09-08付のランチ情報として当日の日替わり松花堂の献立（キハダマグロとメイチダイの刺身など）を投稿していることによる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Y%27s%20Cafe%20%E5%92%8C%E6%AD%8C%E5%B1%B1%E7%9C%8C%E7%94%B0%E8%BE%BA%E5%B8%82%E4%B8%8A%E7%A7%8B%E6%B4%A52405-2">Googleマップで開く</a>
+<div class="src">写真: KiiLife（紀伊民報）（kiilife.jp）より引用 / 参照元: <a href="https://kiilife.jp/gourmet/302066/816">KiiLife（紀伊民報）Y's Cafe 店舗ページ(2026-09-08)</a> / <a href="https://kiilife.jp/gourmet/302066/816/lunch/11985">KiiLife（紀伊民報）ランチ情報「9/8(火)日替わり松花堂(数量限定、平日のみ）」(2026-09-08)</a> / <a href="https://kiilife.jp/gourmet/302066/816/menu">KiiLife（紀伊民報）Y's Cafe メニュー(2026-09-29 閲覧)</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年9月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>
