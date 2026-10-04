@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>米子 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>米子 の食べ歩き地図<span class="n">45店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="米子 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">米子 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/tottori/yonago.html"><span class="sn-e">📄</span>米子のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（88都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "こうりん坊 山月庵", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.424507, "lng": 133.334534, "d": "天然岩ガキ「夏輝（なつき）」の生ポン酢(鳥取県内で採れた天然岩牡蠣のうち、殻の長さ13cm以上のものだけに付くブランド名。殻いっぱいに詰まった身が濃厚で、磯の香りが強い)／白いかの刺身(ケンサキイカの山陰での呼び名。夏から秋に揚がり、やわらかく噛むほど甘い。わさびではなくしょうがを添えて食べる人も多い)", "a": "鳥取県米子市明治町140 米子駅前パーキングビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%81%86%E3%82%8A%E3%82%93%E5%9D%8A%20%E5%B1%B1%E6%9C%88%E5%BA%B5%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%98%8E%E6%B2%BB%E7%94%BA140%20%E7%B1%B3%E5%AD%90%E9%A7%85%E5%89%8D%E3%83%91%E3%83%BC%E3%82%AD%E3%83%B3%E3%82%B0%E3%83%93%E3%83%AB1F", "u": "../japan/tottori/yonago.html#c-kourinbou-sangetsuan-yonago", "food": "../japan/tottori/img/yonago/kourinbou-sangetsuan-yonago.jpg", "ext": ""}, {"i": 1, "n": "美酒佳肴 ゆらく 本店", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 35.424084, "lng": 133.334198, "d": "さばしゃぶ(脂ののった鯖を薄造りにし、出汁にさっとくぐらせて半生で食べる鍋。鯖の甘みが残る山陰ならではの食べ方。金・土限定の「銀のさばしゃぶ」もある)／大山豚の角煮(大山の麓で育った豚を甘辛く炊き含めた一品。脂がとろけるまで煮てある)", "a": "鳥取県米子市明治町227", "m": "https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E9%85%92%E4%BD%B3%E8%82%B4%20%E3%82%86%E3%82%89%E3%81%8F%20%E6%9C%AC%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%98%8E%E6%B2%BB%E7%94%BA227", "u": "../japan/tottori/yonago.html#c-bishukakou-yuraku-yonago", "food": "../japan/tottori/img/yonago/bishukakou-yuraku-yonago.jpg", "ext": ""}, {"i": 2, "n": "だしかっぽう とと", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.433132, "lng": 133.333038, "d": "鯛茶漬け(境港の鯛を醤油で漬けて飯にのせ、途中から熱い出汁を注いで茶漬けにする一品。生と火入れの二通りの食感が一皿で味わえる。1,480円)／だし巻き玉子(出汁をたっぷり含ませて焼いた卵焼き。ぷるりと弾力があり、切ると出汁がにじむ。880円)", "a": "鳥取県米子市角盤町2丁目57", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A0%E3%81%97%E3%81%8B%E3%81%A3%E3%81%BD%E3%81%86%20%E3%81%A8%E3%81%A8%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%A7%92%E7%9B%A4%E7%94%BA2%E4%B8%81%E7%9B%AE57", "u": "../japan/tottori/yonago.html#c-dashikappo-toto-yonago", "food": "../japan/tottori/img/yonago/dashikappo-toto-yonago.jpg", "ext": ""}, {"i": 3, "n": "美さご", "c": ["和食"], "v": "レストラン", "lat": 35.432079, "lng": 133.330444, "d": "山陰磯の会席膳(境港に揚がる紅ズワイガニが一匹まるごと付く会席。境港は紅ズワイガニの水揚げ量が全国一位で、通年予約できる)／タグ付き活松葉がにづくし(11月7日の初水揚げから4月末ごろまでの冬限定。松葉がに＝ズワイガニのオスで、産地と漁船を示すタグの付いた活けのものを刺身・焼き・鍋などに仕立てる)", "a": "鳥取県米子市朝日町47", "m": "https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E3%81%95%E3%81%94%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%9C%9D%E6%97%A5%E7%94%BA47", "u": "../japan/tottori/yonago.html#c-misago-yonago", "food": "", "ext": ""}, {"i": 4, "n": "お食事処 かき船", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.429832, "lng": 133.329208, "d": "かしわ空揚定食(大山どり＝鳥取のブランド鶏のもも肉を大ぶりに5個揚げた定食。衣は薄くて軽く、中はしっとり柔らかい。950円)／かきづくし(牡蠣をフライ・天ぷら・鍋などに仕立てた要予約の膳。冬の看板)", "a": "鳥取県米子市中町48", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E3%81%8B%E3%81%8D%E8%88%B9%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E4%B8%AD%E7%94%BA48", "u": "../japan/tottori/yonago.html#c-kakibune-yonago", "food": "../japan/tottori/img/yonago/kakibune-yonago.jpg", "ext": ""}, {"i": 5, "n": "なる美寿司", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 35.457073, "lng": 133.362488, "d": "活け造りの刺身盛り(生け簀から締めたばかりの魚を盛り合わせたもの。甘えびやうにが添えられることもある)／天然岩ガキ(鳥取の夏の海の幸。大ぶりの殻のまま出され、濃厚な磯の香りがする)", "a": "鳥取県米子市皆生温泉3-7-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%82%8B%E7%BE%8E%E5%AF%BF%E5%8F%B8%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%9A%86%E7%94%9F%E6%B8%A9%E6%B3%893-7-3", "u": "../japan/tottori/yonago.html#c-narumi-zushi-yonago", "food": "../japan/tottori/img/yonago/narumi-zushi-yonago.jpg", "ext": ""}, {"i": 6, "n": "日本料理 雲海", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.424591, "lng": 133.327759, "d": "寿司御膳(にぎり寿司に野菜天婦羅・茶碗蒸し・うどんまたはそばが付く昼の御膳。2,100円)／米子城大手門会席(米子城の大手門の名を冠した会席。山陰の旬を一通り組んだ夜の献立。6,600円)", "a": "鳥取県米子市久米町53-2 ANAクラウンプラザホテル米子1階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E9%9B%B2%E6%B5%B7%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E4%B9%85%E7%B1%B3%E7%94%BA53-2%20ANA%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%B3%E3%83%97%E3%83%A9%E3%82%B6%E3%83%9B%E3%83%86%E3%83%AB%E7%B1%B3%E5%AD%901%E9%9A%8E", "u": "../japan/tottori/yonago.html#c-nihonryori-unkai-yonago", "food": "../japan/tottori/img/yonago/nihonryori-unkai-yonago.jpg", "ext": ""}, {"i": 7, "n": "鮨 よし喜", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 35.424301, "lng": 133.346603, "d": "づけあな丼(特製の漬けだれに浸したマグロと、提供直前に大将がバーナーで炙る煮穴子をのせた昼限定の丼。酢飯の中にも玉子焼き・海老・サーモン・イカ・とび子・イクラが仕込んである。みそ汁付き1,400円)／にぎり九貫＋巻物(鳥取県産きぬむすめの酢飯に地元の魚を合わせた握りの盛り合わせ。1,700円)", "a": "鳥取県米子市道笑町4-12-15", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E3%82%88%E3%81%97%E5%96%9C%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E9%81%93%E7%AC%91%E7%94%BA4-12-15", "u": "../japan/tottori/yonago.html#c-sushi-yoshiki-yonago", "food": "../japan/tottori/img/yonago/sushi-yoshiki-yonago.jpg", "ext": ""}, {"i": 8, "n": "三井別館", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.455967, "lng": 133.363815, "d": "会席料理(境港に揚がる旬の魚と和牛を組み合わせた、皆生温泉の宿の料理人が仕立てるコース。ホットペッパーグルメのジャンル表記は「海鮮／和牛／和食／会席」。夜の予算は7,001〜8,000円)／料理長特製の朝カレー(宿泊客向けの朝食で、宿の料理人が毎朝仕込むカレーに山陰のご飯のお供を添えた小さなビュッフェ)", "a": "鳥取県米子市皆生温泉3丁目15-55", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E4%BA%95%E5%88%A5%E9%A4%A8%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%9A%86%E7%94%9F%E6%B8%A9%E6%B3%893%E4%B8%81%E7%9B%AE15-55", "u": "../japan/tottori/yonago.html#c-mitsui-bekkan-yonago", "food": "", "ext": ""}, {"i": 9, "n": "ラーメン 大和", "c": ["麺類"], "v": "レストラン", "lat": 35.423, "lng": 133.336411, "d": "牛骨ラーメン(牛の骨でとった澄んだスープ。醤油の甘みとコクがあり豚骨とは別の味。鳥取県西部の郷土ラーメン)／牛骨ラーメン＋半丼セット(同じ牛骨ラーメンに丼物の半分サイズを付けた定食仕立ての組み合わせ)", "a": "鳥取県米子市弥生町1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E5%A4%A7%E5%92%8C%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA1", "u": "../japan/tottori/yonago.html#c-ramen-yamato-yonago", "food": "../japan/tottori/img/yonago/ramen-yamato-yonago.jpg", "ext": ""}, {"i": 10, "n": "一番軒", "c": ["麺類"], "v": "レストラン", "lat": 35.434612, "lng": 133.324432, "d": "しょうゆラーメン(牛の骨でとった澄んだスープに醤油を合わせた一杯。牛脂の甘みとコクがあり豚骨とは別の味。鳥取県西部の郷土ラーメン)／みそラーメン(同じ牛骨スープに味噌を合わせたもの。寒い時期に出る濃いめの一杯)", "a": "鳥取県米子市灘町2-104", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E7%95%AA%E8%BB%92%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%81%98%E7%94%BA2-104", "u": "../japan/tottori/yonago.html#c-ichibanken-yonago", "food": "../japan/tottori/img/yonago/ichibanken-yonago.jpg", "ext": ""}, {"i": 11, "n": "とき兵衛", "c": ["麺類"], "v": "レストラン", "lat": 35.424881, "lng": 133.334808, "d": "牛骨ラーメン(牛の骨でとった澄んだスープ。醤油の甘みとコクがあり豚骨とは別の味。鳥取県西部の郷土ラーメンで、飲んだあとの〆に向くあっさりした仕立て)／牛骨チャーシューメン(同じ牛骨スープにチャーシューを増量したもの)", "a": "鳥取県米子市万能町169", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%81%8D%E5%85%B5%E8%A1%9B%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E4%B8%87%E8%83%BD%E7%94%BA169", "u": "../japan/tottori/yonago.html#c-tokibee-yonago", "food": "../japan/tottori/img/yonago/tokibee-yonago.jpg", "ext": ""}, {"i": 12, "n": "満洲味", "c": ["麺類"], "v": "レストラン", "lat": 35.455109, "lng": 133.338226, "d": "ラーメン(牛の骨でとった澄んだスープ。牛脂の旨みとやや甘いコクがあり豚骨とは別の味。鳥取県西部の郷土ラーメンで、この店がその発祥とされる)／唐揚ラーメン(同じ牛骨ラーメンの上に大きな鶏の唐揚げを二個のせた、この店の人気メニュー)", "a": "鳥取県米子市西福原9-21-15", "m": "https://www.google.com/maps/search/?api=1&query=%E6%BA%80%E6%B4%B2%E5%91%B3%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%A5%BF%E7%A6%8F%E5%8E%9F9-21-15", "u": "../japan/tottori/yonago.html#c-masumi-yonago", "food": "../japan/tottori/img/yonago/masumi-yonago.jpg", "ext": ""}, {"i": 13, "n": "麺屋 無双", "c": ["麺類"], "v": "レストラン", "lat": 35.455261, "lng": 133.342072, "d": "牛骨ラーメン(牛の骨でとった澄んだスープ。野菜を使わず牛素材100%で炊くため牛脂の香りと甘みが直に立つ。鳥取県西部の郷土ラーメンで豚骨とは別の味)／牛骨担々麺(同じ牛骨スープを土台に胡麻と辛味を合わせた担々麺仕立ての一杯)", "a": "鳥取県米子市新開6-3-3", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E7%84%A1%E5%8F%8C%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%96%B0%E9%96%8B6-3-3", "u": "../japan/tottori/yonago.html#c-menya-musou-yonago", "food": "../japan/tottori/img/yonago/menya-musou-yonago.jpg", "ext": ""}, {"i": 14, "n": "麺や 銀乃助", "c": ["麺類"], "v": "レストラン", "lat": 35.420479, "lng": 133.408875, "d": "牛骨ラーメン(牛の骨でとった澄んだスープ。自家製の牛骨100%を三日煮込み、あっさりしながらコクがある。鳥取県西部の郷土ラーメンで豚骨とは別の味。炙りチャーシューがのる)／チャーシュー麺(同じ牛骨ラーメンにとろとろの炙りチャーシューを増量した一杯)", "a": "鳥取県米子市尾高2773-3", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%82%84%20%E9%8A%80%E4%B9%83%E5%8A%A9%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E5%B0%BE%E9%AB%982773-3", "u": "../japan/tottori/yonago.html#c-menya-ginnosuke-yonago", "food": "../japan/tottori/img/yonago/menya-ginnosuke-yonago.jpg", "ext": ""}, {"i": 15, "n": "麺処 三鈷峰", "c": ["麺類"], "v": "食材の店", "lat": 35.456348, "lng": 133.361359, "d": "鹿鶏醤油らーめん(鳥取県若桜町「わかさ29工房」の鹿の骨と銘柄鶏・大山どりでとった澄んだ琥珀色の醤油スープ。鹿骨の深いコクと鶏の旨みが重なる)／らーめん（こってり醤油）(鳥取県産の鶏を長時間かけて白濁するまで炊いたスープに、鰹節・煮干し・昆布の和風だしを合わせた濃厚な一杯)", "a": "鳥取県米子市皆生温泉4丁目1-20", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%87%A6%20%E4%B8%89%E9%88%B7%E5%B3%B0%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%9A%86%E7%94%9F%E6%B8%A9%E6%B3%894%E4%B8%81%E7%9B%AE1-20", "u": "../japan/tottori/yonago.html#c-mendokoro-sankohou-yonago", "food": "", "ext": ""}, {"i": 16, "n": "そば処 上代", "c": ["麺類"], "v": "レストラン", "lat": 35.428867, "lng": 133.328415, "d": "田舎ざるそば(挽きぐるみの全層粉で打った黒めのそば。香りとコシが強く、濃いめのつけつゆで食べる。950円)／ごはんセット(炊き込みごはんを付ける小鉢つきの追加セット。そばだけでは足りない人向け。300円)", "a": "鳥取県米子市加茂町1丁目10", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E4%B8%8A%E4%BB%A3%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E5%8A%A0%E8%8C%82%E7%94%BA1%E4%B8%81%E7%9B%AE10", "u": "../japan/tottori/yonago.html#c-sobadokoro-kamidai-yonago", "food": "../japan/tottori/img/yonago/sobadokoro-kamidai-yonago.jpg", "ext": ""}, {"i": 17, "n": "出雲そば 鹿幸", "c": ["麺類"], "v": "レストラン", "lat": 35.447716, "lng": 133.327057, "d": "生ゆばそば(奥出雲町・石田とうふ店の生湯葉をたっぷりのせた太切りの出雲そば。濃厚な湯葉と噛みごたえのある蕎麦を絡めてつゆにつける。1,500円)／三本打ちの江戸流蕎麦(先代の老舗「盛屋」から受け継いだ打ち方で、数量限定で復活させている別仕立ての細い蕎麦)", "a": "鳥取県米子市米原9丁目3-20 東亜青果卸売市場内", "m": "https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%20%E9%B9%BF%E5%B9%B8%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%B1%B3%E5%8E%9F9%E4%B8%81%E7%9B%AE3-20%20%E6%9D%B1%E4%BA%9C%E9%9D%92%E6%9E%9C%E5%8D%B8%E5%A3%B2%E5%B8%82%E5%A0%B4%E5%86%85", "u": "../japan/tottori/yonago.html#c-izumosoba-rokko-yonago", "food": "../japan/tottori/img/yonago/izumosoba-rokko-yonago.jpg", "ext": ""}, {"i": 18, "n": "かすうどん チャンピヨン", "c": ["麺類", "居酒屋・焼肉"], "v": "レストラン", "lat": 35.436279, "lng": 133.322617, "d": "かすネギうどん(牛の小腸を揚げた「油かす」と鳥取県産の白ねぎをのせた関西風出汁のうどん。油かすは外はカリッ、中はぷるぷる。800円)／柚子ベーゼかすうどん(バジルの代わりに柚子を使ったジェノベーゼソースを合わせる限定の一杯。和風出汁と柚子の酸味で後味が軽い。1,000円)", "a": "鳥取県米子市花園町14", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%81%99%E3%81%86%E3%81%A9%E3%82%93%20%E3%83%81%E3%83%A3%E3%83%B3%E3%83%94%E3%83%A8%E3%83%B3%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%8A%B1%E5%9C%92%E7%94%BA14", "u": "../japan/tottori/yonago.html#c-kasuudon-champiyon-yonago", "food": "../japan/tottori/img/yonago/kasuudon-champiyon-yonago.jpg", "ext": ""}, {"i": 19, "n": "天ぷら 幸美", "c": ["麺類"], "v": "レストラン", "lat": 35.431801, "lng": 133.332855, "d": "天ぷらうどん(揚げたての天ぷらと焼餅、甘辛く炊いた椎茸の煮物をのせたうどん。先代から変わらない甘みのある出汁が身上)／椎茸の煮物(そのうどんにのる自家製の煮物。単品でも通が頼む、店の隠れた看板)", "a": "鳥取県米子市角盤町1-71", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E5%B9%B8%E7%BE%8E%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%A7%92%E7%9B%A4%E7%94%BA1-71", "u": "../japan/tottori/yonago.html#c-tempura-koumi-yonago", "food": "../japan/tottori/img/yonago/tempura-koumi-yonago.jpg", "ext": ""}, {"i": 20, "n": "大連", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 35.42326, "lng": 133.334366, "d": "味噌ちゃんぽん(自家製麺に鳥取県産の野菜をどっさり入れ、味噌ベースのピリ辛スープで仕上げたちゃんぽん。店のまかないから生まれた看板)／大山どり油淋鶏(鳥取の銘柄鶏・大山どりをカラッと揚げ、甘酸っぱいタレをかけた一品。添えのレタスとネギも県産)", "a": "鳥取県米子市末広町149", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%80%A3%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%9C%AB%E5%BA%83%E7%94%BA149", "u": "../japan/tottori/yonago.html#c-chuka-dairen-yonago", "food": "../japan/tottori/img/yonago/chuka-dairen-yonago.jpg", "ext": ""}, {"i": 21, "n": "名物レモンサワーと町中華 コブタ飯店", "c": ["麺類", "アジア・エスニック", "居酒屋・焼肉"], "v": "レストラン", "lat": 35.424153, "lng": 133.33296, "d": "麻婆ホルモン(山椒の効いた麻婆豆腐に下処理したホルモンを合わせ、皿から溢れるほど盛る看板料理。1,320円)／ホルモン刺し4種盛り合わせ(砂ぎも・鳥肝・豚タン・豚ハツを刺身仕立てで4種そろえた前菜。858円)", "a": "鳥取県米子市明治町195", "m": "https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E7%89%A9%E3%83%AC%E3%83%A2%E3%83%B3%E3%82%B5%E3%83%AF%E3%83%BC%E3%81%A8%E7%94%BA%E4%B8%AD%E8%8F%AF%20%E3%82%B3%E3%83%96%E3%82%BF%E9%A3%AF%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%98%8E%E6%B2%BB%E7%94%BA195", "u": "../japan/tottori/yonago.html#c-kobuta-hanten-yonago", "food": "../japan/tottori/img/yonago/kobuta-hanten-yonago.jpg", "ext": ""}, {"i": 22, "n": "山陰中華 八仙閣", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 35.453804, "lng": 133.343475, "d": "山陰ちゃんぽん(鳥取県産の野菜と魚介をどっさり入れた具だくさんのちゃんぽん。半世紀続く店の看板)／中華弁当（定食）(副菜とメインを組み合わせて選べる定食。スープ付きでご飯はおかわり自由、ご飯は＋350円で焼き飯に変更できる。1,250円)", "a": "鳥取県米子市西福原7-12-27", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E9%99%B0%E4%B8%AD%E8%8F%AF%20%E5%85%AB%E4%BB%99%E9%96%A3%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%A5%BF%E7%A6%8F%E5%8E%9F7-12-27", "u": "../japan/tottori/yonago.html#c-sanin-chuka-hassenkaku-yonago", "food": "../japan/tottori/img/yonago/sanin-chuka-hassenkaku-yonago.jpg", "ext": ""}, {"i": 23, "n": "手打ちそば 昌庵", "c": ["麺類"], "v": "レストラン", "lat": 35.451786, "lng": 133.283966, "d": "いただき(油揚げの中に生米と刻んだ野菜を詰め、出汁でじっくり炊き上げた鳥取県西部の郷土料理。別名ののこ飯。2個420円)／白いか とろ天ざるそば(白いかをかき揚げにした天ぷらととろろを添えた、平打ちの冷たいざるそば。1,260円)", "a": "鳥取県米子市彦名町4123-3", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%9D%E3%81%B0%20%E6%98%8C%E5%BA%B5%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E5%BD%A6%E5%90%8D%E7%94%BA4123-3", "u": "../japan/tottori/yonago.html#c-shoan-yonago", "food": "../japan/tottori/img/yonago/shoan-yonago.jpg", "ext": ""}, {"i": 24, "n": "手打ちみかも", "c": ["麺類"], "v": "レストラン", "lat": 35.444202, "lng": 133.307312, "d": "すだち蕎麦(薄切りのすだちを一面に浮かべた冷たいそば。柑橘の香りで暑い時期だけ出る季節もの。1,250円)／温玉山かけ冷やし蕎麦(とろろと温泉卵をのせた冷やしそば。まろやかさとさっぱり感が同居する。1,100円・大盛+300円)", "a": "鳥取県米子市旗ヶ崎8丁目5-17", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%BF%E3%81%8B%E3%82%82%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%97%97%E3%83%B6%E5%B4%8E8%E4%B8%81%E7%9B%AE5-17", "u": "../japan/tottori/yonago.html#c-teuchi-mikamo-yonago", "food": "../japan/tottori/img/yonago/teuchi-mikamo-yonago.jpg", "ext": ""}, {"i": 25, "n": "炭火居酒屋わかや", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 35.431698, "lng": 133.33165, "d": "赤鶏のもも焼き(宮崎県の養鶏場から直送する赤鶏のもも肉を炭火で焼いた一皿。弾力の強い歯ごたえと、噛むほどに出てくる脂の甘みが身上)／はまぐりの酒蒸し(大ぶりの蛤を日本酒で蒸し上げた一品。貝から出た出汁がそのまま酒の肴になる)", "a": "鳥取県米子市朝日町14", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E5%B1%85%E9%85%92%E5%B1%8B%E3%82%8F%E3%81%8B%E3%82%84%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%9C%9D%E6%97%A5%E7%94%BA14", "u": "../japan/tottori/yonago.html#c-sumibi-izakaya-wakaya-yonago", "food": "../japan/tottori/img/yonago/sumibi-izakaya-wakaya-yonago.jpg", "ext": ""}, {"i": 26, "n": "酒処 稲田屋 米子店", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 35.433127, "lng": 133.331041, "d": "本日の地魚五種盛合せ(境港をはじめ山陰の港に揚がった魚を、その日の仕入れで五種類盛り合わせた造り)／鳥取和牛オレイン55の陶板焼き(オレイン酸の含有率が55%以上という県の基準を満たした鳥取和牛を、季節の焼き野菜とともに陶板で焼く一皿)", "a": "鳥取県米子市朝日町58-11", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E5%87%A6%20%E7%A8%B2%E7%94%B0%E5%B1%8B%20%E7%B1%B3%E5%AD%90%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%9C%9D%E6%97%A5%E7%94%BA58-11", "u": "../japan/tottori/yonago.html#c-inataya-yonago", "food": "../japan/tottori/img/yonago/inataya-yonago.jpg", "ext": ""}, {"i": 27, "n": "新勝", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 35.432427, "lng": 133.330183, "d": "刺身の盛合せ(境港をはじめ日本海で揚がった魚を大皿に盛る、この店の看板。カウンターのネタケースから選んでもらえる)／馬刺し(赤身の馬肉の刺身。甘みのある脂と山陰の地酒・焼酎との相性で常連に親しまれている)", "a": "鳥取県米子市朝日町62", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%B0%E5%8B%9D%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%9C%9D%E6%97%A5%E7%94%BA62", "u": "../japan/tottori/yonago.html#c-shinkatsu-yonago", "food": "../japan/tottori/img/yonago/shinkatsu-yonago.jpg", "ext": ""}, {"i": 28, "n": "天ぷら 海鮮 地酒 弥栄 米子駅前店", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 35.424853, "lng": 133.333818, "d": "大山どりの天麩羅(鳥取県のブランド鶏・大山どりを衣軽く揚げた名物。ねぎだれをかけた定食仕立てでも出る)／弥栄特選定食(境港直送の造りとこだわりの天麩羅を一度に楽しむ構成。サラダ・小鉢・味噌汁付きで1,980円)", "a": "鳥取県米子市明治町196", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E6%B5%B7%E9%AE%AE%20%E5%9C%B0%E9%85%92%20%E5%BC%A5%E6%A0%84%20%E7%B1%B3%E5%AD%90%E9%A7%85%E5%89%8D%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%98%8E%E6%B2%BB%E7%94%BA196", "u": "../japan/tottori/yonago.html#c-iyasaka-yonago-ekimae-yonago", "food": "../japan/tottori/img/yonago/iyasaka-yonago-ekimae-yonago.jpg", "ext": ""}, {"i": 29, "n": "なるこ", "c": ["ビール・バー"], "v": "レストラン", "lat": 35.42471, "lng": 133.331862, "d": "土手焼(牛すじを味噌ベースの出汁で炊き、串に刺して出す一品。やわらかくこくがあり、燗酒に合う)／造り(日本海の地魚を五種ほど盛る刺身。ひと切れが厚く、時価で出す豪快さがこの店の看板)", "a": "鳥取県米子市茶町44-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%82%8B%E3%81%93%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%8C%B6%E7%94%BA44-1", "u": "../japan/tottori/yonago.html#c-naruko-yonago", "food": "../japan/tottori/img/yonago/naruko-yonago.jpg", "ext": ""}, {"i": 30, "n": "絶好調", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 35.45792, "lng": 133.360428, "d": "モサエビのお造り(鳥取で水揚げされる大型のエビ。傷みが早く産地でしか出回らないため、山陰まで来ないと食べられない)／屋台餃子(皮が薄くぱりぱりに焼き上がる看板の一皿。餡がぎっしり詰まっていて一人前では止まらない)", "a": "鳥取県米子市皆生温泉4-26-15", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B5%B6%E5%A5%BD%E8%AA%BF%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%9A%86%E7%94%9F%E6%B8%A9%E6%B3%894-26-15", "u": "../japan/tottori/yonago.html#c-zekkocho-kaike-yonago", "food": "../japan/tottori/img/yonago/zekkocho-kaike-yonago.jpg", "ext": ""}, {"i": 31, "n": "牛骨おでん 壱ト弐", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 35.423721, "lng": 133.333939, "d": "大根(牛骨スープと和風出汁を合わせた特製の出汁をたっぷり吸わせた、この店の看板の種)／おでん串(大根・玉子・ごぼ天の三種を一本の串に刺した、手で持って食べられる盛り合わせ)／手作り黒豚餃子(店で毎日仕込む黒豚の餃子。生のにんにくをつぶしてタレに入れて食べる、店自慢のスタミナ料理)", "a": "鳥取県米子市明治町273", "m": "https://www.google.com/maps/search/?api=1&query=%E7%89%9B%E9%AA%A8%E3%81%8A%E3%81%A7%E3%82%93%20%E5%A3%B1%E3%83%88%E5%BC%90%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%98%8E%E6%B2%BB%E7%94%BA273", "u": "../japan/tottori/yonago.html#c-gyukotsu-oden-ichitoni-yonago", "food": "../japan/tottori/img/yonago/gyukotsu-oden-ichitoni-yonago.jpg", "ext": ""}, {"i": 32, "n": "spice curry ガンダーラ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.450008, "lng": 133.328476, "d": "ガンダーラカレー(同店のトッピング全部のせ。鳥取県産鶏をスパイスに漬け込んだスパイスチキン、半熟ゆで卵、揚げなすが一皿に乗る)／スパイスカレー鍋(夜限定・要予約の鍋仕立て。スパイスのスープで具材を煮る冬の看板)", "a": "鳥取県米子市米原9丁目11-12", "m": "https://www.google.com/maps/search/?api=1&query=spice%20curry%20%E3%82%AC%E3%83%B3%E3%83%80%E3%83%BC%E3%83%A9%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%B1%B3%E5%8E%9F9%E4%B8%81%E7%9B%AE11-12", "u": "../japan/tottori/yonago.html#c-spice-curry-gandhara-yonago", "food": "../japan/tottori/img/yonago/spice-curry-gandhara-yonago.jpg", "ext": ""}, {"i": 33, "n": "ステーキハウス蘭", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.455544, "lng": 133.362045, "d": "鳥取和牛サーロインの鉄板焼き(鳥取県内で肥育された黒毛和種のブランド牛。サシが細かく溶けやすい脂が持ち味で、目の前の鉄板で焼き上げる)／国産和牛フィレのコース(ヒレは一頭からわずかしか取れない最も柔らかい部位。本日のポタージュと彩り野菜のサラダが付く)", "a": "鳥取県米子市皆生温泉2丁目5-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E3%83%8F%E3%82%A6%E3%82%B9%E8%98%AD%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%9A%86%E7%94%9F%E6%B8%A9%E6%B3%892%E4%B8%81%E7%9B%AE5-1", "u": "../japan/tottori/yonago.html#c-steakhouse-ran-kaike-yonago", "food": "../japan/tottori/img/yonago/steakhouse-ran-kaike-yonago.jpg", "ext": ""}, {"i": 34, "n": "マカロニ食堂", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.429043, "lng": 133.332047, "d": "鳥取県産鶏もも肉のピッツァ(石窯で短時間に焼くナポリ式の薄い生地に、県内産の鶏もも肉をのせた一枚)／チーズフォンデュ(小鍋で溶かしたチーズに野菜や具材をくぐらせる前菜。卓上のコンロで温めながら供される)", "a": "鳥取県米子市四日市町46", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%82%AB%E3%83%AD%E3%83%8B%E9%A3%9F%E5%A0%82%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E5%9B%9B%E6%97%A5%E5%B8%82%E7%94%BA46", "u": "../japan/tottori/yonago.html#c-macaroni-shokudo-yonago", "food": "../japan/tottori/img/yonago/macaroni-shokudo-yonago.jpg", "ext": ""}, {"i": 35, "n": "Harmonie（アルモニー）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.43261, "lng": 133.332062, "d": "ランチコース(前菜3品・メインディッシュ・デザートの構成。11時30分から12時30分の最終入店までに入り、1時間半から2時間かけて供される)／ディナーコース(7,200円と9,600円の2本立て。前日までの予約制で、旬の地元食材を使って組み立てる)", "a": "鳥取県米子市角盤町2丁目46", "m": "https://www.google.com/maps/search/?api=1&query=Harmonie%EF%BC%88%E3%82%A2%E3%83%AB%E3%83%A2%E3%83%8B%E3%83%BC%EF%BC%89%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%A7%92%E7%9B%A4%E7%94%BA2%E4%B8%81%E7%9B%AE46", "u": "../japan/tottori/yonago.html#c-harmonie-yonago", "food": "../japan/tottori/img/yonago/harmonie-yonago.jpg", "ext": ""}, {"i": 36, "n": "とんきん カレー専門店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.425465, "lng": 133.332703, "d": "チキンカレー(定番のカレーに、厚く揚げたチキンカツを3切れのせた看板の一皿。ぶつ切りの鶏ではなくカツで出てくるのが同店の形)／ハンバーグカレー(白飯の上に厚いハンバーグを据え、カレーに合わせて味つけを簡素にした一皿)", "a": "鳥取県米子市茶町14", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E3%81%8D%E3%82%93%20%E3%82%AB%E3%83%AC%E3%83%BC%E5%B0%82%E9%96%80%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%8C%B6%E7%94%BA14", "u": "../japan/tottori/yonago.html#c-tonkin-curry-yonago", "food": "", "ext": ""}, {"i": 37, "n": "インドレストラン アマ 米子店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.428947, "lng": 133.330734, "d": "地元産の米で食べるカレー(鳥取県産の米を合わせたインドカレー。ナンではなく米で供する形を看板にしている)／ラッシー(ヨーグルトを撹拌したインドの飲み物。スパイスの辛さをやわらげる定番の相方)", "a": "鳥取県米子市中町14-9", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%83%B3%E3%83%89%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%A2%E3%83%9E%20%E7%B1%B3%E5%AD%90%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E4%B8%AD%E7%94%BA14-9", "u": "../japan/tottori/yonago.html#c-aamaa-yonago", "food": "../japan/tottori/img/yonago/aamaa-yonago.jpg", "ext": ""}, {"i": 38, "n": "ダックンダック", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.440964, "lng": 133.3423, "d": "牛すじトロトロカレー(鳥取県産の牛すじを約12時間煮出したスープに自家製ルーと果物を加え、丸2日かけて煮込んだスパイシーかつフルーティーな欧風カレー。Aランチ1,500円・Bランチ2,000円のメイン料理として選べる)／白いかのパエリア(地元で揚がる白いかと彩り野菜を米と炊き合わせたパエリア。2人前から・要予約。小3,800円／大10,000円)", "a": "鳥取県米子市西福原3丁目1-11", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%80%E3%83%83%E3%82%AF%E3%83%B3%E3%83%80%E3%83%83%E3%82%AF%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%A5%BF%E7%A6%8F%E5%8E%9F3%E4%B8%81%E7%9B%AE1-11", "u": "../japan/tottori/yonago.html#c-dacndac-yonago", "food": "../japan/tottori/img/yonago/dacndac-yonago.jpg", "ext": ""}, {"i": 39, "n": "米子御菓子司 つるだや 本店", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 35.435905, "lng": 133.329575, "d": "甘爐(かんろ)(薄い皮で餡を包んで蒸し上げたまんじゅう。名前の書は米子初代市長・野坂寛治の筆)／天万の月(てんまんのつき)(大山の麓の天万から見える月に見立てた丸いブッセ。チーズクリームをはさむ)", "a": "鳥取県米子市角盤町3丁目100", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B1%B3%E5%AD%90%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E3%81%A4%E3%82%8B%E3%81%A0%E3%82%84%20%E6%9C%AC%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%A7%92%E7%9B%A4%E7%94%BA3%E4%B8%81%E7%9B%AE100", "u": "../japan/tottori/yonago.html#c-tsurudaya-honten-yonago", "food": "../japan/tottori/img/yonago/tsurudaya-honten-yonago.jpg", "ext": ""}, {"i": 40, "n": "L'ecrin（レクラン）", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 35.422791, "lng": 133.336426, "d": "二十世紀梨ソフトクリーム(鳥取を代表する青梨を使ったソフト。ラクダ形のクッキーを挿して出す)／ごほうびパフェ(梨ソフトと角切りの梨を酸味のあるヨーグルトに重ねた、米子の市外局番475にちなむご当地パフェ)", "a": "鳥取県米子市弥生町2 シャミネ米子2階", "m": "https://www.google.com/maps/search/?api=1&query=L%27ecrin%EF%BC%88%E3%83%AC%E3%82%AF%E3%83%A9%E3%83%B3%EF%BC%89%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA2%20%E3%82%B7%E3%83%A3%E3%83%9F%E3%83%8D%E7%B1%B3%E5%AD%902%E9%9A%8E", "u": "../japan/tottori/yonago.html#c-lecrin-chiffon-yonago", "food": "../japan/tottori/img/yonago/lecrin-chiffon-yonago.jpg", "ext": ""}, {"i": 41, "n": "いしくら餅店", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 35.424217, "lng": 133.331421, "d": "よもぎあん餅(よもぎの葉を細かくすり込んだ草餅にこし餡を包んだもの。木曜のみの販売)／みかん大福(薄い求肥と白餡でみかんを丸ごと包んだ季節の大福。切ると断面に果肉が覗く)", "a": "鳥取県米子市塩町110", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%97%E3%81%8F%E3%82%89%E9%A4%85%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E5%A1%A9%E7%94%BA110", "u": "../japan/tottori/yonago.html#c-ishikura-mochiten-yonago", "food": "../japan/tottori/img/yonago/ishikura-mochiten-yonago.jpg", "ext": ""}, {"i": 42, "n": "Goods & Cafe みっくす", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 35.425816, "lng": 133.333832, "d": "レトロプリン(白バラ牛乳で作る、スプーンが立つほど固い昔ながらの蒸しプリン。生クリームとカラメルを添える)／ミックスジュース(白バラ牛乳と果物を合わせた、昭和の喫茶で出された懐かしい一杯)", "a": "鳥取県米子市日野町7", "m": "https://www.google.com/maps/search/?api=1&query=Goods%20%26%20Cafe%20%E3%81%BF%E3%81%A3%E3%81%8F%E3%81%99%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E6%97%A5%E9%87%8E%E7%94%BA7", "u": "../japan/tottori/yonago.html#c-goods-cafe-mix-yonago", "food": "../japan/tottori/img/yonago/goods-cafe-mix-yonago.jpg", "ext": ""}, {"i": 43, "n": "紅茶とたい焼きの店 あんあん", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 35.42541, "lng": 133.33272, "d": "たい焼き(一匹ずつの型で焼く天然もののたい焼き。白バラ牛乳と鳥取県産卵の薄い皮に、尾まで粒餡が入る)／セイロンのブレンド紅茶(店主が茶葉を選んで淹れる一杯。渋みが少なく、たい焼きの甘さに合わせやすい)", "a": "鳥取県米子市茶町56", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B4%85%E8%8C%B6%E3%81%A8%E3%81%9F%E3%81%84%E7%84%BC%E3%81%8D%E3%81%AE%E5%BA%97%20%E3%81%82%E3%82%93%E3%81%82%E3%82%93%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E8%8C%B6%E7%94%BA56", "u": "../japan/tottori/yonago.html#c-anan-taiyaki-yonago", "food": "../japan/tottori/img/yonago/anan-taiyaki-yonago.jpg", "ext": ""}, {"i": 44, "n": "秋月", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 35.457745, "lng": 133.361664, "d": "大山抹茶のかき氷(ふわりと削った氷に大山の抹茶と自家製餡をかけ、白玉を添えたもの。食べ進むと中から餡が出てくる)／あんレアたい焼き(四時間炊いた粒餡とレアチーズを一緒に包んだ大判のたい焼き。客の求めから生まれた品)", "a": "鳥取県米子市皆生温泉3丁目2-7", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A7%8B%E6%9C%88%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E7%B1%B3%E5%AD%90%E5%B8%82%E7%9A%86%E7%94%9F%E6%B8%A9%E6%B3%893%E4%B8%81%E7%9B%AE2-7", "u": "../japan/tottori/yonago.html#c-shugetsu-kaike-yonago", "food": "../japan/tottori/img/yonago/shugetsu-kaike-yonago.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([35.435557,133.336894],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('yonago', "米子");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

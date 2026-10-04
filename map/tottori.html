@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鳥取 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>鳥取 の食べ歩き地図<span class="n">45店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="鳥取 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">鳥取 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/tottori/tottori.html"><span class="sn-e">📄</span>鳥取のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（88都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "天麩羅 我天", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 35.495196, "lng": 134.226434, "d": "海鮮天丼(その日仕入れた地物の魚介だけを揚げ、丼からはみ出すほど盛る看板メニュー)／キスの天ぷら(鳥取で揚げ物の定番になる白身魚。開いて揚げると身がふっくらと甘い)", "a": "鳥取県鳥取市栄町725 駅前サンロード三番街ビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E9%BA%A9%E7%BE%85%20%E6%88%91%E5%A4%A9%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA725%20%E9%A7%85%E5%89%8D%E3%82%B5%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E4%B8%89%E7%95%AA%E8%A1%97%E3%83%93%E3%83%AB2F", "u": "../japan/tottori/tottori.html#c-tempura-gaten-tottori", "food": "../japan/tottori/img/tottori/tempura-gaten-tottori.jpg", "ext": ""}, {"i": 1, "n": "日本料理 鳥吉", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.498119, "lng": 134.231735, "d": "地魚のお造り(その日に揚がった日本海の白身を盛り合わせる。白ハタやアカガレイなど鳥取らしい魚が並ぶ)／鯛茶漬け(薬味をのせた鯛の刺身に熱い出汁を注いで食べる〆の一品)", "a": "鳥取県鳥取市戎町463", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E9%B3%A5%E5%90%89%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%88%8E%E7%94%BA463", "u": "../japan/tottori/tottori.html#c-nihonryori-torikichi", "food": "../japan/tottori/img/tottori/nihonryori-torikichi.jpg", "ext": ""}, {"i": 2, "n": "名代 笹すし", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 35.496106, "lng": 134.229078, "d": "握り寿司の盛り合わせ(日本海の地魚を、鳥取の米と水で炊いたシャリで握る。白いかやのどぐろなど季節で顔ぶれが替わる)／岩ガキ「夏輝(なつき)」(鳥取県産で殻長13cm以上の大型岩ガキだけに許されるブランド。夏が旬で生食が身上)", "a": "鳥取県鳥取市末広温泉町104", "m": "https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E4%BB%A3%20%E7%AC%B9%E3%81%99%E3%81%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA104", "u": "../japan/tottori/tottori.html#c-nadai-sasasushi", "food": "../japan/tottori/img/tottori/nadai-sasasushi.jpg", "ext": ""}, {"i": 3, "n": "たくみ割烹店", "c": ["和食"], "v": "レストラン", "lat": 35.495975, "lng": 134.226852, "d": "鳥取和牛のすすぎ鍋(吉田璋也が北京の名物料理「涮羊肉」をもとに考案した、しゃぶしゃぶの原型といわれる牛出汁の鍋。ごまだれにラー油を落として食べる)／味噌煮込みカレー(隠し味に味噌を利かせた名物カレー。昼は鳥取和牛のハヤシとのハーフ&ハーフが人気)", "a": "鳥取県鳥取市栄町652", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%8F%E3%81%BF%E5%89%B2%E7%83%B9%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA652", "u": "../japan/tottori/tottori.html#c-takumi-kappou-ten", "food": "../japan/tottori/img/tottori/takumi-kappou-ten.jpg", "ext": ""}, {"i": 4, "n": "うなぎ・郷恩料理 梅乃井", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 35.50058, "lng": 134.230316, "d": "うな重(昭和21年から継ぐ関東風の蒲焼き。背開きにして蒸してから焼くので身がやわらかい)／郷恩料理の会席(鳥取の海と山の季節食材で組む会席。鰻は食事どきに小丼で付く)", "a": "鳥取県鳥取市元魚町1丁目215", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E3%83%BB%E9%83%B7%E6%81%A9%E6%96%99%E7%90%86%20%E6%A2%85%E4%B9%83%E4%BA%95%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%85%83%E9%AD%9A%E7%94%BA1%E4%B8%81%E7%9B%AE215", "u": "../japan/tottori/tottori.html#c-unagi-umenoi", "food": "", "ext": ""}, {"i": 5, "n": "お食事処 若林", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.536102, "lng": 134.189651, "d": "松葉がにのフルコース(ズワイガニのオス。11月6日解禁。かにすき・焼きがに・茹でがに・かに刺し・かに天ぷらまで一匹を使い切る)／花籠御膳(日本海の旬を少しずつ盛り合わせた昼の限定10食の御膳。予約不可で先着)", "a": "鳥取県鳥取市賀露町北1丁目8-12", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E8%8B%A5%E6%9E%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%B3%80%E9%9C%B2%E7%94%BA%E5%8C%971%E4%B8%81%E7%9B%AE8-12", "u": "../japan/tottori/tottori.html#c-oshokujidokoro-wakabayashi", "food": "../japan/tottori/img/tottori/oshokujidokoro-wakabayashi.jpg", "ext": ""}, {"i": 6, "n": "天然海水いけす 海陽亭", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.535076, "lng": 134.179352, "d": "活白いか姿造り(ケンサキイカの地元名。いけすから揚げて透き通ったまま供する。下足と耳は天ぷらか刺身に回せる)／松葉がに(ズワイガニのオス。11月6日解禁。茹で・焼き・かにすきで出す冬の主役)", "a": "鳥取県鳥取市賀露町西3丁目27-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E7%84%B6%E6%B5%B7%E6%B0%B4%E3%81%84%E3%81%91%E3%81%99%20%E6%B5%B7%E9%99%BD%E4%BA%AD%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%B3%80%E9%9C%B2%E7%94%BA%E8%A5%BF3%E4%B8%81%E7%9B%AE27-1", "u": "../japan/tottori/tottori.html#c-kaiyoutei-tottori", "food": "../japan/tottori/img/tottori/kaiyoutei-tottori.jpg", "ext": ""}, {"i": 7, "n": "海鮮祭ホーエンヤ わったいな店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 35.534321, "lng": 134.182922, "d": "元祖いか丼(賀露の老舗旅館・山田屋から受け継いだ名物。白いかの刺身と長芋の短冊の下に、ゲソとウル〈内臓〉の照り焼きが隠れている)／おまかせ海鮮丼(賀露港に揚がったその日の魚介を盛り合わせる看板の丼)", "a": "鳥取県鳥取市賀露町西3-323", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E7%A5%AD%E3%83%9B%E3%83%BC%E3%82%A8%E3%83%B3%E3%83%A4%20%E3%82%8F%E3%81%A3%E3%81%9F%E3%81%84%E3%81%AA%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%B3%80%E9%9C%B2%E7%94%BA%E8%A5%BF3-323", "u": "../japan/tottori/tottori.html#c-kaisenmatsuri-hoenya", "food": "../japan/tottori/img/tottori/kaisenmatsuri-hoenya.jpg", "ext": ""}, {"i": 8, "n": "鳥取牛骨麺 藤喜", "c": ["麺類"], "v": "レストラン", "lat": 35.496086, "lng": 134.225937, "d": "極み醤油麺(牛の骨だけでとった澄んだスープの醤油ラーメン。豚骨のような濁りや獣臭はなく、甘みとコクが特徴の鳥取のご当地ラーメン)／肉三昧麺(大山町産の豚をじっくり煮込んだチャーシューを何枚も重ねた一杯)", "a": "鳥取県鳥取市今町2丁目118", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E5%8F%96%E7%89%9B%E9%AA%A8%E9%BA%BA%20%E8%97%A4%E5%96%9C%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E4%BB%8A%E7%94%BA2%E4%B8%81%E7%9B%AE118", "u": "../japan/tottori/tottori.html#c-tottori-gyukotsumen-fujiki", "food": "", "ext": ""}, {"i": 9, "n": "武蔵屋食堂", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 35.499691, "lng": 134.233368, "d": "素ラーメン(うどんと同じカツオ・昆布の和風だしに中華麺を合わせた鳥取市発祥の一杯。具はねぎとかまぼこだけで、スープは澄んで塩気が穏やか)／カツ丼(ケチャップの入った洋風の割り下でとじる、この店独特のカツ丼)", "a": "鳥取県鳥取市職人町15", "m": "https://www.google.com/maps/search/?api=1&query=%E6%AD%A6%E8%94%B5%E5%B1%8B%E9%A3%9F%E5%A0%82%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%81%B7%E4%BA%BA%E7%94%BA15", "u": "../japan/tottori/tottori.html#c-musashiya-shokudo-tottori", "food": "../japan/tottori/img/tottori/musashiya-shokudo-tottori.jpg", "ext": ""}, {"i": 10, "n": "四川担担麺 蒼雲", "c": ["麺類"], "v": "レストラン", "lat": 35.500481, "lng": 134.235214, "d": "四川担担麺(芝麻醤＝練りごまのコクと花椒の痺れを合わせた汁ありの担担麺。鳥取では珍しい本格的な四川風)／汁なし担担麺(スープを張らず、丼の底のタレと麺を自分で混ぜて食べる食べ方。混ぜるほど濃くなる)", "a": "鳥取県鳥取市上魚町7-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9B%9B%E5%B7%9D%E6%8B%85%E6%8B%85%E9%BA%BA%20%E8%92%BC%E9%9B%B2%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E4%B8%8A%E9%AD%9A%E7%94%BA7-1", "u": "../japan/tottori/tottori.html#c-shisen-tantanmen-soun", "food": "../japan/tottori/img/tottori/shisen-tantanmen-soun.jpg", "ext": ""}, {"i": 11, "n": "ももちゃんラーメン", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 35.496391, "lng": 134.230759, "d": "牛すじラーメン(牛のすじ肉を甘辛く煮込んで醤油ラーメンに載せた一杯。脂と煮汁の甘みがスープに溶けて、飲んだあとでも入る)／旨辛ラーメン(辛味噌とひき肉を落とした辛口。辛さの段階を選べる)", "a": "鳥取県鳥取市弥生町351", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%82%82%E3%81%A1%E3%82%83%E3%82%93%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA351", "u": "../japan/tottori/tottori.html#c-momochan-ramen-tottori", "food": "../japan/tottori/img/tottori/momochan-ramen-tottori.jpg", "ext": ""}, {"i": 12, "n": "らーめんひんま", "c": ["麺類"], "v": "レストラン", "lat": 35.495418, "lng": 134.227449, "d": "牛骨チャーシュー麺(牛の骨でとった澄んだスープの醤油ラーメンにチャーシューを重ねたもの。豚骨とは違う甘みとコクが鳥取の郷土ラーメンの持ち味)／汁なしまぜそば(スープを張らず、太めの麺にタレと具を絡めて食べるこってり系)", "a": "鳥取県鳥取市栄町721", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E3%81%B2%E3%82%93%E3%81%BE%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA721", "u": "../japan/tottori/tottori.html#c-ramen-hinma-sakaemachi", "food": "", "ext": ""}, {"i": 13, "n": "粋な中華蕎麦 みらい", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 35.519657, "lng": 134.178818, "d": "味玉中華蕎麦(鶏と魚介でとった澄んだスープに甘めの醤油を合わせた中華そば。半熟の味付け玉子と低温調理のチャーシューが載る)／餃子(薄皮で焼き目をしっかりつけた一口大の焼き餃子。ラーメンと一緒に頼む人が多い)", "a": "鳥取県鳥取市湖山町北3丁目164", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B2%8B%E3%81%AA%E4%B8%AD%E8%8F%AF%E8%95%8E%E9%BA%A6%20%E3%81%BF%E3%82%89%E3%81%84%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%B9%96%E5%B1%B1%E7%94%BA%E5%8C%973%E4%B8%81%E7%9B%AE164", "u": "../japan/tottori/tottori.html#c-ikina-chukasoba-mirai", "food": "", "ext": ""}, {"i": 14, "n": "らーめん、肉丼ぶり 吉成鶏白湯 鶏神", "c": ["麺類"], "v": "レストラン", "lat": 35.481651, "lng": 134.219223, "d": "鶏白湯らーめん(鶏がらを長時間炊いて白く乳化させたスープのラーメン。鹿児島・桜島どりを使い、濃厚だが後味は軽い)／肉丼ぶり(たれで味付けした肉をごはんに載せた小丼。ラーメンとのセットが定番)", "a": "鳥取県鳥取市吉成南町1-24-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E3%80%81%E8%82%89%E4%B8%BC%E3%81%B6%E3%82%8A%20%E5%90%89%E6%88%90%E9%B6%8F%E7%99%BD%E6%B9%AF%20%E9%B6%8F%E7%A5%9E%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%90%89%E6%88%90%E5%8D%97%E7%94%BA1-24-2", "u": "../japan/tottori/tottori.html#c-yoshinari-toripaitan-torijin", "food": "../japan/tottori/img/tottori/yoshinari-toripaitan-torijin.jpg", "ext": ""}, {"i": 15, "n": "鳥取牛骨拉麺 八起", "c": ["麺類"], "v": "レストラン", "lat": 35.541688, "lng": 134.233946, "d": "特製牛骨拉麺(牛の骨でとった澄んだスープのラーメンに、低温調理のチャーシューと味付け玉子を全部のせにした看板の一杯。豚骨とは違う穏やかな甘みとコクが鳥取の郷土の味)／味玉牛骨拉麺(同じスープに半熟の味付け玉子を一つ載せた標準形)", "a": "鳥取県鳥取市福部町湯山2164-657 サンコスモス104号", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E5%8F%96%E7%89%9B%E9%AA%A8%E6%8B%89%E9%BA%BA%20%E5%85%AB%E8%B5%B7%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E7%A6%8F%E9%83%A8%E7%94%BA%E6%B9%AF%E5%B1%B12164-657%20%E3%82%B5%E3%83%B3%E3%82%B3%E3%82%B9%E3%83%A2%E3%82%B9104%E5%8F%B7", "u": "../japan/tottori/tottori.html#c-tottori-gyukotsu-ramen-yaoki", "food": "../japan/tottori/img/tottori/tottori-gyukotsu-ramen-yaoki.jpg", "ext": ""}, {"i": 16, "n": "麺屋 玖", "c": ["麺類"], "v": "レストラン", "lat": 35.472847, "lng": 134.244064, "d": "みそちゃあしゅうめん 1,350円(大山どりの鶏ガラに胡麻と味噌を溶き込み、丼の半分を覆うほどの煮込み叉焼をのせた看板の一杯)／わんたんめん 1,000円(自家製ワンタンを浮かべた、澄んだ鶏ガラ醤油のあっさり版)", "a": "鳥取県鳥取市正蓮寺107", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E7%8E%96%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%AD%A3%E8%93%AE%E5%AF%BA107", "u": "../japan/tottori/tottori.html#c-menya-kyu-shorenji", "food": "../japan/tottori/img/tottori/menya-kyu-shorenji.jpg", "ext": ""}, {"i": 17, "n": "砂丘そば", "c": ["麺類"], "v": "レストラン", "lat": 35.494729, "lng": 134.223232, "d": "砂丘そば(かけそばに、トビウオのすり身で作る鳥取名産の「あごちくわ」を輪切りで載せた一杯。昆布と削り節の澄んだ出汁で食べる)／かにめし(かに味噌とかに身を炊き込んだ名物駅弁「山陰鳥取かにめし」を、温かい丼仕立てで出すもの)", "a": "鳥取県鳥取市東品治町111-1 シャミネ鳥取 えきなかキッチン", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A0%82%E4%B8%98%E3%81%9D%E3%81%B0%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9D%B1%E5%93%81%E6%B2%BB%E7%94%BA111-1%20%E3%82%B7%E3%83%A3%E3%83%9F%E3%83%8D%E9%B3%A5%E5%8F%96%20%E3%81%88%E3%81%8D%E3%81%AA%E3%81%8B%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3", "u": "../japan/tottori/tottori.html#c-sakyu-soba-tottori-eki", "food": "../japan/tottori/img/tottori/sakyu-soba-tottori-eki.jpg", "ext": ""}, {"i": 18, "n": "吾妻そば", "c": ["麺類"], "v": "レストラン", "lat": 35.500809, "lng": 134.232666, "d": "割子そば(出雲地方の食べ方。朱塗りの丸い器を三段重ねにし、殻ごと挽いた黒いそばへ甘辛いつゆを直接かけ、薬味を変えながら食べる。750円)／天ぷらそば(温かいかけそばに海老天などを載せた一杯。900円)", "a": "鳥取県鳥取市本町1丁目206", "m": "https://www.google.com/maps/search/?api=1&query=%E5%90%BE%E5%A6%BB%E3%81%9D%E3%81%B0%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AC%E7%94%BA1%E4%B8%81%E7%9B%AE206", "u": "../japan/tottori/tottori.html#c-azuma-soba-tottori", "food": "", "ext": ""}, {"i": 19, "n": "お好み工房 こな", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 35.494999, "lng": 134.230667, "d": "ホルモンそば(自家製の味噌ダレで牛ホルモン・もやし・ねぎと中華麺を鉄板で炒める、鳥取のご当地焼きそば「ホルそば」。890円)／チーズお好み焼き(大阪風の生地にとろけるチーズを一面に敷いた一枚。鉄板の上で保温しながら食べる)", "a": "鳥取県鳥取市末広温泉町773", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E5%B7%A5%E6%88%BF%20%E3%81%93%E3%81%AA%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA773", "u": "../japan/tottori/tottori.html#c-okonomi-kobo-kona", "food": "../japan/tottori/img/tottori/okonomi-kobo-kona.jpg", "ext": ""}, {"i": 20, "n": "久松うどん はなしょう", "c": ["麺類"], "v": "レストラン", "lat": 35.508942, "lng": 134.233795, "d": "かけうどん(讃岐風の自家製麺に、昆布と鰹節をたっぷり使った関西風のまろやかな出汁をはった基本の一杯。680円)／鍋焼きうどん(寒い季節の品書き。土鍋で海老天と玉子ごと煮込む)", "a": "鳥取県鳥取市東町3丁目362-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B9%85%E6%9D%BE%E3%81%86%E3%81%A9%E3%82%93%20%E3%81%AF%E3%81%AA%E3%81%97%E3%82%87%E3%81%86%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9D%B1%E7%94%BA3%E4%B8%81%E7%9B%AE362-1", "u": "../japan/tottori/tottori.html#c-hisamatsu-udon-hanasho", "food": "../japan/tottori/img/tottori/hisamatsu-udon-hanasho.jpg", "ext": ""}, {"i": 21, "n": "まつやホルモン店", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 35.491283, "lng": 134.23822, "d": "ホルモンそば(鉄板で牛ホルモン・ねぎ・もやしを特製の味噌ダレで炒め、中華麺を合わせて焼き上げる鳥取のご当地焼きそば。860円)／おでん(鉄板の脇の鍋で煮込む名物。ホルそばが焼き上がるまでの一品として常連が必ずつまむ)", "a": "鳥取県鳥取市吉方温泉4丁目432", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%81%A4%E3%82%84%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%90%89%E6%96%B9%E6%B8%A9%E6%B3%894%E4%B8%81%E7%9B%AE432", "u": "../japan/tottori/tottori.html#c-matsuya-horumon-ten", "food": "../japan/tottori/img/tottori/matsuya-horumon-ten.jpg", "ext": ""}, {"i": 22, "n": "更科", "c": ["麺類"], "v": "レストラン", "lat": 35.523457, "lng": 134.179962, "d": "更科セット(昼限定。温かいうどんかそばに小鉢とごはんが付く、地元の勤め人の定番。1,000円)／塩サバ重(ふっくら焼いた塩鯖に玉子・季節の魚介・トビ子を重ね、特製の胡麻ダレで食べる看板の重。1,850円)", "a": "鳥取県鳥取市湖山町北5丁目245-2", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9B%B4%E7%A7%91%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%B9%96%E5%B1%B1%E7%94%BA%E5%8C%975%E4%B8%81%E7%9B%AE245-2", "u": "../japan/tottori/tottori.html#c-sarashina-koyama-tottori", "food": "../japan/tottori/img/tottori/sarashina-koyama-tottori.jpg", "ext": ""}, {"i": 23, "n": "こうりん屋敷", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 35.495523, "lng": 134.229222, "d": "刺身盛り合わせ(日本海で揚がった白身と地イカを盛る。季節によりのどぐろ＝アカムツの炙りが入る)／ホルモン焼きそば(鳥取の飲み屋の〆の定番。ホルモンと太麺をソースで炒めた一皿)", "a": "鳥取県鳥取市末広温泉町159", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%81%86%E3%82%8A%E3%82%93%E5%B1%8B%E6%95%B7%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA159", "u": "../japan/tottori/tottori.html#c-tottori-kourin-yashiki", "food": "../japan/tottori/img/tottori/tottori-kourin-yashiki.jpg", "ext": ""}, {"i": 24, "n": "ご馳家 ぐらっちぇ 本店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 35.49556, "lng": 134.229919, "d": "のどぐろの炙り焼(アカムツの地元名。脂が多く白身のトロと呼ばれる。皮目を炙って香りを立てる)／刺身盛り合わせ(網代・賀露などの港から入る日替わりの地魚。夏は白いか＝ケンサキイカが入る)", "a": "鳥取県鳥取市末広温泉町271-4 かわとビル", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%94%E9%A6%B3%E5%AE%B6%20%E3%81%90%E3%82%89%E3%81%A3%E3%81%A1%E3%81%87%20%E6%9C%AC%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA271-4%20%E3%81%8B%E3%82%8F%E3%81%A8%E3%83%93%E3%83%AB", "u": "../japan/tottori/tottori.html#c-tottori-gurattye-honten", "food": "../japan/tottori/img/tottori/tottori-gurattye-honten.jpg", "ext": ""}, {"i": 25, "n": "灯宴 暁-AKATSUKI-本店", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 35.49613, "lng": 134.228479, "d": "刺身の舟盛り(日本海で揚がった白身・イカ・甘エビなどを木舟に盛る。季節でモサエビ＝クロザコエビが入る)／肉のたたき盛り合わせ(鳥取和牛や大山どりの表面を炙り、薬味と出汁醤油で食べる)", "a": "鳥取県鳥取市末広温泉町165", "m": "https://www.google.com/maps/search/?api=1&query=%E7%81%AF%E5%AE%B4%20%E6%9A%81-AKATSUKI-%E6%9C%AC%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA165", "u": "../japan/tottori/tottori.html#c-tottori-touen-akatsuki", "food": "../japan/tottori/img/tottori/tottori-touen-akatsuki.jpg", "ext": ""}, {"i": 26, "n": "炭火焼鳥 さく", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 35.496689, "lng": 134.231064, "d": "白肝(しろきも。脂が乗って白っぽくなった鶏のレバー。数が限られる希少部位で、ねっとり甘い)／つくねの卵黄のせ(鶏ひき肉を練って串に巻いて焼き、生卵黄を絡めて食べる)", "a": "鳥取県鳥取市弥生町265 WAGONビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E9%B3%A5%20%E3%81%95%E3%81%8F%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA265%20WAGON%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/tottori/tottori.html#c-tottori-sumibi-yakitori-saku", "food": "../japan/tottori/img/tottori/tottori-sumibi-yakitori-saku.jpg", "ext": ""}, {"i": 27, "n": "海鮮問屋 村上水産 鮮魚部 駅前本所店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 35.49395, "lng": 134.229538, "d": "刺身盛り合わせ(仲買人が市場で直接買い付けた日替わりの地魚。夏は白いか＝ケンサキイカ、冬は松葉がに＝ズワイガニのオスが入る)／とうふちくわ(豆腐と白身魚のすり身を混ぜて蒸した鳥取市特有のちくわ。生姜醤油で食べる)", "a": "鳥取県鳥取市永楽温泉町378", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E5%95%8F%E5%B1%8B%20%E6%9D%91%E4%B8%8A%E6%B0%B4%E7%94%A3%20%E9%AE%AE%E9%AD%9A%E9%83%A8%20%E9%A7%85%E5%89%8D%E6%9C%AC%E6%89%80%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%B0%B8%E6%A5%BD%E6%B8%A9%E6%B3%89%E7%94%BA378", "u": "../japan/tottori/tottori.html#c-tottori-murakami-suisan-ekimae", "food": "../japan/tottori/img/tottori/tottori-murakami-suisan-ekimae.jpg", "ext": ""}, {"i": 28, "n": "山陰海鮮炉端かば 鳥取駅前店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 35.4955, "lng": 134.227186, "d": "かば桶盛(山陰で揚がった魚の刺身を木桶に盛り合わせた看板料理。人数に合わせて大きさを選べる)／炉端名物 鶏もも焼き(鶏もも肉を炉端の炭火で皮目から焼き上げ、塩で食べる一枚焼き)", "a": "鳥取県鳥取市栄町608", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E9%99%B0%E6%B5%B7%E9%AE%AE%E7%82%89%E7%AB%AF%E3%81%8B%E3%81%B0%20%E9%B3%A5%E5%8F%96%E9%A7%85%E5%89%8D%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA608", "u": "../japan/tottori/tottori.html#c-tottori-robata-kaba-ekimae", "food": "../japan/tottori/img/tottori/tottori-robata-kaba-ekimae.jpg", "ext": ""}, {"i": 29, "n": "ri bacaro", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 35.537922, "lng": 134.186417, "d": "鶏の丸焼き(骨付きの鶏をまるごと焼き上げる看板料理。切り分けて数人でつつく)／うどんと小皿の盛り合わせ(地元の出汁で引いたうどんに、小鉢や揚げ物を合わせた軽い食事)", "a": "鳥取県鳥取市賀露町北4-33-25", "m": "https://www.google.com/maps/search/?api=1&query=ri%20bacaro%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%B3%80%E9%9C%B2%E7%94%BA%E5%8C%974-33-25", "u": "../japan/tottori/tottori.html#c-tottori-ri-bacaro-karo", "food": "../japan/tottori/img/tottori/tottori-ri-bacaro-karo.jpg", "ext": ""}, {"i": 30, "n": "花のれん 本店", "c": ["郷土料理", "ビール・バー"], "v": "レストラン", "lat": 35.496758, "lng": 134.226929, "d": "松葉がにコース(ズワイガニのオスの山陰での呼び名。11月6日解禁で、ゆで・炭火焼き・カニスキ・甲羅酒まで一匹を通しで出す冬の献立)／岩ガキ 夏輝(鳥取県が夏に水揚げする大型の天然岩ガキのブランド名。濃厚な身を生で味わう夏の名物)", "a": "鳥取県鳥取市瓦町526", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8A%B1%E3%81%AE%E3%82%8C%E3%82%93%20%E6%9C%AC%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E7%93%A6%E7%94%BA526", "u": "../japan/tottori/tottori.html#c-hananoren-honten", "food": "../japan/tottori/img/tottori/hananoren-honten.jpg", "ext": ""}, {"i": 31, "n": "串焼き・旬菜 紅乃酉", "c": ["ビール・バー"], "v": "食べ歩き", "lat": 35.495987, "lng": 134.2314, "d": "55℃レバー(大山どりの鶏レバーを55℃で3時間かけて低温調理した串。口に入れると溶けて旨味だけが残る)／猛者エビ串(日本海でとれるモサエビ。甘みの強い小型のエビで、頭から尻尾まで殻ごと焼いて食べる鳥取の冬の味)／ねばりっこ短冊(鳥取県が育成した粘りと甘みの強い長芋のブランド品種)", "a": "鳥取県鳥取市弥生町373-4", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E7%84%BC%E3%81%8D%E3%83%BB%E6%97%AC%E8%8F%9C%20%E7%B4%85%E4%B9%83%E9%85%89%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA373-4", "u": "../japan/tottori/tottori.html#c-kounotori-kushiyaki-yayoicho", "food": "../japan/tottori/img/tottori/kounotori-kushiyaki-yayoicho.jpg", "ext": ""}, {"i": 32, "n": "パラキート", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.491856, "lng": 134.224182, "d": "月替わりカレー(その月の食材で内容が変わるスパイスカレー。取材時の7月は夏野菜と牛すじで、牛すじはホロホロに煮込まれていた)／チキン＆ドライキーマカレー 1,000円(鶏のカレーと水分の少ない挽き肉のキーマを一皿に盛り合わせた看板の相がけ)", "a": "鳥取県鳥取市扇町134", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%A9%E3%82%AD%E3%83%BC%E3%83%88%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%89%87%E7%94%BA134", "u": "../japan/tottori/tottori.html#c-parakeet-tottori", "food": "../japan/tottori/img/tottori/parakeet-tottori.jpg", "ext": ""}, {"i": 33, "n": "カレーとアジアンフード コサジイチ シャミネ鳥取店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.495085, "lng": 134.223668, "d": "ポークカレー 小1,080円(厚切りの豚肉をのせた、コクがありつつ後味のさっぱりした定番)／ほうれん草カレー 小900円(ほうれん草を練り込んだ緑色のルウ。単品でも他のカレーへの重ねがけでも頼める)", "a": "鳥取県鳥取市東品治町111-1 シャミネ鳥取 えきなかキッチン", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%AC%E3%83%BC%E3%81%A8%E3%82%A2%E3%82%B8%E3%82%A2%E3%83%B3%E3%83%95%E3%83%BC%E3%83%89%20%E3%82%B3%E3%82%B5%E3%82%B8%E3%82%A4%E3%83%81%20%E3%82%B7%E3%83%A3%E3%83%9F%E3%83%8D%E9%B3%A5%E5%8F%96%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9D%B1%E5%93%81%E6%B2%BB%E7%94%BA111-1%20%E3%82%B7%E3%83%A3%E3%83%9F%E3%83%8D%E9%B3%A5%E5%8F%96%20%E3%81%88%E3%81%8D%E3%81%AA%E3%81%8B%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3", "u": "../japan/tottori/tottori.html#c-cosajiichi-shamine-tottori", "food": "../japan/tottori/img/tottori/cosajiichi-shamine-tottori.jpg", "ext": ""}, {"i": 34, "n": "CURRY COFFEE モンクス", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.497478, "lng": 134.226089, "d": "カツカレー(鳥取県産米ともち麦のご飯に、ご飯・ルウと一緒に口へ入る絶妙な厚さのカツをのせた看板)／タコライス(刻んだ野菜を山盛りにし、その下に辛めのひき肉を敷いた沖縄発祥の一皿)", "a": "鳥取県鳥取市今町1丁目162", "m": "https://www.google.com/maps/search/?api=1&query=CURRY%20COFFEE%20%E3%83%A2%E3%83%B3%E3%82%AF%E3%82%B9%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E4%BB%8A%E7%94%BA1%E4%B8%81%E7%9B%AE162", "u": "../japan/tottori/tottori.html#c-monks-curry-coffee-tottori", "food": "../japan/tottori/img/tottori/monks-curry-coffee-tottori.jpg", "ext": ""}, {"i": 35, "n": "食堂FRUNK", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.49876, "lng": 134.230499, "d": "パルミジャーノ香るタコライス 1,320円(鳥取県産米「星空舞」の上に県産中心の生野菜をたっぷり盛り、スパイシーな挽き肉とチーズソース、削りたてのパルミジャーノ・レッジャーノを重ねた看板)／日替わりの洋食ランチ(その日の鳥取県産野菜を使う昼の定番プレート)", "a": "鳥取県鳥取市元町123", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E5%A0%82FRUNK%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%85%83%E7%94%BA123", "u": "../japan/tottori/tottori.html#c-syokudo-frunk-tottori", "food": "../japan/tottori/img/tottori/syokudo-frunk-tottori.jpg", "ext": ""}, {"i": 36, "n": "ペペネーロ イタリア館", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.496891, "lng": 134.22995, "d": "親ガニのトマトソースパスタ 2,200円(日本海の冬の味覚、ズワイガニの雌＝親ガニを丸ごと使った季節のパスタ)／鳥取和牛のグリッリア 100g 3,500円〜(肉質日本一に輝いたことのある県産黒毛和牛の炭火風グリル)", "a": "鳥取県鳥取市弥生町308-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9A%E3%83%9A%E3%83%8D%E3%83%BC%E3%83%AD%20%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E9%A4%A8%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA308-2", "u": "../japan/tottori/tottori.html#c-pepenero-italia-kan-tottori", "food": "../japan/tottori/img/tottori/pepenero-italia-kan-tottori.jpg", "ext": ""}, {"i": 37, "n": "上海茶楼", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.515427, "lng": 134.188019, "d": "カニ玉ご飯 1,100円(ふんわり焼いた卵にカニをあわせ、とろみのある餡をかけてご飯にのせた昼の看板)／焼き餃子 700円(厚めの皮で包み、鉄板で焼き上げる店の定番。イベント出店では小籠包も出す)", "a": "鳥取県鳥取市湖山町東4丁目32", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%E8%8C%B6%E6%A5%BC%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%B9%96%E5%B1%B1%E7%94%BA%E6%9D%B14%E4%B8%81%E7%9B%AE32", "u": "../japan/tottori/tottori.html#c-shanghai-charo-koyama", "food": "../japan/tottori/img/tottori/shanghai-charo-koyama.jpg", "ext": ""}, {"i": 38, "n": "肉料理 Nick", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.496352, "lng": 134.229494, "d": "鳥取和牛ひつまぶし(鳥取県が育てる黒毛和牛・鳥取和牛を焼いて飯に敷き、そのまま・薬味・出汁と三度味を変えて食べる昼の看板)／洋食ランチ(平日の火・水・木・金だけ出す、イタリアンとフレンチの技法を使った肉の皿)", "a": "鳥取県鳥取市末広温泉町152番地", "m": "https://www.google.com/maps/search/?api=1&query=%E8%82%89%E6%96%99%E7%90%86%20Nick%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA152%E7%95%AA%E5%9C%B0", "u": "../japan/tottori/tottori.html#c-niku-ryori-nick-suehiro", "food": "../japan/tottori/img/tottori/niku-ryori-nick-suehiro.jpg", "ext": ""}, {"i": 39, "n": "喫茶 ベニ屋", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 35.496806, "lng": 134.229936, "d": "かき氷(種類豊富な氷菓。食事のあとに頼むのが常連の流儀で、夏場はこれを目当てに通う客も多い)／チキンカツカレー(十日間寝かせて熟成させたスパイスカレーに鶏カツをのせた一皿。この店の看板で、幾重にも重なる辛さが身上)", "a": "鳥取県鳥取市末広温泉町129", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%20%E3%83%99%E3%83%8B%E5%B1%8B%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA129", "u": "../japan/tottori/tottori.html#c-kissa-beniya-tottori", "food": "", "ext": ""}, {"i": 40, "n": "すなば珈琲 “新”鳥取駅前店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 35.494589, "lng": 134.227177, "d": "小倉トーストセット(厚切りトーストに粒あんとバターをのせ、アイスを添えた甘いトースト。朝から頼める)／小倉あんホットサンド(粒あんを挟んで焼き上げたホットサンド。もさ海老・かにのホットサンドと並ぶ看板)", "a": "鳥取県鳥取市栄町706番地", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%AA%E3%81%B0%E7%8F%88%E7%90%B2%20%E2%80%9C%E6%96%B0%E2%80%9D%E9%B3%A5%E5%8F%96%E9%A7%85%E5%89%8D%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA706%E7%95%AA%E5%9C%B0", "u": "../japan/tottori/tottori.html#c-sunaba-coffee-shin-tottori-ekimae", "food": "../japan/tottori/img/tottori/sunaba-coffee-shin-tottori-ekimae.jpg", "ext": ""}, {"i": 41, "n": "宝月堂", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 35.502213, "lng": 134.23027, "d": "生姜せんべい(因幡に江戸時代から伝わる薄焼きのせんべい。鳥取市気高町産の瑞穂生姜の蜜を引き、一枚ずつ手作業で焼き上げる。民藝運動の柳宗悦・吉田璋也が贈答品として世に送り出した)／MOCHI cube(国産餅粉のやわらかな皮で自家製の餡と生クリームを三層に重ねた四角い大福。北海道産小豆のブレンド餡がマイルド)", "a": "鳥取県鳥取市二階町3丁目121", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AE%9D%E6%9C%88%E5%A0%82%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E4%BA%8C%E9%9A%8E%E7%94%BA3%E4%B8%81%E7%9B%AE121", "u": "../japan/tottori/tottori.html#c-hougetsudou-tottori-nikaimachi", "food": "../japan/tottori/img/tottori/hougetsudou-tottori-nikaimachi.jpg", "ext": ""}, {"i": 42, "n": "亀甲や", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 35.502506, "lng": 134.232666, "d": "二十世紀(鳥取名産の二十世紀梨を薄切りにした姿を、種の抜けた跡まで似せて作った寒天菓子。大正11年からの鳥取銘菓で、1枚ずつ透けるような薄さに仕上げる)／亀甲もなか(亀甲の形に焼いた皮で餡を包んだ最中。かつて宮内省御用を務めた品で、1個118円と日常の茶菓子としても買える)", "a": "鳥取県鳥取市片原2丁目116", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BA%80%E7%94%B2%E3%82%84%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E7%89%87%E5%8E%9F2%E4%B8%81%E7%9B%AE116", "u": "../japan/tottori/tottori.html#c-kikkouya-tottori-kataha", "food": "", "ext": ""}, {"i": 43, "n": "たくみ珈琲店", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 35.4962, "lng": 134.228044, "d": "たくみアフタヌーンティー(2,200円。一の皿に宝月堂のMOCHI cube・大江ノ郷ぷりん・ラムレーズンのマカロン・自家焙煎珈琲ゼリー、二の皿にバスクチーズケーキ・スコーン・天然酵母の揚げパンを重ね、珈琲か紅茶が2杯まで付く)／メロンクリームソーダ(800円。民藝の器づかいの店に昔ながらのクリームソーダが並ぶ一杯)／洋食ランチ 鳥取和牛のハンバーグ(数量限定。全国和牛能力共進会で肉質日本一になった県産黒毛和牛のハンバーグに、鳥取のブランド卵「天美卵」の目玉焼きと濃厚なデミグラスソースを重ね、2段のプレートで出す)", "a": "鳥取県鳥取市栄町606 まるもビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%8F%E3%81%BF%E7%8F%88%E7%90%B2%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA606%20%E3%81%BE%E3%82%8B%E3%82%82%E3%83%93%E3%83%AB1F", "u": "../japan/tottori/tottori.html#c-takumi-coffee-shop-tottori-sakaemachi", "food": "../japan/tottori/img/tottori/takumi-coffee-shop-tottori-sakaemachi.jpg", "ext": ""}, {"i": 44, "n": "タカハマカフェ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 35.542388, "lng": 134.234804, "d": "かき氷(ふんわり削った氷に果実のシロップをかけた夏の看板。屋上テラスで砂丘と日本海を見ながら食べられる)／パン・ペストリー(クロワッサンやデニッシュ、惣菜パンが1階カウンターに並ぶ。買って2階席や屋上の縁台へ持って上がる)", "a": "鳥取県鳥取市福部町湯山2164", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%BF%E3%82%AB%E3%83%8F%E3%83%9E%E3%82%AB%E3%83%95%E3%82%A7%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E7%A6%8F%E9%83%A8%E7%94%BA%E6%B9%AF%E5%B1%B12164", "u": "../japan/tottori/tottori.html#c-takahama-cafe-tottori-sakyu", "food": "../japan/tottori/img/tottori/takahama-cafe-tottori-sakyu.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([35.503115,134.222636],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('tottori', "鳥取");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
