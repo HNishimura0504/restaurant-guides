@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鳥取美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">鳥取美食ガイド<span class="sn-n">45店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/tottori.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="鳥取ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">鳥取ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/tottori.html"><span class="sn-e">🗺️</span>鳥取の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・海の幸（白いか・モサエビ・松葉がに）</a><a href="#s-ramen"><span class="sn-e">・</span>ラーメン・牛骨ラーメン・中華そば</a><a href="#s-men"><span class="sn-e">・</span>そば・うどん・町中華・粉もん</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・郷土料理・地酒</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・カレー・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・和菓子・スイーツ</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全88都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全88都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / TOTTORI・鳥取県 🇯🇵</div>
+  <h1>鳥取美食ガイド</h1>
+  <div class="sub">日本一の砂丘と日本海の港を持つ城下町。とうふちくわ、白いか、モサエビ、松葉がに、そして全国一のカレー消費量とスタミナ納豆。鳥取駅前から末広温泉町の飲み屋街、賀露港まで厳選45スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tottori/_map.png" alt="全域マップ">
+<a href="#c-tempura-gaten-tottori" style="left:68.2%;top:64.24%;width:3.5%;height:2.7%;"></a>
+<a href="#c-nihonryori-torikichi" style="left:74.63%;top:60.9%;width:3.5%;height:2.7%;"></a>
+<a href="#c-nadai-sasasushi" style="left:71.41%;top:63.2%;width:3.5%;height:2.7%;"></a>
+<a href="#c-takumi-kappou-ten" style="left:68.71%;top:63.35%;width:3.5%;height:2.7%;"></a>
+<a href="#c-unagi-umenoi" style="left:72.91%;top:58.08%;width:3.5%;height:2.7%;"></a>
+<a href="#c-oshokujidokoro-wakabayashi" style="left:23.55%;top:17.37%;width:3.5%;height:2.7%;"></a>
+<a href="#c-kaiyoutei-tottori" style="left:11.05%;top:18.55%;width:3.5%;height:2.7%;"></a>
+<a href="#c-kaisenmatsuri-hoenya" style="left:15.38%;top:19.41%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-gyukotsumen-fujiki" style="left:67.6%;top:63.23%;width:3.5%;height:2.7%;"></a>
+<a href="#c-musashiya-shokudo-tottori" style="left:76.62%;top:59.1%;width:3.5%;height:2.7%;"></a>
+<a href="#c-shisen-tantanmen-soun" style="left:78.86%;top:58.19%;width:3.5%;height:2.7%;"></a>
+<a href="#c-momochan-ramen-tottori" style="left:73.45%;top:62.88%;width:3.5%;height:2.7%;"></a>
+<a href="#c-ramen-hinma-sakaemachi" style="left:69.43%;top:63.99%;width:3.5%;height:2.7%;"></a>
+<a href="#c-ikina-chukasoba-mirai" style="left:10.4%;top:36.22%;width:3.5%;height:2.7%;"></a>
+<a href="#c-yoshinari-toripaitan-torijin" style="left:59.45%;top:79.76%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-gyukotsu-ramen-yaoki" style="left:77.32%;top:10.97%;width:3.5%;height:2.7%;"></a>
+<a href="#c-menya-kyu-shorenji" style="left:89.6%;top:89.84%;width:3.5%;height:2.7%;"></a>
+<a href="#c-sakyu-soba-tottori-eki" style="left:64.31%;top:64.78%;width:3.5%;height:2.7%;"></a>
+<a href="#c-azuma-soba-tottori" style="left:75.76%;top:57.81%;width:3.5%;height:2.7%;"></a>
+<a href="#c-okonomi-kobo-kona" style="left:73.34%;top:64.47%;width:3.5%;height:2.7%;"></a>
+<a href="#c-hisamatsu-udon-hanasho" style="left:77.14%;top:48.5%;width:3.5%;height:2.7%;"></a>
+<a href="#c-matsuya-horumon-ten" style="left:82.51%;top:68.73%;width:3.5%;height:2.7%;"></a>
+<a href="#c-sarashina-koyama-tottori" style="left:11.79%;top:31.86%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-kourin-yashiki" style="left:71.58%;top:63.87%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-gurattye-honten" style="left:72.43%;top:63.83%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-touen-akatsuki" style="left:70.68%;top:63.17%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-sumibi-yakitori-saku" style="left:73.82%;top:62.53%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-murakami-suisan-ekimae" style="left:71.97%;top:65.67%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-robata-kaba-ekimae" style="left:69.11%;top:63.9%;width:3.5%;height:2.7%;"></a>
+<a href="#c-tottori-ri-bacaro-karo" style="left:19.62%;top:15.28%;width:3.5%;height:2.7%;"></a>
+<a href="#c-hananoren-honten" style="left:68.8%;top:62.46%;width:3.5%;height:2.7%;"></a>
+<a href="#c-kounotori-kushiyaki-yayoicho" style="left:74.23%;top:63.34%;width:3.5%;height:2.7%;"></a>
+<a href="#c-parakeet-tottori" style="left:65.47%;top:68.07%;width:3.5%;height:2.7%;"></a>
+<a href="#c-cosajiichi-shamine-tottori" style="left:64.84%;top:64.37%;width:3.5%;height:2.7%;"></a>
+<a href="#c-monks-curry-coffee-tottori" style="left:67.78%;top:61.63%;width:3.5%;height:2.7%;"></a>
+<a href="#c-syokudo-frunk-tottori" style="left:73.13%;top:60.16%;width:3.5%;height:2.7%;"></a>
+<a href="#c-pepenero-italia-kan-tottori" style="left:72.47%;top:62.3%;width:3.5%;height:2.7%;"></a>
+<a href="#c-shanghai-charo-koyama" style="left:21.57%;top:41.07%;width:3.5%;height:2.7%;"></a>
+<a href="#c-niku-ryori-nick-suehiro" style="left:71.91%;top:62.92%;width:3.5%;height:2.7%;"></a>
+<a href="#c-kissa-beniya-tottori" style="left:72.45%;top:62.4%;width:3.5%;height:2.7%;"></a>
+<a href="#c-sunaba-coffee-shin-tottori-ekimae" style="left:69.1%;top:64.94%;width:3.5%;height:2.7%;"></a>
+<a href="#c-hougetsudou-tottori-nikaimachi" style="left:72.86%;top:56.21%;width:3.5%;height:2.7%;"></a>
+<a href="#c-kikkouya-tottori-kataha" style="left:75.76%;top:55.87%;width:3.5%;height:2.7%;"></a>
+<a href="#c-takumi-coffee-shop-tottori-sakaemachi" style="left:70.15%;top:63.09%;width:3.5%;height:2.7%;"></a>
+<a href="#c-takahama-cafe-tottori-sakyu" style="left:78.36%;top:10.17%;width:3.5%;height:2.7%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（45店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・海の幸（白いか・モサエビ・松葉がに）</div>
+<div class="links">
+<a href="#c-tempura-gaten-tottori"><span class="tn" style="background:#2a78d6;">1</span>駅前2分、地物だらけの海鮮天丼</a>
+<a href="#c-nihonryori-torikichi"><span class="tn" style="background:#2a78d6;">2</span>住宅街の百年料理屋、完全個室</a>
+<a href="#c-nadai-sasasushi"><span class="tn" style="background:#2a78d6;">3</span>飲み屋街で60年、夜だけの鮨</a>
+<a href="#c-takumi-kappou-ten"><span class="tn" style="background:#2a78d6;">4</span>民藝の器で食べる「生活的美術館」</a>
+<a href="#c-unagi-umenoi"><span class="tn" style="background:#2a78d6;">5</span>昭和21年から続く城下の鰻屋</a>
+<a href="#c-oshokujidokoro-wakabayashi"><span class="tn" style="background:#2a78d6;">6</span>明治元年創業、海の見える魚屋の食堂</a>
+<a href="#c-kaiyoutei-tottori"><span class="tn" style="background:#2a78d6;">7</span>生きた白いかを姿造りで出す港の店</a>
+<a href="#c-kaisenmatsuri-hoenya"><span class="tn" style="background:#2a78d6;">8</span>賀露名物「元祖いか丼」を継いだ丼屋</a>
+</div>
+<div class="sec red">ラーメン・牛骨ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-tottori-gyukotsumen-fujiki"><span class="tn" style="background:#e34948;">9</span>駅前で食べる澄んだ牛骨の一杯</a>
+<a href="#c-musashiya-shokudo-tottori"><span class="tn" style="background:#e34948;">10</span>素ラーメン発祥、明治45年の食堂</a>
+<a href="#c-shisen-tantanmen-soun"><span class="tn" style="background:#e34948;">11</span>ミシュラン掲載、行列の担担麺</a>
+<a href="#c-momochan-ramen-tottori"><span class="tn" style="background:#e34948;">12</span>飲み屋街の夜、牛すじの〆の一杯</a>
+<a href="#c-ramen-hinma-sakaemachi"><span class="tn" style="background:#e34948;">13</span>駅前サンロードの牛骨ラーメン</a>
+<a href="#c-ikina-chukasoba-mirai"><span class="tn" style="background:#e34948;">14</span>湖山の澄んだ醤油中華そば</a>
+<a href="#c-yoshinari-toripaitan-torijin"><span class="tn" style="background:#e34948;">15</span>国道沿い、桜島どりの鶏白湯</a>
+<a href="#c-tottori-gyukotsu-ramen-yaoki"><span class="tn" style="background:#e34948;">16</span>砂丘のすぐ前、自家製麺の牛骨</a>
+<a href="#c-menya-kyu-shorenji"><span class="tn" style="background:#e34948;">17</span>大山どりの澄んだ鶏ガラ一杯の人気店</a>
+</div>
+<div class="sec aqua">そば・うどん・町中華・粉もん</div>
+<div class="links">
+<a href="#c-sakyu-soba-tottori-eki"><span class="tn" style="background:#1baf7a;">18</span>鳥取駅の駅そば。あごちくわが載る</a>
+<a href="#c-azuma-soba-tottori"><span class="tn" style="background:#1baf7a;">19</span>市内でただ一軒の出雲そば</a>
+<a href="#c-okonomi-kobo-kona"><span class="tn" style="background:#1baf7a;">20</span>飲み屋街の鉄板。名物はホルそば</a>
+<a href="#c-hisamatsu-udon-hanasho"><span class="tn" style="background:#1baf7a;">21</span>鳥取城跡の堀端、古民家のうどん</a>
+<a href="#c-matsuya-horumon-ten"><span class="tn" style="background:#1baf7a;">22</span>鳥取の「ホルそば」を代表する一軒</a>
+<a href="#c-sarashina-koyama-tottori"><span class="tn" style="background:#1baf7a;">23</span>湖山の住宅街、麺と丼の食堂</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒</div>
+<div class="links">
+<a href="#c-tottori-kourin-yashiki"><span class="tn" style="background:#0d366b;">24</span>末広温泉町の和室で山陰の魚と地酒</a>
+<a href="#c-tottori-gurattye-honten"><span class="tn" style="background:#0d366b;">25</span>山陰沖の魚を毎日仕入れる末広の老舗</a>
+<a href="#c-tottori-touen-akatsuki"><span class="tn" style="background:#0d366b;">26</span>全室個室で魚も肉も揃う末広の宴会店</a>
+<a href="#c-tottori-sumibi-yakitori-saku"><span class="tn" style="background:#0d366b;">27</span>弥生町の炭火串焼き、金土は朝3時まで</a>
+<a href="#c-tottori-murakami-suisan-ekimae"><span class="tn" style="background:#0d366b;">28</span>鮮魚仲買人が直営する駅前の海鮮居酒屋</a>
+<a href="#c-tottori-robata-kaba-ekimae"><span class="tn" style="background:#0d366b;">29</span>駅前すぐ、山陰の魚を炉端の炭で焼く</a>
+<a href="#c-tottori-ri-bacaro-karo"><span class="tn" style="background:#0d366b;">30</span>賀露の海を見ながら飲む週末だけの酒場</a>
+<a href="#c-hananoren-honten"><span class="tn" style="background:#0d366b;">31</span>創業昭和54年、完全個室の郷土料理店</a>
+<a href="#c-kounotori-kushiyaki-yayoicho"><span class="tn" style="background:#0d366b;">32</span>和傘の下で焼く鳥取地鶏の串焼き</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-parakeet-tottori"><span class="tn" style="background:#4a3aa7;">33</span>駅南5分、月替わりのスパイスカレー</a>
+<a href="#c-cosajiichi-shamine-tottori"><span class="tn" style="background:#4a3aa7;">34</span>鳥取駅ナカの本格スパイスカレー</a>
+<a href="#c-monks-curry-coffee-tottori"><span class="tn" style="background:#4a3aa7;">35</span>レコードが並ぶ商店街のカレー店</a>
+<a href="#c-syokudo-frunk-tottori"><span class="tn" style="background:#4a3aa7;">36</span>若桜橋のたもと、県産野菜の洋食堂</a>
+<a href="#c-pepenero-italia-kan-tottori"><span class="tn" style="background:#4a3aa7;">37</span>1980年創業、鳥取の老舗イタリアン</a>
+<a href="#c-shanghai-charo-koyama"><span class="tn" style="background:#4a3aa7;">38</span>上海の街並みを再現した本格中華</a>
+<a href="#c-niku-ryori-nick-suehiro"><span class="tn" style="background:#4a3aa7;">39</span>鳥取和牛を洋の技法で組む創作肉割烹</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・スイーツ</div>
+<div class="links">
+<a href="#c-kissa-beniya-tottori"><span class="tn" style="background:#eda100;">40</span>若桜街道の昭和の純喫茶とかき氷</a>
+<a href="#c-sunaba-coffee-shin-tottori-ekimae"><span class="tn" style="background:#eda100;">41</span>知事の一言から生まれた鳥取の珈琲店</a>
+<a href="#c-hougetsudou-tottori-nikaimachi"><span class="tn" style="background:#eda100;">42</span>明治創業、生姜せんべいと四角い大福</a>
+<a href="#c-kikkouya-tottori-kataha"><span class="tn" style="background:#eda100;">43</span>慶応創業、梨を写した寒天菓子の店</a>
+<a href="#c-takumi-coffee-shop-tottori-sakaemachi"><span class="tn" style="background:#eda100;">44</span>民藝の器で飲む栄町の自家焙煎珈琲</a>
+<a href="#c-takahama-cafe-tottori-sakyu"><span class="tn" style="background:#eda100;">45</span>砂丘の目の前、隈研吾設計のカフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 鳥取駅前〜若桜街道・智頭街道・末広温泉町・弥生町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tottori/_map2.png" alt="中心部拡大1 鳥取駅前〜若桜街道・智頭街道・末広温泉町・弥生町">
+<a href="#c-tempura-gaten-tottori" style="left:20.15%;top:32.25%;width:3.28%;height:3.26%;"></a>
+<a href="#c-nihonryori-torikichi" style="left:44.25%;top:16.01%;width:3.28%;height:3.26%;"></a>
+<a href="#c-nadai-sasasushi" style="left:32.17%;top:27.19%;width:3.28%;height:3.26%;"></a>
+<a href="#c-takumi-kappou-ten" style="left:22.05%;top:27.92%;width:3.28%;height:3.26%;"></a>
+<a href="#c-unagi-umenoi" style="left:37.8%;top:2.33%;width:3.28%;height:3.26%;"></a>
+<a href="#c-tottori-gyukotsumen-fujiki" style="left:17.9%;top:27.3%;width:3.28%;height:3.26%;"></a>
+<a href="#c-musashiya-shokudo-tottori" style="left:51.67%;top:7.27%;width:3.28%;height:3.26%;"></a>
+<a href="#c-shisen-tantanmen-soun" style="left:60.06%;top:2.88%;width:3.28%;height:3.26%;"></a>
+<a href="#c-momochan-ramen-tottori" style="left:39.81%;top:25.61%;width:3.28%;height:3.26%;"></a>
+<a href="#c-ramen-hinma-sakaemachi" style="left:24.77%;top:31.01%;width:3.28%;height:3.26%;"></a>
+<a href="#c-sakyu-soba-tottori-eki" style="left:5.6%;top:34.84%;width:3.28%;height:3.26%;"></a>
+<a href="#c-azuma-soba-tottori" style="left:48.48%;top:2.17%;width:3.28%;height:3.26%;"></a>
+<a href="#c-okonomi-kobo-kona" style="left:39.4%;top:33.34%;width:3.28%;height:3.26%;"></a>
+<a href="#c-matsuya-horumon-ten" style="left:73.73%;top:53.99%;width:3.28%;height:3.26%;"></a>
+<a href="#c-tottori-kourin-yashiki" style="left:32.83%;top:30.43%;width:3.28%;height:3.26%;"></a>
+<a href="#c-tottori-gurattye-honten" style="left:36.0%;top:30.22%;width:3.28%;height:3.26%;"></a>
+<a href="#c-tottori-touen-akatsuki" style="left:29.45%;top:27.06%;width:3.28%;height:3.26%;"></a>
+<a href="#c-tottori-sumibi-yakitori-saku" style="left:41.2%;top:23.95%;width:3.28%;height:3.26%;"></a>
+<a href="#c-tottori-murakami-suisan-ekimae" style="left:34.26%;top:39.17%;width:3.28%;height:3.26%;"></a>
+<a href="#c-tottori-robata-kaba-ekimae" style="left:23.57%;top:30.56%;width:3.28%;height:3.26%;"></a>
+<a href="#c-hananoren-honten" style="left:22.4%;top:23.57%;width:3.28%;height:3.26%;"></a>
+<a href="#c-kounotori-kushiyaki-yayoicho" style="left:42.73%;top:27.85%;width:3.28%;height:3.26%;"></a>
+<a href="#c-parakeet-tottori" style="left:9.92%;top:50.8%;width:3.28%;height:3.26%;"></a>
+<a href="#c-cosajiichi-shamine-tottori" style="left:7.58%;top:32.86%;width:3.28%;height:3.26%;"></a>
+<a href="#c-monks-curry-coffee-tottori" style="left:18.59%;top:19.57%;width:3.28%;height:3.26%;"></a>
+<a href="#c-syokudo-frunk-tottori" style="left:38.63%;top:12.45%;width:3.28%;height:3.26%;"></a>
+<a href="#c-pepenero-italia-kan-tottori" style="left:36.14%;top:22.83%;width:3.28%;height:3.26%;"></a>
+<a href="#c-niku-ryori-nick-suehiro" style="left:34.06%;top:25.82%;width:3.28%;height:3.26%;"></a>
+<a href="#c-kissa-beniya-tottori" style="left:36.07%;top:23.3%;width:3.28%;height:3.26%;"></a>
+<a href="#c-sunaba-coffee-shin-tottori-ekimae" style="left:23.53%;top:35.62%;width:3.28%;height:3.26%;"></a>
+<a href="#c-takumi-coffee-shop-tottori-sakaemachi" style="left:27.47%;top:26.67%;width:3.28%;height:3.26%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（31店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・海の幸（白いか・モサエビ・松葉がに）</div>
+<div class="links">
+<a href="#c-tempura-gaten-tottori"><span class="tn" style="background:#2a78d6;">1</span>駅前2分、地物だらけの海鮮天丼</a>
+<a href="#c-nihonryori-torikichi"><span class="tn" style="background:#2a78d6;">2</span>住宅街の百年料理屋、完全個室</a>
+<a href="#c-nadai-sasasushi"><span class="tn" style="background:#2a78d6;">3</span>飲み屋街で60年、夜だけの鮨</a>
+<a href="#c-takumi-kappou-ten"><span class="tn" style="background:#2a78d6;">4</span>民藝の器で食べる「生活的美術館」</a>
+<a href="#c-unagi-umenoi"><span class="tn" style="background:#2a78d6;">5</span>昭和21年から続く城下の鰻屋</a>
+</div>
+<div class="sec red">ラーメン・牛骨ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-tottori-gyukotsumen-fujiki"><span class="tn" style="background:#e34948;">9</span>駅前で食べる澄んだ牛骨の一杯</a>
+<a href="#c-musashiya-shokudo-tottori"><span class="tn" style="background:#e34948;">10</span>素ラーメン発祥、明治45年の食堂</a>
+<a href="#c-shisen-tantanmen-soun"><span class="tn" style="background:#e34948;">11</span>ミシュラン掲載、行列の担担麺</a>
+<a href="#c-momochan-ramen-tottori"><span class="tn" style="background:#e34948;">12</span>飲み屋街の夜、牛すじの〆の一杯</a>
+<a href="#c-ramen-hinma-sakaemachi"><span class="tn" style="background:#e34948;">13</span>駅前サンロードの牛骨ラーメン</a>
+</div>
+<div class="sec aqua">そば・うどん・町中華・粉もん</div>
+<div class="links">
+<a href="#c-sakyu-soba-tottori-eki"><span class="tn" style="background:#1baf7a;">18</span>鳥取駅の駅そば。あごちくわが載る</a>
+<a href="#c-azuma-soba-tottori"><span class="tn" style="background:#1baf7a;">19</span>市内でただ一軒の出雲そば</a>
+<a href="#c-okonomi-kobo-kona"><span class="tn" style="background:#1baf7a;">20</span>飲み屋街の鉄板。名物はホルそば</a>
+<a href="#c-matsuya-horumon-ten"><span class="tn" style="background:#1baf7a;">22</span>鳥取の「ホルそば」を代表する一軒</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒</div>
+<div class="links">
+<a href="#c-tottori-kourin-yashiki"><span class="tn" style="background:#0d366b;">24</span>末広温泉町の和室で山陰の魚と地酒</a>
+<a href="#c-tottori-gurattye-honten"><span class="tn" style="background:#0d366b;">25</span>山陰沖の魚を毎日仕入れる末広の老舗</a>
+<a href="#c-tottori-touen-akatsuki"><span class="tn" style="background:#0d366b;">26</span>全室個室で魚も肉も揃う末広の宴会店</a>
+<a href="#c-tottori-sumibi-yakitori-saku"><span class="tn" style="background:#0d366b;">27</span>弥生町の炭火串焼き、金土は朝3時まで</a>
+<a href="#c-tottori-murakami-suisan-ekimae"><span class="tn" style="background:#0d366b;">28</span>鮮魚仲買人が直営する駅前の海鮮居酒屋</a>
+<a href="#c-tottori-robata-kaba-ekimae"><span class="tn" style="background:#0d366b;">29</span>駅前すぐ、山陰の魚を炉端の炭で焼く</a>
+<a href="#c-hananoren-honten"><span class="tn" style="background:#0d366b;">31</span>創業昭和54年、完全個室の郷土料理店</a>
+<a href="#c-kounotori-kushiyaki-yayoicho"><span class="tn" style="background:#0d366b;">32</span>和傘の下で焼く鳥取地鶏の串焼き</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-parakeet-tottori"><span class="tn" style="background:#4a3aa7;">33</span>駅南5分、月替わりのスパイスカレー</a>
+<a href="#c-cosajiichi-shamine-tottori"><span class="tn" style="background:#4a3aa7;">34</span>鳥取駅ナカの本格スパイスカレー</a>
+<a href="#c-monks-curry-coffee-tottori"><span class="tn" style="background:#4a3aa7;">35</span>レコードが並ぶ商店街のカレー店</a>
+<a href="#c-syokudo-frunk-tottori"><span class="tn" style="background:#4a3aa7;">36</span>若桜橋のたもと、県産野菜の洋食堂</a>
+<a href="#c-pepenero-italia-kan-tottori"><span class="tn" style="background:#4a3aa7;">37</span>1980年創業、鳥取の老舗イタリアン</a>
+<a href="#c-niku-ryori-nick-suehiro"><span class="tn" style="background:#4a3aa7;">39</span>鳥取和牛を洋の技法で組む創作肉割烹</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・スイーツ</div>
+<div class="links">
+<a href="#c-kissa-beniya-tottori"><span class="tn" style="background:#eda100;">40</span>若桜街道の昭和の純喫茶とかき氷</a>
+<a href="#c-sunaba-coffee-shin-tottori-ekimae"><span class="tn" style="background:#eda100;">41</span>知事の一言から生まれた鳥取の珈琲店</a>
+<a href="#c-takumi-coffee-shop-tottori-sakaemachi"><span class="tn" style="background:#eda100;">44</span>民藝の器で飲む栄町の自家焙煎珈琲</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 二階町・栄町〜鳥取城跡・久松公園（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tottori/_map3.png" alt="中心部拡大2 二階町・栄町〜鳥取城跡・久松公園">
+<a href="#c-tempura-gaten-tottori" style="left:2.18%;top:84.78%;width:3.0%;height:2.8%;"></a>
+<a href="#c-nihonryori-torikichi" style="left:23.9%;top:70.86%;width:3.0%;height:2.8%;"></a>
+<a href="#c-nadai-sasasushi" style="left:12.82%;top:80.45%;width:3.0%;height:2.8%;"></a>
+<a href="#c-takumi-kappou-ten" style="left:3.55%;top:81.07%;width:3.0%;height:2.8%;"></a>
+<a href="#c-unagi-umenoi" style="left:17.98%;top:59.15%;width:3.0%;height:2.8%;"></a>
+<a href="#c-musashiya-shokudo-tottori" style="left:30.7%;top:63.38%;width:3.0%;height:2.8%;"></a>
+<a href="#c-shisen-tantanmen-soun" style="left:38.39%;top:59.62%;width:3.0%;height:2.8%;"></a>
+<a href="#c-momochan-ramen-tottori" style="left:19.83%;top:79.09%;width:3.0%;height:2.8%;"></a>
+<a href="#c-ramen-hinma-sakaemachi" style="left:6.04%;top:83.73%;width:3.0%;height:2.8%;"></a>
+<a href="#c-azuma-soba-tottori" style="left:27.77%;top:58.06%;width:3.0%;height:2.8%;"></a>
+<a href="#c-okonomi-kobo-kona" style="left:19.45%;top:85.72%;width:3.0%;height:2.8%;"></a>
+<a href="#c-hisamatsu-udon-hanasho" style="left:32.48%;top:19.33%;width:3.0%;height:2.8%;"></a>
+<a href="#c-tottori-kourin-yashiki" style="left:13.43%;top:83.23%;width:3.0%;height:2.8%;"></a>
+<a href="#c-tottori-gurattye-honten" style="left:16.33%;top:83.05%;width:3.0%;height:2.8%;"></a>
+<a href="#c-tottori-touen-akatsuki" style="left:10.33%;top:80.34%;width:3.0%;height:2.8%;"></a>
+<a href="#c-tottori-sumibi-yakitori-saku" style="left:21.1%;top:77.67%;width:3.0%;height:2.8%;"></a>
+<a href="#c-tottori-murakami-suisan-ekimae" style="left:14.74%;top:90.72%;width:3.0%;height:2.8%;"></a>
+<a href="#c-tottori-robata-kaba-ekimae" style="left:4.94%;top:83.34%;width:3.0%;height:2.8%;"></a>
+<a href="#c-hananoren-honten" style="left:3.87%;top:77.35%;width:3.0%;height:2.8%;"></a>
+<a href="#c-kounotori-kushiyaki-yayoicho" style="left:22.5%;top:81.02%;width:3.0%;height:2.8%;"></a>
+<a href="#c-monks-curry-coffee-tottori" style="left:2.18%;top:73.92%;width:3.0%;height:2.8%;"></a>
+<a href="#c-syokudo-frunk-tottori" style="left:18.75%;top:67.81%;width:3.0%;height:2.8%;"></a>
+<a href="#c-pepenero-italia-kan-tottori" style="left:16.46%;top:76.71%;width:3.0%;height:2.8%;"></a>
+<a href="#c-niku-ryori-nick-suehiro" style="left:14.56%;top:79.28%;width:3.0%;height:2.8%;"></a>
+<a href="#c-kissa-beniya-tottori" style="left:16.4%;top:77.12%;width:3.0%;height:2.8%;"></a>
+<a href="#c-sunaba-coffee-shin-tottori-ekimae" style="left:4.9%;top:87.67%;width:3.0%;height:2.8%;"></a>
+<a href="#c-hougetsudou-tottori-nikaimachi" style="left:17.79%;top:51.37%;width:3.0%;height:2.8%;"></a>
+<a href="#c-kikkouya-tottori-kataha" style="left:27.77%;top:49.97%;width:3.0%;height:2.8%;"></a>
+<a href="#c-takumi-coffee-shop-tottori-sakaemachi" style="left:8.52%;top:80.0%;width:3.0%;height:2.8%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（29店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・海の幸（白いか・モサエビ・松葉がに）</div>
+<div class="links">
+<a href="#c-tempura-gaten-tottori"><span class="tn" style="background:#2a78d6;">1</span>駅前2分、地物だらけの海鮮天丼</a>
+<a href="#c-nihonryori-torikichi"><span class="tn" style="background:#2a78d6;">2</span>住宅街の百年料理屋、完全個室</a>
+<a href="#c-nadai-sasasushi"><span class="tn" style="background:#2a78d6;">3</span>飲み屋街で60年、夜だけの鮨</a>
+<a href="#c-takumi-kappou-ten"><span class="tn" style="background:#2a78d6;">4</span>民藝の器で食べる「生活的美術館」</a>
+<a href="#c-unagi-umenoi"><span class="tn" style="background:#2a78d6;">5</span>昭和21年から続く城下の鰻屋</a>
+</div>
+<div class="sec red">ラーメン・牛骨ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-musashiya-shokudo-tottori"><span class="tn" style="background:#e34948;">10</span>素ラーメン発祥、明治45年の食堂</a>
+<a href="#c-shisen-tantanmen-soun"><span class="tn" style="background:#e34948;">11</span>ミシュラン掲載、行列の担担麺</a>
+<a href="#c-momochan-ramen-tottori"><span class="tn" style="background:#e34948;">12</span>飲み屋街の夜、牛すじの〆の一杯</a>
+<a href="#c-ramen-hinma-sakaemachi"><span class="tn" style="background:#e34948;">13</span>駅前サンロードの牛骨ラーメン</a>
+</div>
+<div class="sec aqua">そば・うどん・町中華・粉もん</div>
+<div class="links">
+<a href="#c-azuma-soba-tottori"><span class="tn" style="background:#1baf7a;">19</span>市内でただ一軒の出雲そば</a>
+<a href="#c-okonomi-kobo-kona"><span class="tn" style="background:#1baf7a;">20</span>飲み屋街の鉄板。名物はホルそば</a>
+<a href="#c-hisamatsu-udon-hanasho"><span class="tn" style="background:#1baf7a;">21</span>鳥取城跡の堀端、古民家のうどん</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒</div>
+<div class="links">
+<a href="#c-tottori-kourin-yashiki"><span class="tn" style="background:#0d366b;">24</span>末広温泉町の和室で山陰の魚と地酒</a>
+<a href="#c-tottori-gurattye-honten"><span class="tn" style="background:#0d366b;">25</span>山陰沖の魚を毎日仕入れる末広の老舗</a>
+<a href="#c-tottori-touen-akatsuki"><span class="tn" style="background:#0d366b;">26</span>全室個室で魚も肉も揃う末広の宴会店</a>
+<a href="#c-tottori-sumibi-yakitori-saku"><span class="tn" style="background:#0d366b;">27</span>弥生町の炭火串焼き、金土は朝3時まで</a>
+<a href="#c-tottori-murakami-suisan-ekimae"><span class="tn" style="background:#0d366b;">28</span>鮮魚仲買人が直営する駅前の海鮮居酒屋</a>
+<a href="#c-tottori-robata-kaba-ekimae"><span class="tn" style="background:#0d366b;">29</span>駅前すぐ、山陰の魚を炉端の炭で焼く</a>
+<a href="#c-hananoren-honten"><span class="tn" style="background:#0d366b;">31</span>創業昭和54年、完全個室の郷土料理店</a>
+<a href="#c-kounotori-kushiyaki-yayoicho"><span class="tn" style="background:#0d366b;">32</span>和傘の下で焼く鳥取地鶏の串焼き</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-monks-curry-coffee-tottori"><span class="tn" style="background:#4a3aa7;">35</span>レコードが並ぶ商店街のカレー店</a>
+<a href="#c-syokudo-frunk-tottori"><span class="tn" style="background:#4a3aa7;">36</span>若桜橋のたもと、県産野菜の洋食堂</a>
+<a href="#c-pepenero-italia-kan-tottori"><span class="tn" style="background:#4a3aa7;">37</span>1980年創業、鳥取の老舗イタリアン</a>
+<a href="#c-niku-ryori-nick-suehiro"><span class="tn" style="background:#4a3aa7;">39</span>鳥取和牛を洋の技法で組む創作肉割烹</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・スイーツ</div>
+<div class="links">
+<a href="#c-kissa-beniya-tottori"><span class="tn" style="background:#eda100;">40</span>若桜街道の昭和の純喫茶とかき氷</a>
+<a href="#c-sunaba-coffee-shin-tottori-ekimae"><span class="tn" style="background:#eda100;">41</span>知事の一言から生まれた鳥取の珈琲店</a>
+<a href="#c-hougetsudou-tottori-nikaimachi"><span class="tn" style="background:#eda100;">42</span>明治創業、生姜せんべいと四角い大福</a>
+<a href="#c-kikkouya-tottori-kataha"><span class="tn" style="background:#eda100;">43</span>慶応創業、梨を写した寒天菓子の店</a>
+<a href="#c-takumi-coffee-shop-tottori-sakaemachi"><span class="tn" style="background:#eda100;">44</span>民藝の器で飲む栄町の自家焙煎珈琲</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 湖山〜賀露(かろ)港・鳥取砂丘方面（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tottori/_map4.png" alt="中心部拡大3 湖山〜賀露(かろ)港・鳥取砂丘方面">
+<a href="#c-oshokujidokoro-wakabayashi" style="left:28.07%;top:36.58%;width:2.06%;height:3.08%;"></a>
+<a href="#c-kaiyoutei-tottori" style="left:13.36%;top:39.28%;width:2.06%;height:3.08%;"></a>
+<a href="#c-kaisenmatsuri-hoenya" style="left:18.46%;top:41.27%;width:2.06%;height:3.08%;"></a>
+<a href="#c-ikina-chukasoba-mirai" style="left:12.6%;top:79.85%;width:2.06%;height:3.08%;"></a>
+<a href="#c-tottori-gyukotsu-ramen-yaoki" style="left:91.35%;top:21.88%;width:2.06%;height:3.08%;"></a>
+<a href="#c-sarashina-koyama-tottori" style="left:14.23%;top:69.85%;width:2.06%;height:3.08%;"></a>
+<a href="#c-tottori-ri-bacaro-karo" style="left:23.45%;top:31.79%;width:2.06%;height:3.08%;"></a>
+<a href="#c-shanghai-charo-koyama" style="left:25.74%;top:90.98%;width:2.06%;height:3.08%;"></a>
+<a href="#c-takahama-cafe-tottori-sakyu" style="left:92.58%;top:20.04%;width:2.06%;height:3.08%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（9店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・海の幸（白いか・モサエビ・松葉がに）</div>
+<div class="links">
+<a href="#c-oshokujidokoro-wakabayashi"><span class="tn" style="background:#2a78d6;">6</span>明治元年創業、海の見える魚屋の食堂</a>
+<a href="#c-kaiyoutei-tottori"><span class="tn" style="background:#2a78d6;">7</span>生きた白いかを姿造りで出す港の店</a>
+<a href="#c-kaisenmatsuri-hoenya"><span class="tn" style="background:#2a78d6;">8</span>賀露名物「元祖いか丼」を継いだ丼屋</a>
+</div>
+<div class="sec red">ラーメン・牛骨ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-ikina-chukasoba-mirai"><span class="tn" style="background:#e34948;">14</span>湖山の澄んだ醤油中華そば</a>
+<a href="#c-tottori-gyukotsu-ramen-yaoki"><span class="tn" style="background:#e34948;">16</span>砂丘のすぐ前、自家製麺の牛骨</a>
+</div>
+<div class="sec aqua">そば・うどん・町中華・粉もん</div>
+<div class="links">
+<a href="#c-sarashina-koyama-tottori"><span class="tn" style="background:#1baf7a;">23</span>湖山の住宅街、麺と丼の食堂</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒</div>
+<div class="links">
+<a href="#c-tottori-ri-bacaro-karo"><span class="tn" style="background:#0d366b;">30</span>賀露の海を見ながら飲む週末だけの酒場</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-shanghai-charo-koyama"><span class="tn" style="background:#4a3aa7;">38</span>上海の街並みを再現した本格中華</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・スイーツ</div>
+<div class="links">
+<a href="#c-takahama-cafe-tottori-sakyu"><span class="tn" style="background:#eda100;">45</span>砂丘の目の前、隈研吾設計のカフェ</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>鳥取市の店は4つのかたまりに分かれる。①JR鳥取駅前〜若桜街道・智頭街道＝食事と喫茶の中心 ②末広温泉町・弥生町・瓦町（駅北の東側）＝夜の飲み屋街。鳥取で「飲みに行く」と言えばここ ③鳥取城跡・久松公園〜栄町・二階町＝旧城下の商店街で、昼の食事と和菓子の老舗 ④賀露（かろ）港・鳥取砂丘方面＝魚と砂丘。駅から車で15〜20分、路線バスなら「ループ麒麟獅子」が砂丘・賀露を回る。鳥取の名物＝とうふちくわ（豆腐と白身魚のすり身を混ぜて蒸した鳥取市特有のちくわ。生姜醤油で食べる）、あごちくわ（トビウオのちくわ）、白いか（ケンサキイカの地元名。夏）、モサエビ（クロザコエビ。足が早いので産地でしか食べられない）、松葉がに（ズワイガニのオス。11月6日解禁）、鳥取和牛、砂丘らっきょう、二十世紀梨、スタミナ納豆（鶏ひき肉と納豆を炒めた給食由来のおかず）、鳥取カレー（カレールウの消費量が全国一）、牛骨ラーメン（県中部が本場だが市内にも店がある）、地酒（諏訪泉・いなば鶴・鷹勇）。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-washoku">寿司・和食・海の幸（白いか・モサエビ・松葉がに）</h2>
+<div class="card" id="c-tempura-gaten-tottori">
+<img class="hero" src="img/tottori/tempura-gaten-tottori.jpg" alt="天麩羅 我天 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">1</span>天麩羅 我天<span class="yomi">てんぷら がてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">鳥取駅を出て最初の通りに面したビルの2階にある海鮮天丼専門店。賀露港に揚がったキスや白いか、夏は岩ガキまで、その日の地物だけを揚げて丼からはみ出すほど盛る。駅前の立地ながら観光向けの店ではなく、昼は近隣の勤め人で埋まる。ネタを使い切れば昼でも看板を下ろし、時化が続けば臨時休業するという、港町らしい商いを続けている。</div>
+<div class="sig"><b>一皿:</b>海鮮天丼(その日仕入れた地物の魚介だけを揚げ、丼からはみ出すほど盛る看板メニュー)／キスの天ぷら(鳥取で揚げ物の定番になる白身魚。開いて揚げると身がふっくらと甘い)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00, 17:00〜19:00（ネタを使い切り次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市栄町725 駅前サンロード三番街ビル2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0857221668">☎ 0857-22-1668</a> ／ <a href="https://r.goope.jp/tempura-gaten">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光コンベンション協会の公式サイト『鳥取市観光ナビ』の特集「砂丘観光とセットで鳥取旅先ランチを楽しもう！」に海鮮天丼専門店として掲載。営業の裏取りは公式サイト（グーペ）のお知らせが2026年9月14日・9月20日・9月28日に更新されており、メニュー写真も2026年9月30日付でアップロードされている。『ミシュランガイド京都・大阪＋鳥取2019』の掲載店として紹介されている（2019年の版に拠る情報で、ミシュランガイドの現行の公式一覧では当方は未確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E9%BA%A9%E7%BE%85%20%E6%88%91%E5%A4%A9%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA725%20%E9%A7%85%E5%89%8D%E3%82%B5%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E4%B8%89%E7%95%AA%E8%A1%97%E3%83%93%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（cdn.goope.jp）より引用 / 参照元: <a href="https://www.torican.jp/feature/tottorilunch">鳥取市観光ナビ（公式）砂丘観光とセットで鳥取旅先ランチを楽しもう！—鳥取市</a> / <a href="https://r.goope.jp/tempura-gaten">天麩羅 我天 公式サイト（グーペ）</a> / <a href="https://r.goope.jp/tempura-gaten/info">天麩羅 我天 公式サイト お知らせ（2026-09-28／09-20／09-14）</a> / <a href="https://www.hotpepper.jp/strJ000858414/">ホットペッパーグルメ 天麩羅 我天（営業時間・定休日の裏取り）</a></div>
+</div></div>
+<div class="card" id="c-nihonryori-torikichi">
+<img class="hero" src="img/tottori/nihonryori-torikichi.jpg" alt="日本料理 鳥吉 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">2</span>日本料理 鳥吉<span class="yomi">にほんりょうり とりきち</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">駅から歩いて10分ほど、商店街から外れた住宅街に建つ創業100年以上の日本料理店。1階2階とも個室で、4名の小部屋から40名の大広間まで仕切りを変えて使う。地魚の造りや煮付け、すっぽん、天ぷらといった構えた和食を、昼は前日までの予約制で手頃な膳に仕立てる。観光客より地元の会食・法要・顔合わせで使われてきた店で、鳥取の「よそゆきの和食」の基準がわかる。</div>
+<div class="sig"><b>一皿:</b>地魚のお造り(その日に揚がった日本海の白身を盛り合わせる。白ハタやアカガレイなど鳥取らしい魚が並ぶ)／鯛茶漬け(薬味をのせた鯛の刺身に熱い出汁を注いで食べる〆の一品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>【昼】11:30〜14:00（前日までの要予約）／【夜】月〜木 18:00〜21:00（L.O.20:30）、金・土 18:00〜22:00（L.O.21:30、当日14時までの要予約）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市戎町463</td></tr>
+<tr><th>予約</th><td>要 — <a href="tel:0857224300">☎ 0857-22-4300</a> ／ <a href="https://www.torikichi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地元の編集メディア『とっとりずむ』が実食レポートを掲載しており、公式サイトも品書きと価格、座席構成、予約条件まで現役の内容で公開されている。2025〜2026年の日付入り一次証拠は見つからなかったため、指示どおり「鳥吉 鳥取 閉店」で閉店報を検索し、閉店・休業の報が無いことを2026年10月4日に確認したうえで採用した（この1店だけは日付証拠が弱い点を明記しておく）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E9%B3%A5%E5%90%89%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%88%8E%E7%94%BA463">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.torikichi.jp）より引用 / 参照元: <a href="https://www.torikichi.jp/shopinfo.html">日本料理 鳥吉 公式サイト 店舗情報</a> / <a href="https://www.torikichi.jp/menu.html">日本料理 鳥吉 公式サイト お品書き</a> / <a href="https://tottorizumu.com/torikichi-repo/">とっとりずむ（鳥取の地域メディア）［日本料理 鳥吉(とりきち)］こだわり食材のおいしさを生かした絶品ランチ！</a></div>
+</div></div>
+<div class="card" id="c-nadai-sasasushi">
+<img class="hero" src="img/tottori/nadai-sasasushi.jpg" alt="名代 笹すし 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">3</span>名代 笹すし<span class="yomi">なだい ささすし</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和38年創業、鳥取の夜の中心である末広温泉町に店を構える寿司処。先代から継いだ2代目が握り、女将が迎える構えは創業時から変わらない。シャリは県内の米と水にこだわり、ネタは日本海の地物。大相撲の力士が巡業のたびに通い、店内には相撲にまつわる品が飾られている。隣には同じ一家が40年続ける焼き鳥屋があり、飲み屋街の中で一軒だけ落ち着いた灯をともしている。</div>
+<div class="sig"><b>一皿:</b>握り寿司の盛り合わせ(日本海の地魚を、鳥取の米と水で炊いたシャリで握る。白いかやのどぐろなど季節で顔ぶれが替わる)／岩ガキ「夏輝(なつき)」(鳥取県産で殻長13cm以上の大型岩ガキだけに許されるブランド。夏が旬で生食が身上)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜21:30（夜のみ営業）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（月曜が祝日の場合は日曜営業・月曜代休）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市末広温泉町104</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857234538">☎ 0857-23-4538</a> ／ <a href="https://sasasushi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに自店撮影の料理写真が2026年6月〜9月18日にかけて継続的にアップロードされており、営業中であることが日付つきで確認できる（最新は2026年9月18日）。お知らせ欄も2025年5月23日付で定休日の運用変更を告知。昭和38年創業で地元の寿司処として長く続いている点、夜のみの営業で飲み屋街の文脈に合う点から、この地区の1枠に選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E4%BB%A3%20%E7%AC%B9%E3%81%99%E3%81%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA104">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sasasushi.jp）より引用 / 参照元: <a href="https://sasasushi.jp/">名代 笹すし 公式サイト</a> / <a href="https://sasasushi.jp/shop/">名代 笹すし 公式サイト 当店について（創業55年超・2代目）</a> / <a href="https://sasasushi.jp/news/5328/">名代 笹すし 公式サイト お知らせ（2025年5月23日 定休日のお知らせ）</a></div>
+</div></div>
+<div class="card" id="c-takumi-kappou-ten">
+<img class="hero" src="img/tottori/takumi-kappou-ten.jpg" alt="たくみ割烹店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">4</span>たくみ割烹店<span class="yomi">たくみかっぽうてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和37年開店。民藝運動のプロデューサー・吉田璋也が、自らデザインした椅子と机、鳥取の新作民藝の器で料理を出す「生活的美術館」として開いた割烹。隣は鳥取民藝美術館と鳥取たくみ工芸店で、この一画が民藝館通りと呼ばれる。松葉がにや岩ガキといった郷土の食材を、使うために作られた器で味わえる。器の値段も展示も、食事のあとで隣に寄ればそのまま確かめられる。</div>
+<div class="sig"><b>一皿:</b>鳥取和牛のすすぎ鍋(吉田璋也が北京の名物料理「涮羊肉」をもとに考案した、しゃぶしゃぶの原型といわれる牛出汁の鍋。ごまだれにラー油を落として食べる)／味噌煮込みカレー(隠し味に味噌を利かせた名物カレー。昼は鳥取和牛のハヤシとのハーフ&amp;ハーフが人気)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00, 17:00〜21:00（L.O.20:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜・年末年始</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市栄町652</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857266355">☎ 0857-26-6355</a> ／ <a href="https://www.tottori-mingei.jp/takumikappou.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>運営する公益財団法人 鳥取民藝美術館の公式サイトに営業案内があり、HTTPのLast-Modifiedが2026年10月2日（確認日の2日前）。品書きも「令和8年6月〜」と明記されている。鳥取県公式サイト『とりネット』の「とっとりの民藝と文化に出会う旅」にもスポットとして掲載。鳥取市観光ナビの旅先ランチ特集にも載る、鳥取の和食で外せない一軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%8F%E3%81%BF%E5%89%B2%E7%83%B9%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA652">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.tottori-mingei.jp/takumikappou.html">鳥取民藝美術館（公式）たくみ割烹店（品書きは令和8年6月〜・2026年10月2日更新）</a> / <a href="https://www.pref.tottori.lg.jp/304419.htm">とりネット（鳥取県公式サイト）たくみ割烹店</a> / <a href="https://www.torican.jp/feature/tottorilunch">鳥取市観光ナビ（公式）砂丘観光とセットで鳥取旅先ランチを楽しもう！—鳥取市</a> / <a href="https://discoverjapan-web.com/article/39107">Discover Japan 民藝の精神が息づく鳥取の街をめぐる旅｜後編</a> / <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（公式）【保存版】鳥取駅周辺グルメ情報（2026年9月4日更新）</a> / <a href="https://www.hotpepper.jp/strJ000111102/">ホットペッパーグルメ たくみ割烹（2026/05/17・2026/02/05 更新）</a></div>
+</div></div>
+<div class="card" id="c-unagi-umenoi">
+<div class="hero-pending">写真準備中<span>公式サイトの料理写真が最大700×500pxで、見出し写真の下限（幅900px）に1枚も届かなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">5</span>うなぎ・郷恩料理 梅乃井<span class="yomi">うなぎ・きょうおんりょうり うめのい</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">昭和21年創業、旧城下の魚屋町だった元魚町に続く鰻の専門店。関東風に背開きにし、蒸してから焼き上げる。現在は昼も夜も完全予約制で、12時・12時半、18時・19時といった時間ごとの入れ替え制。鰻のほかに鳥取の季節食材で組む「郷恩料理」の会席があり、こちらでは鰻は食事に小丼で付く。店内は全面禁煙で、中学生未満は入店できない、料理に集中させる構えの店。</div>
+<div class="sig"><b>一皿:</b>うな重(昭和21年から継ぐ関東風の蒲焼き。背開きにして蒸してから焼くので身がやわらかい)／郷恩料理の会席(鳥取の海と山の季節食材で組む会席。鰻は食事どきに小丼で付く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>完全予約制の時間制。昼 12:00／12:30、夕 18:00／19:00 のいずれか</td></tr>
+<tr><th>定休日</th><td class="off">日曜・毎週第4月曜日</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市元魚町1丁目215</td></tr>
+<tr><th>予約</th><td>要 — <a href="tel:0857225383">☎ 0857-22-5383</a> ／ <a href="https://umenoi-tottori.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトのお知らせが2026年9月25日付で更新されており（10月・11月の代休告知）、2025年10月・12月、2026年3月・5月にも更新がある。鳥取市観光ナビ（公式）の旅先ランチ特集にも昭和21年創業の老舗うなぎ専門店として掲載。写真は公式サイトに多数あるが最大700px止まりで、指定の幅900px以上を満たさないため1本も採らなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E3%83%BB%E9%83%B7%E6%81%A9%E6%96%99%E7%90%86%20%E6%A2%85%E4%B9%83%E4%BA%95%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%85%83%E9%AD%9A%E7%94%BA1%E4%B8%81%E7%9B%AE215">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://umenoi-tottori.com/ja/">梅乃井 公式サイト 御利用案内</a> / <a href="https://umenoi-tottori.com/news/news.php">梅乃井 公式サイト お知らせ（2026年9月25日ほか）</a> / <a href="https://www.torican.jp/feature/tottorilunch">鳥取市観光ナビ（公式）砂丘観光とセットで鳥取旅先ランチを楽しもう！—鳥取市</a></div>
+</div></div>
+<div class="card" id="c-oshokujidokoro-wakabayashi">
+<img class="hero" src="img/tottori/oshokujidokoro-wakabayashi.jpg" alt="お食事処 若林 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">6</span>お食事処 若林<span class="yomi">おしょくじどころ わかばやし</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治元年創業の魚屋が営む食事処。1階は鮮魚と干物の直販センター、2階と3階が全室海の見える客席という構えで、1階で自分が選んだ魚をそのまま調理してもらえる。岩ガキ、白いか、モサエビ、松葉がにと、賀露港に揚がる季節の魚介がそのまま品書きになる。昼は限定の御膳が出て、冬は一匹を余さず使う松葉がにのコースが看板。夜は前日午前までの予約が要る。</div>
+<div class="sig"><b>一皿:</b>松葉がにのフルコース(ズワイガニのオス。11月6日解禁。かにすき・焼きがに・茹でがに・かに刺し・かに天ぷらまで一匹を使い切る)／花籠御膳(日本海の旬を少しずつ盛り合わせた昼の限定10食の御膳。予約不可で先着)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00, 17:00〜21:00（日・祝は11:00〜15:00, 16:00〜21:00。夜は前日午前中までの要予約）</td></tr>
+<tr><th>定休日</th><td class="off">不明</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市賀露町北1丁目8-12</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857311178">☎ 0857-31-1178</a> ／ <a href="https://waka2443.com/pages/27/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光ナビ（公式）の「カニだけじゃない！鳥取で味わえる極上の魚介類」（2026年8月17日更新）と「砂丘観光とセットで鳥取旅先ランチを楽しもう！」の両方に掲載されている公式推薦店。公式サイトに現行の営業時間・コース価格が掲載されている。明治元年創業という鳥取港でもっとも古い部類の歴史と、直販センター併設という港町らしい成り立ちで選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E8%8B%A5%E6%9E%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%B3%80%E9%9C%B2%E7%94%BA%E5%8C%971%E4%B8%81%E7%9B%AE8-12">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.waka2443.com）より引用 / 参照元: <a href="https://waka2443.com/pages/27/">お食事処 若林（若林商店）公式サイト</a> / <a href="https://www.torican.jp/feature/gourmet_seafood">鳥取市観光ナビ（公式）カニだけじゃない！鳥取で味わえる極上の魚介類（2026年8月17日更新）</a> / <a href="https://www.torican.jp/feature/tottorikou-gourmet">鳥取市観光ナビ（公式）お役立ち情報★鳥取港・賀露港周辺飲食店まとめ</a></div>
+</div></div>
+<div class="card" id="c-kaiyoutei-tottori">
+<img class="hero" src="img/tottori/kaiyoutei-tottori.jpg" alt="天然海水いけす 海陽亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">7</span>天然海水いけす 海陽亭<span class="yomi">てんねんかいすいいけす かいようてい</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">鳥取港の市場「かろいち」の敷地にある、天然海水のいけすを店の中心に据えた海鮮料理店。いけすから揚げたばかりの白いかを姿造りにして出せるのは、鳥取ではこのぎんりんグループだけ。透き通ったままの身をコリコリと食べ、残った下足と耳は天ぷらか刺身に回してもらえる。冬は松葉がに、夏は岩ガキ。市場のにぎわいの隣にありながら、店内は和のリゾートの設えで落ち着いている。</div>
+<div class="sig"><b>一皿:</b>活白いか姿造り(ケンサキイカの地元名。いけすから揚げて透き通ったまま供する。下足と耳は天ぷらか刺身に回せる)／松葉がに(ズワイガニのオス。11月6日解禁。茹で・焼き・かにすきで出す冬の主役)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:00〜14:00／土日祝 11:00〜14:00, 17:00〜21:00（入店受付19:45・L.O.20:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市賀露町西3丁目27-1</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857314649">☎ 0857-31-4649</a> ／ <a href="https://www.kaiyoutei.jp/tottori/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに2026年10月の休業日（毎週水曜）と営業時間変更の告知が出ており、確認日時点の最新情報として営業が裏取りできる。鳥取市観光ナビ（公式）の魚介特集（2026年8月17日更新）と賀露港飲食店まとめの両方に掲載。「活白いか姿造りが食べられるのは鳥取ではぎんりんグループだけ」と公式観光サイトが明記している点を評価した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E7%84%B6%E6%B5%B7%E6%B0%B4%E3%81%84%E3%81%91%E3%81%99%20%E6%B5%B7%E9%99%BD%E4%BA%AD%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%B3%80%E9%9C%B2%E7%94%BA%E8%A5%BF3%E4%B8%81%E7%9B%AE27-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.kaiyoutei.jp）より引用 / 参照元: <a href="https://www.kaiyoutei.jp/tottori/">天然海水いけす海陽亭 公式サイト（2026年10月の休業日を掲載）</a> / <a href="https://www.torican.jp/feature/gourmet_seafood">鳥取市観光ナビ（公式）カニだけじゃない！鳥取で味わえる極上の魚介類（2026年8月17日更新）</a> / <a href="https://www.torican.jp/feature/tottorikou-gourmet">鳥取市観光ナビ（公式）お役立ち情報★鳥取港・賀露港周辺飲食店まとめ</a></div>
+</div></div>
+<div class="card" id="c-kaisenmatsuri-hoenya">
+<img class="hero" src="img/tottori/kaisenmatsuri-hoenya.jpg" alt="海鮮祭ホーエンヤ わったいな店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">8</span>海鮮祭ホーエンヤ わったいな店<span class="yomi">かいせんまつり ほーえんや わったいなてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">賀露港の直売所「わったいな」に入る丼の店。享保8年創業の老舗旅館・山田屋が出していた名物「元祖いか丼」の昼の提供を引き継いでおり、賀露の味をそのまま食べられる。地元賀露港の魚介、ひと手間かけた鳥取和牛、艶のある星空米という組み合わせで、手軽な丼のかたちにしながら中身は本式。醤油と味噌は鳥取の老舗・楠城屋のものを使う。昼のみの営業で、水曜が休み。</div>
+<div class="sig"><b>一皿:</b>元祖いか丼(賀露の老舗旅館・山田屋から受け継いだ名物。白いかの刺身と長芋の短冊の下に、ゲソとウル〈内臓〉の照り焼きが隠れている)／おまかせ海鮮丼(賀露港に揚がったその日の魚介を盛り合わせる看板の丼)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（L.O.14:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（月2日ほど不定休あり）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市賀露町西3-323</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0857501775">☎ 0857-50-1775</a> ／ <a href="https://hoenya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに令和8年（2026年）8月・9月・10月の定休日カレンダーが掲載されており、確認日時点で営業中であることが日付つきで裏取りできる。鳥取市観光ナビ（公式）の賀露港飲食店まとめ・鳥取砂丘の飲食店まとめ（2026年6月2日更新）・魚介特集（2026年8月17日更新）のいずれにも掲載。山田屋の「元祖いか丼」を継いでいる点を公式観光サイトが明記している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E7%A5%AD%E3%83%9B%E3%83%BC%E3%82%A8%E3%83%B3%E3%83%A4%20%E3%82%8F%E3%81%A3%E3%81%9F%E3%81%84%E3%81%AA%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%B3%80%E9%9C%B2%E7%94%BA%E8%A5%BF3-323">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（hoenya.jp）より引用 / 参照元: <a href="https://hoenya.jp/">海鮮祭ホーエンヤ わったいな店 公式サイト（令和8年8〜10月の定休日を掲載）</a> / <a href="https://www.torican.jp/feature/tottorikou-gourmet">鳥取市観光ナビ（公式）お役立ち情報★鳥取港・賀露港周辺飲食店まとめ</a> / <a href="https://www.torican.jp/feature/dune-gourmet">鳥取市観光ナビ（公式）鳥取砂丘の飲食店 まとめ（2026年6月2日更新）</a> / <a href="https://www.torican.jp/feature/gourmet_seafood">鳥取市観光ナビ（公式）カニだけじゃない！鳥取で味わえる極上の魚介類（2026年8月17日更新）</a></div>
+</div></div>
+<h2 id="s-ramen" class="c-red">ラーメン・牛骨ラーメン・中華そば</h2>
+<div class="card" id="c-tottori-gyukotsumen-fujiki">
+<div class="hero-pending">写真準備中<span>候補の料理写真が地元情報サイト tottorizumu.com の配信のみで、同サイトは記事末尾に「※写真の無断掲載・使用を禁止します」と明示しているため採用しなかった。残る候補は店頭の外観だけで、料理・店内が写っていない</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>鳥取牛骨麺 藤喜<span class="yomi">とっとりぎゅうこつめん ふじき</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">鳥取駅北口を出てすぐ、駅前商店街の一角にある牛骨ラーメン専門店。県中西部が本場の牛骨ラーメンを、県東部の玄関口でも食べられるようにと2023年3月に開いた。県産・東伯牛の大腿骨を長時間かけて煮出したスープは澄んでいて癖がなく、醤油の甘みとコクが後に残る。大山町産の豚を煮込んだチャーシューを重ねた肉三昧麺が店の自慢。</div>
+<div class="sig"><b>一皿:</b>極み醤油麺(牛の骨だけでとった澄んだスープの醤油ラーメン。豚骨のような濁りや獣臭はなく、甘みとコクが特徴の鳥取のご当地ラーメン)／肉三昧麺(大山町産の豚をじっくり煮込んだチャーシューを何枚も重ねた一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00, 17:00〜20:00（ラストオーダーは各30分前）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市今町2丁目118</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857211511">☎ 0857-21-1511</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取駅前商店街振興組合の公式サイト（新鳥取駅前地区商店街振興組合）に店舗情報が掲載され、住所・電話・営業時間・定休日が一次情報として取れる。公式ページの写真は2025年5月アップロード、地域メディアna-naの特集は2026年2月で、いずれも開店告知より新しい。『鳥取牛骨麺 藤喜 閉店』で検索しても閉店の報は無く、開店閉店マップの鳥取ラーメン閉店一覧にも名前が無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E5%8F%96%E7%89%9B%E9%AA%A8%E9%BA%BA%20%E8%97%A4%E5%96%9C%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E4%BB%8A%E7%94%BA2%E4%B8%81%E7%9B%AE118">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.eki.or.jp/shop/hujiki/">鳥取駅前商店街 公式サイト 店舗情報（新鳥取駅前地区商店街振興組合）</a> / <a href="https://tottorizumu.com/fujiki/">とっとりずむ 開店記事（2023年3月7日オープン）</a> / <a href="https://tottoritrip.info/2025/01/22/ekimaera-men/">鳥取とりっぷ 地元民が選ぶ鳥取駅前で人気のラーメン屋5選（2025年1月公開・2026年7月1日更新）</a> / <a href="https://kaiten-heiten-map.com/cat/ramen/tottori">開店閉店マップ 鳥取のラーメン 新規オープン・閉店情報（2026年時点で閉店の記載なし）</a></div>
+</div></div>
+<div class="card" id="c-musashiya-shokudo-tottori">
+<img class="hero" src="img/tottori/musashiya-shokudo-tottori.jpg" alt="武蔵屋食堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>武蔵屋食堂<span class="yomi">むさしやしょくどう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">明治45年（1912年）創業、鳥取の城下町で四代続く大衆食堂。昭和30年ごろ、二代目が「子どもにも安心して食べさせられるものを」と、うどん用の和風だしに中華麺を入れて出したのが素ラーメンの始まりとされる。カツオと昆布でひいた澄んだだしに中華麺、具はねぎとかまぼこだけ。鳥取市のソウルフードとして今も昼どきに行列ができる。</div>
+<div class="sig"><b>一皿:</b>素ラーメン(うどんと同じカツオ・昆布の和風だしに中華麺を合わせた鳥取市発祥の一杯。具はねぎとかまぼこだけで、スープは澄んで塩気が穏やか)／カツ丼(ケチャップの入った洋風の割り下でとじる、この店独特のカツ丼)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜21:00（月曜は15:00〜）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（8月14〜16日、1月1〜4日も休み）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市職人町15</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857223397">☎ 0857-22-3397</a> ／ <a href="https://6348.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイト（6348.jp）で住所・営業時間・定休日・お品書きの全価格が一次情報として確認できる。『孤独のグルメ』で紹介されて以降も客足は続いており、2025年8月（note）・2026年6月（泉州ラーメン探検隊）・2026年7月（山陰百貨店）と、日付のはっきりした来店記録が1年以内に複数ある。鳥取ぺんぎん・na-naなど山陰の編集メディアも継続して取り上げている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%AD%A6%E8%94%B5%E5%B1%8B%E9%A3%9F%E5%A0%82%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%81%B7%E4%BA%BA%E7%94%BA15">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（blog-imgs-183.fc2.com）より引用 / 参照元: <a href="https://6348.jp/">武蔵屋食堂 公式サイト（お品書き・営業時間・定休日）</a> / <a href="https://www.mapple.net/spot/31010455/">まっぷるウェブ 武蔵屋食堂（電話番号・アクセス）</a> / <a href="https://ameblo.jp/sanin-department-store/entry-12972594660.html">山陰百貨店（2026年7月13日の来店記録・写真）</a> / <a href="https://men789.blog.fc2.com/blog-entry-1556.html">泉州ラーメン探検隊（2026年6月11日撮影の来店記録）</a> / <a href="https://note.com/no_ambition/n/nd5c4959a5671">note「鳥取・島根の旅」武蔵屋食堂（2025年8月21日訪問）</a> / <a href="https://tottori-penguin.com/article/15515/">鳥取ぺんぎん 武蔵屋食堂（明治創業の老舗で味わう元祖素ラーメン）</a> / <a href="http://6348.jp/">武蔵屋食堂 公式サイト（創業年・自家製麺・お品書き・営業時間）</a> / <a href="https://www.torican.jp/machinaka-men">鳥取市観光サイト（公式）ご当地麺特集 素ラーメンの項</a> / <a href="https://tottorizumu.com/musasiyashokudou/">とっとりずむ（鳥取の地域情報サイト）武蔵屋食堂</a> / <a href="https://ameblo.jp/jyanbo1830/entry-12948706554.html">個人ブログ 来店記 2025年12月4日</a></div>
+</div></div>
+<div class="card" id="c-shisen-tantanmen-soun">
+<img class="hero" src="img/tottori/shisen-tantanmen-soun.jpg" alt="四川担担麺 蒼雲 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>四川担担麺 蒼雲<span class="yomi">しせんたんたんめん そううん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鳥取城下の上魚町で十年以上続く四川担担麺の専門店。地元の情報サイトが格付けの掲載店として紹介しており、昼前から行列ができる。芝麻醤と花椒のきいた汁ありの担担麺に加え、麺とタレを混ぜて食べる汁なし、黒ごまを使った黒担担麺など数種を出し、辛さと痺れを選べる。昼だけの営業の日が多く、夜は限られた曜日のみ開ける小さな店。</div>
+<div class="sig"><b>一皿:</b>四川担担麺(芝麻醤＝練りごまのコクと花椒の痺れを合わせた汁ありの担担麺。鳥取では珍しい本格的な四川風)／汁なし担担麺(スープを張らず、丼の底のタレと麺を自分で混ぜて食べる食べ方。混ぜるほど濃くなる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜14:30（ラストオーダー14:00）／夜 17:30〜20:30（ラストオーダー20:00・夜営業は曜日限定）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（水曜が祝日のときは木曜）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市上魚町7-1</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857306554">☎ 0857-30-6554</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市では数少ない担担麺の専門店で、鳥取とりっぷの『鳥取駅前で人気のラーメン屋5選』（2026年7月更新）にも入っている。Yahoo!マップの口コミは72件・評価4.32で来店が続いていることが分かり、エキテンにも現行の営業時間が載る。『四川担担麺 蒼雲 閉店』で検索しても閉店の報は無い。営業時間は店頭のお品書きの実写から読み取った。（なお「ミシュラン掲載」は地元の情報サイトの紹介文に拠るもので、ミシュランガイドの公式な一覧では当方は未確認。guide.michelin.com の鳥取県の一覧は本文が取得できなかった。）</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9B%9B%E5%B7%9D%E6%8B%85%E6%8B%85%E9%BA%BA%20%E8%92%BC%E9%9B%B2%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E4%B8%8A%E9%AD%9A%E7%94%BA7-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（tottoritrip.info）より引用 / 参照元: <a href="https://tottoritrip.info/2023/04/03/souun/">鳥取とりっぷ 四川担々麺 蒼雲（ミシュラン掲載・店頭お品書きの実写あり）</a> / <a href="https://tottoritrip.info/2025/01/22/ekimaera-men/">鳥取とりっぷ 地元民が選ぶ鳥取駅前で人気のラーメン屋5選（2026年7月1日更新）</a> / <a href="https://www.ekiten.jp/shop_19711357/">エキテン 四川担々麺 蒼雲（住所・電話・営業時間）</a> / <a href="https://map.yahoo.co.jp/v3/place/zQziTB5Ppnw">Yahoo!マップ 四川担担麺 蒼雲（口コミ72件・評価4.32）</a></div>
+</div></div>
+<div class="card" id="c-momochan-ramen-tottori">
+<img class="hero" src="img/tottori/momochan-ramen-tottori.jpg" alt="ももちゃんラーメン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>ももちゃんラーメン<span class="yomi">ももちゃんらーめん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">鳥取温泉の湯が湧く末広温泉町から弥生町へ続く飲み屋街の一角にある、カウンター中心の小さなラーメン店。夜7時から深夜2時まで開いており、鳥取で飲んだ帰りの〆として地元で知られる。醤油のきいたスープにとろとろの牛すじを載せた牛すじラーメンが看板で、ほかに醤油・醤油バター・旨辛・冷やし中華と、昔ながらの中華そばらしい顔ぶれが並ぶ。</div>
+<div class="sig"><b>一皿:</b>牛すじラーメン(牛のすじ肉を甘辛く煮込んで醤油ラーメンに載せた一杯。脂と煮汁の甘みがスープに溶けて、飲んだあとでも入る)／旨辛ラーメン(辛味噌とひき肉を落とした辛口。辛さの段階を選べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・祝 12:00〜14:00, 19:00〜26:00／土 19:00〜26:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市弥生町351</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857266522">☎ 0857-26-6522</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>飲み屋街の〆として地元で定着した店で、個人ブログの来店記録が2024年7月・2025年2月・2026年3月12日と毎年続いており、最新は2026年3月の実食レポート（住所・電話・営業時間つき）。鳥取のタウン情報サイト『ぐるない』にも掲載されている。エキテンで住所・電話・営業時間を裏取りした。『ももちゃんラーメン 鳥取 閉店』で検索しても閉店の報は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%82%82%E3%81%A1%E3%82%83%E3%82%93%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA351">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（ikkos-films.com）より引用 / 参照元: <a href="https://ikkos-films.com/momochan-ramen-tottori/">Ikko'S Films 品川イッコー公式グルメブログ（2026年3月12日訪問・2026年3月14日公開）</a> / <a href="https://www.ekiten.jp/shop_2755925/">エキテン ももちゃんラーメン（住所・電話・営業時間）</a> / <a href="https://webplan.co.jp/gurunai/momochanramen/">ぐるない（鳥取のタウン情報サイト）ももちゃんラーメン</a> / <a href="https://saburo55.com/entry/2025/03/15/190000">Ramen a go go 牛すじラーメン（2025年3月15日公開・2025年2月来店）</a></div>
+</div></div>
+<div class="card" id="c-ramen-hinma-sakaemachi">
+<div class="hero-pending">写真準備中<span>候補の料理写真が地元情報サイト tottorizumu.com の配信のみで、同サイトは記事末尾に「※写真の無断掲載・使用を禁止します」と明示しているため採用しなかった。残る候補は店頭の外観だけで、料理・店内が写っていない</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">13</span>らーめんひんま<span class="yomi">らーめんひんま</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鳥取駅の正面から北へ延びるアーケード、駅前サンロードの中にある屋台のような構えの店。2023年4月に開き、はじめは昔ながらの正油・味噌ラーメンを出していたが、今は鳥取県東部では珍しい牛骨ラーメンが看板になった。あっさり派には牛骨チャーシュー麺、こってり派には汁なしまぜそばと、同じ店で正反対の一杯が選べる。夜は21時半まで通しで開いている。</div>
+<div class="sig"><b>一皿:</b>牛骨チャーシュー麺(牛の骨でとった澄んだスープの醤油ラーメンにチャーシューを重ねたもの。豚骨とは違う甘みとコクが鳥取の郷土ラーメンの持ち味)／汁なしまぜそば(スープを張らず、太めの麺にタレと具を絡めて食べるこってり系)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:30（ラストオーダー）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（月曜・木曜に休むことが多い）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市栄町721</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:08071992741">☎ 080-7199-2741</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取駅前商店街振興組合の公式サイトに掲載があり、住所・電話・営業時間・定休日が一次情報として取れる（写真のアップロードは2025年5月）。地域メディアna-naの牛骨ラーメン特集（2026年6月9日）にも入っており、2026年8月の来店投稿も確認できた。『らーめんひんま 鳥取 閉店』で検索しても閉店の報は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E3%81%B2%E3%82%93%E3%81%BE%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA721">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.eki.or.jp/shop/hinma/">鳥取駅前商店街 公式サイト 店舗情報（新鳥取駅前地区商店街振興組合）</a> / <a href="https://tottorizumu.com/hinma/">とっとりずむ 開店記事（2023年4月21日オープン・駅前サンロード内）</a> / <a href="https://na-na.media/tottori_gyuukoturamen_20260609/">na-na（ナーナ）鳥取の牛骨ラーメンまとめ7選（2026年6月9日）</a> / <a href="https://www.nap-camp.com/mag/64831">キャンプ情報メディアnap-camp 鳥取市のおすすめラーメン11選（住所・営業時間）</a></div>
+</div></div>
+<div class="card" id="c-ikina-chukasoba-mirai">
+<div class="hero-pending">写真準備中<span>候補の料理写真が地元情報サイト tottorizumu.com の配信のみで、同サイトは記事末尾に「※写真の無断掲載・使用を禁止します」と明示しているため採用しなかった。残る候補は店頭の外観だけで、料理・店内が写っていない</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">14</span>粋な中華蕎麦 みらい<span class="yomi">いきなちゅうかそば みらい</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">湖山池にほど近い鳥取市西部の幹線道路沿いに2023年3月に開いた中華そばの専門店。券売機で食券を買って座るかたちで、昼と夜の二部営業。甘めの醤油ダレを合わせた澄んだスープに中細のストレート麺、低温調理のチャーシューと味玉を載せた味玉中華蕎麦が看板。鳥取大学が近く学生から家族連れまで客層が広い。餃子も人気がある。</div>
+<div class="sig"><b>一皿:</b>味玉中華蕎麦(鶏と魚介でとった澄んだスープに甘めの醤油を合わせた中華そば。半熟の味付け玉子と低温調理のチャーシューが載る)／餃子(薄皮で焼き目をしっかりつけた一口大の焼き餃子。ラーメンと一緒に頼む人が多い)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00, 17:30〜22:00（売り切れ次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市湖山町北3丁目164</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857773595">☎ 0857-77-3595</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>2023年3月1日オープンの比較的新しい店だが、開店記事だけに頼らず、地域メディアna-naの2026年8月の記事と、店頭「営業中」札の実写（営業時間11:00〜15:00／17:30〜22:00、定休日木曜）で現況を確認した。電話番号は複数の掲載で一致。『粋な中華蕎麦 みらい 鳥取 閉店』で検索しても閉店の報は無く、開店閉店マップの閉店一覧にも名前が無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B2%8B%E3%81%AA%E4%B8%AD%E8%8F%AF%E8%95%8E%E9%BA%A6%20%E3%81%BF%E3%82%89%E3%81%84%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%B9%96%E5%B1%B1%E7%94%BA%E5%8C%973%E4%B8%81%E7%9B%AE164">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://tottorizumu.com/ikinachukasoba-mirai/">とっとりずむ 開店記事（2023年3月1日オープン・店頭の営業時間札の実写あり）</a> / <a href="https://na-na.media/mirai0818/">na-na（ナーナ）粋な中華蕎麦 みらい（2026年8月）</a> / <a href="https://www.nap-camp.com/mag/64831">キャンプ情報メディアnap-camp 鳥取市のおすすめラーメン11選（住所・営業時間・定休日）</a> / <a href="https://kaiten-heiten-map.com/cat/ramen/tottori">開店閉店マップ 鳥取のラーメン 新規オープン・閉店情報（2026年時点で閉店の記載なし）</a></div>
+</div></div>
+<div class="card" id="c-yoshinari-toripaitan-torijin">
+<img class="hero" src="img/tottori/yoshinari-toripaitan-torijin.jpg" alt="らーめん、肉丼ぶり 吉成鶏白湯 鶏神 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">15</span>らーめん、肉丼ぶり 吉成鶏白湯 鶏神<span class="yomi">よしなりとりぱいたん とりじん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鳥取駅の南東、国道53号沿いの吉成にある鶏白湯専門店。鹿児島の桜島どりの鶏がらを煮込んだ白湯スープは、濃厚でとろみがありながら最後まで重くならない。味玉鶏白湯らーめん、特製、煮干し醤油鶏白湯と選べ、肉丼ぶりを合わせるのが定番。年中無休で夜は21時半まで開いているので、仕事帰りにも寄りやすい。鳥取市内では数少ない鶏白湯の店。</div>
+<div class="sig"><b>一皿:</b>鶏白湯らーめん(鶏がらを長時間炊いて白く乳化させたスープのラーメン。鹿児島・桜島どりを使い、濃厚だが後味は軽い)／肉丼ぶり(たれで味付けした肉をごはんに載せた小丼。ラーメンとのセットが定番)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30, 17:30〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし（年中無休）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市吉成南町1-24-2</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857511029">☎ 0857-51-1029</a> ／ <a href="https://www.torijin-group.jp/shop/yoshinari/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>運営会社（鶏神グループ）の公式サイトに店舗ページがあり、住所・電話・営業時間・定休日が一次情報として取れる。山陰飲食の会の店舗一覧（2026年3月の写真）、鳥取ぺんぎんの初訪問レポート（2026年1月の写真）と、2026年に入ってからの掲載が複数ある。『吉成鶏白湯 鶏神 閉店』で検索しても閉店の報は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E3%80%81%E8%82%89%E4%B8%BC%E3%81%B6%E3%82%8A%20%E5%90%89%E6%88%90%E9%B6%8F%E7%99%BD%E6%B9%AF%20%E9%B6%8F%E7%A5%9E%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%90%89%E6%88%90%E5%8D%97%E7%94%BA1-24-2">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sanin-eat-union.jp）より引用 / 参照元: <a href="https://www.torijin-group.jp/shop/yoshinari/">鶏白湯らーめん 鶏神 公式サイト 店舗ページ</a> / <a href="https://sanin-eat-union.jp/shoplist/yosinaritoripaitan_torijin/">一般社団法人 山陰飲食の会 店舗一覧（2026年3月掲載写真）</a> / <a href="https://tottori-penguin.com/article/19457/">鳥取ぺんぎん 吉成鶏白湯 鶏神 初訪問レポ（2026年1月掲載写真）</a> / <a href="https://www.nap-camp.com/mag/64831">キャンプ情報メディアnap-camp 鳥取市のおすすめラーメン11選（住所・営業時間）</a></div>
+</div></div>
+<div class="card" id="c-tottori-gyukotsu-ramen-yaoki">
+<img class="hero" src="img/tottori/tottori-gyukotsu-ramen-yaoki.jpg" alt="鳥取牛骨拉麺 八起 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">16</span>鳥取牛骨拉麺 八起<span class="yomi">とっとりぎゅうこつらーめん やおき</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">鳥取砂丘の目の前、砂丘街道沿いに2024年5月に開いた牛骨ラーメンの専門店。鳥取県中西部の郷土ラーメンである牛骨スープを、県産の素材と自家製麺で組み直した店で、県内の人気店が監修している。スープは牛の骨だけとは思えないほど澄んで軽く、低温調理のチャーシューと刻みねぎが載る。食券制・現金のみで、砂丘を歩いたあとの昼食にちょうどよい。</div>
+<div class="sig"><b>一皿:</b>特製牛骨拉麺(牛の骨でとった澄んだスープのラーメンに、低温調理のチャーシューと味付け玉子を全部のせにした看板の一杯。豚骨とは違う穏やかな甘みとコクが鳥取の郷土の味)／味玉牛骨拉麺(同じスープに半熟の味付け玉子を一つ載せた標準形)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:00〜14:00／土日祝 11:00〜15:00（スープ切れ終了）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市福部町湯山2164-657 サンコスモス104号</td></tr>
+<tr><th>予約</th><td>不要</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取砂丘方面で唯一級の牛骨ラーメン専門店。開店記事（2024年5月18日）だけに頼らず、同じ系列が2026年4月9日に鳥取駅前店を出していること（開店閉店マップの新規オープン欄）、地域メディアna-naの牛骨ラーメン特集が2026年6月、鳥取ぺんぎんの紹介が継続していることで現況を確認した。『鳥取牛骨拉麺 八起 閉店』で検索しても閉店の報は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E5%8F%96%E7%89%9B%E9%AA%A8%E6%8B%89%E9%BA%BA%20%E5%85%AB%E8%B5%B7%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E7%A6%8F%E9%83%A8%E7%94%BA%E6%B9%AF%E5%B1%B12164-657%20%E3%82%B5%E3%83%B3%E3%82%B3%E3%82%B9%E3%83%A2%E3%82%B9104%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（na-na.media）より引用 / 参照元: <a href="https://na-na.media/yaoki-tottori/">na-na（ナーナ）八起 鳥取砂丘から徒歩1分（2024年7月30日公開・店舗情報）</a> / <a href="https://tottorinoto.com/yaoki/">とっとりのーと 鳥取砂丘近くに2024年5月18日オープン</a> / <a href="https://tottorizumu.com/yaoki/">とっとりずむ 開店記事（2024年6月4日公開・住所と場所の説明）</a> / <a href="https://kaiten-heiten-map.com/cat/ramen/tottori">開店閉店マップ 鳥取のラーメン（八起 駅前店が2026年4月9日に新規オープン／本店の閉店記載なし）</a></div>
+</div></div>
+<div class="card" id="c-menya-kyu-shorenji">
+<img class="hero" src="img/tottori/menya-kyu-shorenji.jpg" alt="麺屋 玖 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">17</span>麺屋 玖<span class="yomi">めんやきゅう</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">スーパーの敷地の一角に建つ、赤瓦と木づくりの小さなラーメン店。鳥取のブランド鶏・大山どりの鶏ガラだけを澄ませたスープに、湯梨浜町の中原醤油店の醤油と地元野菜を合わせる。味噌・ワンタン・カレーまで一杯ずつ仕立てが違い、県の公式グルメサイト「とりたべ」は有名格付けハンドブックの掲載店として紹介している。仕込みの分が尽きれば終了で、開店と同時に満席になることも多い。</div>
+<div class="sig"><b>一皿:</b>みそちゃあしゅうめん 1,350円(大山どりの鶏ガラに胡麻と味噌を溶き込み、丼の半分を覆うほどの煮込み叉焼をのせた看板の一杯)／わんたんめん 1,000円(自家製ワンタンを浮かべた、澄んだ鶏ガラ醤油のあっさり版)</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜14:00／ディナー 18:00〜20:00（仕込んだ麺が尽きれば終了。早めの売り切れあり）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日の夜、月曜日</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市正蓮寺107</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857202340">☎ 0857-20-2340</a> ／ <a href="https://www.facebook.com/menyakyu/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取県商工労働部 食パラダイス推進課が運営する公式グルメサイト「とりたべ」に実食レポートが2本あり、新しい方は2025年12月15日付（取材写真の撮影日は2025年11月23日）。そこに住所・電話・営業時間・定休日が店舗情報として載っており、これを採った。ミシュラン掲載は同サイトが「有名格付けハンドブック掲載店」と書いている表現に基づくもので、ミシュラン公式サイトでは当方は未確認。2026年に入ってからの日付つき一次証拠は取れていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%20%E7%8E%96%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%AD%A3%E8%93%AE%E5%AF%BA107">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toritabe.jp）より引用 / 参照元: <a href="https://toritabe.jp/report/25645">とりたべ（食パラダイス鳥取県・鳥取県公式）2025年12月15日「【カレーも美味しい】鳥取市正蓮寺の みそちゃあしゅうめん 麺屋 玖（きゅう）」</a> / <a href="https://toritabe.jp/report/4439">とりたべ（鳥取県公式）2023年9月27日「透き通ったあっさりスープにワンタンがクセになる！有名格付けハンドブック掲載店〜麺屋 玖〜」</a></div>
+</div></div>
+<h2 id="s-men" class="c-aqua">そば・うどん・町中華・粉もん</h2>
+<div class="card" id="c-sakyu-soba-tottori-eki">
+<img class="hero" src="img/tottori/sakyu-soba-tottori-eki.jpg" alt="砂丘そば 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>砂丘そば<span class="yomi">さきゅうそば</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和29年開店、鳥取の駅弁屋・阿部鳥取堂が営む駅そば。2025年春にシャミネ鳥取の改装で一度休業し、同年秋に駅構内の「えきなかキッチン」へ移って営業を続けている。関西系の澄んだ出汁が身上で、載るのは鳥取名物のあごちくわ。朝7時から開いており、砂丘や賀露へ出る前の腹ごしらえにも、列車待ちの15分にも使える。かにめしや丼物、天ぷらも揃う。</div>
+<div class="sig"><b>一皿:</b>砂丘そば(かけそばに、トビウオのすり身で作る鳥取名産の「あごちくわ」を輪切りで載せた一杯。昆布と削り節の澄んだ出汁で食べる)／かにめし(かに味噌とかに身を炊き込んだ名物駅弁「山陰鳥取かにめし」を、温かい丼仕立てで出すもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">無休（シャミネ鳥取に準ずる）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市東品治町111-1 シャミネ鳥取 えきなかキッチン</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:08029242798">☎ 080-2924-2798</a> ／ <a href="https://www.shamine.jp/tottori/shop/detail.php?id=651">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光サイト（市公式）のご当地麺特集が「鳥取で蕎麦といえば」として筆頭に挙げる店。営業の裏取りは、2025年3月の移転休業を伝えた個人ブログと、JR西日本グループのシャミネ鳥取公式サイトの現行テナント一覧（えきなかキッチン／2026年10月時点で掲載）、および2026年9月21日付の来店ブログの3点で取った。価格・営業時間はシャミネ公式の店舗ページから。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%A0%82%E4%B8%98%E3%81%9D%E3%81%B0%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9D%B1%E5%93%81%E6%B2%BB%E7%94%BA111-1%20%E3%82%B7%E3%83%A3%E3%83%9F%E3%83%8D%E9%B3%A5%E5%8F%96%20%E3%81%88%E3%81%8D%E3%81%AA%E3%81%8B%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（Ameba）（stat.ameba.jp）より引用 / 参照元: <a href="https://www.shamine.jp/tottori/shop/detail.php?id=651">シャミネ鳥取（JR西日本グループ）公式 店舗ページ「砂丘そば」</a> / <a href="https://www.torican.jp/machinaka-men">鳥取市観光サイト（公式）ご当地麺特集</a> / <a href="https://uraluz.exblog.jp/33542693/">裏LUZ「砂丘そば 閉店移転」2025年3月7日（移転の経緯）</a> / <a href="https://ameblo.jp/susanoko0827/entry-12979388192.html">個人ブログ 来店記 2026年9月21日</a></div>
+</div></div>
+<div class="card" id="c-azuma-soba-tottori">
+<div class="hero-pending">写真準備中<span>条件を満たす写真が店頭の外観1枚だけで、料理・店内の写真が1枚も無かった（外観のみは不可）</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>吾妻そば<span class="yomi">あづまそば</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">鳥取市内で唯一、出雲そばを出す店。先代の実家が島根県境の吾妻山でそば屋を営んでおり、出雲の味がそのまま受け継がれている。殻ごと挽いた黒いそばを朱塗りの割子に盛り、甘辛いつゆを直接かけて食べる島根流。駅から県庁へ向かう若桜街道沿いという立地で、そばのほかうどん・素ラーメン・丼物もあり、城下町の昼めし処として気軽に寄れる。</div>
+<div class="sig"><b>一皿:</b>割子そば(出雲地方の食べ方。朱塗りの丸い器を三段重ねにし、殻ごと挽いた黒いそばへ甘辛いつゆを直接かけ、薬味を変えながら食べる。750円)／天ぷらそば(温かいかけそばに海老天などを載せた一杯。900円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜20:00（L.O.）、土・日曜、祝日は〜16:00（L.O.）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市本町1丁目206</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857230186">☎ 0857-23-0186</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光サイト（市公式）のご当地麺特集が「まちなか中心地のそば」として紹介している店で、出雲そばという一点で市内に代わりがない。住所・電話・営業時間・定休日・価格は昭文社「まっぷるウェブ」の取材情報で裏を取り、ホットペッパーグルメの現行掲載と照合した。写真は市公式サイト掲載の1点のみで、個人ブログの画像は規定の解像度（幅900px以上）に届かなかったため採らなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%90%BE%E5%A6%BB%E3%81%9D%E3%81%B0%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AC%E7%94%BA1%E4%B8%81%E7%9B%AE206">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.torican.jp/machinaka-men">鳥取市観光サイト（公式）ご当地麺特集</a> / <a href="https://www.mapple.net/spot/31010315/">まっぷるウェブ（昭文社）スポット情報 吾妻そば</a> / <a href="https://www.hotpepper.jp/SA71/Y953/G004/">ホットペッパーグルメ 鳥取市・和食一覧（現行掲載）</a></div>
+</div></div>
+<div class="card" id="c-okonomi-kobo-kona">
+<img class="hero" src="img/tottori/okonomi-kobo-kona.jpg" alt="お好み工房 こな 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>お好み工房 こな<span class="yomi">おこのみこうぼう こな</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">鳥取で「飲みに行く」といえばの末広温泉町にある、テーブル一台ごとに鉄板が入った粉もんの店。半個室仕立てのボックス席が並び、焼きたてが冷めないまま最後まで食べられる。看板は大阪風のお好み焼きだが、地元客の注文が集まるのは鳥取のご当地焼きそば「ホルモンそば」。自家製の味噌ダレで牛ホルモンと太麺を炒める。23時まで通しで開いており、二軒目の〆にも向く。</div>
+<div class="sig"><b>一皿:</b>ホルモンそば(自家製の味噌ダレで牛ホルモン・もやし・ねぎと中華麺を鉄板で炒める、鳥取のご当地焼きそば「ホルそば」。890円)／チーズお好み焼き(大阪風の生地にとろけるチーズを一面に敷いた一枚。鉄板の上で保温しながら食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜23:00（料理L.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市末広温泉町773</td></tr>
+<tr><th>予約</th><td>可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメで鳥取市のお好み焼き店は2軒しか掲載がなく、そのうち飲み屋街（末広温泉町）にあるのがこの店。店側が入れた料理・店内写真が11点そろっており、鉄板の形や席の作りまで確認できた。住所・営業時間・定休日・席数は同掲載による。鳥取のご当地焼きそば「ホルそば」を、焼肉店ではなく粉もん屋の形で出す点で本カテゴリの軸になると判断した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E5%B7%A5%E6%88%BF%20%E3%81%93%E3%81%AA%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA773">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000657539/">ホットペッパーグルメ 店舗ページ お好み工房こな</a> / <a href="https://www.hotpepper.jp/strJ000657539/photo/">ホットペッパーグルメ 写真ページ（店側掲載の料理・店内写真）</a> / <a href="https://www.hotpepper.jp/SA71/G016/">ホットペッパーグルメ 鳥取・お好み焼き一覧（現行掲載）</a></div>
+</div></div>
+<div class="card" id="c-hisamatsu-udon-hanasho">
+<img class="hero" src="img/tottori/hisamatsu-udon-hanasho.jpg" alt="久松うどん はなしょう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>久松うどん はなしょう<span class="yomi">ひさまつうどん はなしょう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">鳥取城跡を抱く久松公園の堀端に建つ古民家のうどん屋。麺はつややかで張りのある讃岐風、出汁は昆布と鰹節をたっぷり使った関西風で、鳥取では珍しい組み合わせ。店内中央のテーブルにおにぎりといなり寿司がセルフサービスで並び、好きなだけ取って会計する。昼だけの営業で、城跡や仁風閣を歩いたあとの一杯にちょうどいい。</div>
+<div class="sig"><b>一皿:</b>かけうどん(讃岐風の自家製麺に、昆布と鰹節をたっぷり使った関西風のまろやかな出汁をはった基本の一杯。680円)／鍋焼きうどん(寒い季節の品書き。土鍋で海老天と玉子ごと煮込む)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30（L.O.）</td></tr>
+<tr><th>定休日</th><td class="off">火曜・祝日</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市東町3丁目362-1</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857294608">☎ 0857-29-4608</a> ／ <a href="https://hanashoudon.jimdofree.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光サイト（市公式）が「鳥取城跡にある久松公園の堀端にある古民家うどん屋」として挙げる店。公式サイトに住所・電話・営業時間・定休日・全品書きが出ており、さらに2026年10月分の営業日カレンダー（臨時休業日まで記載）が掲出されていることを確認した。これが現在営業している直接の証拠になる。写真は公式サイトと市公式サイトから。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B9%85%E6%9D%BE%E3%81%86%E3%81%A9%E3%82%93%20%E3%81%AF%E3%81%AA%E3%81%97%E3%82%87%E3%81%86%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9D%B1%E7%94%BA3%E4%B8%81%E7%9B%AE362-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（image.jimcdn.com）より引用 / 参照元: <a href="https://hanashoudon.jimdofree.com/">久松うどん はなしょう 公式サイト（住所・電話・品書き・2026年10月の営業日カレンダー）</a> / <a href="https://www.torican.jp/machinaka-men">鳥取市観光サイト（公式）ご当地麺特集 そば＆うどんの項</a></div>
+</div></div>
+<div class="card" id="c-matsuya-horumon-ten">
+<img class="hero" src="img/tottori/matsuya-horumon-ten.jpg" alt="まつやホルモン店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>まつやホルモン店<span class="yomi">まつやほるもんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">鳥取のご当地グルメ「ホルそば」（ホルモン焼きそば）の名店。かすれた看板と素っ気ない構えだが、中は鉄板を囲む席が常連と観光客で埋まる。目の前の鉄板で新鮮なホルモンにねぎともやしをどっさり合わせ、濃厚な特製味噌ダレを絡めて焼く。鳥取のホルそばは混合ではなく牛の小腸が基本形で、焼肉店から広まった食べ方。『孤独のグルメ』で紹介されて全国に知られた。鍋のおでんも名物。</div>
+<div class="sig"><b>一皿:</b>ホルモンそば(鉄板で牛ホルモン・ねぎ・もやしを特製の味噌ダレで炒め、中華麺を合わせて焼き上げる鳥取のご当地焼きそば。860円)／おでん(鉄板の脇の鍋で煮込む名物。ホルそばが焼き上がるまでの一品として常連が必ずつまむ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜13:15（13:30閉店）／17:00〜21:00（火曜は夜のみ）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（盆・年始は休み、GWは営業）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市吉方温泉4丁目432</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857233050">☎ 0857-23-3050</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光サイト（市公式）が「ホルそばの名店」として2つの特集に挙げており、住所・電話も市公式に記載がある。営業時間・定休日・価格は昭文社「まっぷるウェブ」の取材情報で裏を取った。営業の確認は2026年10月3日付の来店ブログ（外観・店内・鉄板の写真つき）。老舗の個人店なので閉店の報がないかを合わせて確認し、地域情報サイトの開店閉店まとめにも記載がないことを見た。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%81%A4%E3%82%84%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%90%89%E6%96%B9%E6%B8%A9%E6%B3%894%E4%B8%81%E7%9B%AE432">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（Ameba）（stat.ameba.jp）より引用 / 参照元: <a href="https://www.torican.jp/machinaka-men">鳥取市観光サイト（公式）ご当地麺特集 ホルそばの項</a> / <a href="https://www.torican.jp/feature/tottorilunch">鳥取市観光サイト（公式）鳥取ランチ特集（住所・電話）</a> / <a href="https://www.mapple.net/spot/31010449/">まっぷるウェブ（昭文社）スポット情報 まつやホルモン店</a> / <a href="https://ameblo.jp/takeho-731/entry-12980531034.html">個人ブログ 来店記 2026年10月3日</a></div>
+</div></div>
+<div class="card" id="c-sarashina-koyama-tottori">
+<img class="hero" src="img/tottori/sarashina-koyama-tottori.jpg" alt="更科 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>更科<span class="yomi">さらしな</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鳥取駅から離れた湖山の住宅街にある、昼と夜だけ開く食堂。うどん・そばのかけが700円、玉子丼が780円という値段で、調理はすべて手仕事。昼限定の「更科セット」は温かいうどんかそばに小鉢とごはんが付いて1,000円で、近所の勤め人の定番になっている。一方で看板は塩鯖を重ねた「塩サバ重」で、こちらを目当てに市街から来る客も多い。持ち帰りの弁当も出す。</div>
+<div class="sig"><b>一皿:</b>更科セット(昼限定。温かいうどんかそばに小鉢とごはんが付く、地元の勤め人の定番。1,000円)／塩サバ重(ふっくら焼いた塩鯖に玉子・季節の魚介・トビ子を重ね、特製の胡麻ダレで食べる看板の重。1,850円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00／17:30〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市湖山町北5丁目245-2</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857281708">☎ 0857-28-1708</a> ／ <a href="https://sabajyu.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光サイト（市公式）の鳥取ランチ特集が「湖山の住宅街にある和食の店。丼物、麺類、天ぷらや唐揚げなどの定食もリーズナブル」として挙げている一軒で、駅前から離れた市内その他の区画で麺と丼を出す店として選んだ。公式サイトに住所・電話・営業時間・定休日と全品書きの価格が載っており、2025年8月8日付の営業のお知らせとフッタの著作表示（2026年）で現行営業を確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9B%B4%E7%A7%91%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%B9%96%E5%B1%B1%E7%94%BA%E5%8C%975%E4%B8%81%E7%9B%AE245-2">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sabajyu.jp）より引用 / 参照元: <a href="https://sabajyu.jp/">更科 公式サイト（住所・電話・営業時間・お品書き・2025年8月8日のお知らせ）</a> / <a href="https://www.torican.jp/feature/tottorilunch">鳥取市観光サイト（公式）鳥取ランチ特集 定食・和食の項</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・郷土料理・地酒</h2>
+<div class="card" id="c-tottori-kourin-yashiki">
+<img class="hero" src="img/tottori/tottori-kourin-yashiki.jpg" alt="こうりん屋敷 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">24</span>こうりん屋敷<span class="yomi">こうりんやしき</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip local">地元密着</span></div>
+<div class="desc">鳥取市内で居酒屋を束ねる光琳グループの本格和風店。末広温泉町は戦後に温泉を引いた旅館街が飲食店街へ姿を変えた一帯で、いまも鳥取で「飲みに行く」といえばここを指す。106席の大半が和室の個室・掘りごたつで、日本海の刺身盛りやのどぐろを、諏訪泉・稲田姫・強力（ごうりき）といった鳥取の地酒で流し込める。深夜0時半まで開いているので二軒目にも使える。</div>
+<div class="sig"><b>一皿:</b>刺身盛り合わせ(日本海で揚がった白身と地イカを盛る。季節によりのどぐろ＝アカムツの炙りが入る)／ホルモン焼きそば(鳥取の飲み屋の〆の定番。ホルモンと太麺をソースで炒めた一皿)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜翌0:30（料理L.O.翌0:00／ドリンクL.O.翌0:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（翌月曜が祝日の場合は営業し、翌月曜休み）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市末広温泉町159</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857290801">☎ 0857-29-0801</a> ／ <a href="http://kourin-g.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光コンベンション協会の公式サイト『鳥取市観光ナビ』が末広温泉町の飲食店街を市内随一の夜の街と位置づけており、その中心にある。運営する光琳グループの公式サイトが2026年初夏にリニューアルされ、同店の電話番号・営業時間・定休日が現行情報として掲載されている（＝2026年の一次証拠）。加えてホットペッパーグルメの口コミに2026年3月・5月・7月の来店投稿があり、現在も営業していることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%81%86%E3%82%8A%E3%82%93%E5%B1%8B%E6%95%B7%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA159">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="http://kourin-g.jp/">光琳グループ公式サイト（2026年初夏リニューアル。こうりん屋敷の電話・営業時間・住所を掲載）</a> / <a href="https://www.hotpepper.jp/strJ003788005/">ホットペッパーグルメ こうりん屋敷（口コミ投稿日 2026/07/12・2026/05/26・2026/05/19）</a></div>
+</div></div>
+<div class="card" id="c-tottori-gurattye-honten">
+<img class="hero" src="img/tottori/tottori-gurattye-honten.jpg" alt="ご馳家 ぐらっちぇ 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>ご馳家 ぐらっちぇ 本店<span class="yomi">ごちそうや ぐらっちぇ ほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">1997年1月29日開業、末広温泉町で30年近く続く海鮮居酒屋。山陰沖で揚がった魚を馴染みの魚屋から、野菜を地元の八百屋から毎日仕入れ、ベテランの板前が一品ずつ仕立てる。のどぐろの炙り焼き、白いか、モサエビなど鳥取ならではの魚が通年で並び、冬は松葉がにが入る。全席禁煙で個室もあり、飲み屋街にありながら落ち着いて食べられる。</div>
+<div class="sig"><b>一皿:</b>のどぐろの炙り焼(アカムツの地元名。脂が多く白身のトロと呼ばれる。皮目を炙って香りを立てる)／刺身盛り合わせ(網代・賀露などの港から入る日替わりの地魚。夏は白いか＝ケンサキイカが入る)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:00（料理L.O.22:00／ドリンクL.O.22:00）※天候により変更あり</td></tr>
+<tr><th>定休日</th><td class="off">日曜（月曜が祝日の場合は日曜営業のことあり。日曜以外にも不定休あり）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市末広温泉町271-4 かわとビル</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857295300">☎ 0857-29-5300</a> ／ <a href="http://gurattye.com">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光ナビの『鳥取駅周辺グルメ情報』（2026年9月4日更新）が夜の店として掲載し、公式サイトへリンクしている。その公式サイトに「2026年1月29日で29年目を迎える」という当年の記載があり、営業の一次証拠になる。チェーンではなく個人経営で、山陰の魚を自前の仕入れ網で揃える点を選定理由とした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%94%E9%A6%B3%E5%AE%B6%20%E3%81%90%E3%82%89%E3%81%A3%E3%81%A1%E3%81%87%20%E6%9C%AC%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA271-4%20%E3%81%8B%E3%82%8F%E3%81%A8%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（公式）【保存版】鳥取駅周辺グルメ情報（2026年9月4日更新）</a> / <a href="http://gurattye.com">ご馳家ぐらっちぇ本店 公式サイト（2026年1月29日で29年目の記載）</a> / <a href="https://www.hotpepper.jp/strJ000510372/">ホットペッパーグルメ ご馳家 ぐらっちぇ 本店</a></div>
+</div></div>
+<div class="card" id="c-tottori-touen-akatsuki">
+<img class="hero" src="img/tottori/tottori-touen-akatsuki.jpg" alt="灯宴 暁-AKATSUKI-本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>灯宴 暁-AKATSUKI-本店<span class="yomi">とうえん あかつき ほんてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">末広温泉町では新しい世代の個室居酒屋で、150席すべてが仕切られた個室。日本海の刺身の舟盛りと、鳥取和牛・大山どりなどのたたきを一皿で出すのが特徴で、宴会にも二人にも使える。末広温泉町は温泉旅館街から飲み屋街になった町で、この店のある165番地あたりは本通りから入ってすぐの明るい側。金曜・土曜は翌0時半まで。</div>
+<div class="sig"><b>一皿:</b>刺身の舟盛り(日本海で揚がった白身・イカ・甘エビなどを木舟に盛る。季節でモサエビ＝クロザコエビが入る)／肉のたたき盛り合わせ(鳥取和牛や大山どりの表面を炙り、薬味と出汁醤油で食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・祝 17:30〜23:30／金・土・祝前日 17:30〜翌0:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜（祝日が月曜の場合は日曜営業・月曜休み）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市末広温泉町165</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857500010">☎ 0857-50-0010</a> ／ <a href="https://www.instagram.com/akatsuki.touen">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの口コミに2026年8月・9月の来店投稿が複数あり（最新 2026/09/19）、現在営業中であることを日付つきで確認できた数少ない末広温泉町の店。評点4.3。末広温泉町の4店が海鮮一辺倒にならないよう、肉のたたきを前面に出すこの店を入れた。公式Instagramが店舗ページから案内されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%81%AF%E5%AE%B4%20%E6%9A%81-AKATSUKI-%E6%9C%AC%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA165">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004548002/">ホットペッパーグルメ 灯宴 暁-AKATSUKI-本店（口コミ投稿日 2026/09/19・2026/09/18・2026/09/10）</a></div>
+</div></div>
+<div class="card" id="c-tottori-sumibi-yakitori-saku">
+<img class="hero" src="img/tottori/tottori-sumibi-yakitori-saku.jpg" alt="炭火焼鳥 さく 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>炭火焼鳥 さく<span class="yomi">すみびやきとり さく</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">弥生町のWAGONビル1階、カウンター8席＋座敷22席の炭火焼き鳥店。備長炭の長い焼き台を店の正面に据え、白肝（しろきも）など日替わりの希少部位まで一本ずつ焼く。弥生町・瓦町・末広温泉町は細い路地が格子状に走る鳥取随一の飲み屋街で、はしご酒の二軒目に入りやすい。金曜・土曜は翌3時まで開いており、鳥取の夜の終点になる。</div>
+<div class="sig"><b>一皿:</b>白肝(しろきも。脂が乗って白っぽくなった鶏のレバー。数が限られる希少部位で、ねっとり甘い)／つくねの卵黄のせ(鶏ひき肉を練って串に巻いて焼き、生卵黄を絡めて食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・日・祝・祝前日 16:30〜23:30（料理L.O.22:30）／金・土 16:30〜翌3:00（料理L.O.翌2:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市弥生町265 WAGONビル1階</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0857511182">☎ 0857-51-1182</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの口コミに2026年6月・8月・9月の来店投稿があり（最新 2026/09/18）、評点4.3／39件と飲み屋街のなかでも評価が高い。店の公式Instagramではなくホットペッパー掲載写真を使ったのは、店側が入れた炭火と串の実写が10点以上あり画質・サイズとも条件を満たしたため。弥生町という町名どおり飲み屋街のど真ん中にある点も選定理由。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E9%B3%A5%20%E3%81%95%E3%81%8F%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA265%20WAGON%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003942562/">ホットペッパーグルメ 炭火焼鳥 さく（口コミ投稿日 2026/09/18・2026/08/21・2026/08/16）</a></div>
+</div></div>
+<div class="card" id="c-tottori-murakami-suisan-ekimae">
+<img class="hero" src="img/tottori/tottori-murakami-suisan-ekimae.jpg" alt="海鮮問屋 村上水産 鮮魚部 駅前本所店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>海鮮問屋 村上水産 鮮魚部 駅前本所店<span class="yomi">かいせんどんや むらかみすいさん せんぎょぶ えきまえほんじょてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">鳥取県漁協などの仲買権を持つ会社が2009年に始めた直営居酒屋。活イカや松葉がには漁協から生け簀トラックで運び、店の生け簀で生かしたまま使う。カウンターの背に鳥取の一升瓶が並び、座敷・掘りごたつ個室・大広間まである120席。昼は定食と丼、夜は刺身と煮付けで、地元客と旅行者が同じ店で飲んでいるのが駅前らしい。とうふちくわも置く。</div>
+<div class="sig"><b>一皿:</b>刺身盛り合わせ(仲買人が市場で直接買い付けた日替わりの地魚。夏は白いか＝ケンサキイカ、冬は松葉がに＝ズワイガニのオスが入る)／とうふちくわ(豆腐と白身魚のすり身を混ぜて蒸した鳥取市特有のちくわ。生姜醤油で食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜14:00／夜 17:00〜22:00（最終入店21:00、L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（月曜が休みの場合は日曜営業・月曜休業）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市永楽温泉町378</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857221000">☎ 0857-22-1000</a> ／ <a href="https://ginrin-grp.com/suisan/ekimae/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光ナビ（公式）の『鳥取駅周辺グルメ情報』（2026年9月4日更新）に「安くて新鮮なその訳は海鮮問屋の居酒屋だから」と掲載され、公式サイトへリンクされている。公式サイトは2025年更新の店舗写真と現行の営業時間・定休日を載せており、ホットペッパーグルメの口コミにも2026年3月20日・4月14日の投稿がある。写真は食べログ等の利用者投稿ではなく公式サイト掲載分のみを使った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E5%95%8F%E5%B1%8B%20%E6%9D%91%E4%B8%8A%E6%B0%B4%E7%94%A3%20%E9%AE%AE%E9%AD%9A%E9%83%A8%20%E9%A7%85%E5%89%8D%E6%9C%AC%E6%89%80%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%B0%B8%E6%A5%BD%E6%B8%A9%E6%B3%89%E7%94%BA378">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（ginrin-grp.com）より引用 / 参照元: <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（公式）【保存版】鳥取駅周辺グルメ情報（2026年9月4日更新）</a> / <a href="https://ginrin-grp.com/suisan/ekimae/">海鮮問屋 村上水産 公式サイト 駅前本所店（鳥取駅前店）</a> / <a href="https://www.hotpepper.jp/strJ000849848/">ホットペッパーグルメ 海鮮問屋村上水産鮮魚部（口コミ投稿日 2026/04/14・2026/03/20）</a> / <a href="https://www.torican.jp/feature/gourmet_seafood">鳥取市観光ナビ（公式）カニだけじゃない！鳥取で味わえる極上の魚介類（2026年8月17日更新）</a> / <a href="https://ginrin-grp.com/stores/">ぎんりんグループ公式サイト 店舗紹介</a></div>
+</div></div>
+<div class="card" id="c-tottori-robata-kaba-ekimae">
+<img class="hero" src="img/tottori/tottori-robata-kaba-ekimae.jpg" alt="山陰海鮮炉端かば 鳥取駅前店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>山陰海鮮炉端かば 鳥取駅前店<span class="yomi">さんいんかいせんろばたかば とっとりえきまえてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">山陰各地に店を持つ炉端かばの鳥取駅前店。山陰で揚がった魚を刺身・寿司・炉端の炭焼きで通し、260席という大箱ながら仕切られた小上がりと座敷が並ぶ。鳥取駅の北口を出てすぐという立地なので、列車やバスの待ち時間、宿に入る前の一杯に使いやすい。看板は桶に盛った刺身と、炉端で焼く鶏もも焼き。年中無休で深夜まで開く。</div>
+<div class="sig"><b>一皿:</b>かば桶盛(山陰で揚がった魚の刺身を木桶に盛り合わせた看板料理。人数に合わせて大きさを選べる)／炉端名物 鶏もも焼き(鶏もも肉を炉端の炭火で皮目から焼き上げ、塩で食べる一枚焼き)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 17:00〜24:00／土・日 17:00〜翌1:00（閉店時刻が早まる場合あり）</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市栄町608</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857229900">☎ 0857-22-9900</a> ／ <a href="https://y039001.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光ナビ（公式）の『鳥取駅周辺グルメ情報』（2026年9月4日更新）に夜の店として掲載され、公式ページへリンクされている＝自治体系公式サイトによる2026年の一次証拠。駅前という立地と「炉端」という業態が、この章で他の7店と重ならない。写真は店が自ら入れた公式ページ掲載分のみを使い、価格や文字が焼き込まれた販促画像は除外した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E9%99%B0%E6%B5%B7%E9%AE%AE%E7%82%89%E7%AB%AF%E3%81%8B%E3%81%B0%20%E9%B3%A5%E5%8F%96%E9%A7%85%E5%89%8D%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA608">Googleマップで開く</a>
+<div class="src">写真: ぐるなび（rimage.gnst.jp）より引用 / 参照元: <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（公式）【保存版】鳥取駅周辺グルメ情報（2026年9月4日更新）</a> / <a href="https://y039001.gorp.jp/">炉端かば 鳥取駅前店 公式ページ（住所・営業時間・名物）</a> / <a href="https://r.gnavi.co.jp/y039001/">ぐるなび 炉端かば 鳥取駅前店</a></div>
+</div></div>
+<div class="card" id="c-tottori-ri-bacaro-karo">
+<img class="hero" src="img/tottori/tottori-ri-bacaro-karo.jpg" alt="ri bacaro 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>ri bacaro<span class="yomi">りー ばーかろ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鳥取港のある賀露の海岸道路沿い、週末だけ開く25席の小さな酒場。バーカロはヴェネツィアの立ち寄り酒場のことで、その名のとおり食事も酒も軽く寄っていける。窓の外に日本海と賀露の防波堤が広がり、昼から日が暮れるまで通しで営業するので、砂丘や「かろいち」をまわった帰りに寄れる。鳥取の地酒やビールのほか、うどんや鶏の丸焼きなど腹にたまる料理も出す。</div>
+<div class="sig"><b>一皿:</b>鶏の丸焼き(骨付きの鶏をまるごと焼き上げる看板料理。切り分けて数人でつつく)／うどんと小皿の盛り合わせ(地元の出汁で引いたうどんに、小鉢や揚げ物を合わせた軽い食事)</div>
+<table class="info">
+<tr><th>営業時間</th><td>土・日・祝 11:30〜21:00（料理L.O.21:00／最終入店20:00）</td></tr>
+<tr><th>定休日</th><td class="off">月・火・水・木・金</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市賀露町北4-33-25</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:07065028399">☎ 070-6502-8399</a> ／ <a href="https://www.instagram.com/ri_bacaro/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの口コミに2025年8月・9月および2026年9月の投稿があり、週末営業が続いていることを日付つきで確認した。賀露・湖山方面は昼の市場食堂（かろいち等）が中心で夜の飲み屋が少ないが、この店は海の見える席で地酒とワインを出す酒場であり、この章の『ワインバー・クラフトビール』枠にあたる。公式Instagramが店舗ページから案内されている。営業が土日祝のみな点は訪問前に要確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=ri%20bacaro%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E8%B3%80%E9%9C%B2%E7%94%BA%E5%8C%974-33-25">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004041000/">ホットペッパーグルメ ri bacaro（口コミ投稿日 2026/09/21・2025/09/28・2025/08/31）</a></div>
+</div></div>
+<div class="card" id="c-hananoren-honten">
+<img class="hero" src="img/tottori/hananoren-honten.jpg" alt="花のれん 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>花のれん 本店<span class="yomi">はなのれんほんてん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">創業昭和54年、鳥取駅のすぐ南の瓦町に建つ一軒家の郷土料理店。席は完全個室とカウンター8席で、10〜50名の大部屋まで備える。日本海の魚、城下町まわりの畑や山里、湖や河で四季ごとに揚がる食材を板前が手間をかけて仕立てる。昼は手頃な定食、夜は5,500円からの会席と鳥取の地酒。冬は松葉がに、夏は県のブランド岩ガキ「夏輝」が看板になる。</div>
+<div class="sig"><b>一皿:</b>松葉がにコース(ズワイガニのオスの山陰での呼び名。11月6日解禁で、ゆで・炭火焼き・カニスキ・甲羅酒まで一匹を通しで出す冬の献立)／岩ガキ 夏輝(鳥取県が夏に水揚げする大型の天然岩ガキのブランド名。濃厚な身を生で味わう夏の名物)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜14:00／夜 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">原則、日曜夜（月曜が祝日の場合は日曜夜営業・月曜夜休業）、年末年始。臨時休業・不定休あり</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市瓦町526</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857230494">☎ 0857-23-0494</a> ／ <a href="https://www.hananoren.net/hana-noren/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトのお知らせが2026/09/18付で「松葉ガニプラン 2026」を告知し、特設ページに提供期間「2026年11月7日〜2027年3月上旬頃まで」と価格帯（27,500円／44,000円／66,000円〜）まで載っているので、2026年秋時点で営業していることが一次情報で確認できる。鳥取市観光コンベンション協会の公式サイト（2026年9月4日更新）にも駅周辺の郷土料理店として掲載。住所・電話・営業時間・定休日はすべて店の公式サイトの記載をそのまま採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8A%B1%E3%81%AE%E3%82%8C%E3%82%93%20%E6%9C%AC%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E7%93%A6%E7%94%BA526">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.hananoren.net）より引用 / 参照元: <a href="https://www.hananoren.net/hana-noren/">花のれん本店 公式サイト（所在地・営業時間・定休日・電話／お知らせ 2026/09/18 松葉ガニプラン 2026）</a> / <a href="https://www.hananoren.net/kani-plan/">花のれん 松葉がに料理プラン 特設ページ（提供期間 2026年11月7日〜2027年3月上旬頃）</a> / <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（鳥取市観光コンベンション協会）鳥取駅周辺グルメ情報・2026年9月4日更新</a></div>
+</div></div>
+<div class="card" id="c-kounotori-kushiyaki-yayoicho">
+<img class="hero" src="img/tottori/kounotori-kushiyaki-yayoicho.jpg" alt="串焼き・旬菜 紅乃酉 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>串焼き・旬菜 紅乃酉<span class="yomi">くしやきしゅんさいこうのとり</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2024年に弥生町の飲み屋街で開いた串焼き店。天井から和傘を吊るした和モダンの店内に、簾で仕切る個室とテーブル席を備える。串は鳥取のブランド地鶏「鳥取地どりピヨ」や大山どり、日本海のモサエビを炭で焼き分け、鶏レバーは55℃で3時間かけて低温調理する。ねばりっこ、和牛すじなど鳥取の食材を使う一品も厚い。店主は「いずれ鳥取駅周辺に横丁を作りたい」と語る。</div>
+<div class="sig"><b>一皿:</b>55℃レバー(大山どりの鶏レバーを55℃で3時間かけて低温調理した串。口に入れると溶けて旨味だけが残る)／猛者エビ串(日本海でとれるモサエビ。甘みの強い小型のエビで、頭から尻尾まで殻ごと焼いて食べる鳥取の冬の味)／ねばりっこ短冊(鳥取県が育成した粘りと甘みの強い長芋のブランド品種)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・水・木・祝日・祝後日 17:30〜23:30／金・土・祝前日 17:30〜翌0:30（ラストオーダーは各終了30分前）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市弥生町373-4</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857304194">☎ 0857-30-4194</a> ／ <a href="https://www.instagram.com/kounotori.kushiyaki/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取県商工労働部 食パラダイス推進課が運営する公式グルメサイト「とりたべ」の実食レポート（2026年1月14日付）に、住所・電話・曜日別の営業時間・定休日まで載っており、これを採った。4店のなかではもっとも新しい日付つき一次証拠。2024年開店で、記事中に「平日にもかかわらず次々と訪れるお客様」とある。公式Instagramのアドレスはとりたべの店舗情報欄に記載されたものだが、当方の実行環境からは Instagram が HTTP 429 を返して開けず、中身は未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E7%84%BC%E3%81%8D%E3%83%BB%E6%97%AC%E8%8F%9C%20%E7%B4%85%E4%B9%83%E9%85%89%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA373-4">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toritabe.jp）より引用 / 参照元: <a href="https://toritabe.jp/report/27973">とりたべ（食パラダイス鳥取県・鳥取県公式）2026年1月14日「【幸せ運ぶ串焼き】鳥取市弥生町の 串焼き・旬菜 紅乃酉」</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・カレー・各国料理</h2>
+<div class="card" id="c-parakeet-tottori">
+<img class="hero" src="img/tottori/parakeet-tottori.jpg" alt="パラキート 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">33</span>パラキート<span class="yomi">ぱらきーと</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">鳥取県は家庭のカレールウ消費額が全国トップ級で、市内には個性の違うカレー店が密集する。パラキートは鳥取駅南口から歩いて5分、木を基調にしたシンプルな店内でスパイスカレーを出す店。定番に加えて月替わりカレーがあり、トッピングも豊富なので自分好みの一皿に組み立てられる。米は鳥取県産を使う。</div>
+<div class="sig"><b>一皿:</b>月替わりカレー(その月の食材で内容が変わるスパイスカレー。取材時の7月は夏野菜と牛すじで、牛すじはホロホロに煮込まれていた)／チキン＆ドライキーマカレー 1,000円(鶏のカレーと水分の少ない挽き肉のキーマを一皿に盛り合わせた看板の相がけ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00（L.O.13:00）, 18:00〜20:00（L.O.19:40）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市扇町134</td></tr>
+<tr><th>予約</th><td>不明 — <a href="tel:0857200323">☎ 0857-20-0323</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取県の公式グルメ発信サイト「とりたべ」（鳥取県の食パラダイス推進事業）に2026年1月14日と2026年7月13日の2本の実食レポートが掲載されており、2026年7月撮影の店内・料理写真が載っている。半年間隔で2度取材されていることが現在も営業していることの根拠。駅南口から徒歩5分という立地も駅前地区の代表として適する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%91%E3%83%A9%E3%82%AD%E3%83%BC%E3%83%88%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%89%87%E7%94%BA134">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toritabe.jp）より引用 / 参照元: <a href="https://toritabe.jp/report/31838">とりたべ（鳥取県公式グルメサイト）「【鳥取市】こだわりのスパイス!「パラキート」」2026/07/13</a> / <a href="https://toritabe.jp/report/27399">とりたべ「〔鳥取市〕地元で大人気！やみつきになる絶品スパイスカレー🍛「パラキート」」2026/01/14</a></div>
+</div></div>
+<div class="card" id="c-cosajiichi-shamine-tottori">
+<img class="hero" src="img/tottori/cosajiichi-shamine-tottori.jpg" alt="カレーとアジアンフード コサジイチ シャミネ鳥取店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>カレーとアジアンフード コサジイチ シャミネ鳥取店<span class="yomi">かれーとあじあんふーど こさじいち しゃみねとっとりてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">鳥取市緑ケ丘の人気カレー店コサジイチが鳥取駅の駅ビル、シャミネ鳥取に出した支店。鶏ガラを12時間煮込んだスープに20種類以上のスパイスを合わせた、汁気の多いサラサラのスパイスカレーが看板。カレールウ消費額で全国上位を争う鳥取の玄関口で、列車の待ち時間にも寄れるのが強み。小・中・大とサイズが選べ、トッピングも細かい。</div>
+<div class="sig"><b>一皿:</b>ポークカレー 小1,080円(厚切りの豚肉をのせた、コクがありつつ後味のさっぱりした定番)／ほうれん草カレー 小900円(ほうれん草を練り込んだ緑色のルウ。単品でも他のカレーへの重ねがけでも頼める)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">不明（シャミネ鳥取の営業日に準じる）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市東品治町111-1 シャミネ鳥取 えきなかキッチン</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0857301533">☎ 0857-30-1533</a> ／ <a href="https://www.cosajiichi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅ビル運営会社シャミネ鳥取の公式テナント情報に「カレーとアジアンフード コサジイチ」（えきなかキッチン、営業11:00〜21:00、予約不可）として現在も掲載され、同サイトは2026年10月5日時点で「本日営業中」と表示している。加えて鳥取県公式「とりたべ」に2026年8月10日付の実食レポートがある。開店告知だけの店ではないが、駅ナカの新店なので「コサジイチ 閉店」で別途検索し、閉店の報が無いことも確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%AC%E3%83%BC%E3%81%A8%E3%82%A2%E3%82%B8%E3%82%A2%E3%83%B3%E3%83%95%E3%83%BC%E3%83%89%20%E3%82%B3%E3%82%B5%E3%82%B8%E3%82%A4%E3%83%81%20%E3%82%B7%E3%83%A3%E3%83%9F%E3%83%8D%E9%B3%A5%E5%8F%96%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9D%B1%E5%93%81%E6%B2%BB%E7%94%BA111-1%20%E3%82%B7%E3%83%A3%E3%83%9F%E3%83%8D%E9%B3%A5%E5%8F%96%20%E3%81%88%E3%81%8D%E3%81%AA%E3%81%8B%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toritabe.jp）より引用 / 参照元: <a href="https://www.shamine.jp/tottori/shop/detail.php?id=649">シャミネ鳥取 公式ショップ情報「カレーとアジアンフード コサジイチ」（2026/10/05 時点で営業中表示）</a> / <a href="https://toritabe.jp/report/32977">とりたべ（鳥取県公式グルメサイト）「【鳥取市】待望の駅中キッチン！「カレーとアジアンフードコサジイチ シャミネ鳥取店」」2026/08/10</a> / <a href="https://www.cosajiichi.com/">コサジイチ 公式サイト（メニュー・価格）</a></div>
+</div></div>
+<div class="card" id="c-monks-curry-coffee-tottori">
+<img class="hero" src="img/tottori/monks-curry-coffee-tottori.jpg" alt="CURRY COFFEE モンクス 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>CURRY COFFEE モンクス<span class="yomi">かりー こーひー もんくす</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鳥取駅から歩いて5分ほどの商店街にある、スパイスカレーとコーヒーの店。レコードや漫画が並ぶ隠れ家のような店内で、鳥取県産の米にもち麦を混ぜたご飯にスパイスの香りが立つカレーを合わせる。辛さは後から足せる。カレールウの消費で知られる鳥取市のなかでも、喫茶の感覚で一皿を食べられる駅前の一軒。</div>
+<div class="sig"><b>一皿:</b>カツカレー(鳥取県産米ともち麦のご飯に、ご飯・ルウと一緒に口へ入る絶妙な厚さのカツをのせた看板)／タコライス(刻んだ野菜を山盛りにし、その下に辛めのひき肉を敷いた沖縄発祥の一皿)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00, 17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市今町1丁目162</td></tr>
+<tr><th>予約</th><td>不明 — <a href="tel:08019024210">☎ 080-1902-4210</a> ／ <a href="https://www.instagram.com/monkscurry/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取県の公式グルメ発信サイト「とりたべ」に2026年8月12日付で掲載された実食レポートがあり、2026年7月23日撮影の外観・店内・料理写真が載っている。駅前地区のカレー店として、駅ナカのコサジイチ・駅南のパラキートとは性格（喫茶兼業・商店街立地）が異なるため並べて選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=CURRY%20COFFEE%20%E3%83%A2%E3%83%B3%E3%82%AF%E3%82%B9%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E4%BB%8A%E7%94%BA1%E4%B8%81%E7%9B%AE162">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toritabe.jp）より引用 / 参照元: <a href="https://toritabe.jp/report/33112">とりたべ（鳥取県公式グルメサイト）「【鳥取市】本格スパイスとコーヒーのお店「CURRY COFFEE モンクス」」2026/08/12</a></div>
+</div></div>
+<div class="card" id="c-syokudo-frunk-tottori">
+<img class="hero" src="img/tottori/syokudo-frunk-tottori.jpg" alt="食堂FRUNK 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>食堂FRUNK<span class="yomi">しょくどうふらんく</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span></div>
+<div class="desc">鳥取駅から若桜街道を県庁方面へ進み、袋川に架かる若桜橋を渡ってすぐのビル1階。木とグリーンでまとめた広い店内で、鳥取県産を中心にした野菜と県産米「星空舞」を使う洋食を出す。昼は定食感覚のプレート、夜は酒の種類も多いダイニングになる。鳥取城跡・久松公園へ歩いて向かう途中の昼食に使いやすい位置にある。</div>
+<div class="sig"><b>一皿:</b>パルミジャーノ香るタコライス 1,320円(鳥取県産米「星空舞」の上に県産中心の生野菜をたっぷり盛り、スパイシーな挽き肉とチーズソース、削りたてのパルミジャーノ・レッジャーノを重ねた看板)／日替わりの洋食ランチ(その日の鳥取県産野菜を使う昼の定番プレート)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00, 18:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市元町123</td></tr>
+<tr><th>予約</th><td>不明 — <a href="tel:0857302270">☎ 0857-30-2270</a> ／ <a href="https://www.instagram.com/syokudo_frunk">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取県公式「とりたべ」に2025年11月17日付の実食レポートがあり、同月撮影の外観・店内・料理写真が載っている。鳥取城跡・久松公園へ続く旧城下の区画にあり、たくみ珈琲店（栄町）と並べて城下町地区の2軒とした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E5%A0%82FRUNK%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%85%83%E7%94%BA123">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toritabe.jp）より引用 / 参照元: <a href="https://toritabe.jp/report/24585">とりたべ（鳥取県公式グルメサイト）「【鳥取市】おしゃれランチは食堂FRUNKで決まり♪」2025/11/17</a></div>
+</div></div>
+<div class="card" id="c-pepenero-italia-kan-tottori">
+<img class="hero" src="img/tottori/pepenero-italia-kan-tottori.jpg" alt="ペペネーロ イタリア館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>ペペネーロ イタリア館<span class="yomi">ぺぺねーろ いたりあかん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span></div>
+<div class="desc">1980年創業、鳥取市では最も古い部類の本格イタリア料理店。店名はイタリア語の黒胡椒で、小さくても存在感のある店にという願いが込められている。日本海の魚介、大山産の豚や鶏、鳥取和牛、若桜の鹿肉といった山陰の食材をパスタ・ピッツァ・肉魚料理に仕立てる。鳥取県の「とっとりジビエ」提供店でもある。</div>
+<div class="sig"><b>一皿:</b>親ガニのトマトソースパスタ 2,200円(日本海の冬の味覚、ズワイガニの雌＝親ガニを丸ごと使った季節のパスタ)／鳥取和牛のグリッリア 100g 3,500円〜(肉質日本一に輝いたことのある県産黒毛和牛の炭火風グリル)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00（L.O.13:50）, 18:00〜22:00（L.O.21:00／日・祝は21:00）</td></tr>
+<tr><th>定休日</th><td class="off">第1・3・5日曜、第2・4月曜（祝日の場合は翌日）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市弥生町308-2</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0857274736">☎ 0857-27-4736</a> ／ <a href="https://pepenero-italia.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイトに2026年1月27日付「店内改装工事に伴う休業のお知らせ」、2026年5月1日付「GW期間中のテイクアウト注文停止について」という日付入りの告知があり、2026年も営業していることが確認できる。鳥取県公式「とりたべ」にも2025年1月15日付のレポートがある。1980年創業という成り立ちと、カレー・洋食に偏らない各国料理の軸として選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9A%E3%83%9A%E3%83%8D%E3%83%BC%E3%83%AD%20%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E9%A4%A8%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E5%BC%A5%E7%94%9F%E7%94%BA308-2">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toritabe.jp）より引用 / 参照元: <a href="https://pepenero-italia.com/archives/news-list/658">ペペネーロ イタリア館 公式サイト お知らせ「GW期間中のテイクアウト注文停止について（5/2〜5/6）」2026/05/01</a> / <a href="https://pepenero-italia.com/archives/news-list/636">ペペネーロ イタリア館 公式サイト お知らせ「【2/15〜3/8】店内改装工事に伴う休業のお知らせ」2026/01/27</a> / <a href="https://pepenero-italia.com/menu-food">ペペネーロ イタリア館 公式サイト フードメニュー（価格）</a> / <a href="https://toritabe.jp/report/18794">とりたべ（鳥取県公式グルメサイト）「[鳥取市]1980年創業！老舗の本格イタリア料理店【ペペネーロイタリア館】」2025/01/15</a></div>
+</div></div>
+<div class="card" id="c-shanghai-charo-koyama">
+<img class="hero" src="img/tottori/shanghai-charo-koyama.jpg" alt="上海茶楼 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>上海茶楼<span class="yomi">しゃんはいちゃろう</span></div>
+<div class="chips"><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">鳥取市西部の湖山にある中国料理店。店内は上海の街並みを再現した造りで、スタッフもチャイナドレスをまとう。100席と広く通路も広めにとられ、ベビーカーや車椅子でも入りやすい。地元の食材を使うことにこだわり、昼は定食、夜は点心や一品料理を揃える。平日月曜には月曜限定メニューが出る。</div>
+<div class="sig"><b>一皿:</b>カニ玉ご飯 1,100円(ふんわり焼いた卵にカニをあわせ、とろみのある餡をかけてご飯にのせた昼の看板)／焼き餃子 700円(厚めの皮で包み、鉄板で焼き上げる店の定番。イベント出店では小籠包も出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:15〜14:00（平日）／11:30〜14:00（土日祝）, 17:30〜21:00（火〜金）／17:00〜21:00（土日祝）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（Instagramで要確認）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市湖山町東4丁目32</td></tr>
+<tr><th>予約</th><td>不明 — <a href="tel:0857321177">☎ 0857-32-1177</a> ／ <a href="https://www.instagram.com/shanghai_charo/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取県公式「とりたべ」に2025年11月26日付のレポートがあり、掲載写真のファイル名から2025年10月4日の取材と分かる。ホットペッパーグルメの店舗情報で住所・アクセス（湖山駅より約5分）も裏取りした。カレーと洋食に偏らないよう、市内その他の地区から各国料理の一軒として選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%E8%8C%B6%E6%A5%BC%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%B9%96%E5%B1%B1%E7%94%BA%E6%9D%B14%E4%B8%81%E7%9B%AE32">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toritabe.jp）より引用 / 参照元: <a href="https://toritabe.jp/report/23709">とりたべ（鳥取県公式グルメサイト）「【鳥取市】上海の街並みを再現したおしゃれな空間で絶品中華が食べられるお店〜上海茶楼〜」2025/11/26</a> / <a href="https://www.hotpepper.jp/strJ000510429/">ホットペッパーグルメ 上海茶楼（住所・アクセス・席数）</a></div>
+</div></div>
+<div class="card" id="c-niku-ryori-nick-suehiro">
+<img class="hero" src="img/tottori/niku-ryori-nick-suehiro.jpg" alt="肉料理 Nick 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>肉料理 Nick<span class="yomi">にくりょうりにっく</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">鳥取駅の北、温泉がわく末広温泉町の飲み屋街にある肉の店。鳥取和牛にイタリアンとフレンチの技法を織り交ぜた創作の肉割烹で、鳥取市観光コンベンション協会は「ちょっと贅沢なランチを楽しみたいなら鳥取和牛ひつまぶし」と薦める。平日の火〜金は洋食ランチ、土日祝は通常のランチと昼の献立が入れ替わる。30席の全席禁煙で、個室はない。</div>
+<div class="sig"><b>一皿:</b>鳥取和牛ひつまぶし(鳥取県が育てる黒毛和牛・鳥取和牛を焼いて飯に敷き、そのまま・薬味・出汁と三度味を変えて食べる昼の看板)／洋食ランチ(平日の火・水・木・金だけ出す、イタリアンとフレンチの技法を使った肉の皿)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜23:00（月〜日・祝日・祝前日。ホットペッパーグルメ掲載。ただし同欄の更新日は2020年10月21日）。ランチは平日の火〜金が洋食ランチ、土日祝は通常のランチ</td></tr>
+<tr><th>定休日</th><td class="off">なし（ホットペッパーグルメ 2020年10月21日更新時点の記載）</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市末広温泉町152番地</td></tr>
+<tr><th>予約</th><td>推奨 — <a href="tel:0857510855">☎ 0857-51-0855</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市観光コンベンション協会の公式サイト「鳥取市観光ナビ」の【保存版】鳥取駅周辺グルメ情報（2026年9月4日更新）に掲載されており、料理の紹介文と1431×1073ピクセルの料理写真もそこから採った。住所・電話・席数・営業時間はホットペッパーグルメの店舗ページによるが、同ページの店舗情報欄の更新日は2020年10月21日と古いので、営業時間と定休日は来店前の確認が要る。営業していることの直近の根拠は、同ページに2026年2月5日投稿の来店口コミ（コース利用・会計4,001〜5,000円／人）があることと、2026年9月4日更新の観光協会サイトへの掲載の2点。写真は条件（幅900px以上・高さ/幅1.2以下）を満たすものが観光協会サイトの1枚しか見つからなかった。ホットペッパー掲載の店舗写真2枚はいずれも430×436ピクセルで条件に届かず、食べログは利用者投稿のため除外した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%82%89%E6%96%99%E7%90%86%20Nick%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA152%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.torican.jp）より引用 / 参照元: <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（鳥取市観光コンベンション協会）【保存版】鳥取駅周辺グルメ情報・2026年9月4日更新</a> / <a href="https://www.hotpepper.jp/strJ001257704/">ホットペッパーグルメ 肉料理 Nick（住所・電話・営業時間・席数／店舗情報の更新日2020年10月21日／2026年2月5日投稿の口コミ）</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・和菓子・スイーツ</h2>
+<div class="card" id="c-kissa-beniya-tottori">
+<div class="hero-pending">写真準備中<span>公式サイト・公式SNSが無く、条件を満たす実写が1枚も見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">40</span>喫茶 ベニ屋<span class="yomi">きっさ べにや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">鳥取駅から若桜街道を少し上がった末広温泉町にある昔ながらの純喫茶。看板は十日間寝かせてから出すというカレーで、スパイスが幾重にも重なった辛さが地元の常連に長く支持されてきた。食後には種類の豊富なかき氷を頼むのがこの店の作法で、城下町の夏の避難所のように使われている。クリームソーダをはじめ飲み物も昭和の喫茶そのままの顔ぶれで、鳥取砂丘や鳥取城跡を歩く前後の休憩に収まりがよい。</div>
+<div class="sig"><b>一皿:</b>かき氷(種類豊富な氷菓。食事のあとに頼むのが常連の流儀で、夏場はこれを目当てに通う客も多い)／チキンカツカレー(十日間寝かせて熟成させたスパイスカレーに鶏カツをのせた一皿。この店の看板で、幾重にも重なる辛さが身上)</div>
+<table class="info">
+<tr><th>営業時間</th><td>不明</td></tr>
+<tr><th>定休日</th><td class="off">不明</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市末広温泉町129</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857222874">☎ 0857-22-2874</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市の公式観光サイト「鳥取市観光ナビ」の『鳥取駅周辺グルメ情報』に掲載されている駅前の喫茶で、昭文社（まっぷる）のスポット情報でも住所・電話・徒歩分数が一致して確認できた。自治体公式サイトが現在も案内に載せていること、および複数の旅行メディアが若桜街道沿いの純喫茶として現役で紹介していることを営業の根拠とする。ただし2025〜2026年の日付が入った一次証拠（公式SNSの投稿日・公式サイトの更新日）はこの調査では確認できておらず、来店前の電話確認を勧める。公式サイト・公式SNSが見当たらないため写真は1本も取得できなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%20%E3%83%99%E3%83%8B%E5%B1%8B%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%9C%AB%E5%BA%83%E6%B8%A9%E6%B3%89%E7%94%BA129">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（鳥取市公式）鳥取駅周辺グルメ情報</a> / <a href="https://www.mapple.net/spot/31000817/">まっぷるウェブ（昭文社）喫茶 ベニ屋 スポット情報</a></div>
+</div></div>
+<div class="card" id="c-sunaba-coffee-shin-tottori-ekimae">
+<img class="hero" src="img/tottori/sunaba-coffee-shin-tottori-ekimae.jpg" alt="すなば珈琲 “新”鳥取駅前店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>すなば珈琲 “新”鳥取駅前店<span class="yomi">すなばこーひー しんとっとりえきまえてん</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">二〇一四年に一号店が開いた鳥取生まれの珈琲店。「スタバはないがスナバ（砂場）はある」という平井知事の発言を逆手に取って作られ、十年を経て県内随一の店数に育った。駅前のこの店は朝八時から開き、厚切りトーストに粒あんとバターをのせた小倉トーストセットや、あんを挟んで焼いた小倉あんホットサンドなど甘味が充実している。もさ海老やかにを挟んだホットサンドもあり、鳥取砂丘へ向かう前の腹ごしらえに使いやすい。</div>
+<div class="sig"><b>一皿:</b>小倉トーストセット(厚切りトーストに粒あんとバターをのせ、アイスを添えた甘いトースト。朝から頼める)／小倉あんホットサンド(粒あんを挟んで焼き上げたホットサンド。もさ海老・かにのホットサンドと並ぶ看板)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日8:00〜16:00（L.O.15:30）、土日祝8:00〜18:00（L.O.17:30）※モーニングは10:30まで</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市栄町706番地</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857274649">☎ 0857-27-4649</a> ／ <a href="https://sunaba.coffee/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに店舗ページがあり、住所・電話・営業時間・定休日を一次情報として確認した。公式サイトには2026年5月18日付のお知らせが掲載され、店舗ページの料理写真は2025年5月アップロードのファイルで、いずれも2025〜2026年の日付つき一次証拠にあたる。鳥取市観光ナビの『鳥取駅周辺グルメ情報』にも掲載。写真は公式サイトの店舗ページから店内・物販コーナー・甘味の実写を採り、右下を切り出して透かしが無いことを目視で確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%AA%E3%81%B0%E7%8F%88%E7%90%B2%20%E2%80%9C%E6%96%B0%E2%80%9D%E9%B3%A5%E5%8F%96%E9%A7%85%E5%89%8D%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA706%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sunaba.coffee）より引用 / 参照元: <a href="https://sunaba.coffee/store/%e6%96%b0%e9%b3%a5%e5%8f%96%e9%a7%85%e5%89%8d%e5%ba%97/">すなば珈琲 公式サイト “新”鳥取駅前店 店舗情報</a> / <a href="https://sunaba.coffee/history/">すなば珈琲 公式サイト「すなば珈琲と鳥取」（2014年1号店開業の経緯）</a> / <a href="https://sunaba.coffee/feed/">すなば珈琲 公式サイト お知らせ（2026年5月18日付）</a> / <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（鳥取市公式）鳥取駅周辺グルメ情報</a></div>
+</div></div>
+<div class="card" id="c-hougetsudou-tottori-nikaimachi">
+<img class="hero" src="img/tottori/hougetsudou-tottori-nikaimachi.jpg" alt="宝月堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>宝月堂<span class="yomi">ほうげつどう</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治三十五年創業、鳥取城下の二階町で百二十年以上続く菓子屋。看板の生姜せんべいは江戸期から因幡に伝わる庶民の菓子で、気高町産の瑞穂生姜を使い一枚ずつ手作業で仕上げる。これを贈答品として世に出したのは民藝の父・柳宗悦とその弟子で鳥取の民藝運動を率いた吉田璋也だった。五代目は国産餅粉の皮に自家製餡と生クリームを三層に重ねた四角い大福「MOCHI cube」や和風クッキー「砂の丘」も手がけ、白い箱のような現在の店はショーケースが端正に並ぶ。</div>
+<div class="sig"><b>一皿:</b>生姜せんべい(因幡に江戸時代から伝わる薄焼きのせんべい。鳥取市気高町産の瑞穂生姜の蜜を引き、一枚ずつ手作業で焼き上げる。民藝運動の柳宗悦・吉田璋也が贈答品として世に送り出した)／MOCHI cube(国産餅粉のやわらかな皮で自家製の餡と生クリームを三層に重ねた四角い大福。北海道産小豆のブレンド餡がマイルド)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜18:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市二階町3丁目121</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857223745">☎ 0857-22-3745</a> ／ <a href="https://hougetsudou.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイトで住所・電話・商品構成を一次情報として確認し、同サイトには2026年6月29日付のお知らせが掲載されているので2026年時点で現役と判断した。加えて鳥取市公式通販サイト「とっとり市」に出店者として掲載されている。創業年と民藝とのつながりは鳥取県公式メールマガジン『ふるさと鳥取県だより』でも裏が取れた。写真は公式サイトの店舗紹介ページと商品ページから、菓子・店内・ショーケース・暖簾の実写のみを採り、右下を切り出して透かしが無いことを目視確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AE%9D%E6%9C%88%E5%A0%82%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E4%BA%8C%E9%9A%8E%E7%94%BA3%E4%B8%81%E7%9B%AE121">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（hougetsudou.jp）より引用 / 参照元: <a href="https://hougetsudou.jp/">宝月堂 公式サイト</a> / <a href="https://hougetsudou.jp/about-hougetsudou/new-our-shop/">宝月堂 公式サイト 店舗のご案内</a> / <a href="https://hougetsudou.jp/mochi-cube/">宝月堂 公式サイト MOCHI cube 商品ページ</a> / <a href="https://www.pref.tottori.lg.jp/item/1257602.htm">鳥取県公式『ふるさと鳥取県だより』令和3年8月25日 鳥取の和菓子</a> / <a href="https://tottori-ichi.jp/">とっとり市（鳥取市公式通販サイト）出店者一覧</a></div>
+</div></div>
+<div class="card" id="c-kikkouya-tottori-kataha">
+<div class="hero-pending">写真準備中<span>商品写真が鳥取市公式通販サイト「とっとり市」の配信で、全点に「©とっとり市」の透かしが焼き込まれていた</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>亀甲や<span class="yomi">きっこうや</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">慶応四年（明治元年・一八六八）創業、鳥取城下の片原で百五十年以上続く菓子屋。代表作の「二十世紀」は、鳥取名産の二十世紀梨を薄く切った姿を、果芯に残る種の跡まで写し取った寒天菓子で、大正十一年から売られている鳥取銘菓のベストセラーである。当時はまだ栽培の難しかった二十世紀梨を全国に広めたいという思いから生まれたという。亀甲形の皮に餡を包んだ亀甲もなかはかつて宮内省の御用を務めた品で、店は年中無休で朝八時半から開いている。</div>
+<div class="sig"><b>一皿:</b>二十世紀(鳥取名産の二十世紀梨を薄切りにした姿を、種の抜けた跡まで似せて作った寒天菓子。大正11年からの鳥取銘菓で、1枚ずつ透けるような薄さに仕上げる)／亀甲もなか(亀甲の形に焼いた皮で餡を包んだ最中。かつて宮内省御用を務めた品で、1個118円と日常の茶菓子としても買える)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:30〜19:00（日曜・祝日は〜17:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市片原2丁目116</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0857237021">☎ 0857-23-7021</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市公式通販サイト「とっとり市」に出店者として掲載され、二十世紀・亀甲もなか・鳥取ブランケーキなど9商品が現在も販売中であることを確認した（同サイトは2026年10月1日開始のキャンペーンを告知しており現行運用である）。住所・電話・営業時間・価格は昭文社（まっぷる）の取材ベースのスポット情報と一致。創業年と「二十世紀」の由来は鳥取県公式メールマガジンでも裏が取れた。公式サイト・公式SNSは存在せず、とっとり市の商品写真は右下に「©とっとり市(いち)」の透かしが焼き込まれていることを切り出して目視確認したため、規定により1枚も採用していない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%80%E7%94%B2%E3%82%84%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E7%89%87%E5%8E%9F2%E4%B8%81%E7%9B%AE116">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://tottori-ichi.jp/view/item/000000000688">とっとり市（鳥取市公式通販サイト）亀甲や「二十世紀（8枚入り）」商品ページ</a> / <a href="https://tottori-ichi.jp/view/item/000000000735">とっとり市（鳥取市公式通販サイト）亀甲や「亀甲もなか（10個入り）」商品ページ</a> / <a href="https://www.mapple.net/spot/31010060/">まっぷるウェブ（昭文社）亀甲や スポット情報</a> / <a href="https://www.pref.tottori.lg.jp/item/1257602.htm">鳥取県公式『ふるさと鳥取県だより』令和3年8月25日 鳥取の和菓子</a></div>
+</div></div>
+<div class="card" id="c-takumi-coffee-shop-tottori-sakaemachi">
+<img class="hero" src="img/tottori/takumi-coffee-shop-tottori-sakaemachi.jpg" alt="たくみ珈琲店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>たくみ珈琲店<span class="yomi">たくみこーひーてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鳥取の民藝運動ゆかりの店が集まる栄町の一角にある喫茶。「用の美」を日常に取り込むという考えのもと、複数の陶芸作家の器で自家焙煎の珈琲を出す。午後のアフタヌーンティーは一の皿に同じ城下町の宝月堂「MOCHI cube」や自家焙煎珈琲ゼリー、二の皿にバスクチーズケーキや天然酵母の揚げパンを重ねた構成で、鳥取の作り手を一皿に集めたような内容になっている。昼は洋食ランチ、夜は和牛すき焼きのコースに変わる。</div>
+<div class="sig"><b>一皿:</b>たくみアフタヌーンティー(2,200円。一の皿に宝月堂のMOCHI cube・大江ノ郷ぷりん・ラムレーズンのマカロン・自家焙煎珈琲ゼリー、二の皿にバスクチーズケーキ・スコーン・天然酵母の揚げパンを重ね、珈琲か紅茶が2杯まで付く)／メロンクリームソーダ(800円。民藝の器づかいの店に昔ながらのクリームソーダが並ぶ一杯)／洋食ランチ 鳥取和牛のハンバーグ(数量限定。全国和牛能力共進会で肉質日本一になった県産黒毛和牛のハンバーグに、鳥取のブランド卵「天美卵」の目玉焼きと濃厚なデミグラスソースを重ね、2段のプレートで出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:30（L.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市栄町606 まるもビル1F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0857511178">☎ 0857-51-1178</a> ／ <a href="https://www.takumi-coffee-shop.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市の公式観光サイト「鳥取市観光ナビ」の『鳥取駅周辺グルメ情報』から公式サイトをたどり、住所・電話・営業時間・定休日・メニューと価格を一次情報として確認した。写真は公式サイトの画像のみを使い、原寸を実測して幅900px以上・高さ/幅1.2以下の条件を満たすものだけを採り、右下を切り出して透かしが無いことを目視確認している。なお2025〜2026年の日付が入った更新は公式サイト上に見つからなかったため、営業の根拠は自治体公式サイトの現行掲載と公式サイトの稼働に拠る。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%8F%E3%81%BF%E7%8F%88%E7%90%B2%E5%BA%97%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E6%A0%84%E7%94%BA606%20%E3%81%BE%E3%82%8B%E3%82%82%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（static.wixstatic.com）より引用 / 参照元: <a href="https://www.takumi-coffee-shop.com/">たくみ珈琲店 公式サイト</a> / <a href="https://www.takumi-coffee-shop.com/menus">たくみ珈琲店 公式サイト メニュー（昼の部・アフタヌーンティー）</a> / <a href="https://www.torican.jp/feature/station-gourmet">鳥取市観光ナビ（鳥取市公式）鳥取駅周辺グルメ情報</a> / <a href="https://toritabe.jp/report/27338">とりたべ（鳥取県公式グルメサイト）「［鳥取市］鳥取和牛×天美卵の黄金比！「たくみ珈琲店」で味わう至高の洋食ランチ」2026/01/08</a></div>
+</div></div>
+<div class="card" id="c-takahama-cafe-tottori-sakyu">
+<img class="hero" src="img/tottori/takahama-cafe-tottori-sakyu.jpg" alt="タカハマカフェ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>タカハマカフェ<span class="yomi">たかはまかふぇ</span></div>
+<div class="chips"><span class="chip pop">口コミ突出</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">鳥取砂丘の中央入口に向かい合って建つカフェで、設計は隈研吾。鉄筋コンクリートの構造体に鳥取県産杉のラミナを貼ったCLTの大判パネルを重ね、斜めに跳ね上がる木の外観をつくる。照明は鳥取の和紙に砂丘の砂をあしらったオリジナル。一階のカウンターで注文し、昔の日本家屋の縁側のような屋上テラスへ持って上がる。夏はかき氷、朝はパンが並び、砂丘歩きの前後の休憩所になっている。</div>
+<div class="sig"><b>一皿:</b>かき氷(ふんわり削った氷に果実のシロップをかけた夏の看板。屋上テラスで砂丘と日本海を見ながら食べられる)／パン・ペストリー(クロワッサンやデニッシュ、惣菜パンが1階カウンターに並ぶ。買って2階席や屋上の縁台へ持って上がる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00（L.O.16:30）</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>鳥取県鳥取市福部町湯山2164</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:08081323939">☎ 080-8132-3939</a> ／ <a href="https://takahama-cafe.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳥取市の公式観光サイト「鳥取市観光ナビ」の『鳥取砂丘周辺グルメ情報』が公式サイトのURLを明示しており、そこから住所・電話・営業時間・定休日・席数・アクセスを一次情報として確認した（店名のローマ字から推測したドメインではない）。写真は公式サイトの画像のみを使い、原寸を実測して条件を満たすものだけを採用、右下を切り出して透かしが無いことを目視確認した。なお2025〜2026年の日付が入った更新は公式サイト上に見つからず、営業の根拠は鳥取市公式観光サイトの現行掲載と公式サイトの稼働に拠る。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%BF%E3%82%AB%E3%83%8F%E3%83%9E%E3%82%AB%E3%83%95%E3%82%A7%20%E9%B3%A5%E5%8F%96%E7%9C%8C%E9%B3%A5%E5%8F%96%E5%B8%82%E7%A6%8F%E9%83%A8%E7%94%BA%E6%B9%AF%E5%B1%B12164">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（takahama-cafe.com）より引用 / 参照元: <a href="https://takahama-cafe.com/">タカハマカフェ 公式サイト</a> / <a href="https://www.torican.jp/feature/dune-gourmet">鳥取市観光ナビ（鳥取市公式）鳥取砂丘周辺グルメ情報</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年10月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>
