@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>松江美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">松江美食ガイド<span class="sn-n">46店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/matsue.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="松江ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">松江ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/matsue.html"><span class="sn-e">🗺️</span>松江の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・宍道湖七珍（しじみ・スズキ・のどぐろ）</a><a href="#s-soba"><span class="sn-e">・</span>出雲そば・うどん</a><a href="#s-ramen"><span class="sn-e">・</span>ラーメン・中華そば・町中華</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・郷土料理・地酒（伊勢宮）</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・カレー・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・和菓子・抹茶</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全90都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全90都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / MATSUE・島根県松江市 🇯🇵</div>
+  <h1>松江美食ガイド</h1>
+  <div class="sub">宍道湖と大橋川にはさまれた水の城下町。宍道湖七珍（しんじこしっちん）、出雲そば、のどぐろ、そして京都・金沢と並ぶ和菓子と抹茶の町。松江駅前から伊勢宮の飲み屋街、京橋・白潟、塩見縄手、湖畔、玉造温泉まで厳選46スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/matsue/_map.png" alt="全域マップ">
+<a href="#c-matsue-minamikan-teiensaryo-minami" style="left:56.6%;top:28.1%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-kawakyo" style="left:58.12%;top:26.87%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-kuretake-zushi-honten" style="left:58.18%;top:26.71%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-waraku" style="left:65.41%;top:32.16%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-kaido" style="left:60.26%;top:33.75%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-konekkoya" style="left:45.83%;top:31.83%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ajiminami-fujinatei" style="left:34.38%;top:69.08%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-wakatake-zushi" style="left:9.89%;top:89.42%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-unagi-yakumo" style="left:58.69%;top:26.39%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-yakumoan" style="left:52.9%;top:15.13%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-kamiyo-soba" style="left:50.83%;top:14.69%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-funatsu" style="left:45.56%;top:23.69%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-izumosoba-kigaru" style="left:57.94%;top:13.86%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-matsumoto-sobaten" style="left:58.22%;top:30.72%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-tataraya" style="left:64.17%;top:35.18%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-tamaki-udon" style="left:67.02%;top:14.62%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ramen-temari" style="left:45.68%;top:12.97%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ramen-daisho" style="left:57.45%;top:20.63%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ramen-nagasan" style="left:67.92%;top:58.5%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ramen-nasebanaru-kakeru" style="left:64.17%;top:33.93%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ramen-ajitomi" style="left:63.35%;top:31.06%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ramen-papa-chubo" style="left:57.76%;top:27.11%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ramen-shinasoba-katsumi" style="left:67.05%;top:10.59%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-ramen-mensakaba-kou" style="left:62.25%;top:31.42%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-nekkoya-isemiya" style="left:63.73%;top:30.35%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-issei-honten" style="left:64.38%;top:30.43%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-hamayaki-minato" style="left:62.96%;top:32.95%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-sanin-sakaba-kamiari" style="left:62.87%;top:32.35%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-isaribi" style="left:65.41%;top:30.91%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-robata-kushikatsu-tetsuo" style="left:60.73%;top:35.38%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-sakaya-higashihonmachi" style="left:58.95%;top:27.46%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-torisuke" style="left:58.12%;top:28.12%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-umisuke-to-tamahiko" style="left:50.24%;top:25.28%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-bougetsu" style="left:57.78%;top:25.13%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-restaurant-seiyoken" style="left:55.19%;top:26.49%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-pasta-factory-ortaggio" style="left:57.2%;top:26.17%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-osteria-sante" style="left:55.66%;top:24.98%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-racine" style="left:56.46%;top:38.65%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-indoa" style="left:52.3%;top:27.5%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-steak-kan-nagomi" style="left:90.11%;top:42.36%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-saiundo-honten" style="left:59.15%;top:34.44%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-gofuan-furyudo" style="left:60.26%;top:32.5%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-kissa-kiharu" style="left:55.97%;top:20.1%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-libre-coffee-roaster" style="left:57.09%;top:25.01%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-tsukigase-kyomise" style="left:56.64%;top:27.11%;width:3.08%;height:2.98%;"></a>
+<a href="#c-matsue-seishoan-tachibana" style="left:51.97%;top:46.01%;width:3.08%;height:2.98%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（46店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・宍道湖七珍（しじみ・スズキ・のどぐろ）</div>
+<div class="links">
+<a href="#c-matsue-minamikan-teiensaryo-minami"><span class="tn" style="background:#2a78d6;">1</span>宍道湖畔の老舗旅館で味わう家伝の鯛めし</a>
+<a href="#c-matsue-kawakyo"><span class="tn" style="background:#2a78d6;">2</span>宍道湖七珍ひとすじ、カウンター15席の夜</a>
+<a href="#c-matsue-kuretake-zushi-honten"><span class="tn" style="background:#2a78d6;">3</span>京店の裏手、長いカウンターの回らない寿司</a>
+<a href="#c-matsue-waraku"><span class="tn" style="background:#2a78d6;">4</span>駅から徒歩3分、宍道湖七珍とのどぐろの会席</a>
+<a href="#c-matsue-kaido"><span class="tn" style="background:#2a78d6;">5</span>駅から5分、26席の静かな和食コース</a>
+<a href="#c-matsue-konekkoya"><span class="tn" style="background:#2a78d6;">6</span>宍道湖を見下ろす2階、しじみとのどぐろ</a>
+<a href="#c-matsue-ajiminami-fujinatei"><span class="tn" style="background:#2a78d6;">7</span>全席から宍道湖、家伝の鯛めしを御膳で</a>
+<a href="#c-matsue-wakatake-zushi"><span class="tn" style="background:#2a78d6;">8</span>玉造温泉、行列もできる昼の海鮮丼</a>
+<a href="#c-matsue-unagi-yakumo"><span class="tn" style="background:#2a78d6;">9</span>昼2時間だけ開く、松江市街の鰻の店</a>
+</div>
+<div class="sec aqua">出雲そば・うどん</div>
+<div class="links">
+<a href="#c-matsue-yakumoan"><span class="tn" style="background:#1baf7a;">10</span>武家屋敷跡で味わう割子と鴨なんばん</a>
+<a href="#c-matsue-kamiyo-soba"><span class="tn" style="background:#1baf7a;">11</span>自家製粉・生粉打ちを貫く十割そば</a>
+<a href="#c-matsue-funatsu"><span class="tn" style="background:#1baf7a;">12</span>奥出雲の自家栽培そばを十割で打つ工房</a>
+<a href="#c-matsue-izumosoba-kigaru"><span class="tn" style="background:#1baf7a;">13</span>挽きぐるみと丸ぬきを打ち分ける昭和5年創業</a>
+<a href="#c-matsue-matsumoto-sobaten"><span class="tn" style="background:#1baf7a;">14</span>不昧公お抱えと伝わる正統派の出雲そば</a>
+<a href="#c-matsue-tataraya"><span class="tn" style="background:#1baf7a;">15</span>松江駅構内で食べる横田小そばの手打ち</a>
+<a href="#c-matsue-tamaki-udon"><span class="tn" style="background:#1baf7a;">16</span>県内発祥の製麺所が打つ手造りうどん</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-matsue-ramen-temari"><span class="tn" style="background:#e34948;">17</span>自家製麺の松江ちゃんぽん、創業四十余年</a>
+<a href="#c-matsue-ramen-daisho"><span class="tn" style="background:#e34948;">18</span>松江城下の、しじみらーめんととんてき</a>
+<a href="#c-matsue-ramen-nagasan"><span class="tn" style="background:#e34948;">19</span>行列のできる上乃木の自家製チャーシュー</a>
+<a href="#c-matsue-ramen-nasebanaru-kakeru"><span class="tn" style="background:#e34948;">20</span>JR松江駅ビルの、酒も飲めるらあ麺</a>
+<a href="#c-matsue-ramen-ajitomi"><span class="tn" style="background:#e34948;">21</span>伊勢宮の老舗、名物「ぎょうさん」と味噌</a>
+<a href="#c-matsue-ramen-papa-chubo"><span class="tn" style="background:#e34948;">22</span>松江城下の町中華、看板は麻婆豆腐</a>
+<a href="#c-matsue-ramen-shinasoba-katsumi"><span class="tn" style="background:#e34948;">23</span>学園のカウンター8席、自家製ワンタン</a>
+<a href="#c-matsue-ramen-mensakaba-kou"><span class="tn" style="background:#e34948;">24</span>伊勢宮の深夜、いりこ出汁の和風そば</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伊勢宮）</div>
+<div class="links">
+<a href="#c-matsue-nekkoya-isemiya"><span class="tn" style="background:#0d366b;">25</span>伊勢宮町の郷土のつまみと島根の地酒</a>
+<a href="#c-matsue-issei-honten"><span class="tn" style="background:#0d366b;">26</span>伊勢宮町の大箱、日本海の刺身と地酒</a>
+<a href="#c-matsue-hamayaki-minato"><span class="tn" style="background:#0d366b;">27</span>卓上の焼き台で貝を焼く伊勢宮の浜焼き酒場</a>
+<a href="#c-matsue-sanin-sakaba-kamiari"><span class="tn" style="background:#0d366b;">28</span>境港の蟹と烏賊を寿司にのせる山陰の大衆酒場</a>
+<a href="#c-matsue-isaribi"><span class="tn" style="background:#0d366b;">29</span>店先の行灯に島根の地酒が飲める店</a>
+<a href="#c-matsue-robata-kushikatsu-tetsuo"><span class="tn" style="background:#0d366b;">30</span>松江駅西、炉端焼きと串カツの酒場</a>
+<a href="#c-matsue-sakaya-higashihonmachi"><span class="tn" style="background:#0d366b;">31</span>カウンター8席、純米酒で飲ませる小店</a>
+<a href="#c-matsue-torisuke"><span class="tn" style="background:#0d366b;">32</span>末次本町の炭火と鉄板、鶏で飲ませる店</a>
+<a href="#c-matsue-umisuke-to-tamahiko"><span class="tn" style="background:#0d366b;">33</span>県庁前、長いカウンターと酒瓶の壁</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-matsue-bougetsu"><span class="tn" style="background:#4a3aa7;">34</span>黄色いたぬきが迎える町の洋食屋</a>
+<a href="#c-matsue-restaurant-seiyoken"><span class="tn" style="background:#4a3aa7;">35</span>1932年創業、川沿いの老舗洋食</a>
+<a href="#c-matsue-pasta-factory-ortaggio"><span class="tn" style="background:#4a3aa7;">36</span>京店の自家製生パスタとガス窯ピッツァ</a>
+<a href="#c-matsue-osteria-sante"><span class="tn" style="background:#4a3aa7;">37</span>殿町のビル奥で島根の魚介イタリアン</a>
+<a href="#c-matsue-racine"><span class="tn" style="background:#4a3aa7;">38</span>宍道湖の夕日を望むガラス張りのフレンチ</a>
+<a href="#c-matsue-indoa"><span class="tn" style="background:#4a3aa7;">39</span>松江市役所脇のスリランカカレー</a>
+<a href="#c-matsue-steak-kan-nagomi"><span class="tn" style="background:#4a3aa7;">40</span>目の前で焼く島根和牛と幻の隠岐牛</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・抹茶</div>
+<div class="links">
+<a href="#c-matsue-saiundo-honten"><span class="tn" style="background:#eda100;">41</span>不昧公好み「若草」の老舗、本店の茶寮</a>
+<a href="#c-matsue-gofuan-furyudo"><span class="tn" style="background:#eda100;">42</span>蒸したて朝汐を出す老舗の実演工房</a>
+<a href="#c-matsue-kissa-kiharu"><span class="tn" style="background:#eda100;">43</span>松江城の庭を望む歴史館の和の茶房</a>
+<a href="#c-matsue-libre-coffee-roaster"><span class="tn" style="background:#eda100;">44</span>松江城下、豆を自家焙煎する珈琲専門店</a>
+<a href="#c-matsue-tsukigase-kyomise"><span class="tn" style="background:#eda100;">45</span>京店商店街の老舗団子屋の甘味喫茶</a>
+<a href="#c-matsue-seishoan-tachibana"><span class="tn" style="background:#eda100;">46</span>宍道湖の夕日を望む湖畔の菓子処</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 松江駅前〜朝日町・伊勢宮(いせみや)の飲み屋街（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/matsue/_map2.png" alt="中心部拡大1 松江駅前〜朝日町・伊勢宮(いせみや)の飲み屋街">
+<a href="#c-matsue-minamikan-teiensaryo-minami" style="left:18.05%;top:20.49%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-kawakyo" style="left:24.5%;top:14.8%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-kuretake-zushi-honten" style="left:24.77%;top:14.05%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-waraku" style="left:55.5%;top:39.38%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-kaido" style="left:33.59%;top:46.73%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-unagi-yakumo" style="left:26.92%;top:12.59%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-matsumoto-sobaten" style="left:24.91%;top:32.67%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-tataraya" style="left:50.23%;top:53.38%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-nasebanaru-kakeru" style="left:50.23%;top:47.57%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-ajitomi" style="left:46.76%;top:34.24%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-papa-chubo" style="left:22.98%;top:15.92%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-mensakaba-kou" style="left:42.05%;top:35.9%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-nekkoya-isemiya" style="left:48.35%;top:30.94%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-issei-honten" style="left:51.13%;top:31.35%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-hamayaki-minato" style="left:45.1%;top:43.04%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-sanin-sakaba-kamiari" style="left:44.68%;top:40.24%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-isaribi" style="left:55.5%;top:33.57%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-robata-kushikatsu-tetsuo" style="left:35.6%;top:54.3%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-sakaya-higashihonmachi" style="left:28.04%;top:17.55%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-torisuke" style="left:24.5%;top:20.61%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-bougetsu" style="left:23.04%;top:6.71%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-restaurant-seiyoken" style="left:12.01%;top:13.04%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-pasta-factory-ortaggio" style="left:20.59%;top:11.57%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-osteria-sante" style="left:14.02%;top:6.01%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-racine" style="left:17.42%;top:69.5%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-saiundo-honten" style="left:28.87%;top:49.93%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-gofuan-furyudo" style="left:33.59%;top:40.92%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-libre-coffee-roaster" style="left:20.13%;top:6.15%;width:3.28%;height:3.46%;"></a>
+<a href="#c-matsue-tsukigase-kyomise" style="left:18.2%;top:15.92%;width:3.28%;height:3.46%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（29店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・宍道湖七珍（しじみ・スズキ・のどぐろ）</div>
+<div class="links">
+<a href="#c-matsue-minamikan-teiensaryo-minami"><span class="tn" style="background:#2a78d6;">1</span>宍道湖畔の老舗旅館で味わう家伝の鯛めし</a>
+<a href="#c-matsue-kawakyo"><span class="tn" style="background:#2a78d6;">2</span>宍道湖七珍ひとすじ、カウンター15席の夜</a>
+<a href="#c-matsue-kuretake-zushi-honten"><span class="tn" style="background:#2a78d6;">3</span>京店の裏手、長いカウンターの回らない寿司</a>
+<a href="#c-matsue-waraku"><span class="tn" style="background:#2a78d6;">4</span>駅から徒歩3分、宍道湖七珍とのどぐろの会席</a>
+<a href="#c-matsue-kaido"><span class="tn" style="background:#2a78d6;">5</span>駅から5分、26席の静かな和食コース</a>
+<a href="#c-matsue-unagi-yakumo"><span class="tn" style="background:#2a78d6;">9</span>昼2時間だけ開く、松江市街の鰻の店</a>
+</div>
+<div class="sec aqua">出雲そば・うどん</div>
+<div class="links">
+<a href="#c-matsue-matsumoto-sobaten"><span class="tn" style="background:#1baf7a;">14</span>不昧公お抱えと伝わる正統派の出雲そば</a>
+<a href="#c-matsue-tataraya"><span class="tn" style="background:#1baf7a;">15</span>松江駅構内で食べる横田小そばの手打ち</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-matsue-ramen-nasebanaru-kakeru"><span class="tn" style="background:#e34948;">20</span>JR松江駅ビルの、酒も飲めるらあ麺</a>
+<a href="#c-matsue-ramen-ajitomi"><span class="tn" style="background:#e34948;">21</span>伊勢宮の老舗、名物「ぎょうさん」と味噌</a>
+<a href="#c-matsue-ramen-papa-chubo"><span class="tn" style="background:#e34948;">22</span>松江城下の町中華、看板は麻婆豆腐</a>
+<a href="#c-matsue-ramen-mensakaba-kou"><span class="tn" style="background:#e34948;">24</span>伊勢宮の深夜、いりこ出汁の和風そば</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伊勢宮）</div>
+<div class="links">
+<a href="#c-matsue-nekkoya-isemiya"><span class="tn" style="background:#0d366b;">25</span>伊勢宮町の郷土のつまみと島根の地酒</a>
+<a href="#c-matsue-issei-honten"><span class="tn" style="background:#0d366b;">26</span>伊勢宮町の大箱、日本海の刺身と地酒</a>
+<a href="#c-matsue-hamayaki-minato"><span class="tn" style="background:#0d366b;">27</span>卓上の焼き台で貝を焼く伊勢宮の浜焼き酒場</a>
+<a href="#c-matsue-sanin-sakaba-kamiari"><span class="tn" style="background:#0d366b;">28</span>境港の蟹と烏賊を寿司にのせる山陰の大衆酒場</a>
+<a href="#c-matsue-isaribi"><span class="tn" style="background:#0d366b;">29</span>店先の行灯に島根の地酒が飲める店</a>
+<a href="#c-matsue-robata-kushikatsu-tetsuo"><span class="tn" style="background:#0d366b;">30</span>松江駅西、炉端焼きと串カツの酒場</a>
+<a href="#c-matsue-sakaya-higashihonmachi"><span class="tn" style="background:#0d366b;">31</span>カウンター8席、純米酒で飲ませる小店</a>
+<a href="#c-matsue-torisuke"><span class="tn" style="background:#0d366b;">32</span>末次本町の炭火と鉄板、鶏で飲ませる店</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-matsue-bougetsu"><span class="tn" style="background:#4a3aa7;">34</span>黄色いたぬきが迎える町の洋食屋</a>
+<a href="#c-matsue-restaurant-seiyoken"><span class="tn" style="background:#4a3aa7;">35</span>1932年創業、川沿いの老舗洋食</a>
+<a href="#c-matsue-pasta-factory-ortaggio"><span class="tn" style="background:#4a3aa7;">36</span>京店の自家製生パスタとガス窯ピッツァ</a>
+<a href="#c-matsue-osteria-sante"><span class="tn" style="background:#4a3aa7;">37</span>殿町のビル奥で島根の魚介イタリアン</a>
+<a href="#c-matsue-racine"><span class="tn" style="background:#4a3aa7;">38</span>宍道湖の夕日を望むガラス張りのフレンチ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・抹茶</div>
+<div class="links">
+<a href="#c-matsue-saiundo-honten"><span class="tn" style="background:#eda100;">41</span>不昧公好み「若草」の老舗、本店の茶寮</a>
+<a href="#c-matsue-gofuan-furyudo"><span class="tn" style="background:#eda100;">42</span>蒸したて朝汐を出す老舗の実演工房</a>
+<a href="#c-matsue-libre-coffee-roaster"><span class="tn" style="background:#eda100;">44</span>松江城下、豆を自家焙煎する珈琲専門店</a>
+<a href="#c-matsue-tsukigase-kyomise"><span class="tn" style="background:#eda100;">45</span>京店商店街の老舗団子屋の甘味喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 京橋・末次本町〜松江城・塩見縄手(しおみなわて)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/matsue/_map3.png" alt="中心部拡大2 京橋・末次本町〜松江城・塩見縄手(しおみなわて)">
+<a href="#c-matsue-minamikan-teiensaryo-minami" style="left:59.85%;top:79.31%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-kawakyo" style="left:66.95%;top:73.63%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-kuretake-zushi-honten" style="left:67.25%;top:72.87%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-konekkoya" style="left:9.42%;top:96.65%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-unagi-yakumo" style="left:69.61%;top:71.41%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-yakumoan" style="left:42.54%;top:19.13%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-kamiyo-soba" style="left:32.84%;top:17.07%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-funatsu" style="left:8.2%;top:58.85%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-izumosoba-kigaru" style="left:66.11%;top:13.22%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-matsumoto-sobaten" style="left:67.4%;top:91.49%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-temari" style="left:8.73%;top:9.12%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-daisho" style="left:63.82%;top:44.67%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-ajitomi" style="left:91.43%;top:93.07%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-papa-chubo" style="left:65.28%;top:74.75%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-ramen-mensakaba-kou" style="left:86.25%;top:94.72%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-nekkoya-isemiya" style="left:93.19%;top:89.77%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-issei-honten" style="left:96.24%;top:90.17%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-sanin-sakaba-kamiari" style="left:89.15%;top:97.91%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-sakaya-higashihonmachi" style="left:70.84%;top:76.37%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-torisuke" style="left:66.95%;top:79.44%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-umisuke-to-tamahiko" style="left:30.09%;top:66.23%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-bougetsu" style="left:65.34%;top:65.53%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-restaurant-seiyoken" style="left:53.21%;top:71.86%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-pasta-factory-ortaggio" style="left:62.65%;top:70.39%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-osteria-sante" style="left:55.42%;top:64.84%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-indoa" style="left:39.71%;top:76.53%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-gofuan-furyudo" style="left:76.95%;top:97.91%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-kissa-kiharu" style="left:56.87%;top:42.2%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-libre-coffee-roaster" style="left:62.14%;top:64.97%;width:3.6%;height:3.46%;"></a>
+<a href="#c-matsue-tsukigase-kyomise" style="left:60.02%;top:74.75%;width:3.6%;height:3.46%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（30店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・宍道湖七珍（しじみ・スズキ・のどぐろ）</div>
+<div class="links">
+<a href="#c-matsue-minamikan-teiensaryo-minami"><span class="tn" style="background:#2a78d6;">1</span>宍道湖畔の老舗旅館で味わう家伝の鯛めし</a>
+<a href="#c-matsue-kawakyo"><span class="tn" style="background:#2a78d6;">2</span>宍道湖七珍ひとすじ、カウンター15席の夜</a>
+<a href="#c-matsue-kuretake-zushi-honten"><span class="tn" style="background:#2a78d6;">3</span>京店の裏手、長いカウンターの回らない寿司</a>
+<a href="#c-matsue-konekkoya"><span class="tn" style="background:#2a78d6;">6</span>宍道湖を見下ろす2階、しじみとのどぐろ</a>
+<a href="#c-matsue-unagi-yakumo"><span class="tn" style="background:#2a78d6;">9</span>昼2時間だけ開く、松江市街の鰻の店</a>
+</div>
+<div class="sec aqua">出雲そば・うどん</div>
+<div class="links">
+<a href="#c-matsue-yakumoan"><span class="tn" style="background:#1baf7a;">10</span>武家屋敷跡で味わう割子と鴨なんばん</a>
+<a href="#c-matsue-kamiyo-soba"><span class="tn" style="background:#1baf7a;">11</span>自家製粉・生粉打ちを貫く十割そば</a>
+<a href="#c-matsue-funatsu"><span class="tn" style="background:#1baf7a;">12</span>奥出雲の自家栽培そばを十割で打つ工房</a>
+<a href="#c-matsue-izumosoba-kigaru"><span class="tn" style="background:#1baf7a;">13</span>挽きぐるみと丸ぬきを打ち分ける昭和5年創業</a>
+<a href="#c-matsue-matsumoto-sobaten"><span class="tn" style="background:#1baf7a;">14</span>不昧公お抱えと伝わる正統派の出雲そば</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-matsue-ramen-temari"><span class="tn" style="background:#e34948;">17</span>自家製麺の松江ちゃんぽん、創業四十余年</a>
+<a href="#c-matsue-ramen-daisho"><span class="tn" style="background:#e34948;">18</span>松江城下の、しじみらーめんととんてき</a>
+<a href="#c-matsue-ramen-ajitomi"><span class="tn" style="background:#e34948;">21</span>伊勢宮の老舗、名物「ぎょうさん」と味噌</a>
+<a href="#c-matsue-ramen-papa-chubo"><span class="tn" style="background:#e34948;">22</span>松江城下の町中華、看板は麻婆豆腐</a>
+<a href="#c-matsue-ramen-mensakaba-kou"><span class="tn" style="background:#e34948;">24</span>伊勢宮の深夜、いりこ出汁の和風そば</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伊勢宮）</div>
+<div class="links">
+<a href="#c-matsue-nekkoya-isemiya"><span class="tn" style="background:#0d366b;">25</span>伊勢宮町の郷土のつまみと島根の地酒</a>
+<a href="#c-matsue-issei-honten"><span class="tn" style="background:#0d366b;">26</span>伊勢宮町の大箱、日本海の刺身と地酒</a>
+<a href="#c-matsue-sanin-sakaba-kamiari"><span class="tn" style="background:#0d366b;">28</span>境港の蟹と烏賊を寿司にのせる山陰の大衆酒場</a>
+<a href="#c-matsue-sakaya-higashihonmachi"><span class="tn" style="background:#0d366b;">31</span>カウンター8席、純米酒で飲ませる小店</a>
+<a href="#c-matsue-torisuke"><span class="tn" style="background:#0d366b;">32</span>末次本町の炭火と鉄板、鶏で飲ませる店</a>
+<a href="#c-matsue-umisuke-to-tamahiko"><span class="tn" style="background:#0d366b;">33</span>県庁前、長いカウンターと酒瓶の壁</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-matsue-bougetsu"><span class="tn" style="background:#4a3aa7;">34</span>黄色いたぬきが迎える町の洋食屋</a>
+<a href="#c-matsue-restaurant-seiyoken"><span class="tn" style="background:#4a3aa7;">35</span>1932年創業、川沿いの老舗洋食</a>
+<a href="#c-matsue-pasta-factory-ortaggio"><span class="tn" style="background:#4a3aa7;">36</span>京店の自家製生パスタとガス窯ピッツァ</a>
+<a href="#c-matsue-osteria-sante"><span class="tn" style="background:#4a3aa7;">37</span>殿町のビル奥で島根の魚介イタリアン</a>
+<a href="#c-matsue-indoa"><span class="tn" style="background:#4a3aa7;">39</span>松江市役所脇のスリランカカレー</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・抹茶</div>
+<div class="links">
+<a href="#c-matsue-gofuan-furyudo"><span class="tn" style="background:#eda100;">42</span>蒸したて朝汐を出す老舗の実演工房</a>
+<a href="#c-matsue-kissa-kiharu"><span class="tn" style="background:#eda100;">43</span>松江城の庭を望む歴史館の和の茶房</a>
+<a href="#c-matsue-libre-coffee-roaster"><span class="tn" style="background:#eda100;">44</span>松江城下、豆を自家焙煎する珈琲専門店</a>
+<a href="#c-matsue-tsukigase-kyomise"><span class="tn" style="background:#eda100;">45</span>京店商店街の老舗団子屋の甘味喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 宍道湖(しんじこ)の湖畔〜玉造(たまつくり)温泉方面（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/matsue/_map4.png" alt="中心部拡大3 宍道湖(しんじこ)の湖畔〜玉造(たまつくり)温泉方面">
+<a href="#c-matsue-minamikan-teiensaryo-minami" style="left:95.42%;top:5.62%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-kawakyo" style="left:97.03%;top:4.06%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-kuretake-zushi-honten" style="left:97.1%;top:3.85%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-kaido" style="left:97.82%;top:12.82%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-konekkoya" style="left:83.96%;top:10.38%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-ajiminami-fujinatei" style="left:71.79%;top:57.81%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-wakatake-zushi" style="left:45.74%;top:83.7%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-unagi-yakumo" style="left:97.64%;top:3.45%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-funatsu" style="left:83.68%;top:2.52%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-matsumoto-sobaten" style="left:97.14%;top:8.96%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-ramen-papa-chubo" style="left:96.65%;top:4.37%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-robata-kushikatsu-tetsuo" style="left:97.82%;top:14.89%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-sakaya-higashihonmachi" style="left:97.82%;top:4.81%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-torisuke" style="left:97.03%;top:5.65%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-umisuke-to-tamahiko" style="left:88.66%;top:2.52%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-bougetsu" style="left:96.67%;top:2.52%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-restaurant-seiyoken" style="left:93.91%;top:3.58%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-pasta-factory-ortaggio" style="left:96.06%;top:3.17%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-osteria-sante" style="left:94.41%;top:2.52%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-racine" style="left:95.26%;top:19.06%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-indoa" style="left:90.84%;top:4.86%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-saiundo-honten" style="left:97.82%;top:13.69%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-gofuan-furyudo" style="left:97.82%;top:11.22%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-libre-coffee-roaster" style="left:95.94%;top:2.52%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-tsukigase-kyomise" style="left:95.46%;top:4.37%;width:3.28%;height:3.78%;"></a>
+<a href="#c-matsue-seishoan-tachibana" style="left:90.5%;top:28.43%;width:3.28%;height:3.78%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（26店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・宍道湖七珍（しじみ・スズキ・のどぐろ）</div>
+<div class="links">
+<a href="#c-matsue-minamikan-teiensaryo-minami"><span class="tn" style="background:#2a78d6;">1</span>宍道湖畔の老舗旅館で味わう家伝の鯛めし</a>
+<a href="#c-matsue-kawakyo"><span class="tn" style="background:#2a78d6;">2</span>宍道湖七珍ひとすじ、カウンター15席の夜</a>
+<a href="#c-matsue-kuretake-zushi-honten"><span class="tn" style="background:#2a78d6;">3</span>京店の裏手、長いカウンターの回らない寿司</a>
+<a href="#c-matsue-kaido"><span class="tn" style="background:#2a78d6;">5</span>駅から5分、26席の静かな和食コース</a>
+<a href="#c-matsue-konekkoya"><span class="tn" style="background:#2a78d6;">6</span>宍道湖を見下ろす2階、しじみとのどぐろ</a>
+<a href="#c-matsue-ajiminami-fujinatei"><span class="tn" style="background:#2a78d6;">7</span>全席から宍道湖、家伝の鯛めしを御膳で</a>
+<a href="#c-matsue-wakatake-zushi"><span class="tn" style="background:#2a78d6;">8</span>玉造温泉、行列もできる昼の海鮮丼</a>
+<a href="#c-matsue-unagi-yakumo"><span class="tn" style="background:#2a78d6;">9</span>昼2時間だけ開く、松江市街の鰻の店</a>
+</div>
+<div class="sec aqua">出雲そば・うどん</div>
+<div class="links">
+<a href="#c-matsue-funatsu"><span class="tn" style="background:#1baf7a;">12</span>奥出雲の自家栽培そばを十割で打つ工房</a>
+<a href="#c-matsue-matsumoto-sobaten"><span class="tn" style="background:#1baf7a;">14</span>不昧公お抱えと伝わる正統派の出雲そば</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-matsue-ramen-papa-chubo"><span class="tn" style="background:#e34948;">22</span>松江城下の町中華、看板は麻婆豆腐</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伊勢宮）</div>
+<div class="links">
+<a href="#c-matsue-robata-kushikatsu-tetsuo"><span class="tn" style="background:#0d366b;">30</span>松江駅西、炉端焼きと串カツの酒場</a>
+<a href="#c-matsue-sakaya-higashihonmachi"><span class="tn" style="background:#0d366b;">31</span>カウンター8席、純米酒で飲ませる小店</a>
+<a href="#c-matsue-torisuke"><span class="tn" style="background:#0d366b;">32</span>末次本町の炭火と鉄板、鶏で飲ませる店</a>
+<a href="#c-matsue-umisuke-to-tamahiko"><span class="tn" style="background:#0d366b;">33</span>県庁前、長いカウンターと酒瓶の壁</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-matsue-bougetsu"><span class="tn" style="background:#4a3aa7;">34</span>黄色いたぬきが迎える町の洋食屋</a>
+<a href="#c-matsue-restaurant-seiyoken"><span class="tn" style="background:#4a3aa7;">35</span>1932年創業、川沿いの老舗洋食</a>
+<a href="#c-matsue-pasta-factory-ortaggio"><span class="tn" style="background:#4a3aa7;">36</span>京店の自家製生パスタとガス窯ピッツァ</a>
+<a href="#c-matsue-osteria-sante"><span class="tn" style="background:#4a3aa7;">37</span>殿町のビル奥で島根の魚介イタリアン</a>
+<a href="#c-matsue-racine"><span class="tn" style="background:#4a3aa7;">38</span>宍道湖の夕日を望むガラス張りのフレンチ</a>
+<a href="#c-matsue-indoa"><span class="tn" style="background:#4a3aa7;">39</span>松江市役所脇のスリランカカレー</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・和菓子・抹茶</div>
+<div class="links">
+<a href="#c-matsue-saiundo-honten"><span class="tn" style="background:#eda100;">41</span>不昧公好み「若草」の老舗、本店の茶寮</a>
+<a href="#c-matsue-gofuan-furyudo"><span class="tn" style="background:#eda100;">42</span>蒸したて朝汐を出す老舗の実演工房</a>
+<a href="#c-matsue-libre-coffee-roaster"><span class="tn" style="background:#eda100;">44</span>松江城下、豆を自家焙煎する珈琲専門店</a>
+<a href="#c-matsue-tsukigase-kyomise"><span class="tn" style="background:#eda100;">45</span>京店商店街の老舗団子屋の甘味喫茶</a>
+<a href="#c-matsue-seishoan-tachibana"><span class="tn" style="background:#eda100;">46</span>宍道湖の夕日を望む湖畔の菓子処</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 上乃木・学園・東津田(市街の南と東。車で行く店)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/matsue/_map5.png" alt="中心部拡大4 上乃木・学園・東津田(市街の南と東。車で行く店)">
+<a href="#c-matsue-waraku" style="left:10.53%;top:49.44%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-tataraya" style="left:7.63%;top:53.85%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-tamaki-udon" style="left:14.3%;top:23.8%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-ramen-nagasan" style="left:16.4%;top:87.92%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-ramen-nasebanaru-kakeru" style="left:7.63%;top:52.02%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-ramen-ajitomi" style="left:5.72%;top:47.83%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-ramen-shinasoba-katsumi" style="left:14.38%;top:17.91%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-ramen-mensakaba-kou" style="left:3.13%;top:48.35%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-nekkoya-isemiya" style="left:6.6%;top:46.79%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-issei-honten" style="left:8.12%;top:46.91%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-hamayaki-minato" style="left:4.8%;top:50.59%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-sanin-sakaba-kamiari" style="left:4.58%;top:49.71%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-isaribi" style="left:10.53%;top:47.61%;width:3.6%;height:2.18%;"></a>
+<a href="#c-matsue-steak-kan-nagomi" style="left:68.32%;top:64.34%;width:3.6%;height:2.18%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（14店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・宍道湖七珍（しじみ・スズキ・のどぐろ）</div>
+<div class="links">
+<a href="#c-matsue-waraku"><span class="tn" style="background:#2a78d6;">4</span>駅から徒歩3分、宍道湖七珍とのどぐろの会席</a>
+</div>
+<div class="sec aqua">出雲そば・うどん</div>
+<div class="links">
+<a href="#c-matsue-tataraya"><span class="tn" style="background:#1baf7a;">15</span>松江駅構内で食べる横田小そばの手打ち</a>
+<a href="#c-matsue-tamaki-udon"><span class="tn" style="background:#1baf7a;">16</span>県内発祥の製麺所が打つ手造りうどん</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-matsue-ramen-nagasan"><span class="tn" style="background:#e34948;">19</span>行列のできる上乃木の自家製チャーシュー</a>
+<a href="#c-matsue-ramen-nasebanaru-kakeru"><span class="tn" style="background:#e34948;">20</span>JR松江駅ビルの、酒も飲めるらあ麺</a>
+<a href="#c-matsue-ramen-ajitomi"><span class="tn" style="background:#e34948;">21</span>伊勢宮の老舗、名物「ぎょうさん」と味噌</a>
+<a href="#c-matsue-ramen-shinasoba-katsumi"><span class="tn" style="background:#e34948;">23</span>学園のカウンター8席、自家製ワンタン</a>
+<a href="#c-matsue-ramen-mensakaba-kou"><span class="tn" style="background:#e34948;">24</span>伊勢宮の深夜、いりこ出汁の和風そば</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伊勢宮）</div>
+<div class="links">
+<a href="#c-matsue-nekkoya-isemiya"><span class="tn" style="background:#0d366b;">25</span>伊勢宮町の郷土のつまみと島根の地酒</a>
+<a href="#c-matsue-issei-honten"><span class="tn" style="background:#0d366b;">26</span>伊勢宮町の大箱、日本海の刺身と地酒</a>
+<a href="#c-matsue-hamayaki-minato"><span class="tn" style="background:#0d366b;">27</span>卓上の焼き台で貝を焼く伊勢宮の浜焼き酒場</a>
+<a href="#c-matsue-sanin-sakaba-kamiari"><span class="tn" style="background:#0d366b;">28</span>境港の蟹と烏賊を寿司にのせる山陰の大衆酒場</a>
+<a href="#c-matsue-isaribi"><span class="tn" style="background:#0d366b;">29</span>店先の行灯に島根の地酒が飲める店</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-matsue-steak-kan-nagomi"><span class="tn" style="background:#4a3aa7;">40</span>目の前で焼く島根和牛と幻の隠岐牛</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>松江市の店は5つのかたまりに分かれる。①JR松江駅前〜朝日町＝食事と宿の中心 ②伊勢宮町（駅の北すぐ）＝山陰最大級の飲み屋街。松江で「飲みに行く」と言えばここ ③大橋川の北岸＝京橋・末次本町・東本町。老舗の料亭とそば屋、カフェ ④殿町・母衣町〜松江城・塩見縄手（しおみなわて）＝武家屋敷の通り。和菓子と抹茶の店が並ぶ ⑤宍道湖（しんじこ）の湖畔と玉造（たまつくり）温泉＝湖の夕日と温泉街。玉造は駅から車で20分、JR玉造温泉駅からバス。松江の名物＝宍道湖七珍（スズキ・モロゲエビ・ウナギ・アマサギ〈ワカサギ〉・シラウオ・コイ・シジミの7種。頭文字をとって「スモウアシコシ」と覚える）、しじみ汁（宍道湖はヤマトシジミの産地）、出雲そば（殻ごと挽くので黒く、香りが強い。重ねた丸い漆器で出す「割子〈わりご〉そば」と、ゆで汁ごと椀に入れる「釜揚げそば」の2通り）、のどぐろ（アカムツ。脂の乗った高級魚）、松葉がに（ズワイガニのオス。11月解禁）、赤てん（唐辛子入りの魚のすり身揚げ。浜田発祥だが県内全域で食べる）、あご野焼き（トビウオのちくわを棒状に焼いた松江の名物）、島根和牛、和菓子（松江藩七代藩主・松平不昧〈ふまい〉公の茶の湯から、京都・金沢と並ぶ三大菓子処になった。若草・山川・菜種の里が「不昧公好み」の三大銘菓）、地酒（李白・豊の秋・國暉）。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-washoku">寿司・和食・宍道湖七珍（しじみ・スズキ・のどぐろ）</h2>
+<div class="card" id="c-matsue-minamikan-teiensaryo-minami">
+<img class="hero" src="img/matsue/matsue-minamikan-teiensaryo-minami.jpg" alt="庭園茶寮 みな美（皆美館） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">1</span>庭園茶寮 みな美（皆美館）<span class="yomi">ていえんさりょう みなみ（みなみかん）</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治21年(1888年)創業の料亭旅館「皆美館」が館内に構える食事処。宍道湖に面した湖畔庭園を眺めるホール席50席のほか、椅子の個室と床の間付きの座敷個室が並ぶ。看板は初代板前長・西村常太郎が考案した家伝料理「鯛めし」で、昼は鯛めし御膳や鰻まぶし御膳、夜は鯛めしを組み込んだ会席で出す。料理長は令和6年就任の坂田博史。</div>
+<div class="sig"><b>一皿:</b>皆美家伝 鯛めし(そぼろ状にした鯛の身に、ゆで卵の白身のみじん切りと裏ごしした黄身を合わせてご飯にのせ、わさび・大根おろし・ねぎ・海苔を添えて、鰹の本節でひいた出汁をかけて食べる茶漬け風の料理)／鰻のしゃくもどき(かつて使っていたシギ科の鳥「しゃく」が保護鳥になったため、代わりに鰻を使って茄子・牛蒡・銀杏などと炊き合わせた皆美家伝の一品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜15:00（L.O. 平日14:00／土日祝14:30）、夜 17:30〜21:00（L.O.20:00）</td></tr>
+<tr><th>定休日</th><td class="off">毎週火曜日（祝祭日は営業）</td></tr>
+<tr><th>住所</th><td>島根県松江市末次本町14</td></tr>
+<tr><th>予約</th><td>可（予約推奨） — <a href="tel:0852215131">☎ 0852-21-5131</a> ／ <a href="https://www.minami-g.co.jp/minamikan/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江を代表する老舗料亭で、宍道湖畔の庭園を見ながら家伝の鯛めしを昼から食べられる点で選んだ。営業の根拠は公式サイトのレストランページ（2026年10月6日取得。営業時間・定休日・席数・駐車場を掲載し、宿泊予約システムも稼働中）と、松江観光協会の飲食店一覧「和食・寿司」の店舗ページ（同日取得、電話番号・所在地・営業時間を掲載）。価格は楽天ぐるなびの平均予算3,000円（通常平均）に拠り、夜の会席の価格は公式に掲載がなく未確認。写真は公式サイトのレストランページとお料理ページから、会席料理と店内（ホール席・椅子個室・座敷個室）の実写9点を採った（いずれも長辺1,100〜1,500px）。外観のみの画像と、短辺基準で落ちていた小サイズ画像は入れていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%AD%E5%9C%92%E8%8C%B6%E5%AF%AE%20%E3%81%BF%E3%81%AA%E7%BE%8E%EF%BC%88%E7%9A%86%E7%BE%8E%E9%A4%A8%EF%BC%89%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9C%AB%E6%AC%A1%E6%9C%AC%E7%94%BA14">Googleマップで開く</a>
+<div class="src">写真: minami-g.co.jp 掲載ページより引用 / 参照元: <a href="https://www.minami-g.co.jp/minamikan/restaurant/">皆美館 公式サイト レストラン（庭園茶寮みな美の営業時間・定休日・席数）2026年10月6日取得</a> / <a href="https://www.minami-g.co.jp/minamikan/meal/">皆美館 公式サイト お料理（家伝「鯛めし」の由来・鰻のしゃくもどき）2026年10月6日取得</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E9%A3%9F%E3%83%BB%E5%AF%BF%E5%8F%B8&amp;store=27493">松江観光協会 グルメ店舗情報「皆美館・庭園茶寮みな美」2026年10月6日取得</a> / <a href="https://r.gnavi.co.jp/a2kjww110000/">楽天ぐるなび 庭園茶寮 みな美（平均予算3,000円・総席数44席）2026年10月6日取得</a></div>
+</div></div>
+<div class="card" id="c-matsue-kawakyo">
+<img class="hero" src="img/matsue/matsue-kawakyo.jpg" alt="川京 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">2</span>川京<span class="yomi">かわきょう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">昭和45年(1970年)創業、家族で営む宍道湖七珍の専門店。カウンター15席だけで夜のみ営業する。宍道湖でとれるスズキ・モロゲエビ・ウナギ・アマサギ・シラウオ・コイ・シジミの七種を、その季節に出せるものから一品ずつ出していく。七珍には旬があるため、何が食べられるかは電話で確かめてから行くのが確実で、席数が少ないので予約は必須に近い。</div>
+<div class="sig"><b>一皿:</b>うなぎのたたき(宍道湖七珍のウナギを焼いてから細かくたたき、薬味と合わせて出す川京の名物)／宍道湖七珍の品々(スズキ・モロゲエビ・ウナギ・アマサギ・シラウオ・コイ・シジミの七種を、その時期に獲れるものから順に一品ずつ出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜（日曜が祝日の場合は月曜）</td></tr>
+<tr><th>住所</th><td>島根県松江市末次本町65</td></tr>
+<tr><th>予約</th><td>要予約（カウンター15席のみ。電話で早めに） — <a href="tel:0852221312">☎ 0852-22-1312</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江の核である「宍道湖七珍」を正面から出す数少ない専門店で、他の店では一度に揃わない七種を季節ごとに食べられる点で選んだ。営業の根拠は、松江シティホテル公式サイトの「徒歩5分圏内飲食店」ページに店主名義の案内文と営業時間・定休日・席数・電話番号が掲載されていること（2026年10月6日取得）と、ホットペッパーグルメの掲載ページ（同日取得、住所・営業時間・定休日・15席が一致）。あわせて「川京 閉店」で検索したが閉店の報は無かった（2026年10月6日）。価格はホットペッパーグルメの夜の予算目安[夜]￥6,000〜￥7,999に拠り、公式の価格表は未確認。写真は松江シティホテル公式サイトの川京紹介ページの料理写真6点（各1,080×720px）を採った。しじみの酒蒸し、すずきの奉書焼き、たたき、もろげ海老の天ぷらなど宍道湖七珍の品が写っている。ホットペッパーの無料掲載ページに並ぶ画像は近隣店の広告枠なので使っていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E4%BA%AC%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9C%AB%E6%AC%A1%E6%9C%AC%E7%94%BA65">Googleマップで開く</a>
+<div class="src">写真: matsuecityhotel.jp 掲載ページより引用 / 参照元: <a href="https://www.matsuecityhotel.jp/147">松江シティホテル 公式サイト 徒歩5分圏内飲食店「20. 川京」（創業年・営業時間・定休日・席数・電話番号）2026年10月6日取得</a> / <a href="https://www.hotpepper.jp/strJ000111237/">ホットペッパーグルメ 川京（住所・営業時間・定休日・席数）2026年10月6日取得</a> / <a href="https://jimohack.shimane.jp/matsue/21201/">じもハック島根「松江市宍道湖七珍完全ガイド」川京の節 2026年10月6日取得</a></div>
+</div></div>
+<div class="card" id="c-matsue-kuretake-zushi-honten">
+<img class="hero" src="img/matsue/matsue-kuretake-zushi-honten.jpg" alt="呉竹鮨 松江本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">3</span>呉竹鮨 松江本店<span class="yomi">くれたけずし まつえほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">日本海の近海と宍道湖で揚がった魚を中心に握る、回らない寿司の店。1階は一人でも座れる長いカウンター、2階と3階に個室が7部屋あり、足を下ろせる掘りごたつの部屋や座敷に椅子とテーブルを入れた部屋も選べる。寿司のほかに旬の素材を使った料理と島根の地酒も揃える。鳥取市の呉竹鮨と同じエフエムエルサービスグループが運営する山陰の店で、全国チェーンではない。</div>
+<div class="sig"><b>一皿:</b>のどぐろの握り(島根県沖で揚がるアカムツ。白身ながら脂が強く、炙ると脂が溶けて甘みが出る)／究極の炙りのどぐろ丼(島根県産ののどぐろを半身使い、境港産のカニ身とイクラをのせた昼限定の丼。赤だし付き・1日10食限定)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜13:30 / 18:00〜22:00（L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>島根県松江市東本町1-61-4</td></tr>
+<tr><th>予約</th><td>可（電話のみ。個室は昼も予約可） — <a href="tel:0852234490">☎ 0852-23-4490</a> ／ <a href="https://kuretake-susi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江の中心部で昼から「回らない寿司」を一人でも食べられる店として選んだ。営業の根拠は公式サイトの店舗情報（2026年10月6日取得。住所・電話番号・営業時間・定休日・駐車場を掲載し、2024年9月にサイトをリニューアルした告知あり）と、松江商工会議所が公開する「MATSUE 飲食店一覧」に寿司として掲載されていること。昼メニューと価格は山陰のタウン情報誌ラズダの2022年3月1日付の取材記事に拠るため、現在の価格は未確認。写真は日刊Lazudaの取材記事から、カウンター・ネタのショーケース・個室2室・究極の炙りのどぐろ丼2点の計6点（各1,200×800px）を採った。外観のみの1点は入れていない。公式サイトの画像は750×500pxで小さいため使っていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%89%E7%AB%B9%E9%AE%A8%20%E6%9D%BE%E6%B1%9F%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9D%B1%E6%9C%AC%E7%94%BA1-61-4">Googleマップで開く</a>
+<div class="src">写真: 日刊Lazuda（山陰の地域情報サイト）より引用 / 参照元: <a href="https://kuretake-susi.com/">呉竹鮨 松江本店 公式サイト（住所・電話・営業時間・定休日・席）2026年10月6日取得</a> / <a href="https://www.lazuda.com/news/archives/3011">日刊Lazuda（山陰のタウン情報誌）2022年3月1日「【限定10食】お昼からこんな贅沢あり!?ってなる松江の老舗寿司屋の贅沢丼」</a> / <a href="https://www.matsue.jp/2023/10/18/member_r/">松江商工会議所「MATSUE 飲食店一覧」掲載（呉竹鮨・寿司・松江市東本町1-61-4）2026年10月6日取得</a></div>
+</div></div>
+<div class="card" id="c-matsue-waraku">
+<img class="hero" src="img/matsue/matsue-waraku.jpg" alt="日本料理 松江 和らく 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">4</span>日本料理 松江 和らく<span class="yomi">にほんりょうり まつえ わらく</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江駅のすぐ北に建つ160席の日本料理店。仲買権を持つ専任社員が松江魚市場で買い付けるのどぐろと、美保関の専属漁師が直送する活いかを看板にし、宍道湖の七珍を組み立てた会席や、せいろで蒸し上げる「せいろめし」を昼夜とも出す。冬は活松葉がに、夏は隠岐産の岩牡蠣と、季節で品書きが入れ替わる。団体にも対応する大箱で、観光の食事処としても使われる。</div>
+<div class="sig"><b>一皿:</b>宍道湖七珍めし会席(スズキ・モロゲエビ・ウナギ・アマサギ・シラウオ・コイ・シジミの七種を季節に応じて組み立てた会席。6,380円。昼は3,300円からの七珍ランチもある)／活しじみせいろめし(奥出雲の仁多米を活しじみの出汁で炊き、しじみのくず煮をのせてせいろで蒸した名物。1杯目はそのまま、2杯目はしじみ出汁をかけて茶漬けで食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜15:00（L.O.14:00）／夜 17:30〜22:00（L.O.21:00）　※祝日・祝前日の昼は11:30〜14:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>島根県松江市御手船場町565</td></tr>
+<tr><th>予約</th><td>可（電話・ネット。人気の品は予約推奨） — <a href="tel:0852210029">☎ 0852-21-0029</a> ／ <a href="https://wa-ra-ku.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江駅から歩いてすぐで、宍道湖七珍とのどぐろを昼のランチから夜の会席まで価格帯を選んで食べられる点で選んだ。営業の根拠は公式サイトの最新情報欄で、直近の更新が2026年8月10日（お盆期間の営業案内と8月のおすすめ料理）であること。あわせて松江観光協会の飲食店一覧「和食・寿司」の店舗ページ（2026年10月6日取得）と、ホットペッパーグルメの掲載ページ（同日取得。住所・営業時間・定休日・160席・予算詳細5,000円が一致）で裏を取った。価格は公式サイトに掲載された税込価格をそのまま記載した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E6%9D%BE%E6%B1%9F%20%E5%92%8C%E3%82%89%E3%81%8F%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%BE%A1%E6%89%8B%E8%88%B9%E5%A0%B4%E7%94%BA565">Googleマップで開く</a>
+<div class="src">写真: wa-ra-ku.net 掲載ページより引用 / 参照元: <a href="https://wa-ra-ku.net/">日本料理 松江 和らく 公式サイト（最新情報の更新日2026年8月10日・品書きと税込価格・電話番号）2026年10月6日取得</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E9%A3%9F%E3%83%BB%E5%AF%BF%E5%8F%B8&amp;store=27504">松江観光協会 グルメ店舗情報「日本料理 松江和らく」2026年10月6日取得</a> / <a href="https://www.hotpepper.jp/strJ000647724/">ホットペッパーグルメ 日本料理 松江 和らく（住所・アクセス・営業時間・定休日・160席・予算詳細）2026年10月6日取得</a></div>
+</div></div>
+<div class="card" id="c-matsue-kaido">
+<img class="hero" src="img/matsue/matsue-kaido.jpg" alt="和食料理店 海奴 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">5</span>和食料理店 海奴<span class="yomi">わしょくりょうりてん かいど</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">駅から歩いて5分ほどの寺町にある26席の和食店。店主の都田氏が山陰の食材を目利きして仕入れ、かつおと昆布から引いた出汁を軸に、前菜八寸・茶碗蒸し・吸い物・旬魚の刺身・揚げたての天ぷら・締めの御飯まで通しで出すコースを組む。島根和牛のステーキを組み込んだコースもあり、島根の地酒を揃える。カウンターのほかコンクリート壁の個室と窓際のテーブル個室がある。</div>
+<div class="sig"><b>一皿:</b>店主の季節コース(かつおと昆布から引いた出汁を軸に、前菜八寸・茶碗蒸し・吸い物・旬魚の刺身・揚げたて天ぷら四品・締めの御飯まで全8品。4,000円)／旬魚の刺身盛り(境港と日本海で揚がったその日の魚を数種盛り合わせたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・日・祝日・祝前日 17:30〜22:00（料理L.O.21:00／ドリンクL.O.21:30）／水〜土 11:30〜14:00（料理L.O.13:30）、17:30〜22:00（料理L.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（ほかに不定休あり）</td></tr>
+<tr><th>住所</th><td>島根県松江市寺町198-61 寺町プラザ南1階</td></tr>
+<tr><th>予約</th><td>可（ネット・電話。営業時間外は080-2947-7028） — <a href="tel:0852255710">☎ 0852-25-5710</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>老舗や大箱に偏らないよう、駅から歩ける距離でコース仕立ての和食を静かに食べられる個人店として選んだ。営業の根拠はホットペッパーグルメの掲載ページ（2026年10月6日取得。住所・電話番号・営業時間・定休日・26席に加え、現行のコース内容と価格が掲載されている）と、構造化データに記載された電話番号。公式サイトは見当たらず未確認。価格はホットペッパーの予算詳細「2500円から10000円まで予算に合わせたコースをご用意」に拠る。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E9%A3%9F%E6%96%99%E7%90%86%E5%BA%97%20%E6%B5%B7%E5%A5%B4%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%AF%BA%E7%94%BA198-61%20%E5%AF%BA%E7%94%BA%E3%83%97%E3%83%A9%E3%82%B6%E5%8D%971%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004509007/">ホットペッパーグルメ 和食料理店 海奴（住所・電話・営業時間・定休日・席数・コース内容と価格）2026年10月6日取得</a> / <a href="https://www.hotpepper.jp/SA72/Y955/G004/">ホットペッパーグルメ 松江市の和食店一覧（掲載の確認）2026年10月6日取得</a></div>
+</div></div>
+<div class="card" id="c-matsue-konekkoya">
+<img class="hero" src="img/matsue/matsue-konekkoya.jpg" alt="松江の台所 こ根っこや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">6</span>松江の台所 こ根っこや<span class="yomi">まつえのだいどころ こねっこや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">宍道湖しじみ館の2階にある70席の和食店。大きな窓から宍道湖を見渡せる席が並び、カウンター・テーブル・掘りごたつ・最大24名の大広間を選べる。料理長が目利きした地の魚介を使い、宍道湖のしじみを使った酒蒸しや、宍道湖産すずきの柚子雑炊など、ここでしか出さない品を置く。島根の地酒も揃え、なかでも出回りの少ない「王祿」を推す。松江市内で数店を営む根っこやグループの和食業態。</div>
+<div class="sig"><b>一皿:</b>しじみの酒蒸し(宍道湖でとれたヤマトシジミを京都から仕入れる出汁で酒蒸しにしたもの。1人前770円)／宍道湖の幸の柚子雑炊(宍道湖産すずきの切り身を、すずきのアラでとった出汁で炊き、種なし柚子を丸ごと1個加えて仕上げる。2人前1,200円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:00〜14:30（L.O.14:00）／ディナー 17:00〜21:00（L.O.20:30）</td></tr>
+<tr><th>定休日</th><td class="off">年末年始（ほかに臨時定休日あり）</td></tr>
+<tr><th>住所</th><td>島根県松江市千鳥町36 宍道湖しじみ館2F</td></tr>
+<tr><th>予約</th><td>可（電話・WEB予約） — <a href="tel:0852287511">☎ 0852-28-7511</a> ／ <a href="https://www.nekko-group.com/konekko_ya/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>湖畔で宍道湖の幸を昼から食べられる立地として選んだ。営業の根拠は公式サイトの店舗ページで、冒頭に2026年10月5日・15日・21日の臨時定休日の告知が出ていること（2026年10月6日取得）。あわせて松江観光協会の飲食店一覧「和食・寿司」の店舗ページと、ホットペッパーグルメの掲載ページ（いずれも同日取得）で住所・電話・席数を照合した。営業時間は公式サイトの表記を採り、観光協会ページの旧表記（11:30〜14:00／17:00〜22:00）とは食い違うため公式を優先した。価格は公式サイトに載る単品価格とホットペッパーの予算詳細4,000円に拠る。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E6%B1%9F%E3%81%AE%E5%8F%B0%E6%89%80%20%E3%81%93%E6%A0%B9%E3%81%A3%E3%81%93%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%8D%83%E9%B3%A5%E7%94%BA36%20%E5%AE%8D%E9%81%93%E6%B9%96%E3%81%97%E3%81%98%E3%81%BF%E9%A4%A82F">Googleマップで開く</a>
+<div class="src">写真: 松江観光協会 公式サイトより引用 / 参照元: <a href="https://www.nekko-group.com/konekko_ya/">松江の台所 こ根っこや 公式サイト（2026年10月の臨時定休日告知・営業時間・住所・電話・70席）2026年10月6日取得</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E9%A3%9F%E3%83%BB%E5%AF%BF%E5%8F%B8&amp;store=27508">松江観光協会 グルメ店舗情報「松江の台所 こ根っこや」2026年10月6日取得</a> / <a href="https://www.hotpepper.jp/strJ000955797/">ホットペッパーグルメ 松江の台所 こ根っこや（住所・アクセス・営業時間・席数・予算詳細）2026年10月6日取得</a></div>
+</div></div>
+<div class="card" id="c-matsue-ajiminami-fujinatei">
+<img class="hero" src="img/matsue/matsue-ajiminami-fujinatei.jpg" alt="味皆美 ふじな亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">7</span>味皆美 ふじな亭<span class="yomi">あじみなみ ふじなてい</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治21年(1888年)創業の料亭旅館「皆美館」の料理を、より気軽に食べられる食事処として宍道湖のほとりに構える280席の店。どの席からも宍道湖が見え、最大48名の個室もあるため、慶事や法事、観光バスの昼食にも使われる。看板は皆美館から受け継いだ家伝の「鯛めし」で、鯛めし付きの御膳やコースのほか、うな重も出す。駐車場80台、大型バスも停められる。</div>
+<div class="sig"><b>一皿:</b>皆美家伝 鯛めし(そぼろ状にした鯛の身などの具をご飯にのせ、鰹の本節をベースにした秘伝の出汁をかけて食べる、皆美館初代板前長・西村常太郎が考案した家伝料理)／うな重(蒲焼きにした鰻をご飯にのせて重箱で出すもの。香の物と汁が付く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼の部 11:00〜15:00（L.O.14:30／平日14:00）／夜の部 17:00〜21:30（L.O.21:00）※夜は完全予約制</td></tr>
+<tr><th>定休日</th><td class="off">水曜日・年末</td></tr>
+<tr><th>住所</th><td>島根県松江市玉湯町布志名21-1</td></tr>
+<tr><th>予約</th><td>可（夜は完全予約制。電話・WEB予約） — <a href="tel:0852620227">☎ 0852-62-0227</a> ／ <a href="https://www.fujinatei.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>宍道湖を眺めながら松江の家伝料理「鯛めし」を昼の御膳で食べられる店として選んだ。宍道湖畔の皆美館（本記事の別項）と同じ皆美グループだが、こちらは湖の南岸にある大箱で、価格帯も昼1,500〜2,500円と手が届きやすく、性格が違うため別に採った。営業の根拠は公式サイトの店舗情報（2026年10月6日取得。住所・電話・FAX・営業時間・定休日・席数・駐車場・インボイス登録番号T7280002002150を掲載）と、ホットペッパーグルメの掲載ページ（同日取得。住所・営業時間・定休日・246席・予算詳細が一致）。価格はホットペッパーの予算詳細に拠る。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E7%9A%86%E7%BE%8E%20%E3%81%B5%E3%81%98%E3%81%AA%E4%BA%AD%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E7%8E%89%E6%B9%AF%E7%94%BA%E5%B8%83%E5%BF%97%E5%90%8D21-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.fujinatei.com/">味皆美 ふじな亭 公式サイト 店舗情報（住所・電話・営業時間・定休日・280席・駐車場80台）2026年10月6日取得</a> / <a href="https://www.hotpepper.jp/strJ000111280/">ホットペッパーグルメ 味皆美 ふじな亭（住所・営業時間・定休日・予算詳細・写真48点）2026年10月6日取得</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E9%A3%9F%E3%83%BB%E5%AF%BF%E5%8F%B8&amp;store=27517">松江観光協会 グルメ店舗情報「味皆美 ふじな亭」2026年10月6日取得</a></div>
+</div></div>
+<div class="card" id="c-matsue-wakatake-zushi">
+<img class="hero" src="img/matsue/matsue-wakatake-zushi.jpg" alt="若竹寿し 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">8</span>若竹寿し<span class="yomi">わかたけずし</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">玉造温泉の温泉街にある寿司店。店主が独自の仕入れ先から集める地の魚を売りにしており、昼は海鮮丼を目当てに行列ができることもある。山陰の松葉ガニやのどぐろといった郷土の食材と島根の地酒を合わせ、島根県の「故郷料理認定店」を名乗る。昼夜ともラストオーダーが早く、夜は19:30で注文が締め切られる。</div>
+<div class="sig"><b>一皿:</b>海鮮丼(店主が独自ルートで仕入れる地の魚を、酢飯の上に数種のせた丼。うに・いくら・白身・えびなどが季節で替わる)／しじみ汁(宍道湖のヤマトシジミを実にした汁。海鮮丼に添えて出される)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜13:30（L.O.）／夜 17:30〜19:30（L.O.）</td></tr>
+<tr><th>定休日</th><td class="off">木曜日</td></tr>
+<tr><th>住所</th><td>島根県松江市玉湯町玉造83-6</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0852620831">☎ 0852-62-0831</a> ／ <a href="https://y024100.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昼の海鮮丼という枠で、玉造温泉に泊まる人が歩いて行ける店として選んだ。営業の根拠は松江観光協会の飲食店一覧「和食・寿司」の店舗ページ（2026年10月6日取得。電話番号・住所・営業時間・定休日・公式ページのURLを掲載）と、公式ページ（同日取得。住所・郵便番号・価格帯￥3,500・提供料理が構造化データとして載っている）。価格は公式ページの価格帯表示に拠り、個別メニューの価格は未確認。電話番号は観光協会掲載の店舗直通番号を採った（公式ページに出ている050番号は予約サイトの転送番号のため採らない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8B%A5%E7%AB%B9%E5%AF%BF%E3%81%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E7%8E%89%E6%B9%AF%E7%94%BA%E7%8E%89%E9%80%A083-6">Googleマップで開く</a>
+<div class="src">写真: 松江観光協会 公式サイトより引用 / 参照元: <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E9%A3%9F%E3%83%BB%E5%AF%BF%E5%8F%B8&amp;store=62345">松江観光協会 グルメ店舗情報「若竹寿司」（電話・住所・営業時間・定休日）2026年10月6日取得</a> / <a href="https://y024100.gorp.jp/">玉造温泉 若竹寿し 公式ページ（住所・郵便番号・価格帯・提供料理）2026年10月6日取得</a></div>
+</div></div>
+<div class="card" id="c-matsue-unagi-yakumo">
+<img class="hero" src="img/matsue/matsue-unagi-yakumo.jpg" alt="うなぎ やくも 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">9</span>うなぎ やくも<span class="yomi">うなぎ やくも</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">宍道湖産のうなぎが減り松江のうなぎ店が姿を消すなかで、2代目の加村早陽子さんが暖簾を守る店。22席、昼の2時間だけ開ける。裂いたうなぎをまず素焼きの「長焼き」にし、荒削りの本鰹節でとった出汁に地元の醤油と復刻した地伝酒(じでんしゅ)などを合わせた秘伝のたれに漬けて、炭火でじっくり焼き上げる。うなぎは国内産を使う。</div>
+<div class="sig"><b>一皿:</b>うなぎ丼(炭火で焼き上げた国産うなぎの蒲焼きを、秘伝のたれがしみたご飯にのせた丼。この店の一番人気)／長焼き(裂いたうなぎをたれを付けずに素焼きにしたもの。たれ焼きの前の工程であり、単品でも鰻の身の味が分かる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜13:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜日・日曜日</td></tr>
+<tr><th>住所</th><td>島根県松江市東本町1-87</td></tr>
+<tr><th>予約</th><td>不可（席数が少なく、売り切れ次第終了） — <a href="tel:0852214042">☎ 0852-21-4042</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>宍道湖七珍のひとつ「うなぎ」を、松江の市街地で昼に食べられる個人店として選んだ。松江観光協会が2代目店主と焼き方（長焼き→地伝酒入りの秘伝のたれ→炭火）まで取材した紹介文を載せており、郷土料理としての背景が確かめられる点を重く見た。営業の根拠は松江観光協会の飲食店一覧「和食・寿司」の店舗ページ（2026年10月6日取得。電話番号・住所・営業時間・定休日を掲載）と、ホットペッパーグルメの掲載ページ（同日取得。住所・営業時間・定休日・22席・昼の予算が一致）。公式サイトは無く未確認。価格はホットペッパーの昼の予算目安に拠る。写真は島根のグルメブログ「まかろっく」の実食記事3本（2020年11月5日・2022年7月30日・2023年10月6日）から、うな重・うなぎ丼・持ち帰りの折詰の実写6点（各1,200×900px）を採った。外観・お品書き・掲示物・飲み物単体は除いた。ホットペッパーの無料掲載ページに出る画像は近隣店の広告枠で、この店の写真ではないため使っていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%20%E3%82%84%E3%81%8F%E3%82%82%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9D%B1%E6%9C%AC%E7%94%BA1-87">Googleマップで開く</a>
+<div class="src">写真: blog-imgs-135.fc2.com 掲載ページより引用 / 参照元: <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E9%A3%9F%E3%83%BB%E5%AF%BF%E5%8F%B8&amp;store=27502">松江観光協会 グルメ店舗情報「うなぎ やくも」（2代目店主・秘伝のたれ・電話・住所・営業時間・定休日）2026年10月6日取得</a> / <a href="https://www.hotpepper.jp/strJ000512076/">ホットペッパーグルメ うなぎやくも（住所・営業時間・定休日・22席・昼の予算）2026年10月6日取得</a> / <a href="https://makarock.jp/blog-entry-5417.html">グルメブログ「まかろっく」うなぎ やくも 実食記事（2020年11月5日・2022年7月30日・2023年10月6日。料理写真の出典）2026年10月6日取得</a></div>
+</div></div>
+<h2 id="s-soba" class="c-aqua">出雲そば・うどん</h2>
+<div class="card" id="c-matsue-yakumoan">
+<img class="hero" src="img/matsue/matsue-yakumoan.jpg" alt="出雲そば処 八雲庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">10</span>出雲そば処 八雲庵<span class="yomi">いずもそばどころ やくもあん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">松江城北側の塩見縄手に面した出雲そば店。松江藩の剣術指南役・大石源内の屋敷跡を改装した建物で、樹齢450年の出雲黒松や錦鯉の泳ぐ池のある庭を眺めながら食べる。甘皮ごと挽き込んだ色の黒い手打ちそばで、そばに負けないよう割子のだしは辛口に仕上げる。昼だけの営業で、そばが無くなり次第閉める。</div>
+<div class="sig"><b>一皿:</b>割子そば(三段重ねの丸い朱塗りの漆器に盛った出雲そば。上の段から薬味をのせて辛口のだしをかけ、残っただしを次の段へ移して食べる) / 鴨なんばん(臭みのない鴨肉とねぎを合わせたこくのあるだし汁の温かいそば。好みで山椒を振る)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜13:30（そばが無くなり次第終了する場合あり。松江観光協会の掲載は11:00〜13:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜（ほかに2026年9月23日(水)・10月30日(金)が店休。1月1日・2日休み＝松江観光協会）</td></tr>
+<tr><th>住所</th><td>島根県松江市北堀町308</td></tr>
+<tr><th>予約</th><td>一部可（13名以上の予約は受け付けていない＝公式サイト） — <a href="tel:0852222400">☎ 0852-22-2400</a> ／ <a href="https://www.yakumoan.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江観光協会の「出雲そば」店舗一覧(2026-10-06閲覧)と松江そば組合サイトの両方に掲載。営業の根拠は公式サイトのブログ記事「7・8月営業日のお知らせ」(2026年8月30日付)で、9・10月の営業日と木曜定休、9月23日(水)・10月30日(金)の店休を告知している。写真は公式サイトの掲載画像(短辺900px以上・透かしなしを実測確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%E5%87%A6%20%E5%85%AB%E9%9B%B2%E5%BA%B5%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%8C%97%E5%A0%80%E7%94%BA308">Googleマップで開く</a>
+<div class="src">写真: yakumoan.jp 掲載ページより引用 / 参照元: <a href="https://www.yakumoan.jp/">出雲そば処 八雲庵 公式サイト（2026-10-06閲覧）</a> / <a href="https://www.yakumoan.jp/888/">八雲庵 公式ブログ「7・8月営業日のお知らせ」2026年8月30日付</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E3%81%9D%E3%81%B0&amp;store=27551">松江観光協会 グルメ／出雲そば 店舗情報 八雲庵（2026-10-06閲覧）</a> / <a href="https://matsue-soba.net/">松江そば組合 公式サイト（2026-10-06閲覧）</a></div>
+</div></div>
+<div class="card" id="c-matsue-kamiyo-soba">
+<img class="hero" src="img/matsue/matsue-kamiyo-soba.jpg" alt="神代そば 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">11</span>神代そば<span class="yomi">かみよそば</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">昭和27年(1952年)創業。創業時から自家製粉・石臼挽き・つなぎを使わない生粉打ち(十割そば)という昔ながらの製法を守る。つゆには本枯れ節と、島根に伝わる料理酒「地伝酒(じでんしゅ)」を使う。松江そば組合の加盟店で、松江発の新ブランド「玄丹(げんたん)そば」協議会にも参加している。40席、駐車場8台。</div>
+<div class="sig"><b>一皿:</b>とろろ割子(三段重ねの丸い漆器に盛った十割そばに、飯南高原産の大和芋のとろろを絡めて食べる割子そば) / 割子そば(甘皮まで挽き込んだ十割そばを三段の漆器で出し、上の段からだしをかけて食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（ラストオーダー14:30。製粉の都合で早く閉店することがある＝松江そば組合。松江観光協会は11:00〜14:00・そば売切れ次第閉店と記載）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>島根県松江市奥谷町324-5</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0852214866">☎ 0852-21-4866</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>自家製粉・石臼挽き・生粉打ちという条件をすべて満たす松江の代表格。営業の根拠は、松江観光協会のグルメ「出雲そば」店舗一覧(2026-10-06閲覧)と松江そば組合の店舗一覧(2026-10-06閲覧)の両方に現在も掲載されていること。松江そば組合が掲載する公式サイト http://www.e-kamiyo.jp/ は2026-10-06時点で名前解決ができず、内容は未確認。写真は、るるぶ&amp;more.の記事「【2024年最新】松江「出雲そば」がおいしい名店6選」(2024-08-27更新)1点と、個人のブログ「たびめもり」(2022-02-28)および「旅飲み」(2024-04-21)の訪問記7点で、いずれも長辺900px以上・透かしなしを実測確認した。外観のみの写真とメニュー表・品書きの撮影は候補から外した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%A5%9E%E4%BB%A3%E3%81%9D%E3%81%B0%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%A5%A5%E8%B0%B7%E7%94%BA324-5">Googleマップで開く</a>
+<div class="src">写真: るるぶ&amp;more.（JTBパブリッシング）より引用 / 参照元: <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E3%81%9D%E3%81%B0&amp;store=27547">松江観光協会 グルメ／出雲そば 店舗情報 神代そば（2026-10-06閲覧）</a> / <a href="https://matsue-soba.net/">松江そば組合 公式サイト 店舗一覧（2026-10-06閲覧）</a> / <a href="https://rurubu.jp/andmore/article/16943">るるぶ&amp;more.「【2024年最新】松江「出雲そば」がおいしい名店6選」2024年8月27日更新（2026-10-06閲覧）</a> / <a href="https://tabitabimemo.hatenablog.com/entry/2022/02/28/170000">個人ブログ「たびめもり」【島根県・松江市】神代そば（2022年2月28日・2026-10-06閲覧）</a> / <a href="https://tabinomi.hatenablog.com/entry/2024/04/21/%E3%80%90%E5%B3%B6%E6%A0%B9%E3%82%B0%E3%83%AB%E3%83%A1%E3%80%91%E3%80%8C%E7%A5%9E%E4%BB%A3%E3%81%9D%E3%81%B0%E3%80%8D%E3%81%A7%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%E3%82%92%E5%A0%AA%E8%83%BD%EF%BC%81">個人ブログ「旅飲み」神代そばの香り高い十割そば体験（2024年4月21日・2026-10-06閲覧）</a></div>
+</div></div>
+<div class="card" id="c-matsue-funatsu">
+<img class="hero" src="img/matsue/matsue-funatsu.jpg" alt="中国山地蕎麦工房 ふなつ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">12</span>中国山地蕎麦工房 ふなつ<span class="yomi">ちゅうごくさんちそばこうぼう ふなつ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">奥出雲町(横田)で栽培したそばの実を石臼で自家製粉し、地元に湧く名水でつなぎを使わずに打つ十割そばの店。そばは3種類、だしは4種類を仕込み、そば尽くしのコースもある。サバ節のきいた濃いめのつゆが粗挽きのそばに合う。松江そば組合の加盟店で玄丹そば協議会にも参加。40席、駐車場7台。</div>
+<div class="sig"><b>一皿:</b>千鳥割子(粗挽きの十割そばを三段重ねの漆器に盛り、エビ・穴子・うずら卵など彩りのよい具材をのせた割子そば) / 割子そば(甘皮ごと挽いた十割そばを三段の漆器で出し、上の段からだしをかけて食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（材料がなくなり次第終了＝松江そば組合。松江観光協会は11:00〜14:30と記載）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・第3火曜（年始・ゴールデンウィークも休み）</td></tr>
+<tr><th>住所</th><td>島根県松江市外中原町117-6</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0852222361">☎ 0852-22-2361</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>自家栽培・自家製粉・十割という条件をすべて満たし、そばのコースまで組む松江でも手の込んだ一軒。営業の根拠は、松江観光協会のグルメ「出雲そば」店舗一覧(2026-10-06閲覧)と松江そば組合の店舗一覧(2026-10-06閲覧)の両方に現在も掲載されていること。写真は、るるぶ&amp;more.の記事「【2024年最新】松江「出雲そば」がおいしい名店6選」(2024-08-27更新)1点、まっぷるウェブの記事「出雲名物の出雲そば、おすすめ店をご紹介！」(2026-08-27更新)1点、個人のブログ「ゴチソウトラベル」(2025-02-17)および「旅飲み」(2024-04-28)の訪問記6点で、いずれも長辺900px以上・透かしなしを実測確認した。外観のみの写真とメニュー表・品書きの撮影は候補から外した。なお松江市内にある同名の居酒屋「松江 ふなつ」は別店舗なので混同しないこと。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E5%B1%B1%E5%9C%B0%E8%95%8E%E9%BA%A6%E5%B7%A5%E6%88%BF%20%E3%81%B5%E3%81%AA%E3%81%A4%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%A4%96%E4%B8%AD%E5%8E%9F%E7%94%BA117-6">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（はてなブログ）より引用 / 参照元: <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E3%81%9D%E3%81%B0&amp;store=27545">松江観光協会 グルメ／出雲そば 店舗情報 中国山地蕎麦工房ふなつ（2026-10-06閲覧）</a> / <a href="https://matsue-soba.net/">松江そば組合 公式サイト 店舗一覧（2026-10-06閲覧）</a> / <a href="https://rurubu.jp/andmore/article/16943">るるぶ&amp;more.「【2024年最新】松江「出雲そば」がおいしい名店6選」2024年8月27日更新（2026-10-06閲覧）</a> / <a href="https://www.mapple.net/article/75652/">まっぷるウェブ「出雲名物の出雲そば、おすすめ店をご紹介！」2026年8月27日更新（2026-10-06閲覧）</a> / <a href="https://umazeriko.hatenablog.com/entry/funatu">個人ブログ「ゴチソウトラベル」コスパ良し！松江で人気のおそば屋：中国山地蕎麦工房 ふなつの魅力（2025年2月17日・2026-10-06閲覧）</a> / <a href="https://tabinomi.hatenablog.com/entry/2024/04/28/%E3%80%90%E5%B3%B6%E6%A0%B9%E3%82%B0%E3%83%AB%E3%83%A1%E3%80%91%E3%80%8C%E4%B8%AD%E5%9B%BD%E5%B1%B1%E5%9C%B0%E8%95%8E%E9%BA%A6%E5%B7%A5%E6%88%BF%E3%81%B5%E3%81%AA%E3%81%A4%E3%80%8D%E3%81%AE%E7%B5%B6">個人ブログ「旅飲み」中国山地蕎麦工房ふなつの魅力（2024年4月28日・2026-10-06閲覧）</a></div>
+</div></div>
+<div class="card" id="c-matsue-izumosoba-kigaru">
+<img class="hero" src="img/matsue/matsue-izumosoba-kigaru.jpg" alt="出雲そば きがる 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">13</span>出雲そば きがる<span class="yomi">いずもそば きがる</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">昭和5年(1930年)創業。地元松江産の「玄丹(げんたん)そば」を中心に厳選した国産のそばの実を石臼で自家製粉し、甘皮ごと挽いた「挽きぐるみ」と実の中心だけを使う「丸ぬき」の2種類を毎朝打ち分ける。割子でも釜揚げでも食べられ、冬は地元産の岩のりをのせた釜揚げそばも出る。座敷を含め30席。</div>
+<div class="sig"><b>一皿:</b>割子そば(三段重ねの丸い漆器に盛った出雲そば。挽きぐるみと丸ぬきのどちらかを選べる) / 釜揚げそば(ゆで汁ごと椀に盛り、だしと薬味をかけて食べる出雲独特の温かいそば。冬は岩のりをのせた品もある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜土 11:00〜15:30／木〜土 17:00〜20:00／日・祝 11:00〜17:00（そばが無くなり次第、早めに閉店することあり＝松江そば組合・松江観光協会）</td></tr>
+<tr><th>定休日</th><td class="off">火曜・第3水曜（変更あり）</td></tr>
+<tr><th>住所</th><td>島根県松江市石橋町400-1</td></tr>
+<tr><th>予約</th><td>未確認（ホットペッパーグルメではネット予約を受け付けていない） — <a href="tel:0852213642">☎ 0852-21-3642</a> ／ <a href="https://www.izumosobakigaru.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>自家製粉・石臼挽きで2種類のそばを打ち分ける点が松江でも際立つ。営業の根拠は、ホットペッパーグルメの掲載ページに2026年9月11日投稿の来店口コミがあること、および松江観光協会のグルメ「出雲そば」店舗一覧と松江そば組合の店舗一覧(いずれも2026-10-06閲覧)に現在も掲載されていること。写真はホットペッパーグルメの店舗掲載写真(短辺900px以上・透かしなしを実測確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%20%E3%81%8D%E3%81%8C%E3%82%8B%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E7%9F%B3%E6%A9%8B%E7%94%BA400-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000111236/">ホットペッパーグルメ 出雲そば きがる（2026-10-06閲覧。2026年9月11日投稿の口コミあり）</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E3%81%9D%E3%81%B0&amp;store=27556">松江観光協会 グルメ／出雲そば 店舗情報 出雲そば きがる（2026-10-06閲覧）</a> / <a href="https://matsue-soba.net/">松江そば組合 公式サイト 店舗一覧（2026-10-06閲覧）</a></div>
+</div></div>
+<div class="card" id="c-matsue-matsumoto-sobaten">
+<img class="hero" src="img/matsue/matsue-matsumoto-sobaten.jpg" alt="松本蕎麦店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">14</span>松本蕎麦店<span class="yomi">まつもとそばてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江藩7代藩主・松平不昧(ふまい)公のお抱えそば屋だったと伝わる店。ビルの1階ながら入口に日本庭園と古い造りの構えを設け、店内はテーブル席とレトロな座敷に分かれる。出雲地方のそば粉を使い、店主が毎朝店内でそばを打つ。33席。松江そば組合の加盟店。</div>
+<div class="sig"><b>一皿:</b>割子そば(三段重ねの丸い漆器に盛った出雲そば。独特の食べ方は店の人が教えてくれる) / かまわり(温かい釜揚げそば(小)と割子そば2枚を組み合わせたセット。たっぷりの薬味が付く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（松江観光協会は11:00〜16:00と記載）</td></tr>
+<tr><th>定休日</th><td class="off">火曜（祝日の場合は営業）・第2水曜・年末年始</td></tr>
+<tr><th>住所</th><td>島根県松江市白潟本町43 スティックビル1F</td></tr>
+<tr><th>予約</th><td>未確認（ホットペッパーグルメではネット予約を受け付けていない） — <a href="tel:0852287131">☎ 0852-28-7131</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江城下の南側・白潟本町にあり、城北に集まる老舗とは別のエリアを押さえられる。営業の根拠は、松江観光協会のグルメ「出雲そば」店舗一覧と松江そば組合の店舗一覧(いずれも2026-10-06閲覧)に現在も掲載されていること、およびホットペッパーグルメの掲載ページが更新日2022年4月25日で現存すること。写真はホットペッパーグルメの店舗掲載写真(短辺900px以上・透かしなしを実測確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E6%9C%AC%E8%95%8E%E9%BA%A6%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E7%99%BD%E6%BD%9F%E6%9C%AC%E7%94%BA43%20%E3%82%B9%E3%83%86%E3%82%A3%E3%83%83%E3%82%AF%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E3%81%9D%E3%81%B0&amp;store=27541">松江観光協会 グルメ／出雲そば 店舗情報 松本蕎麦店（2026-10-06閲覧）</a> / <a href="https://matsue-soba.net/">松江そば組合 公式サイト 店舗一覧（2026-10-06閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000858431/">ホットペッパーグルメ 松本蕎麦店（2026-10-06閲覧）</a></div>
+</div></div>
+<div class="card" id="c-matsue-tataraya">
+<img class="hero" src="img/matsue/matsue-tataraya.jpg" alt="出雲そば たたらや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">15</span>出雲そば たたらや<span class="yomi">いずもそば たたらや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">松江の老舗駅弁屋・一文字家が営む出雲そば店。奥出雲の名店で修業した職人が手打ちし、一部のメニューには奥出雲で古くから栽培されてきた在来種「横田小(よこたこ)そば」を使う。14席と小さいが、駅構内で本式の出雲そばが食べられる数少ない店。松江そば組合の加盟店。</div>
+<div class="sig"><b>一皿:</b>割子そば(三段重ねの丸い漆器に盛った出雲そば。上の段からだしをかけ、残っただしを次の段へ移して食べる) / だしめし(そば屋のだしと大山鶏の旨煮で炊き込んだご飯。一文字家が駅弁「蕎麦屋のだしめし」にも仕立てている看板メニュー)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（松江そば組合）／松江観光協会は11:00〜20:30(ラストオーダー20:00)と記載。記載が食い違うため来店前に電話で確認を</td></tr>
+<tr><th>定休日</th><td class="off">不定休（シャミネ松江に準ずる）</td></tr>
+<tr><th>住所</th><td>島根県松江市朝日町伊勢宮472-2</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0852613750">☎ 0852-61-3750</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江駅前・伊勢宮エリアを押さえる一軒で、短時間で食べられる業態として他の6店と重ならない。営業の根拠は、松江観光協会のグルメ「出雲そば」店舗一覧と松江そば組合の店舗一覧(いずれも2026-10-06閲覧)に現在も掲載されていること、および運営会社・一文字家の公式サイトが「JR松江駅の『出雲そばたたらや』の人気メニュー」として現在もだしめしを販売していること(2026-10-06閲覧)。写真は個人のブログ「ｏ課長」の訪問記(2022年8月6日)7点で、長辺900px以上・透かしなしを実測確認した。店頭の外観のみの写真とメニュー表の撮影は候補から外した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%20%E3%81%9F%E3%81%9F%E3%82%89%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9C%9D%E6%97%A5%E7%94%BA%E4%BC%8A%E5%8B%A2%E5%AE%AE472-2">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（アメーバブログ）より引用 / 参照元: <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E3%81%9D%E3%81%B0&amp;store=74635">松江観光協会 グルメ／出雲そば 店舗情報 出雲そば たたらや（2026-10-06閲覧）</a> / <a href="https://matsue-soba.net/">松江そば組合 公式サイト 店舗一覧（2026-10-06閲覧）</a> / <a href="https://ichimonjiya.jp/">一文字家 公式サイト（駅弁「蕎麦屋のだしめし」の説明にたたらやの記載。2026-10-06閲覧）</a> / <a href="https://ameblo.jp/okb0322/entry-12757429194.html">個人ブログ「ｏ課長」松江市駅ビルの出雲そば「出雲そば たたらや」（2022年8月6日・2026-10-06閲覧）</a></div>
+</div></div>
+<div class="card" id="c-matsue-tamaki-udon">
+<img class="hero" src="img/matsue/matsue-tamaki-udon.jpg" alt="手造りうどん たまき 松江店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>手造りうどん たまき 松江店<span class="yomi">てづくりうどん たまき まつえてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲市斐川町の玉木製麺(1948年に製麺業として創業、1977年に飲食店1号店)が営むうどん店。島根と鳥取に数店を構える県内発祥の店で、全国展開のチェーンではない。もちもちした自社製麺のうどんが看板だが、天ぷら付割子そばなど出雲そばのメニューもそろえる。100席、テーブル・カウンターあり、夜8時台まで開いている。</div>
+<div class="sig"><b>一皿:</b>手造りうどん(自社製麺所でつくるもちもちした太めのうどん。ぶっかけ・かけ・定食から選べる) / 天ぷら付割子そば(三段重ねの丸い漆器に盛った出雲そばに天ぷらを添えたセット)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜20:30（ラストオーダー20:00＝公式サイト）</td></tr>
+<tr><th>定休日</th><td class="off">木曜（年末年始の定休日は要問い合わせ＝ホットペッパーグルメ）</td></tr>
+<tr><th>住所</th><td>島根県松江市学園1-6-3</td></tr>
+<tr><th>予約</th><td>未確認（ホットペッパーグルメではネット予約を受け付けていない） — <a href="tel:0852271531">☎ 0852-27-1531</a> ／ <a href="https://izumo-tamaki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>そば専門店ばかりに偏らないよう、うどんの枠として1店入れた。全国チェーンではなく、島根県出雲市の製麺所が発祥で島根・鳥取に数店という地元資本の規模。夜まで開いており価格も手頃で、昼だけ営業のそば店が多い松江で使いどころが違う。営業の根拠は公式サイトの店舗一覧に松江店が現在も掲載されていること(2026-10-06閲覧。同じページで大社店・浜田店の閉店は告知済み)、およびホットペッパーグルメに2025年10月22日投稿の来店口コミがあること。写真は公式サイトの店舗紹介写真とホットペッパーグルメの掲載写真(いずれも短辺900px以上・透かしなしを実測確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E9%80%A0%E3%82%8A%E3%81%86%E3%81%A9%E3%82%93%20%E3%81%9F%E3%81%BE%E3%81%8D%20%E6%9D%BE%E6%B1%9F%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%AD%A6%E5%9C%921-6-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://izumo-tamaki.com/web/locations/">うどん・出雲そば たまき 公式サイト 店舗一覧（2026-10-06閲覧）</a> / <a href="https://izumo-tamaki.com/web/locations/%e3%81%9f%e3%81%be%e3%81%8d-%e6%9d%be%e6%b1%9f%e5%ba%97/">うどん・出雲そば たまき 公式サイト 松江店（2026-10-06閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000512430/">ホットペッパーグルメ 手造りうどん たまき 松江店（2026-10-06閲覧。2025年10月22日投稿の口コミあり）</a></div>
+</div></div>
+<h2 id="s-ramen" class="c-red">ラーメン・中華そば・町中華</h2>
+<div class="card" id="c-matsue-ramen-temari">
+<img class="hero" src="img/matsue/matsue-ramen-temari.jpg" alt="らーめん茶屋 てまり 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">17</span>らーめん茶屋 てまり<span class="yomi">らーめんちゃや てまり</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">黒田町のキャスパル通り沿いで四十年以上続く、麺を自家製にしているラーメン店。看板は野菜をたっぷり使った松江ちゃんぽんと、熟成させた濃厚な白湯スープの野菜ぱいたんらーめんで、唐揚げや餃子を合わせた定食仕立ても多い。70席とこの街の麺類店としては広く、カウンターのほかに座敷があり、昼は家族連れ、夜は近隣の勤め帰りで埋まる。年中無休で夜10時まで通しで営業する。</div>
+<div class="sig"><b>一皿:</b>松江ちゃんぽん(豚肉と野菜を炒めて白濁したスープで煮込み、太めの自家製麺とともに大ぶりの丼で出すちゃんぽん。てまりの看板で、長崎のものより野菜の量が多い)／野菜ぱいたんらーめん(鶏や豚の骨を長時間炊いて白く濁らせた濃厚スープに、炒めた野菜を山盛りにのせた一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜22:00（料理L.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし（年中無休）</td></tr>
+<tr><th>住所</th><td>島根県松江市黒田町469-2</td></tr>
+<tr><th>予約</th><td>不要（席のみ・大人数は電話で相談） — <a href="tel:0852274600">☎ 0852-27-4600</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江の麺類店の中では珍しく自家製麺で、ちゃんぽんを看板に据えている点が土地の色として面白い。営業の根拠は、ホットペッパーグルメの掲載ページ（2026年10月6日閲覧）に営業時間11:00〜22:00・定休日なし・予算800円が現行情報として出ていること、および地域情報サイトHAMONIの松江市ラーメンランキング（更新日2026年10月6日）に6位として掲載され、電話番号0852-27-4600が記載されていること。個人店で全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E8%8C%B6%E5%B1%8B%20%E3%81%A6%E3%81%BE%E3%82%8A%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E9%BB%92%E7%94%B0%E7%94%BA469-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000512449/">ホットペッパーグルメ「ラーメン茶屋 てまり」掲載ページ（2026年10月6日閲覧）</a> / <a href="https://hamoni.jp/shop/kirZWlrtGW64CiqhuruN">HAMONI 松江市のおすすめラーメンベスト20 第6位「ちゃんぽん らーめん茶屋 てまり」（更新日2026年10月6日）</a></div>
+</div></div>
+<div class="card" id="c-matsue-ramen-daisho">
+<img class="hero" src="img/matsue/matsue-ramen-daisho.jpg" alt="らーめんとんてき 大翔 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">18</span>らーめんとんてき 大翔<span class="yomi">らーめんとんてき だいしょう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">松江城の東、県庁や県民会館が並ぶ殿町で2010年代初めから続くラーメン店。カウンター3席を含む15席の小さな店で、店主が目の前で作る。定番の大翔ラーメンのほか、宍道湖のしじみを使ったしじみラーメン、いかすみを合わせた黒い醤油ラーメンなど地元の素材を入れた変わり種を置く。店名の通り厚い豚肉を甘辛いたれで焼いた「とんてき」をラーメンに付けられるのが珍しく、昼は官庁街の勤め人で混む。</div>
+<div class="sig"><b>一皿:</b>しじみラーメン(宍道湖でとれるヤマトシジミの出汁をきかせたあっさり醤油味のラーメン。松江ならではの一杯)／とんてきセット(厚切りの豚ロースをにんにくの効いた甘辛いたれで鉄板焼きにした「とんてき」を、ラーメンに組み合わせた定食)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00（料理L.O. 13:30）／17:30〜20:00（料理L.O. 19:30。予約は19時まで受付）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>島根県松江市殿町333-4</td></tr>
+<tr><th>予約</th><td>可（ネット予約・電話予約とも可。10名以上の貸切は要相談） — <a href="tel:0852232117">☎ 0852-23-2117</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江城下の官庁街という立地で、宍道湖のしじみを使った一杯を出す個人店。全国チェーンではない。営業の根拠は、ホットペッパーグルメの掲載ページ（2026年10月6日閲覧）でネット予約が「来店日の当日12時まで受付」として現に稼働しており、営業時間・定休日（水）・キャンセル規定・電話番号0852-23-2117が掲載されていること。あわせて地域情報サイトHAMONIの松江市ラーメンランキング（更新日2026年10月6日）に18位として載っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E3%81%A8%E3%82%93%E3%81%A6%E3%81%8D%20%E5%A4%A7%E7%BF%94%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%AE%BF%E7%94%BA333-4">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000858446/">ホットペッパーグルメ「らーめんとんてき大翔」掲載ページ（2026年10月6日閲覧・ネット予約受付中）</a> / <a href="https://hamoni.jp/shop/gg7ZcD7yalW7eWJT6TpA">HAMONI 松江市のおすすめラーメンベスト20 第18位「らーめん とんてき 大翔」（更新日2026年10月6日）</a></div>
+</div></div>
+<div class="card" id="c-matsue-ramen-nagasan">
+<img class="hero" src="img/matsue/matsue-ramen-nagasan.jpg" alt="ラーメン 長さん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">19</span>ラーメン 長さん<span class="yomi">らーめん ちょうさん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">松江市の南、上乃木の松江中央ランプ交差点そばにある20席ほどのラーメン店。朝9時に開けて昼過ぎまでの通し営業で、休日は行列ができる。豚骨と醤油を合わせたあっさりしてコクのあるスープに、自家製の巻きチャーシューを何枚も重ねた一杯が看板。卓上のきざみ玉ねぎとニンニクは無料で、途中で足して味を変えられる。駐車場は店前5台と専用11台あり、車で行きやすい。</div>
+<div class="sig"><b>一皿:</b>チャーシューメン(豚バラを巻いて煮込んだ自家製チャーシューを何枚も重ねてのせた醤油ラーメン。長さんの看板)／ねぎラーメン(刻んだ青ねぎを丼が隠れるほど盛った醤油ラーメン)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜15:00（まいぷれ[松江]2025年8月取材・島根ラーメン探訪Award 2026年3月の記載とも一致）</td></tr>
+<tr><th>定休日</th><td class="off">第2・第4月曜日</td></tr>
+<tr><th>住所</th><td>島根県松江市上乃木4-21-18</td></tr>
+<tr><th>予約</th><td>不要（宴会は不可） — <a href="tel:0852251870">☎ 0852-25-1870</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>松江でラーメンといえば名が挙がる行列店で、車で行く郊外側の立地を1店入れるために選んだ。個人経営で全国チェーンではない。営業の根拠は、①地域情報サイト「まいぷれ[松江]」の実食レポート（2025年8月取材）に住所・電話0852-25-1870・営業時間9:00〜15:00が載っていること、②Instagramの「第2回島根ラーメン探訪Award」（2026年3月27日投稿）で6位に挙げられ、同じ営業時間と定休日（第2・第4月曜日）・駐車場台数が記されていること、③ホットペッパーグルメの掲載ページ（2026年10月6日閲覧）に店主と料理の写真が19点あること。なお③の営業時間は11:00〜15:00／17:00〜20:00と古い記載のままで食い違うため、新しい①②を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E9%95%B7%E3%81%95%E3%82%93%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E4%B8%8A%E4%B9%83%E6%9C%A84-21-18">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://matsue.mypl.net/article/lunch_matsue/101342">まいぷれ[松江]「行列のできる松江の名店のチャーシューメン 松江市上乃木 ラーメン長さん」（2025年8月取材）</a> / <a href="https://www.hotpepper.jp/strJ000979200/">ホットペッパーグルメ「ラーメン 長さん」掲載ページ（2026年10月6日閲覧）</a> / <a href="https://hamoni.jp/shop/9gr7zguyXxplrq42AV2e">HAMONI「支那そば かつみ」ページに収録された『第2回島根ラーメン探訪Award』（@shimane.ramen・2026年3月27日投稿／長さんは6位）</a></div>
+</div></div>
+<div class="card" id="c-matsue-ramen-nasebanaru-kakeru">
+<img class="hero" src="img/matsue/matsue-ramen-nasebanaru-kakeru.jpg" alt="らあ麺ダイニング 為セバ成ル。KAKERU 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">20</span>らあ麺ダイニング 為セバ成ル。KAKERU<span class="yomi">らあめんだいにんぐ なせばなる かける</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">JR松江駅の駅ビル「シャミネ松江」の食の専門館にある、松江の中西屋が営むらあ麺の店。バーカウンターとソファ席を置き、酒やサイドメニューも揃えた「らあ麺ダイニング」という業態で、ひとりでも遅い時間でも入りやすい。2018年6月に本店の「為セバ成ル。」が閉じ、いまはこのKAKERUが看板を継いでいる。醤油だれに黒い香味油を合わせた「成ル麺。」が定番で、つけ麺も通年ある。</div>
+<div class="sig"><b>一皿:</b>成ル麺。(店の看板らあ麺。醤油のかえしに黒い香味油を重ね、細麺で供する一杯。「極味」「匠味」など数種がある)／つけ麺(濃いめのつけ汁に麺をくぐらせて食べる麺。松江のつけ麺の店としてたびたび名が挙がる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜22:00（L.O. 21:30）※シャミネ松江の公式ショップページの「現在」の表示。同サイトのお知らせ（2024年9月27日）は「10月1日〜当面の間 11:00〜21:00（L.O.20:30）」としており記載が分かれるので、行く前に電話で確認を</td></tr>
+<tr><th>定休日</th><td class="off">なし（シャミネ松江の休館日に準じる）</td></tr>
+<tr><th>住所</th><td>島根県松江市朝日町伊勢宮472-2 シャミネ松江 食の専門館</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0852675840">☎ 0852-67-5840</a> ／ <a href="http://nakanishiya.com/buisiness/kakeru/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前の一軒として、JR松江駅の駅ビルの中にあり列車の待ち時間に使える店を選んだ。運営は松江の株式会社中西屋で、全国チェーンではない。営業の根拠は、①駅ビルの運営会社シャミネ松江の公式ショップページ（2026年10月6日閲覧）に電話0852-67-5840・営業時間・予約不可が現行情報として載っていること、②同社公式サイトのお知らせ「らあ麺ダイニング為セバ成ル。KAKERU 営業時間変更のお知らせ」（2024年9月27日）が存在すること、③運営会社・中西屋の公式サイトに店舗ページがあること。写真は、全国のラーメン店を巡る個人ブログ（アメーバブログ「amagasakiosaka」2021年10月18日の訪問記）に載った実写から、料理と店内が写った1080×810pxの8点を採った（公式サイトとシャミネの画像は449×299pxで条件に届かないため不採用）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%82%E9%BA%BA%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E7%82%BA%E3%82%BB%E3%83%90%E6%88%90%E3%83%AB%E3%80%82KAKERU%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9C%9D%E6%97%A5%E7%94%BA%E4%BC%8A%E5%8B%A2%E5%AE%AE472-2%20%E3%82%B7%E3%83%A3%E3%83%9F%E3%83%8D%E6%9D%BE%E6%B1%9F%20%E9%A3%9F%E3%81%AE%E5%B0%82%E9%96%80%E9%A4%A8">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（アメーバブログ）より引用 / 参照元: <a href="https://www.shamine.jp/matsue/shop/detail.php?id=561">シャミネ松江 公式 ショップ詳細「らあ麺ダイニング 為セバ成ル。KAKERU」（2026年10月6日閲覧）</a> / <a href="http://www.shamine.jp/matsue/information/detail.php?id=1168">シャミネ松江 公式 お知らせ「らあ麺ダイニング為セバ成ル。KAKERU 営業時間変更のお知らせ」（2024年9月27日）</a> / <a href="http://nakanishiya.com/buisiness/kakeru/">株式会社中西屋 公式サイト 店舗紹介「らあ麺ダイニング 為セバ成ル。カケル。」</a> / <a href="https://ameblo.jp/amagasakiosaka/entry-12704718696.html">個人ブログ（アメーバブログ）「無条件に好きなタイプの港屋インスなつけ麺！らあ麺ダイニング 為セバ成ル。カケル@島根県松江市」（2021年10月18日・写真の出典）</a></div>
+</div></div>
+<div class="card" id="c-matsue-ramen-ajitomi">
+<img class="hero" src="img/matsue/matsue-ramen-ajitomi.jpg" alt="味富 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">21</span>味富<span class="yomi">あじとみ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">松江でいちばんの飲み屋街、伊勢宮町にある老舗。品書きはラーメンと餃子にほぼ絞られ、濃いめの味噌ラーメンと、「ぎょうさん」の名で呼ばれる名物の焼き餃子が二枚看板になっている。カウンター6席と小上がり12席の計18席で、昼は近所の勤め人、夜は飲んだあとの客が入れ替わり立ち替わり座る。持ち帰りで餃子を買って帰る家庭も多く、松江で「餃子」といえばまずこの店の名が挙がる。</div>
+<div class="sig"><b>一皿:</b>ぎょうさん(味富の名物として知られる焼き餃子。皮がもっちりして具がぎっしり詰まり、地元では店名と並べて「ぎょうさん」とだけ呼ばれる)／味噌ラーメン(濃厚な味噌だれのラーメン。店が「味噌ラーメン ギョウサン 味富」を名乗るほどの看板)</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜14:00／17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>島根県松江市伊勢宮町538</td></tr>
+<tr><th>予約</th><td>不要（カウンター6席・小上がり12席） — <a href="tel:0852282202">☎ 0852-28-2202</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>餃子を看板にした一軒として、また伊勢宮町という飲み屋街の立地を押さえるために選んだ。個人経営の老舗で全国チェーンではない。営業の根拠は、①ホットペッパーグルメの掲載ページ（2026年10月6日閲覧）に住所・営業時間12:00〜14:00／17:00〜22:00・定休日（日）・席数18席・駐車場2台が現行情報として載っていること、②地域情報サイトHAMONIの「松江市のおすすめ餃子ベスト20」（更新日2026年10月6日）で1位に挙げられ、電話番号0852-28-2202と店のInstagram（@ajitomi538）が記されていること。写真は、個人ブログ（アメーバブログ「モヤトリアムな毎日」2024年4月16日の訪問記）に載った実写から、名物「ぎょうさん」と味噌らーめんが写った長辺1080pxの6点を採った。同記事は電話番号・営業時間・定休日もホットペッパーの掲載と一致しており、価格（ぎょうさん900円・味噌らーめん800円）も確認できる。ホットペッパーの無料掲載ページに載る画像はこの店のものではない広告用の写真なので使っていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%AF%8C%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E4%BC%8A%E5%8B%A2%E5%AE%AE%E7%94%BA538">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（アメーバブログ）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000512112/">ホットペッパーグルメ「味富」掲載ページ（2026年10月6日閲覧）</a> / <a href="https://hamoni.jp/shop/dyyLKBVmBB8wsqD6sikC">HAMONI 松江市のおすすめ餃子ベスト20 第1位「味噌ラーメン ギョウサン 味富」（更新日2026年10月6日）</a> / <a href="https://ameblo.jp/moyatorium/entry-12848536783.html">個人ブログ（アメーバブログ）「味富(松江)。」（2024年4月16日・写真と価格の出典）</a></div>
+</div></div>
+<div class="card" id="c-matsue-ramen-papa-chubo">
+<div class="hero-pending">写真準備中<span>松江観光協会の掲載画像が原寸でも576×377px、個人ブログも長辺640px止まりで、見出し写真の下限（長辺900px）に1枚も届かなかった。公式はInstagramのみで当環境からは取得できない</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">22</span>松江中華 パパ厨房<span class="yomi">まつえちゅうか ぱぱちゅうぼう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">松江城の南、末次本町の町なかにある中華料理店。1階がホール、2階が宴会席で合わせて60名入り、昼は定食、夜は宴会でも使われる。創作中華から本格的な中華料理まで値ごろな値段で出すのが身上で、看板は麻婆豆腐。ラーメンや担々麺といった麺類も通して置いてあり、松江の中華の一軒として地元の情報サイトでも常に上位に名が挙がる。松江観光協会の飲食店一覧にも「洋食・中華」の欄で載っている。</div>
+<div class="sig"><b>一皿:</b>麻婆豆腐(この店の看板料理。四川風の辛みをきかせた豆腐料理で、ご飯と合わせた定食でも頼める)／中華麺類(ラーメン・担々麺など。中華料理店の作るスープで、〆にも昼食にも使える)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00／17:30〜22:00（松江観光協会の掲載）。ホットペッパーグルメの掲載では11:30〜15:00（L.O.14:30）／17:30〜23:00（L.O.22:30）となっており、記載が分かれる</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（松江観光協会の掲載。ホットペッパーグルメは「不定休」としており記載が分かれる）</td></tr>
+<tr><th>住所</th><td>島根県松江市末次本町79</td></tr>
+<tr><th>予約</th><td>可（2階に宴会席28名分あり。電話で相談） — <a href="tel:0852257588">☎ 0852-25-7588</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>町中華の一軒として、また松江城下の末次本町という中心部の立地を押さえるために選んだ。個人経営で全国チェーンではない。営業の根拠は、①一般社団法人松江観光協会の公式サイト「飲食店一覧」の店舗情報ページ（2026年10月6日閲覧）に営業時間・電話0852-25-7588・所在地・定休日（火曜）・定員60名が掲載されていること、②地域情報サイトHAMONIの松江市ラーメンランキング（更新日2026年10月6日）に2位として載っていること。写真候補なし。松江観光協会の掲載画像は原寸でも576×377pxしかなく条件に届かない。個人ブログも当たったが、見つかった2本はいずれも長辺640px（朝日住宅の社員ブログ・2023年5月15日）と、料理がほとんど写っていない見出し用の切り抜き（note「えみのほのぼの日記」）で、使えるものがなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E6%B1%9F%E4%B8%AD%E8%8F%AF%20%E3%83%91%E3%83%91%E5%8E%A8%E6%88%BF%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9C%AB%E6%AC%A1%E6%9C%AC%E7%94%BA79">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E6%B4%8B%E9%A3%9F%E3%83%BB%E4%B8%AD%E8%8F%AF&amp;store=27574">松江観光協会 公式サイト 飲食店一覧 店舗情報「松江中華 パパ厨房」（2026年10月6日閲覧）</a> / <a href="https://hamoni.jp/shop/qGMhgFWU8eZnGOaeDvUW">HAMONI 松江市のおすすめラーメンベスト20 第2位「創作中国料理 パパ厨房」（更新日2026年10月6日）</a> / <a href="https://note.com/emiemi962/n/n1a3a64d7b830">個人ブログ（note）「創作中国料理 パパ厨房」（ランチの内容と公式Instagramの参照先）</a></div>
+</div></div>
+<div class="card" id="c-matsue-ramen-shinasoba-katsumi">
+<img class="hero" src="img/matsue/matsue-ramen-shinasoba-katsumi.jpg" alt="支那そば かつみ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">23</span>支那そば かつみ<span class="yomi">しなそば かつみ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">松江の西、学園通り沿いの住宅地にある支那そばの店。カウンター8席だけの小さな構えで、昼は開店前から並ぶ。澄んだ醤油味のスープに細麺を合わせた昔ながらの一杯が軸で、スープは濃いめの「黒」、あっさりした「白」、その中間の「ミックス」から選べる。名物は自家製のワンタンを肉とエビで3個ずつ入れた特製ワンタン麺。島根のラーメン好きが選ぶ2026年の番付でも上位に入った。</div>
+<div class="sig"><b>一皿:</b>特製ワンタン麺(肉のワンタンとエビのワンタンを3個ずつ入れた支那そば。ワンタンは自家製で、皮の薄さが身上)／支那そば(澄んだ醤油味の中華そば。スープは濃口の「黒」・あっさりの「白」・その中間の「ミックス」から選べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:45／17:30〜20:30（月曜〜木曜）。金・土・日・祝は昼のみ 11:00〜14:45（いずれもラストオーダー。スープがなくなり次第終了する日もある）</td></tr>
+<tr><th>定休日</th><td class="off">第2・第4月曜日と第2・第4火曜日</td></tr>
+<tr><th>住所</th><td>島根県松江市学園2-9-3</td></tr>
+<tr><th>予約</th><td>不可（カウンター8席のみ） — <a href="tel:0852672157">☎ 0852-67-2157</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>島根の中華そばらしい、澄んだスープの一杯を出す店として選んだ。カウンター8席の個人店で全国チェーンではない。営業の根拠は、①Instagramの「第2回島根ラーメン探訪Award」（@shimane.ramen・2026年3月27日投稿）で10位に挙げられ、住所・営業時間11:00〜14:45／17:30〜20:30（月〜木）・定休日（第2・第4月曜日と第2・第4火曜日）・駐車場4台が記されていること、②地域情報サイトHAMONIの松江市ラーメンランキング（更新日2026年10月6日）に11位として載り、電話0852-67-2157・8席・全席禁煙が記されていること、③同ページに2025年12月の実食投稿があること。写真は、全国のラーメン店を巡る個人ブログ（アメーバブログ「amagasakiosaka」2021年10月18日の訪問記）に載った実写から、特製ワンタン麺と支那そばが写った1080×810pxの7点を採った。金・土・日・祝が昼のみという営業時間は、山陰のラーメン専門ブログ「麺ある記 山陰」（2018年8月30日・電話番号と定休日も一致）で確認した。HAMONI掲載の画像は署名付きの一時URLで恒久的に参照できないため使っていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%94%AF%E9%82%A3%E3%81%9D%E3%81%B0%20%E3%81%8B%E3%81%A4%E3%81%BF%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%AD%A6%E5%9C%922-9-3">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（アメーバブログ）より引用 / 参照元: <a href="https://hamoni.jp/shop/9gr7zguyXxplrq42AV2e">HAMONI「支那そば かつみ」店舗ページ（更新日2026年10月6日。『第2回島根ラーメン探訪Award』@shimane.ramen・2026年3月27日投稿を収録）</a> / <a href="https://hamoni.jp/area/shimane/matsue/list/ramen">HAMONI 松江市のおすすめラーメンベスト20 第11位「支那そば かつみ」（更新日2026年10月6日）</a> / <a href="https://ameblo.jp/amagasakiosaka/entry-12704715251.html">個人ブログ（アメーバブログ）「島根を代表すると言っても過言ではない☆極うまワンタン麺！支那そば かつみ@島根県松江市」（2021年10月18日・写真の出典）</a> / <a href="https://menaruki.exblog.jp/30028025">個人ブログ「麺ある記 山陰」支那そば かつみ＠学園（2018年8月30日・営業時間と定休日の出典）</a></div>
+</div></div>
+<div class="card" id="c-matsue-ramen-mensakaba-kou">
+<img class="hero" src="img/matsue/matsue-ramen-mensakaba-kou.jpg" alt="伊勢宮協食 麺酒場 昊 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">24</span>伊勢宮協食 麺酒場 昊<span class="yomi">いせみやきょうしょく めんさかば こう</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2025年9月19日に伊勢宮町の飲み屋街で開いた、9席だけのラーメン酒場。香川県から島根へ移り住んだ店主が、讃岐うどんのいりこ出汁をもとに「島根の地酒に合う和風ラーメン」として組み立てた澄んだ魚介スープを出す。開けるのは火・木の深夜と金・土の夜で、飲んだあとの〆に向く。学生が店に立てる場をつくる「協同学舎」という取り組みの表の顔でもあり、一日だけ店を借りて出店することもできる。</div>
+<div class="sig"><b>一皿:</b>いりこそば(香川の讃岐うどんのいりこ出汁をもとにした、澄んだ魚介スープの和風ラーメン。800円。自家製のいりこ油や日本酒を少し垂らして味を変えながら食べる)／餃子(焼き方に工夫があり、かじると肉汁があふれ出す焼き餃子。この店のもう一つの名物)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火曜・木曜 23:00〜翌4:00／金曜・土曜 21:00〜翌5:00（まいぷれ[松江]の店舗ページ）。同サイトの新店記事では金・土は19:00〜翌5:00とあり記載が分かれるので、行く前にInstagramで確認を</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜・水曜</td></tr>
+<tr><th>住所</th><td>島根県松江市伊勢宮町535-40</td></tr>
+<tr><th>予約</th><td>不要（9席。最大13名の貸切は相談可） — <a href="https://www.instagram.com/kyoudougakusha/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>島根らしい煮干し・いりこ系の澄んだスープを出す新しい店として、また深夜の〆に使える一軒として選んだ。個人店で全国チェーンではない。営業の根拠は、①地域情報サイト「まいぷれ[松江]」の店舗ページ（2026年10月6日閲覧）に住所・営業時間・定休日・メニューの価格・開業日2025年9月19日・Instagram（@kyoudougakusha）が掲載され、店からのニュースが2026年8月25日付で更新されていること、②同サイトの新店紹介記事（2025年11月21日公開）で編集部が取材していること。電話番号は掲載がなく未確認。写真は、同じ「まいぷれ[松江]」の店舗ページのメニュー欄に店が載せた実写から、看板の和風そばと名物の焼き餃子の2点を採った（1200×1600pxと1600×1200px）。記事本文と店舗トップの画像は長辺740px以下で条件に届かないため使っていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BC%8A%E5%8B%A2%E5%AE%AE%E5%8D%94%E9%A3%9F%20%E9%BA%BA%E9%85%92%E5%A0%B4%20%E6%98%8A%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E4%BC%8A%E5%8B%A2%E5%AE%AE%E7%94%BA535-40">Googleマップで開く</a>
+<div class="src">写真: img2.mypl.net 掲載ページより引用 / 参照元: <a href="https://matsue.mypl.net/shop/00000382495/">まいぷれ[松江]「伊勢宮協食 麺酒場 昊」店舗ページ（2026年10月6日閲覧。店からのニュースは2026年8月25日付）</a> / <a href="https://matsue.mypl.net/article/newopen_matsue/104090">まいぷれ[松江]新店情報「伊勢宮協食 麵酒場昊｜ラーメン・コミュニティ」（2025年11月21日）</a> / <a href="https://matsue.mypl.net/shop/00000382495/menu">まいぷれ[松江]「伊勢宮協食 麺酒場 昊」メニューページ（写真の出典）</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・郷土料理・地酒（伊勢宮）</h2>
+<div class="card" id="c-matsue-nekkoya-isemiya">
+<img class="hero" src="img/matsue/matsue-nekkoya-isemiya.jpg" alt="てまひま料理 根っこや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>てまひま料理 根っこや<span class="yomi">てまひまりょうり ねっこや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江駅と宍道湖のあいだに広がる伊勢宮町の飲み屋街にある2階建ての居酒屋。松江市内で「The根っこ」「こ根っこや」を営む根っこグループの一軒で、運営は根っこや株式会社。1階はカウンターと掘りごたつ、2階はテーブル席と8名まで入る個室があり、総席数88席。日本海の旬の魚を軸に、和洋を混ぜた創作料理を出す。店内で鰻専門店「伊勢宮 うな平」も営業している。</div>
+<div class="sig"><b>一皿:</b>丸ごとトマトのおでん(湯引きした完熟トマトを一個まるごと出汁で煮た洋風のおでん。冬は松江のおでんの定番である黒田せり、夏は根菜などを添え、仕上げに岩海苔をのせる)／どぎの唐揚げ(島根でよく獲れる深海魚ドギ＝ゲンゲを衣をつけて揚げたもの。もちもちした身が特徴)</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜14:00（L.O.13:30）／ディナー 17:00〜21:30（L.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">年末年始のみ（ほかは無休）</td></tr>
+<tr><th>住所</th><td>島根県松江市伊勢宮町542-6</td></tr>
+<tr><th>予約</th><td>可（貸切は60名〜。フロア貸切も可） — <a href="tel:0852242060">☎ 0852-24-2060</a> ／ <a href="https://www.nekko-group.com/nekko_ya/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>島根でも入手しにくい地酒「王祿（おうろく）」を酒蔵から直接仕入れていると公式サイトが明記しており、ブリーフが求める地酒の店に合致する。営業の根拠＝公式サイト https://www.nekko-group.com/nekko_ya/ （2026-10-06 取得。年末年始の営業案内、2026年の恵方巻予約、松葉ガニのコース案内が掲載され、住所・電話・営業時間・インボイス登録番号T3280002004308まで記載されている）。ホットペッパー掲載ページ（2024/09/30 更新）も現存。営業時間は公式サイトの記載を採用した（ホットペッパー側は夜22:30〜23:00までとなっており食い違うため）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A6%E3%81%BE%E3%81%B2%E3%81%BE%E6%96%99%E7%90%86%20%E6%A0%B9%E3%81%A3%E3%81%93%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E4%BC%8A%E5%8B%A2%E5%AE%AE%E7%94%BA542-6">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.nekko-group.com/nekko_ya/">根っこグループ公式サイト 根っこや店舗ページ（2026-10-06 取得）</a> / <a href="https://www.nekko-group.com/">根っこグループ公式サイト トップ（2026-10-06 取得）</a> / <a href="https://www.hotpepper.jp/strJ000512202/">ホットペッパーグルメ 根っこや（2024/09/30 更新・2026-10-06 取得）</a></div>
+</div></div>
+<div class="card" id="c-matsue-issei-honten">
+<img class="hero" src="img/matsue/matsue-issei-honten.jpg" alt="一成 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>一成 本店<span class="yomi">いっせい ほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">伊勢宮町にある総席数90席の居酒屋。カウンター、座敷、掘りごたつ、個室を備え、少人数の飲みから宴会まで受ける。日本海で揚がった魚の刺身や姿造りを看板にし、島根の地酒と創作料理を合わせる。店頭には、国産の食材を使う店が掲げる「緑提灯」が下がっている。</div>
+<div class="sig"><b>一皿:</b>刺身の盛り合わせ(日本海で揚がった旬の魚を数種、大皿に盛り合わせたもの)／地魚の姿造り(魚を一尾そのまま使い、頭と尾を立てて身を切り付けた造り)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜23:00（料理L.O.22:00／ドリンクL.O.22:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>島根県松江市伊勢宮町544-9</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0852280888">☎ 0852-28-0888</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>伊勢宮町の飲み屋街で座敷・個室まで備える数少ない大箱で、ホットペッパーの紹介文でも「地元に根ざした居酒屋。地酒と創作料理」と説明される地元の個人店。営業の根拠＝ホットペッパー掲載ページ https://www.hotpepper.jp/strJ000688839/ （2026-10-06 取得。同日時点でホットペッパーの「伊勢宮町×居酒屋」エリア一覧にも掲載されており、電話番号案内ページも生きている）。ただしページ自体の最終更新は2022/12/05と古い。ウェブ検索でも閉店の報は見つからなかったが、訪問前に電話で確認することを勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E6%88%90%20%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E4%BC%8A%E5%8B%A2%E5%AE%AE%E7%94%BA544-9">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000688839/">ホットペッパーグルメ 一成 本店（2026-10-06 取得）</a> / <a href="https://www.hotpepper.jp/SA72/Y955/XPI7/G001/">ホットペッパーグルメ 伊勢宮町×居酒屋 エリア一覧（2026-10-06 取得）</a></div>
+</div></div>
+<div class="card" id="c-matsue-hamayaki-minato">
+<img class="hero" src="img/matsue/matsue-hamayaki-minato.jpg" alt="浜焼き酒場 みなと 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>浜焼き酒場 みなと<span class="yomi">はまやきさかば みなと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">伊勢宮町にある総席数32席の浜焼きの酒場。掘りごたつの座敷のテーブルに焼き台が埋め込まれていて、殻つきの貝や海老を自分で焼いて食べる。壁には大漁旗が張られている。浜焼きのほかに刺身・揚げ物・鍋のコースもあり、山陰の蔵の日本酒も置く。日曜も開けており、松江駅前のホテルから歩いて戻れる距離にある。</div>
+<div class="sig"><b>一皿:</b>浜焼きの盛り合わせ(殻つきの牡蠣・帆立・はまぐり・大海老などを籠に盛り、卓上の焼き台で自分で焼いて食べるもの)／海鮮の刺身盛り(いか・海老・貝など、その日に入った魚介を切り付けて盛り合わせた造り)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜23:30（料理L.O.22:30／ドリンクL.O.23:00）／日曜 17:00〜23:00（料理L.O.22:00／ドリンクL.O.22:30）</td></tr>
+<tr><th>定休日</th><td class="off">記載なし（ホットペッパーの定休日欄に休業日の記載なし。月曜が祝日の場合は日曜も23:30まで営業）</td></tr>
+<tr><th>住所</th><td>島根県松江市伊勢宮町519-24</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0852616555">☎ 0852-61-6555</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>伊勢宮町のなかで業態が他と重ならない浜焼きの店であることと、営業情報の更新がもっとも新しいことから採用した。営業の根拠＝ホットペッパー掲載ページ https://www.hotpepper.jp/strJ003828489/ （2026-10-06 取得。ページ内の更新日が2026/09/29＝取得の1週間前で、ネット予約も受付中）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E7%84%BC%E3%81%8D%E9%85%92%E5%A0%B4%20%E3%81%BF%E3%81%AA%E3%81%A8%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E4%BC%8A%E5%8B%A2%E5%AE%AE%E7%94%BA519-24">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003828489/">ホットペッパーグルメ 浜焼き酒場 みなと（2026/09/29 更新・2026-10-06 取得）</a></div>
+</div></div>
+<div class="card" id="c-matsue-sanin-sakaba-kamiari">
+<div class="hero-pending">写真準備中<span>ホットペッパーの掲載画像は外観1枚のみ（外観だけは不可）。ヒトサラの料理・店内写真は配信の最大が740×555pxで下限（長辺900px）に届かなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>山陰酒場かみあり<span class="yomi">さんいんさかば かみあり</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">伊勢宮町にある総席数72席の大衆酒場。モダンな外観で、カウンター、掘りごたつの個室、座敷を備え、最大50人の宴会まで受ける。山陰の食材を主役にすえ、寿司と串焼きを軸に組み立てる。調理長は1989年松江市生まれの北川信也氏で、高校の調理科を出たあと老舗旅館と市内の料理店で修業し、同じ会社の「満天」を経て開店時に就任した。日本酒・焼酎・ワインを揃える。</div>
+<div class="sig"><b>一皿:</b>山陰！イカかに合戦(境港で揚がった蟹と烏賊を寿司の上にのせた名物。刺身とのセットもある)／大蛇焼き(特製だれに漬け込んだ大山どりを8本の串に刺し、ヤマタノオロチに見立てて焼き上げるもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜翌0:00（料理L.O.23:30／ドリンクL.O.23:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休（大晦日・元旦を除く）</td></tr>
+<tr><th>住所</th><td>島根県松江市伊勢宮町501-32</td></tr>
+<tr><th>予約</th><td>可（貸切可・最大50名） — <a href="tel:0852673000">☎ 0852-67-3000</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>島根の飲み屋街で山陰の食材だけを看板にする新しい大衆酒場で、伊勢宮町の立地と価格帯が他の採用店とずれない。営業の根拠＝ホットペッパー掲載ページ https://www.hotpepper.jp/strJ004492484/ （2026-10-06 取得。ページ内の更新日が2026/02/25）と、ヒトサラの店舗ページ https://hitosara.com/0006026475/ （2026-10-06 取得。調理長の経歴と名物3品、電話0852-67-3000を掲載）。写真候補なし＝ホットペッパー・ヒトサラとも料理と店内の実写があるものの、ホットペッパーの実写は外観1枚のみ、ヒトサラは最大でも短辺767pxで900px未満のため、条件を満たす画像が1枚も取れなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E9%99%B0%E9%85%92%E5%A0%B4%E3%81%8B%E3%81%BF%E3%81%82%E3%82%8A%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E4%BC%8A%E5%8B%A2%E5%AE%AE%E7%94%BA501-32">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.hotpepper.jp/strJ004492484/">ホットペッパーグルメ 山陰酒場かみあり（2026/02/25 更新・2026-10-06 取得）</a> / <a href="https://hitosara.com/0006026475/">ヒトサラ 山陰酒場かみあり（2026-10-06 取得）</a></div>
+</div></div>
+<div class="card" id="c-matsue-isaribi">
+<img class="hero" src="img/matsue/matsue-isaribi.jpg" alt="日本海の幸 漁火 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>日本海の幸 漁火<span class="yomi">にほんかいのさち いさりび</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江駅北口から正面通りを進んだ左手にある総席数80席の海鮮居酒屋。店先の行灯に「島根の地酒が飲める店」と掲げ、カウンターの背後に李白・七冠馬・萌・玉櫻・高津川・月山といった島根県内の蔵の一升瓶を並べる。畳の座敷と掘りごたつがあり、刺身・焼き魚・鍋を出す。</div>
+<div class="sig"><b>一皿:</b>島根の地酒の飲み比べ(松江の李白、奥出雲の七冠馬、邑南町の玉櫻、益田の高津川、安来の月山など県内の蔵の酒を並べて置き、飲み比べられる)／日本海の魚の刺身盛り(その日に揚がった地魚を数種、切り付けて盛り合わせたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜23:00（料理L.O.22:00／ドリンクL.O.22:00）</td></tr>
+<tr><th>定休日</th><td class="off">記載なし（連休の場合は営業し、連休の最終日に休むとホットペッパーに記載）</td></tr>
+<tr><th>住所</th><td>島根県松江市御手船場町568</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。80名以上の予約も相談可） — <a href="tel:0852288115">☎ 0852-28-8115</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ブリーフが優先しろと指定した「島根の地酒を揃える店」そのもので、店の写真に李白・七冠馬・玉櫻・高津川・月山の一升瓶が実際に写っていることを画像を開いて確認した（https://imgfp.hotp.jp/IMGH/12/28/P016101228/P016101228.jpg ・1280x1138）。営業の根拠＝ホットペッパー掲載ページ https://www.hotpepper.jp/strJ001009880/ （2026-10-06 取得。ページ内の更新日が2026/06/04で、ネット予約も受付中）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%B5%B7%E3%81%AE%E5%B9%B8%20%E6%BC%81%E7%81%AB%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%BE%A1%E6%89%8B%E8%88%B9%E5%A0%B4%E7%94%BA568">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001009880/">ホットペッパーグルメ 日本海の幸 漁火（2026/06/04 更新・2026-10-06 取得）</a></div>
+</div></div>
+<div class="card" id="c-matsue-robata-kushikatsu-tetsuo">
+<img class="hero" src="img/matsue/matsue-robata-kushikatsu-tetsuo.jpg" alt="炉端・串カツ テツオ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>炉端・串カツ テツオ<span class="yomi">ろばた・くしかつ てつお</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江駅の西、寺町にある総席数57席の酒場。入口に酒樽と青いのれんを置き、店内はカウンター、掘りごたつ、個室、座敷に分かれる。炉端で炙る焼き物と、揚げたての串カツの両方を看板にしている。だし巻き玉子やローストビーフなどの一品、前菜の盛り合わせも出す。</div>
+<div class="sig"><b>一皿:</b>串カツ(海老や野菜などを一本ずつ串に刺し、衣をつけて揚げたもの)／炉端焼き(目の前の炉で、肉や季節の野菜を炭の直火で焼き上げるもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木 17:30〜22:30（L.O.22:00）／金・土・祝前日 17:30〜23:00（L.O.22:30）／日・祝日 17:30〜22:00（L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>島根県松江市寺町205-3</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0852277717">☎ 0852-27-7717</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>伊勢宮町・東本町に寄った他の採用店と業態（炉端と串カツ）と立地（駅の西側）がずれるため、全体の散らばりを作る目的で採用した。営業の根拠＝ホットペッパー掲載ページ https://www.hotpepper.jp/strJ000858432/ （2026-10-06 取得。ページ内の更新日が2025/06/02で、ネット予約も受付中）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E3%83%BB%E4%B8%B2%E3%82%AB%E3%83%84%20%E3%83%86%E3%83%84%E3%82%AA%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%AF%BA%E7%94%BA205-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000858432/">ホットペッパーグルメ 炉端・串カツ テツオ（2025/06/02 更新・2026-10-06 取得）</a></div>
+</div></div>
+<div class="card" id="c-matsue-sakaya-higashihonmachi">
+<div class="hero-pending">写真準備中<span>ホットペッパーの掲載が2枚だけで原寸が配信されず（360×480pxのみ）、公式サイト・公式SNSも見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>酒匠の店 佐香や 東本町本店<span class="yomi">さかしょうのみせ さかや ひがしほんまちほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">大橋川の北側、東本町にある総席数14席（カウンター8席・座敷6席）の小さな居酒屋。店名の「酒匠（さかしょう）」は日本酒の目利きを指す呼び名で、ホットペッパーの店舗キャッチも「日本酒好きが集まるお店」、楽天ぐるなびの業態表記も「松江×半個室×純米酒」。18時から深夜1時まで開けており、二軒目に使える。松江市内に「佐香や カラコロ広場店」「洞窟居酒屋 松尾や」「炭火焼鳥 ありぺろ」を持つ同系列の本店。</div>
+<div class="sig"><b>一皿:</b>純米酒の飲み比べ(米と米麹と水だけで造った日本酒。店の業態表記が「純米酒」で、カウンター越しに選んでもらえる)／日本酒に合わせる肴(おまかせで出る季節の一品。品書きは公開されていないため、店で確認のこと)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜翌1:00（料理L.O.翌0:00／ドリンクL.O.翌0:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜、第1・第3月曜</td></tr>
+<tr><th>住所</th><td>島根県松江市東本町1-29</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0852280210">☎ 0852-28-0210</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ブリーフが優先しろと指定した「地酒の店」にあたり、カウンター8席という規模と深夜1時までという営業時間が他の採用店と重ならない。営業の根拠＝ホットペッパー掲載ページ https://www.hotpepper.jp/strJ003958546/ （2026-10-06 取得。2024/12/13 更新、口コミ17件・4.9、ネット予約受付中）と、楽天ぐるなびの店舗ページ https://sakayahigasihonmatiten1.gorp.jp/ （2026-10-06 取得。電話0852-28-0210、住所、営業時間、定休日、総席数14席を掲載）。営業時間と定休日はぐるなび側の記載（18:00〜翌1:00、日曜と第1・第3月曜休）を採用した。写真候補なし＝ホットペッパーの掲載ページに料理・店内の実写が2枚しかなく、2枚とも原寸が配信されておらず（480px版のみ・360x480）、短辺900px以上の画像が1枚も取れなかった。公式サイト・公式SNSは見つからなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E5%8C%A0%E3%81%AE%E5%BA%97%20%E4%BD%90%E9%A6%99%E3%82%84%20%E6%9D%B1%E6%9C%AC%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9D%B1%E6%9C%AC%E7%94%BA1-29">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.hotpepper.jp/strJ003958546/">ホットペッパーグルメ 酒匠の店 佐香や 東本町本店（2024/12/13 更新・2026-10-06 取得）</a> / <a href="https://sakayahigasihonmatiten1.gorp.jp/">楽天ぐるなび 酒匠の店 佐香や 東本町本店（2026-10-06 取得）</a></div>
+</div></div>
+<div class="card" id="c-matsue-torisuke">
+<img class="hero" src="img/matsue/matsue-torisuke.jpg" alt="とり助 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>とり助<span class="yomi">とりすけ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江大橋の北、末次本町にある総席数28席の鶏の店。炭火の網で串を焼くほか、熱した鉄板で鶏もも肉を豪快に焼く皿を看板にする。カウンターの背後と壁際の棚に日本酒と焼酎の瓶を並べ、奥には座敷がある。開けるのは夜だけで、18時から23時半まで。日曜は休み。</div>
+<div class="sig"><b>一皿:</b>鶏の鉄板焼き(熱した鉄板で鶏もも肉を焼き、刻みねぎをのせて熱いまま供する皿)／炭火の焼き鳥(備長炭の直火で一本ずつ炙る串。炎が立つ焼き台が店の正面にある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 18:00〜23:30（料理L.O.23:00／ドリンクL.O.23:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>島根県松江市末次本町47</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0852282389">☎ 0852-28-2389</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>焼き鳥・鶏料理の枠で、駅前ではなく大橋川の北側（末次本町）に振るために採用した。炭火焼きと鉄板焼きの両方をやる点が他の採用店と重ならない。営業の根拠＝ホットペッパー掲載ページ https://www.hotpepper.jp/strJ000729479/ （2026-10-06 取得。同日時点で「松江×居酒屋」一覧と電話番号案内ページが生きている）。ただしページ自体の最終更新は2020/02/13と古く、ウェブ検索でも閉店の報は見つからなかったが、訪問前の電話確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%8A%E5%8A%A9%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9C%AB%E6%AC%A1%E6%9C%AC%E7%94%BA47">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000729479/">ホットペッパーグルメ とり助（2026-10-06 取得）</a> / <a href="https://www.hotpepper.jp/SA72/Y955/G001/">ホットペッパーグルメ 松江×居酒屋 一覧（2026-10-06 取得）</a></div>
+</div></div>
+<div class="card" id="c-matsue-umisuke-to-tamahiko">
+<img class="hero" src="img/matsue/matsue-umisuke-to-tamahiko.jpg" alt="旨酒ダイニング うみすけとたまひこ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>旨酒ダイニング うみすけとたまひこ<span class="yomi">うまざけだいにんぐ うみすけとたまひこ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江城の南、県庁の手前にある総席数20席の居酒屋。店の奥へ続く通路の壁一面に一升瓶を並べた棚を設け、その奥に長いカウンターとテーブル席がある。ホットペッパーの店舗キャッチも「酒類豊富！1人でも仲間とでも！」「長いカウンターでお一人でも大丈夫」で、一人で飲みに来る客を前提にした造り。火曜から金曜は昼も開けている。</div>
+<div class="sig"><b>一皿:</b>日本酒・焼酎の品揃え(店内の壁一面の棚に一升瓶を並べ、その中から選んで飲める)／日替わりの肴の盛り合わせ(刺身や和え物など小鉢を数種並べたもの。献立は日によって変わる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・土 17:00〜22:00（L.O.21:30）／火〜金 11:30〜13:30（L.O.13:00）と17:00〜22:00（L.O.21:30）／祝前日 11:30〜14:00（L.O.13:30）と17:00〜22:00（L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>島根県松江市内中原町8</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0852269409">☎ 0852-26-9409</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>採用した他の8店が松江駅前・伊勢宮町・大橋川沿いに集まるため、松江城下（県庁前）に振って立地を散らす目的で採用した。酒の品揃えを軸にした一人飲み向けの店で、価格帯も採用店のなかで最も低い。営業の根拠＝ホットペッパー掲載ページ https://www.hotpepper.jp/strJ000717725/ （2026-10-06 取得。ページ内の更新日が2025/07/07で、ネット予約も受付中、口コミ32件）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A8%E9%85%92%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E3%81%86%E3%81%BF%E3%81%99%E3%81%91%E3%81%A8%E3%81%9F%E3%81%BE%E3%81%B2%E3%81%93%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%86%85%E4%B8%AD%E5%8E%9F%E7%94%BA8">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000717725/">ホットペッパーグルメ 旨酒ダイニング うみすけとたまひこ（2025/07/07 更新・2026-10-06 取得）</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・カレー・各国料理</h2>
+<div class="card" id="c-matsue-bougetsu">
+<img class="hero" src="img/matsue/matsue-bougetsu.jpg" alt="ぼうげつ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>ぼうげつ<span class="yomi">ぼうげつ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江赤十字病院のすぐ西にある家族経営の洋食店。先代から40年以上続き、豚肉のしょうが焼きを松江で最初にメニューに載せた店だと自ら掲げている。カウンター・テーブル・座敷を合わせて35席。注文を受けてから店内で捏ねるハンバーグ、たっぷりの大根おろしで食べるとんかつなど、定食はご飯とみそ汁が付いて量が多い。入口の黄色いたぬきは37年前から立っている。</div>
+<div class="sig"><b>一皿:</b>ハンバーグ(店内で捏ねる手ごねハンバーグ。粗みじんの玉ねぎの食感が残り、目玉焼きとデミグラスソースを添えてご飯・みそ汁付きで出る／850円)／おろしとんかつ定食(揚げたてのとんかつに大根おろしを山盛りに乗せ、醤油をかけて食べる同店1番人気の定食。希望すればポン酢にも替えられる／1,050円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00／18:00〜21:00（都合により閉店が早まる場合あり）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>島根県松江市母衣町18</td></tr>
+<tr><th>予約</th><td>不可（ネット予約の受付なし）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページ（店側が管理する掲載情報、店舗情報の最終更新2020年1月7日）に住所・営業時間・定休日・席数・看板メニューと価格が載っており、同ページの口コミに2026年3月29日来店の投稿（「町の洋食屋さんで人気店です」「ビーフカツをいただきました」）があることから、2026年春の時点で営業していることを確認した。松江城エリアの洋食では価格帯が最も低く、座敷があって家族連れで入れる点が他の6店と重ならないため採用。電話番号はホットペッパー側で非表示のため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BC%E3%81%86%E3%81%92%E3%81%A4%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%AF%8D%E8%A1%A3%E7%94%BA18">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000512198/">ホットペッパーグルメ「ぼうげつ」掲載ページ（店舗情報 2020/01/07 更新・口コミ 2026/03/29）</a></div>
+</div></div>
+<div class="card" id="c-matsue-restaurant-seiyoken">
+<div class="hero-pending">写真準備中<span>まっぷるウェブの写真4点が全て640×480pxで下限（長辺900px）に届かず、ホットペッパーの同店ページには自店写真が無い（表示される4点は他店の広告枠）</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>レストラン 西洋軒<span class="yomi">れすとらん せいようけん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">幸橋のたもとに建つ1932年（昭和7年）創業の洋食店。レンガ造りの建物で、昔からの常連が通う落ち着いた店内。デミグラスソースをかけたオムライス、タンシチュー、ハンバーグ、エビフライといった洋食の定番が一通りそろう。地元では「カツライス発祥の店」として知られる。45席、駐車場3台（無料）、カード利用可。日曜定休で、夜は19時30分ラストオーダーと早じまい。</div>
+<div class="sig"><b>一皿:</b>オムライス(薄焼き卵で包んだライスにデミグラスソースをかけた、創業時から続く洋食店の定番／900円)／タンシチューとクリームコロッケセット(牛タンを煮込んだシチューに、揚げたてのクリームコロッケを組み合わせた看板のセット／1,500円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00（L.O.14:00）／17:30〜19:30（L.O.19:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（年末年始休）</td></tr>
+<tr><th>住所</th><td>島根県松江市片原町111</td></tr>
+<tr><th>予約</th><td>未確認（まっぷる・ホットペッパーとも予約可否の記載なし） — <a href="tel:0852223434">☎ 0852-22-3434</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地図とガイドブックの出版社・昭文社が運営する「まっぷるウェブ」のスポットページに、2026年7月28日撮影の写真4点とともに住所・電話・営業時間・休業日・料金が掲載されている（同社編集部の取材情報）。あわせて地域グルメ情報サイトHAMONIの松江市洋食ランキング（2026年10月6日更新）にも14位で掲載され、営業時間データが生きている。1932年創業という松江で最も古い部類の洋食店で、オムライス・タンシチューという他店にない品目を持つため採用。写真候補なし（まっぷるの掲載画像4点はいずれも640×480pxで、短辺900px未満のため使用できない。ホットペッパーの同店ページには自店写真が1点も無い）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E8%A5%BF%E6%B4%8B%E8%BB%92%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E7%89%87%E5%8E%9F%E7%94%BA111">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.mapple.net/spot/32000518/">まっぷるウェブ（昭文社）スポット「レストラン西洋軒」（掲載写真 2026/07/28）</a> / <a href="https://hamoni.jp/area/shimane/matsue/list/western-food">HAMONI 松江市のおすすめ洋食ベスト20 14位（2026/10/06 更新）</a> / <a href="https://www.hotpepper.jp/strJ000111247/">ホットペッパーグルメ「レストラン 西洋軒」掲載ページ</a></div>
+</div></div>
+<div class="card" id="c-matsue-pasta-factory-ortaggio">
+<img class="hero" src="img/matsue/matsue-pasta-factory-ortaggio.jpg" alt="PASTA FACTORY ORTAGGIO 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>PASTA FACTORY ORTAGGIO<span class="yomi">ぱすたふぁくとりー おるたっじょ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">大橋川北岸の京店商店街にあるイタリアン。松江の飲食会社・株式会社ブロックスインダストリーが2006年7月に「ザ・パスタファクトリー」として開いた店で、同社は現在も松江市内で4店を営む地元資本である。自家製の生パスタと、岩石を積んだガス窯で焼くナポリピッツァが二本柱。50席と広く、カウンター7席があるので一人でも入れる。全席禁煙。専用駐車場はなく、京店第一・第二駐車場が飲食客1時間無料になる。</div>
+<div class="sig"><b>一皿:</b>本日の生パスタプレートランチ(日替わりの自家製生パスタに、サラダ・前菜・スープが付く昼の定番／880円)／マルゲリータ(岩石を積んだガス窯で焼くナポリピッツァ。縁が膨らんで外は香ばしく中はもちもち／S1,540円・M1,958円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 11:30〜14:30（L.O.14:00）／17:30〜22:15（料理L.O.21:45）、土 11:30〜15:00（L.O.14:30）／17:30〜22:15、日祝 11:30〜15:00／17:30〜21:30（料理L.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>島根県松江市末次本町82</td></tr>
+<tr><th>予約</th><td>可（ネット予約は来店日の3日前までリクエスト予約） — <a href="tel:0852280101">☎ 0852-28-0101</a> ／ <a href="https://www.brocs-industry.com/?page_id=2">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメのネット予約ページで2026年10月・11月・12月の空席カレンダーが表示され（10月7日以降がリクエスト予約可）、クーポン情報の更新日が2026年7月7日であることから現在営業中と確認した。運営会社ブロックスインダストリーの公式サイトも2026年9月13日付のお知らせを掲載しており、同社は松江市八束町に本社を置く地元企業で全国チェーンではない。京店商店街という観光動線上にあり、昼880円からと手頃な価格帯の点で採用。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=PASTA%20FACTORY%20ORTAGGIO%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9C%AB%E6%AC%A1%E6%9C%AC%E7%94%BA82">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000688838/">ホットペッパーグルメ「PASTA FACTORY ORTAGGIO」掲載ページ（クーポン 2026/07/07 更新・2026年10〜12月の空席表示）</a> / <a href="https://www.brocs-industry.com/?page_id=2">株式会社ブロックスインダストリー 公式サイト（お知らせ 2026/09/13）</a></div>
+</div></div>
+<div class="card" id="c-matsue-osteria-sante">
+<img class="hero" src="img/matsue/matsue-osteria-sante.jpg" alt="オステリア サンテ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>オステリア サンテ<span class="yomi">おすてりあ さんて</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">松江城の南、殿町の古井ビル1階の奥まった場所にある19席の小さなイタリア料理店。日本海と宍道湖に囲まれた島根の魚介を使う料理が中心で、貝の出汁だけで仕立てるパスタやパエリアを看板にする。店内は一面ガラス張りで昼は光がよく入り、地元作家の作品を並べるギャラリーも兼ねている。全席テーブル席・全席禁煙。昼は10食限定のランチがあり、平日はバゲットがおかわり無料。</div>
+<div class="sig"><b>一皿:</b>スコーリオ(地元の新鮮な貝類の出汁だけで作る岩場風パスタ。店の一番人気／1,400円)／パエリア(魚介をふんだんに使った鉄鍋のパエリア。S・M・Lの3サイズから選べる／S2,400円〜L4,500円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00（料理L.O.14:30）／18:00〜22:00（料理L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>島根県松江市殿町58 古井ビル1F</td></tr>
+<tr><th>予約</th><td>可（ネット予約は来店日の3日前までリクエスト予約） — <a href="tel:0852247668">☎ 0852-24-7668</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメのネット予約ページ（店舗情報 2025年4月18日更新）で住所・電話・営業時間・定休日・席数・決済手段が公開されており、ネット予約の受付も継続している。地域の飲食情報サイトHAMONIの松江市洋食ランキング（2026年10月6日更新）にも「Osteria Sante 島根県松江市殿町58古井ビル1階」として5位で掲載されている。殿町・カラコロ工房という観光動線にあり、島根の魚介を軸にした19席の個人店という点で他店と重ならないため採用。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AA%E3%82%B9%E3%83%86%E3%83%AA%E3%82%A2%20%E3%82%B5%E3%83%B3%E3%83%86%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%AE%BF%E7%94%BA58%20%E5%8F%A4%E4%BA%95%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000808578/">ホットペッパーグルメ「オステリア サンテ Sante Osteria 松江」掲載ページ（2025/04/18 更新）</a> / <a href="https://hamoni.jp/area/shimane/matsue/list/western-food">HAMONI 松江市のおすすめ洋食ベスト20 5位（2026/10/06 更新）</a></div>
+</div></div>
+<div class="card" id="c-matsue-racine">
+<img class="hero" src="img/matsue/matsue-racine.jpg" alt="湖畔のレストラン ラシヌ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>湖畔のレストラン ラシヌ<span class="yomi">こはんのれすとらん らしぬ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">宍道湖畔に建つ島根県立美術館の一角にあるフレンチレストラン。松江の飲食企業・根っこやグループが運営する。一面ガラス張りで、席から宍道湖が一望できる。料理は近海の鮮魚と野菜ソムリエの農家から仕入れる野菜を使い、クラシックなフランス料理に和の要素を加えた「ヌーベル・ジャポネーゼ」を掲げる。ワインは島根と近隣県の国産ワインを中心にそろえる。営業時間・定休日は美術館に準じる。</div>
+<div class="sig"><b>一皿:</b>しまね和牛ビーフシチュー(島根県産のブランド牛「しまね和牛」をじっくり煮込んだランチの単品／2,980円)／RACINE COURSE(アミューズ・オードブル・スープ・パン・魚のメイン・肉のメイン・デザートの全7皿のディナーコース。前日までの予約制／8,800円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>カフェ 10:00〜18:00／ランチ 11:00〜15:00／ディナー 17:00〜20:30（完全予約制）※美術館の開館時間に準じる</td></tr>
+<tr><th>定休日</th><td class="off">火曜、年末年始（12月28日〜1月1日）※美術館の休館日に準じる</td></tr>
+<tr><th>住所</th><td>島根県松江市袖師町1-5 島根県立美術館内</td></tr>
+<tr><th>予約</th><td>可（ディナーは完全予約制・前日まで） — <a href="tel:0852256562">☎ 0852-25-6562</a> ／ <a href="https://www.nekko-group.com/racine/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>島根県立美術館（島根県立の公立美術館）の公式サイト「施設案内」ページに、館内レストランとして店名・営業時間（カフェ10:00〜18:00／ランチ11:00〜15:00／ディナー17:00〜20:30・完全予約制）・電話番号・公式サイトへのリンクが掲載されており、公的機関による一次情報として確実。運営する根っこやグループの公式ブログには2026年1月14日付のラシヌのイベント告知があり、2025年9月（美術館の臨時休館に伴う臨時休業）からの営業再開も告知済み。宍道湖の夕日を店内から見られる唯一の候補として採用。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B9%96%E7%95%94%E3%81%AE%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%A9%E3%82%B7%E3%83%8C%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E8%A2%96%E5%B8%AB%E7%94%BA1-5%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E7%AB%8B%E7%BE%8E%E8%A1%93%E9%A4%A8%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: nekko-group.com 掲載ページより引用 / 参照元: <a href="https://www.shimane-art-museum.jp/visit/facility.html">島根県立美術館 公式サイト 施設案内（レストラン「湖畔のレストラン ラシヌ」）</a> / <a href="https://www.nekko-group.com/racine/">湖畔のレストラン RACINE 公式サイト</a> / <a href="https://www.nekko-group.com/fcblog/racine/">根っこやグループ公式ブログ RACINE（最新記事 2026/01/14）</a> / <a href="https://www.shimane-art-museum.jp/visit/access.html">島根県立美術館 公式サイト 開館時間・休館日／アクセス</a></div>
+</div></div>
+<div class="card" id="c-matsue-indoa">
+<img class="hero" src="img/matsue/matsue-indoa.jpg" alt="印度亜 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>印度亜<span class="yomi">いんどあ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">松江市役所のすぐ近く、西茶町の路地にある23席のスリランカ料理店。添加物を使わず、15〜20種類のスパイスをブレンドして炊くカレーを出す。店内はスリランカのバティック（ろうけつ染め）で飾られ、現地のラジオが流れる。カウンターがあるので一人でも入りやすい。ランチは3種のカレーに主食とサラダかフルーツ、ディナーは4種のカレーに前菜とハーブティーが付くプレート形式。火曜定休。</div>
+<div class="sig"><b>一皿:</b>アティンカムセット(スリランカ・カレーと、米粉の生地を蒸して麺状にした「インディアーッパ」を組み合わせたセット／1,000円)／DEVIL(ビーフ・ポーク・チキン・ソーセージ・魚・エビ・茄子から具を1つ選び、辛さを3段階から指定するスリランカ風の炒め煮／800円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30（料理L.O.14:10）／17:30〜22:30（料理L.O.22:20）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>島根県松江市西茶町1-24</td></tr>
+<tr><th>予約</th><td>一部可（10名以上の貸切は前日までに要予約）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページ（店舗情報 2020年1月7日更新）で住所・営業時間・定休日・席数・メニューと価格を確認し、地域の飲食情報サイトHAMONIの松江市カレー・丼ものランキング（2026年10月6日更新）に8位で掲載され「営業開始：水 11:30」という稼働中の営業時間データと2025年のInstagram投稿が載っていることから、2026年10月時点で営業していると判断した（調査日の10月6日は火曜で、ホットペッパー記載の定休日と一致する）。松江市内でカレーを看板にする個人店のうち、添加物不使用のスリランカカレーという独自性と自店写真の充実で採用。電話番号はホットペッパー側で非表示のため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%B0%E5%BA%A6%E4%BA%9C%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E8%A5%BF%E8%8C%B6%E7%94%BA1-24">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000111301/">ホットペッパーグルメ「印度亜」掲載ページ（2020/01/07 更新）</a> / <a href="https://hamoni.jp/area/shimane/matsue/list/curry-and-donburi">HAMONI 松江市のおすすめカレー・丼ものベスト20 8位（2026/10/06 更新）</a></div>
+</div></div>
+<div class="card" id="c-matsue-steak-kan-nagomi">
+<img class="hero" src="img/matsue/matsue-steak-kan-nagomi.jpg" alt="ステーキ館 和 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>ステーキ館 和<span class="yomi">すてーきかん なごみ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江市東部の東津田町にあるステーキ専門店。コの字型のオープンカウンター21席が中心で、客の目の前の鉄板で肉を焼き上げる。島根県産の黒毛和牛を中心に扱い、平成26年度の第1回島根県肉牛枝肉共進会で最優秀賞を受けたサーロイン・ヒレを数量限定で出したこともある。隠岐諸島の海士町で育つ黒毛和牛「隠岐牛」は月に一度だけ入荷し、入荷日は店のホームページでのみ告知される。個室のテーブル席もあり最大10名まで。</div>
+<div class="sig"><b>一皿:</b>特上特選・島根和牛サーロイン200g(サシの入った島根県産黒毛和牛のサーロインを、目の前の鉄板で焼き上げる／6,300円〜)／隠岐牛ヒレステーキ(隠岐・海士町産の黒毛和牛「隠岐牛」のヒレを厚切りで。月に一度の入荷のみで予約は受け付けず、入荷日は店のホームページで告知される／200g 8,000円〜)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・祝前日 11:00〜15:00（料理L.O.14:15）／17:00〜21:40（料理L.O.21:00）、土日祝 11:00〜21:40（料理L.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>島根県松江市東津田町1109-2</td></tr>
+<tr><th>予約</th><td>可（電話。15名以上の貸切は要相談） — <a href="tel:0852310338">☎ 0852-31-0338</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページ（店舗情報 2020年1月7日更新）に住所・電話・営業時間・定休日・席数・駐車場・メニューと価格が載っている。あわせて地域の飲食情報サイトHAMONIの松江市ステーキランキング（2026年10月時点）に5位で掲載されており、閉店の報は見当たらない。隠岐牛・島根和牛という島根の銘柄牛を軸にした郊外の一軒家という業態で、他の6店と価格帯・立地ともに重ならないため採用。公式サイト（http://w01.tp1.jp/~a382458521/）は当方のアクセスでは403が返り未確認。定休日について別の情報源には「水曜と第3木曜」との記載もあり、訪問前の確認が必要。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E9%A4%A8%20%E5%92%8C%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9D%B1%E6%B4%A5%E7%94%B0%E7%94%BA1109-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000512570/">ホットペッパーグルメ「ステーキ館 和」掲載ページ（2020/01/07 更新）</a> / <a href="https://hamoni.jp/area/shimane/matsue/list/steak">HAMONI 松江市のおすすめステーキランキング 5位（2026/10 時点）</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・和菓子・抹茶</h2>
+<div class="card" id="c-matsue-saiundo-honten">
+<img class="hero" src="img/matsue/matsue-saiundo-honten.jpg" alt="彩雲堂 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>彩雲堂 本店<span class="yomi">さいうんどう ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">明治7年(1874年)創業の松江の和菓子屋。松平不昧公の歌にちなむ銘菓「若草」で知られる。店の奥に茶寮があり、季節の上生菓子とお抹茶のセットなどを座って味わえる（12席ほど）。入口には職人の実演ブースがあり、厚生労働大臣表彰の「現代の名工」に選ばれた大江克之が和菓子をつくる様子を見られる日もある。実演の日程は公式サイトの茶寮カレンダーに出る。</div>
+<div class="sig"><b>一皿:</b>若草(わかくさ)(求肥(ぎゅうひ)に薄緑の寒梅粉をまぶした一口菓子。不昧公の歌にちなむ名で、松江三大銘菓のひとつ)／季節の生菓子とお抹茶セット(その日の上生菓子を選び、抹茶とあわせて茶寮でいただくセット。990円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜18:00（冬期1月は9:00〜17:00）／茶寮 10:00〜17:00（ラストオーダー16:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイトの月別休業日カレンダーで確認。2026年10月は休業日なし）</td></tr>
+<tr><th>住所</th><td>島根県松江市天神町124</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0852212727">☎ 0852-21-2727</a> ／ <a href="https://www.saiundo.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの直営店舗ページに本店の住所・電話・営業時間と「茶寮営業時間 10:00〜17:00(16:30ラストオーダー)」、茶寮メニューの価格が載っている。同じページに2026年10月の店舗休業日カレンダーと「10/10(土)の午後13時より販売開始」という季節限定メニューの告知があり、2026年10月時点で営業していることが確認できた。松江観光協会の特集「『職人商店街』匠の技に触れる旅」でも、創業1874年・優秀和菓子職6名在籍(2024年4月時点)・現代の名工 大江克之の実演ブースとして紹介されている。席数12席はホットペッパーグルメの掲載ページによる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BD%A9%E9%9B%B2%E5%A0%82%20%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%A4%A9%E7%A5%9E%E7%94%BA124">Googleマップで開く</a>
+<div class="src">写真: しまね観光ナビ（島根県観光連盟）より引用 / 参照元: <a href="https://www.saiundo.co.jp/shop/list.php">彩雲堂 公式サイト 直営店舗（本店の住所・電話・営業時間・茶寮の時間とメニュー・2026年10月の休業日）</a> / <a href="https://www.kankou-matsue.jp/omoshiro/shokunin">松江観光協会「『職人商店街』匠の技に触れる旅」（創業1874年・現代の名工 大江克之の実演ブース）</a> / <a href="https://www.hotpepper.jp/strJ000552531/">ホットペッパーグルメ 彩雲堂（総席数12席・営業時間）</a> / <a href="https://www.kankou-matsue.jp/kankou/desc/?cat=%E3%81%8A%E3%81%BF%E3%82%84%E3%81%92%E5%BA%97&amp;spot=103520">松江観光協会 観光スポット 彩雲堂 本店（創業明治7年・中庭が見える喫茶スペース・写真）</a> / <a href="https://www.kankou-shimane.com/destination/21235">しまね観光ナビ（島根県観光連盟）彩雲堂（若草・店内の写真）</a></div>
+</div></div>
+<div class="card" id="c-matsue-gofuan-furyudo">
+<img class="hero" src="img/matsue/matsue-gofuan-furyudo.jpg" alt="五風庵（風流堂 寺町本店内） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>五風庵（風流堂 寺町本店内）<span class="yomi">ごふうあん（ふうりゅうどう てらまちほんてんない）</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治23年(1890年)創業の和菓子屋・風流堂が、2023年4月14日に寺町本店を改装して開いた実演工房。職人の手元を間近に見ながら、蒸したての上用饅頭「朝汐」や、その場で餡をのせる最中を食べられる。店内ではお抹茶と一緒に味わえる。風流堂は大正のはじめ、町の有力者の集まり「どうだら会」の依頼で、製法が途絶えていた不昧公好みの落雁「山川」を復刻し、その技術を他の菓子屋にも広めた店。</div>
+<div class="sig"><b>一皿:</b>蒸したて朝汐(あさしお)(皮むき餡を包んで蒸した上用饅頭。工房で蒸し上がった時間に出される。店内飲食255円)／山川(やまかわ)(赤は紅葉、白は川の水を表した二色の落雁。日本三大銘菓のひとつで、風流堂が大正期に復刻した)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜16:00（風流堂 寺町本店の売り場は9:00〜18:00）</td></tr>
+<tr><th>定休日</th><td class="off">毎週水曜・木曜（風流堂 寺町本店の売り場は毎週水曜と1月1日）</td></tr>
+<tr><th>住所</th><td>島根県松江市寺町151</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0852213241">☎ 0852-21-3241</a> ／ <a href="https://www.furyudo.jp/store/877">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>風流堂の公式サイトに「五風庵（風流堂 寺町本店内）」の独立した店舗ページがあり、営業時間10時〜16時・定休 毎週水曜と木曜・住所・電話と、店内飲食価格つきのメニューが載っている。同サイトのトップには2026年9月30日〜10月1日付の新着情報があり、2026年10月時点で更新が続いている。松江観光協会の特集「『職人商店街』匠の技に触れる旅」でも、2023年にオープンした実演工房として紹介されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%94%E9%A2%A8%E5%BA%B5%EF%BC%88%E9%A2%A8%E6%B5%81%E5%A0%82%20%E5%AF%BA%E7%94%BA%E6%9C%AC%E5%BA%97%E5%86%85%EF%BC%89%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E5%AF%BA%E7%94%BA151">Googleマップで開く</a>
+<div class="src">写真: furyudo.jp 掲載ページより引用 / 参照元: <a href="https://www.furyudo.jp/store/877">風流堂 公式サイト 五風庵（風流堂 寺町本店内）店舗ページ（営業時間・定休日・店内飲食メニューと価格）</a> / <a href="https://www.furyudo.jp/store/38">風流堂 公式サイト 風流堂 寺町本店（住所・電話・営業時間・定休日）</a> / <a href="https://www.furyudo.jp/furyudo/">風流堂 公式サイト 風流堂とは（創業明治23年・山川復刻の経緯）</a> / <a href="https://www.kankou-matsue.jp/omoshiro/shokunin">松江観光協会「『職人商店街』匠の技に触れる旅」（2023年オープンの実演工房・五風餅）</a> / <a href="https://www.kankou-matsue.jp/kankou/desc/?cat=%E3%81%8A%E3%81%BF%E3%82%84%E3%81%92%E5%BA%97&amp;spot=103524">松江観光協会 観光スポット 風流堂 寺町本町(五風庵)（創業明治23年・店内で飲食できるスペース）</a></div>
+</div></div>
+<div class="card" id="c-matsue-kissa-kiharu">
+<img class="hero" src="img/matsue/matsue-kissa-kiharu.jpg" alt="喫茶きはる 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>喫茶きはる<span class="yomi">きっさ きはる</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">国宝松江城のそばに建つ松江歴史館の中にある茶房。入館料のかからない無料ゾーンにあるので、展示を見ない人でも立ち寄れる。出雲式の日本庭園を眺めながら、上生菓子と干菓子のセットや各種甘味、コーヒーなどを味わえる。テーブル席20席と座敷40席の計60席。開館以来この喫茶で和菓子づくりの実演を続けてきた「現代の名工」伊丹二夫は勇退しており、実演は行われていない。</div>
+<div class="sig"><b>一皿:</b>上生菓子と干菓子のセット(季節の上生菓子を選び、干菓子と茶処松江のお茶をあわせた茶房の定番)／きはる特製わらび餅(丁寧に炊いた餡をとろけるわらび餅で包み、まわりに抹茶をふった数量限定の菓子)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 10:00〜17:00（ラストオーダー16:30）／土・日・祝 9:30〜17:00（ラストオーダー16:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（祝日の場合は翌平日）、年末年始（12/29〜1/1）</td></tr>
+<tr><th>住所</th><td>島根県松江市殿町279番地</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0852321607">☎ 0852-32-1607</a> ／ <a href="https://matsu-reki.jp/kiharu/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>喫茶きはるの公式サイトに「営業時間変更のお知らせ（2026.4.1から）」として平日10:00〜17:00(LO16:30)・土日祝9:30〜17:00(LO16:30)が掲げられ、住所・電話・休日(月曜、祝日の場合は翌平日)も明記されている。松江観光協会のグルメ「和菓子・団子」一覧にも掲載。席数60席と昼の予算1,000〜1,999円はホットペッパーグルメの掲載ページによる。松江城のすぐそばで、抹茶と上生菓子を座って味わえる数少ない店として選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%81%8D%E3%81%AF%E3%82%8B%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%AE%BF%E7%94%BA279%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: 松江観光協会 公式サイトより引用 / 参照元: <a href="https://matsu-reki.jp/kiharu/">喫茶きはる 公式サイト（2026年4月1日からの営業時間・住所・電話・休日・名工 伊丹二夫の勇退）</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E8%8F%93%E5%AD%90%E3%83%BB%E5%9B%A3%E5%AD%90&amp;store=27577">松江観光協会 グルメ 松江歴史館 喫茶 きはる</a> / <a href="https://www.hotpepper.jp/strJ001069377/">ホットペッパーグルメ 喫茶きはる（総席数60席・昼予算）</a></div>
+</div></div>
+<div class="card" id="c-matsue-libre-coffee-roaster">
+<img class="hero" src="img/matsue/matsue-libre-coffee-roaster.jpg" alt="libre coffee roaster（リブル） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>libre coffee roaster（リブル）<span class="yomi">りぶる こーひー ろーすたー</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">「コーヒーはフルーツである」を掲げる自家焙煎のコーヒー専門店。広島の老舗焙煎店で修業した店主が、エチオピアのイリガチェフやイエメンのモカなどフルーティーな生豆を選び、質の悪い豆を手作業で一粒ずつ取り除いてから焙煎する。焙煎後の豆は冷凍で保存し鮮度を保つ。無垢の床と梁を生かした店内の奥には坪庭を眺める座敷があり、純喫茶を目指したつくりになっている。</div>
+<div class="sig"><b>一皿:</b>ブレンドコーヒー ロゼ(店の看板ブレンド。ロゼは「雫」の意で、果実の雫のような味わいという。550円)／エチオピア イリガチェフ(花の香りを持つ果実を絞ったジュースのような酸味のシングルオリジン。550円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜</td></tr>
+<tr><th>住所</th><td>島根県松江市殿町404</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:08056158977">☎ 080-5615-8977</a> ／ <a href="https://cafe-libre.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに住所・電話・営業時間（火〜土 11:00〜18:00、店休 日曜・月曜）とコーヒー9種の価格表が載っている。山陰のタウン情報メディア「日刊Lazuda」2022年2月2日の取材記事でも、殿町の南殿町商店街にある自家焙煎店として店内と焙煎・ハンドピッキングの工程が紹介されている。「libre coffee roaster 松江市殿町 リブル 閉店 移転」で検索し、閉店や移転の報が無いことを確認した。松江で豆から自家焙煎する珈琲専門店のうち、公式サイトで現在の価格まで確認できる店として選んだ。なお営業時間はLazudaの記事が「休み 日曜」と書いており食い違うため、公式サイトの「火〜土（店休：日曜、月曜）」を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=libre%20coffee%20roaster%EF%BC%88%E3%83%AA%E3%83%96%E3%83%AB%EF%BC%89%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%AE%BF%E7%94%BA404">Googleマップで開く</a>
+<div class="src">写真: 日刊Lazuda（山陰の地域情報サイト）より引用 / 参照元: <a href="https://cafe-libre.net/">自家焙煎珈琲 libre 公式サイト（住所・電話・営業時間・定休日・コーヒー9種の価格）</a> / <a href="https://www.lazuda.com/news/archives/2940">日刊Lazuda（山陰のタウン情報メディア）2022年2月2日 松江市殿町のコーヒー専門店『libre（リブル）』</a></div>
+</div></div>
+<div class="card" id="c-matsue-tsukigase-kyomise">
+<img class="hero" src="img/matsue/matsue-tsukigase-kyomise.jpg" alt="松江 月ヶ瀬 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>松江 月ヶ瀬<span class="yomi">まつえ つきがせ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">松江城の城下、京店商店街にある団子屋で、公式サイトで「松江城下の老舗団子」を名乗る。奥出雲の仁多米コシヒカリ一等米を100%使い、蒸して杵でついてから一つずつ丸めるので、餅のようにふっくらした食感になる。定番から季節限定まで団子の種類が多い。34席の店内では、団子や抹茶などの甘味のほか、あごだしやしじみだしを使った自家製の和風らーめんも出す。</div>
+<div class="sig"><b>一皿:</b>月ヶ瀬の団子(その日に工房で手仕込みした団子。奥出雲の仁多米一等米を蒸し、杵でついてから一つずつ丸める)／あごだしらーめん(飛魚(あご)の出汁をとった和風ラーメン。甘味とのセットもある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:30（オーダーストップ17:00）</td></tr>
+<tr><th>定休日</th><td class="off">毎週木曜</td></tr>
+<tr><th>住所</th><td>島根県松江市末次本町87</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0852212497">☎ 0852-21-2497</a> ／ <a href="https://matuetukigase.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトに住所・電話・営業時間10:00〜17:30(オーダーストップ17:00)・定休 毎週木曜が掲載され、2025年9月28日付「2025年10月より営業時間変更のお知らせ」、2025年11月18日付「年末年始の営業について」の告知が出ている。松江観光協会のグルメ「和菓子・団子」一覧にも掲載され、ホットペッパーグルメの掲載ページで34席と確認できる。不昧公好みの銘菓を作る老舗3店に加え、城下で座って団子と抹茶を食べられる店として選んだ。なお営業時間は観光協会が10:00〜18:00、ホットペッパーが10:00〜18:30・無休と書いており食い違うため、変更告知のある公式サイトの表記を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E6%B1%9F%20%E6%9C%88%E3%83%B6%E7%80%AC%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E6%9C%AB%E6%AC%A1%E6%9C%AC%E7%94%BA87">Googleマップで開く</a>
+<div class="src">写真: 松江観光協会 公式サイトより引用 / 参照元: <a href="https://matuetukigase.net/">松江 月ヶ瀬 公式サイト（住所・電話・営業時間・定休日・2025年の営業に関する告知）</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E8%8F%93%E5%AD%90%E3%83%BB%E5%9B%A3%E5%AD%90&amp;store=62684">松江観光協会 グルメ 松江 月ヶ瀬</a> / <a href="https://www.hotpepper.jp/strJ000884267/">ホットペッパーグルメ お団子と甘味喫茶 月ヶ瀬（総席数34席・所在）</a></div>
+</div></div>
+<div class="card" id="c-matsue-seishoan-tachibana">
+<img class="hero" src="img/matsue/matsue-seishoan-tachibana.jpg" alt="清松庵たちばな 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>清松庵たちばな<span class="yomi">せいしょうあん たちばな</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">宍道湖の湖畔に建つ菓子処で、売り場の奥に「夕日降る茶房」と名づけた和カフェがある。宍道湖を一望するカウンター席と屋外のオープン席があり、日本の夕陽百選に選ばれた宍道湖の夕日を正面から眺められる。抹茶のほかコーヒー・紅茶、姉妹店リビドー洋菓子店のケーキも出す。店内には和菓子の木型が飾られ、2階には茶会や茶事にも使える茶室「かじゅある茶席」がある。</div>
+<div class="sig"><b>一皿:</b>季節の上生菓子とお抹茶(熟練の職人が季節ごとに意匠を変えて作る上生菓子を、抹茶とあわせて茶房で味わう)／出雲ぜんざい(古代米を使った冬の定番のぜんざい。歯ごたえがあり深い味わい)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">年中無休（元旦をのぞく）</td></tr>
+<tr><th>住所</th><td>島根県松江市袖師町11-1</td></tr>
+<tr><th>予約</th><td>可（2階の茶室「かじゅある茶席」を使う茶会・茶事は要予約） — <a href="tel:0852322345">☎ 0852-32-2345</a> ／ <a href="http://www.sweet-studio.jp/tachibana/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの店舗詳細に住所・電話・営業時間09:00〜18:00・定休 年中無休(元旦のぞく)・「カフェ:有り(個室・オープン席あり)」・無料駐車場が明記されている。松江観光協会のグルメ「和菓子・団子」一覧にも「宍道湖を望む立地にある、湖畔の菓子処」として掲載されている。宍道湖の湖畔で、夕日を見ながら座って抹茶と和菓子を食べられる店は数が限られるため選んだ。なお営業時間は観光協会が09:00〜19:00と書いており食い違うので、公式サイトの09:00〜18:00を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B8%85%E6%9D%BE%E5%BA%B5%E3%81%9F%E3%81%A1%E3%81%B0%E3%81%AA%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E6%9D%BE%E6%B1%9F%E5%B8%82%E8%A2%96%E5%B8%AB%E7%94%BA11-1">Googleマップで開く</a>
+<div class="src">写真: sweet-studio.jp 掲載ページより引用 / 参照元: <a href="http://www.sweet-studio.jp/tachibana/shopinfo.html?shop=7">清松庵たちばな 公式サイト 店舗案内（住所・電話・営業時間・定休日・カフェ席・駐車場）</a> / <a href="http://www.sweet-studio.jp/tachibana/caffe.html">清松庵たちばな 公式サイト 夕日降る茶房（茶房の内容・宍道湖夕日スポット隣接・四季のおすすめ）</a> / <a href="https://www.kankou-matsue.jp/gourmet/desc/?cat=%E5%92%8C%E8%8F%93%E5%AD%90%E3%83%BB%E5%9B%A3%E5%AD%90&amp;store=66701">松江観光協会 グルメ 清松庵たちばな</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年10月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>

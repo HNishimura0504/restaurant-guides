@@ -1,25 +1,25 @@
-# 島根県ガイド（32/47）の制御ファイル — 作業中の保全コピー
+# 島根県ガイド（32/47）の制御ファイル
 
-**この時点の状態（2026-10-06〜07・生成の途中）**
+**完成（2026-10-07 JST）。松江市46店・出雲市45店。**
 
-調査担当12体のうち完了ぶんの `agent_<市>_<章>.json` を、コンテナ回収で失わないために写した。
+調査担当12体の `agent_<市>_<章>.json` を、コンテナ回収で失わないために写した。
 パイプラインの作業ディレクトリは `ai-memory` の `topics/restaurant-guides/assets/pipeline/` だが、
 そこは `.gitignore` で `*.json`（`meta_*.json` を除く）を無視するため git に残らない。
 
-## 進捗
-- 松江市（目標45店）… washoku 9 / soba 7 / ramen 8 / yoshoku 7 / cafe 6 ＝ **37店**。残り **izakaya（目標9）**。
-- 出雲市（目標45店）… soba 9 / washoku 7 / yoshoku 7 / cafe 7 ＝ **30店**。残り **ramen（目標7）・izakaya（目標8）**。
-  （`agent_izumo_izakaya.json` は作業中の途中書き。確定ではない。）
+## 最終の構成
+- 松江市 **46店**… washoku 9 / soba 7 / ramen 8 / izakaya 9 / yoshoku 7 / cafe 6。写真あり42店。
+- 出雲市 **45店**… soba 9 / washoku 7 / ramen 7 / izakaya 8 / yoshoku 7 / cafe 7。写真あり41店。
+- 地図＝各市とも全域図1枚＋中心部の拡大図4枚。拡大図の枠は `map_build.py` の `INSETS`。
 
-## 次にやること
-1. 残り3担当の完了を待って `agent_*.json` を揃える。
-2. 重複の統合（同じ店を2つの章が拾っていないか。写真と出典は捨てる側から統合する）。
-3. `mk_research.py <市> meta_<市>.json agent_<市>_*.json` → `research_<市>.json`
-4. `locations_free.py <市>` → 座標。同じ座標に2店以上が重なっていないかを数える（B-642）。
-5. `map_build.py <市> <img dir>` → 全域図＋拡大図3枚。**INSETS は実際の座標を見てから広げ直す**。
-6. `photos_from_urls.py` → 候補のダウンロード → 選定 → **全数目視** → `stage_imgs.py` → `build_html.py`
-7. PDF（Chromium headless）→ `fix_pdf_links.py` → `audit_pdfs.py` → `audit_blankpages.py`
-8. `notion/stores_extract.py` → `build_map.py` → `add_sitenav.py` → `add_responsive.py`
+## 地図の枠（INSETS）は座標を見てから決め直した
+初期値（各市3枚）では **松江4店・出雲8店がどの枠にも入らなかった**。実測してから広げ直した結果が現在の4枚ずつ。
+- 松江で外れていたのは 上乃木・**学園**・東津田。**松江市学園は駅の南ではなく北東**（35.482N 133.066E）で、
+  当方の地理の見当が外れていた（国土地理院の座標は正しく、Nominatim で裏取りして確認）。
+- 出雲で外れていたのは 日御碕・小境町（宍道湖北岸）・斐川町・平田・塩冶・常松・渡橋。市域が東西に広い。
+
+## ピンの重なりを円周配置で解いた（B-642 の手順）
+同じ代表点に複数店が重なったのは **松江11店・出雲8店**。同じ住所なら半径28m、町の代表点どうしなら半径55mの
+円周へ決定論的に配置し、各店の `note` に「概略位置」と実際の住所を書いた。
 
 ## このセッションで分かったこと（次の県でも使う）
 

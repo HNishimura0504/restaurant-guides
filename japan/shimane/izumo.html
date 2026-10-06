@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>出雲美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">出雲美食ガイド<span class="sn-n">45店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/izumo.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="出雲ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">出雲ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/izumo.html"><span class="sn-e">🗺️</span>出雲の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-soba"><span class="sn-e">・</span>出雲そば（割子・釜揚げ）</a><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・日本海の魚（のどぐろ・白いか）</a><a href="#s-ramen"><span class="sn-e">・</span>ラーメン・中華そば・町中華</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・郷土料理・地酒</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・カレー・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・ぜんざい・甘味</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全90都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全90都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / IZUMO・島根県出雲市 🇯🇵</div>
+  <h1>出雲美食ガイド</h1>
+  <div class="sub">出雲大社の門前町と、斐伊川（ひいかわ）が運んだ平野の町。出雲そばの本場であり、ぜんざい発祥の地。神門通り（しんもんどおり）の門前から出雲市駅前、木綿街道の平田、日本海の大社漁港まで厳選45スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/izumo/_map.png" alt="全域マップ">
+<a href="#c-izumo-arakiya" style="left:17.28%;top:54.99%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-tanakaya-honten" style="left:18.5%;top:55.53%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-kaneya" style="left:19.08%;top:49.5%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-sobadokoro-okuni" style="left:18.23%;top:48.88%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-heiwasoba-honten" style="left:15.39%;top:56.77%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-kenjosoba-haneya-honten" style="left:46.41%;top:73.67%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-hoshien" style="left:45.79%;top:74.41%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-sobadokoro-kitaen" style="left:68.8%;top:33.28%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-sobadokoro-godo" style="left:34.6%;top:61.92%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-sushi-tomita" style="left:45.63%;top:74.74%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-unasho" style="left:43.53%;top:73.24%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-kanunrou" style="left:17.35%;top:54.7%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-gurume-koyomaru" style="left:7.44%;top:39.43%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-yohukiya" style="left:92.56%;top:8.14%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-ryoritei-nadaya" style="left:50.12%;top:72.82%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-tempura-misato" style="left:31.26%;top:91.88%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-fukukumo-nogotoshi" style="left:46.03%;top:72.57%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-chuka-hanten-ichika" style="left:43.67%;top:70.34%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-pairon" style="left:39.98%;top:74.23%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-boochan-ramen" style="left:67.78%;top:37.32%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-kandachi-wanfu" style="left:57.41%;top:69.77%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-no-kuni-menya-shinmon" style="left:18.99%;top:56.41%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-gyozaya" style="left:46.02%;top:74.69%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-kuimonya-gosaku" style="left:44.5%;top:75.57%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-kushikatsu-sho" style="left:43.24%;top:74.78%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-yofu-izakaya-chaka" style="left:45.3%;top:75.09%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-nodoguro-nihonkai" style="left:45.22%;top:75.29%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-izakaya-tsubameya" style="left:45.01%;top:74.0%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-konaya-konkichido" style="left:44.06%;top:70.83%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-space-ohkita" style="left:49.0%;top:68.85%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-ajikobo-fujie" style="left:70.66%;top:29.64%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-yakiniku-kourakuen" style="left:18.96%;top:58.35%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-little-india" style="left:40.25%;top:75.05%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-yakiniku-araki" style="left:68.08%;top:58.49%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-cafe-bistro-ann" style="left:46.02%;top:74.13%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-yoshoku-kirra" style="left:46.11%;top:66.88%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-trattoria814" style="left:68.83%;top:32.68%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-yoshokuya-liebe" style="left:41.56%;top:77.54%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-amaemon" style="left:18.63%;top:55.46%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-zenzaimochi-taisha" style="left:18.63%;top:56.03%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-okuni-chaya" style="left:19.43%;top:55.82%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-haraku-koto" style="left:44.5%;top:75.0%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-cafe-nakakura" style="left:46.24%;top:74.41%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-fujihiro-coffee" style="left:39.53%;top:73.59%;width:2.14%;height:2.66%;"></a>
+<a href="#c-izumo-yunokawa-cafe-nanahoshi" style="left:85.8%;top:60.46%;width:2.14%;height:2.66%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（45店・番号はピンと同じ）</div>
+<div class="sec aqua">出雲そば（割子・釜揚げ）</div>
+<div class="links">
+<a href="#c-izumo-arakiya"><span class="tn" style="background:#1baf7a;">1</span>天明年間創業、出雲そば最古の蕎麦屋</a>
+<a href="#c-izumo-tanakaya-honten"><span class="tn" style="background:#1baf7a;">2</span>出雲大社正門前、粗挽き挽きぐるみの手打ち</a>
+<a href="#c-izumo-kaneya"><span class="tn" style="background:#1baf7a;">3</span>昭和4年創業、出雲大社御用達の釜揚げ</a>
+<a href="#c-izumo-sobadokoro-okuni"><span class="tn" style="background:#1baf7a;">4</span>朝8時から開ける出雲大社駐車場前のそば</a>
+<a href="#c-izumo-heiwasoba-honten"><span class="tn" style="background:#1baf7a;">5</span>昭和25年創業、門前を外れた住宅地の手打ち</a>
+<a href="#c-izumo-kenjosoba-haneya-honten"><span class="tn" style="background:#1baf7a;">6</span>江戸末期創業、大正天皇に献じた十二代</a>
+<a href="#c-izumo-hoshien"><span class="tn" style="background:#1baf7a;">7</span>駅北口徒歩2分、夜だけ開く手打ち出雲そば</a>
+<a href="#c-izumo-sobadokoro-kitaen"><span class="tn" style="background:#1baf7a;">8</span>木綿街道の平田、昼夜ともやるそば割烹</a>
+<a href="#c-izumo-sobadokoro-godo"><span class="tn" style="background:#1baf7a;">9</span>斐伊川平野の県道沿い、夜もやる手打ち</a>
+</div>
+<div class="sec blue">寿司・和食・日本海の魚（のどぐろ・白いか）</div>
+<div class="links">
+<a href="#c-izumo-sushi-tomita"><span class="tn" style="background:#2a78d6;">10</span>出雲市駅北口から徒歩3分、昼は予約制の鮨</a>
+<a href="#c-izumo-unasho"><span class="tn" style="background:#2a78d6;">11</span>出雲市駅の北、昼のうな重の専門店</a>
+<a href="#c-izumo-kanunrou"><span class="tn" style="background:#2a78d6;">12</span>出雲大社の東、明治創業のうず煮</a>
+<a href="#c-izumo-gurume-koyomaru"><span class="tn" style="background:#2a78d6;">13</span>日御碕灯台のたもと、281席の海鮮</a>
+<a href="#c-izumo-yohukiya"><span class="tn" style="background:#2a78d6;">14</span>宍道湖を望む座敷、べべ貝の釜飯</a>
+<a href="#c-izumo-ryoritei-nadaya"><span class="tn" style="background:#2a78d6;">15</span>一畑電車大津町駅そば、完全個室の会席</a>
+<a href="#c-izumo-tempura-misato"><span class="tn" style="background:#2a78d6;">16</span>西出雲駅の目の前、13席の天ぷら</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-izumo-fukukumo-nogotoshi"><span class="tn" style="background:#e34948;">17</span>自家製麺に宍道湖しじみと三種の鶏</a>
+<a href="#c-izumo-chuka-hanten-ichika"><span class="tn" style="background:#e34948;">18</span>あごだしの中華そばが看板の街中華</a>
+<a href="#c-izumo-pairon"><span class="tn" style="background:#e34948;">19</span>国道沿いで四十年、昔ながらの醤油</a>
+<a href="#c-izumo-boochan-ramen"><span class="tn" style="background:#e34948;">20</span>平田の町で味噌と野菜のマシマシ</a>
+<a href="#c-izumo-kandachi-wanfu"><span class="tn" style="background:#e34948;">21</span>斐川町の国道沿いで食べる本格坦々麺</a>
+<a href="#c-izumo-no-kuni-menya-shinmon"><span class="tn" style="background:#e34948;">22</span>神門通りで味わう神話の酒粕味噌</a>
+<a href="#c-izumo-gyozaya"><span class="tn" style="background:#e34948;">23</span>赤ちょうちんが目印の餃子専門店</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒</div>
+<div class="links">
+<a href="#c-izumo-kuimonya-gosaku"><span class="tn" style="background:#0d366b;">24</span>出雲市駅北口100m、島根の地酒と日本海の魚</a>
+<a href="#c-izumo-kushikatsu-sho"><span class="tn" style="background:#0d366b;">25</span>2006年創業、1本80円からの串かつともつ鍋</a>
+<a href="#c-izumo-yofu-izakaya-chaka"><span class="tn" style="background:#0d366b;">26</span>深夜3時まで、ドリンク100種超の洋風居酒屋</a>
+<a href="#c-izumo-nodoguro-nihonkai"><span class="tn" style="background:#0d366b;">27</span>駅から2分、のどぐろを四通りで出す店</a>
+<a href="#c-izumo-izakaya-tsubameya"><span class="tn" style="background:#0d366b;">28</span>15時開店、地魚の刺身で昼から飲める店</a>
+<a href="#c-izumo-konaya-konkichido"><span class="tn" style="background:#0d366b;">29</span>明石焼と出雲の地酒の燗を合わせる店</a>
+<a href="#c-izumo-space-ohkita"><span class="tn" style="background:#0d366b;">30</span>ガレージを改装、山陰の日本酒を置く一軒</a>
+<a href="#c-izumo-ajikobo-fujie"><span class="tn" style="background:#0d366b;">31</span>木綿街道の町なか、カウンター8席の居酒屋</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-izumo-yakiniku-kourakuen"><span class="tn" style="background:#4a3aa7;">32</span>出雲大社門前の鉄板焼きA4和牛</a>
+<a href="#c-izumo-little-india"><span class="tn" style="background:#4a3aa7;">33</span>塩冶の住宅地で焼きたてナンのカレー</a>
+<a href="#c-izumo-yakiniku-araki"><span class="tn" style="background:#4a3aa7;">34</span>斐川の精肉店直営、全席座敷の焼肉</a>
+<a href="#c-izumo-cafe-bistro-ann"><span class="tn" style="background:#4a3aa7;">35</span>築400年の蔵で和とフレンチの融合</a>
+<a href="#c-izumo-yoshoku-kirra"><span class="tn" style="background:#4a3aa7;">36</span>2週間仕込むデミグラスの洋食店</a>
+<a href="#c-izumo-trattoria814"><span class="tn" style="background:#4a3aa7;">37</span>木綿街道の古民家で県産食材のイタリアン</a>
+<a href="#c-izumo-yoshokuya-liebe"><span class="tn" style="background:#4a3aa7;">38</span>手ごねハンバーグと小上がりの洋食屋</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・ぜんざい・甘味</div>
+<div class="links">
+<a href="#c-izumo-amaemon"><span class="tn" style="background:#eda100;">39</span>神門通りの町家でいただく大黒ぜんざい</a>
+<a href="#c-izumo-zenzaimochi-taisha"><span class="tn" style="background:#eda100;">40</span>明治5年創業の和菓子屋が営むぜんざい処</a>
+<a href="#c-izumo-okuni-chaya"><span class="tn" style="background:#eda100;">41</span>仁多米の餅を入れた出雲ぜんざいの茶屋</a>
+<a href="#c-izumo-haraku-koto"><span class="tn" style="background:#eda100;">42</span>駅前の老舗茶舗がひらいた抹茶の甘味処</a>
+<a href="#c-izumo-cafe-nakakura"><span class="tn" style="background:#eda100;">43</span>築100年の米蔵を改装した出雲市駅前のカフェ</a>
+<a href="#c-izumo-fujihiro-coffee"><span class="tn" style="background:#eda100;">44</span>直火焙煎とサイフォンの珈琲専門店</a>
+<a href="#c-izumo-yunokawa-cafe-nanahoshi"><span class="tn" style="background:#eda100;">45</span>築150年の古民家で親子が過ごす48席</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 出雲市駅前〜今市町・高瀬川〜斐川(ひかわ)町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/izumo/_map2.png" alt="中心部拡大1 出雲市駅前〜今市町・高瀬川〜斐川(ひかわ)町">
+<a href="#c-izumo-kenjosoba-haneya-honten" style="left:42.61%;top:50.85%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-hoshien" style="left:39.75%;top:55.2%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-sushi-tomita" style="left:39.0%;top:57.16%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-unasho" style="left:29.24%;top:48.33%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-ryoritei-nadaya" style="left:59.81%;top:45.85%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-fukukumo-nogotoshi" style="left:40.87%;top:44.36%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-chuka-hanten-ichika" style="left:29.9%;top:31.29%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-pairon" style="left:12.77%;top:54.16%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-kandachi-wanfu" style="left:93.67%;top:27.95%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-gyozaya" style="left:40.79%;top:56.85%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-kuimonya-gosaku" style="left:33.76%;top:61.98%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-kushikatsu-sho" style="left:27.93%;top:57.4%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-yofu-izakaya-chaka" style="left:37.48%;top:59.19%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-nodoguro-nihonkai" style="left:37.08%;top:60.37%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-izakaya-tsubameya" style="left:36.13%;top:52.78%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-konaya-konkichido" style="left:31.72%;top:34.14%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-space-ohkita" style="left:54.63%;top:22.53%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-little-india" style="left:14.04%;top:58.96%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-cafe-bistro-ann" style="left:40.79%;top:53.56%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-yoshoku-kirra" style="left:41.21%;top:10.94%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-yoshokuya-liebe" style="left:20.11%;top:73.57%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-haraku-koto" style="left:33.76%;top:58.69%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-cafe-nakakura" style="left:41.84%;top:55.2%;width:2.48%;height:3.92%;"></a>
+<a href="#c-izumo-fujihiro-coffee" style="left:10.67%;top:50.39%;width:2.48%;height:3.92%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（24店・番号はピンと同じ）</div>
+<div class="sec aqua">出雲そば（割子・釜揚げ）</div>
+<div class="links">
+<a href="#c-izumo-kenjosoba-haneya-honten"><span class="tn" style="background:#1baf7a;">6</span>江戸末期創業、大正天皇に献じた十二代</a>
+<a href="#c-izumo-hoshien"><span class="tn" style="background:#1baf7a;">7</span>駅北口徒歩2分、夜だけ開く手打ち出雲そば</a>
+</div>
+<div class="sec blue">寿司・和食・日本海の魚（のどぐろ・白いか）</div>
+<div class="links">
+<a href="#c-izumo-sushi-tomita"><span class="tn" style="background:#2a78d6;">10</span>出雲市駅北口から徒歩3分、昼は予約制の鮨</a>
+<a href="#c-izumo-unasho"><span class="tn" style="background:#2a78d6;">11</span>出雲市駅の北、昼のうな重の専門店</a>
+<a href="#c-izumo-ryoritei-nadaya"><span class="tn" style="background:#2a78d6;">15</span>一畑電車大津町駅そば、完全個室の会席</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-izumo-fukukumo-nogotoshi"><span class="tn" style="background:#e34948;">17</span>自家製麺に宍道湖しじみと三種の鶏</a>
+<a href="#c-izumo-chuka-hanten-ichika"><span class="tn" style="background:#e34948;">18</span>あごだしの中華そばが看板の街中華</a>
+<a href="#c-izumo-pairon"><span class="tn" style="background:#e34948;">19</span>国道沿いで四十年、昔ながらの醤油</a>
+<a href="#c-izumo-kandachi-wanfu"><span class="tn" style="background:#e34948;">21</span>斐川町の国道沿いで食べる本格坦々麺</a>
+<a href="#c-izumo-gyozaya"><span class="tn" style="background:#e34948;">23</span>赤ちょうちんが目印の餃子専門店</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒</div>
+<div class="links">
+<a href="#c-izumo-kuimonya-gosaku"><span class="tn" style="background:#0d366b;">24</span>出雲市駅北口100m、島根の地酒と日本海の魚</a>
+<a href="#c-izumo-kushikatsu-sho"><span class="tn" style="background:#0d366b;">25</span>2006年創業、1本80円からの串かつともつ鍋</a>
+<a href="#c-izumo-yofu-izakaya-chaka"><span class="tn" style="background:#0d366b;">26</span>深夜3時まで、ドリンク100種超の洋風居酒屋</a>
+<a href="#c-izumo-nodoguro-nihonkai"><span class="tn" style="background:#0d366b;">27</span>駅から2分、のどぐろを四通りで出す店</a>
+<a href="#c-izumo-izakaya-tsubameya"><span class="tn" style="background:#0d366b;">28</span>15時開店、地魚の刺身で昼から飲める店</a>
+<a href="#c-izumo-konaya-konkichido"><span class="tn" style="background:#0d366b;">29</span>明石焼と出雲の地酒の燗を合わせる店</a>
+<a href="#c-izumo-space-ohkita"><span class="tn" style="background:#0d366b;">30</span>ガレージを改装、山陰の日本酒を置く一軒</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-izumo-little-india"><span class="tn" style="background:#4a3aa7;">33</span>塩冶の住宅地で焼きたてナンのカレー</a>
+<a href="#c-izumo-cafe-bistro-ann"><span class="tn" style="background:#4a3aa7;">35</span>築400年の蔵で和とフレンチの融合</a>
+<a href="#c-izumo-yoshoku-kirra"><span class="tn" style="background:#4a3aa7;">36</span>2週間仕込むデミグラスの洋食店</a>
+<a href="#c-izumo-yoshokuya-liebe"><span class="tn" style="background:#4a3aa7;">38</span>手ごねハンバーグと小上がりの洋食屋</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・ぜんざい・甘味</div>
+<div class="links">
+<a href="#c-izumo-haraku-koto"><span class="tn" style="background:#eda100;">42</span>駅前の老舗茶舗がひらいた抹茶の甘味処</a>
+<a href="#c-izumo-cafe-nakakura"><span class="tn" style="background:#eda100;">43</span>築100年の米蔵を改装した出雲市駅前のカフェ</a>
+<a href="#c-izumo-fujihiro-coffee"><span class="tn" style="background:#eda100;">44</span>直火焙煎とサイフォンの珈琲専門店</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 出雲大社の門前〜神門通り(しんもんどおり)・勢溜(せいだまり)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/izumo/_map3.png" alt="中心部拡大2 出雲大社の門前〜神門通り(しんもんどおり)・勢溜(せいだまり)">
+<a href="#c-izumo-arakiya" style="left:29.25%;top:51.37%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-tanakaya-honten" style="left:42.43%;top:55.37%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-kaneya" style="left:48.66%;top:11.05%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-sobadokoro-okuni" style="left:39.5%;top:6.49%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-heiwasoba-honten" style="left:8.98%;top:64.46%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-kanunrou" style="left:30.04%;top:49.25%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-no-kuni-menya-shinmon" style="left:47.68%;top:61.83%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-yakiniku-kourakuen" style="left:47.38%;top:76.04%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-amaemon" style="left:43.84%;top:54.86%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-zenzaimochi-taisha" style="left:43.84%;top:58.98%;width:2.88%;height:2.44%;"></a>
+<a href="#c-izumo-okuni-chaya" style="left:52.44%;top:57.48%;width:2.88%;height:2.44%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（11店・番号はピンと同じ）</div>
+<div class="sec aqua">出雲そば（割子・釜揚げ）</div>
+<div class="links">
+<a href="#c-izumo-arakiya"><span class="tn" style="background:#1baf7a;">1</span>天明年間創業、出雲そば最古の蕎麦屋</a>
+<a href="#c-izumo-tanakaya-honten"><span class="tn" style="background:#1baf7a;">2</span>出雲大社正門前、粗挽き挽きぐるみの手打ち</a>
+<a href="#c-izumo-kaneya"><span class="tn" style="background:#1baf7a;">3</span>昭和4年創業、出雲大社御用達の釜揚げ</a>
+<a href="#c-izumo-sobadokoro-okuni"><span class="tn" style="background:#1baf7a;">4</span>朝8時から開ける出雲大社駐車場前のそば</a>
+<a href="#c-izumo-heiwasoba-honten"><span class="tn" style="background:#1baf7a;">5</span>昭和25年創業、門前を外れた住宅地の手打ち</a>
+</div>
+<div class="sec blue">寿司・和食・日本海の魚（のどぐろ・白いか）</div>
+<div class="links">
+<a href="#c-izumo-kanunrou"><span class="tn" style="background:#2a78d6;">12</span>出雲大社の東、明治創業のうず煮</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-izumo-no-kuni-menya-shinmon"><span class="tn" style="background:#e34948;">22</span>神門通りで味わう神話の酒粕味噌</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-izumo-yakiniku-kourakuen"><span class="tn" style="background:#4a3aa7;">32</span>出雲大社門前の鉄板焼きA4和牛</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・ぜんざい・甘味</div>
+<div class="links">
+<a href="#c-izumo-amaemon"><span class="tn" style="background:#eda100;">39</span>神門通りの町家でいただく大黒ぜんざい</a>
+<a href="#c-izumo-zenzaimochi-taisha"><span class="tn" style="background:#eda100;">40</span>明治5年創業の和菓子屋が営むぜんざい処</a>
+<a href="#c-izumo-okuni-chaya"><span class="tn" style="background:#eda100;">41</span>仁多米の餅を入れた出雲ぜんざいの茶屋</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 平田(ひらた)・木綿街道〜斐川・宍道湖の北岸（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/izumo/_map4.png" alt="中心部拡大3 平田(ひらた)・木綿街道〜斐川・宍道湖の北岸">
+<a href="#c-izumo-sobadokoro-kitaen" style="left:35.63%;top:49.21%;width:2.5%;height:2.06%;"></a>
+<a href="#c-izumo-yohukiya" style="left:91.22%;top:10.37%;width:2.5%;height:2.06%;"></a>
+<a href="#c-izumo-boochan-ramen" style="left:33.24%;top:55.45%;width:2.5%;height:2.06%;"></a>
+<a href="#c-izumo-ajikobo-fujie" style="left:39.99%;top:43.59%;width:2.5%;height:2.06%;"></a>
+<a href="#c-izumo-yakiniku-araki" style="left:33.94%;top:88.16%;width:2.5%;height:2.06%;"></a>
+<a href="#c-izumo-trattoria814" style="left:35.69%;top:48.28%;width:2.5%;height:2.06%;"></a>
+<a href="#c-izumo-yunokawa-cafe-nanahoshi" style="left:75.42%;top:91.21%;width:2.5%;height:2.06%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（7店・番号はピンと同じ）</div>
+<div class="sec aqua">出雲そば（割子・釜揚げ）</div>
+<div class="links">
+<a href="#c-izumo-sobadokoro-kitaen"><span class="tn" style="background:#1baf7a;">8</span>木綿街道の平田、昼夜ともやるそば割烹</a>
+</div>
+<div class="sec blue">寿司・和食・日本海の魚（のどぐろ・白いか）</div>
+<div class="links">
+<a href="#c-izumo-yohukiya"><span class="tn" style="background:#2a78d6;">14</span>宍道湖を望む座敷、べべ貝の釜飯</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-izumo-boochan-ramen"><span class="tn" style="background:#e34948;">20</span>平田の町で味噌と野菜のマシマシ</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒</div>
+<div class="links">
+<a href="#c-izumo-ajikobo-fujie"><span class="tn" style="background:#0d366b;">31</span>木綿街道の町なか、カウンター8席の居酒屋</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-izumo-yakiniku-araki"><span class="tn" style="background:#4a3aa7;">34</span>斐川の精肉店直営、全席座敷の焼肉</a>
+<a href="#c-izumo-trattoria814"><span class="tn" style="background:#4a3aa7;">37</span>木綿街道の古民家で県産食材のイタリアン</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・ぜんざい・甘味</div>
+<div class="links">
+<a href="#c-izumo-yunokawa-cafe-nanahoshi"><span class="tn" style="background:#eda100;">45</span>築150年の古民家で親子が過ごす48席</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 塩冶(えんや)・常松〜大津町・日御碕(ひのみさき)方面（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/izumo/_map5.png" alt="中心部拡大4 塩冶(えんや)・常松〜大津町・日御碕(ひのみさき)方面">
+<a href="#c-izumo-arakiya" style="left:25.73%;top:36.82%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-tanakaya-honten" style="left:28.01%;top:37.66%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-kaneya" style="left:29.08%;top:28.41%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-sobadokoro-okuni" style="left:27.5%;top:27.46%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-heiwasoba-honten" style="left:22.24%;top:39.56%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-kenjosoba-haneya-honten" style="left:79.8%;top:65.45%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-hoshien" style="left:78.66%;top:66.59%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-sobadokoro-godo" style="left:57.89%;top:47.44%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-sushi-tomita" style="left:78.36%;top:67.1%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-unasho" style="left:74.46%;top:64.8%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-kanunrou" style="left:25.87%;top:36.38%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-gurume-koyomaru" style="left:7.48%;top:12.97%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-ryoritei-nadaya" style="left:86.68%;top:64.15%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-tempura-misato" style="left:51.68%;top:93.36%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-fukukumo-nogotoshi" style="left:79.11%;top:63.76%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-chuka-hanten-ichika" style="left:74.72%;top:60.35%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-pairon" style="left:67.87%;top:66.32%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-no-kuni-menya-shinmon" style="left:28.91%;top:39.01%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-gyozaya" style="left:79.08%;top:67.02%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-kuimonya-gosaku" style="left:76.26%;top:68.36%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-kushikatsu-sho" style="left:73.93%;top:67.16%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-yofu-izakaya-chaka" style="left:77.75%;top:67.63%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-nodoguro-nihonkai" style="left:77.59%;top:67.94%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-izakaya-tsubameya" style="left:77.21%;top:65.96%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-konaya-konkichido" style="left:75.44%;top:61.1%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-space-ohkita" style="left:84.61%;top:58.07%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-yakiniku-kourakuen" style="left:28.86%;top:41.97%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-little-india" style="left:68.37%;top:67.57%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-cafe-bistro-ann" style="left:79.08%;top:66.16%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-yoshoku-kirra" style="left:79.24%;top:55.04%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-yoshokuya-liebe" style="left:70.8%;top:71.38%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-amaemon" style="left:28.25%;top:37.55%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-zenzaimochi-taisha" style="left:28.25%;top:38.41%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-okuni-chaya" style="left:29.73%;top:38.1%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-haraku-koto" style="left:76.26%;top:67.5%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-cafe-nakakura" style="left:79.49%;top:66.59%;width:1.98%;height:2.04%;"></a>
+<a href="#c-izumo-fujihiro-coffee" style="left:67.03%;top:65.34%;width:1.98%;height:2.04%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（37店・番号はピンと同じ）</div>
+<div class="sec aqua">出雲そば（割子・釜揚げ）</div>
+<div class="links">
+<a href="#c-izumo-arakiya"><span class="tn" style="background:#1baf7a;">1</span>天明年間創業、出雲そば最古の蕎麦屋</a>
+<a href="#c-izumo-tanakaya-honten"><span class="tn" style="background:#1baf7a;">2</span>出雲大社正門前、粗挽き挽きぐるみの手打ち</a>
+<a href="#c-izumo-kaneya"><span class="tn" style="background:#1baf7a;">3</span>昭和4年創業、出雲大社御用達の釜揚げ</a>
+<a href="#c-izumo-sobadokoro-okuni"><span class="tn" style="background:#1baf7a;">4</span>朝8時から開ける出雲大社駐車場前のそば</a>
+<a href="#c-izumo-heiwasoba-honten"><span class="tn" style="background:#1baf7a;">5</span>昭和25年創業、門前を外れた住宅地の手打ち</a>
+<a href="#c-izumo-kenjosoba-haneya-honten"><span class="tn" style="background:#1baf7a;">6</span>江戸末期創業、大正天皇に献じた十二代</a>
+<a href="#c-izumo-hoshien"><span class="tn" style="background:#1baf7a;">7</span>駅北口徒歩2分、夜だけ開く手打ち出雲そば</a>
+<a href="#c-izumo-sobadokoro-godo"><span class="tn" style="background:#1baf7a;">9</span>斐伊川平野の県道沿い、夜もやる手打ち</a>
+</div>
+<div class="sec blue">寿司・和食・日本海の魚（のどぐろ・白いか）</div>
+<div class="links">
+<a href="#c-izumo-sushi-tomita"><span class="tn" style="background:#2a78d6;">10</span>出雲市駅北口から徒歩3分、昼は予約制の鮨</a>
+<a href="#c-izumo-unasho"><span class="tn" style="background:#2a78d6;">11</span>出雲市駅の北、昼のうな重の専門店</a>
+<a href="#c-izumo-kanunrou"><span class="tn" style="background:#2a78d6;">12</span>出雲大社の東、明治創業のうず煮</a>
+<a href="#c-izumo-gurume-koyomaru"><span class="tn" style="background:#2a78d6;">13</span>日御碕灯台のたもと、281席の海鮮</a>
+<a href="#c-izumo-ryoritei-nadaya"><span class="tn" style="background:#2a78d6;">15</span>一畑電車大津町駅そば、完全個室の会席</a>
+<a href="#c-izumo-tempura-misato"><span class="tn" style="background:#2a78d6;">16</span>西出雲駅の目の前、13席の天ぷら</a>
+</div>
+<div class="sec red">ラーメン・中華そば・町中華</div>
+<div class="links">
+<a href="#c-izumo-fukukumo-nogotoshi"><span class="tn" style="background:#e34948;">17</span>自家製麺に宍道湖しじみと三種の鶏</a>
+<a href="#c-izumo-chuka-hanten-ichika"><span class="tn" style="background:#e34948;">18</span>あごだしの中華そばが看板の街中華</a>
+<a href="#c-izumo-pairon"><span class="tn" style="background:#e34948;">19</span>国道沿いで四十年、昔ながらの醤油</a>
+<a href="#c-izumo-no-kuni-menya-shinmon"><span class="tn" style="background:#e34948;">22</span>神門通りで味わう神話の酒粕味噌</a>
+<a href="#c-izumo-gyozaya"><span class="tn" style="background:#e34948;">23</span>赤ちょうちんが目印の餃子専門店</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒</div>
+<div class="links">
+<a href="#c-izumo-kuimonya-gosaku"><span class="tn" style="background:#0d366b;">24</span>出雲市駅北口100m、島根の地酒と日本海の魚</a>
+<a href="#c-izumo-kushikatsu-sho"><span class="tn" style="background:#0d366b;">25</span>2006年創業、1本80円からの串かつともつ鍋</a>
+<a href="#c-izumo-yofu-izakaya-chaka"><span class="tn" style="background:#0d366b;">26</span>深夜3時まで、ドリンク100種超の洋風居酒屋</a>
+<a href="#c-izumo-nodoguro-nihonkai"><span class="tn" style="background:#0d366b;">27</span>駅から2分、のどぐろを四通りで出す店</a>
+<a href="#c-izumo-izakaya-tsubameya"><span class="tn" style="background:#0d366b;">28</span>15時開店、地魚の刺身で昼から飲める店</a>
+<a href="#c-izumo-konaya-konkichido"><span class="tn" style="background:#0d366b;">29</span>明石焼と出雲の地酒の燗を合わせる店</a>
+<a href="#c-izumo-space-ohkita"><span class="tn" style="background:#0d366b;">30</span>ガレージを改装、山陰の日本酒を置く一軒</a>
+</div>
+<div class="sec violet">洋食・カレー・各国料理</div>
+<div class="links">
+<a href="#c-izumo-yakiniku-kourakuen"><span class="tn" style="background:#4a3aa7;">32</span>出雲大社門前の鉄板焼きA4和牛</a>
+<a href="#c-izumo-little-india"><span class="tn" style="background:#4a3aa7;">33</span>塩冶の住宅地で焼きたてナンのカレー</a>
+<a href="#c-izumo-cafe-bistro-ann"><span class="tn" style="background:#4a3aa7;">35</span>築400年の蔵で和とフレンチの融合</a>
+<a href="#c-izumo-yoshoku-kirra"><span class="tn" style="background:#4a3aa7;">36</span>2週間仕込むデミグラスの洋食店</a>
+<a href="#c-izumo-yoshokuya-liebe"><span class="tn" style="background:#4a3aa7;">38</span>手ごねハンバーグと小上がりの洋食屋</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・ぜんざい・甘味</div>
+<div class="links">
+<a href="#c-izumo-amaemon"><span class="tn" style="background:#eda100;">39</span>神門通りの町家でいただく大黒ぜんざい</a>
+<a href="#c-izumo-zenzaimochi-taisha"><span class="tn" style="background:#eda100;">40</span>明治5年創業の和菓子屋が営むぜんざい処</a>
+<a href="#c-izumo-okuni-chaya"><span class="tn" style="background:#eda100;">41</span>仁多米の餅を入れた出雲ぜんざいの茶屋</a>
+<a href="#c-izumo-haraku-koto"><span class="tn" style="background:#eda100;">42</span>駅前の老舗茶舗がひらいた抹茶の甘味処</a>
+<a href="#c-izumo-cafe-nakakura"><span class="tn" style="background:#eda100;">43</span>築100年の米蔵を改装した出雲市駅前のカフェ</a>
+<a href="#c-izumo-fujihiro-coffee"><span class="tn" style="background:#eda100;">44</span>直火焙煎とサイフォンの珈琲専門店</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>出雲市の店は4つのかたまりに分かれる。①出雲大社の門前＝神門通り（しんもんどおり）と勢溜（せいだまり）の周り。そば屋とぜんざいの店が集中する。一畑電車の出雲大社前駅、またはJR出雲市駅からバスで25分 ②JR出雲市駅前〜今市町・高瀬川＝市街地の中心で、夜の店もここ ③平田（ひらた・旧平田市）＝木綿街道の古い町並み。駅から一畑電車で20分 ④大津町・渡橋町〜大社漁港・日御碕（ひのみさき）方面＝国道9号沿いの食事処と、日本海の魚。出雲の名物＝出雲そば（殻ごと挽くので黒く香りが強い。重ねた丸い漆器で出す「割子〈わりご〉そば」と、ゆで汁ごと椀に入れる「釜揚げそば」の2通り。日本三大そばの一つ）、出雲ぜんざい（出雲が発祥。旧暦10月の神在祭〈かみありさい〉で振る舞われた「神在〈じんざい〉餅」が訛って「ぜんざい」になったとされる）、のどぐろ（アカムツ）、しじみ（宍道湖は隣の松江市側だが県内全域で食べる）、板わかめ（日本海のわかめを板状に干したもの。ご飯にふりかける）、出雲おろち大根、出雲そばの「釜揚げ」用の地酒（旭日・十旭日・ヤマサン正宗）、大社の門前の名物として「縁結び」をうたった甘味。訪問前にマップで最終確認を。</div>
+
+<h2 id="s-soba" class="c-aqua">出雲そば（割子・釜揚げ）</h2>
+<div class="card" id="c-izumo-arakiya">
+<img class="hero" src="img/izumo/izumo-arakiya.jpg" alt="出雲そば 荒木屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">1</span>出雲そば 荒木屋<span class="yomi">いずもそば あらきや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">天明年間（1780年代）創業で、出雲そばの店としては最も古いとされる蕎麦屋。初代・濱村定平が旧荒木村から杵築村へ出て店を構えたのが始まりで、屋号は旧村名に由来する。現在は八代目。地元出雲産を中心に厳選した国産の玄そばを石臼挽きし、敷地内に湧く井戸水で打つ。つゆは地元産うるめいわしほか数種の出汁を合わせる。2階建てでテーブル席と座敷がある。</div>
+<div class="sig"><b>一皿:</b>割子そば三段(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移して食べる。930円)／釜揚げそば(茹でたそばを水洗いせず茹で汁ごと丼に移し、薬味とそばつゆを直接かける出雲独特の温かいそば)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00（そばが無くなり次第終了）※出雲観光協会の掲載は11:00〜17:00となっており、公式サイトの16:00と食い違う</td></tr>
+<tr><th>定休日</th><td class="off">水曜（祝日の場合は翌日）</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築東409-2</td></tr>
+<tr><th>予約</th><td>不可（先着順の案内） — <a href="tel:0853532352">☎ 0853-53-2352</a> ／ <a href="https://arakiya-izumo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>出雲そばの店として最古とされる老舗で、自家の井戸水と石臼挽きの玄そばという選定基準に合致する。営業の根拠は、公式サイトの「店舗案内」「荒木屋について」ページ（2026年10月6日閲覧。営業時間11:00〜16:00・水曜定休・駐車場15台・予約不可を明記）と、掲載施設（有限会社荒木屋）の公式確認を経たGOOD LUCK TRIP掲載ページ（更新日2026年5月7日）、および出雲観光協会の出雲そば一覧（2026年10月6日閲覧）の三つ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%20%E8%8D%92%E6%9C%A8%E5%B1%8B%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1409-2">Googleマップで開く</a>
+<div class="src">写真: arakiya-izumo.com 掲載ページより引用 / 参照元: <a href="https://arakiya-izumo.com/shop">出雲そば 荒木屋 公式サイト 店舗案内（2026年10月6日閲覧）</a> / <a href="https://arakiya-izumo.com/about">出雲そば 荒木屋 公式サイト 荒木屋について（創業・歴史。2026年10月6日閲覧）</a> / <a href="https://www.gltjp.com/ja/directory/item/17855/">GOOD LUCK TRIP「出雲そば 荒木屋」監修=有限会社荒木屋・更新2026年5月7日</a> / <a href="https://www.izumo-kankou.gr.jp/?p=5728&amp;ctg=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0">出雲観光協会 公式サイト 食べる＞出雲そば一覧（2026年10月6日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-izumo-tanakaya-honten">
+<img class="hero" src="img/izumo/izumo-tanakaya-honten.jpg" alt="そば処 田中屋 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">2</span>そば処 田中屋 本店<span class="yomi">そばどころ たなかや ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲大社の正門鳥居前で代々参拝客をもてなしてきた店。始まりは小さな駄菓子屋で、平成9年に二代目が出雲そば専門店としてリニューアルし、平成25年5月8日の平成の大遷宮に合わせて再改装した。そば粉は季節ごとに産地を厳選した国産石臼挽きのみで、外皮まで挽き込む挽きぐるみをさらに粗挽きにして使う。つゆは天然真昆布とうるめいわしなどの出汁に、大社町の醤油・本みりん・島根の地伝酒を合わせる。</div>
+<div class="sig"><b>一皿:</b>割子そば三段(朱塗りの丸い漆器を三段重ねた冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移す。1,155円)／釜あげそば(茹でたそばを水洗いせず茹で湯ごと丼に盛り、薬味とつゆを直接かける出雲独特の温かいそば)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00（そばがなくなり次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築東364</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0853532351">☎ 0853-53-2351</a> ／ <a href="https://soba-tanakaya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>国産石臼挽き・粗挽き挽きぐるみという製粉のこだわりと、出雲大社正門前という立地で選んだ。営業の根拠は、公式サイトの「田中屋のこと」「お品書き」（2026年10月6日閲覧。本日のそば粉産地まで掲載）、掲載施設（そば処 田中屋）の公式確認を経たGOOD LUCK TRIP掲載ページ（更新日2026年2月6日）、出雲観光協会の出雲そば一覧、およびホットペッパーグルメの掲載ページ（いずれも2026年10月6日閲覧）の四つ。出雲そば商組合・神門通りおもてなし協同組合の加盟店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E7%94%B0%E4%B8%AD%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1364">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://soba-tanakaya.jp/about/">そば処 田中屋 公式サイト 田中屋のこと（創業・そば粉の産地。2026年10月6日閲覧）</a> / <a href="https://soba-tanakaya.jp/menu/">そば処 田中屋 公式サイト お品書き（価格。2026年10月6日閲覧）</a> / <a href="https://www.gltjp.com/ja/directory/item/14707/">GOOD LUCK TRIP「そば処 田中屋 本店」監修=そば処 田中屋・更新2026年2月6日</a> / <a href="https://www.hotpepper.jp/strJ000677366/">ホットペッパーグルメ そば処 田中屋（住所・営業時間・定休日。2026年10月6日閲覧）</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/2117">出雲観光協会 公式サイト そば処 田中屋（2026年10月6日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-izumo-kaneya">
+<img class="hero" src="img/izumo/izumo-kaneya.jpg" alt="出雲そば かねや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">3</span>出雲そば かねや<span class="yomi">いずもそば かねや</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">昭和4年（1929年）創業で、出雲大社の御用達として知られる蕎麦屋。そばは「ひきたて・打ちたて・ゆでたて」の三たてにこだわる。つゆはうるめいわしと日高昆布を使ったこっくり甘めの味わい。店内は座敷とテーブルの昔ながらの構えで、壁一面に有名人の色紙が並ぶ。49席。参拝の行き帰りに立ち寄りやすい四ツ角の角地にある。</div>
+<div class="sig"><b>一皿:</b>割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけて食べる。840円)／釜揚げそば(茹でたそばを水洗いせず茹で汁ごと丼に移し、そばつゆを垂らして好みの濃さにする出雲独特の温かいそば)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜14:00（土・日は10:30〜14:30）※出雲観光協会の掲載。ホットペッパーグルメの掲載は9:30〜16:00で食い違う</td></tr>
+<tr><th>定休日</th><td class="off">火曜・木曜・金曜（出雲観光協会の掲載。ホットペッパーグルメの掲載は「なし」）</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築東四ツ角659</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0853532366">☎ 0853-53-2366</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>出雲大社御用達の老舗で、釜揚げそばを出す店として選んだ。営業の根拠は、出雲観光協会の出雲そば一覧（2026年10月6日閲覧）とホットペッパーグルメの掲載ページ（2026年10月6日閲覧）、昭文社マップルの出雲大社×そば一覧（住所・価格）の三つ。注意: 営業時間と定休日は出典によって食い違う（出雲観光協会=平日10:30〜14:00/土日10:30〜14:30・火木金休、ホットペッパーグルメ=9:30〜16:00・定休日なし）。訪問前に電話での確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%20%E3%81%8B%E3%81%AD%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1%E5%9B%9B%E3%83%84%E8%A7%92659">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.izumo-kankou.gr.jp/?p=5728&amp;ctg=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0">出雲観光協会 公式サイト 食べる＞出雲そば一覧「出雲そば かねや」（電話・営業時間・定休日。2026年10月6日閲覧）</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/16629">出雲観光協会 公式サイト 出雲そば かねや（2026年10月6日閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000111260/">ホットペッパーグルメ かねや（住所・席数。2026年10月6日閲覧）</a> / <a href="https://www.mapple.net/region/a0601040301_g03050d00/spot/">マップル 出雲大社×そば「かねや」（創業年・価格。2026年10月6日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-izumo-sobadokoro-okuni">
+<img class="hero" src="img/izumo/izumo-sobadokoro-okuni.jpg" alt="そば処 おくに 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">4</span>そば処 おくに<span class="yomi">そばどころ おくに</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲大社の大駐車場前に建つ出雲そばの店で、朝8時から開けているのが特徴。早朝に参拝してからそばを食べる、という出雲の作法に合わせた営業時間になっている。割子そば、三種そばのほか、そばに出雲ぜんざいが付く「縁結びセット」が看板。店内は黒い格子と木のテーブル・座敷の落ち着いた和の構えで、一人でも団体でも入りやすい。そばが売り切れると15時30分すぎに閉めることがある。</div>
+<div class="sig"><b>一皿:</b>割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移して食べる)／縁結びセット(割子そばに出雲ぜんざい〈出雲が発祥とされる小豆の甘味。白玉入り〉を組み合わせた定食。880円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜16:00（料理L.O.15:40・ドリンクL.O.16:00）※混み具合により15:30以降に閉める場合あり</td></tr>
+<tr><th>定休日</th><td class="off">火曜（祝祭日は営業し振替休業あり）</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築東宮内276</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0853535190">☎ 0853-53-5190</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>朝8時開店という出雲大社の参拝動線に合った営業時間で、他の門前の店と時間帯が重ならないため選んだ。営業の根拠は、出雲観光協会の出雲そば一覧および同協会の店舗ページ（2026年10月6日閲覧。8:00〜16:00・火曜定休）と、ホットペッパーグルメの掲載ページ（2026年10月6日閲覧。料理L.O.15:40）の二つ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E3%81%8A%E3%81%8F%E3%81%AB%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1%E5%AE%AE%E5%86%85276">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/403">出雲観光協会 公式サイト そば処 おくに（2026年10月6日閲覧）</a> / <a href="https://www.izumo-kankou.gr.jp/?p=5728&amp;ctg=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0">出雲観光協会 公式サイト 食べる＞出雲そば一覧（電話・営業時間・定休日。2026年10月6日閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000717726/">ホットペッパーグルメ そば処 おくに（住所・アクセス・L.O.。2026年10月6日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-izumo-heiwasoba-honten">
+<img class="hero" src="img/izumo/izumo-heiwasoba-honten.jpg" alt="平和そば本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">5</span>平和そば本店<span class="yomi">へいわそば ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和25年（1950年）、終戦まもない時期に初代が「世の中の平和」を願って名付けた手打ちそばの店。門前の表通りから外れた静かな住宅街にある。国産・地元産のそば粉を手打ちし、香りとコシの強さが持ち味。冷たい割子そばと、茹で汁ごと丼に盛る釜あげ蕎麦の両方を出し、そばがきを使った「そばがきぜんざい」もある。そばがなくなり次第閉店するため、昼の早い時間に行くのが確実。</div>
+<div class="sig"><b>一皿:</b>割子蕎麦(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移す。750円)／釜あげ蕎麦(茹でたそばを水洗いせず茹で汁ごと丼に移し、そばつゆを垂らして好みの濃さにする出雲独特の温かいそば。750円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30（そばがなくなり次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・木曜（臨時休業あり。公式サイトの営業日カレンダーで要確認）</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築西2034</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0853533240">☎ 0853-53-3240</a> ／ <a href="https://www.heiwasoba.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業1950年の老舗で、門前の混雑から外れた立地という点でも他の門前4店と重ならないため選んだ。営業の根拠は、公式サイトのお知らせページ（2026年10月6日閲覧。住所・電話・営業時間11:00〜14:30・月木定休を掲載）と、出雲観光協会の店舗ページおよび出雲そば一覧（2026年10月6日閲覧。同じ営業時間・定休日）の二つで一致。価格は昭文社マップルの出雲大社×そば一覧による。写真は公式サイトの店舗紹介ページとトップページ、お品書きページから7点（店内2点・そばの麺・割子・釜揚げなど。960×640〜2880×800）。右下を切り出して目視し、透かしが無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B9%B3%E5%92%8C%E3%81%9D%E3%81%B0%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E8%A5%BF2034">Googleマップで開く</a>
+<div class="src">写真: heiwasoba.com 掲載ページより引用 / 参照元: <a href="https://www.heiwasoba.com/news/">平和そば本店 公式サイト お知らせ（住所・電話・営業時間・定休日。2026年10月6日閲覧）</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/935">出雲観光協会 公式サイト 平和そば本店（創業の由来・駐車場15台・予算。2026年10月6日閲覧）</a> / <a href="https://www.mapple.net/region/a0601040301_g03050d00/spot/">マップル 出雲大社×そば「平和そば本店」（価格。2026年10月6日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-izumo-kenjosoba-haneya-honten">
+<img class="hero" src="img/izumo/izumo-kenjosoba-haneya-honten.jpg" alt="献上そば 羽根屋 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">6</span>献上そば 羽根屋 本店<span class="yomi">けんじょうそば はねや ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">江戸時代末期（1853〜1868年）創業の手打ちそば店。大正天皇にそばを差し上げて「献上そば」の名を許されたと伝わり、現在は十二代目が店を継ぐ。石臼で製粉し手打ちする技術を代々受け継いでいる。黒い殻ごと挽く出雲そばらしい香りの強さが持ち味で、割子そば三段が看板。釜あげそばのほか、天ぷら割子定食、鴨なんばん、うどん、一品料理まで品数が多い。庭の見える和室とテーブル席、離れの座敷がある。</div>
+<div class="sig"><b>一皿:</b>割子そば三段(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。そば汁を直接かけ、残った汁を次の段へ移して食べる)／釜あげそば(釜から上げたそばを茹で汁ごと丼に移し、出汁をかけて食べる出雲独特の温かいそば)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（L.O.14:30）／17:00〜19:30（L.O.19:00）※そばがなくなり次第終了</td></tr>
+<tr><th>定休日</th><td class="off">元旦のみ（出雲観光協会の掲載は「なし」）</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町549</td></tr>
+<tr><th>予約</th><td>一部可（公式確認のFAQでは平日のみ・席数限定で予約可） — <a href="tel:0853210058">☎ 0853-21-0058</a> ／ <a href="https://kenjosoba-haneya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>出雲そばの代表格とされる江戸末期創業の老舗で、石臼製粉・手打ちという選定基準に合致する。営業の根拠は、掲載施設（有限会社羽根屋）の公式確認を経たGOOD LUCK TRIP掲載ページ（更新日2026年5月8日。住所・電話・営業時間・定休日「元旦」を明記）と、出雲観光協会の出雲そば一覧（2026年10月6日閲覧。営業11時〜20時・定休日なし）、および公式サイト（2026年10月6日閲覧）の三つ。写真は公式サイトから10点。店舗紹介ページの店内7点（1200×800／800×1200。表の客席・洋間・座敷三室・カウンター二態）と、トップページのスライド3点（1200×650。天ぷら割子定食、麺棒でのし板を延ばす手元、包丁でそばを切る手元）。スライドの3点には店自身の屋号「献上そば 羽根屋」が入るが、第三者の媒体名の透かしではないため採用した。外観だけのスライド1点は除外。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8C%AE%E4%B8%8A%E3%81%9D%E3%81%B0%20%E7%BE%BD%E6%A0%B9%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA549">Googleマップで開く</a>
+<div class="src">写真: kenjosoba-haneya.com 掲載ページより引用 / 参照元: <a href="https://www.gltjp.com/ja/directory/item/17856/">GOOD LUCK TRIP「出雲そば 羽根屋本店」監修=有限会社羽根屋・更新2026年5月8日</a> / <a href="https://kenjosoba-haneya.com/">献上そば 羽根屋 公式サイト（2026年10月6日閲覧）</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/37">出雲観光協会 公式サイト 献上そば羽根屋本店（2026年10月6日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-izumo-hoshien">
+<div class="hero-pending">写真準備中<span>公式サイトが2014年製で画像の最大が825×550px、出雲観光協会の掲載も699×446pxで、見出し写真の下限（長辺900px）に1枚も届かなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">7</span>手打ち出雲蕎麦 ほしえん<span class="yomi">てうちいずもそば ほしえん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">出雲市駅の北口すぐ、夜だけ開ける手打ち出雲そばの店。平成25年（2013年）10月2日に、同じ場所で15年続いたラーメン店を引き継ぐ形で開業した。地元産のそばを殻ごと石臼で挽いた挽きぐるみの粉を八割五分使い、毎日店主が手打ちする。看板の三色割子そばは卵・長芋・大根おろしを添えたもの。前身の看板だった出雲塩ラーメンも残す。テーブル28席・カウンター8席。</div>
+<div class="sig"><b>一皿:</b>三色割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そばに、卵・長芋・大根おろしの三種を添えたもの。段ごとに味を変えて食べる)／出雲塩ラーメン(出雲市鷺浦で日本海の海水を海藻ごと炊き上げた藻塩を使う塩ラーメン。前身のラーメン店から受け継いだ一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜24:00（L.O.23:30）※出雲観光協会の掲載。公式サイトは「夜18:00〜翌1:30」と記載しており食い違う</td></tr>
+<tr><th>定休日</th><td class="off">日曜（日曜が祝祭日の場合は月曜）</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町駅通り905-18</td></tr>
+<tr><th>予約</th><td>可（公式サイトに予約・問い合わせの案内あり） — <a href="tel:0853242598">☎ 0853-24-2598</a> ／ <a href="http://park10.wakwak.com/~hoshien/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>出雲市駅前で夜に出雲そばを食べられる数少ない店で、地元産玄そばの石臼挽き八割五分という製粉のこだわりも選定基準に合う。営業の根拠は、出雲観光協会の店舗ページと出雲そば一覧（いずれも2026年10月6日閲覧。住所・電話・営業時間18:00〜24:00・日曜定休を掲載）。公式サイト（2026年10月6日閲覧）は新型コロナ関連の告知が残り更新が古く、営業時間を「夜18:00〜翌1:30」と記しており観光協会の掲載と食い違う。訪問前に電話での確認を勧める。写真候補なし。公式サイトの画像は最大825×550（他は230×322以下）、出雲観光協会の掲載画像は699×446で、いずれも長辺900pxに届かない。号外NET 出雲市・雲南市のサイト内検索でも当店を扱った記事は無く（2026年10月6日実施。隣接地のホテル建設記事で店名が触れられるのみ）、食べログ以外に使える実写の出どころが見つからなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E5%87%BA%E9%9B%B2%E8%95%8E%E9%BA%A6%20%E3%81%BB%E3%81%97%E3%81%88%E3%82%93%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA%E9%A7%85%E9%80%9A%E3%82%8A905-18">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/29">出雲観光協会 公式サイト 手打ち出雲蕎麦 ほしえん（住所・営業時間・定休日・そば粉・アクセス。2026年10月6日閲覧）</a> / <a href="https://www.izumo-kankou.gr.jp/?p=5728&amp;ctg=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0">出雲観光協会 公式サイト 食べる＞出雲そば一覧（2026年10月6日閲覧）</a> / <a href="http://park10.wakwak.com/~hoshien/">手打ち出雲そば ほしえん 公式サイト（2026年10月6日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-izumo-sobadokoro-kitaen">
+<img class="hero" src="img/izumo/izumo-sobadokoro-kitaen.jpg" alt="そば処・喜多縁 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">8</span>そば処・喜多縁<span class="yomi">そばどころ きたえん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">旧平田市の中心、木綿街道の町並みの近くで営む出雲そばの店。2020年5月末にいったん営業を休み、同年秋に平田町へ移転して再開した。冷たい割子そばと温かい釜揚げそばの両方を出し、両方を一度に味わえる「そばりえセット」が看板。昼だけでなく夜も営業し、夜はコース料理も受ける（要予約）ので、そば屋というより和食の店として使える。門前の観光客向けの店とは客層も時間帯も違う。</div>
+<div class="sig"><b>一皿:</b>そばりえセット(冷たい割子そばと温かい釜揚げそばを一度に味わえるセット。出雲そばの二通りの食べ方を一皿で比べられる)／割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00／17:30〜20:00（月曜は昼のみ。水曜の夜はコース予約がある場合のみ営業）</td></tr>
+<tr><th>定休日</th><td class="off">火曜（不定休あり）</td></tr>
+<tr><th>住所</th><td>島根県出雲市平田町989-4</td></tr>
+<tr><th>予約</th><td>可（夜のコースは要予約。ホットペッパーグルメでネット予約も可） — <a href="tel:0853314259">☎ 0853-31-4259</a> ／ <a href="https://www.sobadocoro-kitaen.com/bin/index.cgi">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>出雲市内で平田地区をおさえる一軒として、また夜も営業する数少ない出雲そばの店として選んだ。営業の根拠は、出雲観光協会の店舗ページと出雲そば一覧（2026年10月6日閲覧。住所・電話・営業時間・定休日・公式サイトを掲載）、公式サイト（2026年10月6日閲覧）、およびホットペッパーグルメの掲載ページ（2026年10月6日閲覧。ネット予約カレンダーに当月の空き状況が表示されている）の三つ。移転の経緯は地域ニュース「号外NET 出雲市・雲南市」2020年8月28日の記事による。写真は公式サイトのトップ画像3点（1060×600。そば切りの手元・板そば・店内）とホットペッパーグルメの板そば1点（1139×766）の計4点。公式サイトの3点には左上に店名と予約電話番号が入るが、これは店自身の表示で媒体名の透かしではない。右下を切り出して目視し、媒体の透かしが無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%E3%83%BB%E5%96%9C%E5%A4%9A%E7%B8%81%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B9%B3%E7%94%B0%E7%94%BA989-4">Googleマップで開く</a>
+<div class="src">写真: sobadocoro-kitaen.com 掲載ページより引用 / 参照元: <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/4226">出雲観光協会 公式サイト そば処・喜多縁（住所・電話・営業時間・定休日・予算・駐車場。2026年10月6日閲覧）</a> / <a href="https://www.sobadocoro-kitaen.com/bin/index.cgi">そば処・喜多縁 公式サイト（2026年10月6日閲覧）</a> / <a href="https://www.hotpepper.jp/strJ001158649/">ホットペッパーグルメ そば処 喜多縁（営業時間・ネット予約。2026年10月6日閲覧）</a> / <a href="https://izumo-unnan.goguynet.jp/2020/08/28/soba_kitaen/">号外NET 出雲市・雲南市「そば処・喜多縁が平田町に移転オープン予定」2020年8月28日</a></div>
+</div></div>
+<div class="card" id="c-izumo-sobadokoro-godo">
+<img class="hero" src="img/izumo/izumo-sobadokoro-godo.jpg" alt="そば処 神門 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">9</span>そば処 神門<span class="yomi">そばどころ ごうど</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">出雲大社と出雲市街の中間、斐伊川（ひいかわ）が開いた平野の県道沿いにある手打ちそばの店。門前の観光地から離れ、庭を望む窓の広い和室とテーブル席でゆっくり食べられる。昼だけでなく夜も営業するのが出雲のそば屋では珍しい。割子そばのほか、天ぷらを合わせたそば膳やだし巻き卵などの一品もあり、地元の酒も置く。そばが売り切れ次第終了する。</div>
+<div class="sig"><b>一皿:</b>割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移して食べる)／天ぷらそば膳(手打ちのそばに海老と野菜の天ぷらを合わせた膳。夜の一品料理と一緒に頼める)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00／17:00〜20:00（売り切れ次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（月曜が祝日の場合は営業し翌火曜休み）</td></tr>
+<tr><th>住所</th><td>島根県出雲市常松町378</td></tr>
+<tr><th>予約</th><td>一部可（ホットペッパーグルメ掲載。電話番号はサイト上で非表示のため未確認）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>門前と駅前のどちらでもない平野部の県道沿いという立地を押さえるため、また夜も営業する数少ない出雲そばの店として選んだ。営業の根拠は、ホットペッパーグルメの掲載ページ（2026年10月6日閲覧。住所・アクセス・営業時間・定休日・予算を掲載）と、昭文社マップルの松江・出雲×そば一覧への掲載（2026年10月6日閲覧）。『&lt;店名&gt; 閉店』での検索（2026年10月6日実施）でも閉店の報は見つからなかった。公式サイト・公式SNSは見つけられず未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E7%A5%9E%E9%96%80%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B8%B8%E6%9D%BE%E7%94%BA378">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000513080/">ホットペッパーグルメ 神門 出雲（住所・アクセス・営業時間・定休日・予算。2026年10月6日閲覧）</a> / <a href="https://www.mapple.net/region/a0601040000_g03050d00/spot/">マップル 松江・出雲×そば 一覧（2026年10月6日閲覧）</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・日本海の魚（のどぐろ・白いか）</h2>
+<div class="card" id="c-izumo-sushi-tomita">
+<img class="hero" src="img/izumo/izumo-sushi-tomita.jpg" alt="鮨とみ田 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">10</span>鮨とみ田<span class="yomi">すしとみた</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">JR出雲市駅の北、今市町の路地にある鮨屋。カウンターと小上がりを合わせて27席で全席禁煙、駐車場は無い。日本海で揚がった白身の魚などを仕入れ、握りと刺身で出す。夜は17時30分から21時30分（料理ラストオーダー21時）。昼は11時から13時30分だが、昼の営業は2日前までの予約制で2名以上から受ける（日曜・水曜を除く）。定休は日曜で、日曜と月曜が連休になるときは日曜に営業し翌月曜を休む。</div>
+<div class="sig"><b>一皿:</b>握り(日本海で揚がった白身魚を中心に、カウンターのネタケースから選んで握ってもらう江戸前仕立ての寿司)／刺身の盛り合わせ(いかや白身魚を竹ざるに盛った一皿。山陰の魚をそのまま味わうための品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜13:30（料理L.O.13:00／2日前までの予約制・2名以上。日曜・水曜を除く）／夜 17:30〜21:30（料理L.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（日曜・月曜が連休のときは日曜に営業し、翌月曜が休み）</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町1458</td></tr>
+<tr><th>予約</th><td>可（昼は2日前までの要予約・2名以上）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの出雲市和食一覧（2026年10月6日に取得）に現行の掲載店として並び、掲載ページには席数27席・昼夜の営業時間・コース予約のキャンセル規定まで載っている。回らない寿司の枠として、JR出雲市駅北口から徒歩3分という立地と、昼を2日前までの予約制にしている営業の形を採った。電話番号は掲載ページ上で押さないと表示されない仕組みのため未確認。掲載ページに公式サイトとして登録されていた Google のビジネスサイト（sushi-restaurant-2628.business.site）は2026年10月6日時点で404を返し、存在しない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E3%81%A8%E3%81%BF%E7%94%B0%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA1458">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000512814/">ホットペッパーグルメ 鮨とみ田 掲載ページ（2026年10月6日取得。住所・アクセス・営業時間・定休日・席数・予算）</a> / <a href="https://www.hotpepper.jp/SA72/Y956/G004/">ホットペッパーグルメ 出雲市の和食の店一覧（2026年10月6日取得）</a></div>
+</div></div>
+<div class="card" id="c-izumo-unasho">
+<div class="hero-pending">写真準備中<span>ホットペッパーの掲載ページに自店の写真が1枚も登録されておらず、公式サイトも無い（Instagramは当環境から取得できない）</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>うな昇 出雲<span class="yomi">うなしょう いずも</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">JR出雲市駅の北、今市町にあるうなぎの専門店。30席で全席禁煙、駐車場と個室がある。うな重とうなぎの定食を昼の時間帯に出し、ホットペッパーグルメからネット予約も受ける。営業は火曜から日曜の11時から15時（料理ラストオーダー14時30分）で、祝日はこれに加えて17時30分から21時（料理ラストオーダー20時30分）も開ける。定休は月曜だが、月曜が祝日のときは営業する。</div>
+<div class="sig"><b>一皿:</b>うな重(蒲焼きにしたうなぎを重箱のご飯にのせたもの。うなぎを1尾使う「極」と、4分の3尾の「上」の2段階がある)／うなぎの定食(うな重に吸い物・香の物などを組み合わせた定食仕立て)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 11:00〜15:00（料理L.O.14:30）／祝日はこれに加えて 17:30〜21:00（料理L.O.20:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（月曜が祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町42-30</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメからネット予約可） — <a href="tel:0853216399">☎ 0853-21-6399</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメに「ネット予約可」の掲載店として載っており（2026年10月6日取得）、住所・電話番号・席数・営業時間・定休日・駐車場が現行の掲載内容として確認できる。うなぎの枠として、出雲市内で数少ないうなぎの専門店であること、昼に通しで営業していることを採った。品書きの「極（1尾）」「上（4分の3尾）」は地域情報サイト HAMONI の店舗ページ（2026年10月6日取得）に集まった来店者の投稿に拠る。写真候補なし（ホットペッパーの掲載ページに自店の写真が1枚も登録されておらず、公式サイトが無く、Instagram（@unasyo.izumo）は取得できなかった）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E6%98%87%20%E5%87%BA%E9%9B%B2%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA42-30">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.hotpepper.jp/strJ004089013/">ホットペッパーグルメ うな昇 出雲 掲載ページ〈ネット予約可〉（2026年10月6日取得。住所・電話・営業時間・定休日・席数・駐車場）</a> / <a href="https://hamoni.jp/shop/ysSdirqSUDyxOUmpxUPttO3EjH0ckjWK">HAMONI（地域情報サイト）うな昇 店舗ページ（2026年10月6日取得。住所・電話番号・品書きへの言及）</a> / <a href="https://www.hotpepper.jp/SA72/Y956/G004/">ホットペッパーグルメ 出雲市の和食の店一覧（2026年10月6日取得）</a></div>
+</div></div>
+<div class="card" id="c-izumo-kanunrou">
+<img class="hero" src="img/izumo/izumo-kanunrou.jpg" alt="看雲楼 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>看雲楼<span class="yomi">かんうんろう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">明治15年（1882年）創業の割烹・和食堂。出雲大社の御用商人を務めた料理店で、玄関脇に家紋を掲げる。洋と和の宴会場、レストラン席、小上がりを合わせて114席あり、結婚式後の会食や法要にも使われる。郷土料理の「うず煮」を看板にしつつ、海鮮丼・刺身定食・天婦羅定食・割子そばまで品書きが広い。昼は11時30分から14時、夜は17時30分から21時（ラストオーダー20時）で、夜は要予約。</div>
+<div class="sig"><b>一皿:</b>うず煮(地元で獲れたフグでとった出汁にかんぴょう・椎茸・フグの身を入れ、くず粉でとろみをつけてあんに仕立てる。椀にあんを注いでご飯を盛り、セリと岩海苔、わさびをのせ、ご飯をあんにうずめながら食べる出雲大社伝来の郷土料理。1,650円)／海鮮丼(日本海の旬の魚介を5種類以上のせた丼。しじみの吸い物が付く。2,035円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00／17:30〜21:00（L.O.20:00）※夜は要予約</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築東489-1</td></tr>
+<tr><th>予約</th><td>可（夜と、松花堂膳・会席料理は要予約） — <a href="tel:0853532017">☎ 0853-53-2017</a> ／ <a href="https://kanunrou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>一般社団法人出雲観光協会の公式サイトの店舗ページ（2026年10月6日取得）に、明治15年創業であること、郷土料理「うず煮」の作り方、住所・電話番号・営業時間・定休日・駐車場・平均予算が載っている。あわせて店の公式サイト（2026年10月6日取得。フッターの著作権表示は2026年）で同じ住所・電話・営業時間と、席数114席・各料理の税込価格を照合した。出雲大社の門前の枠として、土地の郷土料理うず煮を今も出し続けている点を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%9C%8B%E9%9B%B2%E6%A5%BC%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1489-1">Googleマップで開く</a>
+<div class="src">写真: kanunrou.com 掲載ページより引用 / 参照元: <a href="https://kanunrou.com/">割烹・和食堂 看雲楼 公式サイト（2026年10月6日取得。住所・電話・営業時間・定休日・席数・品書きと価格）</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/581">出雲観光ガイド（一般社団法人出雲観光協会 公式）看雲楼（2026年10月6日取得。明治15年創業・うず煮の説明・住所・電話・営業時間）</a></div>
+</div></div>
+<div class="card" id="c-izumo-gurume-koyomaru">
+<img class="hero" src="img/izumo/izumo-gurume-koyomaru.jpg" alt="ぐるめ幸洋丸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>ぐるめ幸洋丸<span class="yomi">ぐるめこうようまる</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">出雲日御碕灯台のたもと、海沿いの県道29号沿いにある海鮮の食事処。1階はテーブルと座敷、2階は予約した客だけが使う大広間と個室で、合わせて281席と大きい。近海で揚がった魚介を海鮮丼・刺身定食・焼き物で出し、サザエやイカの姿造り、イカの丸焼きも品書きにある。営業は11時から17時（料理ラストオーダー16時40分）の通しで定休日は無く、仕出し弁当も1,200円から受ける。</div>
+<div class="sig"><b>一皿:</b>海鮮丼(日本海で揚がった刺身を何種類も酢飯にのせた丼。味噌汁と小鉢が付く定食仕立てで出る)／イカの姿造り(イカを丸ごと刺身に引き、船形の器に盛ったもの。山陰の夏から秋の魚)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00（料理L.O.16:40）※出雲観光協会の掲載は10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町日御碕1089-48</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメからネット予約可。2階の大広間・個室は予約した客のみ） — <a href="tel:0853545211">☎ 0853-54-5211</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>一般社団法人出雲観光協会の公式サイトに「ぐるめ幸洋丸」として店舗ページがあり（2026年10月6日取得）、住所・電話番号・営業時間が載っている。あわせてホットペッパーグルメの掲載ページ〈ネット予約可〉（2026年10月6日取得）で席数281席・定休日なし・駐車場・仕出しの価格を照合した。日御碕という立地の枠として、灯台のそばで近海の魚を昼に出す店を採った。なお店名はホットペッパーグルメでは「ぐるめ幸洋」と表記され、営業開始時刻も観光協会の掲載（10時）と食い違う。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%90%E3%82%8B%E3%82%81%E5%B9%B8%E6%B4%8B%E4%B8%B8%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%97%A5%E5%BE%A1%E7%A2%951089-48">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/556">出雲観光ガイド（一般社団法人出雲観光協会 公式）ぐるめ幸洋丸（2026年10月6日取得。住所・電話・営業時間）</a> / <a href="https://www.hotpepper.jp/strJ000513182/">ホットペッパーグルメ ぐるめ幸洋 掲載ページ〈ネット予約可〉（2026年10月6日取得。住所・アクセス・営業時間・定休日・席数・駐車場）</a> / <a href="https://www.hotpepper.jp/SA72/Y956/G004/">ホットペッパーグルメ 出雲市の和食の店一覧（2026年10月6日取得）</a></div>
+</div></div>
+<div class="card" id="c-izumo-yohukiya">
+<img class="hero" src="img/izumo/izumo-yohukiya.jpg" alt="よふきや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>よふきや<span class="yomi">よふきや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">宍道湖の北岸、小境町にある食事処。窓の外に宍道湖が広がる座敷とテーブルで50席、ほかに宴会場がある。日本海で揚がった魚を海鮮丼・刺身・煮付け・天ぷらで出すほか、地元で採れる小さな貝「べべ貝」を使った釜飯を名物に掲げる。会席や慶事・法事の料理、仕出しとテイクアウトも受ける。昼は11時から14時、夜は17時から21時（料理ラストオーダー20時）。定休は不定休で、全席禁煙。</div>
+<div class="sig"><b>一皿:</b>べべ貝の釜飯(地元で採れる小さな巻貝「べべ貝」を炊き込んだ釜飯。磯の香りが立つ、この店の名物)／海鮮丼(日本海の刺身を何種類も重ねて盛った丼。のどぐろや白身、いくらなど季節の魚が替わる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00（料理L.O.14:00）／17:00〜21:00（料理L.O.20:00、ドリンクL.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>島根県出雲市小境町411-4</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0853670804">☎ 0853-67-0804</a> ／ <a href="https://yohukiya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイト（2026年10月6日取得。2026年4月20日付「GW期間中の営業について」が最新のお知らせ）に住所・電話番号・営業時間・定休日が載り、べべ貝の釜飯と海鮮丼を名物として掲げている。あわせてホットペッパーグルメの掲載ページ（2026年10月6日取得）で席数50席・駐車場12台・昼夜の予算を照合した。旧平田市域（宍道湖北岸）の枠として、湖を望む立地と土地の貝を使った釜飯を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%88%E3%81%B5%E3%81%8D%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B0%8F%E5%A2%83%E7%94%BA411-4">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://yohukiya.com/">お食事・宴会・仕出し よふきや 公式サイト（2026年10月6日取得。住所・電話・営業時間・定休日・名物）</a> / <a href="https://www.hotpepper.jp/strJ000513236/">ホットペッパーグルメ よふきや 掲載ページ（2026年10月6日取得。アクセス・営業時間・席数・駐車場・予算）</a> / <a href="https://www.hotpepper.jp/SA72/Y956/G004/">ホットペッパーグルメ 出雲市の和食の店一覧（2026年10月6日取得）</a></div>
+</div></div>
+<div class="card" id="c-izumo-ryoritei-nadaya">
+<img class="hero" src="img/izumo/izumo-ryoritei-nadaya.jpg" alt="料裡亭 灘屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>料裡亭 灘屋<span class="yomi">りょうりてい なだや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲市大津町にある会席の店。有限会社灘屋が営み、同じ建物に昼のランチ席「和ぶれんど 徳益庵」を併設する。旬の食材と日本海の魚介を使った会席を完全個室で出し、杵築・美佐岐・伊奈佐といった出雲の地名を付けた部屋と、三つに分けられる大広間がある。手すりとエレベーター、車椅子を備える。昼は11時30分から14時、夜は17時から21時30分で会席コースのみ。定休は水曜。</div>
+<div class="sig"><b>一皿:</b>会席料理(先付・造り・茶わん蒸し・焼物・天麩羅・鍋物・焚合せ・留め椀などの全10品。季節で中身が替わり、単品の注文はできない。昼夜とも4,000円から、完全予約制)／銀ダラの照り焼きランチ(銀ダラを照り焼きにした昼の定食。昔から変わらない人気の一品で1,650円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜14:00／夜 17:00〜21:30（会席コースのみ）※公式サイトに拠る。ホットペッパーグルメの掲載は夜17:00〜21:00。徳益庵のランチ営業は月・火・木・金で、3日前までに要予約</td></tr>
+<tr><th>定休日</th><td class="off">水曜（定休日でも予約・相談に応じると公式サイトに記載）</td></tr>
+<tr><th>住所</th><td>島根県出雲市大津町2063-11</td></tr>
+<tr><th>予約</th><td>要予約（完全予約制） — <a href="tel:0853212128">☎ 0853-21-2128</a> ／ <a href="https://www.ryoritei-nadaya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店の公式サイト（2026年10月6日取得。2026年6月24日付「【ご予約受付中】土用の丑の日限定「特製うなぎ」のご案内」が最新のお知らせ）に住所・電話番号・営業時間・定休日・コース価格・部屋の案内が載っている。あわせてホットペッパーグルメの掲載ページ（2026年10月6日取得）で席数62席・駐車場・昼夜の予算を照合した。会席の枠として、完全個室で出す点と、昼に手の届く価格の御膳がある点を採った。写真は4枚のみ（公式サイトの大きな画像はバリアフリー設備の記録が中心で、料理と店内が写り短辺900ピクセル以上のものが2枚、ホットペッパーの掲載写真が2枚）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%99%E8%A3%A1%E4%BA%AD%20%E7%81%98%E5%B1%8B%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E6%B4%A5%E7%94%BA2063-11">Googleマップで開く</a>
+<div class="src">写真: ryoritei-nadaya.com 掲載ページより引用 / 参照元: <a href="https://www.ryoritei-nadaya.com/">有限会社 灘屋（料裡亭 灘屋）公式サイト（2026年10月6日取得。住所・電話・営業時間・定休日・コース価格・部屋）</a> / <a href="https://www.ryoritei-nadaya.com/news/202606-news/">料裡亭 灘屋 公式サイト お知らせ「土用の丑の日限定『特製うなぎ』のご案内」2026年6月24日付（営業継続の根拠）</a> / <a href="https://www.hotpepper.jp/strJ003532131/">ホットペッパーグルメ 和ぶれんど 徳益庵(ランチ)／料裡亭 灘屋 掲載ページ（2026年10月6日取得。アクセス・席数・駐車場・予算）</a> / <a href="https://www.hotpepper.jp/SA72/Y956/G004/">ホットペッパーグルメ 出雲市の和食の店一覧（2026年10月6日取得）</a></div>
+</div></div>
+<div class="card" id="c-izumo-tempura-misato">
+<img class="hero" src="img/izumo/izumo-tempura-misato.jpg" alt="天ぷら 味里 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>天ぷら 味里<span class="yomi">てんぷら みさと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">西出雲駅のすぐ南にある天ぷらの店。カウンターと小上がりを合わせて13席の小さな構えで、全席禁煙。揚げ場をカウンター越しに見ながら、天ぷら定食・天丼・天ぷらとそばを組み合わせた膳を食べる。持ち帰りの天ぷら盛りも受ける。昼は11時30分から14時（料理ラストオーダー13時30分）、夜は17時30分から21時（料理ラストオーダー20時30分）。定休は日曜と月曜で、火曜から土曜と祝日・祝前日が営業日。</div>
+<div class="sig"><b>一皿:</b>天ぷら定食(海老・魚・野菜を揚げた天ぷらに、ご飯・味噌汁・小鉢・香の物が付く定食。カウンターの揚げ場で揚げたてが出る)／天丼(天ぷらを丼のご飯にのせてたれをかけたもの。味噌汁と小鉢が付く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00（料理L.O.13:30）／17:30〜21:00（料理L.O.20:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市西新町3-2-1</td></tr>
+<tr><th>予約</th><td>可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページ（2026年10月6日取得）に住所・アクセス・営業時間・定休日・席数13席・駐車場6台・予算が載り、出雲市の和食一覧（同日取得）にも現行の掲載として並んでいる。天ぷらの枠として、出雲市で数少ない天ぷらの専門店であることと、西出雲駅南口の目の前という立地を採った。電話番号は掲載ページ上で押さないと表示されない仕組みのため未確認。店名の読みも一次情報では確認できていない（「みさと」は推定）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E5%91%B3%E9%87%8C%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E8%A5%BF%E6%96%B0%E7%94%BA3-2-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001052760/">ホットペッパーグルメ 天ぷら 味里 掲載ページ（2026年10月6日取得。住所・アクセス・営業時間・定休日・席数・駐車場・予算）</a> / <a href="https://www.hotpepper.jp/SA72/Y956/G004/">ホットペッパーグルメ 出雲市の和食の店一覧（2026年10月6日取得）</a></div>
+</div></div>
+<h2 id="s-ramen" class="c-red">ラーメン・中華そば・町中華</h2>
+<div class="card" id="c-izumo-fukukumo-nogotoshi">
+<img class="hero" src="img/izumo/izumo-fukukumo-nogotoshi.jpg" alt="鶏ラーメン 福如雲 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">17</span>鶏ラーメン 福如雲<span class="yomi">とりらーめん ふくくものごとし</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">2023年2月に開いた鶏ラーメンの店。地鶏・赤鶏・親鶏の三種を合わせたスープは澄んでいて、卵を使わない自家製の熟成麺を合わせる。宍道湖のヤマトしじみを重ねた塩味の一杯を「シン☆イズモラーメン」として押し出しており、トビウオ(あご)の焼き干しを使った鶏ラーメンも出す。昼だけのラーメン営業で、同じ店舗は夜に日本料理店「味工房まつしま」に変わる。</div>
+<div class="sig"><b>一皿:</b>琥珀 宍道湖しじみ鶏ラーメン(地鶏・赤鶏・親鶏からとった澄んだ鶏スープに宍道湖産ヤマトしじみの旨みを重ねた塩味のラーメン。卵不使用の自家製熟成麺を使う。税込880円)／しじみ塩バター鶏ラーメン(同じしじみ鶏スープにバターを落とした季節限定の一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜14:00(夜は同じ店舗が日本料理「味工房まつしま」として18:00〜22:00・要予約)</td></tr>
+<tr><th>定休日</th><td class="off">火曜・水曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町283-5</td></tr>
+<tr><th>予約</th><td>昼のラーメン営業は不要(夜の「味工房まつしま」は要予約) — <a href="tel:0853213290">☎ 0853-21-3290</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地域情報サイト「まいぷれ出雲」の店舗ページが運営されており、最新ニュースが2026年9月29日付(しじみ塩バター鶏ラーメン)、その前が2026年7月29日・7月7日(山陰中央テレビ出演の告知)と直近まで更新されているため、現在も営業していると判断した。自家製麺であること・スープの構成・価格は、同サイト地元編集部の記事「出雲市内のラーメンの名店おすすめ13選」の記述による。全国チェーンではない個人店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B6%8F%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E7%A6%8F%E5%A6%82%E9%9B%B2%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA283-5">Googleマップで開く</a>
+<div class="src">写真: img2.mypl.net 掲載ページより引用 / 参照元: <a href="https://izumo.mypl.net/shop/00000373101/">まいぷれ出雲 店舗ページ「鶏ラーメン 福如雲(ふくくものごとし)」(2026-10-06 閲覧・最新ニュース2026年9月29日)</a> / <a href="https://izumo.mypl.net/article/gourmet_sanin/85767">まいぷれ出雲 地元編集部「出雲市内のラーメンの名店おすすめ13選」(2026-10-06 閲覧)</a></div>
+</div></div>
+<div class="card" id="c-izumo-chuka-hanten-ichika">
+<img class="hero" src="img/izumo/izumo-chuka-hanten-ichika.jpg" alt="中華飯店 一華 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">18</span>中華飯店 一華<span class="yomi">ちゅうかはんてん いちか</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">17年続いた「大衆拉麺酒場 舟島屋」が2025年2月26日に業態を変えて開いた街中華。昼はラーメンとつけ麺が十数種類に中華定食、夜は海老のチリソースや四川麻婆豆腐などの一品と島根の地酒を出す。1階と2階があり、最大30名の宴会にも対応する。ラーメンはあごだし・柑橘塩・牛骨・豚骨など選択肢が広い。</div>
+<div class="sig"><b>一皿:</b>あごだし中華そば(島根県の県魚トビウオ=あごの出汁を豚骨醤油のスープに重ねた中華そば。中細ちぢれ麺に刻み柚子が入る。税込900円)／もちもち焼ぎょうざ(厚めの皮で包んだ焼き餃子。夜の点心メニュー。税込700円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00／18:00〜22:00(料理L.O.21:00、飲み物L.O.21:30)</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市姫原町156</td></tr>
+<tr><th>予約</th><td>可(コース・宴会は要予約) — <a href="tel:0853316870">☎ 0853-31-6870</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>まいぷれ出雲に店舗ページがあり、営業時間・定休日・メニュー122件・写真109枚が掲載され、2025年10月1日の期間限定メニュー告知までニュースが更新されている。あわせて同サイト地元編集部の記事2本(ラーメン13選・中華の名店4選)で看板メニューと価格が確認できる。出雲市内の1店舗のみの個人店で、全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E9%A3%AF%E5%BA%97%20%E4%B8%80%E8%8F%AF%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A7%AB%E5%8E%9F%E7%94%BA156">Googleマップで開く</a>
+<div class="src">写真: img2.mypl.net 掲載ページより引用 / 参照元: <a href="https://izumo.mypl.net/shop/00000083120/">まいぷれ出雲 店舗ページ「中華飯店 一華」(2026-10-06 閲覧・リニューアル告知2025年2月28日、最新ニュース2025年10月1日)</a> / <a href="https://izumo.mypl.net/article/gourmet_sanin/85767">まいぷれ出雲 地元編集部「出雲市内のラーメンの名店おすすめ13選」(2026-10-06 閲覧)</a> / <a href="https://izumo.mypl.net/article/gourmet_sanin/93298">まいぷれ出雲 地元編集部「出雲市内にある中華の名店4選」(2024年12月29日)</a></div>
+</div></div>
+<div class="card" id="c-izumo-pairon">
+<img class="hero" src="img/izumo/izumo-pairon.jpg" alt="中国料理 白龍 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">19</span>中国料理 白龍<span class="yomi">ちゅうごくりょうり ぱいろん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">渡橋町の国道沿いで40年以上続く中華料理店。中国風の装飾をした店内に回転テーブル付きの座敷や半個室があり、家族連れから年配客まで幅広い。昼は900円からのランチで、ごはんの大盛りとスープのおかわりが無料。昔ながらの醤油ラーメンとパラパラの炒飯が看板で、角煮をのせた東坡肉麺などの麺類もそろう。</div>
+<div class="sig"><b>一皿:</b>醤油ラーメン(昔ながらの澄んだ醤油スープに中細麺と香ばしい焼き豚を合わせた一杯。ハーフやきめしが付くBセットは税込900円)／東坡肉麺(とろとろに煮込んだ豚の角煮=東坡肉と青菜をのせた醤油味の麺)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00／17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市渡橋町1220</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0853223022">☎ 0853-22-3022</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>まいぷれ出雲に店舗ページがあり、同サイト地元編集部の記事「出雲市内にある中華の名店4選」(2024年12月29日)で「40年以上の歴史」「国道184号線沿い」「駐車場30台」「月曜定休」と営業実態が具体的に書かれている。さらに同サイトの実食レポート記事でも営業時間と定休日が一致している。出雲市内1店舗の個人店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E7%99%BD%E9%BE%8D%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%B8%A1%E6%A9%8B%E7%94%BA1220">Googleマップで開く</a>
+<div class="src">写真: img2.mypl.net 掲載ページより引用 / 参照元: <a href="https://izumo.mypl.net/shop/00000317023/">まいぷれ出雲 店舗ページ「中国料理 白龍（パイロン）」(2026-10-06 閲覧)</a> / <a href="https://izumo.mypl.net/article/gourmet_sanin/93298">まいぷれ出雲 地元編集部「出雲市内にある中華の名店4選」(2024年12月29日)</a> / <a href="https://izumo.mypl.net/article/lunch_izumo/103869">まいぷれ出雲 実食レポート「柔らかく煮込んだ東坡肉とたっぷりお野菜の東坡肉麺！」</a></div>
+</div></div>
+<div class="card" id="c-izumo-boochan-ramen">
+<img class="hero" src="img/izumo/izumo-boochan-ramen.jpg" alt="ぶーちゃんらーめん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">20</span>ぶーちゃんらーめん<span class="yomi">ぶーちゃんらーめん</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">旧平田市の市街地にある味噌主体のラーメン店。濃厚な味噌をベースにした辛味噌らーめんが看板で、高加水の平打ち麺をキャベツともやし、厚切りチャーシュー、半熟の味付け卵と合わせる。野菜を山盛りにした「野菜マシマシラーメン」も名物。昼と夜の二部制で、季節限定のラーメンやまぜそばも出す。食券の券売機があり、一人でも入りやすい。</div>
+<div class="sig"><b>一皿:</b>辛味噌らーめん(濃厚な味噌スープにショウガの香りと辛みを合わせ、キャベツともやし、厚切りチャーシュー、半熟味玉をのせる。もちもちした高加水の平打ち麺。税込920円)／野菜マシマシラーメン(同じ麺に野菜を山盛りにした名物の一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00／18:00〜19:30(土曜・日曜は昼のみ)</td></tr>
+<tr><th>定休日</th><td class="off">水曜(ほかに不定休あり)</td></tr>
+<tr><th>住所</th><td>島根県出雲市平田町1825-10</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0853776107">☎ 0853-77-6107</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地域情報サイト「まいぷれ出雲」の実食レポート(取材2024年3月)で住所・電話・営業時間・定休日・駐車場が確認でき、同サイト地元編集部の「出雲市内のラーメンの名店おすすめ13選」でも看板メニューと二部制の営業時間が重ねて紹介されている。出雲市内1店舗の個人店で、全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B6%E3%83%BC%E3%81%A1%E3%82%83%E3%82%93%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B9%B3%E7%94%B0%E7%94%BA1825-10">Googleマップで開く</a>
+<div class="src">写真: img2.mypl.net 掲載ページより引用 / 参照元: <a href="https://izumo.mypl.net/article/lunch_izumo/85802">まいぷれ出雲 実食レポート「老若男女問わず挑戦したくなる『野菜マシマシラーメン』」(取材2024年3月)</a> / <a href="https://izumo.mypl.net/article/gourmet_sanin/85767">まいぷれ出雲 地元編集部「出雲市内のラーメンの名店おすすめ13選」(2026-10-06 閲覧)</a></div>
+</div></div>
+<div class="card" id="c-izumo-kandachi-wanfu">
+<img class="hero" src="img/izumo/izumo-kandachi-wanfu.jpg" alt="神立中華 王福 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">21</span>神立中華 王福<span class="yomi">かんだちちゅうか わんふう</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">2024年2月に斐川町併川に開いた中華料理店。花椒と唐辛子を効かせた坦々麺が看板で、中華の一品料理や定食もそろう。テーブル席のほかに掘りごたつの座敷があり、子どもメニューも置くので家族連れで入りやすい。斐川の田園地帯にあり車で行く店で、出雲空港や山陰道からの立ち寄りにも使える。</div>
+<div class="sig"><b>一皿:</b>坦々麺(すり胡麻のコクに唐辛子と花椒の辛みを重ねた本格的な担々麺。挽き肉の辣醤をたっぷりのせる)／中華定食(坦々麺に小鉢とごはん、揚げ物などを組み合わせた昼の定食)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00／17:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">金曜(※月曜休と記す情報もあり未確認)</td></tr>
+<tr><th>住所</th><td>島根県出雲市斐川町併川697</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0853770615">☎ 0853-77-0615</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>地域情報サイト「まいぷれ出雲」の実食レポート(取材2024年2月)で住所・電話・営業時間・定休日・公式Instagram(@wanfu.izumo)とFacebookページの存在が確認できる。開店を伝える記事が主な根拠のため「神立中華 王福 出雲市斐川町 閉店」で検索し、閉店の報が無いことを確かめたうえで採用した(2026-10-06 実施)。地元の個人店。なお定休日は取材記事では金曜だが、グルメサイトには月曜休と記すものもあり未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%A5%9E%E7%AB%8B%E4%B8%AD%E8%8F%AF%20%E7%8E%8B%E7%A6%8F%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%96%90%E5%B7%9D%E7%94%BA%E4%BD%B5%E5%B7%9D697">Googleマップで開く</a>
+<div class="src">写真: img2.mypl.net 掲載ページより引用 / 参照元: <a href="https://izumo.mypl.net/article/lunch_izumo/83594">まいぷれ出雲 実食レポート「この辛さがクセになる！坦々麺と本格中華のお店が出雲にオープン！」(取材2024年2月)</a></div>
+</div></div>
+<div class="card" id="c-izumo-no-kuni-menya-shinmon">
+<img class="hero" src="img/izumo/izumo-no-kuni-menya-shinmon.jpg" alt="出雲の國 麺家 出雲大社神門通店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">22</span>出雲の國 麺家 出雲大社神門通店<span class="yomi">いずものくに めんや いずもたいしゃしんもんどおりてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲大社の表参道、神門通りに面した麺の店。神話の絵物語や写真を飾った30席ほどの店内で、出雲そばと並んでラーメンを出すのが門前では珍しい。看板は地元の味噌に出雲の酒蔵・富士酒造の酒粕を合わせたスサノオラーメンで、丼の下にご飯と卵焼きが隠れている出雲縁結びどんぶり、しまね和牛どんぶり、鉄鍋チャンポン、出雲ぜんざいもある。</div>
+<div class="sig"><b>一皿:</b>スサノオラーメン(スサノオノミコトがヤマタノオロチに酒を飲ませたという出雲神話にちなむ一杯。地元の味噌に富士酒造の酒粕をブレンドしたまろやかな味噌スープ。出雲縁結び空港店では普通盛り税込980円)／出雲縁結びどんぶり(丼に塩野菜ラーメンが盛られ、その下に卵焼きとご飯が隠れている変わり丼)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:30(出雲観光協会の掲載は10:30〜15:30。16時まで延びる場合あり)</td></tr>
+<tr><th>定休日</th><td class="off">不定休(ホットペッパーグルメの掲載は金曜)</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築南780-10</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0853534445">☎ 0853-53-4445</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>出雲観光協会の公式サイトに店舗ページがあり、住所・電話(0853-53-4445)・営業時間10:30〜15:30・不定休が掲載されている。あわせて門前の神門通りおもてなし協同組合が運営する「出雲の國大社観光ご縁市場」の店舗紹介ページにも同じ電話番号と営業時間11:00〜15:30が載る。出雲縁結び空港店やJR出雲市駅店もある地元資本の数店舗展開で、全国チェーンではない。営業時間と定休日は資料で食い違うため両方を併記した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%AE%E5%9C%8B%20%E9%BA%BA%E5%AE%B6%20%E5%87%BA%E9%9B%B2%E5%A4%A7%E7%A4%BE%E7%A5%9E%E9%96%80%E9%80%9A%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%97780-10">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://izumo-kankou.gr.jp/6897">出雲観光協会 公式サイト 店舗ページ「出雲の國 麺家」(2026-10-06 閲覧)</a> / <a href="https://www.izumo.or.jp/menya/">神門通りおもてなし協同組合「出雲の國大社観光ご縁市場」店舗情報(2022年8月26日更新)</a> / <a href="https://www.hotpepper.jp/strJ001047225/">ホットペッパーグルメ「出雲の國 麺家」(2026-10-06 閲覧・口コミに2025年2月2日来店の投稿)</a></div>
+</div></div>
+<div class="card" id="c-izumo-gyozaya">
+<img class="hero" src="img/izumo/izumo-gyozaya.jpg" alt="餃子屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">23</span>餃子屋<span class="yomi">ぎょうざや</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">電鉄出雲市駅の北、赤ちょうちんに「ギョーザ屋」と書かれた夜だけの餃子店。餃子・しそ餃子・水餃子の三種が柱で、ほかに中華粥、ラーメン、焼きそば、チャーハンなどを出す。4人掛けのテーブル6卓とカウンターの小さな店で、21時を過ぎると二次会客で埋まる。2021年に店舗併用住宅として建て替えたが、カウンターも調理場も以前のままの造りを引き継いでいる。</div>
+<div class="sig"><b>一皿:</b>焼き餃子(皮が薄く中身が透けるほどで、噛むと肉汁があふれる。にんにくとニラの香り。6個500円)／水餃子(厚めのもちもちした皮の餃子を薄口の中華スープに浮かべたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:00(ホットペッパーグルメの掲載。地域情報サイトでは18:30頃の開店と紹介されており、来店前に要確認)</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町1268-6</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0853225053">☎ 0853-22-5053</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山陰のWEBマガジン「na-na(ナーナ)」の実食レポート(2023年5月13日)で住所・電話・営業時間・定休日が確認でき、出雲の地域ニュースサイト「いずしる」にも店舗建て替えの記事と餃子まとめ記事がある。ホットペッパーグルメにも掲載があり、住所(今市町1268-6)と夜のみの営業が一致する。念のため「出雲市 今市町 餃子屋 ギョーザ屋 閉店」で検索し、閉店の報が無いことを確かめた(2026-10-06 実施)。個人店。写真は短辺900px以上の条件を満たすものが1点しか取れなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A4%83%E5%AD%90%E5%B1%8B%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA1268-6">Googleマップで開く</a>
+<div class="src">写真: na-na（山陰のWEBマガジン）より引用 / 参照元: <a href="https://na-na.media/gyo_zaya_izumo/">na-na(ナーナ)｜鳥取・島根のWEBマガジン「【餃子屋】出雲市駅近くの餃子専門店で出会った極旨シソ餃子に水餃子…！」(2023年5月13日)</a> / <a href="https://kurashi-karu.com/gyo-zaya/">いずしる(出雲にゅーす)「出雲市今市町の美味しい餃子の店『餃子屋』が、店舗をリニューアル完了！」</a> / <a href="https://www.hotpepper.jp/strJ001077542/">ホットペッパーグルメ「ギョーザ屋」(2026-10-06 閲覧)</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・郷土料理・地酒</h2>
+<div class="card" id="c-izumo-kuimonya-gosaku">
+<img class="hero" src="img/izumo/izumo-kuimonya-gosaku.jpg" alt="くいもん屋吾作 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">24</span>くいもん屋吾作<span class="yomi">くいもんや ごさく</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">JR出雲市駅の北口を出て駅通りを北へ100mほど、出雲の夜の中心である今市町の入口にある居酒屋。島根県内では出雲市内の渡橋町(わたりばしちょう)にもう1軒を構えるだけの地元資本の店で、全国チェーンではない。島根の地酒を幅広く揃え、日本海で揚がった魚の刺身と焼き鳥を軸に据える。75席と大きく、8名以上なら席をつないで個室のように使える。2026年に内装をリニューアルした。</div>
+<div class="sig"><b>一皿:</b>荒磯盛(あらいそもり。日本海から毎朝届く地魚を舟形の器に盛った刺身の盛り合わせ。3〜4人前3,500円、1,200円の小盛りから選べる)／のどぐろの塩焼(島根を代表する高級魚アカムツを一尾そのまま塩で焼いたもの。2,800円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 17:30〜翌0:00(料理L.O.23:00／ドリンクL.O.23:00)、土・祝日・祝前日 17:00〜翌0:00。土日は17:30開店になる場合あり</td></tr>
+<tr><th>定休日</th><td class="off">日曜(日・月が連休の場合は月曜休み)</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町928-2</td></tr>
+<tr><th>予約</th><td>可(ネット予約可) — <a href="tel:0853243323">☎ 0853-24-3323</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページが2026年9月25日付で更新され、同9月24日付の料理情報、クーポン、10〜12月のネット予約カレンダー(空席状況)まで稼働していることを確認した。クーポンと予約枠が将来の日付まで開いているので、現在営業していることの根拠になる。島根県内の店舗はホットペッパーのフリーワード検索(SA=SA72)で出雲市内の2軒のみで、全国チェーンではないことを確認したうえで採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%84%E3%82%82%E3%82%93%E5%B1%8B%E5%90%BE%E4%BD%9C%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA928-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004591107/">ホットペッパーグルメ「くいもん屋吾作」店舗ページ 2026年9月25日更新(料理情報は2026年9月24日更新)</a></div>
+</div></div>
+<div class="card" id="c-izumo-kushikatsu-sho">
+<img class="hero" src="img/izumo/izumo-kushikatsu-sho.jpg" alt="くしかつ 笑 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>くしかつ 笑<span class="yomi">くしかつ しょう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2006年創業の串かつ屋。昆布とかつおの出汁をきかせた衣で一本ずつ揚げ、定番から創作まで30種類以上が1本80円から並ぶ。カウンターの目の前で揚げる様子が見られる。つぼのソースに「二度づけ禁止」で浸す大阪式のほか、串かつ専用の出汁しょうゆ、塩、カレー塩も置く。もつ鍋を通年出しているのと、品書きに出雲そば(「おやじのそば」)があるのがこの店らしいところ。キッズスペースがあり子ども連れでも入れる。</div>
+<div class="sig"><b>一皿:</b>串かつ(30種類以上ある一口大の串揚げ。昆布とかつおの出汁を衣に仕込んであり、何も付けずにほんのり味がつく。1本80円〜)／くしかつ屋のもつ鍋(牛もつの鍋。醤油・塩ごま・辛味噌の3種から味を選べ、1人前から頼める。1,500円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日 18:00〜23:00(料理L.O.23:00／ドリンクL.O.23:00)</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町827-23</td></tr>
+<tr><th>予約</th><td>可(当日予約も受付。ネット予約可) — <a href="tel:0853242900">☎ 0853-24-2900</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページが2026年6月2日付で更新されており、さらに同ページのネット予約カレンダーが2026年10月・11月・12月まで日ごとの受付状況(休業日を含む)を表示していることを確認した。将来の日付の予約枠が開いているので現在営業している根拠になる。地元資本の個人店で、同名の店はホットペッパーの島根県内検索では他に出てこない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%97%E3%81%8B%E3%81%A4%20%E7%AC%91%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA827-23">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000688852/">ホットペッパーグルメ「くしかつ 笑」店舗ページ 2026年6月2日更新</a></div>
+</div></div>
+<div class="card" id="c-izumo-yofu-izakaya-chaka">
+<img class="hero" src="img/izumo/izumo-yofu-izakaya-chaka.jpg" alt="洋風居酒屋CHAKA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>洋風居酒屋CHAKA<span class="yomi">ようふういざかや ちゃか</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">イタリア料理店で修業したオーナーが営む洋風の居酒屋。カウンター8席とテーブル席、10名の個室があり、カクテル・ワイン・焼酎などドリンクが100種類以上そろう。手作りのトマトソースを使ったパスタやピザ、鶏の唐揚げ甘酢あえなど、酒に合わせやすい洋食が中心。出雲市駅周辺では数少ない深夜営業の店で、18時半から翌3時まで開いており、二軒目・三軒目に使える。</div>
+<div class="sig"><b>一皿:</b>イタリアン(手作りのトマトソースで和えたパスタ。825円)／ミックスピザ(Mサイズ990円。テイクアウトもできる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 18:30〜翌3:00(料理L.O.翌2:00／ドリンクL.O.翌2:00)</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町1265</td></tr>
+<tr><th>予約</th><td>可(15名から貸切も相談可) — <a href="tel:0853237424">☎ 0853-23-7424</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページが2026年3月24日付で更新され、ネット予約カレンダーが2026年12月まで日ごとの受付状況を表示していることを確認した。将来の日付の予約枠が開いているので現在営業している根拠になる。出雲市駅前で翌3時まで開いている数少ない店で、日本酒中心の居酒屋ばかりにならないよう洋酒・ワインの枠として採った。同名店はホットペッパーの島根県内検索では1軒のみで、全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A2%A8%E5%B1%85%E9%85%92%E5%B1%8BCHAKA%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA1265">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000513036/">ホットペッパーグルメ「洋風居酒屋CHAKA チャカ」店舗ページ 2026年3月24日更新</a></div>
+</div></div>
+<div class="card" id="c-izumo-nodoguro-nihonkai">
+<img class="hero" src="img/izumo/izumo-nodoguro-nihonkai.jpg" alt="のどぐろ日本海 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>のどぐろ日本海<span class="yomi">のどぐろ にほんかい</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">出雲市駅の北口を出てすぐ、島根を代表する高級魚のどぐろ(アカムツ)を看板に掲げた居酒屋。1階はカウンターとテーブル、2階に個室があり、全44席。のどぐろは焼物・煮物・唐揚げ・蒸しの四通りから選べ、1尾およそ100gで出てくる。日本海の旬の地魚を集めたお造りの盛り合わせ、隠岐の島から直送する岩がきも通年の品書きにある。品書きに載らないその日のおすすめもある。</div>
+<div class="sig"><b>一皿:</b>のどぐろ(島根を代表する高級魚アカムツ。焼物・煮物・唐揚げ・蒸しの四通りから調理法を選べる。1尾およそ100g)／隠岐の岩がき(隠岐の島から直送される大ぶりの夏がき。造り・殻焼き・殻蒸し・フライ・バター焼きから選べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 16:30〜22:30(料理L.O.22:00／ドリンクL.O.22:00)</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町1271-5</td></tr>
+<tr><th>予約</th><td>可(電話) — <a href="tel:0853218686">☎ 0853-21-8686</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページが2026年1月19日付で更新され、住所・営業時間・電話番号・席数・料理内容まで店側の情報として載っていることを確認した。2024年7月16日付の山陰のWEBマガジン「na-na(ナーナ)」の取材記事(のどぐろ丼)でも同じ店が紹介されており、出典が2つある。写真は料理のものが取れず、店内の実写4点のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AE%E3%81%A9%E3%81%90%E3%82%8D%E6%97%A5%E6%9C%AC%E6%B5%B7%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA1271-5">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001052995/">ホットペッパーグルメ「のどぐろ日本海」店舗ページ 2026年1月19日更新</a> / <a href="https://na-na.media/nodoguronihonkai-shirobai/">na-na(ナーナ)｜鳥取・島根のWEBマガジン「【のどぐろ日本海】日本一のご当地どんぶり『のどぐろ丼』！」2024年7月</a></div>
+</div></div>
+<div class="card" id="c-izumo-izakaya-tsubameya">
+<img class="hero" src="img/izumo/izumo-izakaya-tsubameya.jpg" alt="居酒屋 ツバメヤ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>居酒屋 ツバメヤ<span class="yomi">いざかや つばめや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲市駅から北へ3分、アーケード商店街サンロード中町の入口にある大衆的な居酒屋。15時に開くので明るいうちから飲めるのがこの店の持ち味で、カウンター7席を含む57席。その日に仕入れた旬のものを使ったおすすめが、カウンターの上に手書きで大きく貼り出される。地元でおなじみの甘口の刺身醤油で食べる地魚の盛り合わせ、島根和牛のステーキ、鶏そぼろ入りの出し巻きなど、一品物が幅広い。</div>
+<div class="sig"><b>一皿:</b>お刺身5種盛り合せ(旬の地魚を中心に5種類。島根でおなじみの甘口の刺身醤油で食べる。980円)／親子出し巻き(甘辛く炒めた鶏そぼろを巻き込んだ出汁巻き玉子。300円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 15:00〜22:00(料理L.O.21:30／ドリンクL.O.22:00)</td></tr>
+<tr><th>定休日</th><td class="off">12月31日〜1月2日のみ休み</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町651</td></tr>
+<tr><th>予約</th><td>可(貸切は52名まで)</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページが2025年9月18日付で更新され、住所・営業時間・席数・料理内容が店側の情報として載っていることを確認した。15時開店で昼から飲めること、年末年始以外は定休日が無いことから、他の店が開く前の一軒目として使える点を買って採った。電話番号は掲載ページでは非表示のため未確認。所在地はサンロード中町の入口側で、2026年6月23日に同アーケードで起きた大規模火災(約3,400平方メートル焼損)の被災範囲に入っていないかは未確認のため、訪問前に電話で確かめること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%83%84%E3%83%90%E3%83%A1%E3%83%A4%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA651">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001052930/">ホットペッパーグルメ「居酒屋 ツバメヤ」店舗ページ 2025年9月18日更新</a></div>
+</div></div>
+<div class="card" id="c-izumo-konaya-konkichido">
+<div class="hero-pending">写真準備中<span>写真の出どころが地元WEBマガジンの記事2本だけで、その画像が日本海テレビの番組映像からの切り出しのため、画面に番組名のテロップが焼き込まれていた</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>粉家こん吉堂<span class="yomi">こなや こんきちどう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">明石焼(本場では玉子焼と呼ぶ)と中華点心を、出雲の地酒に合わせて出す店。店主の今吉さんが明石で食べた玉子焼の味に衝撃を受けて始めた店で、2023年の取材時点で開店から21年。箸でぎりぎり持てる柔らかさを狙って焼き、出汁にひたして食べる。真夏でも燗酒を出すのがこの店の流儀で、出雲の旭日(あさひ)酒造「御幡の元氣米」や伊矢倉酒造「天雲」などを料理に合わせてすすめてくれる。昼は明石焼の定食も出す。</div>
+<div class="sig"><b>一皿:</b>玉子焼(明石焼。たこ入りの柔らかい焼き玉子を、出汁にひたして食べる。箸でぎりぎり持てる柔らかさに焼いてある)／大餅(ターピン。ねぎと豚ミンチを包んで皮をパリパリに焼いた中華点心。自家製の甜麺醤をかけて出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 昼12:00〜13:30、夜18:00〜22:30(na-naの記事では夜18:00〜22:00・金曜は19:00〜、日曜13:00〜20:00。変動があるため要確認)</td></tr>
+<tr><th>定休日</th><td class="off">月曜(祝日の場合は営業、翌日休み)</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町120-2</td></tr>
+<tr><th>予約</th><td>可(カウンター中心で席数が少ないため要確認) — <a href="tel:0853301909">☎ 0853-30-1909</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメに店舗ページ(粉家こん吉堂)が現存し、住所・営業時間・定休日・夜の予算帯が掲載されていることを確認した。あわせて山陰のWEBマガジン「na-na(ナーナ)」の取材記事2本(2022年5月・2023年4月)で、住所・電話番号・品書き・合わせる地酒の銘柄まで確認できる。酒と肴が主役で、出雲の地酒を燗で出す数少ない店として採った。写真候補なし(na-naの該当記事の画像はテレビ番組の映像からの切り出しで、番組名のテロップが焼き込まれているため除外した)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B2%89%E5%AE%B6%E3%81%93%E3%82%93%E5%90%89%E5%A0%82%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA120-2">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.hotpepper.jp/strJ000513140/">ホットペッパーグルメ「粉家こん吉堂」店舗ページ(2026年10月6日閲覧)</a> / <a href="https://na-na.media/konkitido/">na-na(ナーナ)「【こん吉堂】粋な酒と肴 明石焼と中華点心と日本酒のお店｜出雲市」2022年5月</a> / <a href="https://na-na.media/konkitidou-izuo/">na-na(ナーナ)「【粉屋こん吉堂】ふわっふわ明石焼と日本酒を楽しむお店」2023年4月</a></div>
+</div></div>
+<div class="card" id="c-izumo-space-ohkita">
+<img class="hero" src="img/izumo/izumo-space-ohkita.jpg" alt="SPACE大北 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>SPACE大北<span class="yomi">すぺーす おおきた</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">出雲市大津町にある、ガレージを改装した複合的な一軒。店内に農業用トラクターが据えられ、こたつ席やハンモックまである変わった造りで、山陰の日本酒とその土地の食事を出す。昼は週替わりで1日10食限定の大北ランチプレートがあり、分厚いチャーシューに小松菜のお浸しや大根漬けなど惣菜8種が付く。酒の提供と宿泊設備もあり、利用は予約が勧められている。2026年5月18日付で地元WEBマガジンが取材している。</div>
+<div class="sig"><b>一皿:</b>大北ランチプレート(週替わり・1日10食限定の定食。分厚いチャーシューを主菜に、ポテトサラダ・小松菜のお浸し・大根漬けなど惣菜8種が付く。1,500円)／山陰の日本酒(島根・鳥取の蔵の酒を揃え、地元の食事と合わせて出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00(ランチ)。酒の提供もあるが夜の営業時間は未確認・要予約</td></tr>
+<tr><th>定休日</th><td class="off">火・水・木</td></tr>
+<tr><th>住所</th><td>島根県出雲市大津町781</td></tr>
+<tr><th>予約</th><td>要予約(予約が推奨されている) — <a href="tel:05017242414">☎ 050-1724-2414</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山陰のWEBマガジン「na-na(ナーナ)」の実食取材記事(2026年5月18日付)で、住所・営業時間・定休日・電話番号・支払い方法・駐車場・公式インスタグラム(space_ohkita)まで確認できた。2026年5月という直近の一次情報があり、閉店の報は見当たらない。出雲市駅前に偏らないよう大津町から採った。ただし記事に載っている営業時間は昼(11:00〜15:00)のみで、夜の酒の提供の時間帯は未確認。訪問前に予約と時間の確認が要る。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SPACE%E5%A4%A7%E5%8C%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E6%B4%A5%E7%94%BA781">Googleマップで開く</a>
+<div class="src">写真: na-na（山陰のWEBマガジン）より引用 / 参照元: <a href="https://na-na.media/spacedaihoku/">na-na(ナーナ)「ガレージを改装した店内で、山陰の日本酒とローカルな食事の新体験を！｜島根県出雲市」2026年5月18日</a></div>
+</div></div>
+<div class="card" id="c-izumo-ajikobo-fujie">
+<div class="hero-pending">写真準備中<span>ホットペッパーの掲載ページに自店の写真が0枚（表示される6枚はすべて他店にも出る広告枠）。他に写真のある一次情報が見つからなかった</span></div>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>味工房藤江<span class="yomi">あじこうぼう ふじえ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲市の北部、旧平田の中心である中本町にある居酒屋。江戸期の町家や白壁の土蔵が残る木綿街道の界隈にあり、出雲市駅前の飲み屋街とは別の、落ち着いた町なかで飲める一軒。カウンター8席と座敷(6名卓1つ・4名卓2つ)の計22席で、座敷をつなげば最大20名まで入る。17時半から23時まで開いており、定休日は水曜。駐車場が2台ある。</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 17:30〜23:00(L.O.22:00)</td></tr>
+<tr><th>定休日</th><td class="off">水曜(月・火・木が祝日の場合は休みになることがある)</td></tr>
+<tr><th>住所</th><td>島根県出雲市平田町中本町1101</td></tr>
+<tr><th>予約</th><td>可(座敷をつなげて最大20名まで)</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページで住所・営業時間(ラストオーダー含む)・定休日・席数の内訳・予算帯・駐車場台数まで確認できた。出雲市駅前の今市町に偏らないよう、平田(雲州平田)から1軒採った。木綿街道の界隈にある数少ない夜の店である点を買っている。ただし看板料理・電話番号は一次情報が取れず未確認(ホットペッパーの当該ページは電話番号非表示、メニューページも存在しない)。写真候補なし(掲載ページに店側の写真が1枚も無く、表示される画像はすべて他店にも出る広告画像だったため除外した)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%B7%A5%E6%88%BF%E8%97%A4%E6%B1%9F%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B9%B3%E7%94%B0%E7%94%BA%E4%B8%AD%E6%9C%AC%E7%94%BA1101">Googleマップで開く</a>
+<div class="src">写真: 準備中 / 参照元: <a href="https://www.hotpepper.jp/strJ000823926/">ホットペッパーグルメ「味工房藤江」店舗ページ(2026年10月6日閲覧)</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・カレー・各国料理</h2>
+<div class="card" id="c-izumo-yakiniku-kourakuen">
+<img class="hero" src="img/izumo/izumo-yakiniku-kourakuen.jpg" alt="焼肉・韓国料理 幸楽苑 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">32</span>焼肉・韓国料理 幸楽苑<span class="yomi">やきにく・かんこくりょうり こうらくえん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">出雲大社の門前、神門通りの南端にある焼肉と韓国料理の店。創業は昭和50年(1975年)。牛肉は脂の乗りすぎを避けてA5ではなくA4ランクのみを使い、肉を切る担当者を限定する。網ではなく鉄板で焼かせ、強力な排煙設備で衣服に匂いが残りにくいようにしている。コチュジャンや6時間煮込む出汁まで自家製。60席で、間仕切りを外せば30名規模の宴会にも対応する。</div>
+<div class="sig"><b>一皿:</b>焼肉懐石(前菜・サラダ・数種の焼肉・食事までを一通りの流れで出すコース仕立ての焼肉)／冷麺(6時間煮込んだ自家製スープに、ゆで卵とオレンジを乗せる同店の韓国料理の看板)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00(入店13:00まで) / 17:30〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">毎週木曜日</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築南1386-2</td></tr>
+<tr><th>予約</th><td>可(電話またはウェブ予約) — <a href="tel:0853533749">☎ 0853-53-3749</a> ／ <a href="https://yakiniku-kourakuen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトのお知らせが2026年10月1日付で「10月の営業について」を掲載しており、同じ公式サイトの店舗・アクセスページに住所・電話・営業時間・座席数・支払い方法が揃っているため、今日の営業の一次証拠として採用した。2026年6月29日付のお知らせで昼の御膳メニューによるランチ営業を始めたことも確認できる。出雲大社の門前で焼肉という組み合わせは市内では珍しく、門前エリアの枠として選んだ。写真は公式サイトのお品書きページから。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%83%BB%E9%9F%93%E5%9B%BD%E6%96%99%E7%90%86%20%E5%B9%B8%E6%A5%BD%E8%8B%91%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%971386-2">Googleマップで開く</a>
+<div class="src">写真: yakiniku-kourakuen.com 掲載ページより引用 / 参照元: <a href="https://yakiniku-kourakuen.com/store/">幸楽苑 公式サイト 店舗・アクセス(2026年10月6日閲覧)</a> / <a href="https://yakiniku-kourakuen.com/info/">幸楽苑 公式サイト お知らせ「10月の営業について」2026年10月1日</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/14813">出雲観光協会 公式サイト 焼肉・韓国料理 幸楽苑</a></div>
+</div></div>
+<div class="card" id="c-izumo-little-india">
+<img class="hero" src="img/izumo/izumo-little-india.jpg" alt="リトルインディア 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">33</span>リトルインディア<span class="yomi">りとるいんでぃあ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲市駅の西側、塩冶有原町にあるインド料理店。タンドール窯で焼くナンと、辛さを選べる各種カレーを組み合わせたセットが中心で、昼はワンコインに近い価格のランチも出す。テーブル26席と座敷10席の計36席で、座敷があるため子ども連れでも使いやすい。店内にはインドの音楽が流れ、25名からの貸切にも応じる。昼は11時から15時まで、夜は17時から22時まで通しで営業し、定休日を設けていない。</div>
+<div class="sig"><b>一皿:</b>カレーとナンのセット(バターチキン・ほうれん草・豆など数種から選び、タンドール窯で焼いた大判のナンとサラダを付ける)／タンドリーチキン(ヨーグルトと香辛料に漬けた骨付き鶏をタンドール窯で焼いたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00(料理L.O.15:00) / 17:00〜22:00(料理L.O.22:00)</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>島根県出雲市塩冶有原町1-14-1</td></tr>
+<tr><th>予約</th><td>可(25名以上は貸切可)</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの有料掲載ページ(2026年10月6日閲覧)に住所・アクセス・営業時間・席数・駐車場が掲載され、店側が用意した料理写真が並んでいることから、掲載が維持されている営業中の店と判断した。市内のカレーの枠として、スパイスカレーの新店ではなく、タンドール窯を備えた定着した店を選んだ。電話番号はホットペッパー上で非表示のため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AA%E3%83%88%E3%83%AB%E3%82%A4%E3%83%B3%E3%83%87%E3%82%A3%E3%82%A2%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A1%A9%E5%86%B6%E6%9C%89%E5%8E%9F%E7%94%BA1-14-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001127489/">ホットペッパーグルメ リトルインディア(出雲/アジア・エスニック料理) 2026年10月6日閲覧</a></div>
+</div></div>
+<div class="card" id="c-izumo-yakiniku-araki">
+<img class="hero" src="img/izumo/izumo-yakiniku-araki.jpg" alt="焼肉と鍋料理の店 あらき 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>焼肉と鍋料理の店 あらき<span class="yomi">やきにくとなべりょうりのみせ あらき</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">斐川町直江にある焼肉店で、昭和61年(1986年)創業のあらき精肉店が営む。肉は精肉店が自分で仕入れる黒毛和牛が中心で、焼肉のほかしゃぶしゃぶや鍋も扱う。62席すべてが座敷で、8名から30名まで入る完全個室もあるため、家族連れや法事・宴会の利用が多い。駐車場は20台。出雲空港と出雲大社を結ぶ国道9号の内側にあたり、斐川側に泊まる人や空港利用者が立ち寄りやすい位置にある。</div>
+<div class="sig"><b>一皿:</b>黒毛和牛の盛り合わせ(精肉店が自ら仕入れた黒毛和牛を部位ごとに一皿に盛ったもの)／しゃぶしゃぶ(薄切りの牛肉を出汁にくぐらせる鍋。焼肉と並ぶ看板で、冬は鍋料理の予約が中心になる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜22:00(料理L.O.21:30 ドリンクL.O.21:30)</td></tr>
+<tr><th>定休日</th><td class="off">月曜日</td></tr>
+<tr><th>住所</th><td>島根県出雲市斐川町直江5310</td></tr>
+<tr><th>予約</th><td>可(電話・ネット予約。宴会・貸切も相談可) — <a href="tel:0853722364">☎ 0853-72-2364</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの有料掲載ページ(2026年10月6日閲覧)で、2026年10月のネット予約空席カレンダーに日ごとの受付状況(◎と月曜の休)が出ており、予約を受け付けている営業中の店であることが確認できる。口コミ80件・評点4.6。精肉店直営という由来と全席座敷という形が市内の他の焼肉店と重ならないこと、立地が斐川町で市街地と離れることから選んだ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%81%A8%E9%8D%8B%E6%96%99%E7%90%86%E3%81%AE%E5%BA%97%20%E3%81%82%E3%82%89%E3%81%8D%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%96%90%E5%B7%9D%E7%94%BA%E7%9B%B4%E6%B1%9F5310">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000688816/">ホットペッパーグルメ 焼肉と鍋料理の店あらき(出雲/焼肉・ホルモン) 2026年10月6日閲覧</a></div>
+</div></div>
+<div class="card" id="c-izumo-cafe-bistro-ann">
+<img class="hero" src="img/izumo/izumo-cafe-bistro-ann.jpg" alt="カフェ＆ビストロ あん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>カフェ＆ビストロ あん<span class="yomi">かふぇあんどびすとろ あん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">明治5年創業の出雲の和菓子店「坂根屋」が、本店の裏手の築400年の蔵を改装して2022年6月30日に開いたフレンチの店。和菓子屋の敷地を通って入る造りで、全28席はテーブル席、庭に面した5〜8名の個室が1室ある。食材は島根県産が基本で、仕入れに合わせその日のコースを組む。朝のモーニングから昼のコース、午後のカフェまで通しで営業する。</div>
+<div class="sig"><b>一皿:</b>シェフのおまかせコース(前菜・自家製パン・スープ・メイン・デザートまでを島根県産の食材で組む昼夜のコース。当日でも予約なしで頼める3,800円と4,800円の2種がある)／出雲アフタヌーンティー(一日9名限定・要予約の三段のスタンド。上から季節の上生菓子とケーキ、ローストビーフやキッシュ、自家製パンのサンドイッチと続き、出雲ぜんざいが付く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 9:00〜17:00(モーニング9:00〜11:00 / ランチ11:00〜14:00 / カフェ14:00〜16:30、L.O.16:30) ・ 土日祝 8:30〜17:00。夜はディナーコースと18:00〜のアフタヌーンティーの予約がある日のみ</td></tr>
+<tr><th>定休日</th><td class="off">水曜日(火曜日は夜のみ休み)</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町扇町890</td></tr>
+<tr><th>予約</th><td>可(コース・アフタヌーンティーは2日前までに要予約) — <a href="tel:0853315033">☎ 0853-31-5033</a> ／ <a href="https://www.sakaneya.jp/ann.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>運営元である坂根屋の公式サイト内に本店とは別立ての専用ページがあり、住所・電話・営業時間・席数・駐車場・支払い方法が載っているため一次情報として採用した(2026年10月6日閲覧)。定休日は公式ページの「火曜日の夜、水曜日は定休日」の記載に従った(ホットペッパー側の『定休日なし』より公式を優先)。出雲市街で蔵を使ったフレンチという業態は他に見当たらず、駅前エリアの枠として選んだ。写真はホットペッパー掲載ページの店舗提供分から。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%86%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%81%82%E3%82%93%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA%E6%89%87%E7%94%BA890">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.sakaneya.jp/ann.html">カフェ＆ビストロ あん 公式ページ(坂根屋サイト内) 2026年10月6日閲覧</a> / <a href="https://www.hotpepper.jp/strJ003323129/">ホットペッパーグルメ カフェ&amp;ビストロ あん(出雲/イタリアン・フレンチ) 2026年10月6日閲覧</a></div>
+</div></div>
+<div class="card" id="c-izumo-yoshoku-kirra">
+<img class="hero" src="img/izumo/izumo-yoshoku-kirra.jpg" alt="洋食kirra 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>洋食kirra<span class="yomi">ようしょく きら</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">2017年に開いた洋食店で、洋食一筋の兄と和食の経験もある弟が厨房に立つ。看板は国産牛100％のハンバーグで、ソースやトッピング違いで7種類を用意する。仕込みに2週間かけるデミグラスソースのほか、ベシャメルソースやポタージュも店で作る。昼は空席待ちが出ることが多く、ランチの席の予約は6名以上のみ。支払いは現金のみ。</div>
+<div class="sig"><b>一皿:</b>デミグラスソースのハンバーグ(国産牛100％。2週間かけて仕込む自家製デミグラスソースをかける。サラダ・スープ・ライスかパンが付く)／kirraセット(ハンバーグ、真鯛のクリームコロッケ、エビフライ、オムライスを一皿に盛り合わせた同店最大の盛り合わせ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:00(L.O.20:00) ※ランチは11:00〜14:30(L.O.14:00)</td></tr>
+<tr><th>定休日</th><td class="off">月曜日</td></tr>
+<tr><th>住所</th><td>島根県出雲市大津朝倉3-7-1 朝倉テナントビル1階</td></tr>
+<tr><th>予約</th><td>一部可(電話受付。ランチの予約は6名以上のみ) — <a href="tel:0853212770">☎ 0853-21-2770</a> ／ <a href="https://www.instagram.com/kirra.izumo">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山陰中央新報社の生活情報サイト「りびえーる」の2025年5月4日付の取材記事と、山陰のタウン情報誌ラズダの2026年5月18日付の取材記事があり、2026年の記事で住所・電話・営業時間・定休日・駐車場が一致して確認できるため採用した。市内の洋食の枠で、デミグラスソースを自分で仕込む点と兄弟で営む点が他店と重ならない。写真はラズダ記事の撮影分から。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9Fkirra%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E6%B4%A5%E6%9C%9D%E5%80%893-7-1%20%E6%9C%9D%E5%80%89%E3%83%86%E3%83%8A%E3%83%B3%E3%83%88%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 日刊Lazuda（山陰の地域情報サイト）より引用 / 参照元: <a href="https://www.lazuda.com/news/archives/7941">日刊Lazuda(ラズダ)「ご褒美に食べたい！出雲市『洋食kirra』の手間ひまかけた本格洋食を堪能」2026年5月18日</a> / <a href="https://ww4.sanin-chuo.co.jp/livingyell/gourmet/archive-gourmet-750">りびえーる(山陰中央新報社)「【出雲市】＜洋食Kirra＞行列の価値あり！絶品デミグラスの洋食」2025年5月4日</a></div>
+</div></div>
+<div class="card" id="c-izumo-trattoria814">
+<img class="hero" src="img/izumo/izumo-trattoria814.jpg" alt="trattoria814 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>trattoria814<span class="yomi">とらっとりあ はちいちよん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">旧平田市の中心部、木綿街道と呼ばれる古い町並みに2018年に開いたイタリア料理店。築100年を超える町家を改装し、奥の窓際の席からはかつて商船が行き来した川が見える。食材は島根県産が中心で、リゾットにはイタリア米ではなく奥出雲のブランド米「仁多米」を使う。昼は自家製パンが付く日替わりのセット、夜はコース。</div>
+<div class="sig"><b>一皿:</b>日替わりランチセット(前菜、パスタかリゾット、デザート、焼きたての自家製パンが付く昼の定番。メインは仕入れ次第で変わる)／島根県産鰆のチーズリゾット(皮をバーナーで炙ってからオーブンで二度焼きした鰆を、仁多米を白ワインとブイヨンで煮たチーズリゾットに乗せる。ランチセットに+400円で変更できる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00 / 17:00〜22:00(夜は要予約)</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>島根県出雲市平田町814</td></tr>
+<tr><th>予約</th><td>可(夜は要予約。昼もできるだけ予約) — <a href="tel:0853279424">☎ 0853-27-9424</a> ／ <a href="https://www.instagram.com/trattoria814hachiichiyon/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>TSKさんいん中央テレビのウェブマガジン「Soupful」に2026年2月7日付の取材記事があり、住所・電話・営業時間・駐車場・公式インスタグラムが載っている。山陰中央新報社「りびえーる」の2024年10月27日付記事で定休日(火曜日)も確認した。あわせて『trattoria814 出雲 平田 閉店』で検索し、閉店の報が無いことを確認済み(2026年10月6日)。平田エリアの枠として、木綿街道の町家を使う点を評価して選んだ。写真はSoupful記事の撮影分から。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=trattoria814%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B9%B3%E7%94%B0%E7%94%BA814">Googleマップで開く</a>
+<div class="src">写真: soupful.tsk-tv.com 掲載ページより引用 / 参照元: <a href="https://soupful.tsk-tv.com/mystar/1637/">Soupful(TSKさんいん中央テレビ)「trattoria814｜出雲・木綿街道の古民家イタリアン」2026年2月7日</a> / <a href="https://ww4.sanin-chuo.co.jp/livingyell/gourmet/archive-gourmet-664">りびえーる(山陰中央新報社)「【出雲市】＜TRATTORIA814＞身近な地元食材を極上のイタリアンに」2024年10月27日</a></div>
+</div></div>
+<div class="card" id="c-izumo-yoshokuya-liebe">
+<img class="hero" src="img/izumo/izumo-yoshokuya-liebe.jpg" alt="洋食屋リーヴェ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>洋食屋リーヴェ<span class="yomi">ようしょくや りーヴぇ</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">塩冶有原町の住宅地にある洋食店。昼の「選べるランチ」はハンバーグピラフ、手ごねハンバーグ、本ズワイのクリームコロッケ、エビフライと魚フライ、エビピラフの5種からメインを選び、コーンポタージュとサラダが付く。前の2品は10年以上続く定番で、タルタルソースやドレッシングも店で作る。洋食店では珍しい小上がりの座敷を備える。</div>
+<div class="sig"><b>一皿:</b>国産牛・豚ひき肉の手ごねハンバーグ(10年以上続く看板。外は香ばしく中はふっくら焼き上げる。選べるランチのメインの一つ)／本ズワイのクリームコロッケ(ズワイガニの身を混ぜたベシャメルを衣で包んで揚げる。こちらも10年以上の定番)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00 / 17:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜日</td></tr>
+<tr><th>住所</th><td>島根県出雲市塩冶有原町4-65-2</td></tr>
+<tr><th>予約</th><td>一部可(夜のディナーコースは3日前までに要予約) — <a href="tel:0853215569">☎ 0853-21-5569</a> ／ <a href="https://www.instagram.com/liebe4562">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山陰のタウン情報誌ラズダの2026年9月17日付の取材記事に、住所・電話・営業時間・定休日・駐車場・公式インスタグラムが載っており、記事に載る料理も当日の撮影であることから営業中と判断した。洋食の2軒目として、デミグラス中心の洋食kirraとは違う、手ごねハンバーグとフライ中心の町の洋食屋という性格で選んだ。写真はラズダ記事の撮影分から。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%E3%83%AA%E3%83%BC%E3%83%B4%E3%82%A7%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A1%A9%E5%86%B6%E6%9C%89%E5%8E%9F%E7%94%BA4-65-2">Googleマップで開く</a>
+<div class="src">写真: 日刊Lazuda（山陰の地域情報サイト）より引用 / 参照元: <a href="https://www.lazuda.com/news/archives/8346">日刊Lazuda(ラズダ)「家族で洋食ランチならココ！出雲市『洋食屋リーヴェ』の本格洋食5種からメインを選べるランチが1380円」2026年9月17日</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・ぜんざい・甘味</h2>
+<div class="card" id="c-izumo-amaemon">
+<img class="hero" src="img/izumo/izumo-amaemon.jpg" alt="くつろぎ和かふぇ 甘右衛門 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">39</span>くつろぎ和かふぇ 甘右衛門<span class="yomi">くつろぎわかふぇ かんえもん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">出雲大社の表参道にあたる神門通りに面した和風カフェ。梁をあらわにした日本建築の店内に、中庭を望む席、バリアフリー対応席、地下の有料特別席が分かれて置かれている。島根の窯元の器でコーヒーを出すのが特徴で、抹茶は出雲抹茶「翠の昔」、コーヒーはスペシャルティコーヒーを使う。未就学児の入店は不可、5名以上は有料特別席のみの利用となる。</div>
+<div class="sig"><b>一皿:</b>大黒ぜんざい(旧暦10月の神在祭〈かみありさい〉で振る舞われた神在餅〈じんざいもち〉を起源とする出雲ぜんざい。熱いつゆに餅を入れる)／《極》あんみつ ‐出雲抹茶づくし‐(一皿に出雲抹茶を10g以上使う抹茶尽くしのあんみつ。1日10食限定)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00(ラストオーダー16:30)</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜(ほか臨時休業あり)</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築南839-1</td></tr>
+<tr><th>予約</th><td>一部可(有料特別席のみ予約可。通常席は予約不可) — <a href="tel:0853258120">☎ 0853-25-8120</a> ／ <a href="https://amaemon.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現役で、2026年9月22日付の「9月カレンダー」の告知と2026年10月7日の店休日表示が出ている。店舗情報欄に住所・電話・営業時間・定休日が明記されており、営業の一次情報として十分。昭文社まっぷるウェブの出雲ぜんざい特集(2024年10月3日更新)にも掲載。神門通りで出雲ぜんざいを出す代表的な和カフェとして採った。写真は公式サイト「写真」ページの内観6点から5点を採用(短辺3024px・透かしなし)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%A4%E3%82%8D%E3%81%8E%E5%92%8C%E3%81%8B%E3%81%B5%E3%81%87%20%E7%94%98%E5%8F%B3%E8%A1%9B%E9%96%80%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%97839-1">Googleマップで開く</a>
+<div class="src">写真: cdn.goope.jp 掲載ページより引用 / 参照元: <a href="https://amaemon.jp/">くつろぎ和かふぇ甘右衛門 公式サイト 店舗情報(2026年10月6日閲覧・2026年9月22日付インフォメーション掲載)</a> / <a href="https://amaemon.jp/menu">くつろぎ和かふぇ甘右衛門 公式サイト メニュー(大黒ぜんざい・極あんみつ)</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/2171">出雲観光協会 出雲観光ガイド くつろぎ和かふぇ 甘右衛門</a> / <a href="https://www.mapple.net/article/244610/">まっぷるウェブ 出雲ぜんざいを食べるならこのお店！ 2024年10月3日更新</a></div>
+</div></div>
+<div class="card" id="c-izumo-zenzaimochi-taisha">
+<img class="hero" src="img/izumo/izumo-zenzaimochi-taisha.jpg" alt="出雲ぜんざい餅 大社店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">40</span>出雲ぜんざい餅 大社店<span class="yomi">いずもぜんざいもち たいしゃてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">出雲市今市町に本店を置く明治5(1872)年創業の和菓子屋・宿禰餅本舗 坂根屋(すくねもちほんぽ さかねや)が、出雲大社の正門前「ご縁横丁」で営むぜんざいの店。現在は5代目が当主を務める。店内は床暖房を入れた広い座敷とベンチ席があり、参拝の行き帰りに腰を下ろせる。出雲産の大納言小豆を使い、甘さをおさえて炊く。</div>
+<div class="sig"><b>一皿:</b>出雲ぜんざい(出雲産の大納言小豆を粒感を残して炊いた汁に、紅白の餅を入れた出雲名物。塩昆布が添えられる)／ぜんざい餅(ぜんざいの餡を餅生地で包んで焼いた、この店だけの焼き菓子。持ち帰りもできる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜18:00(夏季)／9:00〜17:00(冬季)</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築南840-1 ご縁横丁</td></tr>
+<tr><th>予約</th><td>不可(公式サイトに「出雲ぜんざい餅(大社店)では事前のご予約は承っておりません」と明記) — <a href="tel:0853240011">☎ 0853-24-0011</a> ／ <a href="http://www.sakaneya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>坂根屋の公式サイトの店舗一覧に「出雲大社正門前ご縁横丁 出雲ぜんざい餅(大社店)」として住所・営業時間・予約不可が明記されている(2026年10月6日閲覧)。同社公式サイトは明治5年創業・5代目・神在餅由来のぜんざいについても自ら記載。昭文社まっぷるウェブの出雲ぜんざい特集(2024年10月3日更新)にも掲載。ぜんざい発祥地としての出雲を代表する一軒として採った。写真はホットペッパーグルメ掲載ページの原寸画像から、料理と店内のみを選別(短辺960px・透かしなし)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9C%E3%82%93%E3%81%96%E3%81%84%E9%A4%85%20%E5%A4%A7%E7%A4%BE%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%97840-1%20%E3%81%94%E7%B8%81%E6%A8%AA%E4%B8%81">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="http://www.sakaneya.jp/access.html">坂根屋 公式サイト 店舗情報・会社概要(出雲ぜんざい餅 大社店の住所・営業時間・予約不可)2026年10月6日閲覧</a> / <a href="http://www.sakaneya.jp/">坂根屋 公式サイト トップ(明治5年創業・5代目・神在餅とぜんざいの由来)</a> / <a href="https://www.hotpepper.jp/strJ001052883/">ホットペッパーグルメ 出雲 ぜんざい餅</a> / <a href="https://www.mapple.net/article/244610/">まっぷるウェブ 出雲ぜんざいを食べるならこのお店！ 2024年10月3日更新</a></div>
+</div></div>
+<div class="card" id="c-izumo-okuni-chaya">
+<img class="hero" src="img/izumo/izumo-okuni-chaya.jpg" alt="おくに茶や 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>おくに茶や<span class="yomi">おくにちゃや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">神門通り沿いにある22席の甘味処。奥出雲でとれる仁多米(にたまい)でついた餅を使ったぜんざいを看板にしている。木のテーブルを並べた明るい店内のほか、通りを眺めながら食べられる外席があり、ペット同伴のときは外席を使う。甘味だけでなく出雲大社公認の縁結びうどんや割子そばもあり、参拝のあとの軽い食事にも使える。</div>
+<div class="sig"><b>一皿:</b>仁多米ぜんざい(奥出雲産の仁多米でついた餅を2つ入れた出雲ぜんざい。甘さをおさえた小豆と餅のもちもちした食感が合う)／抹茶ぜんざい(抹茶の碗に小豆と焼き餅を入れた一品。ほろ苦い抹茶と餡を合わせる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜17:00(食材が無くなり次第終了)</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市大社町杵築南731</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0853532356">☎ 0853-53-2356</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>出雲市のホットペッパーグルメ掲載ページで住所・アクセス・営業時間・定休日・席数が確認でき、掲載写真の盆に刷られた店名と電話番号(0853-53-2356)から店の連絡先も裏づけた。神門通りの中でも大鳥居側に位置し、ぜんざいだけでなく麺類も出す点で甘右衛門・出雲ぜんざい餅と性格が分かれるため採った。写真は同ページの原寸画像から料理と店内のみを選別(短辺960px・透かしなし)。ただし公式サイト・公式SNSは見つからず、2025〜2026年の日付つきの一次情報は取れていない＝営業の最新確認は未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%8F%E3%81%AB%E8%8C%B6%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%97731">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001047224/">ホットペッパーグルメ おくに茶や(住所・営業時間・定休日・席数)2026年10月6日閲覧</a></div>
+</div></div>
+<div class="card" id="c-izumo-haraku-koto">
+<img class="hero" src="img/izumo/izumo-haraku-koto.jpg" alt="和かふぇ 葉楽Koto 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>和かふぇ 葉楽Koto<span class="yomi">わかふぇ はらくこと</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip official">official</span></div>
+<div class="desc">明治44(1911)年創業の茶舗・寿園(ことぶきえん)が営む和カフェ。カウンターに茶葉と菓子が並び、席数は30ほど。抹茶は店が独自に配合したものを使い、あんこは毎日炊き、あんみつの具も毎朝ひとつずつ手で仕込む。抹茶そばなど軽い食事もある。出雲市駅のすぐ前という立地で、旅の待ち時間にも地元の日常使いにも向く。</div>
+<div class="sig"><b>一皿:</b>特選あんみつ(抹茶ソフトクリームを中心に、抹茶ゼリー・あんこ・白玉・寒天をあしらった看板の甘味)／出雲ぜんざい(小豆を厨房で2時間かけて煮た汁に、香ばしく焼いた紅白の餅を入れる出雲名物。塩昆布が添えられる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜18:00(ラストオーダー17:30)※出典により10:00〜19:00の記載もあり、未確認</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町2076</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0853218810">☎ 0853-21-8810</a> ／ <a href="https://www.harakotobukien.co.jp/about.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>日本航空の旅メディアOnTrip JALの出雲食べ歩き記事(2025年10月29日公開)が現地取材のうえ店名・住所・電話・営業時間・定休日・公式サイトURLを載せている。昭文社まっぷるウェブのスポット情報(ID 32010568)でも明治44年創業の御茶屋併設と住所・電話が一致。出雲市駅前で茶舗が営む和カフェという、神門通りとは性格の違う一軒として採った。なお公式サイト(harakotobukien.co.jp)は当方の接続では403が返り直接は読めていない。営業時間はOnTrip JAL(2025年10月)の12:00〜18:00を採ったが、出雲観光協会は10:00〜19:00、まっぷるは10:00〜17:30と記載しており食い違う＝訪問前の確認を要する(未確認)。写真はOnTrip JALの取材記事の画像(1280x853)から、店内1点と特選あんみつ・出雲ぜんざいの料理6点を採用した(外観と看板の1点は除外。右下を切り出して目視し透かしの無いことを確認)。まっぷるの画像は640x480で小さいため使っていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%81%8B%E3%81%B5%E3%81%87%20%E8%91%89%E6%A5%BDKoto%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA2076">Googleマップで開く</a>
+<div class="src">写真: d1uzk9o9cg136f.cloudfront.net 掲載ページより引用 / 参照元: <a href="https://ontrip.jal.co.jp/_ct/17798145/p2">OnTrip JAL(日本航空の旅メディア) 出雲で食べ歩き！ここでしか食べられないタイパ優秀グルメ 2025年10月29日</a> / <a href="https://www.mapple.net/spot/32010568/">まっぷるウェブ(昭文社) 和かふぇ 葉楽Koto スポット情報</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/13">出雲観光協会 出雲観光ガイド 原寿園(1階喫茶 和かふぇ葉楽koto)</a></div>
+</div></div>
+<div class="card" id="c-izumo-cafe-nakakura">
+<img class="hero" src="img/izumo/izumo-cafe-nakakura.jpg" alt="Cafe naka蔵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>Cafe naka蔵<span class="yomi">かふぇ なかくら</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">築100年以上の米蔵を改装した27席のカフェ。黒い梁をあらわにした天井の高い空間が、窓から光の入る明るい側と、薪ストーブと飾り棚のある暗い側の2つに分かれており、席を選べる。ジャズやクラシックが流れる。ケーキは作り置きせず毎日焼くため、その日ある分だけ。野菜を主役にしたランチも出す。</div>
+<div class="sig"><b>一皿:</b>naka蔵 特製シフォンケーキ(毎日焼き、その日の分だけ出すシフォンケーキ。ドリンク付きのセットもある)／ハニートースト(厚く焼いたはちみつパンにアイスクリームとはちみつをたっぷりかけた一品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜18:00(料理ラストオーダー17:30)※金・土は21:00まで</td></tr>
+<tr><th>定休日</th><td class="off">水曜、第2・第4月曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市今市町中町689</td></tr>
+<tr><th>予約</th><td>可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>星野リゾートの観光ガイド記事「出雲・松江のカフェ」(2021年10月18日公開・2026年5月20日更新)に、築100年の米蔵を改装した店として住所・営業時間・定休日が載っている。ホットペッパーグルメの掲載ページでも住所・アクセス・席数・定休日が一致。JR出雲市駅から歩ける距離にある古い建物のカフェとして採った。写真はホットペッパーグルメの原寸画像(短辺960px)と星野リゾート記事の画像(1500x1000)から、料理と店内のみを選別。いずれも透かしなしを目視で確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Cafe%20naka%E8%94%B5%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA%E4%B8%AD%E7%94%BA689">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ 掲載ページより引用 / 参照元: <a href="https://hoshinoresorts.com/jp/guide/area/chugoku/shimane/izumo/cafe-6/">星野リゾート 観光ガイド 出雲・松江のおすすめカフェ(2021年10月18日公開・2026年5月20日更新)</a> / <a href="https://www.hotpepper.jp/strJ000830563/">ホットペッパーグルメ Cafe naka蔵(住所・営業時間・定休日・席数)2026年10月6日閲覧</a></div>
+</div></div>
+<div class="card" id="c-izumo-fujihiro-coffee">
+<img class="hero" src="img/izumo/izumo-fujihiro-coffee.jpg" alt="ふじひろ珈琲 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>ふじひろ珈琲<span class="yomi">ふじひろこーひー</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">出雲で焙煎を始めて20年以上になる自家焙煎の珈琲専門店。選んだ生豆を直火式の焙煎機で炒り、注文を受けてから挽いてサイフォンで淹れる。和モダンの落ち着いた店内にテーブル席とカウンター席があり、朝8時から開く。山陰のソウルフードであるバラパン(渦巻き状にクリームを巻き込んだ菓子パン)を使った軽食やフレンチトーストも出す。焙煎した豆は量り売りと通信販売もしている。</div>
+<div class="sig"><b>一皿:</b>自家焙煎のサイフォンコーヒー(直火式焙煎機で炒った豆を、注文ごとに挽いてサイフォンで淹れる)／バラパン(山陰で親しまれている渦巻き型のクリームパン。コーヒーと合わせて出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜19:00 ※星野リゾートの記事では8:00〜18:00。閉店時刻は未確認</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>島根県出雲市渡橋町1223-1</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0853241760">☎ 0853-24-1760</a> ／ <a href="https://www.fujihiro-coffee.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>出雲観光協会の出雲観光ガイドに住所・電話・営業時間・定休日・駐車場35台が掲載され、星野リゾートの観光ガイド記事(2021年10月18日公開・2026年5月20日更新)でも渡橋町1223-1・8:00〜18:00・日曜休として紹介されている。公式の通販サイト(有限会社藤博)も現役。出雲市内で豆から挽く珈琲を飲める店として採った。営業時間は出雲観光協会の8:00〜19:00と星野リゾートの8:00〜18:00で食い違っており、閉店時刻は未確認。写真は星野リゾート記事の1500x1000の画像2点(料理1・店内1)と、店主が書く公式ブログ「ふじひろ珈琲の店長ぶろぐ」の1280x720の画像5点(いずれも窓際に焙煎機を据えた店内と客席)を採用した。右下を切り出して目視し透かしの無いことを確認している。出雲観光協会の画像と公式ブログの残りは外観のみ・物販の陳列・店外のイベントだったため除外した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%98%E3%81%B2%E3%82%8D%E7%8F%88%E7%90%B2%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%B8%A1%E6%A9%8B%E7%94%BA1223-1">Googleマップで開く</a>
+<div class="src">写真: hoshinoresorts.com 掲載ページより引用 / 参照元: <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/10154">出雲観光協会 出雲観光ガイド ふじひろ珈琲(住所・電話・営業時間・定休日・駐車場)</a> / <a href="https://hoshinoresorts.com/jp/guide/area/chugoku/shimane/izumo/cafe-6/">星野リゾート 観光ガイド 出雲・松江のおすすめカフェ(2021年10月18日公開・2026年5月20日更新)</a> / <a href="https://www.fujihiro-coffee.co.jp/?mode=sk">ふじひろ珈琲 公式オンラインショップ(有限会社藤博・特定商取引法に基づく表記)</a></div>
+</div></div>
+<div class="card" id="c-izumo-yunokawa-cafe-nanahoshi">
+<img class="hero" src="img/izumo/izumo-yunokawa-cafe-nanahoshi.jpg" alt="湯の川カフェ ななほし 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>湯の川カフェ ななほし<span class="yomi">ゆのかわかふぇ ななほし</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">築150年の古民家を改装したカフェ。座敷30席・フローリング8席・テーブル10席の計48席で全席禁煙、駐車場15台。特定非営利活動法人プレーパークてんとう虫が運営しており、子ども向けのメニューを多くそろえた「親子にやさしいカフェ」を掲げている。11時から14時は家庭的な昼食、10時半から16時は甘味と飲み物を出す。</div>
+<div class="sig"><b>一皿:</b>抹茶のシフォンケーキ(抹茶を混ぜて焼いたシフォンケーキに生クリームを添えた自家製の菓子)／日替わりのランチプレート(小鉢と汁物を組み合わせた家庭的な定食。古民家の座敷で食べられる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30開店／ランチ11:00〜14:00／カフェ10:30〜16:00(ラストオーダー15:30)</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜(祝日の場合は営業)</td></tr>
+<tr><th>住所</th><td>島根県出雲市斐川町学頭1264</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0853317570">☎ 0853-31-7570</a> ／ <a href="https://tentou-mushi.jp/nanahoshicafe/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトが現役で、2026年9月26日付の「10月の店休日について」をはじめ毎月の店休日を更新している。同サイトに住所・電話・営業時間・定休日・席数・運営法人が明記されており、営業の一次情報として十分。出雲観光協会の出雲観光ガイドにも掲載。斐川町という郊外側の立地と、築150年の古民家という建物で他店と性格が分かれるため採った。写真は公式サイトのメニューページの画像から、短辺900px以上の料理写真のみを選別(透かしなしを目視で確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B9%AF%E3%81%AE%E5%B7%9D%E3%82%AB%E3%83%95%E3%82%A7%20%E3%81%AA%E3%81%AA%E3%81%BB%E3%81%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%96%90%E5%B7%9D%E7%94%BA%E5%AD%A6%E9%A0%AD1264">Googleマップで開く</a>
+<div class="src">写真: tentou-mushi.jp 掲載ページより引用 / 参照元: <a href="https://tentou-mushi.jp/nanahoshicafe/">湯の川カフェ ななほし 公式サイト(住所・電話・営業時間・席数／2026年9月26日付お知らせ)2026年10月6日閲覧</a> / <a href="https://tentou-mushi.jp/nanahoshicafe/menu/">湯の川カフェ ななほし 公式サイト メニュー</a> / <a href="https://www.izumo-kankou.gr.jp/spot/gurumet/14525">出雲観光協会 出雲観光ガイド 湯の川カフェ ななほし</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年10月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>
