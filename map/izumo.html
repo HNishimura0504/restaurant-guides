@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>出雲 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>出雲 の食べ歩き地図<span class="n">45店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="出雲 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">出雲 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/shimane/izumo.html"><span class="sn-e">📄</span>出雲のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（90都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "出雲そば 荒木屋", "c": ["麺類"], "v": "レストラン", "lat": 35.397671, "lng": 132.682312, "d": "割子そば三段(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移して食べる。930円)／釜揚げそば(茹でたそばを水洗いせず茹で汁ごと丼に移し、薬味とそばつゆを直接かける出雲独特の温かいそば)", "a": "島根県出雲市大社町杵築東409-2", "m": "https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%20%E8%8D%92%E6%9C%A8%E5%B1%8B%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1409-2", "u": "../japan/shimane/izumo.html#c-izumo-arakiya", "food": "../japan/shimane/img/izumo/izumo-arakiya.jpg", "ext": ""}, {"i": 1, "n": "そば処 田中屋 本店", "c": ["麺類"], "v": "レストラン", "lat": 35.396713, "lng": 132.685608, "d": "割子そば三段(朱塗りの丸い漆器を三段重ねた冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移す。1,155円)／釜あげそば(茹でたそばを水洗いせず茹で湯ごと丼に盛り、薬味とつゆを直接かける出雲独特の温かいそば)", "a": "島根県出雲市大社町杵築東364", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E7%94%B0%E4%B8%AD%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1364", "u": "../japan/shimane/izumo.html#c-izumo-tanakaya-honten", "food": "../japan/shimane/img/izumo/izumo-tanakaya-honten.jpg", "ext": ""}, {"i": 2, "n": "出雲そば かねや", "c": ["麺類"], "v": "レストラン", "lat": 35.407349, "lng": 132.687164, "d": "割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけて食べる。840円)／釜揚げそば(茹でたそばを水洗いせず茹で汁ごと丼に移し、そばつゆを垂らして好みの濃さにする出雲独特の温かいそば)", "a": "島根県出雲市大社町杵築東四ツ角659", "m": "https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9D%E3%81%B0%20%E3%81%8B%E3%81%AD%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1%E5%9B%9B%E3%83%84%E8%A7%92659", "u": "../japan/shimane/izumo.html#c-izumo-kaneya", "food": "../japan/shimane/img/izumo/izumo-kaneya.jpg", "ext": ""}, {"i": 3, "n": "そば処 おくに", "c": ["麺類"], "v": "レストラン", "lat": 35.408443, "lng": 132.684875, "d": "割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移して食べる)／縁結びセット(割子そばに出雲ぜんざい〈出雲が発祥とされる小豆の甘味。白玉入り〉を組み合わせた定食。880円)", "a": "島根県出雲市大社町杵築東宮内276", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E3%81%8A%E3%81%8F%E3%81%AB%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1%E5%AE%AE%E5%86%85276", "u": "../japan/shimane/izumo.html#c-izumo-sobadokoro-okuni", "food": "../japan/shimane/img/izumo/izumo-sobadokoro-okuni.jpg", "ext": ""}, {"i": 4, "n": "平和そば本店", "c": ["麺類"], "v": "レストラン", "lat": 35.394531, "lng": 132.677246, "d": "割子蕎麦(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移す。750円)／釜あげ蕎麦(茹でたそばを水洗いせず茹で汁ごと丼に移し、そばつゆを垂らして好みの濃さにする出雲独特の温かいそば。750円)", "a": "島根県出雲市大社町杵築西2034", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B9%B3%E5%92%8C%E3%81%9D%E3%81%B0%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E8%A5%BF2034", "u": "../japan/shimane/izumo.html#c-izumo-heiwasoba-honten", "food": "../japan/shimane/img/izumo/izumo-heiwasoba-honten.jpg", "ext": ""}, {"i": 5, "n": "献上そば 羽根屋 本店", "c": ["麺類"], "v": "レストラン", "lat": 35.364746, "lng": 132.760712, "d": "割子そば三段(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。そば汁を直接かけ、残った汁を次の段へ移して食べる)／釜あげそば(釜から上げたそばを茹で汁ごと丼に移し、出汁をかけて食べる出雲独特の温かいそば)", "a": "島根県出雲市今市町549", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8C%AE%E4%B8%8A%E3%81%9D%E3%81%B0%20%E7%BE%BD%E6%A0%B9%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA549", "u": "../japan/shimane/izumo.html#c-izumo-kenjosoba-haneya-honten", "food": "../japan/shimane/img/izumo/izumo-kenjosoba-haneya-honten.jpg", "ext": ""}, {"i": 6, "n": "手打ち出雲蕎麦 ほしえん", "c": ["麺類"], "v": "レストラン", "lat": 35.36344, "lng": 132.759054, "d": "三色割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そばに、卵・長芋・大根おろしの三種を添えたもの。段ごとに味を変えて食べる)／出雲塩ラーメン(出雲市鷺浦で日本海の海水を海藻ごと炊き上げた藻塩を使う塩ラーメン。前身のラーメン店から受け継いだ一杯)", "a": "島根県出雲市今市町駅通り905-18", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E5%87%BA%E9%9B%B2%E8%95%8E%E9%BA%A6%20%E3%81%BB%E3%81%97%E3%81%88%E3%82%93%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA%E9%A7%85%E9%80%9A%E3%82%8A905-18", "u": "../japan/shimane/izumo.html#c-izumo-hoshien", "food": "", "ext": ""}, {"i": 7, "n": "そば処・喜多縁", "c": ["麺類"], "v": "レストラン", "lat": 35.435921, "lng": 132.820969, "d": "そばりえセット(冷たい割子そばと温かい釜揚げそばを一度に味わえるセット。出雲そばの二通りの食べ方を一皿で比べられる)／割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移す)", "a": "島根県出雲市平田町989-4", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%E3%83%BB%E5%96%9C%E5%A4%9A%E7%B8%81%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B9%B3%E7%94%B0%E7%94%BA989-4", "u": "../japan/shimane/izumo.html#c-izumo-sobadokoro-kitaen", "food": "../japan/shimane/img/izumo/izumo-sobadokoro-kitaen.jpg", "ext": ""}, {"i": 8, "n": "そば処 神門", "c": ["麺類"], "v": "レストラン", "lat": 35.38546, "lng": 132.728943, "d": "割子そば(三段重ねの朱塗りの丸い漆器に盛った冷たい出雲そば。上の段から直接つゆをかけ、残った汁を次の段へ移して食べる)／天ぷらそば膳(手打ちのそばに海老と野菜の天ぷらを合わせた膳。夜の一品料理と一緒に頼める)", "a": "島根県出雲市常松町378", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E7%A5%9E%E9%96%80%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B8%B8%E6%9D%BE%E7%94%BA378", "u": "../japan/shimane/izumo.html#c-izumo-sobadokoro-godo", "food": "../japan/shimane/img/izumo/izumo-sobadokoro-godo.jpg", "ext": ""}, {"i": 9, "n": "鮨とみ田", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 35.362854, "lng": 132.758621, "d": "握り(日本海で揚がった白身魚を中心に、カウンターのネタケースから選んで握ってもらう江戸前仕立ての寿司)／刺身の盛り合わせ(いかや白身魚を竹ざるに盛った一皿。山陰の魚をそのまま味わうための品)", "a": "島根県出雲市今市町1458", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E3%81%A8%E3%81%BF%E7%94%B0%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA1458", "u": "../japan/shimane/izumo.html#c-izumo-sushi-tomita", "food": "../japan/shimane/img/izumo/izumo-sushi-tomita.jpg", "ext": ""}, {"i": 10, "n": "うな昇 出雲", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 35.365501, "lng": 132.75296, "d": "うな重(蒲焼きにしたうなぎを重箱のご飯にのせたもの。うなぎを1尾使う「極」と、4分の3尾の「上」の2段階がある)／うなぎの定食(うな重に吸い物・香の物などを組み合わせた定食仕立て)", "a": "島根県出雲市今市町42-30", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E6%98%87%20%E5%87%BA%E9%9B%B2%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA42-30", "u": "../japan/shimane/izumo.html#c-izumo-unasho", "food": "", "ext": ""}, {"i": 11, "n": "看雲楼", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 35.398182, "lng": 132.68251, "d": "うず煮(地元で獲れたフグでとった出汁にかんぴょう・椎茸・フグの身を入れ、くず粉でとろみをつけてあんに仕立てる。椀にあんを注いでご飯を盛り、セリと岩海苔、わさびをのせ、ご飯をあんにうずめながら食べる出雲大社伝来の郷土料理。1,650円)／海鮮丼(日本海の旬の魚介を5種類以上のせた丼。しじみの吸い物が付く。2,035円)", "a": "島根県出雲市大社町杵築東489-1", "m": "https://www.google.com/maps/search/?api=1&query=%E7%9C%8B%E9%9B%B2%E6%A5%BC%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E6%9D%B1489-1", "u": "../japan/shimane/izumo.html#c-izumo-kanunrou", "food": "../japan/shimane/img/izumo/izumo-kanunrou.jpg", "ext": ""}, {"i": 12, "n": "ぐるめ幸洋丸", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 35.425091, "lng": 132.655853, "d": "海鮮丼(日本海で揚がった刺身を何種類も酢飯にのせた丼。味噌汁と小鉢が付く定食仕立てで出る)／イカの姿造り(イカを丸ごと刺身に引き、船形の器に盛ったもの。山陰の夏から秋の魚)", "a": "島根県出雲市大社町日御碕1089-48", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%90%E3%82%8B%E3%82%81%E5%B9%B8%E6%B4%8B%E4%B8%B8%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%97%A5%E5%BE%A1%E7%A2%951089-48", "u": "../japan/shimane/izumo.html#c-izumo-gurume-koyomaru", "food": "../japan/shimane/img/izumo/izumo-gurume-koyomaru.jpg", "ext": ""}, {"i": 13, "n": "よふきや", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 35.480186, "lng": 132.884903, "d": "べべ貝の釜飯(地元で採れる小さな巻貝「べべ貝」を炊き込んだ釜飯。磯の香りが立つ、この店の名物)／海鮮丼(日本海の刺身を何種類も重ねて盛った丼。のどぐろや白身、いくらなど季節の魚が替わる)", "a": "島根県出雲市小境町411-4", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%88%E3%81%B5%E3%81%8D%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B0%8F%E5%A2%83%E7%94%BA411-4", "u": "../japan/shimane/izumo.html#c-izumo-yohukiya", "food": "../japan/shimane/img/izumo/izumo-yohukiya.jpg", "ext": ""}, {"i": 14, "n": "料裡亭 灘屋", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.366245, "lng": 132.770691, "d": "会席料理(先付・造り・茶わん蒸し・焼物・天麩羅・鍋物・焚合せ・留め椀などの全10品。季節で中身が替わり、単品の注文はできない。昼夜とも4,000円から、完全予約制)／銀ダラの照り焼きランチ(銀ダラを照り焼きにした昼の定食。昔から変わらない人気の一品で1,650円)", "a": "島根県出雲市大津町2063-11", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%99%E8%A3%A1%E4%BA%AD%20%E7%81%98%E5%B1%8B%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E6%B4%A5%E7%94%BA2063-11", "u": "../japan/shimane/izumo.html#c-izumo-ryoritei-nadaya", "food": "../japan/shimane/img/izumo/izumo-ryoritei-nadaya.jpg", "ext": ""}, {"i": 15, "n": "天ぷら 味里", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 35.332645, "lng": 132.71994, "d": "天ぷら定食(海老・魚・野菜を揚げた天ぷらに、ご飯・味噌汁・小鉢・香の物が付く定食。カウンターの揚げ場で揚げたてが出る)／天丼(天ぷらを丼のご飯にのせてたれをかけたもの。味噌汁と小鉢が付く)", "a": "島根県出雲市西新町3-2-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E5%91%B3%E9%87%8C%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E8%A5%BF%E6%96%B0%E7%94%BA3-2-1", "u": "../japan/shimane/izumo.html#c-izumo-tempura-misato", "food": "../japan/shimane/img/izumo/izumo-tempura-misato.jpg", "ext": ""}, {"i": 16, "n": "鶏ラーメン 福如雲", "c": ["麺類"], "v": "レストラン", "lat": 35.366692, "lng": 132.759705, "d": "琥珀 宍道湖しじみ鶏ラーメン(地鶏・赤鶏・親鶏からとった澄んだ鶏スープに宍道湖産ヤマトしじみの旨みを重ねた塩味のラーメン。卵不使用の自家製熟成麺を使う。税込880円)／しじみ塩バター鶏ラーメン(同じしじみ鶏スープにバターを落とした季節限定の一杯)", "a": "島根県出雲市今市町283-5", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B6%8F%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E7%A6%8F%E5%A6%82%E9%9B%B2%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA283-5", "u": "../japan/shimane/izumo.html#c-izumo-fukukumo-nogotoshi", "food": "../japan/shimane/img/izumo/izumo-fukukumo-nogotoshi.jpg", "ext": ""}, {"i": 17, "n": "中華飯店 一華", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 35.370613, "lng": 132.753342, "d": "あごだし中華そば(島根県の県魚トビウオ=あごの出汁を豚骨醤油のスープに重ねた中華そば。中細ちぢれ麺に刻み柚子が入る。税込900円)／もちもち焼ぎょうざ(厚めの皮で包んだ焼き餃子。夜の点心メニュー。税込700円)", "a": "島根県出雲市姫原町156", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E9%A3%AF%E5%BA%97%20%E4%B8%80%E8%8F%AF%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A7%AB%E5%8E%9F%E7%94%BA156", "u": "../japan/shimane/izumo.html#c-izumo-chuka-hanten-ichika", "food": "../japan/shimane/img/izumo/izumo-chuka-hanten-ichika.jpg", "ext": ""}, {"i": 18, "n": "中国料理 白龍", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 35.363754, "lng": 132.743408, "d": "醤油ラーメン(昔ながらの澄んだ醤油スープに中細麺と香ばしい焼き豚を合わせた一杯。ハーフやきめしが付くBセットは税込900円)／東坡肉麺(とろとろに煮込んだ豚の角煮=東坡肉と青菜をのせた醤油味の麺)", "a": "島根県出雲市渡橋町1220", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E7%99%BD%E9%BE%8D%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%B8%A1%E6%A9%8B%E7%94%BA1220", "u": "../japan/shimane/izumo.html#c-izumo-pairon", "food": "../japan/shimane/img/izumo/izumo-pairon.jpg", "ext": ""}, {"i": 19, "n": "ぶーちゃんらーめん", "c": ["麺類"], "v": "レストラン", "lat": 35.428802, "lng": 132.818222, "d": "辛味噌らーめん(濃厚な味噌スープにショウガの香りと辛みを合わせ、キャベツともやし、厚切りチャーシュー、半熟味玉をのせる。もちもちした高加水の平打ち麺。税込920円)／野菜マシマシラーメン(同じ麺に野菜を山盛りにした名物の一杯)", "a": "島根県出雲市平田町1825-10", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B6%E3%83%BC%E3%81%A1%E3%82%83%E3%82%93%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B9%B3%E7%94%B0%E7%94%BA1825-10", "u": "../japan/shimane/izumo.html#c-izumo-boochan-ramen", "food": "../japan/shimane/img/izumo/izumo-boochan-ramen.jpg", "ext": ""}, {"i": 20, "n": "神立中華 王福", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 35.371616, "lng": 132.790329, "d": "坦々麺(すり胡麻のコクに唐辛子と花椒の辛みを重ねた本格的な担々麺。挽き肉の辣醤をたっぷりのせる)／中華定食(坦々麺に小鉢とごはん、揚げ物などを組み合わせた昼の定食)", "a": "島根県出雲市斐川町併川697", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A5%9E%E7%AB%8B%E4%B8%AD%E8%8F%AF%20%E7%8E%8B%E7%A6%8F%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%96%90%E5%B7%9D%E7%94%BA%E4%BD%B5%E5%B7%9D697", "u": "../japan/shimane/izumo.html#c-izumo-kandachi-wanfu", "food": "../japan/shimane/img/izumo/izumo-kandachi-wanfu.jpg", "ext": ""}, {"i": 21, "n": "出雲の國 麺家 出雲大社神門通店", "c": ["麺類"], "v": "レストラン", "lat": 35.395161, "lng": 132.68692, "d": "スサノオラーメン(スサノオノミコトがヤマタノオロチに酒を飲ませたという出雲神話にちなむ一杯。地元の味噌に富士酒造の酒粕をブレンドしたまろやかな味噌スープ。出雲縁結び空港店では普通盛り税込980円)／出雲縁結びどんぶり(丼に塩野菜ラーメンが盛られ、その下に卵焼きとご飯が隠れている変わり丼)", "a": "島根県出雲市大社町杵築南780-10", "m": "https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%AE%E5%9C%8B%20%E9%BA%BA%E5%AE%B6%20%E5%87%BA%E9%9B%B2%E5%A4%A7%E7%A4%BE%E7%A5%9E%E9%96%80%E9%80%9A%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%97780-10", "u": "../japan/shimane/izumo.html#c-izumo-no-kuni-menya-shinmon", "food": "../japan/shimane/img/izumo/izumo-no-kuni-menya-shinmon.jpg", "ext": ""}, {"i": 22, "n": "餃子屋", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 35.362946, "lng": 132.75966, "d": "焼き餃子(皮が薄く中身が透けるほどで、噛むと肉汁があふれる。にんにくとニラの香り。6個500円)／水餃子(厚めのもちもちした皮の餃子を薄口の中華スープに浮かべたもの)", "a": "島根県出雲市今市町1268-6", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A4%83%E5%AD%90%E5%B1%8B%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA1268-6", "u": "../japan/shimane/izumo.html#c-izumo-gyozaya", "food": "../japan/shimane/img/izumo/izumo-gyozaya.jpg", "ext": ""}, {"i": 23, "n": "くいもん屋吾作", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 35.361406, "lng": 132.75558, "d": "荒磯盛(あらいそもり。日本海から毎朝届く地魚を舟形の器に盛った刺身の盛り合わせ。3〜4人前3,500円、1,200円の小盛りから選べる)／のどぐろの塩焼(島根を代表する高級魚アカムツを一尾そのまま塩で焼いたもの。2,800円)", "a": "島根県出雲市今市町928-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%84%E3%82%82%E3%82%93%E5%B1%8B%E5%90%BE%E4%BD%9C%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA928-2", "u": "../japan/shimane/izumo.html#c-izumo-kuimonya-gosaku", "food": "../japan/shimane/img/izumo/izumo-kuimonya-gosaku.jpg", "ext": ""}, {"i": 24, "n": "くしかつ 笑", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 35.362782, "lng": 132.752197, "d": "串かつ(30種類以上ある一口大の串揚げ。昆布とかつおの出汁を衣に仕込んであり、何も付けずにほんのり味がつく。1本80円〜)／くしかつ屋のもつ鍋(牛もつの鍋。醤油・塩ごま・辛味噌の3種から味を選べ、1人前から頼める。1,500円)", "a": "島根県出雲市今市町827-23", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%97%E3%81%8B%E3%81%A4%20%E7%AC%91%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA827-23", "u": "../japan/shimane/izumo.html#c-izumo-kushikatsu-sho", "food": "../japan/shimane/img/izumo/izumo-kushikatsu-sho.jpg", "ext": ""}, {"i": 25, "n": "洋風居酒屋CHAKA", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 35.362244, "lng": 132.757736, "d": "イタリアン(手作りのトマトソースで和えたパスタ。825円)／ミックスピザ(Mサイズ990円。テイクアウトもできる)", "a": "島根県出雲市今市町1265", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A2%A8%E5%B1%85%E9%85%92%E5%B1%8BCHAKA%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA1265", "u": "../japan/shimane/izumo.html#c-izumo-yofu-izakaya-chaka", "food": "../japan/shimane/img/izumo/izumo-yofu-izakaya-chaka.jpg", "ext": ""}, {"i": 26, "n": "のどぐろ日本海", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 35.361889, "lng": 132.757507, "d": "のどぐろ(島根を代表する高級魚アカムツ。焼物・煮物・唐揚げ・蒸しの四通りから調理法を選べる。1尾およそ100g)／隠岐の岩がき(隠岐の島から直送される大ぶりの夏がき。造り・殻焼き・殻蒸し・フライ・バター焼きから選べる)", "a": "島根県出雲市今市町1271-5", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%AE%E3%81%A9%E3%81%90%E3%82%8D%E6%97%A5%E6%9C%AC%E6%B5%B7%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA1271-5", "u": "../japan/shimane/izumo.html#c-izumo-nodoguro-nihonkai", "food": "../japan/shimane/img/izumo/izumo-nodoguro-nihonkai.jpg", "ext": ""}, {"i": 27, "n": "居酒屋 ツバメヤ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 35.364166, "lng": 132.756958, "d": "お刺身5種盛り合せ(旬の地魚を中心に5種類。島根でおなじみの甘口の刺身醤油で食べる。980円)／親子出し巻き(甘辛く炒めた鶏そぼろを巻き込んだ出汁巻き玉子。300円)", "a": "島根県出雲市今市町651", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%83%84%E3%83%90%E3%83%A1%E3%83%A4%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA651", "u": "../japan/shimane/izumo.html#c-izumo-izakaya-tsubameya", "food": "../japan/shimane/img/izumo/izumo-izakaya-tsubameya.jpg", "ext": ""}, {"i": 28, "n": "粉家こん吉堂", "c": ["ビール・バー"], "v": "レストラン", "lat": 35.369759, "lng": 132.754395, "d": "玉子焼(明石焼。たこ入りの柔らかい焼き玉子を、出汁にひたして食べる。箸でぎりぎり持てる柔らかさに焼いてある)／大餅(ターピン。ねぎと豚ミンチを包んで皮をパリパリに焼いた中華点心。自家製の甜麺醤をかけて出す)", "a": "島根県出雲市今市町120-2", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B2%89%E5%AE%B6%E3%81%93%E3%82%93%E5%90%89%E5%A0%82%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA120-2", "u": "../japan/shimane/izumo.html#c-izumo-konaya-konkichido", "food": "", "ext": ""}, {"i": 29, "n": "SPACE大北", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 35.373241, "lng": 132.767685, "d": "大北ランチプレート(週替わり・1日10食限定の定食。分厚いチャーシューを主菜に、ポテトサラダ・小松菜のお浸し・大根漬けなど惣菜8種が付く。1,500円)／山陰の日本酒(島根・鳥取の蔵の酒を揃え、地元の食事と合わせて出す)", "a": "島根県出雲市大津町781", "m": "https://www.google.com/maps/search/?api=1&query=SPACE%E5%A4%A7%E5%8C%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E6%B4%A5%E7%94%BA781", "u": "../japan/shimane/izumo.html#c-izumo-space-ohkita", "food": "../japan/shimane/img/izumo/izumo-space-ohkita.jpg", "ext": ""}, {"i": 30, "n": "味工房藤江", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 35.442329, "lng": 132.825989, "d": "", "a": "島根県出雲市平田町中本町1101", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%B7%A5%E6%88%BF%E8%97%A4%E6%B1%9F%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B9%B3%E7%94%B0%E7%94%BA%E4%B8%AD%E6%9C%AC%E7%94%BA1101", "u": "../japan/shimane/izumo.html#c-izumo-ajikobo-fujie", "food": "", "ext": ""}, {"i": 31, "n": "焼肉・韓国料理 幸楽苑", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.39175, "lng": 132.686844, "d": "焼肉懐石(前菜・サラダ・数種の焼肉・食事までを一通りの流れで出すコース仕立ての焼肉)／冷麺(6時間煮込んだ自家製スープに、ゆで卵とオレンジを乗せる同店の韓国料理の看板)", "a": "島根県出雲市大社町杵築南1386-2", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%83%BB%E9%9F%93%E5%9B%BD%E6%96%99%E7%90%86%20%E5%B9%B8%E6%A5%BD%E8%8B%91%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%971386-2", "u": "../japan/shimane/izumo.html#c-izumo-yakiniku-kourakuen", "food": "../japan/shimane/img/izumo/izumo-yakiniku-kourakuen.jpg", "ext": ""}, {"i": 32, "n": "リトルインディア", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.362312, "lng": 132.744141, "d": "カレーとナンのセット(バターチキン・ほうれん草・豆など数種から選び、タンドール窯で焼いた大判のナンとサラダを付ける)／タンドリーチキン(ヨーグルトと香辛料に漬けた骨付き鶏をタンドール窯で焼いたもの)", "a": "島根県出雲市塩冶有原町1-14-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AA%E3%83%88%E3%83%AB%E3%82%A4%E3%83%B3%E3%83%87%E3%82%A3%E3%82%A2%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A1%A9%E5%86%B6%E6%9C%89%E5%8E%9F%E7%94%BA1-14-1", "u": "../japan/shimane/izumo.html#c-izumo-little-india", "food": "../japan/shimane/img/izumo/izumo-little-india.jpg", "ext": ""}, {"i": 33, "n": "焼肉と鍋料理の店 あらき", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.391502, "lng": 132.819031, "d": "黒毛和牛の盛り合わせ(精肉店が自ら仕入れた黒毛和牛を部位ごとに一皿に盛ったもの)／しゃぶしゃぶ(薄切りの牛肉を出汁にくぐらせる鍋。焼肉と並ぶ看板で、冬は鍋料理の予約が中心になる)", "a": "島根県出雲市斐川町直江5310", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%81%A8%E9%8D%8B%E6%96%99%E7%90%86%E3%81%AE%E5%BA%97%20%E3%81%82%E3%82%89%E3%81%8D%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%96%90%E5%B7%9D%E7%94%BA%E7%9B%B4%E6%B1%9F5310", "u": "../japan/shimane/izumo.html#c-izumo-yakiniku-araki", "food": "../japan/shimane/img/izumo/izumo-yakiniku-araki.jpg", "ext": ""}, {"i": 34, "n": "カフェ＆ビストロ あん", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.363934, "lng": 132.75966, "d": "シェフのおまかせコース(前菜・自家製パン・スープ・メイン・デザートまでを島根県産の食材で組む昼夜のコース。当日でも予約なしで頼める3,800円と4,800円の2種がある)／出雲アフタヌーンティー(一日9名限定・要予約の三段のスタンド。上から季節の上生菓子とケーキ、ローストビーフやキッシュ、自家製パンのサンドイッチと続き、出雲ぜんざいが付く)", "a": "島根県出雲市今市町扇町890", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%86%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%81%82%E3%82%93%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA%E6%89%87%E7%94%BA890", "u": "../japan/shimane/izumo.html#c-izumo-cafe-bistro-ann", "food": "../japan/shimane/img/izumo/izumo-cafe-bistro-ann.jpg", "ext": ""}, {"i": 35, "n": "洋食kirra", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.37672, "lng": 132.759903, "d": "デミグラスソースのハンバーグ(国産牛100％。2週間かけて仕込む自家製デミグラスソースをかける。サラダ・スープ・ライスかパンが付く)／kirraセット(ハンバーグ、真鯛のクリームコロッケ、エビフライ、オムライスを一皿に盛り合わせた同店最大の盛り合わせ)", "a": "島根県出雲市大津朝倉3-7-1 朝倉テナントビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9Fkirra%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E6%B4%A5%E6%9C%9D%E5%80%893-7-1%20%E6%9C%9D%E5%80%89%E3%83%86%E3%83%8A%E3%83%B3%E3%83%88%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/shimane/izumo.html#c-izumo-yoshoku-kirra", "food": "../japan/shimane/img/izumo/izumo-yoshoku-kirra.jpg", "ext": ""}, {"i": 36, "n": "trattoria814", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.436981, "lng": 132.821045, "d": "日替わりランチセット(前菜、パスタかリゾット、デザート、焼きたての自家製パンが付く昼の定番。メインは仕入れ次第で変わる)／島根県産鰆のチーズリゾット(皮をバーナーで炙ってからオーブンで二度焼きした鰆を、仁多米を白ワインとブイヨンで煮たチーズリゾットに乗せる。ランチセットに+400円で変更できる)", "a": "島根県出雲市平田町814", "m": "https://www.google.com/maps/search/?api=1&query=trattoria814%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%B9%B3%E7%94%B0%E7%94%BA814", "u": "../japan/shimane/izumo.html#c-izumo-trattoria814", "food": "../japan/shimane/img/izumo/izumo-trattoria814.jpg", "ext": ""}, {"i": 37, "n": "洋食屋リーヴェ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 35.357929, "lng": 132.747665, "d": "国産牛・豚ひき肉の手ごねハンバーグ(10年以上続く看板。外は香ばしく中はふっくら焼き上げる。選べるランチのメインの一つ)／本ズワイのクリームコロッケ(ズワイガニの身を混ぜたベシャメルを衣で包んで揚げる。こちらも10年以上の定番)", "a": "島根県出雲市塩冶有原町4-65-2", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%E3%83%AA%E3%83%BC%E3%83%B4%E3%82%A7%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A1%A9%E5%86%B6%E6%9C%89%E5%8E%9F%E7%94%BA4-65-2", "u": "../japan/shimane/izumo.html#c-izumo-yoshokuya-liebe", "food": "../japan/shimane/img/izumo/izumo-yoshokuya-liebe.jpg", "ext": ""}, {"i": 38, "n": "くつろぎ和かふぇ 甘右衛門", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 35.396834, "lng": 132.68596, "d": "大黒ぜんざい(旧暦10月の神在祭〈かみありさい〉で振る舞われた神在餅〈じんざいもち〉を起源とする出雲ぜんざい。熱いつゆに餅を入れる)／《極》あんみつ ‐出雲抹茶づくし‐(一皿に出雲抹茶を10g以上使う抹茶尽くしのあんみつ。1日10食限定)", "a": "島根県出雲市大社町杵築南839-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8F%E3%81%A4%E3%82%8D%E3%81%8E%E5%92%8C%E3%81%8B%E3%81%B5%E3%81%87%20%E7%94%98%E5%8F%B3%E8%A1%9B%E9%96%80%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%97839-1", "u": "../japan/shimane/izumo.html#c-izumo-amaemon", "food": "../japan/shimane/img/izumo/izumo-amaemon.jpg", "ext": ""}, {"i": 39, "n": "出雲ぜんざい餅 大社店", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 35.395846, "lng": 132.68596, "d": "出雲ぜんざい(出雲産の大納言小豆を粒感を残して炊いた汁に、紅白の餅を入れた出雲名物。塩昆布が添えられる)／ぜんざい餅(ぜんざいの餡を餅生地で包んで焼いた、この店だけの焼き菓子。持ち帰りもできる)", "a": "島根県出雲市大社町杵築南840-1 ご縁横丁", "m": "https://www.google.com/maps/search/?api=1&query=%E5%87%BA%E9%9B%B2%E3%81%9C%E3%82%93%E3%81%96%E3%81%84%E9%A4%85%20%E5%A4%A7%E7%A4%BE%E5%BA%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%97840-1%20%E3%81%94%E7%B8%81%E6%A8%AA%E4%B8%81", "u": "../japan/shimane/izumo.html#c-izumo-zenzaimochi-taisha", "food": "../japan/shimane/img/izumo/izumo-zenzaimochi-taisha.jpg", "ext": ""}, {"i": 40, "n": "おくに茶や", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 35.396206, "lng": 132.68811, "d": "仁多米ぜんざい(奥出雲産の仁多米でついた餅を2つ入れた出雲ぜんざい。甘さをおさえた小豆と餅のもちもちした食感が合う)／抹茶ぜんざい(抹茶の碗に小豆と焼き餅を入れた一品。ほろ苦い抹茶と餡を合わせる)", "a": "島根県出雲市大社町杵築南731", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%8F%E3%81%AB%E8%8C%B6%E3%82%84%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E5%A4%A7%E7%A4%BE%E7%94%BA%E6%9D%B5%E7%AF%89%E5%8D%97731", "u": "../japan/shimane/izumo.html#c-izumo-okuni-chaya", "food": "../japan/shimane/img/izumo/izumo-okuni-chaya.jpg", "ext": ""}, {"i": 41, "n": "和かふぇ 葉楽Koto", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 35.362394, "lng": 132.75558, "d": "特選あんみつ(抹茶ソフトクリームを中心に、抹茶ゼリー・あんこ・白玉・寒天をあしらった看板の甘味)／出雲ぜんざい(小豆を厨房で2時間かけて煮た汁に、香ばしく焼いた紅白の餅を入れる出雲名物。塩昆布が添えられる)", "a": "島根県出雲市今市町2076", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%81%8B%E3%81%B5%E3%81%87%20%E8%91%89%E6%A5%BDKoto%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA2076", "u": "../japan/shimane/izumo.html#c-izumo-haraku-koto", "food": "../japan/shimane/img/izumo/izumo-haraku-koto.jpg", "ext": ""}, {"i": 42, "n": "Cafe naka蔵", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 35.36344, "lng": 132.760266, "d": "naka蔵 特製シフォンケーキ(毎日焼き、その日の分だけ出すシフォンケーキ。ドリンク付きのセットもある)／ハニートースト(厚く焼いたはちみつパンにアイスクリームとはちみつをたっぷりかけた一品)", "a": "島根県出雲市今市町中町689", "m": "https://www.google.com/maps/search/?api=1&query=Cafe%20naka%E8%94%B5%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E4%BB%8A%E5%B8%82%E7%94%BA%E4%B8%AD%E7%94%BA689", "u": "../japan/shimane/izumo.html#c-izumo-cafe-nakakura", "food": "../japan/shimane/img/izumo/izumo-cafe-nakakura.jpg", "ext": ""}, {"i": 43, "n": "ふじひろ珈琲", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 35.364883, "lng": 132.742188, "d": "自家焙煎のサイフォンコーヒー(直火式焙煎機で炒った豆を、注文ごとに挽いてサイフォンで淹れる)／バラパン(山陰で親しまれている渦巻き型のクリームパン。コーヒーと合わせて出す)", "a": "島根県出雲市渡橋町1223-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%98%E3%81%B2%E3%82%8D%E7%8F%88%E7%90%B2%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%B8%A1%E6%A9%8B%E7%94%BA1223-1", "u": "../japan/shimane/izumo.html#c-izumo-fujihiro-coffee", "food": "../japan/shimane/img/izumo/izumo-fujihiro-coffee.jpg", "ext": ""}, {"i": 44, "n": "湯の川カフェ ななほし", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 35.388031, "lng": 132.86673, "d": "抹茶のシフォンケーキ(抹茶を混ぜて焼いたシフォンケーキに生クリームを添えた自家製の菓子)／日替わりのランチプレート(小鉢と汁物を組み合わせた家庭的な定食。古民家の座敷で食べられる)", "a": "島根県出雲市斐川町学頭1264", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B9%AF%E3%81%AE%E5%B7%9D%E3%82%AB%E3%83%95%E3%82%A7%20%E3%81%AA%E3%81%AA%E3%81%BB%E3%81%97%20%E5%B3%B6%E6%A0%B9%E7%9C%8C%E5%87%BA%E9%9B%B2%E5%B8%82%E6%96%90%E5%B7%9D%E7%94%BA%E5%AD%A6%E9%A0%AD1264", "u": "../japan/shimane/izumo.html#c-izumo-yunokawa-cafe-nanahoshi", "food": "../japan/shimane/img/izumo/izumo-yunokawa-cafe-nanahoshi.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([35.384248,132.748335],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('izumo', "出雲");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
