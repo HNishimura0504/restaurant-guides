@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>岡山 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>岡山 の食べ歩き地図<span class="n">72店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="岡山 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">岡山 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/okayama/okayama.html"><span class="sn-e">📄</span>岡山のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（92都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "吾妻寿司 さんすて岡山店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.665607, "lng": 133.918015, "d": "岡山ばら寿司(江戸時代の倹約令に対抗して生まれたとされる岡山の郷土寿司。生ものは使わず、酢でしめたり焼いたり炊いたりしたままかり・さわら・もがい・穴子などの海の幸と山の幸を酢飯に敷きつめる。黄ニラの赤だし付き)／名物三種盛(岡山名物のままかり・さわら・黄ニラをそれぞれ2貫ずつ握った盛り合わせ)", "a": "岡山県岡山市北区駅元町1-1 さんすて岡山2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%90%BE%E5%A6%BB%E5%AF%BF%E5%8F%B8%20%E3%81%95%E3%82%93%E3%81%99%E3%81%A6%E5%B2%A1%E5%B1%B1%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E9%A7%85%E5%85%83%E7%94%BA1-1%20%E3%81%95%E3%82%93%E3%81%99%E3%81%A6%E5%B2%A1%E5%B1%B12F", "u": "../japan/okayama/okayama.html#c-okayama-azumazushi-sanste", "food": "../japan/okayama/img/okayama/okayama-azumazushi-sanste.jpg", "ext": ""}, {"i": 1, "n": "福寿司本店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.669483, "lng": 133.917465, "d": "備前ばらずし(明治から戦前の岡山の家庭のばら寿司を文献と聞き込みから再現した一品。鰆の漬け酢の香りと具の甘みが強く、上に載せた具を先に肴として食べ、次に寿司本体、翌日は茶漬けにして三度楽しむのが本来の食べ方。3営業日前までの予約制)／岡山ちらし(予約なしで食べられるばらずしに近い一品。具にあらかじめ味がついている)", "a": "岡山県岡山市北区奉還町2丁目16-17", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%AF%BF%E5%8F%B8%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A5%89%E9%82%84%E7%94%BA2%E4%B8%81%E7%9B%AE16-17", "u": "../japan/okayama/okayama.html#c-okayama-fukuzushi-honten", "food": "../japan/okayama/img/okayama/okayama-fukuzushi-honten.jpg", "ext": ""}, {"i": 2, "n": "夜寿司 田町本店", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.658836, "lng": 133.925415, "d": "岡山ばら寿司(ままかりなど岡山らしい具を使ったばら寿司。天満屋地下店では1,998円で持ち帰りも扱う)／にぎり盛り合わせ(瀬戸内の地魚を中心にした握り。穴子や車海老、うに・いくらの軍艦などが並ぶ)", "a": "岡山県岡山市北区田町2丁目11-8", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%9C%E5%AF%BF%E5%8F%B8%20%E7%94%B0%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE11-8", "u": "../japan/okayama/okayama.html#c-okayama-yozushi-tamachi", "food": "../japan/okayama/img/okayama/okayama-yozushi-tamachi.jpg", "ext": ""}, {"i": 3, "n": "鮨竜心", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.659985, "lng": 133.920074, "d": "おまかせのにぎり(鮪の赤身や大トロ、穴子、光り物などを、目の前で1貫ずつ握って出す構成。つまみと交互に進む)／シャリ(大きな木桶で合わせる赤酢のきいた酢飯。ネタ箱から選んだ瀬戸内と各地の魚を合わせる)", "a": "岡山県岡山市北区柳町1丁目2-23", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E7%AB%9C%E5%BF%83%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E6%9F%B3%E7%94%BA1%E4%B8%81%E7%9B%AE2-23", "u": "../japan/okayama/okayama.html#c-okayama-sushi-ryushin", "food": "../japan/okayama/img/okayama/okayama-sushi-ryushin.jpg", "ext": ""}, {"i": 4, "n": "うなぎ天ぷら ひぐち", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.660084, "lng": 133.92572, "d": "うな重(重箱に敷いた飯にうなぎの蒲焼をのせ、吸い物・香の物・小鉢を添えた一式)／天ぷらの盛り合わせ(海老と季節の野菜を薄衣で揚げ、白い敷紙の上に立てて盛る)", "a": "岡山県岡山市北区田町2丁目4-13", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E5%A4%A9%E3%81%B7%E3%82%89%20%E3%81%B2%E3%81%90%E3%81%A1%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE4-13", "u": "../japan/okayama/okayama.html#c-okayama-unagi-tempura-higuchi", "food": "../japan/okayama/img/okayama/okayama-unagi-tempura-higuchi.jpg", "ext": ""}, {"i": 5, "n": "岡山浜作", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.660316, "lng": 133.928665, "d": "会席料理(瀬戸内の鯛やあわび、岡山の野菜を組み立てた献立。鯛の姿焼きやあわびの酒蒸しが並ぶ)／鉄板焼(厳選した黒毛和牛と瀬戸内の魚介を、客席の目の前の鉄板で焼き上げる。音と香りも含めた名物)", "a": "岡山県岡山市北区表町2-7-65", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B2%A1%E5%B1%B1%E6%B5%9C%E4%BD%9C%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA2-7-65", "u": "../japan/okayama/okayama.html#c-okayama-hamasaku", "food": "../japan/okayama/img/okayama/okayama-hamasaku.jpg", "ext": ""}, {"i": 6, "n": "荒手茶寮", "c": ["和食"], "v": "レストラン", "lat": 34.668472, "lng": 133.933731, "d": "季節の懐石料理(岡山と近県の食材で組み立てる。炊き合わせ、造り、焼き物、土鍋の飯まで一通り出る)／殿様御膳(江戸時代に岡山藩主が後楽園で食べた献立をまとめたレシピ集『殿様の御馳走帖』から抜粋して再現した膳。岡山県郷土文化財団の狂言鑑賞公演の昼食として提供される)", "a": "岡山県岡山市北区後楽園1-9", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8D%92%E6%89%8B%E8%8C%B6%E5%AF%AE%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%BE%8C%E6%A5%BD%E5%9C%921-9", "u": "../japan/okayama/okayama.html#c-okayama-aratesaryo", "food": "../japan/okayama/img/okayama/okayama-aratesaryo.jpg", "ext": ""}, {"i": 7, "n": "みず喜 すし園", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.619282, "lng": 133.871887, "d": "にぎりの盛り合わせ(瀬戸内の地魚を中心にした握り。天ぷらや小鉢を添えた御膳仕立てもある)／穴子の石焼き(熱した石鍋に焼き穴子を敷き詰め、薬味と刻み海苔をのせて供する一品)", "a": "岡山県岡山市南区妹尾2307-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%81%9A%E5%96%9C%20%E3%81%99%E3%81%97%E5%9C%92%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8D%97%E5%8C%BA%E5%A6%B9%E5%B0%BE2307-1", "u": "../japan/okayama/okayama.html#c-okayama-mizuki-sushien", "food": "../japan/okayama/img/okayama/okayama-mizuki-sushien.jpg", "ext": ""}, {"i": 8, "n": "慈恩精舎", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.677032, "lng": 133.992737, "d": "小鉢膳「十八願」(朱塗りの膳に十八の小鉢を並べ、れんこんや旬の野菜をさまざまな調理で少しずつ味わう昼限定の膳。3,500円・税サ込)／はす麺(れんこんの粉を練り込んだ細麺を椀で供する店の名物)", "a": "岡山県岡山市中区米田26-5", "m": "https://www.google.com/maps/search/?api=1&query=%E6%85%88%E6%81%A9%E7%B2%BE%E8%88%8E%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E4%B8%AD%E5%8C%BA%E7%B1%B3%E7%94%B026-5", "u": "../japan/okayama/okayama.html#c-okayama-jionshoja", "food": "../japan/okayama/img/okayama/okayama-jionshoja.jpg", "ext": ""}, {"i": 9, "n": "味司 野村", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.665218, "lng": 133.923843, "d": "ドミグラスソースカツ丼(ご飯の上に茹でたキャベツを敷き、とんかつと濃いドミグラスソース、グリンピースをのせた岡山式のカツ丼。ロース1,100円。ロースとヒレが選べる)／玉子とじカツ丼とのセット(ドミグラスソースの丼と一般的な玉子とじの丼を小さい器で一度に出すセット。子膳・孫膳とサイズが選べる)", "a": "岡山県岡山市北区平和町1-10 野村ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%8F%B8%20%E9%87%8E%E6%9D%91%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%B9%B3%E5%92%8C%E7%94%BA1-10%20%E9%87%8E%E6%9D%91%E3%83%93%E3%83%AB1F", "u": "../japan/okayama/okayama.html#c-okayama-ajitsukasa-nomura", "food": "../japan/okayama/img/okayama/okayama-ajitsukasa-nomura.jpg", "ext": ""}, {"i": 10, "n": "食堂やまと", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.663708, "lng": 133.929657, "d": "カツ丼(中華そばのスープにソースとケチャップを合わせた明るい色の自家製「ドビソース」を、ヘレとバラ2種のとんかつにかけた岡山式のカツ丼。店で出すカツ丼はこの1種類のみ)／中華そば(昭和23年から変えていないスープの中華そば。店の一番人気で、袋入り・冷凍の通販もある)", "a": "岡山県岡山市北区表町1-9-7", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E5%A0%82%E3%82%84%E3%81%BE%E3%81%A8%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA1-9-7", "u": "../japan/okayama/okayama.html#c-okayama-shokudo-yamato", "food": "../japan/okayama/img/okayama/okayama-shokudo-yamato.jpg", "ext": ""}, {"i": 11, "n": "雅芳", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.663773, "lng": 133.930023, "d": "デミカツ丼セット(店で仕込む酸味の効いたさらっとしたデミグラスソースを、薄衣のとんかつにかけた丼。サラダとみそ汁が付く)／とんかつ弁当(とんかつを中心に少しずつ盛り合わせた折詰。こま弁当という小ぶりの弁当もあり、仕出しにも対応する)", "a": "岡山県岡山市北区表町1丁目7-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9B%85%E8%8A%B3%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA1%E4%B8%81%E7%9B%AE7-1", "u": "../japan/okayama/okayama.html#c-okayama-gahou", "food": "../japan/okayama/img/okayama/okayama-gahou.jpg", "ext": ""}, {"i": 12, "n": "えびめしや 万成店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.678677, "lng": 133.893173, "d": "えびめし(カラメルソースとケチャップ、香辛料を合わせた黒いソースで小エビと一緒に炒めた焼き飯。見た目ほど濃くない甘辛い味で、錦糸卵をのせて出す)／オムえびめし(えびめしを薄焼き卵で包んだもの。えびめしとエビフライなどを組み合わせたセットも用意がある)", "a": "岡山県岡山市北区万成西町2-53", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%88%E3%81%B3%E3%82%81%E3%81%97%E3%82%84%20%E4%B8%87%E6%88%90%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E4%B8%87%E6%88%90%E8%A5%BF%E7%94%BA2-53", "u": "../japan/okayama/okayama.html#c-okayama-ebimeshiya-mannari", "food": "../japan/okayama/img/okayama/okayama-ebimeshiya-mannari.jpg", "ext": ""}, {"i": 13, "n": "烏城珈琲店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.665909, "lng": 133.930771, "d": "岡山名物えびめし(黒いソースで小エビと炒めた焼き飯に錦糸卵をのせた岡山のご当地洋食。この店の一番人気／850円)／岡山名物デミカツ丼(とんかつにコクのあるデミグラスソースをかけた岡山式のカツ丼。トマトの風味を効かせている／950円)", "a": "岡山県岡山市北区石関町5-1 ホテルエクセル岡山1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%83%8F%E5%9F%8E%E7%8F%88%E7%90%B2%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E7%9F%B3%E9%96%A2%E7%94%BA5-1%20%E3%83%9B%E3%83%86%E3%83%AB%E3%82%A8%E3%82%AF%E3%82%BB%E3%83%AB%E5%B2%A1%E5%B1%B11F", "u": "../japan/okayama/okayama.html#c-okayama-ujo-coffee", "food": "../japan/okayama/img/okayama/okayama-ujo-coffee.jpg", "ext": ""}, {"i": 14, "n": "オリアン", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.662487, "lng": 133.92746, "d": "カツカレー(揚げたてのとんかつをのせた洋食店のカレー。総重量1kgほどあり、注文時にご飯の量を減らしてもらうこともできる／1,500円)／カキフライ(冬の定番で、山盛りのサラダと自家製ドレッシングが付く)", "a": "岡山県岡山市北区中山下1-9-40 新岡山ビルB1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AA%E3%83%AA%E3%82%A2%E3%83%B3%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E4%B8%AD%E5%B1%B1%E4%B8%8B1-9-40%20%E6%96%B0%E5%B2%A1%E5%B1%B1%E3%83%93%E3%83%ABB1", "u": "../japan/okayama/okayama.html#c-okayama-orian", "food": "../japan/okayama/img/okayama/okayama-orian.jpg", "ext": ""}, {"i": 15, "n": "キッチン エクボ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.665829, "lng": 133.924606, "d": "オムレツ ekubo風(ボロネーゼ風の具をたっぷり包んで巻き上げたオムレツ。とろけるチーズのコクが加わる同店の人気料理／1,540円税込)／ハンバーグ(デミグラスソースで出す定番。昼は2種類のランチの一つとして出ることが多い)", "a": "岡山県岡山市北区野田屋町1丁目7-20 中野ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%20%E3%82%A8%E3%82%AF%E3%83%9C%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E9%87%8E%E7%94%B0%E5%B1%8B%E7%94%BA1%E4%B8%81%E7%9B%AE7-20%20%E4%B8%AD%E9%87%8E%E3%83%93%E3%83%AB1F", "u": "../japan/okayama/okayama.html#c-okayama-kitchen-ekubo", "food": "../japan/okayama/img/okayama/okayama-kitchen-ekubo.jpg", "ext": ""}, {"i": 16, "n": "グリル蔵敷 岡山一番街店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.665421, "lng": 133.916733, "d": "黒毛和牛100％ハンバーグ(つなぎに頼らず黒毛和牛だけで作るハンバーグ。鉄板で熱いまま出し、デミグラスソースやチーズをのせたものがある)／岡山県産ピーチポークのデミカツ丼(岡山のブランド豚ピーチポークのカツに自家製デミグラスソースをかけた、岡山のご当地丼／2,178円税込)", "a": "岡山県岡山市北区駅元町地下一番街5号", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B0%E3%83%AA%E3%83%AB%E8%94%B5%E6%95%B7%20%E5%B2%A1%E5%B1%B1%E4%B8%80%E7%95%AA%E8%A1%97%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E9%A7%85%E5%85%83%E7%94%BA%E5%9C%B0%E4%B8%8B%E4%B8%80%E7%95%AA%E8%A1%975%E5%8F%B7", "u": "../japan/okayama/okayama.html#c-okayama-grill-kurashiki-ichibangai", "food": "../japan/okayama/img/okayama/okayama-grill-kurashiki-ichibangai.jpg", "ext": ""}, {"i": 17, "n": "洋食カフェ もみじ堂 岡山本店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.610516, "lng": 133.84816, "d": "オムえびプレート(岡山名物のえびめしを薄焼き卵で包んだオムえびに、5種類から選んだ一品を合わせるプレート／1,180円・2020年時点の掲載価格)／えびめしドリア(えびめしにチーズをのせて焼いた山盛りのドリア。鉄板ナポリタンと並ぶ人気メニュー)", "a": "岡山県岡山市南区箕島1317-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E3%82%AB%E3%83%95%E3%82%A7%20%E3%82%82%E3%81%BF%E3%81%98%E5%A0%82%20%E5%B2%A1%E5%B1%B1%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8D%97%E5%8C%BA%E7%AE%95%E5%B3%B61317-1", "u": "../japan/okayama/okayama.html#c-okayama-momijido-honten", "food": "../japan/okayama/img/okayama/okayama-momijido-honten.jpg", "ext": ""}, {"i": 18, "n": "浅月・本店", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 34.668411, "lng": 133.915894, "d": "カツそば(中華そばの丼に揚げたてのとんかつを一枚まるごとのせた一杯。衣が醤油スープを吸って崩れていくのを楽しむ、岡山のB級グルメとして知られる。1,200円)／中華そば(豚骨と鶏ガラの醤油スープに細めのストレート麺、チャーシューとメンマ、刻み青ねぎ)", "a": "岡山県岡山市北区奉還町2-5-25", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%85%E6%9C%88%E3%83%BB%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A5%89%E9%82%84%E7%94%BA2-5-25", "u": "../japan/okayama/okayama.html#c-okayama-ramen-asazuki-honten", "food": "../japan/okayama/img/okayama/okayama-ramen-asazuki-honten.jpg", "ext": ""}, {"i": 19, "n": "中華そば 冨士屋", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 34.668472, "lng": 133.915955, "d": "中華そば(甘みのある醤油ベースのスープに細いストレート麺、自家製チャーシュー・メンマ・刻み青ねぎ。色は濃いが口当たりはあっさりしている)／チャーシュー麺(同じ中華そばに自家製チャーシューを重ねて敷き詰めた一杯)", "a": "岡山県岡山市北区奉還町2-3-8", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E5%86%A8%E5%A3%AB%E5%B1%8B%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A5%89%E9%82%84%E7%94%BA2-3-8", "u": "../japan/okayama/okayama.html#c-okayama-ramen-fujiya-hokancho", "food": "../japan/okayama/img/okayama/okayama-ramen-fujiya-hokancho.jpg", "ext": ""}, {"i": 20, "n": "中華そば山冨士 本町店", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 34.664707, "lng": 133.921387, "d": "中華そば(鶏ガラと豚骨の醤油スープに細めの麺を合わせ、刻んだ青ねぎを山盛りにのせた一杯。ねぎの下からチャーシューとメンマが出てくる)／唐揚げ中華そば(同じ中華そばに揚げたての鶏の唐揚げをのせたもの)", "a": "岡山県岡山市北区本町5-13", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E5%B1%B1%E5%86%A8%E5%A3%AB%20%E6%9C%AC%E7%94%BA%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E6%9C%AC%E7%94%BA5-13", "u": "../japan/okayama/okayama.html#c-okayama-ramen-yamafuji-honmachi", "food": "../japan/okayama/img/okayama/okayama-ramen-yamafuji-honmachi.jpg", "ext": ""}, {"i": 21, "n": "天神そば", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 34.665867, "lng": 133.929352, "d": "天神そば(鶏ガラベースの甘めの醤油スープに中太ストレート麺を合わせ、チャーシュー・もやし・かまぼこ・青ねぎをのせた中華そば。大盛1,100円)／中華そば(同じ一杯の並盛。鶏の脂が浮いたスープを最後まで飲み干す客が多い)", "a": "岡山県岡山市北区天神町1-19", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E7%A5%9E%E3%81%9D%E3%81%B0%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A4%A9%E7%A5%9E%E7%94%BA1-19", "u": "../japan/okayama/okayama.html#c-okayama-ramen-tenjin-soba", "food": "../japan/okayama/img/okayama/okayama-ramen-tenjin-soba.jpg", "ext": ""}, {"i": 22, "n": "ノラネコ食堂", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 34.662632, "lng": 133.929337, "d": "中華そば(鶏ガラ醤油のあっさりしたスープに、もちっとした細ちぢれ麺を合わせた一杯。メンマやチャーシューを多めにのせる。900円)／中華そばライスセット(その中華そばにご飯と小鉢を付けた定食。1,000円)", "a": "岡山県岡山市北区表町1-9-46", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%8E%E3%83%A9%E3%83%8D%E3%82%B3%E9%A3%9F%E5%A0%82%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA1-9-46", "u": "../japan/okayama/okayama.html#c-okayama-ramen-noraneko-shokudo", "food": "../japan/okayama/img/okayama/okayama-ramen-noraneko-shokudo.jpg", "ext": ""}, {"i": 23, "n": "元祖とりそば太田", "c": ["麺類"], "v": "レストラン", "lat": 34.662941, "lng": 133.930298, "d": "とりそば(鶏ガラだけでとっただしに醤油ダレを合わせ、細麺に鶏チャーシューと青ねぎをのせた一杯。豚骨を使わないので後口が軽い。670円)／塩とりそば(同じ鶏だしを塩ダレで仕立てたもの。だしの香りがより立つ)", "a": "岡山県岡山市北区表町1-7-24", "m": "https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%E3%81%A8%E3%82%8A%E3%81%9D%E3%81%B0%E5%A4%AA%E7%94%B0%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA1-7-24", "u": "../japan/okayama/okayama.html#c-okayama-ramen-ganso-torisoba-ota", "food": "../japan/okayama/img/okayama/okayama-ramen-ganso-torisoba-ota.jpg", "ext": ""}, {"i": 24, "n": "ラーメン西本", "c": ["麺類"], "v": "レストラン", "lat": 34.660828, "lng": 133.929718, "d": "塩野菜ラーメン(炒めた野菜を200gのせ、半熟煮玉子を添えた塩味のラーメン。魚介のだしが効いたあっさりしたスープに野菜の甘みが溶ける。この店でいちばん出る一杯)／えびめし(小えびを入れたご飯を黒いソースで炒める岡山名物の焼き飯。岡山のえびめしの元祖とされる店から直伝のレシピで作っている)", "a": "岡山県岡山市北区表町2-3-63", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E8%A5%BF%E6%9C%AC%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA2-3-63", "u": "../japan/okayama/okayama.html#c-okayama-ramen-nishimoto", "food": "../japan/okayama/img/okayama/okayama-ramen-nishimoto.jpg", "ext": ""}, {"i": 25, "n": "支那そばの店 餐休 泉田本店", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 34.624084, "lng": 133.909836, "d": "支那そば(鶏ガラと豚骨でとった澄んだ醤油スープに細麺を合わせ、チャーシューと刻み青ねぎをのせた中華そば。創業以来変えていない看板の一杯)／名物そば(同じだしに胡麻を加えて白く濁らせた、この店でしか食べられない胡麻風味の一杯)", "a": "岡山県岡山市南区泉田328-7", "m": "https://www.google.com/maps/search/?api=1&query=%E6%94%AF%E9%82%A3%E3%81%9D%E3%81%B0%E3%81%AE%E5%BA%97%20%E9%A4%90%E4%BC%91%20%E6%B3%89%E7%94%B0%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8D%97%E5%8C%BA%E6%B3%89%E7%94%B0328-7", "u": "../japan/okayama/okayama.html#c-okayama-ramen-sankyu-izumida", "food": "../japan/okayama/img/okayama/okayama-ramen-sankyu-izumida.jpg", "ext": ""}, {"i": 26, "n": "だてそば", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 34.66069, "lng": 133.929718, "d": "支那そば(鶏ガラと豚骨でとった澄んだ醤油スープに細麺を合わせ、チャーシュー・メンマ・刻み青ねぎをのせた中華そば。創業以来のスープを継いでいる)／カツ丼(ご飯に豚カツをのせ、デミグラスではないさらりとしたソースをかけて卵黄を落とした丼。支那そばとの半々セットにできる。1,000円)", "a": "岡山県岡山市北区表町2-3-60", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A0%E3%81%A6%E3%81%9D%E3%81%B0%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA2-3-60", "u": "../japan/okayama/okayama.html#c-okayama-ramen-date-soba", "food": "../japan/okayama/img/okayama/okayama-ramen-date-soba.jpg", "ext": ""}, {"i": 27, "n": "手打うどん 名玄", "c": ["麺類"], "v": "レストラン", "lat": 34.639153, "lng": 133.939972, "d": "ぶっかけうどん(ゆで上げた麺に濃いめの出汁を少量かけて食べる岡山・倉敷圏の食べ方。かけうどんと並ぶ定番)／ゲソ天(イカの足の天ぷら。丼からはみ出す大きさで知られる看板の揚げ物)", "a": "岡山県岡山市中区平井6-7-17", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%20%E5%90%8D%E7%8E%84%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%B9%B3%E4%BA%956-7-17", "u": "../japan/okayama/okayama.html#c-okayama-meigen", "food": "../japan/okayama/img/okayama/okayama-meigen.jpg", "ext": ""}, {"i": 28, "n": "手打ちうどん とよ香", "c": ["麺類"], "v": "レストラン", "lat": 34.661991, "lng": 133.933884, "d": "ぶっかけうどん(冷たい手打ち麺に濃いめの出汁を少量かけ、柚子を添えて食べる岡山流の食べ方)／野菜天ぷら(注文を受けてから揚げる揚げたての天ぷら)", "a": "岡山県岡山市北区内山下2-3-5 房野ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%86%E3%81%A9%E3%82%93%20%E3%81%A8%E3%82%88%E9%A6%99%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%86%85%E5%B1%B1%E4%B8%8B2-3-5%20%E6%88%BF%E9%87%8E%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/okayama/okayama.html#c-okayama-toyoka", "food": "../japan/okayama/img/okayama/okayama-toyoka.jpg", "ext": ""}, {"i": 29, "n": "讃岐の男うどん能勢", "c": ["麺類"], "v": "レストラン", "lat": 34.668446, "lng": 133.916138, "d": "男の肉ぶっかけ(冷たいうどんに濃いめの出汁を少量かけ、甘辛い牛肉・ちくわ天・大きなごぼう天・温泉卵をのせた看板の一杯。1,100円)／えび天ぶっかけ(えび天2尾と野菜天をのせたぶっかけ。950円)", "a": "岡山県岡山市北区奉還町2-3-6", "m": "https://www.google.com/maps/search/?api=1&query=%E8%AE%83%E5%B2%90%E3%81%AE%E7%94%B7%E3%81%86%E3%81%A9%E3%82%93%E8%83%BD%E5%8B%A2%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A5%89%E9%82%84%E7%94%BA2-3-6", "u": "../japan/okayama/okayama.html#c-okayama-otokoudon-nose", "food": "../japan/okayama/img/okayama/okayama-otokoudon-nose.jpg", "ext": ""}, {"i": 30, "n": "うどんおよべ 表町本店", "c": ["麺類"], "v": "レストラン", "lat": 34.662132, "lng": 133.929306, "d": "カレーうどん(和風だしに溶いたカレーをうどんにかける一杯。県民の声でまず名前が挙がる定番)／季節のうどん(夏のすだちうどん、冬のすじ味噌うどんなど、季節ごとに入れ替わる品書き)", "a": "岡山県岡山市北区表町2-2-85", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E3%81%8A%E3%82%88%E3%81%B9%20%E8%A1%A8%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA2-2-85", "u": "../japan/okayama/okayama.html#c-okayama-oyobe-omotecho", "food": "../japan/okayama/img/okayama/okayama-oyobe-omotecho.jpg", "ext": ""}, {"i": 31, "n": "石臼挽 手打そば 小むら", "c": ["麺類"], "v": "レストラン", "lat": 34.66713, "lng": 133.927002, "d": "もり蕎麦(石臼で自家製粉したそば粉100%の手打ちそばを、冷たいまませいろで出す。しっかりした噛みごたえと濃い蕎麦の味)／だし巻き玉子(辛味大根を添え、箸を入れるとそばだしがじゅわっと溢れる名物の玉子焼き)", "a": "岡山県岡山市北区蕃山町2-12", "m": "https://www.google.com/maps/search/?api=1&query=%E7%9F%B3%E8%87%BC%E6%8C%BD%20%E6%89%8B%E6%89%93%E3%81%9D%E3%81%B0%20%E5%B0%8F%E3%82%80%E3%82%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%95%83%E5%B1%B1%E7%94%BA2-12", "u": "../japan/okayama/okayama.html#c-okayama-komura-soba", "food": "../japan/okayama/img/okayama/okayama-komura-soba.jpg", "ext": ""}, {"i": 32, "n": "そば処 水谷", "c": ["麺類"], "v": "レストラン", "lat": 34.661827, "lng": 133.921539, "d": "もりそば(香りの高い手打ちのそばを細く切り、少し濃いめのもり汁で食べる。県民の声でそろって挙がる基本の一杯)／玉子焼き・とり焼き(そばと一緒に必ず頼む人が多い一品料理)", "a": "岡山県岡山市北区幸町4-26 大重ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E5%87%A6%20%E6%B0%B4%E8%B0%B7%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%B9%B8%E7%94%BA4-26%20%E5%A4%A7%E9%87%8D%E3%83%93%E3%83%AB1F", "u": "../japan/okayama/okayama.html#c-okayama-mizutani-soba", "food": "../japan/okayama/img/okayama/okayama-mizutani-soba.jpg", "ext": ""}, {"i": 33, "n": "お好み焼き もり", "c": ["麺類"], "v": "レストラン", "lat": 34.669693, "lng": 133.917816, "d": "ホルモンうどん(牛ホルモンとうどんを鉄板で味噌だれとともに炒める津山発祥の鉄板料理。1,680円)／カキオコ(牡蠣をたっぷり入れて焼くお好み焼き。備前市日生の名物を岡山駅近くで出す)", "a": "岡山県岡山市北区奉還町1-6-9", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E3%82%82%E3%82%8A%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A5%89%E9%82%84%E7%94%BA1-6-9", "u": "../japan/okayama/okayama.html#c-okayama-okonomiyaki-mori", "food": "../japan/okayama/img/okayama/okayama-okonomiyaki-mori.jpg", "ext": ""}, {"i": 34, "n": "味のやよい", "c": ["麺類", "アジア・エスニック"], "v": "レストラン", "lat": 34.657265, "lng": 133.915588, "d": "そばモダン(広島風に薄く焼いた生地と大量のキャベツに焼きそばを重ね、卵でとじるお好み焼き。鉄板の上で大きく返すのが名物)／お好み焼き(しっとりした生地と甘いキャベツが身上の広島風)", "a": "岡山県岡山市北区桑田町10-7", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E3%81%AE%E3%82%84%E3%82%88%E3%81%84%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E6%A1%91%E7%94%B0%E7%94%BA10-7", "u": "../japan/okayama/okayama.html#c-okayama-ajino-yayoi", "food": "../japan/okayama/img/okayama/okayama-ajino-yayoi.jpg", "ext": ""}, {"i": 35, "n": "中華料理 廣珍軒", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 34.658371, "lng": 133.927933, "d": "温ネギトリソバ(蒸し鶏とねぎをのせた温かい中華麺。1,100円。夏は冷しネギトリソバ1,210円)／サンラータン麺(酢の酸味と唐辛子の辛みをきかせたスープに麺を入れた一杯。1,320円)", "a": "岡山県岡山市北区表町3-14-10", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E5%BB%A3%E7%8F%8D%E8%BB%92%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA3-14-10", "u": "../japan/okayama/okayama.html#c-okayama-kochinken", "food": "../japan/okayama/img/okayama/okayama-kochinken.jpg", "ext": ""}, {"i": 36, "n": "豆炭 本店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.660309, "lng": 133.926102, "d": "ホルモンのダッジオーブン焼き(黒毛和種などのホルモンを専用の味噌だれに漬け込んで熟成させ、ダッジオーブン＝厚手の鋳物鍋に詰めて七輪にかけ、自分の脂で煮揚げのようにする一品。各657円)／ハラミの七輪焼き(牛の横隔膜のうち薄く柔らかい部分だけを使い、備前の老舗醤油蔵の特製醤油だれで食べる。767円)", "a": "岡山県岡山市北区田町2-4-7", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B1%86%E7%82%AD%20%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E7%94%B0%E7%94%BA2-4-7", "u": "../japan/okayama/okayama.html#c-okayama-mametan-honten", "food": "../japan/okayama/img/okayama/okayama-mametan-honten.jpg", "ext": ""}, {"i": 37, "n": "岡山田町 酒菜屋 古粋", "c": ["ビール・バー"], "v": "食材の店", "lat": 34.662434, "lng": 133.924576, "d": "岡山地酒の3種飲み比べ(吉井川・旭川・高梁川という3本の一級河川に恵まれた岡山の酒蔵から、日替わりで3銘柄を小さなグラスで出すセット。1,000円)／備前黒毛和牛のタタキ(岡山県産の黒毛和牛の表面だけを炙って薄く切り、ポン酢などで食べる一品。1,950円)", "a": "岡山県岡山市北区田町1-2-3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B2%A1%E5%B1%B1%E7%94%B0%E7%94%BA%20%E9%85%92%E8%8F%9C%E5%B1%8B%20%E5%8F%A4%E7%B2%8B%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E7%94%B0%E7%94%BA1-2-3", "u": "../japan/okayama/okayama.html#c-okayama-koiki-tamachi", "food": "../japan/okayama/img/okayama/okayama-koiki-tamachi.jpg", "ext": ""}, {"i": 38, "n": "岡山料理専門店 cooking of art Ikiya", "c": ["ビール・バー"], "v": "レストラン", "lat": 34.658363, "lng": 133.920181, "d": "ママカリの酢漬け(標準和名サッパという瀬戸内の小魚を酢に漬けたもの。『ママ＝ご飯を隣から借りに行くほど旨い』が名の由来とされる岡山の定番。550円。ほかに刺身440円・焼きびたし600円・天ぷら440円・にぎり190円もある)／黄ニラの刺身(日光を遮って育てた岡山特産の黄色いニラを、生産者から直送してもらい生のまま出す一品。530円)", "a": "岡山県岡山市北区柳町2-1-7 ラポールビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B2%A1%E5%B1%B1%E6%96%99%E7%90%86%E5%B0%82%E9%96%80%E5%BA%97%20cooking%20of%20art%20Ikiya%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E6%9F%B3%E7%94%BA2-1-7%20%E3%83%A9%E3%83%9D%E3%83%BC%E3%83%AB%E3%83%93%E3%83%AB1F", "u": "../japan/okayama/okayama.html#c-okayama-ikiya-yanagimachi", "food": "../japan/okayama/img/okayama/okayama-ikiya-yanagimachi.jpg", "ext": ""}, {"i": 39, "n": "岡山食材 岡山地酒 創作居酒屋前原", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 34.656132, "lng": 133.925812, "d": "千屋牛のたわら肉の鉄板焼き(岡山県新見市の和牛・千屋牛の、前足のすねに付いた俵型の部位。鉄板で軽く焼いて食べる。1,650円)／そずり肉のキムチ鍋(そずり肉＝骨のまわりから削ぎ落とした肉のことで、岡山でよく食べられる。よい出汁が出る。1人前1,430円)", "a": "岡山県岡山市北区南中央町2-14 長瀬ビル1F 102", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B2%A1%E5%B1%B1%E9%A3%9F%E6%9D%90%20%E5%B2%A1%E5%B1%B1%E5%9C%B0%E9%85%92%20%E5%89%B5%E4%BD%9C%E5%B1%85%E9%85%92%E5%B1%8B%E5%89%8D%E5%8E%9F%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%8D%97%E4%B8%AD%E5%A4%AE%E7%94%BA2-14%20%E9%95%B7%E7%80%AC%E3%83%93%E3%83%AB1F%20102", "u": "../japan/okayama/okayama.html#c-okayama-maehara-minamichuo", "food": "../japan/okayama/img/okayama/okayama-maehara-minamichuo.jpg", "ext": ""}, {"i": 40, "n": "だんだん畑", "c": ["居酒屋・焼肉", "郷土料理", "ビール・バー"], "v": "レストラン", "lat": 34.668598, "lng": 133.917557, "d": "鰆と黄ニラのあんかけ(岡山でよく食べる春の魚・鰆に、日光を当てずに育てた岡山特産の黄ニラを合わせ、あんをかけた一品。1,430円)／粟麩とのりとチーズの湯葉包み揚げ(粟を練り込んだ生麩・海苔・チーズを湯葉で包んで揚げた料理長の創作。726円)", "a": "岡山県岡山市北区奉還町1-2-12", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A0%E3%82%93%E3%81%A0%E3%82%93%E7%95%91%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A5%89%E9%82%84%E7%94%BA1-2-12", "u": "../japan/okayama/okayama.html#c-okayama-dandanbatake-hokancho", "food": "../japan/okayama/img/okayama/okayama-dandanbatake-hokancho.jpg", "ext": ""}, {"i": 41, "n": "酒・旬処 クロちゃん", "c": ["郷土料理", "ビール・バー"], "v": "レストラン", "lat": 34.663822, "lng": 133.925018, "d": "名物おでん(店主の伯父の代から半世紀継ぎ足した出汁で炊くおでん。大根や牛すじのほか、トマト、玉葱とベーコン、にゅうめんといった変わり種もある。単品600円)／おでんだしの焼きおにぎり茶漬け(おでんの出汁に焼きおにぎりを沈めた、茶漬け風の締め)", "a": "岡山県岡山市北区磨屋町7-7", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E3%83%BB%E6%97%AC%E5%87%A6%20%E3%82%AF%E3%83%AD%E3%81%A1%E3%82%83%E3%82%93%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E7%A3%A8%E5%B1%8B%E7%94%BA7-7", "u": "../japan/okayama/okayama.html#c-okayama-kurochan-togiyacho", "food": "../japan/okayama/img/okayama/okayama-kurochan-togiyacho.jpg", "ext": ""}, {"i": 42, "n": "岡山県産こだわりのおばんざい せんべろ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.663788, "lng": 133.928665, "d": "おでん食べ放題(出汁の染みたおでんを好きなだけ食べられる仕組み。日本酒飲み放題を頼んだ人が対象)／せんべろラーメン(醤油)(飲んだあとの締めに出す小ぶりの醤油ラーメン。店名の『せんべろ』は千円でべろべろに酔えるという意味の俗語)", "a": "岡山県岡山市北区表町1-11-1 中之町第一ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B2%A1%E5%B1%B1%E7%9C%8C%E7%94%A3%E3%81%93%E3%81%A0%E3%82%8F%E3%82%8A%E3%81%AE%E3%81%8A%E3%81%B0%E3%82%93%E3%81%96%E3%81%84%20%E3%81%9B%E3%82%93%E3%81%B9%E3%82%8D%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA1-11-1%20%E4%B8%AD%E4%B9%8B%E7%94%BA%E7%AC%AC%E4%B8%80%E3%83%93%E3%83%AB1F", "u": "../japan/okayama/okayama.html#c-okayama-senbero-omotecho", "food": "../japan/okayama/img/okayama/okayama-senbero-omotecho.jpg", "ext": ""}, {"i": 43, "n": "焼酎天国 金星", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.65966, "lng": 133.929214, "d": "さわら塩たたき(岡山でよく食べる魚・鰆の皮目をしっかり炙り、塩で食べる刺身。1,098円)／黄ニラ豚味噌きゅうり(鹿児島の麦味噌と奄美の黒糖に、岡山特産の黄ニラを合わせた自家製の豚味噌を、きゅうりに添えて出す。459円)", "a": "岡山県岡山市北区表町2-6-50", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%85%8E%E5%A4%A9%E5%9B%BD%20%E9%87%91%E6%98%9F%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA2-6-50", "u": "../japan/okayama/okayama.html#c-okayama-kinboshi-omotecho", "food": "../japan/okayama/img/okayama/okayama-kinboshi-omotecho.jpg", "ext": ""}, {"i": 44, "n": "餃子ト鶏皮ト酒 ネオとよじ", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.644176, "lng": 133.888718, "d": "焼き餃子(鹿児島県産の黒豚を餡に使い、薄皮で、水を使わずに焼き上げる餃子。味は4種類。319円〜)／名代鶏皮 白・黒・赤(干して焼いて寝かせる工程を繰り返し、旨味を凝縮させた鶏皮の串。白＝塩、黒＝たれ、赤＝辛みそ。1本各154円)", "a": "岡山県岡山市北区問屋町15-101", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A4%83%E5%AD%90%E3%83%88%E9%B6%8F%E7%9A%AE%E3%83%88%E9%85%92%20%E3%83%8D%E3%82%AA%E3%81%A8%E3%82%88%E3%81%98%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%95%8F%E5%B1%8B%E7%94%BA15-101", "u": "../japan/okayama/okayama.html#c-okayama-neotoyoji-toiyacho", "food": "../japan/okayama/img/okayama/okayama-neotoyoji-toiyacho.jpg", "ext": ""}, {"i": 45, "n": "千屋牛 焼肉割烹 J's苑", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.669563, "lng": 133.914215, "d": "千屋牛カルビ(新見市千屋地区で続く日本最古の蔓〈つる〉牛の血統を引く和牛のバラ肉。A5ランクを30日熟成させたもので、1人前100g・2,300円税込)／千屋牛の赤身の塊焼き(熟成させた赤身を厚い塊のまま炭火で焼き、切り分けて出すもの)", "a": "岡山県岡山市北区奉還町2-10-11", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%83%E5%B1%8B%E7%89%9B%20%E7%84%BC%E8%82%89%E5%89%B2%E7%83%B9%20J%27s%E8%8B%91%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A5%89%E9%82%84%E7%94%BA2-10-11", "u": "../japan/okayama/okayama.html#c-okayama-jsen-chiyagyu", "food": "../japan/okayama/img/okayama/okayama-jsen-chiyagyu.jpg", "ext": ""}, {"i": 46, "n": "和牛焼肉 岡山そだち", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.665321, "lng": 133.921616, "d": "おかやま和牛五つ星食べ比べ(一頭買いした県産和牛を5つの部位に分けて並べ、食べ比べる盛り合わせ)／黄にらサーロイン(岡山特産の軟白栽培のニラ「黄にら」をサーロインで巻き、生卵を絡めて食べる一品)", "a": "岡山県岡山市北区本町3番2号 あらたセカンドビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E7%89%9B%E7%84%BC%E8%82%89%20%E5%B2%A1%E5%B1%B1%E3%81%9D%E3%81%A0%E3%81%A1%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E6%9C%AC%E7%94%BA3%E7%95%AA2%E5%8F%B7%20%E3%81%82%E3%82%89%E3%81%9F%E3%82%BB%E3%82%AB%E3%83%B3%E3%83%89%E3%83%93%E3%83%AB2F", "u": "../japan/okayama/okayama.html#c-okayama-sodachi-wagyu", "food": "../japan/okayama/img/okayama/okayama-sodachi-wagyu.jpg", "ext": ""}, {"i": 47, "n": "焼肉はちや 一宮本店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.676502, "lng": 133.866272, "d": "おかやま和牛のロースステーキ(県産黒毛和牛のロースを厚切りにし、玉ねぎ・かぼちゃを添えて鉄板で焼くもの)／焼肉定食(カルビ・ハラミなどにご飯・スープ・キムチが付く昼の定食)", "a": "岡山県岡山市北区一宮93-1", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%81%AF%E3%81%A1%E3%82%84%20%E4%B8%80%E5%AE%AE%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E4%B8%80%E5%AE%AE93-1", "u": "../japan/okayama/okayama.html#c-okayama-hachiya-ichinomiya", "food": "../japan/okayama/img/okayama/okayama-hachiya-ichinomiya.jpg", "ext": ""}, {"i": 48, "n": "焼肉ホルモンおぐさん", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.657631, "lng": 133.928375, "d": "厚切り牛タンステーキ(店主が仕入れにこだわる牛タンを厚く切って焼く看板料理)／ホルモンの盛り合わせ(シマチョウ・ミノ・センマイなど牛の内臓数種を一皿に盛ったもの)", "a": "岡山県岡山市北区表町3-13-65 2階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E3%81%8A%E3%81%90%E3%81%95%E3%82%93%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA3-13-65%202%E9%9A%8E", "u": "../japan/okayama/okayama.html#c-okayama-ogusan-horumon", "food": "../japan/okayama/img/okayama/okayama-ogusan-horumon.jpg", "ext": ""}, {"i": 49, "n": "焼肉寺坂", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.658855, "lng": 133.924423, "d": "厚切り牛タン(ほどよい厚みに切ったタンを焼き、やわらかさと噛みごたえの両方を出す一品)／肉寿司(赤身と霜降りのバランスがよい部位を寿司にしたもの。タレと塩から選べる)", "a": "岡山県岡山市北区田町2-12-25 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E5%AF%BA%E5%9D%82%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E7%94%B0%E7%94%BA2-12-25%201F", "u": "../japan/okayama/okayama.html#c-okayama-terasaka-nagi", "food": "../japan/okayama/img/okayama/okayama-terasaka-nagi.jpg", "ext": ""}, {"i": 50, "n": "柳町焼肉カンテラ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.658466, "lng": 133.920135, "d": "厳選部位の盛り合わせ(タン・ほほ肉・ハラミなどを一皿に盛り、自家製のタレで食べるもの)／自家製キムチの盛り合わせ(店で漬けた数種のキムチを盛り合わせた箸休め)", "a": "岡山県岡山市北区柳町1-12-16", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9F%B3%E7%94%BA%E7%84%BC%E8%82%89%E3%82%AB%E3%83%B3%E3%83%86%E3%83%A9%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E6%9F%B3%E7%94%BA1-12-16", "u": "../japan/okayama/okayama.html#c-okayama-kantera-yanagimachi", "food": "../japan/okayama/img/okayama/okayama-kantera-yanagimachi.jpg", "ext": ""}, {"i": 51, "n": "ホルモンの旨い店 焼肉十兵衛", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.659103, "lng": 133.914749, "d": "国産アブラホルモン(牛の小腸。脂が多くやわらかい部位で、専用の味噌ポン酢ダレを絡めて食べる)／チレ刺(牛の脾臓〈ひぞう〉を刺身で出すもの。卵黄とねぎを乗せる)", "a": "岡山県岡山市北区桑田町13-28", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E3%81%AE%E6%97%A8%E3%81%84%E5%BA%97%20%E7%84%BC%E8%82%89%E5%8D%81%E5%85%B5%E8%A1%9B%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E6%A1%91%E7%94%B0%E7%94%BA13-28", "u": "../japan/okayama/okayama.html#c-okayama-jubei-horumon", "food": "../japan/okayama/img/okayama/okayama-jubei-horumon.jpg", "ext": ""}, {"i": 52, "n": "ダルマ 浜店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.670429, "lng": 133.935043, "d": "ホルモン(毎日仕入れる牛の内臓。シマチョウなどを網で焼いてタレで食べる店の看板)／焼肉セット(カルビ・ハラミ・ホルモン・若鶏・ウインナー・野菜を一皿に組んだもの。仕入れで内容が変わる)", "a": "岡山県岡山市中区浜2-1-27", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%80%E3%83%AB%E3%83%9E%20%E6%B5%9C%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%B5%9C2-1-27", "u": "../japan/okayama/okayama.html#c-okayama-daruma-hama", "food": "../japan/okayama/img/okayama/okayama-daruma-hama.jpg", "ext": ""}, {"i": 53, "n": "瀬戸内とんかつ 豚まど", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.658607, "lng": 133.917969, "d": "ミルフィーユかつ(薄切りのピーチポークを何枚も重ねて揚げたもの。200g・1,380円税込)／梅大葉チーズかつ(梅・大葉・チーズを豚肉で巻いて揚げる名物。200g・1,480円税込。数量限定)", "a": "岡山県岡山市北区下石井2丁目10番8号 杜の街プラザ1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E3%81%A8%E3%82%93%E3%81%8B%E3%81%A4%20%E8%B1%9A%E3%81%BE%E3%81%A9%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E4%B8%8B%E7%9F%B3%E4%BA%952%E4%B8%81%E7%9B%AE10%E7%95%AA8%E5%8F%B7%20%E6%9D%9C%E3%81%AE%E8%A1%97%E3%83%97%E3%83%A9%E3%82%B61F", "u": "../japan/okayama/okayama.html#c-okayama-butamado-tonkatsu", "food": "../japan/okayama/img/okayama/okayama-butamado-tonkatsu.jpg", "ext": ""}, {"i": 54, "n": "la Ricetta（ラ リチェッタ）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.660282, "lng": 133.923309, "d": "美星豚のロースト(岡山県井原市美星町の高原で育てられた銘柄豚。プリフィックスコースのメインから選べる、脂に甘みのあるロースト)／自家製カラスミのペペロンチーノ(店で仕込んだボラの卵巣の塩漬けを削りかけたにんにくと唐辛子のパスタ。追加料金なしで選べる定番)", "a": "岡山県岡山市北区田町2丁目1-3 BOSCO 2F", "m": "https://www.google.com/maps/search/?api=1&query=la%20Ricetta%EF%BC%88%E3%83%A9%20%E3%83%AA%E3%83%81%E3%82%A7%E3%83%83%E3%82%BF%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE1-3%20BOSCO%202F", "u": "../japan/okayama/okayama.html#c-okayama-la-ricetta", "food": "../japan/okayama/img/okayama/okayama-la-ricetta.jpg", "ext": ""}, {"i": 55, "n": "Duomo（ドゥオモ）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.663822, "lng": 133.921875, "d": "マルゲリータ吉田牧場(岡山県吉備中央町の吉田牧場のモッツァレラを使うマルゲリータ。トマトソース、パルミジャーノ、バジル／1,950円)／瀬戸内鮮魚と自家製ドライトマトの手打ちショートパスタ「ラサ」(チーズ削り器で生地を細かく削って作る北イタリアの伝統パスタで、シェフのスペシャリテ／2,200円)", "a": "岡山県岡山市北区錦町3-4 山佐ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=Duomo%EF%BC%88%E3%83%89%E3%82%A5%E3%82%AA%E3%83%A2%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E9%8C%A6%E7%94%BA3-4%20%E5%B1%B1%E4%BD%90%E3%83%93%E3%83%AB1F", "u": "../japan/okayama/okayama.html#c-okayama-duomo", "food": "../japan/okayama/img/okayama/okayama-duomo.jpg", "ext": ""}, {"i": 56, "n": "ビストロ etroit（エトロワ）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.6679, "lng": 133.915894, "d": "パテ・アン・クルート(鹿・鴨・豚・フォアグラを合わせて練り粉の生地で包み焼いた、4日かけて仕込む同店のスペシャリテ)／ブイヤベース(南仏の魚介のスープ煮。魚と貝を香味野菜とともに煮出したスープで供する)", "a": "岡山県岡山市北区駅元町28-13", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20etroit%EF%BC%88%E3%82%A8%E3%83%88%E3%83%AD%E3%83%AF%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E9%A7%85%E5%85%83%E7%94%BA28-13", "u": "../japan/okayama/okayama.html#c-okayama-bistro-etroit", "food": "../japan/okayama/img/okayama/okayama-bistro-etroit.jpg", "ext": ""}, {"i": 57, "n": "カジュアルイタリアン Rock DoG 問屋町", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.644821, "lng": 133.889786, "d": "窯焼きピッツァ(生地から仕込み、高温で一気に焼いて外は香ばしく中はもっちりに仕上げるピッツァ。定番のマルゲリータはLサイズ1,880円)／カマンベールのアヒージョ(丸ごとのカマンベールチーズと具材をオリーブオイルで熱したまま出す小鍋料理。バゲットを浸して食べる／1,080円)", "a": "岡山県岡山市北区問屋町11-105", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%82%B8%E3%83%A5%E3%82%A2%E3%83%AB%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E3%83%B3%20Rock%20DoG%20%E5%95%8F%E5%B1%8B%E7%94%BA%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%95%8F%E5%B1%8B%E7%94%BA11-105", "u": "../japan/okayama/okayama.html#c-okayama-rock-dog-tonyacho", "food": "../japan/okayama/img/okayama/okayama-rock-dog-tonyacho.jpg", "ext": ""}, {"i": 58, "n": "自家製ソーセージと欧風料理の店 グルマンソノワ", "c": ["洋食・各国料理"], "v": "ベーカリー・パティスリー", "lat": 34.664093, "lng": 133.92804, "d": "自家製ソーセージ盛り合わせ3本(ボイル・スモーク・生の中から好きなものを3本選ぶ。人気は岡山産猪のサルシッチャとドイツのヴァイス・ブルスト＝白ソーセージ／1,800円。5本2,800円、単品700円〜)／アイスバイン(豚のすね肉を塩漬けにして長時間ゆでるドイツの伝統料理／1,500円)", "a": "岡山県岡山市北区中山下1丁目5番地32 梅田ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E8%A3%BD%E3%82%BD%E3%83%BC%E3%82%BB%E3%83%BC%E3%82%B8%E3%81%A8%E6%AC%A7%E9%A2%A8%E6%96%99%E7%90%86%E3%81%AE%E5%BA%97%20%E3%82%B0%E3%83%AB%E3%83%9E%E3%83%B3%E3%82%BD%E3%83%8E%E3%83%AF%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E4%B8%AD%E5%B1%B1%E4%B8%8B1%E4%B8%81%E7%9B%AE5%E7%95%AA%E5%9C%B032%20%E6%A2%85%E7%94%B0%E3%83%93%E3%83%AB1F", "u": "../japan/okayama/okayama.html#c-okayama-gourmand-sonowa", "food": "../japan/okayama/img/okayama/okayama-gourmand-sonowa.jpg", "ext": ""}, {"i": 59, "n": "韓国食堂ゆぱ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.644821, "lng": 133.889786, "d": "カンジャンセウ定食(生の赤海老を特製の醤油だれに漬け込んだ韓国の料理。殻をむいてご飯と食べる／1,850円)／鉄板サムギョプサル定食(豚バラ肉の余分な脂を落としながら鉄板で焼き、葉野菜に包んで食べる／1,680円)", "a": "岡山県岡山市北区問屋町11-106 BLD201", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E9%A3%9F%E5%A0%82%E3%82%86%E3%81%B1%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%95%8F%E5%B1%8B%E7%94%BA11-106%20BLD201", "u": "../japan/okayama/okayama.html#c-okayama-kankoku-shokudo-yupa", "food": "../japan/okayama/img/okayama/okayama-kankoku-shokudo-yupa.jpg", "ext": ""}, {"i": 60, "n": "インドレストランサム", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.621647, "lng": 133.929138, "d": "ランチセット(10種類から選ぶカレーに、チキンティッカ＝タンドール窯で焼いた骨なし鶏肉の串焼き、バター風味のナン、ターメリックライス、サラダ、ドリンクが付く／980円)／ランチカレーナンセット(19種類のカレーと8種類のナンの組み合わせを選べる一番安いセット／650円)", "a": "岡山県岡山市南区福富西2丁目19番36号 サンガーデンWEST 1F 105号", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%83%B3%E3%83%89%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B5%E3%83%A0%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8D%97%E5%8C%BA%E7%A6%8F%E5%AF%8C%E8%A5%BF2%E4%B8%81%E7%9B%AE19%E7%95%AA36%E5%8F%B7%20%E3%82%B5%E3%83%B3%E3%82%AC%E3%83%BC%E3%83%87%E3%83%B3WEST%201F%20105%E5%8F%B7", "u": "../japan/okayama/okayama.html#c-okayama-indo-restaurant-sam", "food": "../japan/okayama/img/okayama/okayama-indo-restaurant-sam.jpg", "ext": ""}, {"i": 61, "n": "中華園 岡山本店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.664104, "lng": 133.898483, "d": "麻辣火鍋(マーラーホウコウ／郫県豆板醤に花椒・肉桂・八角などを合わせた辛いスープで、美星町産和牛や岡山県産豚肉をしゃぶしゃぶのように煮る鍋。完全予約制で3〜4日前までに要予約／3,600円〜)／麻婆豆腐(数種をブレンドした豆板醤を使い、隠し味にケチャップを加えて辛さに丸みを持たせた一皿。辣油を増やした多辣麻婆豆腐1,560円もある／1,480円)", "a": "岡山県岡山市北区西崎1丁目8-30", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E5%9C%92%20%E5%B2%A1%E5%B1%B1%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A5%BF%E5%B4%8E1%E4%B8%81%E7%9B%AE8-30", "u": "../japan/okayama/okayama.html#c-okayama-chukaen-okayama-honten", "food": "../japan/okayama/img/okayama/okayama-chukaen-okayama-honten.jpg", "ext": ""}, {"i": 62, "n": "スペインバル Kurakura（クラクラ）", "c": ["洋食・各国料理"], "v": "食材の店", "lat": 34.669388, "lng": 133.921143, "d": "ミックスパエリア(5日かけて仕込む自家製ベーコンとアサリ・海老・鮮魚・鶏を合わせ、注文を受けてから米から炊き上げるパエリア／1,980円〜)／サザエのガーリックバター焼き(サザエをにんにくバターで焼いた同店で一番出るタパス。バゲットが付く／638円)", "a": "岡山県岡山市北区岩田町2 順正学園岡山駅前キャンパス1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%9A%E3%82%A4%E3%83%B3%E3%83%90%E3%83%AB%20Kurakura%EF%BC%88%E3%82%AF%E3%83%A9%E3%82%AF%E3%83%A9%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%B2%A9%E7%94%B0%E7%94%BA2%20%E9%A0%86%E6%AD%A3%E5%AD%A6%E5%9C%92%E5%B2%A1%E5%B1%B1%E9%A7%85%E5%89%8D%E3%82%AD%E3%83%A3%E3%83%B3%E3%83%91%E3%82%B91F", "u": "../japan/okayama/okayama.html#c-okayama-spain-bal-kurakura", "food": "../japan/okayama/img/okayama/okayama-spain-bal-kurakura.jpg", "ext": ""}, {"i": 63, "n": "cafe Antenna（カフェ アンテナ）", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.669476, "lng": 133.931107, "d": "白桃のパフェ(店主が産地まで出向いて仕入れた岡山県産の清水白桃を惜しみなく盛るパフェ。紅茶ゼリーと自家製の白桃ジュレを重ね、希少な足守(あしもり)メロンも忍ばせる)／岡山野菜のスリランカカリー(岡山の野菜と瀬戸内の魚のだしで作る香辛料のきいたカレー)", "a": "岡山県岡山市北区出石町1-8-23", "m": "https://www.google.com/maps/search/?api=1&query=cafe%20Antenna%EF%BC%88%E3%82%AB%E3%83%95%E3%82%A7%20%E3%82%A2%E3%83%B3%E3%83%86%E3%83%8A%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%87%BA%E7%9F%B3%E7%94%BA1-8-23", "u": "../japan/okayama/okayama.html#c-okayama-cafe-antenna-izushicho", "food": "../japan/okayama/img/okayama/okayama-cafe-antenna-izushicho.jpg", "ext": ""}, {"i": 64, "n": "アンティークカフェ faim de loup（ファンデル）", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.64476, "lng": 133.887482, "d": "キッシュのワンプレート(卵と生クリームの生地をタルト型に流して焼いた塩味の料理。サラダや副菜と一緒に一皿で出る)／いちごのタルト(焼いたタルト生地にクリームと生のいちごを盛った季節の菓子)", "a": "岡山県岡山市北区問屋町26-101 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%B3%E3%83%86%E3%82%A3%E3%83%BC%E3%82%AF%E3%82%AB%E3%83%95%E3%82%A7%20faim%20de%20loup%EF%BC%88%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%83%AB%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%95%8F%E5%B1%8B%E7%94%BA26-101%202F", "u": "../japan/okayama/okayama.html#c-okayama-faim-de-loup-toiyacho", "food": "../japan/okayama/img/okayama/okayama-faim-de-loup-toiyacho.jpg", "ext": ""}, {"i": 65, "n": "廣榮堂 中納言本店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.657566, "lng": 133.937881, "d": "きびだんご(黍(きび)を混ぜた餅を一口大に切り分けた菓子。桃太郎の昔話にちなむ岡山の定番の土産)／むらすずめ(小麦粉の薄い生地で粒あんを包んだ菓子)", "a": "岡山県岡山市中区中納言町7-32", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BB%A3%E6%A6%AE%E5%A0%82%20%E4%B8%AD%E7%B4%8D%E8%A8%80%E6%9C%AC%E5%BA%97%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E4%B8%AD%E5%8C%BA%E4%B8%AD%E7%B4%8D%E8%A8%80%E7%94%BA7-32", "u": "../japan/okayama/okayama.html#c-okayama-koeido-chunagon-honten", "food": "../japan/okayama/img/okayama/okayama-koeido-chunagon-honten.jpg", "ext": ""}, {"i": 66, "n": "烏城カフェ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.664192, "lng": 133.935867, "d": "お城パフェ(岡山城の天守をかたどった黒い最中をのせたパフェ。県産の果物と紅茶ゼリー、契約農家の桃で作る自家製ピューレを重ねる・1,750円)／烏城タルト(抹茶の生クリームに黒い最中を添えたタルト・650円)", "a": "岡山県岡山市北区丸の内2-3-1 岡山城天守閣1階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%83%8F%E5%9F%8E%E3%82%AB%E3%83%95%E3%82%A7%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E4%B8%B8%E3%81%AE%E5%86%852-3-1%20%E5%B2%A1%E5%B1%B1%E5%9F%8E%E5%A4%A9%E5%AE%88%E9%96%A31%E9%9A%8E", "u": "../japan/okayama/okayama.html#c-okayama-ujo-cafe", "food": "../japan/okayama/img/okayama/okayama-ujo-cafe.jpg", "ext": ""}, {"i": 67, "n": "harebare（はればれ）", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 34.66946, "lng": 133.918243, "d": "白桃のパフェ(岡山県産の白桃を注文ごとに皮をむいて丸ごと一個のせる夏のパフェ。自家製の桃ゼリー、すもものジャム、自家製グラノーラを重ねる)／フルーツサンド(生クリームと季節の果物をパンではさんだ軽食)", "a": "岡山県岡山市北区奉還町1丁目5-15", "m": "https://www.google.com/maps/search/?api=1&query=harebare%EF%BC%88%E3%81%AF%E3%82%8C%E3%81%B0%E3%82%8C%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E5%A5%89%E9%82%84%E7%94%BA1%E4%B8%81%E7%9B%AE5-15", "u": "../japan/okayama/okayama.html#c-okayama-harebare-hokancho", "food": "../japan/okayama/img/okayama/okayama-harebare-hokancho.jpg", "ext": ""}, {"i": 68, "n": "無添加デザート Frurela（フルリラ）", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 34.6623, "lng": 133.933716, "d": "桃パフェ(岡山県産の桃を使う夏のパフェ。自家製ミルクアイスとパンナコッタを重ね、9月には黄桃に替わる)／ミルク氷(牛乳とてんさい糖を凍らせて削り、自家製のフルーツソースをかけた夏の氷菓)", "a": "岡山県岡山市北区丸の内2丁目12-16", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%A1%E6%B7%BB%E5%8A%A0%E3%83%87%E3%82%B6%E3%83%BC%E3%83%88%20Frurela%EF%BC%88%E3%83%95%E3%83%AB%E3%83%AA%E3%83%A9%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E4%B8%B8%E3%81%AE%E5%86%852%E4%B8%81%E7%9B%AE12-16", "u": "../japan/okayama/okayama.html#c-okayama-frurela-marunouchi", "food": "../japan/okayama/img/okayama/okayama-frurela-marunouchi.jpg", "ext": ""}, {"i": 69, "n": "安富牧場 ファミーユ", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 34.723843, "lng": 133.81134, "d": "自家生乳のソフトクリーム(その日に搾った牧場の生乳で作る。濃いこくがありながら後味は軽い)／フルーツパフェ(そのソフトクリームを土台に、地元の足守メロンや岡山県産の季節の果物を大きく切ってのせる)", "a": "岡山県岡山市北区下足守402-3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AE%89%E5%AF%8C%E7%89%A7%E5%A0%B4%20%E3%83%95%E3%82%A1%E3%83%9F%E3%83%BC%E3%83%A6%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E4%B8%8B%E8%B6%B3%E5%AE%88402-3", "u": "../japan/okayama/okayama.html#c-okayama-yasutomi-famille-shimoashimori", "food": "../japan/okayama/img/okayama/okayama-yasutomi-famille-shimoashimori.jpg", "ext": ""}, {"i": 70, "n": "四代目 五果苑", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.713463, "lng": 133.871201, "d": "五果苑フルーツパフェ(生の果汁を使った白桃ジェラートに季節の果物をのせた看板のスイーツ・990円)／若もぎ白桃ピクルス(摘果した若い桃を自家加工した甘じょっぱい漬物。パフェやワッフルの付け合わせにも使う)", "a": "岡山県岡山市北区芳賀5385-6", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9B%9B%E4%BB%A3%E7%9B%AE%20%E4%BA%94%E6%9E%9C%E8%8B%91%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%8A%B3%E8%B3%805385-6", "u": "../japan/okayama/okayama.html#c-okayama-gokaen-haga", "food": "../japan/okayama/img/okayama/okayama-gokaen-haga.jpg", "ext": ""}, {"i": 71, "n": "自家焙煎珈琲 O-TO-YA（オートヤ）", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.663479, "lng": 133.929367, "d": "ブレンドコーヒー(三種類の豆を合わせ、サイフォンで淹れる看板のコーヒー。酸味と苦みのつり合いが取れた味・450円)／レアチーズケーキ(焼かずに冷やし固めたチーズの菓子。丸い形でさっぱりした味わい・400円)", "a": "岡山県岡山市北区表町1丁目9-65", "m": "https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%E7%8F%88%E7%90%B2%20O-TO-YA%EF%BC%88%E3%82%AA%E3%83%BC%E3%83%88%E3%83%A4%EF%BC%89%20%E5%B2%A1%E5%B1%B1%E7%9C%8C%E5%B2%A1%E5%B1%B1%E5%B8%82%E5%8C%97%E5%8C%BA%E8%A1%A8%E7%94%BA1%E4%B8%81%E7%9B%AE9-65", "u": "../japan/okayama/okayama.html#c-okayama-o-to-ya-omotecho", "food": "../japan/okayama/img/okayama/okayama-o-to-ya-omotecho.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([34.661756,133.918071],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('okayama', "岡山");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
