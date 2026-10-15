@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>広島美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / HIROSHIMA・広島県広島市 🇯🇵</div>
+  <h1>広島美食ガイド</h1>
+  <div class="sub">瀬戸内と中国山地にはさまれた、中国地方で最大の都市。重ね焼きのお好み焼きと牡蠣、瀬戸内の小魚とあなご、広島産の牛と地酒。流川・薬研堀の夜の街から、八丁堀・本通りの商店街、広島駅前、平和記念公園のまわり、宮島口まで厳選72スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/hiroshima/_map.jpg" alt="全域マップ">
+<a href="#c-hiroshima-mitchan-sohonten-hatchobori" style="left:81.22%;top:57.32%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-reichan-ekie" style="left:89.21%;top:55.24%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-nagataya-otemachi" style="left:75.29%;top:58.42%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-hasshou-nagarekawa" style="left:81.14%;top:62.09%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-chinchikurin-yagenbori" style="left:81.69%;top:63.17%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-goemon-ebisucho" style="left:81.95%;top:59.74%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-lopez-yokogawa" style="left:75.22%;top:46.36%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-isoya-minamikannon" style="left:60.16%;top:64.76%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-enjin-itsukaichi" style="left:9.95%;top:47.44%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-kakifune-kanawa-seto" style="left:75.38%;top:57.91%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-kakiden-hikarimachi" style="left:91.58%;top:53.51%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-oysterbar-steam-hondori" style="left:80.13%;top:59.4%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-cuore-del-pesce-ebisucho" style="left:81.85%;top:59.61%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-miyamae-nakamachi" style="left:76.99%;top:61.84%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-uminosuke-ekinishi" style="left:87.07%;top:55.12%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-nakatani-ebisucho" style="left:82.76%;top:59.65%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-danryu-kannon" style="left:66.58%;top:58.63%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-uogushi-yokogawa" style="left:72.9%;top:45.48%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-tachinomi-hiroshima" style="left:81.37%;top:60.15%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-yamaoto-nagarekawa" style="left:81.23%;top:61.81%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-jukkon-nakashinchi" style="left:81.81%;top:60.77%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-jussho-nagarekawa" style="left:81.16%;top:62.45%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-ichizen-sakaba-nakamachi" style="left:78.24%;top:61.65%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-onegiya-fukuromachi" style="left:79.04%;top:60.28%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-yoridokoro-ekinishi" style="left:87.22%;top:55.3%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-kenmin-sakaba-otemachi" style="left:75.73%;top:62.71%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-itsuha-itsukaichi" style="left:8.42%;top:79.28%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-bakudanya-ekie" style="left:89.21%;top:55.24%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-kujiraya-yagenbori" style="left:82.46%;top:61.33%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-karabu-tokaichi" style="left:71.42%;top:56.39%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-uguisu-nagarekawa" style="left:81.22%;top:60.8%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-youki-otemachi" style="left:75.77%;top:62.57%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-suzume-funairi" style="left:66.25%;top:66.81%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-kunimatsu-hatchobori" style="left:80.13%;top:57.06%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-rairaitei-nishimidorii" style="left:81.86%;top:77.71%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-maru-takasu" style="left:50.96%;top:62.03%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-sushi-ooi-nagarekawa" style="left:81.28%;top:61.03%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-sushi-nakano-yokogawa" style="left:72.64%;top:49.01%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-sushi-ajiroya-honten" style="left:88.39%;top:57.29%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-mitakiso" style="left:74.2%;top:40.64%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-nihonryori-takayama" style="left:82.99%;top:59.89%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-oryori-suijin" style="left:80.63%;top:57.9%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-tempura-tenkou-nakamachi" style="left:78.33%;top:61.31%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-shariki-otemachi" style="left:74.21%;top:67.33%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-sasakin-omachi" style="left:82.91%;top:8.9%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-aohige-honten" style="left:80.2%;top:57.08%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-tomiya-bekkan" style="left:78.3%;top:60.05%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-genkyu-itsukaichi" style="left:13.5%;top:73.26%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-sakoi-shokudo" style="left:81.94%;top:60.9%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-hachiya-yagenbori" style="left:82.76%;top:60.72%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-sandaime-horumon-center" style="left:86.88%;top:55.07%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-hakuri-honten" style="left:58.41%;top:70.83%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-kawai-fukushimacho" style="left:60.97%;top:57.82%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-wagaya-asaminami" style="left:86.81%;top:9.71%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-italian-ao" style="left:81.95%;top:60.26%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-nido-setouchi" style="left:79.16%;top:58.79%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-trattoria-ruzzo" style="left:10.2%;top:84.17%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-le-feu-barbare" style="left:78.44%;top:61.14%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-restaurant-capucine" style="left:17.43%;top:75.01%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-birdman-matobacho" style="left:88.47%;top:59.31%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-bombay-yokogawa" style="left:74.87%;top:43.95%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-cueva-sol" style="left:78.12%;top:58.53%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-keiran" style="left:70.79%;top:56.84%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-teranishi-coffee-honten" style="left:80.19%;top:65.8%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-ruhe-brazil" style="left:74.3%;top:66.84%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-chamonix-montblanc-honten" style="left:81.42%;top:59.66%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-okashidokoro-takaki-tokaichi" style="left:71.32%;top:56.26%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-kissa-saeki" style="left:77.95%;top:58.3%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-shimaji-coffee-roasters" style="left:88.23%;top:59.2%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-roastery-cafe-note" style="left:78.5%;top:86.53%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-kissa-kamome-mocha" style="left:75.67%;top:91.11%;width:1.88%;height:1.86%;"></a>
+<a href="#c-hiroshima-hakuto" style="left:73.38%;top:55.03%;width:1.88%;height:1.86%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（72店・番号はピンと同じ）</div>
+<div class="sec red">お好み焼き・鉄板焼き</div>
+<div class="links">
+<a href="#c-hiroshima-mitchan-sohonten-hatchobori"><span class="tn" style="background:#e34948;">1</span>そば入りお好み焼を生んだ総本店</a>
+<a href="#c-hiroshima-reichan-ekie"><span class="tn" style="background:#e34948;">2</span>広島駅ekieに入る昭和32年からの老舗</a>
+<a href="#c-hiroshima-nagataya-otemachi"><span class="tn" style="background:#e34948;">3</span>原爆ドームの真向かい、行列の一枚</a>
+<a href="#c-hiroshima-hasshou-nagarekawa"><span class="tn" style="background:#e34948;">4</span>深夜まで開く、ねぎを山と載せた一枚</a>
+<a href="#c-hiroshima-chinchikurin-yagenbori"><span class="tn" style="background:#e34948;">5</span>パリパリに焼いた麺と鉄板焼きの本店</a>
+<a href="#c-hiroshima-goemon-ebisucho"><span class="tn" style="background:#e34948;">6</span>全席鉄板付き、広島生まれの店の本店</a>
+<a href="#c-hiroshima-lopez-yokogawa"><span class="tn" style="background:#e34948;">7</span>横川の路地裏、青唐辛子を載せる一枚</a>
+<a href="#c-hiroshima-isoya-minamikannon"><span class="tn" style="background:#e34948;">8</span>西区の住宅地、麺を焼き付けた一枚</a>
+<a href="#c-hiroshima-enjin-itsukaichi"><span class="tn" style="background:#e34948;">9</span>五日市の山あい、生麺を茹でる15席</a>
+</div>
+<div class="sec blue">牡蠣・瀬戸内の魚・あなご</div>
+<div class="links">
+<a href="#c-hiroshima-kakifune-kanawa-seto"><span class="tn" style="background:#2a78d6;">10</span>元安川に浮かぶ船上の牡蠣料理店</a>
+<a href="#c-hiroshima-kakiden-hikarimachi"><span class="tn" style="background:#2a78d6;">11</span>広島駅北口、牡蠣と穴子の1980年創業店</a>
+<a href="#c-hiroshima-oysterbar-steam-hondori"><span class="tn" style="background:#2a78d6;">12</span>金座街地下、江田島産の生牡蠣が主役</a>
+<a href="#c-hiroshima-cuore-del-pesce-ebisucho"><span class="tn" style="background:#2a78d6;">13</span>流川入口の宮島産牡蠣と魚介のイタリアン</a>
+<a href="#c-hiroshima-miyamae-nakamachi"><span class="tn" style="background:#2a78d6;">14</span>袋町の牡蠣と地穴子、広島名物の一軒</a>
+<a href="#c-hiroshima-uminosuke-ekinishi"><span class="tn" style="background:#2a78d6;">15</span>エキニシの16席、牡蠣と地魚の串の店</a>
+<a href="#c-hiroshima-nakatani-ebisucho"><span class="tn" style="background:#2a78d6;">16</span>胡町の瀬戸内海鮮、小いわし刺身の老舗</a>
+<a href="#c-hiroshima-danryu-kannon"><span class="tn" style="background:#2a78d6;">17</span>8トン水槽の活魚と小いわし天ぷら</a>
+<a href="#c-hiroshima-uogushi-yokogawa"><span class="tn" style="background:#2a78d6;">18</span>横川駅前、瀬戸内の地魚を串で焼く店</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（流川・薬研堀）</div>
+<div class="links">
+<a href="#c-hiroshima-tachinomi-hiroshima"><span class="tn" style="background:#0d366b;">19</span>流川の入口で広島名物を一皿371円</a>
+<a href="#c-hiroshima-yamaoto-nagarekawa"><span class="tn" style="background:#0d366b;">20</span>流川の二階で広島7蔵を燗から冷やまで</a>
+<a href="#c-hiroshima-jukkon-nakashinchi"><span class="tn" style="background:#0d366b;">21</span>流川で美酒鍋と広島7蔵をグラスで</a>
+<a href="#c-hiroshima-jussho-nagarekawa"><span class="tn" style="background:#0d366b;">22</span>昼11時から朝9時まで通しの流川の大衆酒場</a>
+<a href="#c-hiroshima-ichizen-sakaba-nakamachi"><span class="tn" style="background:#0d366b;">23</span>袋町の裏手、広島11銘柄を小徳利で</a>
+<a href="#c-hiroshima-onegiya-fukuromachi"><span class="tn" style="background:#0d366b;">24</span>うらぶくろの葱料理店、西条の美酒鍋</a>
+<a href="#c-hiroshima-yoridokoro-ekinishi"><span class="tn" style="background:#0d366b;">25</span>エキニシの19席、亀齢萬年と小イワシ</a>
+<a href="#c-hiroshima-kenmin-sakaba-otemachi"><span class="tn" style="background:#0d366b;">26</span>大手町の地下、広島の地酒44種と県内名物</a>
+<a href="#c-hiroshima-itsuha-itsukaichi"><span class="tn" style="background:#0d366b;">27</span>五日市の全席個室、広島7蔵をそろえる</a>
+</div>
+<div class="sec brown">広島つけ麺・ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-hiroshima-bakudanya-ekie"><span class="tn" style="background:#8a5a2b;">28</span>広島駅ビルで食べられる広島つけ麺</a>
+<a href="#c-hiroshima-kujiraya-yagenbori"><span class="tn" style="background:#8a5a2b;">29</span>深夜3時まで開く薬研堀の辛つけ麺店</a>
+<a href="#c-hiroshima-karabu-tokaichi"><span class="tn" style="background:#8a5a2b;">30</span>原爆ドーム近く、中太麺の広島つけ麺</a>
+<a href="#c-hiroshima-uguisu-nagarekawa"><span class="tn" style="background:#8a5a2b;">31</span>昭和23年開業、夜だけ開く中華そば10席</a>
+<a href="#c-hiroshima-youki-otemachi"><span class="tn" style="background:#8a5a2b;">32</span>昭和33年創業、中華そば一本の広島ラーメン</a>
+<a href="#c-hiroshima-suzume-funairi"><span class="tn" style="background:#8a5a2b;">33</span>閉店した名店すずめの味を継ぐ中華そば</a>
+<a href="#c-hiroshima-kunimatsu-hatchobori"><span class="tn" style="background:#8a5a2b;">34</span>広島の汁なし担担麺を広めた八丁堀の店</a>
+<a href="#c-hiroshima-rairaitei-nishimidorii"><span class="tn" style="background:#8a5a2b;">35</span>昭和23年開店、錦糸卵がのる中華そば</a>
+<a href="#c-hiroshima-maru-takasu"><span class="tn" style="background:#8a5a2b;">36</span>骨粉が沈む濃いめの豚骨醤油、深夜まで</a>
+</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-hiroshima-sushi-ooi-nagarekawa"><span class="tn" style="background:#1baf7a;">37</span>創業61年、流川の路面で握る老舗鮨</a>
+<a href="#c-hiroshima-sushi-nakano-yokogawa"><span class="tn" style="background:#1baf7a;">38</span>横川の10席、赤酢のシャリで江戸前</a>
+<a href="#c-hiroshima-sushi-ajiroya-honten"><span class="tn" style="background:#1baf7a;">39</span>広島駅前4階、夜景とおまかせ懐石鮨</a>
+<a href="#c-hiroshima-mitakiso"><span class="tn" style="background:#1baf7a;">40</span>1946年開業、庭を望む木造の料亭懐石</a>
+<a href="#c-hiroshima-nihonryori-takayama"><span class="tn" style="background:#1baf7a;">41</span>完全予約制、おまかせ一本の日本料理</a>
+<a href="#c-hiroshima-oryori-suijin"><span class="tn" style="background:#1baf7a;">42</span>八丁堀の路地裏、献立を置かない会席</a>
+<a href="#c-hiroshima-tempura-tenkou-nakamachi"><span class="tn" style="background:#1baf7a;">43</span>天ぷら一筋35年、ごま油で揚げる江戸前</a>
+<a href="#c-hiroshima-shariki-otemachi"><span class="tn" style="background:#1baf7a;">44</span>大手町の一貫200円から、昼夜の握り</a>
+<a href="#c-hiroshima-sasakin-omachi"><span class="tn" style="background:#1baf7a;">45</span>安佐南区大町、赤酢の握りと30種の天ぷら</a>
+</div>
+<div class="sec violet">焼肉・ホルモン・広島牛</div>
+<div class="links">
+<a href="#c-hiroshima-aohige-honten"><span class="tn" style="background:#4a3aa7;">46</span>広島牛A4を鉄板で焼き分ける八丁堀の一軒</a>
+<a href="#c-hiroshima-tomiya-bekkan"><span class="tn" style="background:#4a3aa7;">47</span>広島牛と比婆牛を焼肉とすき焼きで出す袋町の肉専門店</a>
+<a href="#c-hiroshima-genkyu-itsukaichi"><span class="tn" style="background:#4a3aa7;">48</span>広島牛を上カルビのしゃぶしゃぶで出す五日市の店</a>
+<a href="#c-hiroshima-sakoi-shokudo"><span class="tn" style="background:#4a3aa7;">49</span>ホルモン天ぷらとコウネ刺しを出す薬研堀の大衆焼肉</a>
+<a href="#c-hiroshima-hachiya-yagenbori"><span class="tn" style="background:#4a3aa7;">50</span>せんじがらとコウネを置く深夜までの焼肉酒場</a>
+<a href="#c-hiroshima-sandaime-horumon-center"><span class="tn" style="background:#4a3aa7;">51</span>精肉店が営む生ホルモンの炭火焼肉・広島駅西</a>
+<a href="#c-hiroshima-hakuri-honten"><span class="tn" style="background:#4a3aa7;">52</span>県北のブランド牛「神石牛」を出す120席の本店</a>
+<a href="#c-hiroshima-kawai-fukushimacho"><span class="tn" style="background:#4a3aa7;">53</span>大腸と小腸を食べ比べる西区福島町のホルモン焼肉</a>
+<a href="#c-hiroshima-wagaya-asaminami"><span class="tn" style="background:#4a3aa7;">54</span>内臓16種を炭火で焼き分ける安佐南区の店</a>
+</div>
+<div class="sec green">イタリアン・フレンチ・各国料理</div>
+<div class="links">
+<a href="#c-hiroshima-italian-ao"><span class="tn" style="background:#3f7d20;">55</span>広島産牡蠣と比婆牛を出す流川のイタリアン</a>
+<a href="#c-hiroshima-nido-setouchi"><span class="tn" style="background:#3f7d20;">56</span>瀬戸内の生産者を巡る32席の隠れ家イタリアン</a>
+<a href="#c-hiroshima-trattoria-ruzzo"><span class="tn" style="background:#3f7d20;">57</span>楽々園の住宅街にある28席のトラットリア</a>
+<a href="#c-hiroshima-le-feu-barbare"><span class="tn" style="background:#3f7d20;">58</span>古民家の薪窯で焼く肉と広島の生牡蠣</a>
+<a href="#c-hiroshima-restaurant-capucine"><span class="tn" style="background:#3f7d20;">59</span>五日市の住宅地に建つ24席のフレンチ</a>
+<a href="#c-hiroshima-birdman-matobacho"><span class="tn" style="background:#3f7d20;">60</span>屋台の空気をそのまま持ち込んだタイ食堂</a>
+<a href="#c-hiroshima-bombay-yokogawa"><span class="tn" style="background:#3f7d20;">61</span>広島市内3店の老舗インド料理店の横川店</a>
+<a href="#c-hiroshima-cueva-sol"><span class="tn" style="background:#3f7d20;">62</span>テラス席のある紙屋町のスペイン料理店</a>
+<a href="#c-hiroshima-keiran"><span class="tn" style="background:#3f7d20;">63</span>昭和42年創業・十日市町の老舗北京料理</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-hiroshima-teranishi-coffee-honten"><span class="tn" style="background:#eda100;">64</span>プロバットで毎日焙煎する1978年創業の喫茶</a>
+<a href="#c-hiroshima-ruhe-brazil"><span class="tn" style="background:#eda100;">65</span>モーニング発祥とされる鷹野橋の老舗喫茶</a>
+<a href="#c-hiroshima-chamonix-montblanc-honten"><span class="tn" style="background:#eda100;">66</span>胡子神社の向かいに残るレトロな老舗喫茶</a>
+<a href="#c-hiroshima-okashidokoro-takaki-tokaichi"><span class="tn" style="background:#eda100;">67</span>大正8年創業の和菓子店、庭を望む茶寮付き</a>
+<a href="#c-hiroshima-kissa-saeki"><span class="tn" style="background:#eda100;">68</span>1970年創業、紙屋町の有機食材の喫茶</a>
+<a href="#c-hiroshima-shimaji-coffee-roasters"><span class="tn" style="background:#eda100;">69</span>広島駅近く、浅煎り専門の自家焙煎店</a>
+<a href="#c-hiroshima-roastery-cafe-note"><span class="tn" style="background:#eda100;">70</span>宇品の自家焙煎スペシャルティ珈琲の店</a>
+<a href="#c-hiroshima-kissa-kamome-mocha"><span class="tn" style="background:#eda100;">71</span>広島港ターミナル2階、海の見える喫茶</a>
+<a href="#c-hiroshima-hakuto"><span class="tn" style="background:#eda100;">72</span>器を自分で選ぶ本川町の隠れ家喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 流川(ながれかわ)・薬研堀(やげんぼり)・胡町(えびすちょう)の夜の街（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/hiroshima/_map2.jpg" alt="中心部拡大1 流川(ながれかわ)・薬研堀(やげんぼり)・胡町(えびすちょう)の夜の街">
+<a href="#c-hiroshima-hasshou-nagarekawa" style="left:27.84%;top:65.15%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-chinchikurin-yagenbori" style="left:43.38%;top:88.1%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-goemon-ebisucho" style="left:50.6%;top:15.3%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-cuore-del-pesce-ebisucho" style="left:47.82%;top:12.43%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-nakatani-ebisucho" style="left:73.35%;top:13.27%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-tachinomi-hiroshima" style="left:34.51%;top:24.07%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-yamaoto-nagarekawa" style="left:30.35%;top:59.23%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-jukkon-nakashinchi" style="left:46.71%;top:37.17%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-jussho-nagarekawa" style="left:28.4%;top:72.78%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-kujiraya-yagenbori" style="left:64.75%;top:49.0%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-uguisu-nagarekawa" style="left:30.07%;top:37.87%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-sushi-ooi-nagarekawa" style="left:32.0%;top:42.63%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-nihonryori-takayama" style="left:79.73%;top:18.55%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-sakoi-shokudo" style="left:50.31%;top:39.9%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-hachiya-yagenbori" style="left:73.35%;top:36.15%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-italian-ao" style="left:50.6%;top:26.37%;width:3.28%;height:2.48%;"></a>
+<a href="#c-hiroshima-chamonix-montblanc-honten" style="left:35.89%;top:13.58%;width:3.28%;height:2.48%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（17店・番号はピンと同じ）</div>
+<div class="sec red">お好み焼き・鉄板焼き</div>
+<div class="links">
+<a href="#c-hiroshima-hasshou-nagarekawa"><span class="tn" style="background:#e34948;">4</span>深夜まで開く、ねぎを山と載せた一枚</a>
+<a href="#c-hiroshima-chinchikurin-yagenbori"><span class="tn" style="background:#e34948;">5</span>パリパリに焼いた麺と鉄板焼きの本店</a>
+<a href="#c-hiroshima-goemon-ebisucho"><span class="tn" style="background:#e34948;">6</span>全席鉄板付き、広島生まれの店の本店</a>
+</div>
+<div class="sec blue">牡蠣・瀬戸内の魚・あなご</div>
+<div class="links">
+<a href="#c-hiroshima-cuore-del-pesce-ebisucho"><span class="tn" style="background:#2a78d6;">13</span>流川入口の宮島産牡蠣と魚介のイタリアン</a>
+<a href="#c-hiroshima-nakatani-ebisucho"><span class="tn" style="background:#2a78d6;">16</span>胡町の瀬戸内海鮮、小いわし刺身の老舗</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（流川・薬研堀）</div>
+<div class="links">
+<a href="#c-hiroshima-tachinomi-hiroshima"><span class="tn" style="background:#0d366b;">19</span>流川の入口で広島名物を一皿371円</a>
+<a href="#c-hiroshima-yamaoto-nagarekawa"><span class="tn" style="background:#0d366b;">20</span>流川の二階で広島7蔵を燗から冷やまで</a>
+<a href="#c-hiroshima-jukkon-nakashinchi"><span class="tn" style="background:#0d366b;">21</span>流川で美酒鍋と広島7蔵をグラスで</a>
+<a href="#c-hiroshima-jussho-nagarekawa"><span class="tn" style="background:#0d366b;">22</span>昼11時から朝9時まで通しの流川の大衆酒場</a>
+</div>
+<div class="sec brown">広島つけ麺・ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-hiroshima-kujiraya-yagenbori"><span class="tn" style="background:#8a5a2b;">29</span>深夜3時まで開く薬研堀の辛つけ麺店</a>
+<a href="#c-hiroshima-uguisu-nagarekawa"><span class="tn" style="background:#8a5a2b;">31</span>昭和23年開業、夜だけ開く中華そば10席</a>
+</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-hiroshima-sushi-ooi-nagarekawa"><span class="tn" style="background:#1baf7a;">37</span>創業61年、流川の路面で握る老舗鮨</a>
+<a href="#c-hiroshima-nihonryori-takayama"><span class="tn" style="background:#1baf7a;">41</span>完全予約制、おまかせ一本の日本料理</a>
+</div>
+<div class="sec violet">焼肉・ホルモン・広島牛</div>
+<div class="links">
+<a href="#c-hiroshima-sakoi-shokudo"><span class="tn" style="background:#4a3aa7;">49</span>ホルモン天ぷらとコウネ刺しを出す薬研堀の大衆焼肉</a>
+<a href="#c-hiroshima-hachiya-yagenbori"><span class="tn" style="background:#4a3aa7;">50</span>せんじがらとコウネを置く深夜までの焼肉酒場</a>
+</div>
+<div class="sec green">イタリアン・フレンチ・各国料理</div>
+<div class="links">
+<a href="#c-hiroshima-italian-ao"><span class="tn" style="background:#3f7d20;">55</span>広島産牡蠣と比婆牛を出す流川のイタリアン</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-hiroshima-chamonix-montblanc-honten"><span class="tn" style="background:#eda100;">66</span>胡子神社の向かいに残るレトロな老舗喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 八丁堀(はっちょうぼり)・本通り・袋町(ふくろまち)・紙屋町(かみやちょう)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/hiroshima/_map3.jpg" alt="中心部拡大2 八丁堀(はっちょうぼり)・本通り・袋町(ふくろまち)・紙屋町(かみやちょう)">
+<a href="#c-hiroshima-oysterbar-steam-hondori" style="left:85.54%;top:52.95%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-ichizen-sakaba-nakamachi" style="left:33.5%;top:89.17%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-onegiya-fukuromachi" style="left:55.57%;top:67.15%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-kunimatsu-hatchobori" style="left:85.54%;top:15.24%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-oryori-suijin" style="left:97.82%;top:28.76%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-tempura-tenkou-nakamachi" style="left:35.95%;top:83.81%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-aohige-honten" style="left:87.45%;top:15.62%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-tomiya-bekkan" style="left:35.12%;top:63.43%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-nido-setouchi" style="left:58.84%;top:43.1%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-le-feu-barbare" style="left:38.95%;top:81.05%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-cueva-sol" style="left:30.23%;top:38.95%;width:3.22%;height:1.88%;"></a>
+<a href="#c-hiroshima-kissa-saeki" style="left:25.59%;top:35.23%;width:3.22%;height:1.88%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（12店・番号はピンと同じ）</div>
+<div class="sec blue">牡蠣・瀬戸内の魚・あなご</div>
+<div class="links">
+<a href="#c-hiroshima-oysterbar-steam-hondori"><span class="tn" style="background:#2a78d6;">12</span>金座街地下、江田島産の生牡蠣が主役</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（流川・薬研堀）</div>
+<div class="links">
+<a href="#c-hiroshima-ichizen-sakaba-nakamachi"><span class="tn" style="background:#0d366b;">23</span>袋町の裏手、広島11銘柄を小徳利で</a>
+<a href="#c-hiroshima-onegiya-fukuromachi"><span class="tn" style="background:#0d366b;">24</span>うらぶくろの葱料理店、西条の美酒鍋</a>
+</div>
+<div class="sec brown">広島つけ麺・ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-hiroshima-kunimatsu-hatchobori"><span class="tn" style="background:#8a5a2b;">34</span>広島の汁なし担担麺を広めた八丁堀の店</a>
+</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-hiroshima-oryori-suijin"><span class="tn" style="background:#1baf7a;">42</span>八丁堀の路地裏、献立を置かない会席</a>
+<a href="#c-hiroshima-tempura-tenkou-nakamachi"><span class="tn" style="background:#1baf7a;">43</span>天ぷら一筋35年、ごま油で揚げる江戸前</a>
+</div>
+<div class="sec violet">焼肉・ホルモン・広島牛</div>
+<div class="links">
+<a href="#c-hiroshima-aohige-honten"><span class="tn" style="background:#4a3aa7;">46</span>広島牛A4を鉄板で焼き分ける八丁堀の一軒</a>
+<a href="#c-hiroshima-tomiya-bekkan"><span class="tn" style="background:#4a3aa7;">47</span>広島牛と比婆牛を焼肉とすき焼きで出す袋町の肉専門店</a>
+</div>
+<div class="sec green">イタリアン・フレンチ・各国料理</div>
+<div class="links">
+<a href="#c-hiroshima-nido-setouchi"><span class="tn" style="background:#3f7d20;">56</span>瀬戸内の生産者を巡る32席の隠れ家イタリアン</a>
+<a href="#c-hiroshima-le-feu-barbare"><span class="tn" style="background:#3f7d20;">58</span>古民家の薪窯で焼く肉と広島の生牡蠣</a>
+<a href="#c-hiroshima-cueva-sol"><span class="tn" style="background:#3f7d20;">62</span>テラス席のある紙屋町のスペイン料理店</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-hiroshima-kissa-saeki"><span class="tn" style="background:#eda100;">68</span>1970年創業、紙屋町の有機食材の喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 広島駅前・エキニシ・的場町(まとばちょう)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/hiroshima/_map4.jpg" alt="中心部拡大3 広島駅前・エキニシ・的場町(まとばちょう)">
+<a href="#c-hiroshima-reichan-ekie" style="left:52.13%;top:35.35%;width:1.9%;height:1.66%;"></a>
+<a href="#c-hiroshima-kakiden-hikarimachi" style="left:90.36%;top:10.92%;width:1.9%;height:1.66%;"></a>
+<a href="#c-hiroshima-uminosuke-ekinishi" style="left:17.43%;top:33.69%;width:1.9%;height:1.66%;"></a>
+<a href="#c-hiroshima-yoridokoro-ekinishi" style="left:19.84%;top:36.19%;width:1.9%;height:1.66%;"></a>
+<a href="#c-hiroshima-bakudanya-ekie" style="left:52.13%;top:35.35%;width:1.9%;height:1.66%;"></a>
+<a href="#c-hiroshima-sushi-ajiroya-honten" style="left:38.8%;top:64.46%;width:1.9%;height:1.66%;"></a>
+<a href="#c-hiroshima-sandaime-horumon-center" style="left:14.38%;top:33.06%;width:1.9%;height:1.66%;"></a>
+<a href="#c-hiroshima-birdman-matobacho" style="left:40.08%;top:93.03%;width:1.9%;height:1.66%;"></a>
+<a href="#c-hiroshima-shimaji-coffee-roasters" style="left:36.23%;top:91.38%;width:1.9%;height:1.66%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（9店・番号はピンと同じ）</div>
+<div class="sec red">お好み焼き・鉄板焼き</div>
+<div class="links">
+<a href="#c-hiroshima-reichan-ekie"><span class="tn" style="background:#e34948;">2</span>広島駅ekieに入る昭和32年からの老舗</a>
+</div>
+<div class="sec blue">牡蠣・瀬戸内の魚・あなご</div>
+<div class="links">
+<a href="#c-hiroshima-kakiden-hikarimachi"><span class="tn" style="background:#2a78d6;">11</span>広島駅北口、牡蠣と穴子の1980年創業店</a>
+<a href="#c-hiroshima-uminosuke-ekinishi"><span class="tn" style="background:#2a78d6;">15</span>エキニシの16席、牡蠣と地魚の串の店</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（流川・薬研堀）</div>
+<div class="links">
+<a href="#c-hiroshima-yoridokoro-ekinishi"><span class="tn" style="background:#0d366b;">25</span>エキニシの19席、亀齢萬年と小イワシ</a>
+</div>
+<div class="sec brown">広島つけ麺・ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-hiroshima-bakudanya-ekie"><span class="tn" style="background:#8a5a2b;">28</span>広島駅ビルで食べられる広島つけ麺</a>
+</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-hiroshima-sushi-ajiroya-honten"><span class="tn" style="background:#1baf7a;">39</span>広島駅前4階、夜景とおまかせ懐石鮨</a>
+</div>
+<div class="sec violet">焼肉・ホルモン・広島牛</div>
+<div class="links">
+<a href="#c-hiroshima-sandaime-horumon-center"><span class="tn" style="background:#4a3aa7;">51</span>精肉店が営む生ホルモンの炭火焼肉・広島駅西</a>
+</div>
+<div class="sec green">イタリアン・フレンチ・各国料理</div>
+<div class="links">
+<a href="#c-hiroshima-birdman-matobacho"><span class="tn" style="background:#3f7d20;">60</span>屋台の空気をそのまま持ち込んだタイ食堂</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-hiroshima-shimaji-coffee-roasters"><span class="tn" style="background:#eda100;">69</span>広島駅近く、浅煎り専門の自家焙煎店</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 大手町・十日市(とおかいち)・本川町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/hiroshima/_map5.jpg" alt="中心部拡大4 大手町・十日市(とおかいち)・本川町">
+<a href="#c-hiroshima-nagataya-otemachi" style="left:78.64%;top:29.9%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-kakifune-kanawa-seto" style="left:79.83%;top:26.19%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-kenmin-sakaba-otemachi" style="left:84.48%;top:61.12%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-karabu-tokaichi" style="left:26.9%;top:15.16%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-youki-otemachi" style="left:85.01%;top:60.11%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-shariki-otemachi" style="left:64.18%;top:94.75%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-keiran" style="left:18.54%;top:18.45%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-ruhe-brazil" style="left:65.37%;top:91.17%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-okashidokoro-takaki-tokaichi" style="left:25.57%;top:14.22%;width:3.14%;height:1.7%;"></a>
+<a href="#c-hiroshima-hakuto" style="left:53.17%;top:5.26%;width:3.14%;height:1.7%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（10店・番号はピンと同じ）</div>
+<div class="sec red">お好み焼き・鉄板焼き</div>
+<div class="links">
+<a href="#c-hiroshima-nagataya-otemachi"><span class="tn" style="background:#e34948;">3</span>原爆ドームの真向かい、行列の一枚</a>
+</div>
+<div class="sec blue">牡蠣・瀬戸内の魚・あなご</div>
+<div class="links">
+<a href="#c-hiroshima-kakifune-kanawa-seto"><span class="tn" style="background:#2a78d6;">10</span>元安川に浮かぶ船上の牡蠣料理店</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（流川・薬研堀）</div>
+<div class="links">
+<a href="#c-hiroshima-kenmin-sakaba-otemachi"><span class="tn" style="background:#0d366b;">26</span>大手町の地下、広島の地酒44種と県内名物</a>
+</div>
+<div class="sec brown">広島つけ麺・ラーメン・中華そば</div>
+<div class="links">
+<a href="#c-hiroshima-karabu-tokaichi"><span class="tn" style="background:#8a5a2b;">30</span>原爆ドーム近く、中太麺の広島つけ麺</a>
+<a href="#c-hiroshima-youki-otemachi"><span class="tn" style="background:#8a5a2b;">32</span>昭和33年創業、中華そば一本の広島ラーメン</a>
+</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-hiroshima-shariki-otemachi"><span class="tn" style="background:#1baf7a;">44</span>大手町の一貫200円から、昼夜の握り</a>
+</div>
+<div class="sec green">イタリアン・フレンチ・各国料理</div>
+<div class="links">
+<a href="#c-hiroshima-keiran"><span class="tn" style="background:#3f7d20;">63</span>昭和42年創業・十日市町の老舗北京料理</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-hiroshima-ruhe-brazil"><span class="tn" style="background:#eda100;">65</span>モーニング発祥とされる鷹野橋の老舗喫茶</a>
+<a href="#c-hiroshima-okashidokoro-takaki-tokaichi"><span class="tn" style="background:#eda100;">67</span>大正8年創業の和菓子店、庭を望む茶寮付き</a>
+<a href="#c-hiroshima-hakuto"><span class="tn" style="background:#eda100;">72</span>器を自分で選ぶ本川町の隠れ家喫茶</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>広島市の店は6つのかたまりに分かれる。①流川（ながれかわ）・薬研堀（やげんぼり）＝中国地方で最大の夜の街。小さな店が縦に積み重なった雑居ビルが並ぶ ②八丁堀（はっちょうぼり）・本通り（ほんどおり）・袋町（ふくろまち）＝市の中心の商店街と、その裏通りの落ち着いた店 ③広島駅前・エキエ＝新幹線の駅。駅ビルと、南口の猿猴橋（えんこうばし）界隈 ④平和記念公園・紙屋町（かみやちょう）・大手町＝原爆ドームと公園のまわり。昼の店が多い ⑤横川（よこがわ）・十日市（とおかいち）・舟入（ふないり）＝市電で5〜10分。地元の人が通う店 ⑥西区・南区・安佐南区の郊外（五日市・井口・宇品〈うじな〉・祇園〈ぎおん〉）＝車で行く店。広島の名物＝お好み焼き（広島では生地を薄く焼いて、キャベツ・そば・卵を順に【重ねる】。大阪のように混ぜない。「広島風」と呼ぶのは県外の言い方で、地元では単に「お好み焼き」）、牡蠣（かき。全国の生産量の約6割が広島県産。11〜3月が旬で、焼き・フライ・土手鍋で出る）、あなご（宮島口の名物。炭で焼いて飯の上に敷く「あなごめし」）、小いわし（カタクチイワシ。「七度洗えば鯛の味」と言われ、刺身と天ぷらで出る）、がんす（白身魚のすり身にパン粉を付けて揚げた練り物。酒の肴）、広島つけ麺（辛い冷たいつけだれに、冷やした麺と野菜。1950年代に市内で生まれた）、広島牛（県内で育てた黒毛和牛）、地酒（西条〈さいじょう〉は灘・伏見と並ぶ日本三大酒どころ。賀茂鶴・白牡丹・亀齢〈きれい〉など）。**市内の移動は市電（広島電鉄）が基本**で、紙屋町・八丁堀・胡町〈えびすちょう〉の3つの電停の間がほぼ全部の中心部。宮島へ行くなら市電かJRで宮島口まで30〜70分。</div>
+
+<h2 id="s-okonomi" class="c-red">お好み焼き・鉄板焼き</h2>
+<div class="card" id="c-hiroshima-mitchan-sohonten-hatchobori">
+<img class="hero" src="img/hiroshima/hiroshima-mitchan-sohonten-hatchobori.jpg" alt="お好み焼 みっちゃん総本店 八丁堀本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>お好み焼 みっちゃん総本店 八丁堀本店<span class="yomi">おこのみやき みっちゃんそうほんてん はっちょうぼりほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">昭和25年に屋台『美笠屋』として始まり、28年に店名を『みっちゃん』へ改めた店。焼きそばをお好み焼に重ねる「そば入り」を店のメニューとして最初に出した店として知られ、昭和43年に八丁堀へ総本店1号店、62年に現在地へ移った。生地を薄く焼き、キャベツともやしを山盛りにして蒸し焼きにし、そば・豚肉・卵を順に重ねる広島のお好み焼をそのまま出す。50席でカウンターあり、全席禁煙。</div>
+<div class="sig"><b>一皿:</b>そば肉玉(薄く伸ばした生地にキャベツともやしを山盛りにして蒸し焼きにし、そば・豚肉・卵を重ねた広島のお好み焼の基本形。混ぜずに重ねて焼く)／へらで食べるスタイル(皿を使わず鉄板の上から木柄のへらで直接食べる、この店が広めた食べ方)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日11:30〜14:30／17:30〜21:00、土日祝11:00〜14:30／17:00〜21:00（最終受付は閉店30分前）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（火曜が祝日の場合は翌日の水曜）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区八丁堀6-7 チュリス八丁堀1F</td></tr>
+<tr><th>予約</th><td>テイクアウトのみ可（店内の席は予約不可） — <a href="tel:0822215438">☎ 082-221-5438</a> ／ <a href="https://www.okonomi.co.jp/hatchobori.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島のお好み焼の原型をつくった店で、重ね焼きの基準として最初に置くべき一軒。営業の根拠＝公式サイトの八丁堀本店ページと店舗一覧ページ（https://www.okonomi.co.jp/hatchobori.html ・ https://www.okonomi.co.jp/shop.html ）を2026年10月13日に取得し、住所・電話・営業時間・定休日が掲載されていることを確認。同じ店舗一覧の広島駅ekie店に「※10/5より営業時間変更」の注記があり、2026年10月時点で更新されているページだと分かる。地元資本（株式会社ISE広島育ち）で広島市内中心に数店の規模。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%20%E3%81%BF%E3%81%A3%E3%81%A1%E3%82%83%E3%82%93%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E5%85%AB%E4%B8%81%E5%A0%80%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%85%AB%E4%B8%81%E5%A0%806-7%20%E3%83%81%E3%83%A5%E3%83%AA%E3%82%B9%E5%85%AB%E4%B8%81%E5%A0%801F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.okonomi.co.jp）より引用 / 参照元: <a href="https://www.okonomi.co.jp/hatchobori.html">みっちゃん総本店 公式サイト 八丁堀本店ページ（2026-10-13閲覧）</a> / <a href="https://www.okonomi.co.jp/shop.html">みっちゃん総本店 公式サイト 店舗のご案内（2026-10-13閲覧）</a> / <a href="https://www.okonomi.co.jp/history.html">みっちゃん総本店 公式サイト お好み焼の歴史（2026-10-13閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-reichan-ekie">
+<img class="hero" src="img/hiroshima/hiroshima-reichan-ekie.jpg" alt="麗ちゃん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>麗ちゃん<span class="yomi">れいちゃん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">昭和32年の創業で、西新天地の公園そばの屋台から始まり、長く広島駅ビルASSEで営業した。2018年3月29日に同じ広島駅のekie 1階へ移った。生地を薄く焼いてキャベツを重ね、そばかうどんを選んで挟む広島のお好み焼で、鉄板を囲むカウンターのほかテーブル席もあり35席。冬は広島産の牡蠣を入れた一枚も出る。行列ができるため店内席の予約は受けておらず、持ち帰りだけ電話で先に注文できる。</div>
+<div class="sig"><b>一皿:</b>肉玉そば又はうどん入り(重ね焼きにした生地・キャベツ・豚肉・卵の定番。そばかうどんを選べる。1,000円)／スペシャル そば又はうどん入り(定番に生イカと生エビを加えた一番人気。1,680円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜22:00（L.O. 食事21:15／ドリンク21:30）※2026年10月5日改定</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイトのよくある質問による。ekieの休みに準ずる）</td></tr>
+<tr><th>住所</th><td>広島県広島市南区松原町1-2 ekie 1F</td></tr>
+<tr><th>予約</th><td>店内席は不可（行列のため受け付けていない）。テイクアウトは電話で事前注文可 — <a href="tel:0822862382">☎ 082-286-2382</a> ／ <a href="http://www.o-reichan.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島駅で重ね焼きを食べられる最も古い部類の店で、そばとうどんを選べるので麺の違いを比べられる。営業の根拠＝公式サイト（ http://www.o-reichan.jp/ ）を2026年10月13日に取得し、「2026.10 営業時間変更のお知らせ 10月5日より、営業時間を下記の通り変更いたしました。営業時間11:00〜22:00」という今月付けの告知が出ていることを確認した。価格・予約の可否・定休日は同サイトのお品書きページとよくある質問ページから取った。写真は公式サイトが画像の転載を禁じているため使わず、ホットペッパーの掲載ページのものを使った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%97%E3%81%A1%E3%82%83%E3%82%93%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E6%9D%BE%E5%8E%9F%E7%94%BA1-2%20ekie%201F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="http://www.o-reichan.jp/">麗ちゃん 公式サイト（2026年10月の営業時間変更告知を2026-10-13に確認）</a> / <a href="https://www.hotpepper.jp/strJ000111504/">ホットペッパーグルメ 麗ちゃん（2026-10-13閲覧）</a> / <a href="http://www.o-reichan.jp/menu.htm">麗ちゃん 公式サイト お品書き・よくある質問（2026-10-13閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-nagataya-otemachi">
+<img class="hero" src="img/hiroshima/hiroshima-nagataya-otemachi.jpg" alt="お好み焼き 長田屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>お好み焼き 長田屋<span class="yomi">おこのみやき ながたや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">平和記念公園のすぐ東、大手町の電車通り沿いにあるお好み焼き店。店内は昭和30年代の建物をイメージした造りで、テーブル席はすべて鉄板付き、全36席。ソースはオタフクソースへの特注、麺は豚骨スープで下味を付けるなど素材を指定している。冬場は広島産の牡蠣を載せた一枚も出る。夜は世羅産ホルモンなど鉄板焼きも頼める。</div>
+<div class="sig"><b>一皿:</b>長田屋焼(そば入りの重ね焼きに具を盛った看板の一枚)／カキ入りお好み焼(広島産の牡蠣を載せた冬の一枚。重ね焼きの上にふっくら火を通す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜20:00（料理L.O. 20:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日、第2・第4水曜日（7月と8月は変則）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区大手町1-7-19</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない（電話での可否は未確認） — <a href="tel:0822470787">☎ 082-247-0787</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>平和記念公園を歩いたあとにそのまま寄れる立地で、観光の動線に乗る一軒。営業の根拠＝ホットペッパーグルメの掲載ページ（店舗情報は2024年7月22日更新）を2026年10月13日に取得し、2026年5月9日・5月11日付の来店口コミ（「カキ入りお好み焼き食べました」「開店40分前に並び1時間後に入店」）が載っていることを確認した。公式サイトは見つからなかった（ホットペッパーの定休日欄が「7月と8月はHPでご確認ください」と書いているが、URLの記載はない）。写真はホットペッパーの掲載ページから2本しか基準（長辺900px以上・料理か店内が写っている）を満たすものが取れなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E9%95%B7%E7%94%B0%E5%B1%8B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E6%89%8B%E7%94%BA1-7-19">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000747424/">ホットペッパーグルメ お好み焼き 長田屋（店舗情報2024-07-22更新・2026年5月の口コミあり。2026-10-13閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-hasshou-nagarekawa">
+<img class="hero" src="img/hiroshima/hiroshima-hasshou-nagarekawa.jpg" alt="お好み焼き鉄板焼 八昌 流川店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>お好み焼き鉄板焼 八昌 流川店<span class="yomi">おこのみやきてっぱんやき はっしょう ながれかわてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">流川の飲み屋街の真ん中にあり、公式サイトに創立33周年とある店。生地を薄く円く伸ばして焼き、その上にキャベツを山盛りにして蒸し焼きにし、ゆでたての生麺と豚肉、卵を順に重ねる。麺はそばとうどんを選べる。広島産のねぎを山ほど載せる焼き方が看板で、一銭洋食のなごりという「ネギ焼き」も出す。鉄板焼きは30種類以上。鉄板席・カウンター・テーブルで計53席。深夜まで開いており、全席喫煙可で支払いは現金のみ。</div>
+<div class="sig"><b>一皿:</b>スペシャルそばねぎかけ(薄く焼いた生地にキャベツを重ねて蒸し焼きにし、ゆでたての生麺・豚肉・卵をのせたうえへ、広島産のねぎを山と載せた一枚。そばをうどんに替えることもできる。1,400円)／八昌ネギ焼き(広島産のねぎを大量に使う一枚で、一銭洋食のなごりといわれる。900円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・祝 16:00〜翌2:00頃／土・祝前日 16:00〜翌3:00頃／日 16:00〜24:00頃（公式サイトのアクセスページによる。材料がなくなり次第終了の日あり）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日（ほかに代休・臨時休業あり。公式サイトの新着情報で告知される）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区流川町8-20 エイトビル2F</td></tr>
+<tr><th>予約</th><td>団体は電話で予約可（受付は電話のみ・営業時間内。日によって受けられないことがある）。ネット予約は受け付けていない — <a href="tel:0822438400">☎ 082-243-8400</a> ／ <a href="http://www.hassho-nagarekawa.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ねぎを山盛りに載せる焼き方と、麺をそばとうどんから選べる点で、重ね焼きの幅を見せられる一軒。流川の飲み屋街で深夜まで開いているので、夜の広島で食べられる枠にもなる。営業の根拠＝①公式サイト（ http://www.hassho-nagarekawa.com/ ）を2026年10月13日に取得し、新着情報の最新が2026年10月1日付（「10月12日は通常通り営業しておりますが、材料がなくなり次第終了となります」）であること、アクセスページに住所・電話・席数・営業時間・定休日（水曜日）が載っていることを確認 ②ホットペッパーグルメの掲載ページに2026年2月2日付の来店投稿（「土曜の6時半頃から1時間くらい並びました」）があることを確認。営業時間と定休日・価格は公式サイトの記載を採った（ホットペッパー側の店舗情報は2021年6月更新で古い）。流川のこの1軒だけで、チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E9%89%84%E6%9D%BF%E7%84%BC%20%E5%85%AB%E6%98%8C%20%E6%B5%81%E5%B7%9D%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%B5%81%E5%B7%9D%E7%94%BA8-20%20%E3%82%A8%E3%82%A4%E3%83%88%E3%83%93%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="http://www.hassho-nagarekawa.com/">八昌 流川店 公式サイト トップ（新着情報の最新2026-10-01。2026-10-13閲覧）</a> / <a href="http://www.hassho-nagarekawa.com/access.html">八昌 流川店 公式サイト アクセス（住所・電話・席数・営業時間・定休日。2026-10-13閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000521110/">ホットペッパーグルメ お好み焼き鉄板焼 八昌 流川（2026年2月2日の来店投稿あり。2026-10-13閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-chinchikurin-yagenbori">
+<img class="hero" src="img/hiroshima/hiroshima-chinchikurin-yagenbori.jpg" alt="お好み焼き・鉄板焼き ちんちくりん 薬研堀本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>お好み焼き・鉄板焼き ちんちくりん 薬研堀本店<span class="yomi">おこのみやき てっぱんやき ちんちくりん やげんぼりほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市内と宮島口、東京・新橋に店を持つ広島の会社の本店。お好み焼き専用の磯野製麺の麺をしっかり湯がいて甘みを出し、大豆白絞油で表面を焼き付けた「パリ麺」を重ねるのが特徴で、外は香ばしく中はもちもちに仕上がる。そばのほかうどんや辛い麺も選べる。43席のうち鉄板を備えた丸いちゃぶ台の座敷が15名分あり、鉄板焼きの一品も多い。全席禁煙。ワンドリンクオーダー制。</div>
+<div class="sig"><b>一皿:</b>ちんちくりん焼き(目玉焼きとイカ天を載せた看板のお好み焼き。湯がいてから焼き付けた『パリ麺』を重ねる)／しょぶり焼き(牛の中落ち肉を鉄板で焼く、この店の名物の鉄板焼き)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日 17:00〜翌0:00（料理・ドリンクL.O. 23:30／テイクアウトとデリバリーは23:00まで）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区田中町6-3 音戸温泉ビル1F</td></tr>
+<tr><th>予約</th><td>可（ネット予約・電話とも可。ワンドリンクオーダー制） — <a href="tel:0822408222">☎ 082-240-8222</a> ／ <a href="https://okonomiyaki.chinchikurin.com/yagenbori/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鉄板焼きの一品も頼める枠として選んだ。麺をそば・うどん・辛い麺から選べるので麺の違いが分かる。地元資本で広島市内中心に数店という規模（流川店・八木店・COCORO店・宮島口店、ほかに東京新橋に1店）。営業の根拠＝①公式サイト（ https://okonomiyaki.chinchikurin.com/yagenbori/ ）を2026年10月13日に取得し、ブログの最新記事が2026年10月9日付であること、住所・営業時間・定休日が載っていることを確認 ②ホットペッパーグルメの掲載ページのネット予約カレンダーが2026年10月〜12月で即予約可になっていることを確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E3%83%BB%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E3%81%A1%E3%82%93%E3%81%A1%E3%81%8F%E3%82%8A%E3%82%93%20%E8%96%AC%E7%A0%94%E5%A0%80%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E7%94%B0%E4%B8%AD%E7%94%BA6-3%20%E9%9F%B3%E6%88%B8%E6%B8%A9%E6%B3%89%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://okonomiyaki.chinchikurin.com/yagenbori/">ちんちくりん薬研堀本店 公式サイト（ブログ最新2026-10-09・2026-10-13閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000027093/">ホットペッパーグルメ ちんちくりん 薬研堀本店（2026年10〜12月の予約可。2026-10-13閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-goemon-ebisucho">
+<img class="hero" src="img/hiroshima/hiroshima-goemon-ebisucho.jpg" alt="五エ門 胡町本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>五エ門 胡町本店<span class="yomi">ごえもん えびすちょうほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市内と近郊の商業施設に展開する広島の会社の本店。40席すべてに鉄板が付いていて、焼き上がりをそのまま熱いうちに食べられる。お好み焼きはそばとうどんを選べ、生イカ・生エビ・中ネギ・しそが入る『スペシャル』、イカ天としそにネギを山ほど載せる『ネギかけデラックス』、11月から3月は広島産の牡蠣を入れる『カキスペシャル』と、載せ物の種類が多い。昼も通しで開いている。全席喫煙可。</div>
+<div class="sig"><b>一皿:</b>お好み焼きスペシャルそば(うどん)入り(生イカ・生エビ・中ネギ・しそ・豚肉・卵を重ねた看板の一枚。1,430円)／お好み焼きネギかけデラックス(イカ天としそに刻みネギを山盛りに載せた一枚。1,100円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝前日 11:30〜14:00（L.O. 13:00）／17:00〜翌0:00（L.O. 翌0:00）、日・祝 11:30〜14:00／17:00〜23:00（L.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>広島県広島市中区胡町3-14 アーバン胡館1F</td></tr>
+<tr><th>予約</th><td>電話で可（ネット予約は受け付けていない） — <a href="tel:0822498089">☎ 082-249-8089</a> ／ <a href="http://goemon.in/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ねぎを山盛りに載せた一枚と、冬の牡蠣入りの一枚を同じ店で選べるので、載せ物の違いを見せられる。地元資本で広島市内と近郊に数店（バスセンター・福屋広島駅前・イオンモール広島祇園・イオンモール広島府中など）という規模。営業の根拠＝ホットペッパーグルメの掲載ページを2026年10月13日に取得し、2026年5月22日と5月31日付の来店投稿があること、料理ページに税込価格の現行メニューが並んでいることを確認した。公式サイト http://goemon.in/ は当方の実行環境からは403が返り開けなかったため、ホットペッパーの掲載内容を根拠にしている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%94%E3%82%A8%E9%96%80%20%E8%83%A1%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%83%A1%E7%94%BA3-14%20%E3%82%A2%E3%83%BC%E3%83%90%E3%83%B3%E8%83%A1%E9%A4%A81F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000111757/">ホットペッパーグルメ 五エ門 胡町本店（2026年5月の来店投稿あり。2026-10-13閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000111757/food/">ホットペッパーグルメ 五エ門 胡町本店 料理メニュー（2026-10-13閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-lopez-yokogawa">
+<img class="hero" src="img/hiroshima/hiroshima-lopez-yokogawa.jpg" alt="ロぺズ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>ロぺズ<span class="yomi">ろぺず</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">中米グアテマラ出身の店主が焼く、横川の路地裏のお好み焼き店。生地を薄く焼いてキャベツを重ねる広島の作り方そのままに、メキシコの青唐辛子ハラペーニョを載せる一枚が名物になっている。そばとうどんを選べ、イカ天・生イカ・チーズ・もち・ねぎなどを足せる。牛肉と豆を煮込んだ中米風のシチューなど店独自の一品もある。17席、駐車場あり、現金のみ。火曜と金曜は昼だけ、月・水・木は夜だけの営業。</div>
+<div class="sig"><b>一皿:</b>肉玉そば＋ハラペーニョ(重ね焼きにした定番の上に、メキシコの青唐辛子ハラペーニョを散らす名物。ピリッとした辛みが甘いソースと合う)／チリリオグランデ(牛肉と豆を煮込んだ中米風のシチュー。焼き上がりを待つ間の一品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木 16:30〜23:00（L.O. 22:30）／火・金 11:30〜14:00（L.O. 14:00）※店舗情報の更新日は2020年1月のため要確認</td></tr>
+<tr><th>定休日</th><td class="off">土曜・日曜・祝日（12月30日〜1月3日は年末年始休業）</td></tr>
+<tr><th>住所</th><td>広島県広島市西区楠木町1-7-13</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない（電話での可否は未確認） — <a href="tel:0822325277">☎ 082-232-5277</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の重ね焼きの作り方を守りながら載せ物だけが外国の食材という、他に無い一軒。営業の根拠＝ホットペッパーグルメの掲載ページを2026年10月13日に取得し、2026年9月14日付（夜の来店）と2026年5月1日付（「野菜・肉玉ハラペーニョトッピング1,050円を食べました」）の来店投稿があることを確認した。公式サイトは見つからなかった。なお同ページの店舗情報の更新日は2020年1月7日なので、営業時間と定休日は変わっている可能性がある（訪問前に電話で確認したほうがよい）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AD%E3%81%BA%E3%82%BA%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E6%A5%A0%E6%9C%A8%E7%94%BA1-7-13">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000111752/">ホットペッパーグルメ ロペズ 広島（2026年9月14日・5月1日の来店投稿あり。2026-10-13閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000111752/food/">ホットペッパーグルメ ロペズ 広島 料理メニュー（2026-10-13閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-isoya-minamikannon">
+<img class="hero" src="img/hiroshima/hiroshima-isoya-minamikannon.jpg" alt="鉄板・お好み焼き 五十家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>鉄板・お好み焼き 五十家<span class="yomi">てっぱん おこのみやき いそや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">観光地から離れた西区南観音の住宅地にある21席の店。注文を受けてから目の前の鉄板で焼き、麺はカリカリ、パリパリになるまで焼き付ける。お好み焼きはそばとうどんを選べて700円（税込）から。昼は国産の肉をたっぷり載せた『五十家の肉うどん』もある。夜は自家製のオリジナル味噌で味付けしたホルモンなど鉄板焼きの一品が揃う。全席禁煙でお通しは無し。</div>
+<div class="sig"><b>一皿:</b>肉玉そば・うどん(注文を受けてから鉄板で焼く定番。麺をカリカリに焼き付けるのがこの店の焼き方。700円税込)／ホルモンみそ(コチュジャンを入れた自家製味噌で味付けしたホルモンの鉄板焼き。900円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・金〜日・祝 11:00〜14:00（料理L.O. 13:15／ドリンクL.O. 13:30）／17:00〜21:00（料理L.O. 20:15／ドリンクL.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜（年末年始は要問い合わせ）</td></tr>
+<tr><th>住所</th><td>広島県広島市西区南観音2-2-22</td></tr>
+<tr><th>予約</th><td>可（ネット予約は来店当日20時まで、リクエスト予約は3日前まで） — <a href="tel:0825336666">☎ 082-533-6666</a> ／ <a href="https://isoya.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>観光客向けではない住宅地の店で、同じ重ね焼きでも麺を強く焼き付ける作り方の違いが分かる。営業の根拠＝ホットペッパーグルメの掲載ページを2026年10月13日に取得し、①ネット予約カレンダーが2026年10月〜12月で即予約可になっていること ②来店日2026年9月29日の投稿があることを確認した。公式の予約ページ https://isoya.owst.jp が店舗情報欄に掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%89%84%E6%9D%BF%E3%83%BB%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E4%BA%94%E5%8D%81%E5%AE%B6%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E5%8D%97%E8%A6%B3%E9%9F%B32-2-22">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001260393/">ホットペッパーグルメ 鉄板 お好み焼き 五十家（2026年10〜12月の予約可・2026年9月29日来店の投稿あり。2026-10-13閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-enjin-itsukaichi">
+<img class="hero" src="img/hiroshima/hiroshima-enjin-itsukaichi.jpg" alt="お好み焼き 炎陣 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>お好み焼き 炎陣<span class="yomi">おこのみやき えんじん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">佐伯区五日市の山あいにある15席（うちカウンター10席）の店。生麺を注文のたびに茹でてから重ねるので、麺にもちもちした食感が残る。肉玉そばのほか、チーズと明太子、エビとイカ、ステーキを合わせた一枚など載せ物の種類が多く、ねぎを山盛りにしたものもある。支払いは現金のみ、全席禁煙、駐車場あり。</div>
+<div class="sig"><b>一皿:</b>お好み焼き（肉玉そば）(生麺を注文のたびに茹でてから重ねる定番。もちもちした麺の食感が残る。850円税込)／ねぎとイカ天を載せた一枚(重ね焼きの上に刻みねぎを山盛りにしたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜20:30</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県広島市佐伯区五日市町下河内42</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない（電話で要問い合わせ。問い合わせは午前10時から） — <a href="tel:0822993677">☎ 082-299-3677</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>中心部から離れた山あいの店で、麺を茹でたてで重ねる作り方が市内中心部の店（麺を焼き付ける店が多い）と対照になる。営業の根拠＝ホットペッパーグルメの掲載ページ（店舗情報は2025年10月4日更新。コース・料理・ドリンク・テイクアウトの各ページと自店の写真8点を掲載した有料掲載のページ）を2026年10月13日に取得して確認した。あわせて「お好み焼き 炎陣 広島 五日市 下河内 営業」で検索したが、この店に触れた記事も閉店の報も見つからなかった（2026-10-13）。口コミは0件、ネット予約は受け付けていないので、遠方から行くなら電話で開いているか確かめたほうがよい。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E7%82%8E%E9%99%A3%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%BD%90%E4%BC%AF%E5%8C%BA%E4%BA%94%E6%97%A5%E5%B8%82%E7%94%BA%E4%B8%8B%E6%B2%B3%E5%86%8542">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004444734/">ホットペッパーグルメ お好み焼き 炎陣（店舗情報2025-10-04更新。2026-10-13閲覧）</a></div>
+</div></div>
+<h2 id="s-kaki">牡蠣・瀬戸内の魚・あなご</h2>
+<div class="card" id="c-hiroshima-kakifune-kanawa-seto">
+<img class="hero" src="img/hiroshima/hiroshima-kakifune-kanawa-seto.jpg" alt="かき船かなわ 瀬戸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">10</span>かき船かなわ 瀬戸<span class="yomi">かきふねかなわ せと</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">牡蠣養殖業者のかなわが元安川に浮かべている「かき船」2隻のうち、気軽に使えるレストラン船。かなわは1867年(慶応3年)に三保久太郎が牡蠣養殖を家業として始め、昭和37年に江戸時代から続く「かき船」(船の上の座敷で牡蠣料理を食べさせる水上料理店)を広島で復活させた。自社の養殖場がある大黒神島深浦の牡蠣を使い、土手鍋・釜めし・フライ・生かきと調理法を変えて出す。席からは川面と平和記念公園が見える。</div>
+<div class="sig"><b>一皿:</b>かきの土手鍋(鍋のふちに味噌を土手のように塗りつけ、崩しながら牡蠣と野菜を煮て食べる広島の郷土鍋。かなわは季節に合わせて料理長が味噌を調合する／2,750円)／かきと林檎のグラタン(くりぬいた林檎を器にして、ホワイトソースと牡蠣を入れて焼き上げた一品。林檎の酸味を合わせる／1,650円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30／17:00〜20:00（いずれもラストオーダー）。牡蠣料理は通年提供（公式メニューに季節限定の表記なし）だが、牡蠣の旬は11〜3月</td></tr>
+<tr><th>定休日</th><td class="off">年末年始</td></tr>
+<tr><th>住所</th><td>広島県広島市中区大手町1丁目地先</td></tr>
+<tr><th>予約</th><td>可（公式サイトのオンライン予約、または電話082-241-7416） — <a href="tel:0822417416">☎ 082-241-7416</a> ／ <a href="https://www.kanawa.co.jp/seto">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の「かき船」文化をいまも営業の形で残している店で、平和記念公園の見学と同じ足で寄れる。営業の根拠は公式サイトの「かき船かなわ 瀬戸」ページ(2026年10月13日取得。住所・電話・営業時間11時〜14時30分/17時〜20時L.O.・休業日年末年始・メニューと税込価格を掲載)と、同サイトの画像フォルダに2026年10月付でアップロードされた新コース(かき三昧コース7,700円)の写真。牡蠣料理は通年の掲載で季節限定の表記はなく、生かきも公式ニュース(2026年9月)で「毎日水揚げ」と告知されている。ただし牡蠣そのものの旬は11〜3月。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%81%8D%E8%88%B9%E3%81%8B%E3%81%AA%E3%82%8F%20%E7%80%AC%E6%88%B8%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E6%89%8B%E7%94%BA1%E4%B8%81%E7%9B%AE%E5%9C%B0%E5%85%88">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.kanawa.co.jp）より引用 / 参照元: <a href="https://www.kanawa.co.jp/seto">かなわ 公式サイト「かき船かなわ 瀬戸」（住所・電話・営業時間・休業日・メニューと税込価格）2026年10月13日取得</a> / <a href="https://www.kanawa.co.jp/khistory">かなわ 公式サイト「かき船とかなわの歴史」（1867年創業・昭和37年のかき船復活・広島牡蠣が全国生産量の約6割）2026年10月13日取得</a> / <a href="https://www.kanawa.co.jp/">かなわ 公式サイト トップページ（2026年秋の新メニュー告知・生牡蠣の毎日水揚げ告知）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-kakiden-hikarimachi">
+<img class="hero" src="img/hiroshima/hiroshima-kakiden-hikarimachi.jpg" alt="かき傳 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>かき傳<span class="yomi">かきでん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1980年創業。広島市東区光町で、広島県産の牡蠣と地物の穴子を軸に据えた店。牡蠣は生・焼き・蒸しと調理法を変えて出し、穴子は白焼き・刺身(うす造り)・天ぷら・穴子飯にする。昼は穴子飯を中心にした定食を出し、夜はコースと一品。総席数50席で掘りごたつの個室があり、フロア貸切は25〜32名。自家製の鯖の燻製やじゃがまんなど店独自の一品もある。</div>
+<div class="sig"><b>一皿:</b>穴子飯(穴子の骨からとった出汁で炊いたご飯に煮穴子をのせ、特製のたれを塗ったもの／1,300円)／穴子のうす造り(穴子を薄くそぎ切りにした刺身。自家製の橙酢ポン酢で食べる／2,300円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜14:00（ラストオーダー13:30）／夜 17:00〜22:00（ラストオーダー21:00）。※月曜の昼は休み。生牡蠣は通年提供（牡蠣の旬は11〜3月）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（月曜が祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>広島県広島市東区光町2-8-24 ダイケンビル1階</td></tr>
+<tr><th>予約</th><td>可（電話082-264-5968、またはホットペッパーグルメのネット予約。キャンセルは2日前まで） — <a href="tel:0822645968">☎ 082-264-5968</a> ／ <a href="https://www.kakiden-setouchiryouri.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>宮島口の「あなごめし」は廿日市市なので、広島市内で穴子をきちんと出す店としてこの店を採った。穴子と牡蠣を同時に扱い、しかも昼から穴子飯が食べられる点で旅行者が使いやすい。営業の根拠は公式サイトの店舗情報(2026年10月13日取得。1980年創業・住所・電話・昼11時〜14時/夜17時〜22時・日曜定休・総席数50席・駐車場3台を掲載)と、ホットペッパーグルメの掲載ページ(2026年9月29日更新、2026年10月〜11月の予約可否カレンダーが稼働中)。牡蠣はホットペッパー掲載画像の説明文に「当店は広島県産の生牡蠣を1年を通してご提供しております」とあり通年。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%81%8D%E5%82%B3%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E6%9D%B1%E5%8C%BA%E5%85%89%E7%94%BA2-8-24%20%E3%83%80%E3%82%A4%E3%82%B1%E3%83%B3%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.kakiden-setouchiryouri.com/">かき傳 公式サイト（1980年創業・住所・電話・営業時間・定休日・席数・駐車場）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ000111620/">ホットペッパーグルメ「かき傳」掲載ページ（2026年9月29日更新・営業時間・定休日・メニューと税込価格・予約可否カレンダー）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-oysterbar-steam-hondori">
+<img class="hero" src="img/hiroshima/hiroshima-oysterbar-steam-hondori.jpg" alt="牡蠣 オイスターバル Steam 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>牡蠣 オイスターバル Steam<span class="yomi">かき おいすたーばる すちーむ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">本通り・金座街の地下にある20席のオイスターバー。広島県江田島産を中心に産地を替えた生牡蠣を1個単位で出し、5種盛り合わせで食べ比べができる。焼き牡蠣やオイスターシューター(生牡蠣を酒やトマトジュースと一緒にグラスで飲む出し方)、牡蠣とクリームチーズのパテ、ムール貝の白ワイン蒸しなどワインに合わせる料理が並ぶ。カウンター6席。土日祝は昼12時から通しで開く。</div>
+<div class="sig"><b>一皿:</b>生牡蠣5種盛り合わせ(産地の違う生牡蠣5種を並べて食べ比べる盛り合わせ)／オイスターシューター(殻から外した生牡蠣をショットグラスに入れ、酒や調味液と一緒に一息で飲む出し方)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜金・祝前日 15:00〜22:30（ラストオーダー22:00）／土・日・祝 12:00〜22:30（ラストオーダー22:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜（ほかに不定休あり）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区本通1-6 金座街FSビル B1</td></tr>
+<tr><th>予約</th><td>可（電話080-2899-5966、またはホットペッパーグルメのネット予約） — <a href="tel:08028995966">☎ 080-2899-5966</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>焼き・鍋・フライの店が多い広島で、生牡蠣の産地食べ比べを軸にした小さなオイスターバーとして出し方が重ならない。本通り・八丁堀の買い物のあとに寄れる立地。営業の根拠はホットペッパーグルメの掲載ページ(2026年7月25日更新、2026年10月〜11月の予約可否カレンダーが稼働中。住所・電話・営業時間・定休日火曜・総席数20席・予算3,500円を掲載)。広島県内の個人経営店で全国展開のチェーンではない。牡蠣の旬は11〜3月だが、当店は生牡蠣を通年の看板にしている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%89%A1%E8%A0%A3%20%E3%82%AA%E3%82%A4%E3%82%B9%E3%82%BF%E3%83%BC%E3%83%90%E3%83%AB%20Steam%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%9C%AC%E9%80%9A1-6%20%E9%87%91%E5%BA%A7%E8%A1%97FS%E3%83%93%E3%83%AB%20B1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003763742/">ホットペッパーグルメ「牡蠣 オイスターバル Steam（スチーム）」掲載ページ（2026年7月25日更新・住所・電話・営業時間・定休日・席数・メニュー）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-cuore-del-pesce-ebisucho">
+<img class="hero" src="img/hiroshima/hiroshima-cuore-del-pesce-ebisucho.jpg" alt="牡蠣と魚介のレストラン クオーレ デルペッシェ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>牡蠣と魚介のレストラン クオーレ デルペッシェ<span class="yomi">かきとぎょかいのれすとらん くおーれ でるぺっしぇ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">宮島近海で育った広島県産の牡蠣を軸に、瀬戸内と市場の魚介を地中海料理の手法で出す店。生で、焼いて、フライに、グラタンに、アヒージョ(オリーブ油とにんにくで煮る小鍋料理)に、パスタやパエリアにと調理法を変えて牡蠣を出すのが特徴。冬の広島県産のほか、季節によって北海道・宮城・北陸の牡蠣も置く。1階はカウンターと奥のテーブル、2階と3階は貸切にできる79席。</div>
+<div class="sig"><b>一皿:</b>広島県産生牡蠣(宮島近海で育った殻付きの生牡蠣。2個900円、1個追加ごとに450円)／牡蠣のアヒージョ(牡蠣をオリーブ油とにんにくで小鍋に煮たスペイン料理。油を浸して食べるバゲット付き／1,080円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜翌1:00（料理ラストオーダー翌0:00）／日 17:00〜翌0:00（料理ラストオーダー23:00）。牡蠣は季節により産地を替えて通年提供</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県広島市中区胡町3-17 大戸ビル1F</td></tr>
+<tr><th>予約</th><td>可（電話082-240-0190は15時以降。ホットペッパーグルメのネット予約は当日22時まで） — <a href="tel:0822400190">☎ 082-240-0190</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>焼き・鍋が中心の広島で、牡蠣を洋風に（グラタン・アヒージョ・パエリア）出す店として出し方が重ならない。流川の入口という繁華街の立地で遅い時間まで開いているのも使いやすい。営業の根拠はホットペッパーグルメの掲載ページ(2026年1月22日メニュー更新、2026年10月〜11月の予約可否カレンダーが稼働中。住所・電話・営業時間・席数・税込価格を掲載)。広島市内の1店舗のみで全国チェーンではない。牡蠣は季節で産地を替えて通年提供（広島県産の牡蠣の旬は11〜3月）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%89%A1%E8%A0%A3%E3%81%A8%E9%AD%9A%E4%BB%8B%E3%81%AE%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%AF%E3%82%AA%E3%83%BC%E3%83%AC%20%E3%83%87%E3%83%AB%E3%83%9A%E3%83%83%E3%82%B7%E3%82%A7%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%83%A1%E7%94%BA3-17%20%E5%A4%A7%E6%88%B8%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000989070/">ホットペッパーグルメ「牡蠣と魚介のレストラン クオーレ デルペッシェ」掲載ページ（住所・電話・営業時間・席数）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ000989070/food/">同 料理メニューページ（2026年1月22日更新・生牡蠣2個900円・牡蠣のアヒージョ・牡蠣グラタン・アクアパッツァの税込価格）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-miyamae-nakamachi">
+<img class="hero" src="img/hiroshima/hiroshima-miyamae-nakamachi.jpg" alt="廣島牡蠣 みやまえ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>廣島牡蠣 みやまえ<span class="yomi">ひろしまかき みやまえ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市の市場から毎日仕入れる広島ブランド牡蠣「かき小町」を、生・焼き・フライ・ポン酢・鍋と出し分ける店。牡蠣だけでなく広島県産の地穴子を白焼きと天ぷらで出し、刺身の盛り合わせには地穴子の刺身も入る。瀬戸内の干物「でべら」の炙りや広島名物のがんす(魚のすり身にパン粉をつけて揚げたもの)も置く。カウンター6席と掘りごたつ20席の28席。</div>
+<div class="sig"><b>一皿:</b>広島ブランド牡蠣「かき小町」の生牡蠣／焼き牡蠣(身が肉厚で大粒になるよう広島県が開発した養殖牡蠣の品種。各2個1,380円)／広島県産地穴子の白焼(広島湾の穴子をたれを塗らずに素焼きにしたもの。わさびとレモンを添える／2,400円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:30〜23:00（料理・ドリンクともラストオーダー22:00）。週末・連休は2時間の時間制になる場合あり。牡蠣ポン酢と牡蠣鍋は冬季限定、生・焼き・フライは通年</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県広島市中区中町7-16 ポレスター広島103</td></tr>
+<tr><th>予約</th><td>可（電話082-246-7591、またはホットペッパーグルメのネット予約） — <a href="tel:0822467591">☎ 082-246-7591</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>牡蠣の出し方（生・焼き・フライ・ポン酢・鍋）が1軒でひととおり揃い、広島湾の地穴子ででべらまで押さえられるので、牡蠣と瀬戸内の魚の両方に当たる店として採った。営業の根拠はホットペッパーグルメの掲載ページ(2026年7月30日メニュー更新、2026年10月〜11月の予約可否カレンダーが稼働中。住所・電話・営業時間・定休日・席数・税込価格を掲載)。広島市内の1店舗のみで全国チェーンではない。なお牡蠣ポン酢と牡蠣鍋は冬季限定で、生牡蠣・焼き牡蠣・カキフライは通年の掲載（牡蠣の旬は11〜3月）。公式サイトは見つからず、ホットペッパー掲載のホームページ欄は店舗情報サイトのページだったので website は空にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BB%A3%E5%B3%B6%E7%89%A1%E8%A0%A3%20%E3%81%BF%E3%82%84%E3%81%BE%E3%81%88%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E4%B8%AD%E7%94%BA7-16%20%E3%83%9D%E3%83%AC%E3%82%B9%E3%82%BF%E3%83%BC%E5%BA%83%E5%B3%B6103">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000521383/">ホットペッパーグルメ「廣島牡蠣 みやまえ」掲載ページ（住所・電話・営業時間・定休日・席数）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ000521383/food/">同 料理メニューページ（2026年7月30日更新・かき小町の生／焼き／フライ、牡蠣鍋と牡蠣ポン酢の冬季限定表記、地穴子の白焼・天ぷら、でべら蝶の炙り、がんすの税込価格）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-uminosuke-ekinishi">
+<img class="hero" src="img/hiroshima/hiroshima-uminosuke-ekinishi.jpg" alt="エキニシ 広島牡蠣と串もんの店 うみの介 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>エキニシ 広島牡蠣と串もんの店 うみの介<span class="yomi">えきにし ひろしまかきとくしもんのみせ うみのすけ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島駅西側の飲み屋街「エキニシ」にある16席の店。広島県産の殻付き牡蠣と、その日に仕入れた地魚を串にして焼く・揚げるのが柱。牡蠣は低温調理で生に近い食感に仕上げたもの、昆布焼き、フライ、串カツと出し分ける。串は鯛のしそ巻き、穴子の白焼き、ぶりの照り焼きなど瀬戸内の魚を使う。周りの店より早い16時から開くので、はしご酒の1軒目にも使える。</div>
+<div class="sig"><b>一皿:</b>牡蠣ぺい焼き串(殻から外した牡蠣を串に刺して焼いたうみの介の名物／590円)／地物生穴子刺し(広島湾で獲れた穴子を生のまま刺身にしたもの。穴子は血に毒があるため丁寧な処理が要り、産地でないと出せない／990円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>16:00〜翌0:00（料理ラストオーダー23:30、ドリンクラストオーダー翌0:00）。牡蠣は通年提供の掲載（牡蠣の旬は11〜3月）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>広島県広島市南区大須賀町12-12</td></tr>
+<tr><th>予約</th><td>可（電話080-1300-3728、またはホットペッパーグルメのネット予約。2階は最大10名まで） — <a href="tel:08013003728">☎ 080-1300-3728</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>牡蠣を「串」で出す店は広島でも珍しく、ほかの8軒と出し方が重ならない。16席の個人店で、広島駅の西側（エキニシ）という町のかたまりも他と離れている。営業の根拠はホットペッパーグルメの掲載ページ(2025年7月8日メニュー更新だが、2026年10月〜12月の予約可否カレンダーが稼働中で定休日なし・16時〜翌0時の表示。住所・電話・席数・税込価格を掲載)。広島市内の1店舗のみで全国チェーンではない。牡蠣は通年の掲載（牡蠣の旬は11〜3月）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A8%E3%82%AD%E3%83%8B%E3%82%B7%20%E5%BA%83%E5%B3%B6%E7%89%A1%E8%A0%A3%E3%81%A8%E4%B8%B2%E3%82%82%E3%82%93%E3%81%AE%E5%BA%97%20%E3%81%86%E3%81%BF%E3%81%AE%E4%BB%8B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E5%A4%A7%E9%A0%88%E8%B3%80%E7%94%BA12-12">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004026404/">ホットペッパーグルメ「エキニシ 広島牡蠣と串もんの店 うみの介」掲載ページ（住所・電話・営業時間・定休日・席数）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ004026404/food/">同 料理メニューページ（2025年7月8日更新・牡蠣ぺい焼き串590円・低温調理の殻付き牡蠣540円・地物生穴子刺し990円・串の各種税込価格）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-nakatani-ebisucho">
+<img class="hero" src="img/hiroshima/hiroshima-nakatani-ebisucho.jpg" alt="広島の旬 なかたに 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>広島の旬 なかたに<span class="yomi">ひろしまのしゅん なかたに</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">創業35年の瀬戸内海鮮の店。店に生簀を置き、鯛・ひらめ・すずき・めばる・おこぜ・石鯛・かれいなど瀬戸内の活き魚を注文を受けてから造りや煮付け、塩焼きにする。広島の夏の風物詩である小いわし(カタクチイワシ)は刺身と天ぷらの両方で出す。地穴子の天ぷら、鯛の釜めし、瀬戸の小魚の塩焼きも品書きにある。昼も開いており、座敷と掘りごたつの個室を備えた50席。</div>
+<div class="sig"><b>一皿:</b>小いわし(カタクチイワシ。「七度洗えば鯛の味」と言われ、冷水で繰り返し洗って身を締める。おろし生姜を添えた刺身で／880円。天ぷらでも出す)／鯛の釜めし(瀬戸内の鯛を一匹分ほぐして釜で炊き込むご飯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00（料理ラストオーダー13:30）／17:00〜翌0:00（料理ラストオーダー23:30）。小いわしは6月10日の漁解禁以降の夏が本番で、刺身は仕入れ次第</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>広島県広島市中区胡町2-20</td></tr>
+<tr><th>予約</th><td>可（電話082-240-4008、またはホットペッパーグルメのネット予約。※昼のネット予約は受付なし） — <a href="tel:0822404008">☎ 082-240-4008</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の小いわしを刺身と天ぷらの両方で出す店は限られており、そこを押さえるために採った。生簀の活き魚で瀬戸内の鯛・めばる・おこぜまで揃う点も、牡蠣中心の他の店と役割が分かれる。営業の根拠はホットペッパーグルメの掲載ページ(2026年10月〜11月の予約可否カレンダーが稼働中。住所・電話・営業時間・定休日なし・席数・税込価格を掲載)。広島市内の1店舗のみで全国チェーンではない。小いわしの漁は毎年6月10日解禁で、刺身は夏が本番（広島県の公式特集ページによる）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%83%E5%B3%B6%E3%81%AE%E6%97%AC%20%E3%81%AA%E3%81%8B%E3%81%9F%E3%81%AB%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%83%A1%E7%94%BA2-20">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001145796/">ホットペッパーグルメ「広島の旬 なかたに」掲載ページ（創業35年・住所・電話・営業時間・定休日・席数）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ001145796/food/">同 料理メニューページ（小いわしの刺身880円・小いわしの天ぷら・地穴子の天ぷら・活き魚の魚種・鯛の釜めし）2026年10月13日取得</a> / <a href="https://dive-hiroshima.com/feature/seafood-hiroshimabay/">Dive! Hiroshima（広島県観光連盟・広島県・広島市の公式観光サイト）特集「広島湾七大海の幸など」（コイワシは『七度洗えばタイの味』、刺身と天ぷらが代表料理）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-danryu-kannon">
+<img class="hero" src="img/hiroshima/hiroshima-danryu-kannon.jpg" alt="暖流 観音店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>暖流 観音店<span class="yomi">だんりゅう かんのんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">8トンの生簀を店内に備え、泳いでいる魚をその場で引き上げて造りや天ぷら、煮付け、塩焼きにする西区の店。めばる・かれい・鯛かぶと・はまちの荒煮など瀬戸内の魚が煮付けの品書きに並ぶ。広島の小いわしは天ぷらと梅しそ巻き揚げの2通りで出す。昼は定食、夜は一品とおまかせコース。掘りごたつの個室が多く、水槽は子ども連れでも楽しめる。</div>
+<div class="sig"><b>一皿:</b>小いわし天麩羅(カタクチイワシを開いて揚げた広島の定番。「七度洗えば鯛の味」と言われる魚で、刺身と並ぶ代表的な食べ方／700円)／活魚の造り(8トンの生簀から引き上げた鯛・ひらめなどをその場でさばく造り。豪華盛り合わせは1,480円〜)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30（ランチのラストオーダー13:50）／17:00〜22:00（ラストオーダー21:00）。お盆と正月は通常と異なる。小いわしは6月10日の漁解禁以降の夏が本番で、仕入れ次第</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>広島県広島市西区観音町7-29</td></tr>
+<tr><th>予約</th><td>可（電話082-297-4013、またはホットペッパーグルメのリクエスト予約＝来店日の3日前まで） — <a href="tel:0822974013">☎ 082-297-4013</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市の中心部から外れた西区に置く1軒として採った。8トンという大きさの生簀を持つ店は市内でも少なく、瀬戸内の活き魚と小いわしを昼から食べられる。営業の根拠はホットペッパーグルメの掲載ページ(2026年10月〜11月の予約可否カレンダーが稼働中。住所・電話・営業時間・定休日水曜・税込価格を掲載)。広島県内で「暖流」の名の店はこの観音店を含め2店で、全国展開のチェーンではない。小いわしは漁の解禁が毎年6月10日で夏が本番、仕入れ次第で品書きが変わる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9A%96%E6%B5%81%20%E8%A6%B3%E9%9F%B3%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E8%A6%B3%E9%9F%B3%E7%94%BA7-29">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001026273/">ホットペッパーグルメ「暖流 観音店（だんりゅう）」掲載ページ（8トン水槽・住所・電話・営業時間・定休日・予算）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ001026273/food/">同 料理メニューページ（小いわし天麩羅700円・小いわし梅しそ巻揚800円・めばる／かれい／鯛かぶとの煮付け・活あじ塩焼の税込価格）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-uogushi-yokogawa">
+<img class="hero" src="img/hiroshima/hiroshima-uogushi-yokogawa.jpg" alt="粗末イイコトスル団 魚串 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>粗末イイコトスル団 魚串<span class="yomi">そまついいことするだん うおぐし</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">横川駅北口すぐの25席の店。旬の魚を1本ずつ手で仕込んで串に刺し、焼き上げて出す「魚串」が柱で、鯛・太刀魚・さわら・ぶり・鯵・鯖といった瀬戸内の魚が並ぶ。刺身は一手間加えて味を付けた状態で出すので、醤油なしでそのまま食べられる。キスの天ぷら、一夜干しイカ、サザエのつぼ焼きなど炉端の品もある。店長は釣りが趣味で、自分が釣った魚が店に並ぶこともある。</div>
+<div class="sig"><b>一皿:</b>魚串盛り合わせ(旬の魚を職人が1本ずつ手で仕込んで焼き上げた串の盛り合わせ。基本の5串は5種類の魚を5種類の味付けで出す／5本1,408円・7本1,738円)／ひと手間加えた刺身の盛り合わせ(すべて下味を付けてあり、醤油を使わずそのまま食べられる刺身／1,518円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・日・祝 17:30〜23:30（ラストオーダー23:00）／金・土・祝前日 17:30〜翌0:30（ラストオーダーは店の案内では23:50）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>広島県広島市西区三篠町1丁目10-1</td></tr>
+<tr><th>予約</th><td>可（電話082-530-7025、またはホットペッパーグルメのネット予約。2階フロア17名まで貸切可） — <a href="tel:0825307025">☎ 082-530-7025</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市の西側・横川に置く1軒として採った。瀬戸内の魚（鯛・太刀魚・さわら・鯵・鯖）を串で焼くという出し方がほかの8軒と重ならない。営業の根拠はホットペッパーグルメの掲載ページ(メニューの最終更新は2025年7月29日だが、2026年10月〜12月の予約可否カレンダーが稼働しており水曜のみ休と表示。利用者の投稿写真に2026年9月25日付のものがある。住所・電話・営業時間・席数・税込価格を掲載)。広島市内の1店舗のみで全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B2%97%E6%9C%AB%E3%82%A4%E3%82%A4%E3%82%B3%E3%83%88%E3%82%B9%E3%83%AB%E5%9B%A3%20%E9%AD%9A%E4%B8%B2%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%B8%89%E7%AF%A0%E7%94%BA1%E4%B8%81%E7%9B%AE10-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004402335/">ホットペッパーグルメ「粗末イイコトスル団 魚串」掲載ページ（住所・電話・営業時間・定休日・席数・2026年9月25日付の投稿写真）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ004402335/food/">同 料理メニューページ（2025年7月29日更新・魚串盛り合わせ・刺身の盛り合わせ・鯛／太刀魚／さわら／鯵／鯖の各串・キスの天ぷらの税込価格）2026年10月13日取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・郷土料理・地酒（流川・薬研堀）</h2>
+<div class="card" id="c-hiroshima-tachinomi-hiroshima">
+<img class="hero" src="img/hiroshima/hiroshima-tachinomi-hiroshima.jpg" alt="立ち飲み広島 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">19</span>立ち飲み広島<span class="yomi">たちのみひろしま</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">流川の飲み屋街にある立ち飲みの店。平日は17時、土日祝は13時から深夜1〜2時まで通しで開き、定休日はない。30席で、座る席を使うときだけ席料100円がかかる。品書きは広島の名物をそろえた一皿371円の列と、1本207円からの串焼きが柱で、広島の地酒もグラス548円から置く。</div>
+<div class="sig"><b>一皿:</b>自家製せんじがら(豚のホルモン＝胃や腸を乾燥させてから揚げた広島の珍味。噛むほど味が出る乾き物の肴。371円)／広島名物ガンス(白身魚のすり身に玉ねぎや唐辛子を混ぜ、パン粉をつけて揚げた広島の練り物。371円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 17:00〜翌1:00（料理・ドリンクL.O. 翌0:30）／金・祝前日 17:00〜翌2:00（L.O. 翌1:30）／土・祝 13:00〜翌2:00（L.O. 翌1:30）／日 13:00〜翌1:00（L.O. 翌0:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区流川町2-22 インペリアルファーストビル1F</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0822989799">☎ 082-298-9799</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で1店入れると決めた立ち飲みの枠に充てた。価格帯も選定9店の中で最も低く、2,000円台を受け持つ。せんじがら・ガンス・江田島産小鰯の天ぷら・ウニホーレン・湯来産子持ちコンニャク・広島菜漬け・和牛コウネと、広島の肴がほぼひととおり371円前後で並ぶ点を買った。地酒は賀茂鶴と美和桜をグラスで置き、広島地酒3種飲み比べセット1,186円もある。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年11月・12月の全日にわたり『◎』（即予約可）で開いており、定休日なしという記載と一致していること。料理写真・店内写真も同ページで2026年に更新されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%AB%8B%E3%81%A1%E9%A3%B2%E3%81%BF%E5%BA%83%E5%B3%B6%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%B5%81%E5%B7%9D%E7%94%BA2-22%20%E3%82%A4%E3%83%B3%E3%83%9A%E3%83%AA%E3%82%A2%E3%83%AB%E3%83%95%E3%82%A1%E3%83%BC%E3%82%B9%E3%83%88%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004403712/">ホットペッパーグルメ 立ち飲み広島（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ004403712/food/">ホットペッパーグルメ 立ち飲み広島 料理メニュー（2026-10-13 取得・せんじがら/ガンスの価格を確認）</a> / <a href="https://www.hotpepper.jp/strJ004403712/drink/">ホットペッパーグルメ 立ち飲み広島 ドリンクメニュー（2026-10-13 取得・賀茂鶴/美和桜/広島地酒3種飲み比べを確認）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-yamaoto-nagarekawa">
+<img class="hero" src="img/hiroshima/hiroshima-yamaoto-nagarekawa.jpg" alt="ごはんと酒菜 やま音 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">20</span>ごはんと酒菜 やま音<span class="yomi">ごはんとさかな やまおと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">流川通りから小道を入ったビル2階にある16席の居酒屋。店主が一人で調理しており、カウンターの裏に日本酒の冷蔵庫が据えてある。日本酒は広島の蔵を軸に、白鴻（呉）・神雷（神石高原）・龍勢（竹原）・華鳩（呉）・瑞冠（三次）・美和桜（三次）などを産地表示つきで出し、燗の指定もできる。肴は広島の名物と瀬戸内の魚を合わせた構成。</div>
+<div class="sig"><b>一皿:</b>揚げたてガンス(白身魚のすり身にパン粉をつけて揚げた広島の練り物。530円)／手作りせんじがら(豚のホルモンを乾燥させて揚げた広島の珍味。570円)／本日のヌタ(わけぎなどの葉物を酢味噌で和えた広島の家庭料理。640円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 17:30〜23:00（料理・ドリンクL.O. 22:00）／金・土・祝前日 17:30〜翌0:00（L.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（ほかに不定休あり）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区流川町5-19 共栄ビル2階</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。コースは3名から） — <a href="tel:0822411788">☎ 082-241-1788</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の地酒を銘柄まで公開している店として選んだ。ドリンクメニューに白鴻 純米酒65橙ラベル・神雷 特別純米・龍勢 特別純米・華鳩 純米吟醸 別注品・瑞冠 純米大吟醸生・美和桜 純米にごりおかゆ（燗）・美和桜 辛口純米ONIGIRI（燗）と、いずれも（広島）の産地表示つきで並ぶ。郷土料理も揚げたてガンス・手作りせんじがら・本日のヌタの3品がそろい、この章の条件を単独で満たす。価格帯は選定9店の上端を受け持つ。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年11月・12月とも『◎』で開き、定休の日曜・祝日が『休』として正しく反映されていること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%94%E3%81%AF%E3%82%93%E3%81%A8%E9%85%92%E8%8F%9C%20%E3%82%84%E3%81%BE%E9%9F%B3%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%B5%81%E5%B7%9D%E7%94%BA5-19%20%E5%85%B1%E6%A0%84%E3%83%93%E3%83%AB2%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001144979/">ホットペッパーグルメ ごはんと酒菜 やま音（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ001144979/drink/">ホットペッパーグルメ ごはんと酒菜 やま音 ドリンクメニュー（2026-10-13 取得・広島7銘柄の産地表示を確認）</a> / <a href="https://www.hotpepper.jp/strJ001144979/food/">ホットペッパーグルメ ごはんと酒菜 やま音 料理メニュー（2026-10-13 取得・ガンス/せんじがら/ヌタを確認）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-jukkon-nakashinchi">
+<img class="hero" src="img/hiroshima/hiroshima-jukkon-nakashinchi.jpg" alt="獅魂 中新地 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">21</span>獅魂 中新地<span class="yomi">じゅっこん なかしんち</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">流川の北端にある40席の居酒屋。市内に中新地と新天地の2店を構える広島の店で、3階に予約制のロフト個室がある。広島の食材を使った一品が中心で、西条の酒蔵の賄いから広まった美酒鍋をコースに組んでいる。日本酒は賀茂鶴・宝剣・雨後の月・竹鶴・天寶一・賀茂金秀・瑞冠などをグラス350円から量り売りする。全席禁煙。</div>
+<div class="sig"><b>一皿:</b>美酒鍋(びしゅなべ。東広島市西条の酒蔵の賄いが始まりとされる鍋で、出汁を使わず酒と塩胡椒だけで肉と野菜を炒め煮にする。全8品の広島食材厳選コース 飲み放題つき5,500円に組み込まれている)／揚げたて広島がんす(白身魚のすり身にパン粉をつけて揚げた広島の練り物。650円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝・祝前日 18:00〜翌1:00（料理・ドリンクL.O. 翌0:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（月曜が祝日の場合は営業し、翌火曜が休み）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区流川町1-7 セントラルゲート5ブロック</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0822472787">☎ 082-247-2787</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>西条の美酒鍋をコースで出す店として選んだ。ホットペッパーのコース一覧に『【美酒鍋を堪能！】広島食材厳選コース（全8品）飲み放題つき5500円』があることを確認している。地酒も賀茂鶴（西条）・宝剣（呉）・雨後の月（呉）・竹鶴（竹原）・天寶一（福山）・賀茂金秀（東広島黒瀬）・瑞冠（三次）をグラス350〜600円で公開しており、銘柄を具体的に出す店という条件に合う。郷土料理は揚げたて広島がんす・小鰯の天婦羅・ウニホーレン・白肉の天婦羅がある。全国チェーンではなく、広島市内に中新地と新天地の2店のみの地元資本である点も確認した。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年11月・12月とも『◎』で開き、定休の月曜が『休』として反映されていること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8D%85%E9%AD%82%20%E4%B8%AD%E6%96%B0%E5%9C%B0%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%B5%81%E5%B7%9D%E7%94%BA1-7%20%E3%82%BB%E3%83%B3%E3%83%88%E3%83%A9%E3%83%AB%E3%82%B2%E3%83%BC%E3%83%885%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000030991/">ホットペッパーグルメ 獅魂 中新地（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ000030991/course/">ホットペッパーグルメ 獅魂 中新地 コース一覧（2026-10-13 取得・美酒鍋コース5,500円を確認）</a> / <a href="https://www.hotpepper.jp/strJ000030991/drink/">ホットペッパーグルメ 獅魂 中新地 ドリンクメニュー（2026-10-13 取得・賀茂鶴/宝剣/雨後の月/竹鶴/天寶一/賀茂金秀/瑞冠を確認）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-jussho-nagarekawa">
+<img class="hero" src="img/hiroshima/hiroshima-jussho-nagarekawa.jpg" alt="広島大衆居酒屋 十升 流川通り店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">22</span>広島大衆居酒屋 十升 流川通り店<span class="yomi">ひろしまたいしゅういざかや じゅっしょう ながれかわどおりてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">流川通り沿いの大衆居酒屋。昼11時に開けて翌朝9時まで通しで営業する。市内に本店・薬研堀店・流川通り店の3店を持つ広島の店で、ここは44席、カウンターのほか7〜8名の仕切り席が3つあり、外せば最大22名まで使える。品書きは自家製がんす・せんじがら・ウニホーレン・和牛コウネ・広島菜漬けといった広島の肴が中心。席料300円（お通し込み）。</div>
+<div class="sig"><b>一皿:</b>自家製がんす(白身魚のすり身にパン粉をつけて揚げた広島の練り物。店で仕込む。550円)／せんじがら(豚のホルモンを乾燥させて揚げた広島の珍味。400円)／ウニホーレン(バターで炒めたほうれん草に生うにをのせた広島発祥の一品。1,650円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝・祝前日 11:00〜翌9:00（昼11時開店、朝9時まで通し営業）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県広島市中区流川町8-13 第3ハワイヤビル1F</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。混雑時は2時間制） — <a href="tel:0822477890">☎ 082-247-7890</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>流川の枠を4店にするにあたり、朝まで開いている大衆酒場として入れた。昼11時から翌朝9時までという営業時間は選定9店の中で唯一で、一次会にも〆にも使える。郷土料理は自家製がんす・せんじがら・ウニホーレン・和牛コウネ炙り・広島菜漬け、地酒は亀齢 八拾／賀茂鶴 白壁の郷／瑞冠 超辛口／雨後の月を一合800〜1,000円で銘柄表示している。十升は広島市内に3店のみの地元資本で、全国チェーンではない（本店＝広島牡蠣・鉄板焼き、ほかに薬研堀店）。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年12月31日まで『◎』ないし『□』で開いていること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%83%E5%B3%B6%E5%A4%A7%E8%A1%86%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%8D%81%E5%8D%87%20%E6%B5%81%E5%B7%9D%E9%80%9A%E3%82%8A%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%B5%81%E5%B7%9D%E7%94%BA8-13%20%E7%AC%AC3%E3%83%8F%E3%83%AF%E3%82%A4%E3%83%A4%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001144435/">ホットペッパーグルメ 広島大衆居酒屋 十升 流川通り店（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ001144435/food/">ホットペッパーグルメ 十升 流川通り店 料理メニュー（2026-10-13 取得・がんす/せんじがら/ウニホーレンの価格を確認）</a> / <a href="https://www.hotpepper.jp/strJ001144435/drink/">ホットペッパーグルメ 十升 流川通り店 ドリンクメニュー（2026-10-13 取得・亀齢/賀茂鶴/瑞冠/雨後の月を確認）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-ichizen-sakaba-nakamachi">
+<img class="hero" src="img/hiroshima/hiroshima-ichizen-sakaba-nakamachi.jpg" alt="一膳酒場 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">23</span>一膳酒場<span class="yomi">いちぜんさかば</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">袋町電停の裏手、中町にある40席の居酒屋。写真の説明文に創業30年とある古い店で、掘りごたつの座敷とふすま・簾で仕切った半個室、カウンターがある。日本酒は本醸造・純米・純米吟醸・果実酒の段ごとに広島の蔵元を並べ、小徳利で出す。料理はがんすや瀬戸内の小鰯を含む広島の一品と、ぶた天・だし巻き玉子などの定番。</div>
+<div class="sig"><b>一皿:</b>がんす(白身魚のすり身にパン粉をつけて揚げた広島の練り物)／広島の地酒の小徳利(本醸造＝賀茂泉・千福・美和桜・賀茂鶴・白牡丹を700円から、純米酒＝美和桜・天賓一・竹鶴・亀齢・広島錦を850円から、純米吟醸＝雨後の月・華鳩を1,100円から)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 17:30〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（ほかに臨時休業あり）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区中町5-6 エポカ中町</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0822448868">☎ 082-244-8868</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の地酒を銘柄まで公開している店のうち、品ぞろえが最も広いので選んだ。ドリンクメニューに本醸造5銘柄（賀茂泉／千福／美和桜／賀茂鶴／白牡丹）、純米酒5銘柄（美和桜／天賓一／竹鶴／亀齢／広島錦）、純米吟醸2銘柄（雨後の月／華鳩）、果実酒（賀茂鶴の梅酒ほか）が段ごとに並ぶ。西条の賀茂鶴・賀茂泉・白牡丹がそろうのはこの9店ではこの店だけ。郷土料理はがんすと小鰯があり、価格帯の中上を受け持つ。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年11月・12月とも『◎』で開き、定休の日曜・祝日が『休』として反映されていること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E8%86%B3%E9%85%92%E5%A0%B4%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E4%B8%AD%E7%94%BA5-6%20%E3%82%A8%E3%83%9D%E3%82%AB%E4%B8%AD%E7%94%BA">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000027386/">ホットペッパーグルメ 一膳酒場（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ000027386/drink/">ホットペッパーグルメ 一膳酒場 ドリンクメニュー（2026-10-13 取得・広島11銘柄の段組みを確認）</a> / <a href="https://www.hotpepper.jp/strJ000027386/photo/">ホットペッパーグルメ 一膳酒場 写真（2026-10-13 取得・『創業30年の老舗居酒屋』の記載と店内写真を確認）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-onegiya-fukuromachi">
+<img class="hero" src="img/hiroshima/hiroshima-onegiya-fukuromachi.jpg" alt="旬彩酒庵 おねぎや 袋町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">24</span>旬彩酒庵 おねぎや 袋町店<span class="yomi">しゅんさいしゅあん おねぎや ふくろまちてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">本通りの裏手にあたるうらぶくろ商店街の居酒屋。全国から葱を仕入れ、広島県産の『サムライねぎ』を使ったキムチ・餃子・しゅうまい・肉巻き串など、葱を主役にした品書きを組む。54席で個室風の仕切り席が9つ。年中無休で、コースには東広島市西条の美酒鍋を据えたものがある。日本酒は賀茂泉・雨後の月・冨久長を広島の酒として明記して置く。</div>
+<div class="sig"><b>一皿:</b>西条美酒鍋(びしゅなべ。東広島市西条の酒蔵の賄いが始まりとされる鍋で、出汁を使わず日本酒と塩胡椒だけで肉と野菜を炒め煮にする。飲み放題付コース6,000円に組み込まれている)／お魚せんじがら(魚を使ったせんじがら。せんじがらは本来、豚のホルモンを乾燥させて揚げた広島の珍味。528円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 17:00〜23:30（料理・ドリンクL.O. 23:00）／日・祝 17:00〜23:00（L.O. 22:00）</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区袋町1-13 日専連ビル1階</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0822436351">☎ 082-243-6351</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>西条の美酒鍋をコース名に掲げている店として選んだ。ホットペッパーのコース一覧に『［おねぎやお薦め！西条美酒鍋コース］飲み放題付《お一人様》6,000円（税込）』があることを確認している。この店が選定9店で唯一の6,000円台のコースで、価格帯の上端も受け持つ。日本酒は〔広島〕賀茂泉 緑線・〔広島〕雨後の月 吟醸純米・〔広島〕冨久長 特別純米辛口と産地つきで出す。葱料理という切り口が他の8店と重ならない点も選定理由。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年11月・12月とも開いており、定休日なしという記載と一致していること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E5%BD%A9%E9%85%92%E5%BA%B5%20%E3%81%8A%E3%81%AD%E3%81%8E%E3%82%84%20%E8%A2%8B%E7%94%BA%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%A2%8B%E7%94%BA1-13%20%E6%97%A5%E5%B0%82%E9%80%A3%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000028077/">ホットペッパーグルメ 旬彩酒庵 おねぎや 袋町店（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ000028077/course/">ホットペッパーグルメ おねぎや 袋町店 コース一覧（2026-10-13 取得・西条美酒鍋コース6,000円を確認）</a> / <a href="https://www.hotpepper.jp/strJ000028077/drink/">ホットペッパーグルメ おねぎや 袋町店 ドリンクメニュー（2026-10-13 取得・賀茂泉/雨後の月/冨久長を確認）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-yoridokoro-ekinishi">
+<img class="hero" src="img/hiroshima/hiroshima-yoridokoro-ekinishi.jpg" alt="よりどころ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>よりどころ<span class="yomi">よりどころ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島駅西側の通称エキニシにある19席の居酒屋。カウンター5席とテーブル席で、同じ名前の立町の店とは別の店舗にあたる。串焼きは1本165円から、天麩羅は330円からで、瀬戸内の小イワシや穴子の一本揚げも揚げる。日本酒は広島の蔵を軸にそろえ、亀齢 萬年・宝剣 純米吟醸八反・瑞冠 いい風・雨後の月 吟醸純米・美和桜 本醸辛口を銘柄表示で置く。</div>
+<div class="sig"><b>一皿:</b>小イワシ天麩羅(カタクチイワシを広島では小いわしと呼び、七度洗えば鯛の味といわれる。衣をつけて揚げた広島の定番の肴。660円)／亀齢 萬年(東広島市西条の亀齢酒造の酒。880円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝・祝前日 17:00〜翌0:00（料理・ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>広島県広島市南区大須賀町11-8</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:09073704448">☎ 090-7370-4448</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島駅前の枠として選んだ。駅から徒歩3分のエキニシにあり、広島の地酒を亀齢 萬年・宝剣・瑞冠・雨後の月・美和桜と銘柄表示で5種置く点を買った。亀齢は西条の蔵で、この章が求める西条の酒を具体名で出す店にあたる。郷土料理は小イワシ天麩羅があり、串1本165円からという価格帯も9店の下側を補う。カウンター5席・総席数19席の小さな個人店で、全国チェーンではない。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年11月・12月とも『◎』で開き、定休の日曜が『休』として反映されていること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%88%E3%82%8A%E3%81%A9%E3%81%93%E3%82%8D%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E5%A4%A7%E9%A0%88%E8%B3%80%E7%94%BA11-8">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001210177/">ホットペッパーグルメ よりどころ（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ001210177/drink/">ホットペッパーグルメ よりどころ ドリンクメニュー（2026-10-13 取得・亀齢萬年/宝剣/瑞冠/雨後の月/美和桜を確認）</a> / <a href="https://www.hotpepper.jp/strJ001210177/food/">ホットペッパーグルメ よりどころ 料理メニュー（2026-10-13 取得・小イワシ天麩羅660円を確認）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-kenmin-sakaba-otemachi">
+<img class="hero" src="img/hiroshima/hiroshima-kenmin-sakaba-otemachi.jpg" alt="居酒屋 広島県民酒場 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>居酒屋 広島県民酒場<span class="yomi">いざかや ひろしまけんみんさかば</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">大手町の地下にある80席の居酒屋。掘りごたつ・テーブル・カウンターがあり、年中無休で深夜0時まで開く。品書きが産地別に組まれているのが特徴で、［呉名物］がんす、［福島町のホルモン］せんじがら、［三次名物］ワニのフライ、［尾道名物］でべら、［三原名物］地ダコ、［福山名物］鯛というふうに広島県内の名物を並べる。日本酒も県内の蔵を44種ほど、蔵元の所在地と日本酒度つきで450〜550円で出す。</div>
+<div class="sig"><b>一皿:</b>せんじがら(豚のホルモン＝胃や腸を乾燥させてから揚げた広島の珍味。広島市西区福島町のホルモンを使う。580円)／がんす(白身魚のすり身に玉ねぎや唐辛子を混ぜ、パン粉をつけて揚げた呉の練り物。580円)／広島の地酒(西条の白牡丹・賀茂泉・山陽鶴・賀茂鶴・福美人・西条鶴・亀齢から、呉の宝剣・白鴻・華鳩・雨後の月、竹原の誠鏡・竹鶴まで、蔵元の所在地つきで44種。450〜550円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝・祝前日 17:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区大手町3-1-8 B1F</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0822368850">☎ 082-236-8850</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>平和記念公園・紙屋町・大手町の枠として選んだ。この章が求める『広島の地酒を銘柄まで公開している店』として選定9店で群を抜いており、ドリンクメニューに八幡川(五日市)・一代(廿日市)・三谷春(呉)・千福(呉)・弥山(廿日市)・蓬莱鶴(白島)・御幸(草津)・本州一(向洋)・水龍(呉)・宝剣(呉)・白鴻(呉)・同期の桜(江田島)・誠鏡(竹原)・富久長(安芸津)・雨後の月(呉)・華鳩(呉)・竹鶴(竹原)・夜の帝王(竹原)・酔心(三原)・白牡丹(西条)・賀茂泉(西条)・山陽鶴(西条)・賀茂金秀(黒瀬)・賀茂鶴(西条、4種)・福美人(西条)・西条鶴(西条、3種)・亀齢(西条、4種)・天宝一(神辺)・向井桜(安芸高田)・美和桜(三次、3種)・比婆美人(庄原)・超群(庄原)が、いずれも蔵元の所在地と日本酒度つきで並ぶ。西条の蔵だけで7蔵15種。郷土料理もせんじがら・がんす・ウニホーレン・小イワシ・広島菜・花ソーセージ・ワニ・でべらとそろう。個人経営の1店舗で全国チェーンではない。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年11月・12月の末日まで『◎』（即予約可）で開いており、定休日なしという記載と一致していること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E6%B0%91%E9%85%92%E5%A0%B4%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E6%89%8B%E7%94%BA3-1-8%20B1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001192897/">ホットペッパーグルメ 居酒屋 広島県民酒場（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ001192897/drink/">ホットペッパーグルメ 広島県民酒場 ドリンクメニュー（2026-10-13 取得・広島44銘柄の蔵元所在地つきの一覧を確認）</a> / <a href="https://www.hotpepper.jp/strJ001192897/food/">ホットペッパーグルメ 広島県民酒場 料理メニュー（2026-10-13 取得・せんじがら/がんす/ウニホーレン/ワニ/でべらを確認）</a> / <a href="https://www.hotpepper.jp/strJ001192897/course/">ホットペッパーグルメ 広島県民酒場 コース一覧（2026-10-13 取得・広島地酒50種付きコースを確認）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-itsuha-itsukaichi">
+<img class="hero" src="img/hiroshima/hiroshima-itsuha-itsukaichi.jpg" alt="隠れ家個室 広島食材 五葉－いつは－ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>隠れ家個室 広島食材 五葉－いつは－<span class="yomi">かくれがこしつ ひろしましょくざい いつは</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市西部、佐伯区五日市の居酒屋。70席すべてが完全個室で、9台分の駐車場がある。年中無休（12月31日・1月1日のみ休み）で17時から23時まで。広島の食材を掲げ、A5黒毛和牛のコウネ炙りや地蛸・地穴子の天麩羅、瀬戸紅葉豚などを出す。日本酒は広島の蔵を中心に銘柄表示でそろえ、竹鶴・雨後の月・宝剣・賀茂泉・亀齢・天寶一・美和桜が並ぶ。</div>
+<div class="sig"><b>一皿:</b>A5黒毛和牛 コウネ炙り(牛の肩バラの一部で、広島ではコウネと呼ぶ。脂の層を炙って切り出したもの。1,200円)／地穴子の天麩羅盛(瀬戸内でとれた穴子を揚げたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 17:00〜23:00（料理・ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">年中無休（12月31日・1月1日のみ休み）</td></tr>
+<tr><th>住所</th><td>広島県広島市佐伯区五日市中央1-3-28</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。コースは席の確保が2時間半） — <a href="tel:0829250677">☎ 082-925-0677</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>郊外の枠として選んだ。中心部から離れた佐伯区五日市にあり、広電楽々園電停から徒歩5分・駐車場9台と、車でも電車でも行ける。広島の地酒を竹鶴（竹原）・雨後の月（呉）・宝剣（呉）・賀茂泉 純米吟醸 七割五分（西条）・亀齢 辛口純米八捨（西条）・天寶一（福山）・美和桜 別囲い大吟醸（三次）と7銘柄、800〜1,200円で銘柄表示しており、西条の2蔵がそろう。全席個室で家族連れが使いやすい点も、他の8店（カウンター中心の小さな店が多い）と性格が重ならない。営業の根拠＝ホットペッパーグルメ掲載ページ（2026-10-13 取得）のネット予約カレンダーが2026年11月・12月とも開いており、年中無休という記載と一致していること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9A%A0%E3%82%8C%E5%AE%B6%E5%80%8B%E5%AE%A4%20%E5%BA%83%E5%B3%B6%E9%A3%9F%E6%9D%90%20%E4%BA%94%E8%91%89%EF%BC%8D%E3%81%84%E3%81%A4%E3%81%AF%EF%BC%8D%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%BD%90%E4%BC%AF%E5%8C%BA%E4%BA%94%E6%97%A5%E5%B8%82%E4%B8%AD%E5%A4%AE1-3-28">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000526923/">ホットペッパーグルメ 隠れ家個室 広島食材 五葉－いつは－（2026-10-13 取得・予約カレンダーで営業を確認）</a> / <a href="https://www.hotpepper.jp/strJ000526923/drink/">ホットペッパーグルメ 五葉－いつは－ ドリンクメニュー（2026-10-13 取得・竹鶴/雨後の月/宝剣/賀茂泉/亀齢/天寶一/美和桜を確認）</a> / <a href="https://www.hotpepper.jp/strJ000526923/food/">ホットペッパーグルメ 五葉－いつは－ 料理メニュー（2026-10-13 取得・A5黒毛和牛コウネ炙りを確認）</a></div>
+</div></div>
+<h2 id="s-ramen" class="c-brown">広島つけ麺・ラーメン・中華そば</h2>
+<div class="card" id="c-hiroshima-bakudanya-ekie">
+<img class="hero" src="img/hiroshima/hiroshima-bakudanya-ekie.jpg" alt="廣島つけ麺本舗 ばくだん屋 ekie店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">28</span>廣島つけ麺本舗 ばくだん屋 ekie店<span class="yomi">ひろしまつけめんほんぽ ばくだんや えきえてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">広島つけ麺だけを看板にした専門店の駅ビル店。本店(中区新天地)を含め広島市内に8店を自社で構える。茹でて氷水で締めた中細ストレート麺に、茹でキャベツ・きゅうり・ねぎ・チャーシュー・煮玉子を添え、いりこ(煮干し)だしに唐辛子とごまを効かせた冷たい辛だれを付けて食べる。辛さは0辛から無限大まで注文時に指定でき、辛さ0でも頼める。11時から22時まで通しで営業するので、新幹線の待ち時間にも使える。</div>
+<div class="sig"><b>一皿:</b>廣島つけ麺(冷)(冷水で締めた中細ストレート麺に、茹でキャベツ・きゅうり・ねぎ・チャーシュー・煮玉子を添え、いりこだしに唐辛子とごまを合わせた冷たい辛だれを付けて食べる広島つけ麺。麺もたれも冷たいのが普通のつけ麺との違い。辛さは0辛から無限大まで段階で選べる)／辛味噌つけそば(温)(同じ具材に温かい辛味噌のつけだれを合わせたもの。寒い時期向け)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜22:00(L.O.21:00)</td></tr>
+<tr><th>定休日</th><td class="off">無休(ekieが休館の日は休み)</td></tr>
+<tr><th>住所</th><td>広島県広島市南区松原町1-2 ekie 2F</td></tr>
+<tr><th>予約</th><td>不可(カウンター中心の麺店のため席の予約は受けていない。持ち帰りは電話で注文可) — <a href="tel:0822363889">☎ 082-236-3889</a> ／ <a href="https://www.bakudanya.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイト(www.bakudanya.net)の店舗一覧にekie店の郵便番号・住所・電話番号・営業時間・休業条件が明記されている(2026-10-13閲覧)。広島県観光連盟などの公式観光サイト『Dive! Hiroshima』の特集「広島つけ麺」でも、つけ麺文化を発信している老舗店として筆頭に挙げられている。全国チェーンではなく広島市内8店を自社展開する地元資本で、県外常設店は持たない。写真は公式サイト掲載の料理写真(ブランド共通の撮り下ろし)を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BB%A3%E5%B3%B6%E3%81%A4%E3%81%91%E9%BA%BA%E6%9C%AC%E8%88%97%20%E3%81%B0%E3%81%8F%E3%81%A0%E3%82%93%E5%B1%8B%20ekie%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E6%9D%BE%E5%8E%9F%E7%94%BA1-2%20ekie%202F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（static.wixstatic.com）より引用 / 参照元: <a href="https://www.bakudanya.net/">ばくだん屋 公式サイト 店舗一覧(ekie店の住所・電話・営業時間を記載／2026-10-13閲覧)</a> / <a href="https://dive-hiroshima.com/feature/noodle-tsukemen/">Dive! Hiroshima(広島県観光連盟・広島県・広島市の公式観光サイト)特集「広島つけ麺」(2026-10-13閲覧)</a> / <a href="https://www.hotpepper.jp/strJ000111736/">ホットペッパーグルメ「ばくだん屋 本店」掲載ページ(同ブランドの営業確認・2026-06-08付の来店口コミあり／2026-10-13閲覧)</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-kujiraya-yagenbori">
+<img class="hero" src="img/hiroshima/hiroshima-kujiraya-yagenbori.jpg" alt="廣島辛つけ麺くじら屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">29</span>廣島辛つけ麺くじら屋<span class="yomi">ひろしまからつけめんくじらや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">広島市随一の飲み屋街である薬研堀にある広島つけ麺の専門店で、夕方18時から翌朝3時まで通しで営業する。冷水で締めた麺に茹でキャベツ・ねぎ・チャーシュー・煮玉子を添え、冷たい辛だれを付けて食べる広島つけ麺を、トッピングと辛さを細かく選べる形で出す。締めに合わせる自家製おにぎりも看板。カウンター中心の14席で、日曜のみ休み。</div>
+<div class="sig"><b>一皿:</b>廣島辛つけ麺(冷水で締めた麺に茹でキャベツ・ねぎ・チャーシュー・煮玉子を添え、唐辛子とごまを効かせた冷たい辛だれに付けて食べる広島つけ麺。麺もたれも冷たい。辛さは注文時に段階で選べ、トッピングも豊富)／自家製おにぎり(つけ麺の残った辛だれに浸して食べる、海苔を巻いた大ぶりのおにぎり)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜翌3:00(料理L.O.翌2:50 ドリンクL.O.翌2:50)</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>広島県広島市中区薬研堀5-18 パールビル1F</td></tr>
+<tr><th>予約</th><td>可(ホットペッパーグルメ経由のネット予約あり)</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページ(2026-10-13閲覧)に住所・営業時間・定休日・席数・予算と、店が自ら用意した料理・店内写真が13点掲載されている。流川・薬研堀の深夜帯を担う店で、昼営業中心のばくだん屋・辛部とは使う時間帯が重ならない。全国チェーンではなく薬研堀の1店のみ。電話番号はホットペッパーグルメ上で非表示のため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BB%A3%E5%B3%B6%E8%BE%9B%E3%81%A4%E3%81%91%E9%BA%BA%E3%81%8F%E3%81%98%E3%82%89%E5%B1%8B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%96%AC%E7%A0%94%E5%A0%805-18%20%E3%83%91%E3%83%BC%E3%83%AB%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003297162/">ホットペッパーグルメ「廣島辛つけ麺くじら屋」掲載ページ(2026-10-13閲覧)</a> / <a href="https://dive-hiroshima.com/feature/noodle-tsukemen/">Dive! Hiroshima(広島県観光連盟・広島県・広島市の公式観光サイト)特集「広島つけ麺」(2026-10-13閲覧)</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-karabu-tokaichi">
+<img class="hero" src="img/hiroshima/hiroshima-karabu-tokaichi.jpg" alt="つけ麺本舗 辛部 十日市店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">30</span>つけ麺本舗 辛部 十日市店<span class="yomi">つけめんほんぽ からぶ とおかいちてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">広島市内に十日市・広島駅前・五日市・井口・皆実町の5店を構える広島つけ麺の専門店の、最初に開いた店。2000年代初めの創業で、公式サイトには『広島つけ麺を磨き続けて20年』とある。広島つけ麺では珍しい食べ応えのある熟成中太麺を使い、茹で上げてすぐ滑りを取り冷水で締める。つけだれは魚介出汁に唐辛子とごまを合わせた冷たい辛だれで、辛さは表から段階を選ぶ。麺の量は小(半玉)から超大(3玉)まで5段階。</div>
+<div class="sig"><b>一皿:</b>定番つけ麺(冷水で締めた熟成中太麺に、茹でキャベツ・きゅうり・ねぎ・チャーシューを添え、魚介出汁の冷たい辛だれを付けて食べる広島つけ麺。麺もたれも冷たい。辛さは卓上の表から段階で選べ、麺量も小〜超大の5段階)／のりかつおつけ麺(定番つけ麺に味付海苔とかつお節を足したもの。魚介出汁と合わせた同店の一番人気)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00／18:00〜23:00(料理L.O.22:45 ドリンクL.O.22:45)</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>広島県広島市中区十日市町1-4-29 1F</td></tr>
+<tr><th>予約</th><td>不要(持ち帰りは電話予約可) — <a href="https://karabu.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>同ブランドの公式サイト(karabu.jp)に麺・つけだれの作り方、辛さの段階、麺量と価格、持ち帰りとデリバリーの扱いが載っており(2026-10-13閲覧)、十日市店についてはホットペッパーグルメの掲載ページに住所・アクセス・営業時間・定休日・席数がある。地元資本で広島市内5店のみ、県外出店は無い。写真は同店自身のホットペッパー掲載写真を採った。電話番号は掲載ページ上で非表示のため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A4%E3%81%91%E9%BA%BA%E6%9C%AC%E8%88%97%20%E8%BE%9B%E9%83%A8%20%E5%8D%81%E6%97%A5%E5%B8%82%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%8D%81%E6%97%A5%E5%B8%82%E7%94%BA1-4-29%201F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://karabu.jp/">つけ麺本舗 辛部 公式サイト(広島駅前店／ブランドの麺・つけだれ・辛さ・麺量の説明。2026-10-13閲覧)</a> / <a href="https://www.hotpepper.jp/strJ000789299/">ホットペッパーグルメ「つけ麺本舗 辛部 十日市店」掲載ページ(2026-10-13閲覧)</a> / <a href="https://dive-hiroshima.com/feature/noodle-tsukemen/">Dive! Hiroshima(広島県観光連盟・広島県・広島市の公式観光サイト)特集「広島つけ麺」(2026-10-13閲覧)</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-uguisu-nagarekawa">
+<img class="hero" src="img/hiroshima/hiroshima-uguisu-nagarekawa.jpg" alt="うぐいす 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">31</span>うぐいす<span class="yomi">うぐいす</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和23年(1948年)開業の中華そば専門店。豚骨を炊いたスープに醤油ダレを合わせた、濁りのある茶色いあっさり味の広島ラーメンを出す。やや硬めの細麺にもやしを合わせるのが昔からの形。カウンターだけの10席で、営業は夜20時から翌2時まで。日曜と祝日が休みで、飲んだ後の一杯として流川で長く使われてきた。</div>
+<div class="sig"><b>一皿:</b>中華そば(豚骨を炊いたスープに醤油ダレを合わせた、濁りのある茶色いあっさり味の広島ラーメン。やや硬めの細麺にチャーシュー・もやし・ねぎがのる)／ねぎ中華そば(同じ中華そばに刻みねぎを山盛りにしたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>20:00〜翌2:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜、祝日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区流川町3-16</td></tr>
+<tr><th>予約</th><td>不要(カウンター10席のみ)</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昭文社のまっぷるトラベルガイドの「広島ラーメン」店一覧に、昭和23(1948)年開業・住所(流川町3-16)・価格が掲載されており、ホットペッパーグルメの掲載ページでも同じ住所・営業時間(20:00〜翌2:00)・定休日(日・祝)・席数10席が確認できる(いずれも2026-10-13閲覧)。同ページには店自身の料理写真が複数ある。全国チェーンではなく流川の1店のみ。電話番号は掲載ページ上で非表示のため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%90%E3%81%84%E3%81%99%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%B5%81%E5%B7%9D%E7%94%BA3-16">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.mapple.net/collection/afc1480c2fed4816aa07d6ac6e27f767/">まっぷるトラベルガイド(昭文社)「広島ラーメン」店一覧(2026-10-13閲覧)</a> / <a href="https://www.hotpepper.jp/strJ000111774/">ホットペッパーグルメ「うぐいす」掲載ページ(2026-10-13閲覧)</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-youki-otemachi">
+<img class="hero" src="img/hiroshima/hiroshima-youki-otemachi.jpg" alt="陽気 大手町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">32</span>陽気 大手町店<span class="yomi">ようき おおてまちてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和33年(1958年)に中区江波南で創業した広島ラーメンの代表格『陽気』の大手町店。品書きは中華そばとむすびだけで、豚骨と鶏ガラを炊いた濁りのある茶色いスープに醤油を合わせ、コシのある細麺ともやし・青ねぎ・チャーシューを合わせる。横浜のラーメン博物館でも紹介された店で、江波の本店のほか大手町・横川新町などに店がある。11時から22時まで通しで営業し、日曜と毎月6日が休み。</div>
+<div class="sig"><b>一皿:</b>中華そば(豚骨と鶏ガラを炊いた濁りのある茶色い醤油スープに細麺を合わせ、もやし・青ねぎ・醤油で煮たチャーシューをのせた広島ラーメン。これ以外の麺はほぼ置いていない)／むすび(スープに合わせて頼む塩むすび。2個単位)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜、毎月6日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区大手町3-1-6</td></tr>
+<tr><th>予約</th><td>不要</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昭文社のまっぷるトラベルガイドの「広島ラーメン」店一覧に、創業は昭和33(1958)年、江波南の本店と大手町店(大手町3-1-6)の住所・価格が載っている。ホットペッパーグルメの掲載ページでも大手町店の住所・営業時間(11:00〜22:00)・定休日(日曜・毎月6日)・席数24席と、店自身の料理写真が確認できる(いずれも2026-10-13閲覧)。全国チェーンではなく広島市内のみの地元資本。電話番号は掲載ページ上で非表示のため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%99%BD%E6%B0%97%20%E5%A4%A7%E6%89%8B%E7%94%BA%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E6%89%8B%E7%94%BA3-1-6">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.mapple.net/collection/afc1480c2fed4816aa07d6ac6e27f767/">まっぷるトラベルガイド(昭文社)「広島ラーメン」店一覧(2026-10-13閲覧)</a> / <a href="https://www.hotpepper.jp/strJ000653151/">ホットペッパーグルメ「陽気 大手町店」掲載ページ(2026-10-13閲覧)</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-suzume-funairi">
+<img class="hero" src="img/hiroshima/hiroshima-suzume-funairi.jpg" alt="中華そば 寿々女 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">33</span>中華そば 寿々女<span class="yomi">ちゅうかそば すずめ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">2015年に惜しまれつつ閉店した広島ラーメンの名店「すずめ」の味を受け継いだ中華そば専門店。豚骨と鶏ガラを炊いた濁りのある茶色い醤油スープに細麺を合わせ、チャーシュー・もやし・青ねぎをのせた、60年受け継がれてきた形の一杯を600円で出す。昼はスープが切れ次第終了で、夜は木曜と土曜だけ開く。駐車場が5台あり、毎月14日と日曜が休み。</div>
+<div class="sig"><b>一皿:</b>中華そば(豚骨と鶏ガラを炊いた濁りのある茶色い醤油スープに細麺を合わせ、チャーシュー・もやし・青ねぎをのせた広島ラーメン。600円)／紅辛そば(自家製ラー油で仕上げた、マイルドな辛さの中華そば。時間限定・700円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 11:30〜15:00(スープが切れ次第終了)／夜は木曜19:30〜22:00・土曜19:00〜22:00のみ</td></tr>
+<tr><th>定休日</th><td class="off">日曜、毎月14日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区舟入幸町18-8 ※ホットペッパーグルメは18-10と表記。番地は未確認</td></tr>
+<tr><th>予約</th><td>不要</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページと楽天ぐるなびの店舗ページ(ともに2026-10-13閲覧)の両方に住所・営業時間・定休日・席数が載っており、ぐるなび側には店が用意した料理・店内写真が10点ある。閉店した『すずめ』の系譜という点で、戦後からの広島ラーメンの流れをたどれる店。全国チェーンではなく舟入の1店のみ。※住所はホットペッパーが『舟入幸町18-10』、ぐるなびが『舟入幸町18-8』で食い違っており、ここではぐるなびの表記を採った。番地は未確定。電話番号は両サイトとも実番号を出していないため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E5%AF%BF%E3%80%85%E5%A5%B3%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%88%9F%E5%85%A5%E5%B9%B8%E7%94%BA18-8%20%E2%80%BB%E3%83%9B%E3%83%83%E3%83%88%E3%83%9A%E3%83%83%E3%83%91%E3%83%BC%E3%82%B0%E3%83%AB%E3%83%A1%E3%81%AF18-10%E3%81%A8%E8%A1%A8%E8%A8%98%E3%80%82%E7%95%AA%E5%9C%B0%E3%81%AF%E6%9C%AA%E7%A2%BA%E8%AA%8D">Googleマップで開く</a>
+<div class="src">写真: ぐるなび（rimage.gnst.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001175196/">ホットペッパーグルメ「中華そば 寿々女」掲載ページ(2026-10-13閲覧)</a> / <a href="https://r.gnavi.co.jp/85zr5cc90000/">楽天ぐるなび「寿々女(スズメ)」店舗ページ(2026-10-13閲覧)</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-kunimatsu-hatchobori">
+<img class="hero" src="img/hiroshima/hiroshima-kunimatsu-hatchobori.jpg" alt="中華そば くにまつ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">34</span>中華そば くにまつ<span class="yomi">ちゅうかそば くにまつ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">2008年に八丁堀で開いた麺専門店で、広島で汁なし担担麺が定着するきっかけになった店として知られる。茹でた細麺に花椒(ホアジャオ)と唐辛子を効かせたタレ・肉そぼろ・ねぎをのせ、客が自分で30回ほど混ぜてから食べる。辛さと山椒の量を選べ、締めに少量のごはんを入れて残ったタレとからめる食べ方が定番。汁ありの中華そばや豚肉をのせた丼も置く。日曜休み。</div>
+<div class="sig"><b>一皿:</b>汁なし担担麺(茹でた細麺に花椒と唐辛子のタレ・肉そぼろ・青ねぎをのせ、汁を張らずに出す麺。卓上でよく混ぜてから食べ、辛さと山椒の量を選べる。締めに少量のごはんを入れて残ったタレとからめる)／豚丼(甘辛く煮た豚バラをのせた小ぶりの丼。汁なし担担麺と合わせて頼む人が多い)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 11:00〜15:00／17:00〜21:00、土 11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>広島県広島市中区八丁堀8-10 清水ビル1F</td></tr>
+<tr><th>予約</th><td>不要</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページ(2026-10-13閲覧)に住所・アクセス・営業時間・定休日・席数23席と、店自身が用意した料理・店内写真が6点載っている。広島つけ麺・広島ラーメンとは別系統の、広島で近年定着した麺として選んだ。地元資本の店で全国チェーンではない。電話番号は掲載ページ上で非表示のため未確認。創業年は『2008年開店』とする記述がグルメ媒体に複数あるが一次情報では確認できていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E3%81%8F%E3%81%AB%E3%81%BE%E3%81%A4%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%85%AB%E4%B8%81%E5%A0%808-10%20%E6%B8%85%E6%B0%B4%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000805862/">ホットペッパーグルメ「中華そば くにまつ」掲載ページ(2026-10-13閲覧)</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-rairaitei-nishimidorii">
+<img class="hero" src="img/hiroshima/hiroshima-rairaitei-nishimidorii.jpg" alt="来頼亭 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">35</span>来頼亭<span class="yomi">らいらいてい</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">昭和23年(1948年)開店の中華そば専門店で、開店当時の味を受け継いでいる。近くに広陵高校があったことから「広陵ラーメン」とも呼ばれる。スープは豚骨と5種類ほどの材料でとっただしに、チャーシューを煮た醤油ダレを合わせたもの。やや薄めで、卓上の醤油ダレと胡椒で濃さを自分で調えて食べる。中華そばに錦糸卵がのるのが珍しく、ねぎ・もやし・薄切りの大きなチャーシューが添う。17席・全席禁煙。</div>
+<div class="sig"><b>一皿:</b>中華そば(豚骨と数種の材料でとっただしに、チャーシューを煮た醤油ダレを合わせた広島ラーメン。錦糸卵・ねぎ・もやし・薄切りの大きなチャーシューがのり、卓上のタレと胡椒で濃さを調える。麺1玉)／大中華そば(同じ中華そばの麺を2玉にしたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:30／17:00〜20:00(HAMONI掲載。祝日は異なる場合あり)</td></tr>
+<tr><th>定休日</th><td class="off">月曜(個人ブログの2016年の記事による。一次情報では未確認)</td></tr>
+<tr><th>住所</th><td>広島県広島市南区西翠町3-3</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0822531701">☎ 082-253-1701</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昭文社のまっぷるトラベルガイドの「広島ラーメン」店一覧に、昭和23(1948)年の開店当時の味を受け継ぐ店として住所(西翠町3-3)とスープの作りが載っている。広島の店舗情報サイトHAMONIの店舗ページに同じ住所・電話番号(082-253-1701)・17席・営業時間が掲載され、2026年7月付の来店投稿(宇品の老舗4軒めぐりの1軒として中華そばを食べたもの)がある。さらに個人ブログ2本(2025年3月16日付・2023年5月17日付)に、店内の卓上・券売機・中華そばの実写があり、営業が続いていることが年をまたいで確認できる(いずれも2026-10-13閲覧)。全国チェーンではなく1店のみ。写真は上記2本の個人ブログから、料理が写っているもののみ7点を採った(外観・のれん・券売機・メニュー表・人物が主になっているものは除外。実測で全点とも長辺1,024px以上)。定休日は一次情報では未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%A5%E9%A0%BC%E4%BA%AD%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E8%A5%BF%E7%BF%A0%E7%94%BA3-3">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（はてなブログ）（cdn-ak.f.st-hatena.com）より引用 / 参照元: <a href="https://www.mapple.net/collection/afc1480c2fed4816aa07d6ac6e27f767/">まっぷるトラベルガイド(昭文社)「広島ラーメン」店一覧(2026-10-13閲覧)</a> / <a href="https://hamoni.jp/shop/sv7hzxw4IZszz4RKVkNF">HAMONI(広島の店舗情報サイト)「来頼亭」店舗ページ(住所・電話・席数・営業時間、2026年7月付の来店投稿あり／2026-10-13閲覧)</a> / <a href="https://aki-tokitamago.hatenablog.com/entry/2025/03/16/120000">個人ブログ「お茶にしよっ‼︎」『はじめまして、来頼亭の中華そば』(2025-03-16付・2026-10-13閲覧)</a> / <a href="https://ameblo.jp/kingofchem2000/entry-12803391666.html">個人ブログ(Ameba)『「来頼亭」〜せっかく宇品方面まで来たので〜』(2023-05-17付・2026-10-13閲覧)</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-maru-takasu">
+<img class="hero" src="img/hiroshima/hiroshima-maru-takasu.jpg" alt="中華そば まる 高須店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">36</span>中華そば まる 高須店<span class="yomi">ちゅうかそば まる たかすてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">昔ながらの豚骨醤油の中華そばを出す店で、コラーゲンの多い濃いめのスープの底に骨粉が沈むのが特徴。カウンターだけの10席という小さな造りで、昼11時45分から14時30分、夜は17時30分から翌0時15分まで開けており、西区の住宅地で夜遅くまで食べられる数少ない一軒。焼き飯や餃子も置く。駐車場は1台。元旦の昼だけ休む。</div>
+<div class="sig"><b>一皿:</b>中華そば(豚骨と醤油のスープに細麺を合わせた広島ラーメン。コラーゲンの多い濃いめのスープで、底には骨粉が沈む。チャーシュー・もやし・青ねぎがのる)／焼き飯(中華そばと合わせて頼まれることが多い、鍋で炒めたチャーハン)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:45〜14:30／17:30〜翌0:15</td></tr>
+<tr><th>定休日</th><td class="off">無休(元旦の昼のみ休み)</td></tr>
+<tr><th>住所</th><td>広島県広島市西区庚午北2-23-2</td></tr>
+<tr><th>予約</th><td>不要(カウンター10席のみ)</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページ(2026-10-13閲覧)に住所・アクセス・営業時間・定休日・席数・昼夜の予算が載っており、店自身が用意した料理・店内写真が10点ある。広島市中心部に集中しがちな広島ラーメンを西区の郊外側で拾うために選んだ。『中華そば まる』は広島市内の数店のみで、全国チェーンではない。電話番号は掲載ページ上で非表示のため未確認。創業年は一次情報で確認できなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E3%81%BE%E3%82%8B%20%E9%AB%98%E9%A0%88%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E5%BA%9A%E5%8D%88%E5%8C%972-23-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000522421/">ホットペッパーグルメ「中華そば まる 高須店」掲載ページ(2026-10-13閲覧)</a></div>
+</div></div>
+<h2 id="s-washoku" class="c-aqua">寿司・和食・割烹</h2>
+<div class="card" id="c-hiroshima-sushi-ooi-nagarekawa">
+<img class="hero" src="img/hiroshima/hiroshima-sushi-ooi-nagarekawa.jpg" alt="鮨 おゝ井 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">37</span>鮨 おゝ井<span class="yomi">すし おおい</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島一の飲み屋街・流川にある創業61年(1965年ごろ創業)の鮨店。カウンター11席、2名掛けテーブル2卓、4名用の個室2部屋(つなげて最大8名)の計23席で、ネタは瀬戸内産を中心に毎日仕入れる。にぎりのほかカワハギの肝あえ、ふぐ刺し(要予約)など季節の一品も出す。ネタがなくなり次第閉める日がある。</div>
+<div class="sig"><b>一皿:</b>おまかせのにぎり(その日の瀬戸内の魚を職人が一貫ずつ握って出す寿司。カウンターでは握りたてを順に出す)／煮穴子(厳選した肉厚の穴子を秘伝の煮汁でふっくら煮上げたもの。甘辛い「ツメ」と塩の2通りの味で出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝前日 18:00〜翌0:00（料理・ドリンクL.O. 23:30）／日・祝 18:00〜22:00（料理・ドリンクL.O. 21:30）※ネタがなくなり次第終了する場合あり</td></tr>
+<tr><th>定休日</th><td class="off">なし（不定休）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区流川町3-5 1F</td></tr>
+<tr><th>予約</th><td>可（ネット予約は来店日当日22時まで受付。問い合わせは16:00以降） — <a href="tel:0822453695">☎ 082-245-3695</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>流川の繁華街で創業61年続く回らない鮨屋で、カウンターでおまかせの握りを食べられる老舗。営業の根拠は、ホットペッパーグルメの掲載ページ(2026年10月13日取得)の記述『創業61年の歴史を感じる落ち着いた店内』と、同ページのネット予約カレンダーが2026年10月14日〜12月31日までほぼ全日『即予約可』になっていること、メニュー欄の更新日が2026年7月30日、コース欄の更新日が2026年8月27日であること。写真は、ホットペッパーの自店掲載写真のうち長辺900px以上の条件を満たしたものが2点しかなく（他はいずれも長辺796px以下）、公式サイトも公式SNSも見つからなかったため、採れたのは2点だけ。写真候補が3点に届かない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E3%81%8A%E3%82%9D%E4%BA%95%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%B5%81%E5%B7%9D%E7%94%BA3-5%201F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000111509/">ホットペッパーグルメ「鮨 おゝ井 オオイ(流川/和食)」店舗ページ（住所・電話・営業時間・定休日・席数23席・創業61年・予算12,500円・2026年10〜12月のネット予約カレンダー）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ000111509/course/">ホットペッパーグルメ「鮨 おゝ井 オオイ」コース一覧（全7品12,100円/全8品14,300円/全8品16,500円・2026年8月27日更新）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-sushi-nakano-yokogawa">
+<img class="hero" src="img/hiroshima/hiroshima-sushi-nakano-yokogawa.jpg" alt="鮨 なかの 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">38</span>鮨 なかの<span class="yomi">すし なかの</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">JR横川駅の南、横川町の通り沿いにある全10席のカウンターだけの鮨店。店主は飲食業24年・鮨職人歴10年で、東京で8年、広島で2年修行して独立した。シャリは米酢と赤酢をブレンドする。寿司は皿にまとめず江戸前のように一貫ずつ握りたてを出す。昼は11時半から、夜は17時から営業し、水曜が定休。</div>
+<div class="sig"><b>一皿:</b>特上寿司(店主が選んだネタ9貫に巻物1本と玉子焼きが付く握りの盛り合わせ。皿にまとめず一貫ずつ握りたてを出す)4,000円／穴子の炙り刺(広島名物の穴子を活け締めにして刺身にし、皮目を炙って香ばしさを出した一品)1,000円</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日・祝・祝前日 11:30〜14:00（料理L.O. 13:30／ドリンクL.O. 13:30）、17:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）※来店状況により早く閉める場合あり</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>広島県広島市西区横川町1丁目5-22</td></tr>
+<tr><th>予約</th><td>可（ネット予約は来店日当日22時まで。リクエスト予約は前日17時まで） — <a href="tel:0825545118">☎ 082-554-5118</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の中心部から離れた横川で、カウンター10席だけでおまかせに近い握りを出す個人店。寿司屋を中心部に偏らせないために採った。営業の根拠は、ホットペッパーグルメの掲載ページ(2026年10月13日取得)のメニュー更新日が2025年10月3日であること、同ページのネット予約カレンダーが2026年10月15日〜12月31日まで水曜の定休日を除きほぼ全日『即予約可』になっていること。写真はホットペッパーの自店掲載写真(960〜1280px)を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E3%81%AA%E3%81%8B%E3%81%AE%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E6%A8%AA%E5%B7%9D%E7%94%BA1%E4%B8%81%E7%9B%AE5-22">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004422001/">ホットペッパーグルメ「鮨 なかの(横川/和食)」店舗ページ（住所・電話・営業時間・定休日・総席数10席・上寿司/特上寿司の税込価格・店主の経歴・2026年10〜12月のネット予約カレンダー）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-sushi-ajiroya-honten">
+<img class="hero" src="img/hiroshima/hiroshima-sushi-ajiroya-honten.jpg" alt="鮨 広島 あじろや 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">39</span>鮨 広島 あじろや 本店<span class="yomi">すし ひろしま あじろや ほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島駅のすぐそば、ビッグフロントひろしま4階にある鮨店。白木のカウンターと完全個室(4名)があり、総席数18席。板前は尾道市の生まれで鮨の経験年数30年を超える。瀬戸内の地物を中心に一貫ずつ握るほか、先付・椀・造りから鮨へと進むコースを組む。昼は12貫のにぎりの定食もある。月曜が定休。</div>
+<div class="sig"><b>一皿:</b>おまかせコース「紅葉(もみじ)」(先付・御椀・造里・温料理のあとに職人が握る鮨が続く懐石仕立てのコース)12,650円／穴子(長崎・広島産の穴子を継ぎ足しの出汁でふっくら炊き、炙って甘辛いタレを塗った握り)910円〜</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝・祝前日 11:30〜14:00（料理L.O. 13:30）、17:00〜22:00（料理L.O. 21:00）※コースのL.O.は20:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>広島県広島市南区松原町5-1 ビッグフロントひろしま4階</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーのネット予約は現在停止。電話で要予約。電話番号は未確認）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島駅から徒歩3分という旅行者が寄りやすい位置で、カウンターでおまかせのコースと握りを出す店。駅前に1店入れるために採った。営業の根拠は、ホットペッパーグルメの掲載ページ(2026年10月13日取得)の店舗情報とメニューの更新日がいずれも2026年3月24日であること、および掲載されたコース・単品の税込価格。電話番号はホットペッパー上で非表示のため未確認。写真はホットペッパーの自店掲載写真のうち長辺900px以上のものを採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E5%BA%83%E5%B3%B6%20%E3%81%82%E3%81%98%E3%82%8D%E3%82%84%20%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E6%9D%BE%E5%8E%9F%E7%94%BA5-1%20%E3%83%93%E3%83%83%E3%82%B0%E3%83%95%E3%83%AD%E3%83%B3%E3%83%88%E3%81%B2%E3%82%8D%E3%81%97%E3%81%BE4%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004577255/">ホットペッパーグルメ「鮨 広島 あじろや 本店(広島駅/和食)」店舗ページ（住所・営業時間・定休日・総席数18席・コース桔梗9,900円/紅葉12,650円・昼限定極上にぎり4,730円・2026年3月24日更新）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-mitakiso">
+<img class="hero" src="img/hiroshima/hiroshima-mitakiso.jpg" alt="三瀧荘 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">40</span>三瀧荘<span class="yomi">みたきそう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1946年に料亭旅館として開業した広島の料亭。原爆の被害を免れた昭和初期の和洋折衷の邸宅で、約2,800平方メートルの敷地に木造2階建て延べ約2,000平方メートルの建物と日本庭園がある。釘を使わない木組みの日本間や網代天井が残る。個室5室を含む総席数120席。現在は婚礼も行う施設だが、水曜を除く平日・土日は懐石の食事だけでも利用できる。</div>
+<div class="sig"><b>一皿:</b>平日夜の懐石「雅(みやび)」(先付から御椀・造里・焼物・食事・甘味まで全9品で組む月替わりの懐石。仕入れにより献立が変わる)11,000円／平日昼の懐石「香(こう)」(昼だけの手頃な懐石。庭に面した部屋で出す)4,180円</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜15:30（料理L.O. 14:30）／ディナー 17:30〜22:00（料理L.O. 21:00）。施設の営業は10:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜（婚礼のある土日祝は個室のみの営業）</td></tr>
+<tr><th>住所</th><td>広島県広島市西区三滝町1-3</td></tr>
+<tr><th>予約</th><td>要予約（公式のオンライン予約、または予約専用 050-5443-6200。受付は月火木金11:00〜20:00・土日祝10:00〜20:00） — <a href="tel:0825370220">☎ 082-537-0220</a> ／ <a href="https://restaurant.novarese.jp/mts/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市内で会席をきちんと食べられる料亭のうち、建物と庭がそのまま残る最も古い店。横川という中心部から外れた位置も、町のかたまりを散らすうえで効く。営業の根拠は、公式サイト(2026年10月13日取得)の『一九四六年開業の老舗料亭、三瀧荘』の記述と住所・電話、公式のレストランページ(2026年10月13日取得)の営業時間11:30〜15:30/17:30〜22:00・水曜定休・オンライン予約の案内、同サイト献立ページの懐石の税込価格、およびホットペッパーグルメの掲載ページ(2026年10月13日取得)の席数120席(個室5室)・駐車場15台の記載。写真は公式のレストランページの空間写真7点(960×550)と公式サイトの料理写真1点(1200×550)を採った。婚礼の写真と外観・門の写真は除いた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E7%80%A7%E8%8D%98%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%B8%89%E6%BB%9D%E7%94%BA1-3">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（mitakiso.jp）より引用 / 参照元: <a href="https://mitakiso.jp/">三瀧荘 公式サイト（1946年開業・住所・電話・定休日）2026年10月13日取得</a> / <a href="https://restaurant.novarese.jp/mts/">三瀧荘 公式レストランページ（営業時間・定休日・予約方法・アクセス・駐車場）2026年10月13日取得</a> / <a href="https://restaurant.novarese.jp/mts/menu/">三瀧荘 公式サイト 献立（平日昼・平日夜・土日祝の懐石の税込価格、弁当の品目）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ003958817/">ホットペッパーグルメ「三瀧荘(広島市西区/和食)」店舗ページ（住所・電話082-537-0220・席数120席/個室5室・駐車場15台・2024年12月17日更新）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-nihonryori-takayama">
+<img class="hero" src="img/hiroshima/hiroshima-nihonryori-takayama.jpg" alt="日本料理 高山 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">41</span>日本料理 高山<span class="yomi">にほんりょうり たかやま</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2009年に開業し、2021年1月に現在の胡町へ移転した日本料理店。全日本料理師協会の師範で西日本調理研究会会長を務める高山和典が料理を作る。献立はおまかせのコースだけで、前日15時までの完全予約制、予約は2名から。席はカウンター8席と座敷2部屋(4名・6名、つなげて最大10名)。無垢材を使った店内で、瀬戸内の立地を軸に献立を組む。</div>
+<div class="sig"><b>一皿:</b>お任せ料理(店主がその日の仕入れで組む会席のコース。品数・内容は予約時の相談で決まる)14,300円／瀬戸内さかなコース(瀬戸内の魚を主役にした上位のコース)17,600円</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜22:00（料理・ドリンクL.O. 21:30）。前日15時までの完全予約制で、当日予約は不可</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（公式サイトは「不定休」と記載。4名以上なら日曜・祝日も相談可）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区胡町2-17 1階</td></tr>
+<tr><th>予約</th><td>要予約（完全予約制・2名から。前日15時まで） — <a href="tel:0825457717">☎ 082-545-7717</a> ／ <a href="http://www.nihonryori-takayama.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の中心部で、グランドメニューを置かずおまかせだけを出す割烹。公式サイトが献立と価格を自分で公開しており、裏が取りやすい。営業の根拠は、公式サイト(2026年10月13日取得)のコース価格・完全予約制の説明と、アクセスページの住所『広島市中区胡町2-17 1階』・電話082-545-7717・営業時間18時〜22時、および2023年2月付の写真が掲載されていること。加えてホットペッパーグルメの掲載ページ(2026年10月13日取得)が同じ住所・電話を載せ、ネット予約を受け付けている。写真は公式サイトの店内・料理の実写8点(1,280〜4,032px)を採った。外観だけの1点と店主の肖像(絵画風に加工されたもの)は除いた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E9%AB%98%E5%B1%B1%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%83%A1%E7%94%BA2-17%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.nihonryori-takayama.com）より引用 / 参照元: <a href="http://www.nihonryori-takayama.com/">日本料理 高山 公式サイト トップ（コース価格・完全予約制・2019年4月15日の10周年、2021年1月20日の移転開業のお知らせ）2026年10月13日取得</a> / <a href="https://www.nihonryori-takayama.com/%e3%81%8a%e6%96%99%e7%90%86%e3%83%bb%e5%ba%97%e5%86%85%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6/">日本料理 高山 公式サイト「お料理・店内について」（コース5種の税込価格・サービス料10%・カウンター8席と座敷2部屋）2026年10月13日取得</a> / <a href="https://www.nihonryori-takayama.com/%e3%82%a2%e3%82%af%e3%82%bb%e3%82%b9/">日本料理 高山 公式サイト「アクセス」（住所・電話・営業時間18時〜22時）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ000806032/">ホットペッパーグルメ「日本料理 高山(流川/和食)」店舗ページ（住所・電話・営業時間・前日までの完全予約制・ネット予約受付）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-oryori-suijin">
+<img class="hero" src="img/hiroshima/hiroshima-oryori-suijin.jpg" alt="御料理 粋人 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">42</span>御料理 粋人<span class="yomi">おりょうり すいじん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">八丁堀交差点のすぐ裏の路地にある会席料理の店。日ごとに食材が変わるためグランドメニューを置かず、その日の献立で組む。席は全23席で、目の高さに板場があるカウンター8席のほか、4名用と6名用の個室があり、つなげて最大16名まで使える。接待にも使うが会席の入門としても使える構えにしている。日曜・祝日は予約があれば営業する。</div>
+<div class="sig"><b>一皿:</b>その日の会席(決まった品書きを置かず、仕入れた食材でその日ごとに組む会席のコース。内容は来店時の相談で決まる)／カウンターの板場仕事(目線の高さにある板場で店主が仕上げる一品を、その場で受け取る)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝前日 17:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（予約があれば営業）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区八丁堀13-15</td></tr>
+<tr><th>予約</th><td>要予約（ホットペッパーのネット予約は受付停止中。電話での予約が必要だが電話番号は未確認）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>八丁堀の路地で、カウンター越しに板場の仕事を見ながら会席を食べられる割烹。ホテルや料亭ではない街場の会席として入れた。営業の根拠は、ホットペッパーグルメの掲載ページ(2026年10月13日取得)の住所・アクセス・営業時間・定休日・席数23席の記載と、広島市中心部の和食一覧(フリーワード検索『懐石』『割烹』、2026年10月13日取得)に現在も掲載されていること。ただし同ページの最終更新は2022年1月29日と古く、ネット予約も受け付けていないため、電話で営業を確かめてから行くのが確実。電話番号はホットペッパー上で非表示のため未確認。写真はホットペッパーの自店掲載写真のうち長辺900px以上で、料理と店内が写るもの4点を採った（外観のみの1点と重複1点は除いた）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E6%96%99%E7%90%86%20%E7%B2%8B%E4%BA%BA%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%85%AB%E4%B8%81%E5%A0%8013-15">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001123264/">ホットペッパーグルメ「御料理 粋人(八丁堀・幟町/和食)」店舗ページ（住所・アクセス・営業時間・定休日・総席数23席・個室の構成・2022年1月29日更新）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/CSP/psh010/doBasic?FWT=%E6%87%90%E7%9F%B3&amp;SA=SA74&amp;MA=Y600">ホットペッパーグルメ フリーワード検索「懐石」広島市中心部（SA74・Y600）の一覧に掲載 2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-tempura-tenkou-nakamachi">
+<img class="hero" src="img/hiroshima/hiroshima-tempura-tenkou-nakamachi.jpg" alt="天冨良 天甲 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">43</span>天冨良 天甲<span class="yomi">てんぷら てんこう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島の中心部で天ぷら一筋35年という天ぷら店。最高級のごま油を使った独自のブレンド油で揚げ、天丼のたれは24年注ぎ足して使っている。瀬戸内の魚介のほか、水槽から引き上げた活きた車海老を一匹ずつ揚げる。カウンターのほかテーブル席と8名・4名の個室2部屋があり総席数22席(個室は別途1,050円)。昼は上天丼や天茶漬けの定食もある。流川に姉妹店「天甲本店」(2010年開店)がある。</div>
+<div class="sig"><b>一皿:</b>車海老の天ぷら(店の水槽から引き上げた活きた車海老を一匹ずつその場で揚げる。時価)／上天丼(揚げたての天ぷらを、24年注ぎ足した自家製のたれで仕上げた丼。昼の定番)1,650円</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝・祝前日 11:30〜14:00（料理・ドリンクL.O. 13:30）、17:00〜22:00（料理・ドリンクL.O. 21:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜、第2日曜（1月・8月・12月を除く）、年末年始・夏季・冬季休暇</td></tr>
+<tr><th>住所</th><td>広島県広島市中区中町5-1 中町長沼ビル2F</td></tr>
+<tr><th>予約</th><td>可（問い合わせ時間10:00〜20:00。個室利用は別途1,050円。電話番号は未確認）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の中心部で、カウンターで揚げたてを順に出す天ぷら専門店。寿司と割烹に偏らないよう、揚げ物から1店入れた。営業の根拠は、ホットペッパーグルメの掲載ページ(2026年10月13日取得)の店舗情報の更新日が2026年7月31日であること、住所・営業時間・定休日・総席数22席・予算の記載、およびぐるなびの店舗ページ(2026年10月13日取得)が同じ住所『広島市中区中町5-1 中町長沼ビル2F』・席数22席・営業時間を載せ、コース価格を掲載していること。電話番号はホットペッパーでは非表示、ぐるなびは予約転送用の050番号とFAX番号しか載せていないため未確認。写真はホットペッパーの自店掲載写真のうち長辺900px以上で料理が写る5点を採った（店内写真は640×480しかなく条件を満たさなかった）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E5%86%A8%E8%89%AF%20%E5%A4%A9%E7%94%B2%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E4%B8%AD%E7%94%BA5-1%20%E4%B8%AD%E7%94%BA%E9%95%B7%E6%B2%BC%E3%83%93%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000030917/">ホットペッパーグルメ「天冨良 天甲(中町/和食)」店舗ページ（住所・営業時間・定休日・総席数22席・予算夜7,000円/昼1,500円・上天丼1,650円・天茶漬け1,200円・天ぷら一筋35年・2026年7月31日更新）2026年10月13日取得</a> / <a href="https://r.gnavi.co.jp/y005300/">ぐるなび「天甲」店舗ページ（住所・席数22席・営業時間・定休日・天甲おまかせコース9,900円/梅コース5,200円）2026年10月13日取得</a> / <a href="https://r.gnavi.co.jp/y005302/">ぐるなび「天甲本店」店舗ページ（姉妹店。中区堀川町4-2・2010年開店・カウンターのみ）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-shariki-otemachi">
+<img class="hero" src="img/hiroshima/hiroshima-shariki-otemachi.jpg" alt="米希 SHARIKI 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">44</span>米希 SHARIKI<span class="yomi">しゃりき</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">大手町の南寄り、鷹野橋の電停近くにある寿司と和食の店。握りは1貫200円からで、その日のおすすめを出す。広島の天然うなぎを使う季節限定のうな重や、天ぷら、刺身の盛り合わせもある。店主自ら釣った魚や、自ら採りに行く生ウニを出すことがある。席はカウンター9席、4名の座敷3卓、4名テーブル1卓の計25席で、座敷は仕切って個室として使える。日本酒は広島・備後の地酒を中心に揃える。</div>
+<div class="sig"><b>一皿:</b>握り寿司(その日の仕入れで握る1貫200円からの握り。王道のネタのほか変わり種も出す)／うな重(広島県産の天然うなぎを使う季節・数量限定の重。3,500円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 11:30〜13:30（料理L.O. 13:00）・17:00〜22:00（料理L.O. 22:00／ドリンクL.O. 21:30）／金・祝前日 11:30〜13:30・17:00〜23:00／土 17:00〜23:00／祝日 17:00〜21:30 ※土日祝の昼は営業なし</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>広島県広島市中区大手町5-7-20</td></tr>
+<tr><th>予約</th><td>可（ネット予約は来店日当日21時まで即予約可、前日17時までリクエスト予約可。コースのキャンセルは前日23時以降50%）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の中心部で、構えずに一貫単位で握りを頼める店。価格帯を上の寿司屋とずらすため、また平和記念公園から歩ける大手町側に1店置くために採った。営業の根拠は、ホットペッパーグルメの掲載ページ(2026年10月13日取得)の住所・営業時間・定休日・総席数25席・予算の記載と、同ページのネット予約が受付中（来店日当日21時まで即予約可、前日17時までリクエスト予約可）であること。メニューの更新日は2023年9月12日。電話番号はホットペッパー上で非表示のため未確認。写真はホットペッパーの自店掲載写真のうち長辺900px以上で料理と店内が写る8点を採った（同じ写真の重複は除いた）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B1%B3%E5%B8%8C%20SHARIKI%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E6%89%8B%E7%94%BA5-7-20">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000026485/">ホットペッパーグルメ「米希 SHARIKI(大手町・広島市役所前/居酒屋)」店舗ページ（住所・営業時間・定休日・総席数25席・予算3,500〜4,000円・握り1貫200円〜・うな重3,500円・ネット予約受付）2026年10月13日取得</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-sasakin-omachi">
+<img class="hero" src="img/hiroshima/hiroshima-sasakin-omachi.jpg" alt="寿司と天麩羅 ささ金 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">45</span>寿司と天麩羅 ささ金<span class="yomi">すしとてんぷら ささきん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市北部の安佐南区大町にある和食店。1階が持ち帰り専門、2階が店内の飲食で、2階は寿司と天ぷらを中心に出す。シャリには赤酢を使い、ネタは店内で熟成させてから隠し包丁を入れる。刺身は赤坂水産のブランド鯛「白寿真鯛」を熟成させて使う。席はカウンター11席、6名掛けの掘りごたつ個室3部屋、テーブル席4卓で、最大20名の宴会にも対応する。昼は日曜のみ、持ち帰りは11時半から19時まで。</div>
+<div class="sig"><b>一皿:</b>ささ金名物の刺し盛(赤坂水産のブランド鯛「白寿真鯛」などを仕入れてから熟成させ、一切れずつ隠し包丁を入れて盛る刺身の盛り合わせ)1人前980円／天ぷら30種(衣を軽く仕上げた天ぷらを1つ180円から一品ずつ頼める。和牛もも天480円など)</div>
+<table class="info">
+<tr><th>営業時間</th><td>2階（店内）ディナー 火〜土・祝 17:30〜22:00（料理L.O. 21:00／ドリンクL.O. 21:30）、日曜は11:30〜14:00（料理・ドリンクL.O. 14:00）と17:30〜22:00／1階（持ち帰り）11:30〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>広島県広島市安佐南区大町西1丁目4-31 サニーロード1</td></tr>
+<tr><th>予約</th><td>可（電話またはLINEで予約。店からの返信で確定。当日の予約は電話） — <a href="tel:0829620970">☎ 082-962-0970</a> ／ <a href="https://sasakin.sg-hiroshima.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>市の中心部から離れた安佐南区で、寿司と天ぷらの両方をカウンターで出す地元の店。郊外を1店入れるために採った。営業の根拠は、公式サイト(2026年10月13日取得)の店舗情報（住所・電話082-962-0970・1階持ち帰り11:30〜19:00・2階ディナー17:30〜22:00・日曜ランチ11:30〜14:00・月曜定休・カウンター11席と掘りごたつ個室・LINE予約の案内）と、同サイトに2026年10月付の画像が置かれていること、およびホットペッパーグルメの掲載ページ(2026年10月13日取得)の営業時間・定休日・単品の税込価格（メニュー更新日2025年4月28日、クーポン更新日2025年3月19日）。写真はホットペッパーの自店掲載写真のうち長辺900px以上で料理と店内が写る10点を採った（公式サイトの画像はすべて埋め込み形式で直URLが取れなかった）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E5%8F%B8%E3%81%A8%E5%A4%A9%E9%BA%A9%E7%BE%85%20%E3%81%95%E3%81%95%E9%87%91%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%AE%89%E4%BD%90%E5%8D%97%E5%8C%BA%E5%A4%A7%E7%94%BA%E8%A5%BF1%E4%B8%81%E7%9B%AE4-31%20%E3%82%B5%E3%83%8B%E3%83%BC%E3%83%AD%E3%83%BC%E3%83%891">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://sasakin.sg-hiroshima.com/">ささ金 公式サイト（住所・電話・1階持ち帰りと2階店内の営業時間・月曜定休・席数・LINE予約・駐車場10台・アクセス）2026年10月13日取得</a> / <a href="https://www.hotpepper.jp/strJ004005273/">ホットペッパーグルメ「寿司と天麩羅 ささ金(安佐南区/和食)」店舗ページ（住所・電話082-962-0970・営業時間・定休日・刺し盛980円などの税込価格・コース7種・2025年4月28日更新）2026年10月13日取得</a></div>
+</div></div>
+<h2 id="s-yakiniku" class="c-violet">焼肉・ホルモン・広島牛</h2>
+<div class="card" id="c-hiroshima-aohige-honten">
+<img class="hero" src="img/hiroshima/hiroshima-aohige-honten.jpg" alt="広島牛 青ひげ本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">46</span>広島牛 青ひげ本店<span class="yomi">ひろしまぎゅう あおひげほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島県産のA4等級和牛「広島牛」だけを使う鉄板焼きの店。鉄板焼の店で修業した店主が、脂がしつこくなく赤身の旨みが出るA4等級に絞って仕入れている。ヒレ・ランプ・サーロインのステーキのほか、瀬戸内の牡蠣・穴子・車海老も鉄板で焼く。鉄板を囲むカウンターと個室があり、総席数43席。精肉店と焼肉店を含む青ひげの系列が広島市内に数店ある。</div>
+<div class="sig"><b>一皿:</b>広島牛ヒレステーキ(広島県内で肥育されたA4等級の黒毛和牛のヒレ肉を目の前の鉄板で焼くもの。100g 4,800円・150g 7,200円・200g 9,600円の税込で、来店時に希望のグラム数を伝える)／広島牛コウネ焼き(コウネは牛の首から肩にかけての脂の多い部位で、広島でよく食べられる。焼いて脂を落とし、レモンをかけて食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜水・日 11:00〜15:00(料理L.O.14:30／ドリンクL.O.14:30)、17:00〜22:00(料理L.O.21:00) / 金・土・祝前日 11:00〜15:00、17:00〜23:00(料理L.O.22:00)</td></tr>
+<tr><th>定休日</th><td class="off">木曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区八丁堀8-11</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可。個室は要予約) — <a href="tel:0822115811">☎ 082-211-5811</a> ／ <a href="https://hiroshimabeef.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>市内で「広島牛」を店名に掲げ、等級まで公開している数少ない店なので、広島牛の章の軸に置いた。全国チェーンではなく、青ひげ精肉店を母体に広島市内だけで店を広げた地元資本。営業の根拠は、ホットペッパーグルメの掲載ページ(料理情報2026-05-17更新・クーポン2026-09-18更新)にネット予約の空席カレンダーが2026年10月〜12月まで稼働していること、および系列の公式オンラインストア hiroshimabeef.jp の店舗案内に本店が電話番号つきで載っていること(いずれも2026-10-13 閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%83%E5%B3%B6%E7%89%9B%20%E9%9D%92%E3%81%B2%E3%81%92%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%85%AB%E4%B8%81%E5%A0%808-11">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003473911/">ホットペッパーグルメ 広島牛 青ひげ本店（2026-10-13 閲覧／料理情報 2026-05-17 更新）</a> / <a href="https://hiroshimabeef.jp/">青ひげオンラインストア（広島牛専門通販）店舗案内（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-tomiya-bekkan">
+<img class="hero" src="img/hiroshima/hiroshima-tomiya-bekkan.jpg" alt="焼肉・すき焼き とみや別館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">47</span>焼肉・すき焼き とみや別館<span class="yomi">やきにく・すきやき とみやべっかん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">袋町にある肉専門店で、焼肉とすき焼きの両方を一軒で出す。黒毛和牛を部位ごとに値付けして売るのが基本で、県北・庄原(しょうばら)市のブランド牛「比婆牛(ひばぎゅう)」と「広島牛」を並べた盛り合わせや、比婆牛のすき焼き取り揃えを置く。1階がテーブル30席、2階がテーブル8席と掘りごたつ40席の計78席。鉄板焼きの「とみや本館」が近くにあり、2店とも広島市内だけの店。</div>
+<div class="sig"><b>一皿:</b>比婆牛・広島牛赤身ロース盛(庄原市の但馬系ブランド和牛「比婆牛」と県内産「広島牛」の赤身ロースを一皿に並べて食べ比べるもの。2,200円税込)／比婆牛赤身上ロースすき焼き取り揃え(比婆牛の赤身上ロースに野菜と生玉子が付いたすき焼きの一人前。4,180円税込、肉の追加は3,630円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝日・祝前日 11:30〜15:00(料理L.O.14:00／ドリンクL.O.14:00)、17:00〜23:00(料理L.O.22:00／ドリンクL.O.22:00)</td></tr>
+<tr><th>定休日</th><td class="off">月曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区袋町2-9-1</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可) — <a href="tel:0825461038">☎ 082-546-1038</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島牛に加えて県北の比婆牛まで扱い、しかも焼肉とすき焼きの両方で食べ比べができるので、ブランド牛の章に入れた。値段は夜でも3,000〜4,000円台で、1万円台の青ひげ本店と価格帯を分けられる。全国チェーンではなく本館・別館の2店だけの地元資本。営業の根拠は、ホットペッパーグルメの掲載ページ(2026-10-09 更新)でネット予約の空席カレンダーが2026年10月14日から12月31日まで「即予約可」で埋まっていること(2026-10-13 閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%83%BB%E3%81%99%E3%81%8D%E7%84%BC%E3%81%8D%20%E3%81%A8%E3%81%BF%E3%82%84%E5%88%A5%E9%A4%A8%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%A2%8B%E7%94%BA2-9-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001125442/">ホットペッパーグルメ 焼肉・すき焼き とみや別館（2026-10-13 閲覧／2026-10-09 更新）</a> / <a href="https://www.hotpepper.jp/strJ001125442/food/">ホットペッパーグルメ とみや別館 料理メニュー（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-genkyu-itsukaichi">
+<img class="hero" src="img/hiroshima/hiroshima-genkyu-itsukaichi.jpg" alt="広島牛焼肉 玄牛 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">48</span>広島牛焼肉 玄牛<span class="yomi">ひろしまぎゅうやきにく げんぎゅう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">佐伯区五日市の住宅地にある焼肉店。店主が厳選した広島牛・黒毛和牛を部位ごとに出し、タンやコウネ、ハチノスやセンマイといった内臓も置く。キムチとナムルは店内で手作りする。総席数30席で、6名掛けの掘りごたつ2室とカウンター5席がある。水曜と第2木曜が休み。市中心部から離れた郊外にあるぶん、同じ等級でも中心部より抑えた値付けをしている。</div>
+<div class="sig"><b>一皿:</b>上カルビのしゃぶしゃぶ(薄く切った上カルビを焼かずにさっと炙るように火を通して食べる当店の名物)／和牛コウネ(牛の首から肩にかけての脂の多い部位で、広島の焼肉では定番。1,320円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日 17:00〜22:00(料理L.O.21:00／ドリンクL.O.21:30)</td></tr>
+<tr><th>定休日</th><td class="off">水曜日、第2木曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市佐伯区五日市7-13-16</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可。ネット予約は要問い合わせの日が多い) — <a href="tel:0829099344">☎ 0829-09-9344</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店名に「広島牛」を掲げ、郊外(佐伯区五日市)でブランド牛を出す店として、中心部に寄りがちな構成を散らすために選んだ。地元の個人店でチェーンではない。営業の根拠は、ホットペッパーグルメの掲載ページ(料理情報 2026-08-04 更新、店舗情報 2026-09-28 更新)にネット予約の空席カレンダーが2026年10〜12月まで稼働していること(2026-10-13 閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%83%E5%B3%B6%E7%89%9B%E7%84%BC%E8%82%89%20%E7%8E%84%E7%89%9B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%BD%90%E4%BC%AF%E5%8C%BA%E4%BA%94%E6%97%A5%E5%B8%827-13-16">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004591543/">ホットペッパーグルメ 広島牛焼肉 玄牛（2026-10-13 閲覧／2026-09-28 更新）</a> / <a href="https://www.hotpepper.jp/strJ004591543/food/">ホットペッパーグルメ 広島牛焼肉 玄牛 料理メニュー（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-sakoi-shokudo">
+<img class="hero" src="img/hiroshima/hiroshima-sakoi-shokudo.jpg" alt="大衆焼肉 ホルモン天ぷら サコイ食堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">49</span>大衆焼肉 ホルモン天ぷら サコイ食堂<span class="yomi">たいしゅうやきにく ほるもんてんぷら さこいしょくどう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">薬研堀の繁華街にある大衆焼肉店。店名に掲げる「ホルモン天ぷら」は、下処理した牛・豚の内臓に衣をつけて揚げた広島の大衆料理で、これを看板にしている。焼肉のほかコウネ刺し・白センマイ刺し・ホホ刺し・ガツ刺しといった刺しの品数が多い。手作りキムチ、スンドゥブチゲ、氷結冷麺も置く。総席数28席で、テーブル・座敷・カウンターがある。</div>
+<div class="sig"><b>一皿:</b>ホルモン天ぷら(牛や豚の内臓に衣をつけて揚げた広島の大衆料理。辛味だれを付けて食べる)／広島名物コウネ刺し(コウネは牛の首から肩にかけての部位で、一頭からわずかしか取れない。コラーゲンとゼラチンが多く、刺しでも焼きでも食べる。1,480円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 18:00〜翌0:00(料理L.O.23:30／ドリンクL.O.23:30)</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県広島市中区薬研堀3-14</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可) — <a href="tel:0822440290">☎ 082-244-0290</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホルモンの章の軸に置いた。広島の大衆料理であるホルモン天ぷらを店名に掲げている店は市内でも少なく、刺しの品揃えもホルモン中心で、焼肉店というよりホルモンの店として読める。全国チェーンではなくこの1軒だけの店。営業の根拠は、ホットペッパーグルメの掲載ページでネット予約の空席カレンダーが2026年10月14日から12月31日までほぼ全日「即予約可」で稼働していること(2026-10-13 閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E7%84%BC%E8%82%89%20%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E5%A4%A9%E3%81%B7%E3%82%89%20%E3%82%B5%E3%82%B3%E3%82%A4%E9%A3%9F%E5%A0%82%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E8%96%AC%E7%A0%94%E5%A0%803-14">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001179678/">ホットペッパーグルメ 大衆焼肉 ホルモン天ぷら サコイ食堂（2026-10-13 閲覧）</a> / <a href="https://www.hotpepper.jp/strJ001179678/food/">ホットペッパーグルメ サコイ食堂 料理メニュー（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-hachiya-yagenbori">
+<img class="hero" src="img/hiroshima/hiroshima-hachiya-yagenbori.jpg" alt="焼肉酒場 蜂ヤ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">50</span>焼肉酒場 蜂ヤ<span class="yomi">やきにくさかば はちや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">薬研堀の裏手にある焼肉酒場。18時から翌3時まで開けていて、飲んだあとに肉を食べに行ける店として使われている。和牛の切り出しカルビや炙りユッケ、特製LAカルビのほか、広島名物の品を一通り置く。総席数36席で個室もある。1杯以上の注文が必要で、店は3,000円以上の利用を求めている。全席喫煙可。</div>
+<div class="sig"><b>一皿:</b>広島名物せんじがら(豚の胃袋〈ガツ〉を油で揚げて乾かした広島の珍味。噛むほど味が出るので酒の肴にされる。400〜500円税込)／蜂ヤ名物特製LAカルビ(骨を横に薄く切ったあばら肉を甘辛いたれに漬けたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>水〜土・祝日・祝前日 18:00〜翌3:00(料理L.O.翌2:30／ドリンクL.O.翌2:30)</td></tr>
+<tr><th>定休日</th><td class="off">月曜日・火曜日・日曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区銀山町12-26</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可) — <a href="tel:0822488518">☎ 082-248-8518</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島の珍味せんじがらを品書きに載せている焼肉店として選んだ(市内の焼肉店では置いている店が少なく、居酒屋に多い)。コウネの刺身やがんす揚げも置き、広島の肉まわりの名物が一軒でそろう。全国チェーンではなく、同系列は市内の中新地にもう1軒あるだけ。営業の根拠は、ホットペッパーグルメの掲載ページ(2026-06-02 更新)でネット予約の空席カレンダーが2026年10月〜12月まで定休日を反映して稼働していること(2026-10-13 閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E9%85%92%E5%A0%B4%20%E8%9C%82%E3%83%A4%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E9%8A%80%E5%B1%B1%E7%94%BA12-26">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001249185/">ホットペッパーグルメ 焼肉酒場 蜂ヤ（2026-10-13 閲覧／2026-06-02 更新）</a> / <a href="https://www.hotpepper.jp/strJ001249185/food/">ホットペッパーグルメ 焼肉酒場 蜂ヤ 料理メニュー（せんじがらの掲載を確認／2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-sandaime-horumon-center">
+<img class="hero" src="img/hiroshima/hiroshima-sandaime-horumon-center.jpg" alt="大衆焼肉 三代目ホルモンセンター 広島エキニシ店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">51</span>大衆焼肉 三代目ホルモンセンター 広島エキニシ店<span class="yomi">たいしゅうやきにく さんだいめほるもんせんたー ひろしまえきにしてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">広島駅西側の飲み屋街「エキニシ」にある大衆焼肉店。60年続く精肉店が母体で、自前の仕入れで和牛の小腸(生ホルモン)やレバーを鮮度重視で出す。味付けは秘伝の醤油だれと、広島産の青唐辛子と酢を合わせたつけだれの2種類。1階がカウンター、2階がテーブル席で総席数22席と小さい。定休日は公式インスタグラムで告知している。</div>
+<div class="sig"><b>一皿:</b>名物三代目ハラミ(60年続く肉屋のもみだれに絡めた厚切りのハラミ。1日75人前以上出ることもある。1,538円税込)／生ホルモン(精肉店の仕入れで出す和牛の小腸。一本焼きで出し、ハラミ・厚切りタンとの2種・3種の組み合わせもある。801円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 16:00〜翌0:00(料理L.O.23:00／ドリンクL.O.23:30) / 日 16:00〜23:00(料理L.O.22:00／ドリンクL.O.22:30)</td></tr>
+<tr><th>定休日</th><td class="off">不定休(公式インスタグラム @hs3_official で告知)</td></tr>
+<tr><th>住所</th><td>広島県広島市南区大須賀町12-9</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可) — <a href="tel:0829099373">☎ 082-909-9373</a> ／ <a href="https://www.instagram.com/hs3_official/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホルモンの章のうち、広島駅前(エキニシ)の枠に入れた。精肉店が母体で小腸を生で出す点が、ほかのホルモン店と業態が違う。全国チェーンの検索(ホットペッパー・ウェブ検索、2026-10-13)では広島市内のこの1軒しか見つからず、全国展開店ではないと判断した。営業の根拠は、ホットペッパーグルメの掲載ページ(2026-09-22 更新)でネット予約の空席カレンダーが2026年10月14日から12月まで「即予約可」で稼働していること(2026-10-13 閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E7%84%BC%E8%82%89%20%E4%B8%89%E4%BB%A3%E7%9B%AE%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC%20%E5%BA%83%E5%B3%B6%E3%82%A8%E3%82%AD%E3%83%8B%E3%82%B7%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E5%A4%A7%E9%A0%88%E8%B3%80%E7%94%BA12-9">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004469171/">ホットペッパーグルメ 三代目ホルモンセンター 広島エキニシ店（2026-10-13 閲覧／2026-09-22 更新）</a> / <a href="https://www.hotpepper.jp/strJ004469171/food/">ホットペッパーグルメ 三代目ホルモンセンター 料理メニュー（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-hakuri-honten">
+<img class="hero" src="img/hiroshima/hiroshima-hakuri-honten.jpg" alt="焼肉 白李 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">52</span>焼肉 白李 本店<span class="yomi">やきにく はくり ほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">1996年創業の白李グループの本店で、広島市内に数店ある同グループのうち最も大きい120席。広島県神石高原町(じんせきこうげんちょう)のブランド牛「神石牛(じんせきぎゅう)」を柱に据え、赤身・上ロース・ヒレを部位ごとに出す。生センマイやハラ皮ポン酢といった内臓の品も置く。駐車場7台と提携パーキングがあり、日曜・祝日は昼から開ける。</div>
+<div class="sig"><b>一皿:</b>神石牛 本日の赤身(神石高原町で育てた黒毛和牛。年間出荷が約400頭と少ない。マル芯・ヒウチ・カメノコ・内モモなどその日の部位を出す。2,200円税込)／大トロタン(数量限定の厚い牛タン。玉ねぎのスライスと一緒にポン酢を付けて食べる。2,079円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝前日 17:00〜23:00(料理L.O.22:15／ドリンクL.O.22:15) / 日・祝日 11:30〜23:00(料理L.O.22:15／ドリンクL.O.22:15)</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県広島市西区南観音7丁目16-18</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可。肉ケーキは前日までの要予約) — <a href="tel:0822962995">☎ 082-296-2995</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島牛・比婆牛に続く県内第3のブランド牛「神石牛」を正面に掲げた店として入れた。グループは広島市内だけで本通店・じぞう通り店・大町店・庚午店などを展開する地元資本で、全国チェーンではない。営業の根拠は、ホットペッパーグルメの掲載ページ(2026-10-13 閲覧)にネット予約の空席カレンダーが2026年10〜12月まで稼働していることと、ぐるなびのグループ店掲載ページ(2026-10-13 閲覧)に1996年創業と神石牛の説明が載っていること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E7%99%BD%E6%9D%8E%20%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E5%8D%97%E8%A6%B3%E9%9F%B37%E4%B8%81%E7%9B%AE16-18">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000523319/">ホットペッパーグルメ 焼肉 白李 本店（2026-10-13 閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000523319/food/">ホットペッパーグルメ 焼肉 白李 本店 料理メニュー（神石牛の品書きを確認／2026-10-13 閲覧）</a> / <a href="https://r.gnavi.co.jp/284ggzvr0000/">ぐるなび 白李 じぞう通り店（白李グループ 1996年創業・神石牛の説明／2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-kawai-fukushimacho">
+<img class="hero" src="img/hiroshima/hiroshima-kawai-fukushimacho.jpg" alt="焼肉 河井 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">53</span>焼肉 河井<span class="yomi">やきにく かわい</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">西区福島町の電車通り沿いにある焼肉店。ホルモンは大腸(シマチョウ)と小腸の両方を仕入れ、食感の違いを食べ比べられるようにしている。レバー・センマイ・ギアラ・丸腸のほか、豚タン・豚足・豚耳・ガリ(気管)まで内臓の品数が多く、1品550〜900円台と安い。16名用の個室と掘りごたつ座敷があり、駐車場は6台。土日は昼も開ける。</div>
+<div class="sig"><b>一皿:</b>絶品！ホルモン(大腸と小腸の両方を仕入れ、自家製のたれに付けて食べる。770円税込)／広島名物とろけるコウネ(牛の首から肩にかけての部位。さっと焼いて塩こしょうで食べる。900円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・祝日 17:00〜22:00(料理L.O.21:30) / 金・祝前日 17:00〜23:00(料理L.O.22:30) / 土 11:30〜23:00(料理L.O.22:30) / 日 11:30〜22:00(料理L.O.21:30)。土日の昼は11:30〜14:00(L.O.13:30)</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市西区福島町2-5-4</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可。個室は16名×1室) — <a href="tel:0825312989">☎ 082-531-2989</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホルモンの品数が多く、1品が550〜900円台と安い大衆的なホルモン焼肉として、価格帯の下側を埋めるために選んだ。市内中心部ではなく西区の電停そばで、立地も散らせる。地元の個人店でチェーンではない。営業の根拠は、ホットペッパーグルメの掲載ページ(2026-10-13 閲覧)にネット予約の空席カレンダーが2026年10〜12月まで稼働していること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E6%B2%B3%E4%BA%95%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E7%A6%8F%E5%B3%B6%E7%94%BA2-5-4">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000525151/">ホットペッパーグルメ 焼肉 河井（2026-10-13 閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000525151/food/">ホットペッパーグルメ 焼肉 河井 料理メニュー（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-wagaya-asaminami">
+<img class="hero" src="img/hiroshima/hiroshima-wagaya-asaminami.jpg" alt="炭火ホルモン 焼肉 我が家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">54</span>炭火ホルモン 焼肉 我が家<span class="yomi">すみびほるもん やきにく わがや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">安佐南区中須の炭火焼肉店。牛の内臓を丸腸・小腸・上ミノ(第一胃袋)・センマイ(第二胃袋)・ハチノス(第三胃袋)・ギアラ(第四胃袋)・ヤサキ(心臓)・レバー・マメ(腎臓)・コリコリ(大動脈)・シビレ(リンパ腺)などに分けて出し、豚のガリ(気管)・チチカブ・ノドガシラ(喉元)・コブクロ(子宮)まで置く。黒毛和牛の赤身も扱う。座敷・テーブル・カウンターの計46席、駐車場5台。</div>
+<div class="sig"><b>一皿:</b>ホルモンミックス(7〜8種類の内臓を一皿に盛り合わせたもの。1,380円税込)／丸腸(牛の小腸を裏返さずに筒のまま切ったもので、脂が中に残る。850円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日 17:00〜23:00(料理L.O.22:30／ドリンクL.O.22:30)。飲み放題の最終受付は21:00、最終入店は21:30</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市安佐南区中須1-14-2</td></tr>
+<tr><th>予約</th><td>可(ネット予約・電話予約とも可) — <a href="tel:0828762950">☎ 082-876-2950</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>内臓を部位ごとに16種類まで分けて品書きに載せており、ホルモンの店として中心部の店とは品揃えの深さが違うので入れた。郊外(安佐南区)で駐車場があり、車で行く読者の受け皿にもなる。地元の個人店でチェーンではない。営業の根拠は、ホットペッパーグルメの掲載ページ(2026-10-01 更新)にネット予約の空席カレンダーが2026年10〜12月まで稼働していること(2026-10-13 閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%20%E7%84%BC%E8%82%89%20%E6%88%91%E3%81%8C%E5%AE%B6%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%AE%89%E4%BD%90%E5%8D%97%E5%8C%BA%E4%B8%AD%E9%A0%881-14-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001222625/">ホットペッパーグルメ 炭火ホルモン 焼肉 我が家（2026-10-13 閲覧／2026-10-01 更新）</a> / <a href="https://www.hotpepper.jp/strJ001222625/food/">ホットペッパーグルメ 炭火ホルモン 焼肉 我が家 料理メニュー（内臓16種の品書きを確認／2026-10-13 閲覧）</a></div>
+</div></div>
+<h2 id="s-world" class="c-green">イタリアン・フレンチ・各国料理</h2>
+<div class="card" id="c-hiroshima-italian-ao">
+<img class="hero" src="img/hiroshima/hiroshima-italian-ao.jpg" alt="HIROSHIMA ITALIAN AO（あお） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">55</span>HIROSHIMA ITALIAN AO（あお）<span class="yomi">ひろしま いたりあん あお</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市中区堀川町のビル2階にある総席数100席のイタリア料理店。広島県産の食材を前面に出し、広島産牡蠣をアヒージョ・ガーリックバター焼き・ピッツァと数種の調理法で出す。ほかに広島のブランド牛である比婆牛(ひばぎゅう)のフィレ、広島レモンサーモン、東広島市福富町の上ノ原牧場から直送するモッツァレラ、呉市音戸のちりめんを使うピッツァも。テラス席と完全個室3室があり、最大100名の貸切に対応。</div>
+<div class="sig"><b>一皿:</b>広島産牡蠣とほうれん草のガーリックバター焼き(広島県産の牡蠣をほうれん草と一緒にバターとにんにくで焼いた熱々の一皿。1,380円)／バーニャカウダ(アンチョビとにんにくを煮込んだ温かいソースに生野菜を浸して食べる北イタリアの料理。店が看板料理として挙げているもので、ソムリエが選んだ野菜を使う)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 17:00〜翌1:00（料理L.O. 翌0:00／ドリンクL.O. 翌0:30）／金・土 11:30〜翌3:00（料理L.O. 翌2:00）／日・祝 11:30〜翌0:00（料理L.O. 23:00）。11:30〜18:00はハッピーアワー</td></tr>
+<tr><th>定休日</th><td class="off">無休（ただし月・火・水・木はランチ営業を休み。祝日の場合はランチも営業）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区堀川町1-14 レックスMB2F</td></tr>
+<tr><th>予約</th><td>可（電話・ネット予約。ネット予約は来店日の翌0時まで受付、リクエスト予約は前日17時まで） — <a href="tel:0825456107">☎ 082-545-6107</a> ／ <a href="https://hiroshima-italian-ao.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島県産の牡蠣・比婆牛・広島レモンサーモン・福富町上ノ原牧場のチーズ・音戸のちりめんと、県内産の素材を料理名にそのまま出しているイタリアンなので、広島らしい洋食として採った。営業の根拠は、公式サイト（hiroshima-italian-ao.owst.jp／2026年10月13日閲覧）が稼働していることと、ホットペッパーグルメの掲載ページが2026年10月1日更新で、同ページのネット予約カレンダーが2026年10月〜12月の日付で「即予約可」を表示していること（2026年10月13日閲覧）。全国チェーンではなく広島市内の独立店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=HIROSHIMA%20ITALIAN%20AO%EF%BC%88%E3%81%82%E3%81%8A%EF%BC%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A0%80%E5%B7%9D%E7%94%BA1-14%20%E3%83%AC%E3%83%83%E3%82%AF%E3%82%B9MB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://hiroshima-italian-ao.owst.jp">HIROSHIMA ITALIAN AO あお 公式サイト（2026年10月13日閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000026837/">ホットペッパーグルメ HIROSHIMA ITALIAN AO あお（2026年10月1日更新・2026年10月13日閲覧。住所・営業時間・席数・予約カレンダー）</a> / <a href="https://www.hotpepper.jp/strJ000026837/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-nido-setouchi">
+<img class="hero" src="img/hiroshima/hiroshima-nido-setouchi.jpg" alt="イタリアンバル Nido Setouchi（ニドセトウチ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">56</span>イタリアンバル Nido Setouchi（ニドセトウチ）<span class="yomi">いたりあんばる にど せとうち</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市中区立町のビル1階にある32席のイタリア料理店。店名の Nido はイタリア語で「巣」の意味。オーナーが瀬戸内の産地へ直接出向いて生産者から仕入れる方針を掲げ、瀬戸内の魚介と広島県産三元豚を使った料理を出す。カウンター8席とテーブル席で構成し、20名から貸切にも対応する。2階にバル「Nido notte」を併設し、こちらは毎日19:00〜翌1:00（L.O. 翌0:30）の営業。</div>
+<div class="sig"><b>一皿:</b>広島県産三元豚のグリル(大ヨークシャー種など3品種を掛け合わせた豚肉を焼き上げたメイン料理)／旬野菜のグリル 自家製の塩を添えて(季節の野菜を焼き、店で仕込んだ塩だけで食べさせる前菜)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜水・金〜日・祝 11:30〜14:30（料理L.O. 14:00）／17:00〜23:00（料理L.O. 22:30）。2階のバル「Nido notte」は毎日19:00〜翌1:00（L.O. 翌0:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区立町3-2 桂ビル1F</td></tr>
+<tr><th>予約</th><td>可（電話・ネット予約。ネット予約は来店日当日21時まで受付、リクエスト予約は前日17時まで） — <a href="tel:0829099459">☎ 082-909-9459</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>瀬戸内の食材と広島県産三元豚を軸に、オーナーが生産者を訪ねて仕入れる独立店なので、広島の洋食として採った。営業の根拠は、ホットペッパーグルメの掲載ページ（2026年10月13日閲覧）のネット予約カレンダーが2026年10月〜12月の日付で「即予約可」を表示しており、定休日の木曜だけが休に塗られていること。全国チェーンではなく、同店の説明文にも「大手チェーンの合理性では不可能なアプローチ」と自店の立場が書かれている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E3%83%B3%E3%83%90%E3%83%AB%20Nido%20Setouchi%EF%BC%88%E3%83%8B%E3%83%89%E3%82%BB%E3%83%88%E3%82%A6%E3%83%81%EF%BC%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E7%AB%8B%E7%94%BA3-2%20%E6%A1%82%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004576370/">ホットペッパーグルメ イタリアンバル Nido Setouchi（2026年10月13日閲覧。住所・電話・営業時間・席数・予約カレンダー）</a> / <a href="https://www.hotpepper.jp/strJ004576370/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-trattoria-ruzzo">
+<img class="hero" src="img/hiroshima/hiroshima-trattoria-ruzzo.jpg" alt="Trattoria Ruzzo（トラットリア ルッツォ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">57</span>Trattoria Ruzzo（トラットリア ルッツォ）<span class="yomi">とらっとりあ るっつぉ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市佐伯区楽々園にある28席のイタリア料理店。市中心部から広電で20分ほど離れた住宅街にあり、ディナーコース予約者専用の半個室8席を備える。シェフが雌の黒毛和牛だけを熟成させて出す肉料理と、その日に仕入れた魚を3〜5種盛り合わせるカルパッチョが柱。ソースはすべて自家製で、パスタは110円の追加で生パスタに替えられる。16〜20名で貸切も可能。</div>
+<div class="sig"><b>一皿:</b>鮮魚のカルパッチョ盛り合わせ(その日に仕入れた魚を3〜5種、薄切りにしてソースをかけた前菜の盛り合わせ。2〜4人前・2,200円〜)／和牛ステーキ(雌牛のみを選んで熟成させた黒毛和牛の焼き物。3,982円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日・祝 11:00〜15:00（料理L.O. 14:30）／17:30〜22:00（料理L.O. 21:00）。コース・パーティープランの予約は18:00〜19:30開始</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（祝日の場合は営業し、翌日休業または代休）</td></tr>
+<tr><th>住所</th><td>広島県広島市佐伯区楽々園5丁目2-16-105</td></tr>
+<tr><th>予約</th><td>可（電話は15:00〜17:30の間が通じやすい。ネット予約は来店日当日17時まで、リクエスト予約は3日前まで） — <a href="tel:0825544336">☎ 082-554-4336</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市中心部から離れた佐伯区の住宅街で、シェフがコース主体に営む独立したトラットリアなので、郊外枠として採った。営業の根拠は、ホットペッパーグルメの掲載ページ（2026年10月13日閲覧）のネット予約カレンダーが2026年10月〜12月の日付で「即予約可」を表示し、定休日の火曜だけが休に塗られていること。全国チェーンではなく個人店。広島県産の食材を前面に出す店ではない点は、県産食材を掲げる他店と役割が異なる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Trattoria%20Ruzzo%EF%BC%88%E3%83%88%E3%83%A9%E3%83%83%E3%83%88%E3%83%AA%E3%82%A2%20%E3%83%AB%E3%83%83%E3%83%84%E3%82%A9%EF%BC%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%BD%90%E4%BC%AF%E5%8C%BA%E6%A5%BD%E3%80%85%E5%9C%925%E4%B8%81%E7%9B%AE2-16-105">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001007142/">ホットペッパーグルメ Trattoria Ruzzo（2026年10月13日閲覧。住所・電話・営業時間・席数・予約カレンダー）</a> / <a href="https://www.hotpepper.jp/strJ001007142/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-le-feu-barbare">
+<img class="hero" src="img/hiroshima/hiroshima-le-feu-barbare.jpg" alt="薪火×牡蠣 Le Feu Barbare（ル・フ・バルバール）広島 袋町本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">58</span>薪火×牡蠣 Le Feu Barbare（ル・フ・バルバール）広島 袋町本店<span class="yomi">まきび かき る・ふ・ばるばーる ひろしま ふくろまちほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市中区中町にある薪火(まきび)料理のフランス料理店。古民家を改装した建物で、1階に特注の薪窯とカウンター8席、2階に完全個室、外にテラス席を備え総席数70席。薪窯の直火で焼く国産牛ステーキとTボーンステーキが看板で、広島県産を中心とした生牡蠣を通年で出し、牡蠣フライ・グラタン・アヒージョと牡蠣料理を揃える。瀬戸内豚や瀬戸内の魚、広島鶏のコンフィもある。</div>
+<div class="sig"><b>一皿:</b>広島厳選生牡蠣3種(広島県産を中心に産地を選んで仕入れる生牡蠣を、3種類食べ比べる皿。Aコースに組み込まれている)／薪火の国産牛ステーキ(店内の特注窯で薪の直火にかけて焼き上げる塊肉。国産牛ロースは100gあたり1,800円、Tボーンは1kg 14,800円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日 12:00〜15:00（料理L.O. 14:00）／17:00〜23:00（料理L.O. 22:00）。テラス席のみ15:00〜17:00も通し営業（雨天時は閉鎖）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区中町1-19</td></tr>
+<tr><th>予約</th><td>可（電話・ネット予約。コースは2階席確約のものがある） — <a href="tel:0822588551">☎ 082-258-8551</a> ／ <a href="https://bistrobarbare.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島県産を中心とした生牡蠣と瀬戸内豚・瀬戸内の魚・広島鶏を、薪窯のフランス料理として出す店なので、広島らしいフレンチとして採った。営業の根拠は、公式サイト（bistrobarbare.owst.jp／2026年10月13日閲覧）が稼働してコースと価格を掲載していることと、ホットペッパーグルメの掲載ページが2026年9月4日更新であること（2026年10月13日閲覧）。広島市内に薬研堀店（プティバルバール）を持つ地元資本の小規模な系列で、全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%96%AA%E7%81%AB%C3%97%E7%89%A1%E8%A0%A3%20Le%20Feu%20Barbare%EF%BC%88%E3%83%AB%E3%83%BB%E3%83%95%E3%83%BB%E3%83%90%E3%83%AB%E3%83%90%E3%83%BC%E3%83%AB%EF%BC%89%E5%BA%83%E5%B3%B6%20%E8%A2%8B%E7%94%BA%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E4%B8%AD%E7%94%BA1-19">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://bistrobarbare.owst.jp">Le Feu Barbare 広島 袋町本店 公式サイト（コース・メニュー・電話番号／2026年10月13日閲覧）</a> / <a href="https://www.hotpepper.jp/strJ001186857/">ホットペッパーグルメ 薪火×牡蠣 Le Feu Barbare 広島 袋町本店（2026年9月4日更新・2026年10月13日閲覧。住所・営業時間・席数）</a> / <a href="https://www.hotpepper.jp/strJ001186857/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-restaurant-capucine">
+<img class="hero" src="img/hiroshima/hiroshima-restaurant-capucine.jpg" alt="restaurant capucine（レストラン カプシーヌ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">59</span>restaurant capucine（レストラン カプシーヌ）<span class="yomi">れすとらん かぷしーぬ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市佐伯区皆賀の住宅地に建つ一軒家のフランス料理店。席数24で、カウンターは仕切りを低くして調理の様子が見えるようにしてある。コースの前菜プレートは月に1回内容を替え、北広島町のベビーリーフなど県内の野菜も使う。店主は野菜の皮やエビの殻を乾燥させて粉にし、彩りや出汁に使い切る方針を掲げている。ランチは11時と13時の2部制。アラカルトもあり、普段使いにも対応する。</div>
+<div class="sig"><b>一皿:</b>彩り豊かな前菜プレート(旬の野菜や魚介を少量ずつ一皿に並べた前菜の盛り合わせ。コースの最初に出る看板で、月替わり)／季節のフルーツと生ハムと北広島町のベビーリーフのサラダ(広島県北広島町で育てた若い葉野菜に果物と生ハムを合わせたサラダ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日・祝 11:00〜16:00（ランチは11時・13時の2部制）／18:00〜21:30（料理L.O. 20:00／ドリンクL.O. 21:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日（ほかに月2回の不定休あり）</td></tr>
+<tr><th>住所</th><td>広島県広島市佐伯区皆賀3-22-26-5</td></tr>
+<tr><th>予約</th><td>可（電話・ネット予約。リクエスト予約は返信に数日かかることがあり、返答がメールで届く場合がある） — <a href="tel:0829614839">☎ 082-961-4839</a> ／ <a href="https://instagram.com/restaurant_capucine">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>県内（北広島町）の野菜を使い、シェフが月替わりでコースを組む一軒家フレンチなので、郊外のフランス料理として採った。営業の根拠は、ホットペッパーグルメの掲載ページ（2026年7月6日更新・2026年10月13日閲覧）のネット予約カレンダーが2026年10月〜12月の日付で受付を表示していること、および同ページが公式として案内する店のInstagram（@restaurant_capucine）。個人経営の独立店で、チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=restaurant%20capucine%EF%BC%88%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%AB%E3%83%97%E3%82%B7%E3%83%BC%E3%83%8C%EF%BC%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%BD%90%E4%BC%AF%E5%8C%BA%E7%9A%86%E8%B3%803-22-26-5">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003345005/">ホットペッパーグルメ restaurant capucine（2026年7月6日更新・2026年10月13日閲覧。住所・電話・営業時間・席数・予約カレンダー）</a> / <a href="https://www.hotpepper.jp/strJ003345005/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a> / <a href="https://instagram.com/restaurant_capucine">restaurant capucine 公式Instagram（ホットペッパー掲載ページが「お店のホームページ」として案内／2026年10月13日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-birdman-matobacho">
+<img class="hero" src="img/hiroshima/hiroshima-birdman-matobacho.jpg" alt="バンコク食堂バードマン 的場町 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">60</span>バンコク食堂バードマン 的場町<span class="yomi">ばんこくしょくどう ばーどまん まとばちょう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市南区的場町にある22席のタイ料理店。バンコクの屋台をまねた内装で、原色のプラスチック製の丸椅子を並べ、タイ語の看板を掲げる。店名のバードマン（タイ語表記 เบิร์ดแมน）を冠したカオマンガイが名物で、ガイヤーン、パッタイ、ヤムウンセン、生春巻きといった屋台料理を昼夜とも出す。昼は11時から14時半まで。広島市佐伯区の五日市駅前横丁に7席の支店がある。</div>
+<div class="sig"><b>一皿:</b>カオマンガイ(鶏の茹で汁で炊いた米の上に蒸し鶏をのせ、生姜と唐辛子の入ったたれをかけるタイの屋台飯。店名にも冠した看板料理)／ガイヤーン(下味をつけた鶏肉を炭火でじっくり焼いたタイ東北部の焼き鳥。甘辛いたれを添える)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜水・金〜日・祝 11:00〜14:30（料理L.O. 14:00）／17:30〜22:00（料理L.O. 21:00）</td></tr>
+<tr><th>定休日</th><td class="off">木曜日（ほかに不定休あり）</td></tr>
+<tr><th>住所</th><td>広島県広島市南区的場町1-7-24</td></tr>
+<tr><th>予約</th><td>可（電話・ネット予約） — <a href="tel:0825699639">☎ 082-569-9639</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市内に2店だけの小さな地元資本のタイ料理店で、全国チェーンではない。屋台の内装と昼の定食で、広島駅のすぐそばに気軽なアジア料理の枠を置けるので採った。営業の根拠は、ホットペッパーグルメの掲載ページ（2026年10月13日閲覧）のネット予約カレンダーが2026年10月〜12月の日付で受付を表示し、定休日の木曜だけが休に塗られていること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%B3%E3%82%B3%E3%82%AF%E9%A3%9F%E5%A0%82%E3%83%90%E3%83%BC%E3%83%89%E3%83%9E%E3%83%B3%20%E7%9A%84%E5%A0%B4%E7%94%BA%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E7%9A%84%E5%A0%B4%E7%94%BA1-7-24">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003560320/">ホットペッパーグルメ バンコク食堂バードマン 的場町（2026年10月13日閲覧。住所・電話・営業時間・席数・予約カレンダー）</a> / <a href="https://www.hotpepper.jp/strJ003560320/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a> / <a href="https://www.hotpepper.jp/strJ001276736/">ホットペッパーグルメ バンコク食堂 バードマン（五日市店。同じ店が市内に2店であることの確認／2026年10月13日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-bombay-yokogawa">
+<img class="hero" src="img/hiroshima/hiroshima-bombay-yokogawa.jpg" alt="ボンベイ・インディアン・ダイニング 横川店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">61</span>ボンベイ・インディアン・ダイニング 横川店<span class="yomi">ぼんべい いんでぃあん だいにんぐ よこがわてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市西区三篠町にある28席のインド料理店。宇品・五日市・横川の広島市内3店で営む店の1軒で、タンドール窯で焼くナンとタンドリーチキン、十数種のカレーを出す。白壁と木の梁を見せた店内はテーブルとソファー席で、15〜28名の貸切にも応じる。ランチは11時から15時まで通しで、サラダ・スープ・パパド・タンドリーチキンかサモサが付くDランチが1,280円。持ち帰りもある。</div>
+<div class="sig"><b>一皿:</b>Dランチ(サラダ、日替わりスープ、パパド〈豆の粉を薄く焼いた煎餅〉、タンドリーチキンまたはサモサ、カレー、ナンかライスが付く昼の定食。1,280円)／ボンベイミックスタンドリーセット(タンドール窯で焼いた鶏や魚、チーズの串焼きを盛り合わせた皿。1人前・2人前がある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝 11:00〜15:00（L.O. 15:00）／17:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>広島県広島市西区三篠町2丁目14-9</td></tr>
+<tr><th>予約</th><td>可（電話・ネット予約。15〜28名の貸切は要相談） — <a href="tel:0822378858">☎ 082-237-8858</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市内3店（宇品・五日市・横川）だけで営む地元資本のインド料理店で、全国チェーンではない。横川という中心部から外れた町にアジア料理の枠を置けるので採った。営業の根拠は、ホットペッパーグルメの掲載ページが2026年7月22日更新で、同ページのネット予約カレンダーが2026年10月〜12月の日付で受付を表示していること（2026年10月13日閲覧）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9C%E3%83%B3%E3%83%99%E3%82%A4%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%87%E3%82%A3%E3%82%A2%E3%83%B3%E3%83%BB%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E6%A8%AA%E5%B7%9D%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%B8%89%E7%AF%A0%E7%94%BA2%E4%B8%81%E7%9B%AE14-9">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001061350/">ホットペッパーグルメ ボンベイ・インディアン・ダイニング 横川店（2026年7月22日更新・2026年10月13日閲覧。住所・電話・営業時間・席数・予約カレンダー・市内3店の電話番号）</a> / <a href="https://www.hotpepper.jp/strJ001061350/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-cueva-sol">
+<img class="hero" src="img/hiroshima/hiroshima-cueva-sol.jpg" alt="スペイン料理 クエバソル 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">62</span>スペイン料理 クエバソル<span class="yomi">すぺいんりょうり くえばそる</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市中区紙屋町のビル3階にある27席のスペイン料理店。カウンター7席とテーブル20席に加えて、ウッドデッキのオープンテラスとテント式の半個室席を備える。素材・調味料・香辛料をスペインから仕入れる方針で、地方ごとの郷土料理を出す。看板はバレンシア地方発祥のパエリアと、海老・タコ・穴子などを選べるアヒージョ。36か月以上熟成させたイベリコ豚ベジョータの生ハムとスペインワインを揃える。夜のみの営業。</div>
+<div class="sig"><b>一皿:</b>パエリア(サフランで黄色く色づけた米を、魚介や野菜と一緒に平たい専用鍋で炊き上げるスペイン・バレンシア地方の郷土料理。約8種の海の幸が入るMサイズが看板)／ガンバスのアヒージョ(にんにくと唐辛子を効かせたオリーブオイルで海老を煮る小皿料理。海老のほかタコや穴子も選べ、残った油はバゲットに付けて食べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝・祝前日 17:30〜22:30（料理L.O. 22:00／ドリンクL.O. 22:30）。昼の営業はなし</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（ほかに不定休の場合あり）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区紙屋町1丁目4-3 エフケイビル301</td></tr>
+<tr><th>予約</th><td>可（電話・ネット予約。テラスのテント席（半個室）は電話予約のみ） — <a href="tel:0822070015">☎ 082-207-0015</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市中心部で数少ないスペイン料理の専門店で、仕入れをスペインに絞り地方料理を出す独立店なので、各国料理の枠として採った。平和記念公園・紙屋町という観光の動線にあり、テラス席がある点も他店と重ならない。営業の根拠は、ホットペッパーグルメの掲載ページ（2026年3月22日更新・2026年10月13日閲覧）のネット予約カレンダーが2026年10月〜12月の日付で受付を表示し、定休日の日曜だけが休に塗られていること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%9A%E3%82%A4%E3%83%B3%E6%96%99%E7%90%86%20%E3%82%AF%E3%82%A8%E3%83%90%E3%82%BD%E3%83%AB%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E7%B4%99%E5%B1%8B%E7%94%BA1%E4%B8%81%E7%9B%AE4-3%20%E3%82%A8%E3%83%95%E3%82%B1%E3%82%A4%E3%83%93%E3%83%AB301">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003873153/">ホットペッパーグルメ スペイン料理 クエバソル（2026年3月22日更新・2026年10月13日閲覧。住所・電話・営業時間・席数・予約カレンダー）</a> / <a href="https://www.hotpepper.jp/strJ003873153/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-keiran">
+<img class="hero" src="img/hiroshima/hiroshima-keiran.jpg" alt="北京料理 桂蘭（けいらん） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#3f7d20;">63</span>北京料理 桂蘭（けいらん）<span class="yomi">ぺきんりょうり けいらん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市中区十日市町にある北京料理店。昭和42年（1967年）創業で、中華料理一筋60年以上というオーナー料理長が厨房に立つ。総席数162席のうち、2名から56名まで入る個室（獅子・麒麟・孔雀の間ほか）を複数備え、法事や宴会にも使われる。北京ダック、フカヒレの姿煮、自家製の手包み小籠包、海老のチリソース炒めが柱で、昼はランチ、夜はコースとオーダーバイキングがある。毎月最終火曜日は定休日でも営業する。</div>
+<div class="sig"><b>一皿:</b>北京ダック(皮をあめ色に焼いたアヒルの皮を薄い餅(ピン)で包み、甜麺醤とねぎを添えて食べる北京の宮廷料理。6枚入りで出す)／自家製 手包み小籠包(店で一つずつ包む、噛むとスープが流れ出す蒸し餃子)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30（料理L.O. 14:00／最終入店13:30）／17:30〜21:30（料理L.O. 21:00／最終入店20:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（毎月最終火曜日は営業。年末年始は休み）</td></tr>
+<tr><th>住所</th><td>広島県広島市中区十日市町1丁目3-10</td></tr>
+<tr><th>予約</th><td>可（電話・ネット予約。個室は2〜56名で要予約） — <a href="tel:0822311218">☎ 082-231-1218</a> ／ <a href="http://www.keiran-1984.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昭和42年創業の広島の老舗で、公式サイトに「広島の老舗北京料理店」と明記している独立店。中国料理の枠として、また平和記念公園から西側の十日市という町を拾うために採った。営業の根拠は、公式サイト（keiran-1984.com／2026年10月13日閲覧）が営業時間と電話番号を掲げて予約を受けていることと、ホットペッパーグルメの掲載ページが2026年10月2日更新で、同ページのネット予約カレンダーが2026年10月〜12月の日付で受付を表示していること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8C%97%E4%BA%AC%E6%96%99%E7%90%86%20%E6%A1%82%E8%98%AD%EF%BC%88%E3%81%91%E3%81%84%E3%82%89%E3%82%93%EF%BC%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%8D%81%E6%97%A5%E5%B8%82%E7%94%BA1%E4%B8%81%E7%9B%AE3-10">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.keiran-1984.com）より引用 / 参照元: <a href="http://www.keiran-1984.com/">北京料理 桂蘭 公式サイト（創業年・営業時間・電話番号・個室案内／2026年10月13日閲覧）</a> / <a href="https://www.hotpepper.jp/strJ000520525/">ホットペッパーグルメ 北京料理 桂蘭（2026年10月2日更新・2026年10月13日閲覧。住所・席数・定休日・予約カレンダー）</a> / <a href="https://www.hotpepper.jp/strJ000520525/photo/">ホットペッパーグルメ 同店 写真ギャラリー（2026年10月13日閲覧）</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・甘味</h2>
+<div class="card" id="c-hiroshima-teranishi-coffee-honten">
+<img class="hero" src="img/hiroshima/hiroshima-teranishi-coffee-honten.jpg" alt="てらにし珈琲店 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">64</span>てらにし珈琲店 本店<span class="yomi">てらにしこーひーてんほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">1978年開店の自家焙煎喫茶で、公式サイトに「1978年から今に至るまで45年以上」と記す。神戸の老舗珈琲店で修業した店主が、ドイツ・プロバット社の焙煎機で豆ごとに焙煎方法を変えて毎日焙煎し、挽き具合を調整したうえでオリジナルのネル(布のこし器)で抽出する。ミルクも珈琲に合わせて自家調整。本店は23席、駐車場7台。市内に本店と国泰寺店の2店。</div>
+<div class="sig"><b>一皿:</b>モーニングセット(砂糖不使用の自家製厚切りトーストと、手作りドレッシングをかけた山盛りサラダ、ドリンクが付く朝の定食。8:00〜11:00)／カナディアンセット(ハムと卵ときゅうりをはさんで焼いたサンドイッチ。オリジナルのカクテルソースが入る、開店当初からの品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜18:30（モーニングは8:00〜11:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>広島県広島市中区宝町6-15</td></tr>
+<tr><th>予約</th><td>不要（予約の受付についての記載はなく来店順） — <a href="tel:0822493850">☎ 082-249-3850</a> ／ <a href="https://www.teranishicoffee.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市内で最も古い部類の自家焙煎喫茶で、焙煎機の機種(プロバット)まで公開している。営業の根拠＝公式サイトの店舗案内ページ(2026-10-13閲覧)が本店の営業時間8:00〜18:30・定休日日曜祝日・席数23席・駐車場7台を掲示。あわせて広島県観光連盟／広島県／広島市の公式観光サイト「Dive! Hiroshima」の特集(2026-10-13閲覧)が同じ住所・電話・営業時間で紹介している。全国チェーンではなく本店と国泰寺店の2店のみの地元店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A6%E3%82%89%E3%81%AB%E3%81%97%E7%8F%88%E7%90%B2%E5%BA%97%20%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%AE%9D%E7%94%BA6-15">Googleマップで開く</a>
+<div class="src">写真: ペコマガ（広島のタウン情報WEBマガジン）（pecomag.jp）より引用 / 参照元: <a href="https://www.teranishicoffee.com/">てらにし珈琲店 公式サイト トップ（2026-10-13 閲覧。1978年から45年以上・プロバットの焙煎機で毎日焙煎の記載）</a> / <a href="https://www.teranishicoffee.com/%E5%BA%97%E8%88%97%E6%A1%88%E5%86%85/%E6%9C%AC%E5%BA%97/">てらにし珈琲店 公式サイト 店舗案内・本店（2026-10-13 閲覧。23席・駐車場7台・営業時間）</a> / <a href="https://dive-hiroshima.com/feature/feature-103525/">Dive! Hiroshima（広島県観光連盟・広島県・広島市の公式観光サイト）特集「広島モーニング」（2026-10-13 閲覧）</a> / <a href="https://pecomag.jp/33947/">ペコマガ（広島のタウン情報ウェブマガジン）「また行きたくなる喫茶店『てらにし珈琲店本店』でいただくモーニング」（2026-10-13 閲覧。店内とプロバットの焙煎機の写真）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-ruhe-brazil">
+<img class="hero" src="img/hiroshima/hiroshima-ruhe-brazil.jpg" alt="ルーエぶらじる 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">65</span>ルーエぶらじる<span class="yomi">るーえぶらじる</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">戦後まもなくモーニングの提供を始め、「モーニング発祥の地」とされる老舗喫茶店。広島県の公式観光サイトは創業70年以上と記す。昭和の面影を色濃く残すレトロな店内で、トースト・サラダ・卵料理・コーヒーの定番に加え、カレーやバーガーなど6種類から選べるモーニングを朝7時から出す。パンの販売もしており、持ち帰りだけの利用もできる。</div>
+<div class="sig"><b>一皿:</b>名物モーニング(トースト・サラダ・卵料理・コーヒーの組み合わせを基本に、カレーやバーガーなど6種類から選ぶ朝食。7:00〜10:30)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 7:00〜19:00／土日祝 7:00〜18:00（モーニング 7:00〜10:30）</td></tr>
+<tr><th>定休日</th><td class="off">年末年始・お盆</td></tr>
+<tr><th>住所</th><td>広島県広島市中区大手町5丁目6-11</td></tr>
+<tr><th>予約</th><td>不要（予約についての記載なし） — <a href="tel:0822442327">☎ 082-244-2327</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島のモーニング文化の原点とされる純喫茶で、創業70年以上。営業の根拠＝広島県観光連盟／広島県／広島市の公式観光サイト「Dive! Hiroshima」の特集ページ(2026-10-13閲覧)が、住所・電話番号・モーニング時間・平日/土日祝の営業時間・定休日まで掲載している。同サイトは2026年10月の記事を並べて更新を続けている。地元の一軒のみで全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AB%E3%83%BC%E3%82%A8%E3%81%B6%E3%82%89%E3%81%98%E3%82%8B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A4%A7%E6%89%8B%E7%94%BA5%E4%B8%81%E7%9B%AE6-11">Googleマップで開く</a>
+<div class="src">写真: ひろしま観光ナビ Dive! Hiroshima（広島県観光連盟）（image.dive-hiroshima.com）より引用 / 参照元: <a href="https://dive-hiroshima.com/feature/feature-103525/">Dive! Hiroshima（広島県観光連盟・広島県・広島市の公式観光サイト）特集「広島モーニング」（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-chamonix-montblanc-honten">
+<img class="hero" src="img/hiroshima/hiroshima-chamonix-montblanc-honten.jpg" alt="シャモニーモンブラン 本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">66</span>シャモニーモンブラン 本店<span class="yomi">しゃもにーもんぶらんほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">八丁堀の胡通りに残る喫茶店。掲載情報では「創業56年の老舗喫茶店」とされ、別の紹介文には「70年以上続く」ともある。深みのある椅子に小さめのテーブル、ステンドグラスを残した店内で、1階・中2階・2階あわせて60席。プリン・ア・ラ・モードやピッツァトーストといった昔ながらの喫茶メニューと、ハンバーグなどの洋食を朝8時から夜9時まで通しで出す。漫画や小説も置いてある。</div>
+<div class="sig"><b>一皿:</b>プリン・ア・ラ・モード(プリンに果物と生クリームを盛り合わせた昔ながらの喫茶デザート。800円)／シャモニーセット(ビーフカツ・ハンバーグ・ボイルドエッグを一皿に盛った看板の洋食セット。1,300円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜21:00（料理L.O. 20:30／ドリンクL.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>広島県広島市中区堀川町3-17</td></tr>
+<tr><th>予約</th><td>一部可（ネット予約は受付なし。中2階は20名以上でフロア貸切の相談が可能）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>八丁堀のど真ん中に残る数少ない老舗喫茶で、朝8時から夜9時まで通しで座れる。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13閲覧)が、メニューを2026/06/09・店舗情報を2025/08/28に更新しており、総席数60席・無休・8:00〜21:00を掲示。同ページの投稿写真には2026/07/07撮影のものがある。全国チェーンではなく広島の一軒のみ。なお公式サイトとして登録されているURL(o-kyakusama.com)は2026-10-13時点で表示されず、閉鎖とみられるため website は空欄にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%A3%E3%83%A2%E3%83%8B%E3%83%BC%E3%83%A2%E3%83%B3%E3%83%96%E3%83%A9%E3%83%B3%20%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%A0%80%E5%B7%9D%E7%94%BA3-17">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000520878/">ホットペッパーグルメ シャモニーモンブラン 本店 掲載ページ（2026-10-13 閲覧。店舗情報2025/08/28更新・メニュー2026/06/09更新）</a> / <a href="https://www.hotpepper.jp/strJ000520878/photo/">ホットペッパーグルメ シャモニーモンブラン 本店 写真ギャラリー（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-okashidokoro-takaki-tokaichi">
+<img class="hero" src="img/hiroshima/hiroshima-okashidokoro-takaki-tokaichi.jpg" alt="御菓子所 高木 十日市本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">67</span>御菓子所 高木 十日市本店<span class="yomi">おかしどころたかぎとおかいちほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">大正8年(1919年)創業。創業者の高木松次郎が広島市左官町(現在の十日市)でしること ぜんざいを出す和風喫茶として始めた店で、持ち帰りの和菓子販売は戦後から。十日市本店は1階店舗の奥に茶寮コーナーがあり、庭を眺めながら甘味や食事がとれる。2階には8畳と6畳の本格的な茶室もある。定休日は元旦のみ、駐車場3台。広島県内に11店舗。</div>
+<div class="sig"><b>一皿:</b>季節の上生菓子(練切や外郎(ういろう)で季節の風物を象った生菓子。約2週間ごとに5種類ほどが入れ替わる。各292円)／ひろしま檸の菓(れのか。広島県産レモンと もち粉を使い白餡を包んだ もっちりした焼き菓子。184円)／鶴亀もなか(広島県産もち米の皮に備中産大納言小豆のつぶ餡か抹茶餡をはさんだ、戦後から約70年続く最古参の品。162円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>店舗 9:00〜18:00／茶寮コーナー 10:00〜17:00（L.O. 16:30）</td></tr>
+<tr><th>定休日</th><td class="off">元旦のみ</td></tr>
+<tr><th>住所</th><td>広島県広島市中区十日市町1丁目4-26</td></tr>
+<tr><th>予約</th><td>不要（茶寮は来店順。2階の茶室・ロビーのみ要問い合わせ） — <a href="tel:0822312121">☎ 082-231-2121</a> ／ <a href="https://www.okashidokoro-takaki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市内で最も古い部類の和菓子店で、創業そのものが「ぜんざいを出す和風喫茶」。いま広島レモンを使った菓子(ひろしま檸の菓)も自社で作っている。営業の根拠＝公式サイトの店舗案内ページ(2026-10-13閲覧)が十日市本店の住所・電話・営業時間9:00-18:00・茶寮コーナー10:00-17:00(L.O.16:30)・定休日元旦のみ・駐車場3台を掲示し、同サイトのお知らせが2026年10月13日付で更新されている。座って飲食できる席＝1階の茶寮コーナー(庭に面したテーブルとベンチ席)を公式サイトの写真で確認。全国チェーンではなく広島県内のみの地元企業(株式会社御菓子所高木・広島市西区)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E6%89%80%20%E9%AB%98%E6%9C%A8%20%E5%8D%81%E6%97%A5%E5%B8%82%E6%9C%AC%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E5%8D%81%E6%97%A5%E5%B8%82%E7%94%BA1%E4%B8%81%E7%9B%AE4-26">Googleマップで開く</a>
+<div class="src">写真: ペコマガ（広島のタウン情報WEBマガジン）（pecomag.jp）より引用 / 参照元: <a href="https://www.okashidokoro-takaki.com/shop/">御菓子所 高木 公式サイト 店舗のご案内・十日市本店（2026-10-13 閲覧。茶寮コーナー10:00-17:00・メニュー・駐車場）</a> / <a href="https://www.okashidokoro-takaki.com/company/">御菓子所 高木 公式サイト 会社情報（2026-10-13 閲覧。大正8年3月創業、和風喫茶として開業の沿革）</a> / <a href="https://www.okashidokoro-takaki.com/">御菓子所 高木 公式サイト トップ（2026-10-13 閲覧。2026年10月13日付のお知らせを掲載）</a> / <a href="https://pecomag.jp/13848/">ペコマガ（広島のタウン情報ウェブマガジン）「創業103年『御菓子所 高木』の季節を感じるかわいい生菓子」（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-kissa-saeki">
+<img class="hero" src="img/hiroshima/hiroshima-kissa-saeki.jpg" alt="喫茶さえき 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">68</span>喫茶さえき<span class="yomi">きっささえき</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">公式サイトが「Cafe Saeki Since 1970」と掲げる長く続く喫茶店（ホットペッパーの掲載文は1977年開業と記す）。化学合成農薬や化学肥料に頼らない近隣の提携農家から野菜を仕入れ、コーヒー豆など海外原産のものはフェアトレード品を優先する。卵・乳製品・動物性を使わないヴィーガン対応やグルテンフリーの品を揃え、全ての食材を説明できる「食のバリアフリー」を掲げる。総席数48席でカウンターもある。</div>
+<div class="sig"><b>一皿:</b>ヴィーガンハンバーグ(レンズ豆・野菜・雑穀を“重ね煮”してスパイスを加えた、卵も乳製品も動物性も使わないハンバーグ。酵素玄米ごはんなどが付く)／アフォガード(豆乳で作ったヴィーガンアイスクリームに温かいコーヒーをかけるグルテンフリーのデザート)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00（L.O. 16:30）※17:00以降は予約のみ</td></tr>
+<tr><th>定休日</th><td class="off">第2・第4日曜（ホットペッパー掲載では第4月曜も休み）。年末年始・お盆は休み</td></tr>
+<tr><th>住所</th><td>広島県広島市中区紙屋町1-4-25</td></tr>
+<tr><th>予約</th><td>一部可（ネット予約あり。17:00以降は予約のみ） — <a href="tel:0822469339">☎ 082-246-9339</a> ／ <a href="https://kissa-saeki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>紙屋町・平和記念公園のすぐ近くにある1970年創業の喫茶店で、半世紀続けながら有機・ヴィーガン対応へ切り替えた珍しい一軒。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13閲覧)が店舗情報を2026/10/12に更新しており、口コミに2026/09/24・2026/09/17・2026/08/27来店のものが並ぶ。あわせて公式サイト(2026-10-13閲覧)が住所・電話・営業時間10:00-17:00・L.O.16:30・第2第4日曜休を掲示。座席48席はホットペッパーの席情報で確認。全国チェーンではなく広島の一軒のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%81%95%E3%81%88%E3%81%8D%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E7%B4%99%E5%B1%8B%E7%94%BA1-4-25">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://kissa-saeki.com/">喫茶さえき 公式サイト（2026-10-13 閲覧。Since 1970・住所・営業時間・定休日）</a> / <a href="https://www.hotpepper.jp/strJ001006795/">ホットペッパーグルメ Organic cafe &amp; kitchen 喫茶さえき（2026-10-13 閲覧。店舗情報2026/10/12更新・総席数48席・2026/09/24来店の口コミ）</a> / <a href="https://www.hotpepper.jp/strJ001006795/photo/">ホットペッパーグルメ 喫茶さえき 写真ギャラリー（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-shimaji-coffee-roasters">
+<img class="hero" src="img/hiroshima/hiroshima-shimaji-coffee-roasters.jpg" alt="shimaji coffee roasters 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">69</span>shimaji coffee roasters<span class="yomi">しまじこーひーろーすたーず</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">深煎りが主流の広島で浅煎りを広めたいという思いから開いた自家焙煎店。焙煎8段階のうち2〜3にあたる浅煎りを中心に扱い、豆の種類は定期的に入れ替わる。抽出は圧力をかけるエアロプレス(筒に挽いた豆と湯を入れ密閉して押し出す器具)が基本で、頼めばハンドドリップにも変えてもらえる。メニューはコーヒーのみ。店内は木を使った明るいつくりで、ベンチを含めて8席。豆の量り売りもある。</div>
+<div class="sig"><b>一皿:</b>ドリップコーヒー(その日の数種類の浅煎り豆から香りで選び、エアロプレスで淹れる一杯。エチオピアはベリー系の酸味、ブルンジは花の蜜のような甘い香り。450円)／カフェラテ(浅煎りの豆に牛乳を合わせた、紅茶に近い口当たりの一杯。500円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>広島県広島市南区的場町1-6-8</td></tr>
+<tr><th>予約</th><td>不要（カウンターで注文する形式。予約についての記載なし） — <a href="tel:0825697013">☎ 082-569-7013</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市内では珍しい浅煎り専門の自家焙煎店で、広島駅から歩いて行ける。営業の根拠＝コーヒー専門メディア coffee-labo の広島特集(2026-09-29更新。各店の公式サイトなど一次情報に当たって営業情報を照合し、変わっていた6店を書き換えたと明記)が、営業時間12:00〜18:00・火曜定休・住所・電話番号を掲載。自家焙煎・浅煎り・8席・エアロプレスの詳細はペコマガ(広島のタウン情報ウェブマガジン)の取材記事で確認した。個人経営の1店舗のみで全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=shimaji%20coffee%20roasters%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E7%9A%84%E5%A0%B4%E7%94%BA1-6-8">Googleマップで開く</a>
+<div class="src">写真: ペコマガ（広島のタウン情報WEBマガジン）（pecomag.jp）より引用 / 参照元: <a href="https://pecomag.jp/738/">ペコマガ（広島のタウン情報ウェブマガジン）「広島にも浅煎りコーヒーを広めたい。シマジコーヒーロースターズ」（2026-10-13 閲覧。8席・エアロプレス・価格）</a> / <a href="https://coffee-labo.co.jp/hirosima-coffee/">coffee-labo「広島のおすすめ人気コーヒー専門店・カフェ13選」（2026-09-29 更新／2026-10-13 閲覧。営業時間12:00〜18:00・火曜定休・住所・電話を一次情報と照合したと明記）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-roastery-cafe-note">
+<img class="hero" src="img/hiroshima/hiroshima-roastery-cafe-note.jpg" alt="Roastery Cafe note 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">70</span>Roastery Cafe note<span class="yomi">ろーすたりーかふぇのーと</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">レンガの壁が目を引く自家焙煎のスペシャルティコーヒー専門店。10種類以上の豆を店で焙煎して量り売りし、季節に合わせたシーズンブレンドも出す。コーヒーは1杯ずつハンドドリップ。席は全部で14席で、カウンター席があるので一人でも入りやすい。全粒粉入りの手作り丸パンのサンドイッチやワッフル、スコーンなど食事と菓子も揃う。月に1度、定員4名のハンドドリップ講習を開く。</div>
+<div class="sig"><b>一皿:</b>スペシャルティコーヒー(店で焙煎した10種類以上の豆から選び、1杯ずつハンドドリップで淹れる。グアテマラはしっかりした苦味、エチオピアは紅茶のようにフルーティー。レギュラー400円／ラージ480円)／自家製チーズケーキ(密度の高いしっとりしたチーズケーキ。添えたクリームで甘さを足して食べられる。400円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜18:00（L.O. 17:30）※コーヒー豆の販売は19:00まで</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜（ペコマガの記事では火曜のみと記載。訪問前に確認を）</td></tr>
+<tr><th>住所</th><td>広島県広島市南区宇品西4丁目1-67 101</td></tr>
+<tr><th>予約</th><td>不要（予約についての記載なし） — <a href="tel:08029328030">☎ 080-2932-8030</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市南部で自家焙煎のスペシャルティコーヒーを1杯ずつ淹れる店。営業の根拠＝コーヒー専門メディア coffee-labo の広島特集(2026-09-29更新。各店の一次情報に当たって営業情報を照合したと明記)が、営業時間11:00-18:00(L.O.17:30)・月火定休・住所・電話番号を掲載。席数14席と自家焙煎・ハンドドリップの詳細はペコマガ(広島のタウン情報ウェブマガジン)の取材記事で確認。なお定休日はペコマガの記事では火曜のみ、coffee-laboでは月・火となっており、新しい後者を採った。個人経営の1店舗のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Roastery%20Cafe%20note%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E5%AE%87%E5%93%81%E8%A5%BF4%E4%B8%81%E7%9B%AE1-67%20101">Googleマップで開く</a>
+<div class="src">写真: ペコマガ（広島のタウン情報WEBマガジン）（pecomag.jp）より引用 / 参照元: <a href="https://pecomag.jp/17354/">ペコマガ（広島のタウン情報ウェブマガジン）「宇品のロースタリーカフェノートで自家焙煎のこだわりコーヒーをいただきます！」（2026-10-13 閲覧。14席・豆10種類・価格）</a> / <a href="https://coffee-labo.co.jp/hirosima-coffee/">coffee-labo「広島のおすすめ人気コーヒー専門店・カフェ13選」（2026-09-29 更新／2026-10-13 閲覧。営業時間11:00-18:00 L.O.17:30・月火定休・住所・電話）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-kissa-kamome-mocha">
+<img class="hero" src="img/hiroshima/hiroshima-kissa-kamome-mocha.jpg" alt="喫茶かもめモカ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">71</span>喫茶かもめモカ<span class="yomi">きっさかもめもか</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">宮島や江田島へのフェリーが出る広島港ターミナルの2階にある喫茶店。朝6時から開いていて、海と港を眺めながら朝食がとれる。10時から14時は自家製のランチ。クレープは注文を受けてから焼き、甘いものだけでなく おかずクレープもある。ピザは生地もソースも自家製。広島北ビール亀山醸造所のクラフトビールも置く。総席数は15席で、ソファー席・テーブル・カウンターがある。</div>
+<div class="sig"><b>一皿:</b>かもめのクッキーシュー(クッキー生地のシュー皮に手作りクリームをたっぷり詰めた、この店の一番人気。350円。持ち帰りも可)／ふわぁとろぉオムライス(ふわりとした卵でご飯を包んだオムライス。950円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>6:00〜17:00（料理L.O. 16:30／ドリンクL.O. 16:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>広島県広島市南区宇品海岸1-13-26 広島港ターミナル2F</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーのネット予約あり。電話は営業時間内に出られない場合があり、店はインスタグラムのDMでの問い合わせを案内している）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島港の船着場にあり、朝6時から海を見ながら座れる喫茶。市中心部の喫茶とは立地も時間帯も違うので入れた。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13閲覧)に2026年10月〜12月のネット予約枠が日ごとに出ており、口コミに2026/09/30来店・投稿のものが3件並ぶ。店舗情報は2025/08/04更新で、総席数15席・火曜定休・6:00〜17:00を掲示。全国チェーンではない個人店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%81%8B%E3%82%82%E3%82%81%E3%83%A2%E3%82%AB%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E5%8D%97%E5%8C%BA%E5%AE%87%E5%93%81%E6%B5%B7%E5%B2%B81-13-26%20%E5%BA%83%E5%B3%B6%E6%B8%AF%E3%82%BF%E3%83%BC%E3%83%9F%E3%83%8A%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004068106/">ホットペッパーグルメ 喫茶かもめモカ（2026-10-13 閲覧。総席数15席・6:00〜17:00・火曜定休、口コミ2026/09/30）</a> / <a href="https://www.hotpepper.jp/strJ004068106/photo/">ホットペッパーグルメ 喫茶かもめモカ 写真ギャラリー（2026-10-13 閲覧）</a></div>
+</div></div>
+<div class="card" id="c-hiroshima-hakuto">
+<img class="hero" src="img/hiroshima/hiroshima-hakuto.jpg" alt="白灯 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">72</span>白灯<span class="yomi">はくとう</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">ビルの4階にある、一人でも入りやすいことをうたう隠れ家のようなカフェ。店主が長年集めてきた手作りの器が棚にずらりと並び、料理を盛る器を客が自分で選べる。コーヒーは一杯ずつネルドリップ(布のこし器で落とす抽出法)。チーズケーキは自家製で日によって種類が変わる。食事はほぼ毎日替わるスパイスカレーで、副菜が5〜6種類付く。</div>
+<div class="sig"><b>一皿:</b>ネルドリップ珈琲(店主が一杯ずつ布のこし器で落とす、雑味のないまろやかなコーヒー。700円)／手作りチーズケーキ(日替わりで種類が変わる自家製のチーズケーキ。ブルーベリー、塩キャラメルバナナなど。700円)／アイス珈琲オレンジ(オレンジジュースにコーヒーを合わせた冷たいアレンジドリンク。650円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県広島市中区本川町2丁目1-4 浜本ビル405</td></tr>
+<tr><th>予約</th><td>不要（予約についての記載なし）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>平和記念公園の対岸にある、ネルドリップのコーヒーと自家製チーズケーキの店。器を選べる仕掛けが他にない。営業の根拠＝ペコマガ(広島のタウン情報ウェブマガジン)が2026年8月31日と2026年9月2日に2本の取材記事を公開しており、どちらにも住所・営業時間11:00〜17:00・不定休・駐車場なしが載っている(2026-10-13閲覧)。座って飲食できる席＝窓際のテーブル席と椅子が同記事の写真で確認できる。個人経営の1店舗のみで全国チェーンではない。※日替わりのメニューと営業日は店の公式インスタグラムで告知されるため、訪問前に確認するとよい。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E7%81%AF%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E5%BA%83%E5%B3%B6%E5%B8%82%E4%B8%AD%E5%8C%BA%E6%9C%AC%E5%B7%9D%E7%94%BA2%E4%B8%81%E7%9B%AE1-4%20%E6%B5%9C%E6%9C%AC%E3%83%93%E3%83%AB405">Googleマップで開く</a>
+<div class="src">写真: ペコマガ（広島のタウン情報WEBマガジン）（pecomag.jp）より引用 / 参照元: <a href="https://pecomag.jp/52452/">ペコマガ「至福のカフェタイム。『白灯』のこだわりネルドリップコーヒーと手作りチーズケーキ」（2026-09-02 公開／2026-10-13 閲覧）</a> / <a href="https://pecomag.jp/52416/">ペコマガ「器も自分で選べる！『白灯』で出会うその日だけの絶品スパイスカレー」（2026-08-31 公開／2026-10-13 閲覧）</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年10月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+</body>
+</html>
