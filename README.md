@@ -96,8 +96,10 @@
 | 島根県 | 出雲市 | 45 | [japan/shimane/](japan/shimane/) |
 | 岡山県 | 岡山市 | 72 | [japan/okayama/](japan/okayama/) |
 | 岡山県 | 倉敷市 | 50 | [japan/okayama/](japan/okayama/) |
+| 広島県 | 広島市 | 72 | [japan/hiroshima/](japan/hiroshima/) |
+| 広島県 | 福山市 | 50 | [japan/hiroshima/](japan/hiroshima/) |
 
-小計 68冊 / 3780店
+小計 70冊 / 3902店
 
 ## 欧州
 

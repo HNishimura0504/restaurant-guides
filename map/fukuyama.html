@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>福山 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>福山 の食べ歩き地図<span class="n">50店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="福山 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">福山 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/hiroshima/fukuyama.html"><span class="sn-e">📄</span>福山のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（94都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "季節料理 衣笠", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.386852, "lng": 133.382706, "d": "鯛づくし膳(鯛の造り・かぶと煮・ちり蒸し・鯛めしなど、1匹の鯛を部位ごとに仕立て分けた御膳。要予約)／鯛うずみ(福山の郷土料理「うずみ」＝具を飯の下に埋めて隠した汁かけ飯を、鯛の身で仕立てたもの。品書きには天ぷらうずみも並ぶ)", "a": "広島県福山市鞆町鞆150-12", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AD%A3%E7%AF%80%E6%96%99%E7%90%86%20%E8%A1%A3%E7%AC%A0%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86150-12", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-kinugasa-tomonoura", "food": "../japan/hiroshima/img/fukuyama/fukuyama-kinugasa-tomonoura.jpg", "ext": ""}, {"i": 1, "n": "日本料理 鞆膳", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.487415, "lng": 133.364563, "d": "うずみ定食(福山の郷土料理うずみ＝具を飯の下に埋めた汁かけ飯の定食。瀬戸内の食材を使う予約限定のランチ)／鯛茶漬け(店が新名物として挙げる一品。鯛の身を出汁茶漬けにしたもの)", "a": "広島県福山市元町13-26", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E9%9E%86%E8%86%B3%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA13-26", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-tomozen", "food": "../japan/hiroshima/img/fukuyama/fukuyama-tomozen.jpg", "ext": ""}, {"i": 2, "n": "すし処 伊織", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.563046, "lng": 133.382309, "d": "ばらちらし(11種類以上のネタをヅケにして飯の上に散らした丼。茶碗蒸しと汁物が付く)／サワラの西京焼き(店で独自に合わせた西京味噌に、3kg以上の魚体のサワラを漬けて焼いたもの)", "a": "広島県福山市神辺町西中条1268", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E5%87%A6%20%E4%BC%8A%E7%B9%94%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%A5%9E%E8%BE%BA%E7%94%BA%E8%A5%BF%E4%B8%AD%E6%9D%A11268", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-iori-kannabe", "food": "../japan/hiroshima/img/fukuyama/fukuyama-iori-kannabe.jpg", "ext": ""}, {"i": 3, "n": "福山 日本料理 おだはら", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.483761, "lng": 133.365021, "d": "季節の会席(前菜から造り・季節の小鍋・揚げ物・食事まで全7〜10品を組んだコース。全7品5,500円、全8品7,700円、全10品11,000円の3段階。いずれも税込・要予約)／昼の御膳(造り御膳・寿司御膳・天ぷら御膳・海鮮丼から選ぶランチ限定の品書き)", "a": "広島県福山市霞町1-8-3", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%B1%B1%20%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%8A%E3%81%A0%E3%81%AF%E3%82%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9C%9E%E7%94%BA1-8-3", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-odahara", "food": "../japan/hiroshima/img/fukuyama/fukuyama-odahara.jpg", "ext": ""}, {"i": 4, "n": "焼きたて・握りたて・酒処 鞆や", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.488544, "lng": 133.363419, "d": "握りたて寿司盛り(その日のネタを職人がその場で握る盛り合わせ。5貫1,380円から、8貫1,980円)／焼さば定食(選んだサバを店内で焼き上げる定食。外は香ばしく中は身が残るように焼く、店の名物)", "a": "広島県福山市伏見町1-18", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E3%81%8D%E3%81%9F%E3%81%A6%E3%83%BB%E6%8F%A1%E3%82%8A%E3%81%9F%E3%81%A6%E3%83%BB%E9%85%92%E5%87%A6%20%E9%9E%86%E3%82%84%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA1-18", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-tomoya-fushimicho", "food": "../japan/hiroshima/img/fukuyama/fukuyama-tomoya-fushimicho.jpg", "ext": ""}, {"i": 5, "n": "活魚料理 鯛めし 千とせ", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.384106, "lng": 133.383698, "d": "鯛めし(鯛のおかしらから取った出汁で、鯛の身を入れて炊き込む鞆の浦の郷土食。鯛網漁が盛んだった土地の伝統の味)／鯛そうめん(煮付けた鯛のおかしらを丸ごと素麺の上に載せ、鯛の出汁を絡めて食べる瀬戸内の祝い料理。広島県の公式観光サイトがこの店の名物として挙げている)／選べる鯛定食(鯛の塩焼き・煮付け・天ぷら・造りから選ぶ定食。2品1,650円・3品2,310円＝2022年12月時点の店頭の品書き)", "a": "広島県福山市鞆町鞆552-7", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%BB%E9%AD%9A%E6%96%99%E7%90%86%20%E9%AF%9B%E3%82%81%E3%81%97%20%E5%8D%83%E3%81%A8%E3%81%9B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86552-7", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-chitose-tomonoura", "food": "../japan/hiroshima/img/fukuyama/fukuyama-chitose-tomonoura.jpg", "ext": ""}, {"i": 6, "n": "御舟宿 いろは", "c": ["寿司・海鮮"], "v": "食材の店", "lat": 34.38332, "lng": 133.382736, "d": "いろは御膳(鞆の浦で揚がる魚と地元の野菜を使った昼の御膳。小鉢・造り・煮物などを組み合わせた一汁数菜の形)／季節の創作料理(シェフが瀬戸内の魚を主に仕立てる一皿。季節で内容が替わる)", "a": "広島県福山市鞆町鞆670", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%88%9F%E5%AE%BF%20%E3%81%84%E3%82%8D%E3%81%AF%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86670", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-ofunayado-iroha", "food": "../japan/hiroshima/img/fukuyama/fukuyama-ofunayado-iroha.jpg", "ext": ""}, {"i": 7, "n": "小魚阿も珍 川口店", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.473167, "lng": 133.385117, "d": "ちーいか天ぷら(小さなイカを丸ごと甘辛く煮含めてから衣をつけて揚げる、阿藻家に伝わる店の名物)／鯛を使った刺身・煮付け(鞆の浦の漁師から直送される鯛を、造りや煮付けで出す)", "a": "広島県福山市東川口町3-18-18", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E9%AD%9A%E9%98%BF%E3%82%82%E7%8F%8D%20%E5%B7%9D%E5%8F%A3%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%9D%B1%E5%B7%9D%E5%8F%A3%E7%94%BA3-18-18", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-amochin-kawaguchi", "food": "../japan/hiroshima/img/fukuyama/fukuyama-amochin-kawaguchi.jpg", "ext": ""}, {"i": 8, "n": "瀬戸内料理 たんと", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.487144, "lng": 133.364838, "d": "瀬戸内食材の刺身盛合わせ(瀬戸内で揚がったその日の鮮魚を数種盛り合わせたもの)／保命酒梅酒『梅太郎』(鞆の浦で江戸時代から造られる薬味酒＝16種の生薬をみりんに漬けた保命酒を仕込みに使った梅酒。800円)／くわい焼酎『福山そだち』(福山が全国生産量の約7割を占めるくわい＝おせちに入る球根を原料にした焼酎。600円)", "a": "広島県福山市元町13-21 宮通りビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E6%96%99%E7%90%86%20%E3%81%9F%E3%82%93%E3%81%A8%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA13-21%20%E5%AE%AE%E9%80%9A%E3%82%8A%E3%83%93%E3%83%AB1F", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-tanto", "food": "../japan/hiroshima/img/fukuyama/fukuyama-tanto.jpg", "ext": ""}, {"i": 9, "n": "つたふじ 福山支店", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 34.479168, "lng": 133.370529, "d": "中華そば(鶏ガラと瀬戸内の小魚の出汁に醤油を合わせ、小粒の背脂を浮かせた尾道系の一杯。やや黄みがかった中細ストレート麺を使う)／中華うどん(同じ尾道系の醤油スープに、ラーメンではなくうどんの麺を入れたこの店独自の一品)", "a": "広島県福山市御門町2丁目9-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A4%E3%81%9F%E3%81%B5%E3%81%98%20%E7%A6%8F%E5%B1%B1%E6%94%AF%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%BE%A1%E9%96%80%E7%94%BA2%E4%B8%81%E7%9B%AE9-1", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-tsutafuji-fukuyama", "food": "../japan/hiroshima/img/fukuyama/fukuyama-tsutafuji-fukuyama.jpg", "ext": ""}, {"i": 10, "n": "尾道ラーメン 一丁", "c": ["麺類"], "v": "レストラン", "lat": 34.488075, "lng": 133.361664, "d": "ラーメン(鶏ガラ・豚骨と小魚の出汁に濃口醤油を合わせ、甘みのある背脂ミンチをたっぷり浮かせた尾道系の一杯。細い平打ち麺を使う)／あげギョウザ(尾道ラーメンの店では珍しい揚げ餃子)", "a": "広島県福山市三之丸町3-7 土井ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B0%BE%E9%81%93%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E4%B8%80%E4%B8%81%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%B8%89%E4%B9%8B%E4%B8%B8%E7%94%BA3-7%20%E5%9C%9F%E4%BA%95%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-onomichi-ramen-iccho", "food": "../japan/hiroshima/img/fukuyama/fukuyama-onomichi-ramen-iccho.jpg", "ext": ""}, {"i": 11, "n": "中華そば専門店 十八番 引野店", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 34.494087, "lng": 133.411179, "d": "中華そば(魚介と鶏ガラの出汁に醤油を合わせ、背脂を浮かせた尾道系。角切りの細麺に、薄切りチャーシュー・メンマ・青ねぎをのせる)／チャンポン(麺の上に熱々の野菜あんをたっぷりかけた、この店独自のあんかけ式)", "a": "広島県福山市引野町4丁目6-24", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E5%B0%82%E9%96%80%E5%BA%97%20%E5%8D%81%E5%85%AB%E7%95%AA%20%E5%BC%95%E9%87%8E%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%BC%95%E9%87%8E%E7%94%BA4%E4%B8%81%E7%9B%AE6-24", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-juhachiban-hikino", "food": "../japan/hiroshima/img/fukuyama/fukuyama-juhachiban-hikino.jpg", "ext": ""}, {"i": 12, "n": "中華そば しんたく", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 34.547161, "lng": 133.359909, "d": "中華そば(鶏ガラと小魚の出汁に醤油を合わせ、大粒でぷりっとした背脂を浮かせた尾道系の一杯。やや平たいストレート麺を使う)／焼そば(中華そばと同じ中華麺を使って焼き上げた、この店の2番人気)", "a": "広島県福山市神辺町十九軒屋253-2 サンキューランド内", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E3%81%97%E3%82%93%E3%81%9F%E3%81%8F%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%A5%9E%E8%BE%BA%E7%94%BA%E5%8D%81%E4%B9%9D%E8%BB%92%E5%B1%8B253-2%20%E3%82%B5%E3%83%B3%E3%82%AD%E3%83%A5%E3%83%BC%E3%83%A9%E3%83%B3%E3%83%89%E5%86%85", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-shintaku-kannabe", "food": "../japan/hiroshima/img/fukuyama/fukuyama-shintaku-kannabe.jpg", "ext": ""}, {"i": 13, "n": "朱華楼 川口店", "c": ["アジア・エスニック", "麺類"], "v": "レストラン", "lat": 34.468559, "lng": 133.385437, "d": "中華そば(鶏ガラ・豚骨と小魚の出汁に醤油を合わせた尾道系。天かすのようにふわとろにほどける背脂と、角張った平打ち麺が特徴)／焼きめし(しっかり焼き色をつけた塩気の強いチャーハン。中華そばとのセットが単品より安い)", "a": "広島県福山市川口町2丁目10-50", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%B1%E8%8F%AF%E6%A5%BC%20%E5%B7%9D%E5%8F%A3%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%B7%9D%E5%8F%A3%E7%94%BA2%E4%B8%81%E7%9B%AE10-50", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-shukaro-kawaguchi", "food": "../japan/hiroshima/img/fukuyama/fukuyama-shukaro-kawaguchi.jpg", "ext": ""}, {"i": 14, "n": "らあめん 天", "c": ["麺類"], "v": "レストラン", "lat": 34.442158, "lng": 133.256943, "d": "天らあめん(甘みのある背脂醤油のスープに、低加水の細ストレート麺を合わせた一杯。厚切りで味のしみたチャーシューがのる)／鳥からごはん(鶏の唐揚げを甘辛いタレと海苔でごはんにのせたサイドメニュー)", "a": "広島県福山市松永町7丁目3-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%82%E3%82%81%E3%82%93%20%E5%A4%A9%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%9D%BE%E6%B0%B8%E7%94%BA7%E4%B8%81%E7%9B%AE3-3", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-raamen-ten-matsunaga", "food": "../japan/hiroshima/img/fukuyama/fukuyama-raamen-ten-matsunaga.jpg", "ext": ""}, {"i": 15, "n": "味龍 福山箕島店", "c": ["麺類"], "v": "レストラン", "lat": 34.454376, "lng": 133.388565, "d": "初代 味龍らーめん(鶏ガラと魚介の合わせ出汁に醤油を効かせた尾道系の一杯。自家製の細麺を使う)／二代目 濃厚 煮干しらーめん(煮干しを強く効かせたとろみのあるスープに、太めの縮れ麺を合わせたもの)", "a": "広島県福山市箕島町5816-222", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E9%BE%8D%20%E7%A6%8F%E5%B1%B1%E7%AE%95%E5%B3%B6%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%AE%95%E5%B3%B6%E7%94%BA5816-222", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-ajiryu-minoshima", "food": "../japan/hiroshima/img/fukuyama/fukuyama-ajiryu-minoshima.jpg", "ext": ""}, {"i": 16, "n": "鶏泡そば 草戸ベース", "c": ["麺類"], "v": "レストラン", "lat": 34.474304, "lng": 133.359329, "d": "鶏泡しお(きめ細かい白い泡をのせた鶏白湯の塩ラーメン。泡の下はとろみのあるまろやかなスープで、赤たまねぎ・かいわれ・フライドオニオンがのる)／鶏泡しょうゆ(同じ鶏白湯に6種の醤油のかえしを合わせた、やや甘辛い方)", "a": "広島県福山市草戸町4丁目10-3", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B6%8F%E6%B3%A1%E3%81%9D%E3%81%B0%20%E8%8D%89%E6%88%B8%E3%83%99%E3%83%BC%E3%82%B9%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%8D%89%E6%88%B8%E7%94%BA4%E4%B8%81%E7%9B%AE10-3", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-kusado-base", "food": "../japan/hiroshima/img/fukuyama/fukuyama-kusado-base.jpg", "ext": ""}, {"i": 17, "n": "お好み焼き・鉄板焼き まん太郎", "c": ["麺類"], "v": "レストラン", "lat": 34.48341, "lng": 133.369522, "d": "まん太郎スペシャル(豚肉・イカ天などを盛り込んだ全部乗せのお好み焼き。生地を薄く焼いてキャベツ・そば・卵を順に重ねる広島の重ね焼き)／関西フワトロ玉子かけ(生地とキャベツを混ぜて焼く関西風に、半熟の玉子をかけた一枚)", "a": "広島県福山市南町1-18", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E3%83%BB%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E3%81%BE%E3%82%93%E5%A4%AA%E9%83%8E%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%8D%97%E7%94%BA1-18", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-okonomi-mantaro", "food": "../japan/hiroshima/img/fukuyama/fukuyama-okonomi-mantaro.jpg", "ext": ""}, {"i": 18, "n": "鉄板焼き たちまち", "c": ["麺類"], "v": "レストラン", "lat": 34.490349, "lng": 133.365677, "d": "ぶた玉(豚肉入りのお好み焼き。薄く焼いた生地にキャベツ・そば・卵を重ねる広島の重ね焼き)／府中焼き(府中市発祥のお好み焼き。豚バラではなく牛豚のミンチ肉を使い、出た脂で両面をカリッと焼き上げる)", "a": "広島県福山市城見町1丁目3-41", "m": "https://www.google.com/maps/search/?api=1&query=%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E3%81%9F%E3%81%A1%E3%81%BE%E3%81%A1%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%9F%8E%E8%A6%8B%E7%94%BA1%E4%B8%81%E7%9B%AE3-41", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-okonomi-tachimachi", "food": "../japan/hiroshima/img/fukuyama/fukuyama-okonomi-tachimachi.jpg", "ext": ""}, {"i": 19, "n": "はっせい船町店。", "c": ["麺類"], "v": "レストラン", "lat": 34.487312, "lng": 133.367722, "d": "肉玉そば(基本のお好み焼き。薄い生地にキャベツ・豚肉を重ねて蒸し、茹でたての生中華麺と卵を重ねる)／大葉焼(刻んだ大葉とチーズを入れたお好み焼き。香りととろけたチーズが合わさる)", "a": "広島県福山市船町4-6", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%AF%E3%81%A3%E3%81%9B%E3%81%84%E8%88%B9%E7%94%BA%E5%BA%97%E3%80%82%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%88%B9%E7%94%BA4-6", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-okonomi-hassei-funamachi", "food": "../japan/hiroshima/img/fukuyama/fukuyama-okonomi-hassei-funamachi.jpg", "ext": ""}, {"i": 20, "n": "饂飩屋 康平衛", "c": ["麺類"], "v": "レストラン", "lat": 34.488216, "lng": 133.383194, "d": "かまだし(釜から上げたての麺を汁や濃いつゆで食べる一杯。茹でたての香りと食感をそのまま味わう品)／エビ入り野菜かきあげうどん(エビと野菜の大きなかき揚げを載せたうどん)", "a": "広島県福山市王子町2-15-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A5%82%E9%A3%A9%E5%B1%8B%20%E5%BA%B7%E5%B9%B3%E8%A1%9B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%8E%8B%E5%AD%90%E7%94%BA2-15-1", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-okonomi-udonya-koubei", "food": "../japan/hiroshima/img/fukuyama/fukuyama-okonomi-udonya-koubei.jpg", "ext": ""}, {"i": 21, "n": "お好み焼き鉄板焼 えんまる 伏見町店", "c": ["麺類"], "v": "レストラン", "lat": 34.488678, "lng": 133.364197, "d": "えんまる焼き(一番人気の看板のお好み焼き。韓国海苔を表面に敷き、半熟の目玉焼きをのせる)／牛しょぶり焼き(牛の希少部位のミンチ肉を使ったお好み焼き)", "a": "広島県福山市伏見町3-25", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E9%89%84%E6%9D%BF%E7%84%BC%20%E3%81%88%E3%82%93%E3%81%BE%E3%82%8B%20%E4%BC%8F%E8%A6%8B%E7%94%BA%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA3-25", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-okonomi-emmaru-fushimicho", "food": "../japan/hiroshima/img/fukuyama/fukuyama-okonomi-emmaru-fushimicho.jpg", "ext": ""}, {"i": 22, "n": "府中お好み焼き鉄板焼き 大地の母 本庄店", "c": ["麺類"], "v": "レストラン", "lat": 34.490074, "lng": 133.349319, "d": "府中焼き 肉玉そば(府中焼きの基本。薄い生地にキャベツと挽き肉を重ね、挽き肉の脂で中華麺をカリッと焼いて卵をのせる)／牛すじ煮込み玉そば(府中焼きに煮込んだ牛すじをのせた一枚。麺を辛麺に替えたり和牛の牛脂を足したりもできる)", "a": "広島県福山市本庄町中2-6-33", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BA%9C%E4%B8%AD%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E5%A4%A7%E5%9C%B0%E3%81%AE%E6%AF%8D%20%E6%9C%AC%E5%BA%84%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%9C%AC%E5%BA%84%E7%94%BA%E4%B8%AD2-6-33", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-okonomi-daichinohaha-honjo", "food": "../japan/hiroshima/img/fukuyama/fukuyama-okonomi-daichinohaha-honjo.jpg", "ext": ""}, {"i": 23, "n": "手打ちそば 草戸庵", "c": ["麺類"], "v": "レストラン", "lat": 34.497425, "lng": 133.382492, "d": "ざるそば(自家製粉・自家製麺のそばを、甘めのもり汁で手繰る。木の湯桶で出るそば湯で締める)／舞茸天ざるそば(ざるそばに揚げたての舞茸の天ぷらが付く。塩でも食べられる)", "a": "広島県福山市西深津町4-7-26", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%9D%E3%81%B0%20%E8%8D%89%E6%88%B8%E5%BA%B5%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%A5%BF%E6%B7%B1%E6%B4%A5%E7%94%BA4-7-26", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-okonomi-kusadoan", "food": "../japan/hiroshima/img/fukuyama/fukuyama-okonomi-kusadoan.jpg", "ext": ""}, {"i": 24, "n": "いけの飯店", "c": ["麺類"], "v": "レストラン", "lat": 34.506256, "lng": 133.407181, "d": "いけの自慢の八宝菜(豚肉・エビ・イカと旬の野菜をとろみのある白いあんでまとめた炒め物)／焼餃子(5個単位で頼める焼き餃子。持ち帰りもできる)", "a": "広島県福山市春日町1-2-48", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%91%E3%81%AE%E9%A3%AF%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%98%A5%E6%97%A5%E7%94%BA1-2-48", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-okonomi-ikeno-hanten", "food": "../japan/hiroshima/img/fukuyama/fukuyama-okonomi-ikeno-hanten.jpg", "ext": ""}, {"i": 25, "n": "居酒屋 別館", "c": ["居酒屋・焼肉", "ビール・バー", "郷土料理"], "v": "バー・居酒屋・パブ", "lat": 34.487274, "lng": 133.364548, "d": "くわい唐揚(くわいは水田で育つ球根状の野菜で、福山市が全国生産量の約7割を占める特産。先から芽が伸びる形から「芽(め)が出る」縁起物とされ、おせちにも使う。素揚げするとホクホクした栗のような食感になる)／ネブト唐揚げ 780円(ネブトは瀬戸内でとれるテンジクダイ科の小魚。福山では骨ごと二度揚げして丸かじりする定番の酒の肴)／広島の地酒(天寶一(福山市神辺町)、雨後の月(呉市)、神雷(神石高原町)、亀齢・加茂金秀(東広島市西条)、宝剣(呉市)を1杯から出す。福山育ちのくわいで造った焼酎もある)", "a": "広島県福山市元町8-2", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%88%A5%E9%A4%A8%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA8-2", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-bekkan", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-bekkan.jpg", "ext": ""}, {"i": 26, "n": "酒膳屋 三茶", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 34.487495, "lng": 133.365601, "d": "瀬戸内真鯛の藁焼き炙り刺し(瀬戸内でとれた真鯛を店内で藁の炎に当てて表面だけ焼き、刺身に引いたもの。藁の煙の香りが身に移る。混雑時は売り切れ、夏季は提供なし)／広島の地酒(宝剣(ほうけん・呉市仁方の宝剣酒造)、雨後の月(うごのつき・同じく仁方の相原酒造)、福山産の酒米「恋の予感」を使った酒などを季節で入れ替えて置く)", "a": "広島県福山市元町13-12 エスビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%86%B3%E5%B1%8B%20%E4%B8%89%E8%8C%B6%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA13-12%20%E3%82%A8%E3%82%B9%E3%83%93%E3%83%AB2F", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-shuzenya-sancha", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-shuzenya-sancha.jpg", "ext": ""}, {"i": 27, "n": "海鮮炉端厨房 ほろよい小町", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.488773, "lng": 133.364624, "d": "瀬戸内タイの荒煮・骨蒸(こつむし)(鯛の頭や中骨など身を取ったあとの部位を、醤油と砂糖で甘辛く煮たもの。骨蒸しは同じ部位を酒と塩で蒸し上げる関西の仕立て)／タイカブト焼き(鯛の頭を縦に二つに割り、塩を振って炉端で焼いたもの)／福山名物ネブト唐揚げ(ネブトは瀬戸内でとれるテンジクダイ科の小魚。骨ごと二度揚げして丸ごと食べる福山の定番の肴)", "a": "広島県福山市伏見町3-21", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E7%82%89%E7%AB%AF%E5%8E%A8%E6%88%BF%20%E3%81%BB%E3%82%8D%E3%82%88%E3%81%84%E5%B0%8F%E7%94%BA%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA3-21", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-horoyoi-komachi", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-horoyoi-komachi.jpg", "ext": ""}, {"i": 28, "n": "和彩酒膳 照月", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 34.490379, "lng": 133.367203, "d": "福つまみ4種盛り合わせ(「福つまみ」は福山の特産でつくる名物の肴の総称。ねぶと(瀬戸内の小魚)、ちいちいいか(親指ほどの小さなイカ)、くわい(福山が全国生産量の約7割を占める球根野菜)、ガス天(がんす。白身魚のすり身にパン粉をつけて揚げた広島の練り物)、鯛ちくわの5つを指し、この店はその全部を置く)／とらふぐのてっさ(ふぐの身を皿の模様が透けるほど薄く引いた刺身。11月〜3月のみ)／広島の地酒(神雷(しんらい・神石高原町)と宝剣(ほうけん・呉市)。いずれも広島県内の蔵の酒で、福つまみに合わせる)", "a": "広島県福山市今町30-1 A区画", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E5%BD%A9%E9%85%92%E8%86%B3%20%E7%85%A7%E6%9C%88%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BB%8A%E7%94%BA30-1%20A%E5%8C%BA%E7%94%BB", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-shogetsu", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-shogetsu.jpg", "ext": ""}, {"i": 29, "n": "串揚げさっくる このさきや", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.489059, "lng": 133.363297, "d": "串揚げ 1本100円(税抜)〜(小さく切った具に衣をつけて串で揚げたもの。約50種類あり、注文のつど揚げる)／備後(びんご)7本セット・赤ヘル9本セットなどの盛り合わせ(いずれも串揚げの本数違いの盛り合わせ。ソースは広島特産のカープソースに和風だしを合わせた特製のもの)", "a": "広島県福山市伏見町1-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E6%8F%9A%E3%81%92%E3%81%95%E3%81%A3%E3%81%8F%E3%82%8B%20%E3%81%93%E3%81%AE%E3%81%95%E3%81%8D%E3%82%84%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA1-1", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-sakkuru-konosakiya", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-sakkuru-konosakiya.jpg", "ext": ""}, {"i": 30, "n": "大衆酒場 福山バット", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.488567, "lng": 133.363922, "d": "名物ハラミステーキ 979円(牛の横隔膜の肉を、中に柔らかさを残した焼き加減で出すステーキ。肉汁とソースを絡めて食べる)／トロトロ牛すじ煮込み(牛すじを長時間煮込んだもの。焼肉店仕込みの仕込み方だと店が書いている)／天宝一 上撰(てんぽういち。福山市神辺町(かんなべちょう)の天宝一が造る日本酒。福山で醸される数少ない地元の銘柄)", "a": "広島県福山市伏見町4-5", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%20%E7%A6%8F%E5%B1%B1%E3%83%90%E3%83%83%E3%83%88%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA4-5", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-taishu-sakaba-fukuyama-bat", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-taishu-sakaba-fukuyama-bat.jpg", "ext": ""}, {"i": 31, "n": "大衆酒場北のメジロ", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.550877, "lng": 133.355316, "d": "鶏白湯おでん 1品100〜300円(鶏ガラを4時間強火で炊いた濃厚な出汁で煮るおでん。大根・玉子・しらたき・厚揚げ・ロールキャベツ・手羽元・餃子のほか季節の品も入る)／広島の日本酒3種(天宝一(てんぽういち・福山市神辺町)、神雷(しんらい・神石高原町)、瑞冠(ずいかん・三次市)。いずれも広島県内の蔵の酒)", "a": "広島県福山市神辺町十三軒屋11-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%E5%8C%97%E3%81%AE%E3%83%A1%E3%82%B8%E3%83%AD%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%A5%9E%E8%BE%BA%E7%94%BA%E5%8D%81%E4%B8%89%E8%BB%92%E5%B1%8B11-1", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-kita-no-mejiro", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-kita-no-mejiro.jpg", "ext": ""}, {"i": 32, "n": "おばんざい山ろく", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.491016, "lng": 133.444717, "d": "おでん盛り(こんにゃく1個121円〜。具を1個から選んで頼める。馴染みのある味つけで、酒の肴向き)／煮物 各種(かぼちゃ・さといも・なすなど、家庭の惣菜としての煮物を小鉢で出す。日替わり)／天宝一の熱燗(てんぽういち。福山市神辺町の天宝一が造る日本酒。1.5合の熱燗と300ml瓶で置く)", "a": "広島県福山市大門町4-21-36", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%B0%E3%82%93%E3%81%96%E3%81%84%E5%B1%B1%E3%82%8D%E3%81%8F%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%A4%A7%E9%96%80%E7%94%BA4-21-36", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-obanzai-yamaroku", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-obanzai-yamaroku.jpg", "ext": ""}, {"i": 33, "n": "お食事処 おてび", "c": ["ビール・バー"], "v": "レストラン", "lat": 34.383476, "lng": 133.380814, "d": "小魚定食 950円(鞆の港で揚がった小魚を数種、唐揚げや煮付けにして一皿に盛り、酢の物・煮物の小鉢と汁を付けた定食。中身はその日の漁次第で替わる)／カウンターのお惣菜 320〜500円(大皿に並ぶ惣菜を1皿から取り分けてもらう。小魚、盛合わせ、冷奴、湯どうふ、カツとじなど。酒の肴にする)／おてびのそば 500円(鶏がらのあっさりしたスープに細麺、炒めた野菜をのせた中華そば。店では飲んだあとの〆として出している)", "a": "広島県福山市鞆町鞆838", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E3%81%8A%E3%81%A6%E3%81%B3%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86838", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-izakaya-otebi-tomonoura", "food": "../japan/hiroshima/img/fukuyama/fukuyama-izakaya-otebi-tomonoura.jpg", "ext": ""}, {"i": 34, "n": "洋食レストラン サンセール", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.487411, "lng": 133.367401, "d": "Bセット(牛サガリステーキに海老フライとカニクリームコロッケを盛り合わせた昼の定番セット。スープ・サラダ・ライスまたはパン・ソフトクリームが付く)／和牛ヒレステーキ150g(和牛のヒレ肉を一枚焼きにした単品の肉料理)", "a": "広島県福山市船町1-24", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%B5%E3%83%B3%E3%82%BB%E3%83%BC%E3%83%AB%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%88%B9%E7%94%BA1-24", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-sunsaile", "food": "../japan/hiroshima/img/fukuyama/fukuyama-sunsaile.jpg", "ext": ""}, {"i": 35, "n": "KaDoNo 洋食屋かどの", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.474297, "lng": 133.375992, "d": "KaDoNoランチ(サラダ・スープ・選べるメイン・バゲットかライス・ドリンクが付く昼のセット。メインは海老のカダイフ揚げタルタルソース添え、チキンのバルサミコ南蛮、ポークの高菜マヨネーズ焼き、本日のパスタから選ぶ)／フリーオーダープラン(パスタだけで10種類以上、約60種の料理を注文ごとに作りたてで出す食べ放題。男性5,000円・女性4,500円 税込)", "a": "広島県福山市沖野上町2-9-25", "m": "https://www.google.com/maps/search/?api=1&query=KaDoNo%20%E6%B4%8B%E9%A3%9F%E5%B1%8B%E3%81%8B%E3%81%A9%E3%81%AE%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%B2%96%E9%87%8E%E4%B8%8A%E7%94%BA2-9-25", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-kadono", "food": "../japan/hiroshima/img/fukuyama/fukuyama-kadono.jpg", "ext": ""}, {"i": 36, "n": "LUONTO(ルオント)", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.487579, "lng": 133.361679, "d": "スカロピーネ(薄切りの肉を焼き、焼いたフライパンに瀬戸田のレモンを絞って作るレモンバターソースで仕上げる一皿)／タリアータ(世羅産牛を焼いて薄切りにし、自社農園の野菜を合わせた料理)", "a": "広島県福山市三之丸町4-12", "m": "https://www.google.com/maps/search/?api=1&query=LUONTO%28%E3%83%AB%E3%82%AA%E3%83%B3%E3%83%88%29%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%B8%89%E4%B9%8B%E4%B8%B8%E7%94%BA4-12", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-luonto", "food": "../japan/hiroshima/img/fukuyama/fukuyama-luonto.jpg", "ext": ""}, {"i": 37, "n": "Trattoria ロマーノ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.55172, "lng": 133.274902, "d": "ミラノ風薄焼きピッツァ(生地を薄く伸ばして焼くミラノ風のピッツァ。マルゲリータ、照り焼きチキン、クワトロフォルマッジなどを用意)／小柱ときのこと白ネギの梅風味のスパゲッティ(貝柱ときのこ、白ネギを梅で和風に仕立てたパスタ)", "a": "広島県福山市新市町新市322-1", "m": "https://www.google.com/maps/search/?api=1&query=Trattoria%20%E3%83%AD%E3%83%9E%E3%83%BC%E3%83%8E%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%96%B0%E5%B8%82%E7%94%BA%E6%96%B0%E5%B8%82322-1", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-trattoria-romano", "food": "../japan/hiroshima/img/fukuyama/fukuyama-trattoria-romano.jpg", "ext": ""}, {"i": 38, "n": "L'ardoise(ラルドワーズ)", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.54681, "lng": 133.346985, "d": "瀬戸内海産サワラのホワイヨ風(瀬戸内でとれたサワラを使い、鱗状に薄切りの具を重ねて焼くフランス料理の技法で仕上げた魚料理)／ラルドワーズコース 全8品(アミューズ、冷野菜と温野菜の2種の前菜、魚料理、肉料理などを組んだ夜のコース。5,750円 税込)", "a": "広島県福山市御幸町上岩成455-3", "m": "https://www.google.com/maps/search/?api=1&query=L%27ardoise%28%E3%83%A9%E3%83%AB%E3%83%89%E3%83%AF%E3%83%BC%E3%82%BA%29%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%BE%A1%E5%B9%B8%E7%94%BA%E4%B8%8A%E5%B2%A9%E6%88%90455-3", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-lardoise", "food": "../japan/hiroshima/img/fukuyama/fukuyama-lardoise.jpg", "ext": ""}, {"i": 39, "n": "T8 TOMONOURA", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.384892, "lng": 133.38353, "d": "広島県産牡蠣と海鮮ペペロンチーノ(広島県産の牡蠣と魚介を唐辛子とにんにくのオイルで和えたパスタ)／保命酒4種飲み比べ(鞆の浦で江戸期から造られてきた、みりんに生薬を漬け込んだ薬味酒。4種類を少量ずつ飲み比べる)", "a": "広島県福山市鞆町鞆435-5", "m": "https://www.google.com/maps/search/?api=1&query=T8%20TOMONOURA%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86435-5", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-t8-tomonoura", "food": "../japan/hiroshima/img/fukuyama/fukuyama-t8-tomonoura.jpg", "ext": ""}, {"i": 40, "n": "ビストロボントレ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.461903, "lng": 133.378799, "d": "黒毛和牛ハンバーグ160g(黒毛和牛の挽き肉で焼いた看板のハンバーグ)／オムライス デミグラスソース(卵で包んだライスにデミグラスソースをかけた一皿。トッピングを足せる)／牛かつ(牛肉に衣を付けて揚げたカツ。100g・150g・200gから選ぶ)", "a": "広島県福山市西新涯町1-2-31", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%E3%83%9C%E3%83%B3%E3%83%88%E3%83%AC%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%A5%BF%E6%96%B0%E6%B6%AF%E7%94%BA1-2-31", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-bistro-bontore", "food": "../japan/hiroshima/img/fukuyama/fukuyama-bistro-bontore.jpg", "ext": ""}, {"i": 41, "n": "韓国創作料理 とんちゃんや", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.442802, "lng": 133.256012, "d": "サムギョプサル(豚バラ肉を鉄板で焼き、サンチュなどの葉野菜に包んで食べる韓国料理)／カムジャタン(豚の背骨とじゃがいもを唐辛子だれで煮込んだ韓国の鍋料理)", "a": "広島県福山市松永町6-10-31 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E5%89%B5%E4%BD%9C%E6%96%99%E7%90%86%20%E3%81%A8%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%E3%82%84%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%9D%BE%E6%B0%B8%E7%94%BA6-10-31%202F", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-tonchanya", "food": "../japan/hiroshima/img/fukuyama/fukuyama-tonchanya.jpg", "ext": ""}, {"i": 42, "n": "とよた珈琲店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.488361, "lng": 133.363464, "d": "光サイフォン抽出の自家焙煎ブレンド(ハロゲンランプの熱でお湯を上げるサイフォン式の抽出器で一杯ずつ淹れるコーヒー。豆は店で焙煎する)／ワッフル(注文を受けてから焼く厚手のワッフル。バナナチョコレート・抹茶などがある)", "a": "広島県福山市伏見町4-40", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%88%E3%81%9F%E7%8F%88%E7%90%B2%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA4-40", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-cafe-toyota-coffee", "food": "../japan/hiroshima/img/fukuyama/fukuyama-cafe-toyota-coffee.jpg", "ext": ""}, {"i": 43, "n": "純喫茶ルナ 元町店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.487862, "lng": 133.365173, "d": "プリントップ(やわらかく炊いた自家製プリンに自家製ソフトクリームを重ね、下にフルーツとゼリーを隠したプリンパフェ。親子三代の常連がいる看板品)／コンビワッフル(イチゴとバナナを挟んだワッフルにミニソフトクリームとコーヒーが付くセット)", "a": "広島県福山市元町12-8", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E5%96%AB%E8%8C%B6%E3%83%AB%E3%83%8A%20%E5%85%83%E7%94%BA%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA12-8", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-cafe-luna-motomachi", "food": "../japan/hiroshima/img/fukuyama/fukuyama-cafe-luna-motomachi.jpg", "ext": ""}, {"i": 44, "n": "民芸茶処 深津屋", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.383438, "lng": 133.381256, "d": "宇治金時ミルク(かき氷に宇治抹茶の蜜と粒あん、練乳をかけた夏の甘味。800円)／ぜんざい(小豆を炊いた温かい汁に餅を入れた冬の甘味。750円)／炭焼きコーヒー(炭火で焙煎した豆で淹れるコーヒー)", "a": "広島県福山市鞆町鞆852", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B0%91%E8%8A%B8%E8%8C%B6%E5%87%A6%20%E6%B7%B1%E6%B4%A5%E5%B1%8B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86852", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-cafe-fukatsuya-tomonoura", "food": "../japan/hiroshima/img/fukuyama/fukuyama-cafe-fukatsuya-tomonoura.jpg", "ext": ""}, {"i": 45, "n": "鞆の浦@cafe", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.38269, "lng": 133.380539, "d": "ブレンドコーヒー(鞆港を眺めながら飲む一杯。400円)／ベーコンとレタスとトマトのサンドセット(前菜とコーヒーが付くサンドイッチのセット。1,100円)", "a": "広島県福山市鞆町鞆844-3", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9E%86%E3%81%AE%E6%B5%A6%40cafe%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86844-3", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-cafe-tomonoura-a-cafe", "food": "../japan/hiroshima/img/fukuyama/fukuyama-cafe-tomonoura-a-cafe.jpg", "ext": ""}, {"i": 46, "n": "喫茶 FINE", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.43383, "lng": 133.250046, "d": "ホットドッグのモーニング(カレー風味の玉ねぎとウインナー、卵を挟んだホットドッグにサラダとドリンクが付く。580円)／日替わり定食(豆腐入りハンバーグに玉ねぎとりんごとブラックペッパーの和風ソースをかけた一皿など。730円)", "a": "広島県福山市南松永町3-9-20", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%20FINE%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%8D%97%E6%9D%BE%E6%B0%B8%E7%94%BA3-9-20", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-cafe-kissa-fine-matsunaga", "food": "../japan/hiroshima/img/fukuyama/fukuyama-cafe-kissa-fine-matsunaga.jpg", "ext": ""}, {"i": 47, "n": "conoks（コノクス）", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.496037, "lng": 133.403931, "d": "オリジナルバスクチーズケーキ(スペイン・バスク地方発祥の、表面を高温で焦がして焼くチーズケーキ。中はとろりとした半生の食感)／季節のパフェ(旬の果物を使い中身が季節ごとに変わるパフェ。いちご・ほうじ茶・クラシックプリンなどの通年の品もある)", "a": "広島県福山市引野町1-15-2", "m": "https://www.google.com/maps/search/?api=1&query=conoks%EF%BC%88%E3%82%B3%E3%83%8E%E3%82%AF%E3%82%B9%EF%BC%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%BC%95%E9%87%8E%E7%94%BA1-15-2", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-cafe-conoks-higashifukuyama", "food": "../japan/hiroshima/img/fukuyama/fukuyama-cafe-conoks-higashifukuyama.jpg", "ext": ""}, {"i": 48, "n": "茶房 とうろどう", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.38269, "lng": 133.380539, "d": "自家焙煎コーヒー(店で焙煎した豆を、ネルドリップ＝布の濾し器で一杯ずつ落として淹れるコーヒー。アイス450円・ホット450〜500円)／鞆ノ津スカッシュ(生のレモン、または鞆の名産である保命酒(ほうめいしゅ＝薬味酒)を炭酸で割った自家製のスカッシュ。カステラが付く)／ぜんざい(小豆を炊いた温かい汁に餅を入れた甘味。500円)", "a": "広島県福山市鞆町鞆843", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E6%88%BF%20%E3%81%A8%E3%81%86%E3%82%8D%E3%81%A9%E3%81%86%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86843", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-cafe-torodo-tomonoura", "food": "../japan/hiroshima/img/fukuyama/fukuyama-cafe-torodo-tomonoura.jpg", "ext": ""}, {"i": 49, "n": "風の時計", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.437908, "lng": 133.412689, "d": "4種のオリジナルブレンド珈琲(「空」「海」「風」「時計」の4種。森修焼のカップで出す)／鉄板焼きカレー(国産玉ねぎ・無臭にんにく・国産牛を煮込んだオリジナルカレーを鉄板で供する一皿。玉子・ナン・チーズから1種を選べる)／ワッフル(熱した鉄板にのせて出すワッフル。冷たいアイスクリームを添える)", "a": "広島県福山市箕島町6585", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A2%A8%E3%81%AE%E6%99%82%E8%A8%88%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%AE%95%E5%B3%B6%E7%94%BA6585", "u": "../japan/hiroshima/fukuyama.html#c-fukuyama-cafe-kazenotokei-minoshima", "food": "../japan/hiroshima/img/fukuyama/fukuyama-cafe-kazenotokei-minoshima.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([34.472082,133.366205],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('fukuyama', "福山");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

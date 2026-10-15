@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>福山美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">福山美食ガイド<span class="sn-n">50店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/fukuyama.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="福山ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">福山ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/fukuyama.html"><span class="sn-e">🗺️</span>福山の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・鞆の浦の魚</a><a href="#s-ramen"><span class="sn-e">・</span>尾道系の中華そば・ラーメン</a><a href="#s-okonomi"><span class="sn-e">・</span>お好み焼き・鉄板焼き・麺類</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・郷土料理・地酒（伏見町）</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・イタリアン・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・甘味</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全94都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全94都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / FUKUYAMA・広島県福山市 🇯🇵</div>
+  <h1>福山美食ガイド</h1>
+  <div class="sub">備後（びんご）の中心、瀬戸内に開いた城下町。江戸の町並みが残る鞆の浦（とものうら）の魚、備後府中の味噌、くわいと保命酒、そして市内に根づいた尾道系の中華そば。福山駅前から伏見町の夜の街、鞆の浦、松永・新市まで厳選50スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/fukuyama/_map.jpg" alt="全域マップ">
+<a href="#c-fukuyama-kinugasa-tomonoura" style="left:65.36%;top:90.28%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-tomozen" style="left:57.47%;top:43.22%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-iori-kannabe" style="left:65.19%;top:7.79%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-odahara" style="left:57.67%;top:44.93%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-tomoya-fushimicho" style="left:56.98%;top:42.69%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-chitose-tomonoura" style="left:65.79%;top:91.56%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-ofunayado-iroha" style="left:65.38%;top:91.93%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-amochin-kawaguchi" style="left:66.41%;top:49.89%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-tanto" style="left:57.59%;top:43.35%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-tsutafuji-fukuyama" style="left:60.07%;top:47.08%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-onomichi-ramen-iccho" style="left:56.21%;top:42.91%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-juhachiban-hikino" style="left:77.75%;top:40.1%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-shintaku-kannabe" style="left:55.45%;top:15.24%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-shukaro-kawaguchi" style="left:66.55%;top:52.05%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-raamen-ten-matsunaga" style="left:10.67%;top:64.41%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-ajiryu-minoshima" style="left:67.91%;top:58.69%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-kusado-base" style="left:55.2%;top:49.36%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-okonomi-mantaro" style="left:59.63%;top:45.1%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-okonomi-tachimachi" style="left:57.96%;top:41.85%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-okonomi-hassei-funamachi" style="left:58.85%;top:43.27%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-okonomi-udonya-koubei" style="left:65.58%;top:42.85%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-okonomi-emmaru-fushimicho" style="left:57.31%;top:42.63%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-okonomi-daichinohaha-honjo" style="left:50.84%;top:41.98%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-okonomi-kusadoan" style="left:65.27%;top:38.53%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-okonomi-ikeno-hanten" style="left:76.01%;top:34.4%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-bekkan" style="left:57.47%;top:43.29%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-shuzenya-sancha" style="left:57.92%;top:43.18%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-horoyoi-komachi" style="left:57.5%;top:42.59%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-shogetsu" style="left:58.62%;top:41.83%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-sakkuru-konosakiya" style="left:56.92%;top:42.45%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-taishu-sakaba-fukuyama-bat" style="left:57.19%;top:42.68%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-kita-no-mejiro" style="left:53.45%;top:13.49%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-obanzai-yamaroku" style="left:92.33%;top:41.54%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-izakaya-otebi-tomonoura" style="left:64.54%;top:91.86%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-sunsaile" style="left:58.71%;top:43.22%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-kadono" style="left:62.44%;top:49.36%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-luonto" style="left:56.22%;top:43.14%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-trattoria-romano" style="left:18.48%;top:13.1%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-lardoise" style="left:49.83%;top:15.4%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-t8-tomonoura" style="left:65.72%;top:91.2%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-bistro-bontore" style="left:63.66%;top:55.16%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-tonchanya" style="left:10.26%;top:64.1%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-cafe-toyota-coffee" style="left:56.99%;top:42.78%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-cafe-luna-motomachi" style="left:57.74%;top:43.01%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-cafe-fukatsuya-tomonoura" style="left:64.73%;top:91.88%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-cafe-tomonoura-a-cafe" style="left:64.42%;top:92.23%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-cafe-kissa-fine-matsunaga" style="left:7.67%;top:68.3%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-cafe-conoks-higashifukuyama" style="left:74.59%;top:39.18%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-cafe-torodo-tomonoura" style="left:64.42%;top:92.23%;width:2.5%;height:2.22%;"></a>
+<a href="#c-fukuyama-cafe-kazenotokei-minoshima" style="left:78.4%;top:66.4%;width:2.5%;height:2.22%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（50店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・鞆の浦の魚</div>
+<div class="links">
+<a href="#c-fukuyama-kinugasa-tomonoura"><span class="tn" style="background:#2a78d6;">1</span>鞆の原漁港前、鯛づくしとうずみ</a>
+<a href="#c-fukuyama-tomozen"><span class="tn" style="background:#2a78d6;">2</span>福山駅近く、全席個室の日本料理</a>
+<a href="#c-fukuyama-iori-kannabe"><span class="tn" style="background:#2a78d6;">3</span>神辺の一枚板カウンターの寿司屋</a>
+<a href="#c-fukuyama-odahara"><span class="tn" style="background:#2a78d6;">4</span>霞町の懐石と、昼の本格御膳の店</a>
+<a href="#c-fukuyama-tomoya-fushimicho"><span class="tn" style="background:#2a78d6;">5</span>福山駅南口1分、握りと焼き魚定食</a>
+<a href="#c-fukuyama-chitose-tomonoura"><span class="tn" style="background:#2a78d6;">6</span>鞆の浦の海を眺めて食べる鯛めし</a>
+<a href="#c-fukuyama-ofunayado-iroha"><span class="tn" style="background:#2a78d6;">7</span>龍馬が談判した町家で昼の御膳を</a>
+<a href="#c-fukuyama-amochin-kawaguchi"><span class="tn" style="background:#2a78d6;">8</span>鞆の浦直送の魚と名物ちーいか天</a>
+<a href="#c-fukuyama-tanto"><span class="tn" style="background:#2a78d6;">9</span>元町の路地で瀬戸内料理と保命酒</a>
+</div>
+<div class="sec red">尾道系の中華そば・ラーメン</div>
+<div class="links">
+<a href="#c-fukuyama-tsutafuji-fukuyama"><span class="tn" style="background:#e34948;">10</span>尾道の老舗が福山で守る中華そば</a>
+<a href="#c-fukuyama-onomichi-ramen-iccho"><span class="tn" style="background:#e34948;">11</span>福山駅前で行列が絶えない尾道ラーメン</a>
+<a href="#c-fukuyama-juhachiban-hikino"><span class="tn" style="background:#e34948;">12</span>昭和30年代から続く福山の中華そば</a>
+<a href="#c-fukuyama-shintaku-kannabe"><span class="tn" style="background:#e34948;">13</span>朱華園で修業した店主の尾道中華そば</a>
+<a href="#c-fukuyama-shukaro-kawaguchi"><span class="tn" style="background:#e34948;">14</span>ふわとろ背脂が浮く福山の老舗中華そば</a>
+<a href="#c-fukuyama-raamen-ten-matsunaga"><span class="tn" style="background:#e34948;">15</span>松永で行列が絶えない背脂醤油の細麺</a>
+<a href="#c-fukuyama-ajiryu-minoshima"><span class="tn" style="background:#e34948;">16</span>尾道系と濃厚煮干しが並ぶ郊外の一軒</a>
+<a href="#c-fukuyama-kusado-base"><span class="tn" style="background:#e34948;">17</span>福山で初めての泡系鶏白湯ラーメン</a>
+</div>
+<div class="sec aqua">お好み焼き・鉄板焼き・麺類</div>
+<div class="links">
+<a href="#c-fukuyama-okonomi-mantaro"><span class="tn" style="background:#1baf7a;">18</span>南町の夜更けまで焼く鉄板カウンター</a>
+<a href="#c-fukuyama-okonomi-tachimachi"><span class="tn" style="background:#1baf7a;">19</span>福山城側の16席、府中焼きも焼く鉄板</a>
+<a href="#c-fukuyama-okonomi-hassei-funamachi"><span class="tn" style="background:#1baf7a;">20</span>広島の名店で修業、生麺の重ね焼き</a>
+<a href="#c-fukuyama-okonomi-udonya-koubei"><span class="tn" style="background:#1baf7a;">21</span>包丁切りの手打ちうどん、昼だけの22席</a>
+<a href="#c-fukuyama-okonomi-emmaru-fushimicho"><span class="tn" style="background:#1baf7a;">22</span>広島の老舗で修業した店主の重ね焼き</a>
+<a href="#c-fukuyama-okonomi-daichinohaha-honjo"><span class="tn" style="background:#1baf7a;">23</span>ミンチ肉で焼く府中焼きの専門店</a>
+<a href="#c-fukuyama-okonomi-kusadoan"><span class="tn" style="background:#1baf7a;">24</span>自家製粉・自家製麺の三たてそば</a>
+<a href="#c-fukuyama-okonomi-ikeno-hanten"><span class="tn" style="background:#1baf7a;">25</span>1979年開店、個室だらけの町の中華</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伏見町）</div>
+<div class="links">
+<a href="#c-fukuyama-izakaya-bekkan"><span class="tn" style="background:#0d366b;">26</span>福山名物の揚げ物三種を昼から出す店</a>
+<a href="#c-fukuyama-izakaya-shuzenya-sancha"><span class="tn" style="background:#0d366b;">27</span>広島の地酒を並べる元町のカウンター酒場</a>
+<a href="#c-fukuyama-izakaya-horoyoi-komachi"><span class="tn" style="background:#0d366b;">28</span>伏見町で瀬戸内の鯛と牡蠣を炉端で</a>
+<a href="#c-fukuyama-izakaya-shogetsu"><span class="tn" style="background:#0d366b;">29</span>福山の名物肴「福つまみ」を5品そろえる個室店</a>
+<a href="#c-fukuyama-izakaya-sakkuru-konosakiya"><span class="tn" style="background:#0d366b;">30</span>福山駅1分、1本100円の串揚げ立ち飲み</a>
+<a href="#c-fukuyama-izakaya-taishu-sakaba-fukuyama-bat"><span class="tn" style="background:#0d366b;">31</span>レモンサワー209円で粘れる伏見町の大衆酒場</a>
+<a href="#c-fukuyama-izakaya-kita-no-mejiro"><span class="tn" style="background:#0d366b;">32</span>神辺で15時から、鶏白湯おでんの大衆酒場</a>
+<a href="#c-fukuyama-izakaya-obanzai-yamaroku"><span class="tn" style="background:#0d366b;">33</span>大門の住宅地で、煮物とおでんを肴に燗酒</a>
+<a href="#c-fukuyama-izakaya-otebi-tomonoura"><span class="tn" style="background:#0d366b;">34</span>鞆の浦で、カウンターの小魚を肴に一杯</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-fukuyama-sunsaile"><span class="tn" style="background:#4a3aa7;">35</span>JR福山駅南の昔ながらの街の洋食屋</a>
+<a href="#c-fukuyama-kadono"><span class="tn" style="background:#4a3aa7;">36</span>沖野上の交差点角に立つ青い洋食店</a>
+<a href="#c-fukuyama-luonto"><span class="tn" style="background:#4a3aa7;">37</span>自社農園の無農薬野菜で組む駅前イタリアン</a>
+<a href="#c-fukuyama-trattoria-romano"><span class="tn" style="background:#4a3aa7;">38</span>新市の国道沿いに立つ薪窯なしの街イタリアン</a>
+<a href="#c-fukuyama-lardoise"><span class="tn" style="background:#4a3aa7;">39</span>瀬戸内の魚介と地元野菜で組むフレンチ</a>
+<a href="#c-fukuyama-t8-tomonoura"><span class="tn" style="background:#4a3aa7;">40</span>築120年の古民家で保命酒と瀬戸内の皿</a>
+<a href="#c-fukuyama-bistro-bontore"><span class="tn" style="background:#4a3aa7;">41</span>黒毛和牛のハンバーグと牛かつの郊外洋食店</a>
+<a href="#c-fukuyama-tonchanya"><span class="tn" style="background:#4a3aa7;">42</span>松永小学校前の赤い暖簾が目印の韓国料理</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-fukuyama-cafe-toyota-coffee"><span class="tn" style="background:#eda100;">43</span>光サイフォンで淹れる自家焙煎の駅前喫茶</a>
+<a href="#c-fukuyama-cafe-luna-motomachi"><span class="tn" style="background:#eda100;">44</span>1956年創業、螺旋階段のある老舗純喫茶</a>
+<a href="#c-fukuyama-cafe-fukatsuya-tomonoura"><span class="tn" style="background:#eda100;">45</span>鞆の浦の町家を使った和の甘味茶房</a>
+<a href="#c-fukuyama-cafe-tomonoura-a-cafe"><span class="tn" style="background:#eda100;">46</span>常夜燈の真ん前、築150年の長屋カフェ</a>
+<a href="#c-fukuyama-cafe-kissa-fine-matsunaga"><span class="tn" style="background:#eda100;">47</span>松永の住宅街にある朝だけの町の喫茶</a>
+<a href="#c-fukuyama-cafe-conoks-higashifukuyama"><span class="tn" style="background:#eda100;">48</span>東福山駅前、パフェとタルトのカフェ</a>
+<a href="#c-fukuyama-cafe-torodo-tomonoura"><span class="tn" style="background:#eda100;">49</span>常夜燈のそば、自家焙煎と文学の茶房</a>
+<a href="#c-fukuyama-cafe-kazenotokei-minoshima"><span class="tn" style="background:#eda100;">50</span>瀬戸内海を見下ろすギャラリー併設の喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 JR福山駅前・元町・三之丸・霞町(かすみちょう)・伏見町・船町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/fukuyama/_map2.jpg" alt="中心部拡大1 JR福山駅前・元町・三之丸・霞町(かすみちょう)・伏見町・船町">
+<a href="#c-fukuyama-tomozen" style="left:50.7%;top:45.39%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-odahara" style="left:55.79%;top:85.99%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-tomoya-fushimicho" style="left:37.99%;top:32.85%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-tanto" style="left:53.76%;top:48.4%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-onomichi-ramen-iccho" style="left:18.49%;top:38.06%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-okonomi-tachimachi" style="left:63.08%;top:12.79%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-okonomi-hassei-funamachi" style="left:85.8%;top:46.53%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-okonomi-emmaru-fushimicho" style="left:46.63%;top:31.36%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-izakaya-bekkan" style="left:50.53%;top:46.96%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-izakaya-shuzenya-sancha" style="left:62.23%;top:44.5%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-izakaya-horoyoi-komachi" style="left:51.38%;top:30.3%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-izakaya-shogetsu" style="left:80.03%;top:12.46%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-izakaya-sakkuru-konosakiya" style="left:36.63%;top:27.12%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-izakaya-taishu-sakaba-fukuyama-bat" style="left:43.58%;top:32.59%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-sunsaile" style="left:82.23%;top:45.43%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-luonto" style="left:18.66%;top:43.57%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-cafe-toyota-coffee" style="left:38.49%;top:34.88%;width:2.0%;height:1.66%;"></a>
+<a href="#c-fukuyama-cafe-luna-motomachi" style="left:57.48%;top:40.42%;width:2.0%;height:1.66%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（18店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・鞆の浦の魚</div>
+<div class="links">
+<a href="#c-fukuyama-tomozen"><span class="tn" style="background:#2a78d6;">2</span>福山駅近く、全席個室の日本料理</a>
+<a href="#c-fukuyama-odahara"><span class="tn" style="background:#2a78d6;">4</span>霞町の懐石と、昼の本格御膳の店</a>
+<a href="#c-fukuyama-tomoya-fushimicho"><span class="tn" style="background:#2a78d6;">5</span>福山駅南口1分、握りと焼き魚定食</a>
+<a href="#c-fukuyama-tanto"><span class="tn" style="background:#2a78d6;">9</span>元町の路地で瀬戸内料理と保命酒</a>
+</div>
+<div class="sec red">尾道系の中華そば・ラーメン</div>
+<div class="links">
+<a href="#c-fukuyama-onomichi-ramen-iccho"><span class="tn" style="background:#e34948;">11</span>福山駅前で行列が絶えない尾道ラーメン</a>
+</div>
+<div class="sec aqua">お好み焼き・鉄板焼き・麺類</div>
+<div class="links">
+<a href="#c-fukuyama-okonomi-tachimachi"><span class="tn" style="background:#1baf7a;">19</span>福山城側の16席、府中焼きも焼く鉄板</a>
+<a href="#c-fukuyama-okonomi-hassei-funamachi"><span class="tn" style="background:#1baf7a;">20</span>広島の名店で修業、生麺の重ね焼き</a>
+<a href="#c-fukuyama-okonomi-emmaru-fushimicho"><span class="tn" style="background:#1baf7a;">22</span>広島の老舗で修業した店主の重ね焼き</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伏見町）</div>
+<div class="links">
+<a href="#c-fukuyama-izakaya-bekkan"><span class="tn" style="background:#0d366b;">26</span>福山名物の揚げ物三種を昼から出す店</a>
+<a href="#c-fukuyama-izakaya-shuzenya-sancha"><span class="tn" style="background:#0d366b;">27</span>広島の地酒を並べる元町のカウンター酒場</a>
+<a href="#c-fukuyama-izakaya-horoyoi-komachi"><span class="tn" style="background:#0d366b;">28</span>伏見町で瀬戸内の鯛と牡蠣を炉端で</a>
+<a href="#c-fukuyama-izakaya-shogetsu"><span class="tn" style="background:#0d366b;">29</span>福山の名物肴「福つまみ」を5品そろえる個室店</a>
+<a href="#c-fukuyama-izakaya-sakkuru-konosakiya"><span class="tn" style="background:#0d366b;">30</span>福山駅1分、1本100円の串揚げ立ち飲み</a>
+<a href="#c-fukuyama-izakaya-taishu-sakaba-fukuyama-bat"><span class="tn" style="background:#0d366b;">31</span>レモンサワー209円で粘れる伏見町の大衆酒場</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-fukuyama-sunsaile"><span class="tn" style="background:#4a3aa7;">35</span>JR福山駅南の昔ながらの街の洋食屋</a>
+<a href="#c-fukuyama-luonto"><span class="tn" style="background:#4a3aa7;">37</span>自社農園の無農薬野菜で組む駅前イタリアン</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-fukuyama-cafe-toyota-coffee"><span class="tn" style="background:#eda100;">43</span>光サイフォンで淹れる自家焙煎の駅前喫茶</a>
+<a href="#c-fukuyama-cafe-luna-motomachi"><span class="tn" style="background:#eda100;">44</span>1956年創業、螺旋階段のある老舗純喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 鞆の浦(とものうら)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/fukuyama/_map3.jpg" alt="中心部拡大2 鞆の浦(とものうら)">
+<a href="#c-fukuyama-kinugasa-tomonoura" style="left:61.77%;top:17.66%;width:3.0%;height:2.28%;"></a>
+<a href="#c-fukuyama-chitose-tomonoura" style="left:78.3%;top:59.91%;width:3.0%;height:2.28%;"></a>
+<a href="#c-fukuyama-ofunayado-iroha" style="left:62.27%;top:72.0%;width:3.0%;height:2.28%;"></a>
+<a href="#c-fukuyama-izakaya-otebi-tomonoura" style="left:30.23%;top:69.6%;width:3.0%;height:2.28%;"></a>
+<a href="#c-fukuyama-t8-tomonoura" style="left:75.5%;top:47.82%;width:3.0%;height:2.28%;"></a>
+<a href="#c-fukuyama-cafe-fukatsuya-tomonoura" style="left:37.6%;top:70.19%;width:3.0%;height:2.28%;"></a>
+<a href="#c-fukuyama-cafe-tomonoura-a-cafe" style="left:25.65%;top:81.69%;width:3.0%;height:2.28%;"></a>
+<a href="#c-fukuyama-cafe-torodo-tomonoura" style="left:25.65%;top:81.69%;width:3.0%;height:2.28%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（8店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・鞆の浦の魚</div>
+<div class="links">
+<a href="#c-fukuyama-kinugasa-tomonoura"><span class="tn" style="background:#2a78d6;">1</span>鞆の原漁港前、鯛づくしとうずみ</a>
+<a href="#c-fukuyama-chitose-tomonoura"><span class="tn" style="background:#2a78d6;">6</span>鞆の浦の海を眺めて食べる鯛めし</a>
+<a href="#c-fukuyama-ofunayado-iroha"><span class="tn" style="background:#2a78d6;">7</span>龍馬が談判した町家で昼の御膳を</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伏見町）</div>
+<div class="links">
+<a href="#c-fukuyama-izakaya-otebi-tomonoura"><span class="tn" style="background:#0d366b;">34</span>鞆の浦で、カウンターの小魚を肴に一杯</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-fukuyama-t8-tomonoura"><span class="tn" style="background:#4a3aa7;">40</span>築120年の古民家で保命酒と瀬戸内の皿</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-fukuyama-cafe-fukatsuya-tomonoura"><span class="tn" style="background:#eda100;">45</span>鞆の浦の町家を使った和の甘味茶房</a>
+<a href="#c-fukuyama-cafe-tomonoura-a-cafe"><span class="tn" style="background:#eda100;">46</span>常夜燈の真ん前、築150年の長屋カフェ</a>
+<a href="#c-fukuyama-cafe-torodo-tomonoura"><span class="tn" style="background:#eda100;">49</span>常夜燈のそば、自家焙煎と文学の茶房</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 松永(まつなが)・南松永（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/fukuyama/_map4.jpg" alt="中心部拡大3 松永(まつなが)・南松永">
+<a href="#c-fukuyama-raamen-ten-matsunaga" style="left:81.3%;top:15.35%;width:3.28%;height:2.48%;"></a>
+<a href="#c-fukuyama-tonchanya" style="left:72.84%;top:9.98%;width:3.28%;height:2.48%;"></a>
+<a href="#c-fukuyama-cafe-kissa-fine-matsunaga" style="left:18.6%;top:84.75%;width:3.28%;height:2.48%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（3店・番号はピンと同じ）</div>
+<div class="sec red">尾道系の中華そば・ラーメン</div>
+<div class="links">
+<a href="#c-fukuyama-raamen-ten-matsunaga"><span class="tn" style="background:#e34948;">15</span>松永で行列が絶えない背脂醤油の細麺</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-fukuyama-tonchanya"><span class="tn" style="background:#4a3aa7;">42</span>松永小学校前の赤い暖簾が目印の韓国料理</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-fukuyama-cafe-kissa-fine-matsunaga"><span class="tn" style="background:#eda100;">47</span>松永の住宅街にある朝だけの町の喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 神辺(かんなべ)・道上(みちのうえ)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/fukuyama/_map5.jpg" alt="中心部拡大4 神辺(かんなべ)・道上(みちのうえ)">
+<a href="#c-fukuyama-iori-kannabe" style="left:84.62%;top:13.43%;width:2.88%;height:5.4%;"></a>
+<a href="#c-fukuyama-shintaku-kannabe" style="left:39.82%;top:85.63%;width:2.88%;height:5.4%;"></a>
+<a href="#c-fukuyama-izakaya-kita-no-mejiro" style="left:30.63%;top:68.74%;width:2.88%;height:5.4%;"></a>
+<a href="#c-fukuyama-lardoise" style="left:13.97%;top:87.23%;width:2.88%;height:5.4%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（4店・番号はピンと同じ）</div>
+<div class="sec blue">寿司・和食・鞆の浦の魚</div>
+<div class="links">
+<a href="#c-fukuyama-iori-kannabe"><span class="tn" style="background:#2a78d6;">3</span>神辺の一枚板カウンターの寿司屋</a>
+</div>
+<div class="sec red">尾道系の中華そば・ラーメン</div>
+<div class="links">
+<a href="#c-fukuyama-shintaku-kannabe"><span class="tn" style="background:#e34948;">13</span>朱華園で修業した店主の尾道中華そば</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（伏見町）</div>
+<div class="links">
+<a href="#c-fukuyama-izakaya-kita-no-mejiro"><span class="tn" style="background:#0d366b;">32</span>神辺で15時から、鶏白湯おでんの大衆酒場</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-fukuyama-lardoise"><span class="tn" style="background:#4a3aa7;">39</span>瀬戸内の魚介と地元野菜で組むフレンチ</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>福山市の店は5つのかたまりに分かれる。①JR福山駅前・霞町（かすみちょう）＝新幹線の駅。駅のすぐ北に福山城が建つ ②伏見町（ふしみちょう）・船町（ふなまち）＝福山で最大の夜の街。駅から歩いて5分 ③鞆の浦（とものうら）＝市の南、瀬戸内に突き出た港町。江戸時代の港の設備（常夜燈・雁木〈がんぎ〉・波止〈はと〉）が全部そろって残る国内唯一の港で、魚と保命酒の店が並ぶ。駅からバスで約30分 ④松永（まつなが）・東福山・神辺（かんなべ）＝市内の東西。地元の人が通う店 ⑤新市（しんいち）・駅家（えきや）・郊外＝車で行く店。福山の名物＝尾道系の中華そば（鶏ガラと魚の出汁に、背脂を浮かせた醤油味。尾道が発祥で福山にも根づいている）、鞆の浦の魚（鯛〈たい〉が代表。春は鯛、冬は寒ブリと牡蠣）、保命酒（ほうめいしゅ。鞆の浦で江戸時代から作る薬味酒。16種の生薬をみりんに漬けたもので、食前酒として出る）、くわい（おせちに入る球根。福山市が全国の生産量の約7割を占める）、備後府中の味噌（隣の府中市の名産で、福山の店でも味噌料理に使う）、うずみ（福山の郷土料理。具を飯の下に【埋める】汁かけ飯で、江戸時代の倹約令を逃れるために具を隠したのが始まりと伝わる）、あなご（鞆の浦と内海〈うつみ〉で揚がる）。**鞆の浦へ行くなら、福山駅前の5番のりばから鞆鉄バスで約30分**（1時間に2〜3本）。</div>
+
+<h2 id="s-washoku">寿司・和食・鞆の浦の魚</h2>
+<div class="card" id="c-fukuyama-kinugasa-tomonoura">
+<img class="hero" src="img/fukuyama/fukuyama-kinugasa-tomonoura.jpg" alt="季節料理 衣笠 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">1</span>季節料理 衣笠<span class="yomi">きせつりょうり きぬがさ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">鞆の浦の原漁港の目の前に立つ和食の食事処。鮮魚店をあわせて営んでおり、鞆の浦で揚がる鯛を中心に瀬戸内の魚を使う。木目調の外観と、入口に水車の模型を置いた造りで、テーブル席のほかに間仕切りのある席と座敷があり、総席数36席・個室あり。昼は定食と御膳、夜は一品と会席で、鯛づくし膳と会席は予約制。</div>
+<div class="sig"><b>一皿:</b>鯛づくし膳(鯛の造り・かぶと煮・ちり蒸し・鯛めしなど、1匹の鯛を部位ごとに仕立て分けた御膳。要予約)／鯛うずみ(福山の郷土料理「うずみ」＝具を飯の下に埋めて隠した汁かけ飯を、鯛の身で仕立てたもの。品書きには天ぷらうずみも並ぶ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜土・祝前日 11:30〜14:00／18:00〜20:30(料理L.O. 20:00)、日・祝 11:30〜14:00(料理L.O. 14:00)／18:00〜20:30(料理L.O. 20:00)</td></tr>
+<tr><th>定休日</th><td class="off">水曜(水曜が祝日のときは木曜が臨時休業)。ほかに月1〜2回の臨時休業あり</td></tr>
+<tr><th>住所</th><td>広島県福山市鞆町鞆150-12</td></tr>
+<tr><th>予約</th><td>可(鯛づくし膳・会席は要予約。会席は来店3日前の21時まで) — <a href="tel:0849835330">☎ 084-983-5330</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鞆の浦で郷土料理の「うずみ」を常設の品書きに載せている数少ない食事処で、鯛と結び付けた形で出している点がこの章の中心に合う。営業の根拠＝①ホットペッパーグルメの掲載ページ(2026-10-13 取得。営業時間・定休日・席数が現行で掲載) ②マップル観光ガイドの鞆の浦グルメ一覧(2026-10-13 取得。住所・営業時間・鯛づくし膳(要予約)を掲載) ③るるぶ&amp;moreのスポットページ(2026-10-13 取得)。あわせて「季節料理 衣笠 閉店」で検索し、閉店の報が無いことを確認(2026-10-13)。なお料理の価格はホットペッパー掲載が2013年更新で旧税率のため、金額は概算として扱い本文には載せていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AD%A3%E7%AF%80%E6%96%99%E7%90%86%20%E8%A1%A3%E7%AC%A0%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86150-12">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000111662/">ホットペッパーグルメ 季節料理 衣笠 掲載ページ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000111662/food/">ホットペッパーグルメ 季節料理 衣笠 料理ページ(2026-10-13 取得・鯛うずみ/天ぷらうずみの記載)</a> / <a href="https://www.mapple.net/region/a0602090801_g03000000/spot/">マップル 鞆の浦観光地区のグルメ一覧(2026-10-13 取得)</a> / <a href="https://rurubu.jp/andmore/spot/80034583">るるぶ&amp;more 季節料理衣笠(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-tomozen">
+<img class="hero" src="img/fukuyama/fukuyama-tomozen.jpg" alt="日本料理 鞆膳 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">2</span>日本料理 鞆膳<span class="yomi">にほんりょうり ともぜん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅の南、元町の路地にある日本料理店。2021年9月に御門町(みかどちょう)から現在地へ移った。出汁をひくところから一日が始まるという作りで、市場で仕入れた瀬戸内の鮮魚と季節の食材を使う。席は20席すべてが個室で、最大20名まで。昼は御膳と定食、会席、夜は旬の食材のコース。仕出し弁当も受ける。</div>
+<div class="sig"><b>一皿:</b>うずみ定食(福山の郷土料理うずみ＝具を飯の下に埋めた汁かけ飯の定食。瀬戸内の食材を使う予約限定のランチ)／鯛茶漬け(店が新名物として挙げる一品。鯛の身を出汁茶漬けにしたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜14:30(L.O. 14:30)／夜 17:00〜22:00(L.O. 21:30)※昼の宴会は完全予約制</td></tr>
+<tr><th>定休日</th><td class="off">不定休(前日までの予約には対応)</td></tr>
+<tr><th>住所</th><td>広島県福山市元町13-26</td></tr>
+<tr><th>予約</th><td>可(うずみ定食などの昼の御膳・会席は要予約) — <a href="tel:0849323336">☎ 084-932-3336</a> ／ <a href="https://www.tomozen.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山駅から歩ける範囲で、郷土料理のうずみを定食の形で出している日本料理店。全席個室なので人数や目的を選ばずに使える。営業の根拠＝①店の公式サイト(2026-10-13 取得。住所・電話・営業時間・定休日が掲載され、2021年9月の移転の告知も現行) ②ホットペッパーグルメの掲載ページとコースページ(2026-10-13 取得。うずみ定食1,408円の掲載あり)。住所・電話・営業時間は公式サイトの記載を採った(ホットペッパー側は元町13-25・084-928-5465と古く、後者は系列店『瀬戸内料理たんと』と同じ番号のため)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E9%9E%86%E8%86%B3%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA13-26">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.tomozen.jp/">日本料理 鞆膳 公式サイト 店舗情報(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000529662/">ホットペッパーグルメ 日本料理 鞆膳 掲載ページ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000529662/course/">ホットペッパーグルメ 日本料理 鞆膳 コースページ(2026-10-13 取得・うずみ定食の記載)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-iori-kannabe">
+<img class="hero" src="img/fukuyama/fukuyama-iori-kannabe.jpg" alt="すし処 伊織 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">3</span>すし処 伊織<span class="yomi">すしどころ いおり</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">神辺の県道沿いにある寿司屋。一枚板の広いカウンターのほか、一枚板の座卓を据えた小上がりと畳の大広間があり、通路を広くとって車いすでも動けるようにしてある。瀬戸内と日本海の魚を使ったにぎりとちらしのほか、焼きもの・煮物・揚げものを単品で出し、夜は品数で選ぶコースを組む。</div>
+<div class="sig"><b>一皿:</b>ばらちらし(11種類以上のネタをヅケにして飯の上に散らした丼。茶碗蒸しと汁物が付く)／サワラの西京焼き(店で独自に合わせた西京味噌に、3kg以上の魚体のサワラを漬けて焼いたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日・祝・祝前日 11:30〜13:00／17:00〜23:00 ※昼の営業は不定期なので来店前に要問い合わせ</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>広島県福山市神辺町西中条1268</td></tr>
+<tr><th>予約</th><td>可(コースは来店2日前の0時まで) — <a href="tel:0849622911">☎ 084-962-2911</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>回転寿司でない寿司屋を福山市の東部から1店選んだ。昼のにぎり・ちらしが手ごろで、夜はコースにもできるので使い分けができる。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13 取得。営業時間・定休日・席情報が現行で掲載され、店自身が撮った料理と店内の写真12点が写真ページに並ぶ)。料理の価格はホットペッパー掲載が2013〜2014年更新で旧税率のため、目安として扱っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E5%87%A6%20%E4%BC%8A%E7%B9%94%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%A5%9E%E8%BE%BA%E7%94%BA%E8%A5%BF%E4%B8%AD%E6%9D%A11268">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000530283/">ホットペッパーグルメ すし処 伊織 掲載ページ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000530283/photo/">ホットペッパーグルメ すし処 伊織 写真ページ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000530283/food/">ホットペッパーグルメ すし処 伊織 料理ページ(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-odahara">
+<img class="hero" src="img/fukuyama/fukuyama-odahara.jpg" alt="福山 日本料理 おだはら 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">4</span>福山 日本料理 おだはら<span class="yomi">ふくやま にほんりょうり おだはら</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅の南、霞町にある日本料理店。ホテルの料理店で修業した店主が朝から仕込みをし、季節の魚と野菜を使った懐石を組む。カウンターと座敷があり、顔合わせや法事、還暦の祝いなどの席にも使われる。昼は御膳と丼を中心にした品書きで、本格的な懐石を昼の価格で出す点が特徴。</div>
+<div class="sig"><b>一皿:</b>季節の会席(前菜から造り・季節の小鍋・揚げ物・食事まで全7〜10品を組んだコース。全7品5,500円、全8品7,700円、全10品11,000円の3段階。いずれも税込・要予約)／昼の御膳(造り御膳・寿司御膳・天ぷら御膳・海鮮丼から選ぶランチ限定の品書き)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日・祝・祝前日 11:30〜14:00(料理L.O. 13:30／ドリンクL.O. 13:00)／17:30〜22:00(料理・ドリンクL.O. 21:00)。12/30〜1/3は昼の御膳を休み、3,300円の夕膳からの予約のみ(正月料金20%増)</td></tr>
+<tr><th>定休日</th><td class="off">水曜、ほかに不定休</td></tr>
+<tr><th>住所</th><td>広島県福山市霞町1-8-3</td></tr>
+<tr><th>予約</th><td>可(会席コースは来店の前日〜2日前22時まで。ネット予約可) — <a href="tel:0849993539">☎ 084-999-3539</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山駅から歩ける範囲で、懐石をきちんと組む店として選んだ。昼の御膳が1,000円台からあり、夜の会席と使い分けできる。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13 取得。コースページの更新日が2026-06-22、料理ページが2026-01-07、ネット予約の空席表に2026年10月・11月の空き状況が日ごとに出ている)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%B1%B1%20%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%8A%E3%81%A0%E3%81%AF%E3%82%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9C%9E%E7%94%BA1-8-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001285568/">ホットペッパーグルメ 福山 日本料理 おだはら 掲載ページ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ001285568/course/">ホットペッパーグルメ 福山 日本料理 おだはら コースページ(2026-06-22 更新／2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ001285568/photo/">ホットペッパーグルメ 福山 日本料理 おだはら 写真ページ(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-tomoya-fushimicho">
+<img class="hero" src="img/fukuyama/fukuyama-tomoya-fushimicho.jpg" alt="焼きたて・握りたて・酒処 鞆や 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">5</span>焼きたて・握りたて・酒処 鞆や<span class="yomi">やきたて にぎりたて さけどころ ともや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅南口のすぐそばにある魚と寿司の店。その日に仕入れたネタを職人が握る握り寿司と、店内で焼く焼き魚の定食を二本柱にしている。昼は定食、夜は寿司と一品、宴会用のコースまで通して使える。座敷の個室があり、テーブルクロスを敷いた掘りごたつ式の部屋で2〜20名まで仕切れる。</div>
+<div class="sig"><b>一皿:</b>握りたて寿司盛り(その日のネタを職人がその場で握る盛り合わせ。5貫1,380円から、8貫1,980円)／焼さば定食(選んだサバを店内で焼き上げる定食。外は香ばしく中は身が残るように焼く、店の名物)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日・祝・祝前日 11:00〜14:00(料理L.O. 13:30／ドリンクL.O. 13:30)／17:00〜22:00(料理・ドリンクL.O. 21:30)</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>広島県福山市伏見町1-18</td></tr>
+<tr><th>予約</th><td>可(宴会コースは来店前日17時まで。ネット予約可。15〜20名で店舗貸切も可) — <a href="tel:0849992899">☎ 084-999-2899</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>回転寿司でない寿司を福山駅前から1店選んだ。握りと焼き魚の両方を昼の定食で出すので、観光の途中でも入れる。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13 取得。料理ページの更新日が2026-08-28、コースページが2026-08-21、ネット予約の空席表に2026年10月・11月の空き状況が日ごとに出ている)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E3%81%8D%E3%81%9F%E3%81%A6%E3%83%BB%E6%8F%A1%E3%82%8A%E3%81%9F%E3%81%A6%E3%83%BB%E9%85%92%E5%87%A6%20%E9%9E%86%E3%82%84%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA1-18">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004661333/">ホットペッパーグルメ 焼きたて・握りたて・酒処 鞆や 掲載ページ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ004661333/food/">ホットペッパーグルメ 焼きたて・握りたて・酒処 鞆や 料理ページ(2026-08-28 更新／2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ004661333/photo/">ホットペッパーグルメ 焼きたて・握りたて・酒処 鞆や 写真ページ(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-chitose-tomonoura">
+<img class="hero" src="img/fukuyama/fukuyama-chitose-tomonoura.jpg" alt="活魚料理 鯛めし 千とせ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">6</span>活魚料理 鯛めし 千とせ<span class="yomi">かつぎょりょうり たいめし ちとせ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鞆の浦の渡船場に近い、港に面した鯛料理の店。鞆の浦は約380年続く伝統漁法『鯛しばり網漁法』が伝わる鯛の産地で、この店はその鯛を一匹から使い分ける。店からは瀬戸内海と仙酔島(せんすいじま)が見える。鯛めしのほか、塩焼き・煮付け・天ぷら・造りから選ぶ定食、鯛茶漬け、鯛そうめんがあり、会席も組む。昼どきは開店前から並ぶことがある。</div>
+<div class="sig"><b>一皿:</b>鯛めし(鯛のおかしらから取った出汁で、鯛の身を入れて炊き込む鞆の浦の郷土食。鯛網漁が盛んだった土地の伝統の味)／鯛そうめん(煮付けた鯛のおかしらを丸ごと素麺の上に載せ、鯛の出汁を絡めて食べる瀬戸内の祝い料理。広島県の公式観光サイトがこの店の名物として挙げている)／選べる鯛定食(鯛の塩焼き・煮付け・天ぷら・造りから選ぶ定食。2品1,650円・3品2,310円＝2022年12月時点の店頭の品書き)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・日 11:30〜15:00(L.O. 14:30)／18:00〜21:00(L.O. 20:30)</td></tr>
+<tr><th>定休日</th><td class="off">火曜(祝日の場合は木曜)</td></tr>
+<tr><th>住所</th><td>広島県福山市鞆町鞆552-7</td></tr>
+<tr><th>予約</th><td>可(会席・鯛づくしは要予約。鯛めしは売り切れ次第終了のため予約が無難) — <a href="tel:0849823165">☎ 084-982-3165</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鞆の浦で鯛料理を正面から出す店の代表格で、広島県観光連盟の公式サイトが鞆の浦の鯛料理の店として最初に挙げている。営業の根拠＝①Dive! Hiroshima(広島県観光連盟の公式観光サイト)の特集『福山(鞆の浦)の鯛』(2026-10-13 取得。店名・住所・電話が現行で掲載) ②ホットペッパーグルメの掲載ページ(2026-10-13 取得。営業時間・定休日が掲載) ③鞆物語(鞆の浦の地域情報サイト)の店舗ページ(2026-10-15 取得) ④マップル観光ガイドの鞆の浦グルメ一覧(2026-10-13 取得)。写真は、店に許可を取って撮ったと本文に記した個人ブログの2022年12月の訪問記から料理4点(選べる鯛定食・鯛そうめん・鯛の塩焼き・鯛の吸い物)と、鞆物語の店舗ページから定食1点を採った。同ブログの1枚目は本文に『食べログより』と書かれていたので除外し、外観・海の景色・品書きの写真も除いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%BB%E9%AD%9A%E6%96%99%E7%90%86%20%E9%AF%9B%E3%82%81%E3%81%97%20%E5%8D%83%E3%81%A8%E3%81%9B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86552-7">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（Ameba）（stat.ameba.jp）より引用 / 参照元: <a href="https://dive-hiroshima.com/feature/seafood-tai/">Dive! Hiroshima(広島県観光連盟公式)特集『福山(鞆の浦)の鯛』(2026-10-13 取得)</a> / <a href="https://tomonoura.life/gourmet/12629/">鞆物語(鞆の浦の地域情報サイト)活魚料理 鯛めし 千とせ(2026-10-15 取得)</a> / <a href="https://www.hotpepper.jp/strJ000111727/">ホットペッパーグルメ 千とせ 掲載ページ(2026-10-13 取得)</a> / <a href="https://www.mapple.net/region/a0602090801_g03000000/spot/">マップル 鞆の浦観光地区のグルメ一覧(2026-10-13 取得)</a> / <a href="https://ameblo.jp/akyutabi/entry-12784496844.html">個人ブログ『鞆の浦 鯛めし 千とせ』2022-12-12(2026-10-15 取得・料理写真の出所)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-ofunayado-iroha">
+<img class="hero" src="img/fukuyama/fukuyama-ofunayado-iroha.jpg" alt="御舟宿 いろは 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">7</span>御舟宿 いろは<span class="yomi">おふなやど いろは</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">鞆の浦の港に面した江戸期の町家を使う食事処兼宿。1867年のいろは丸事件で、坂本龍馬らと紀州藩が賠償を談判した商家(旧魚屋萬蔵宅)がこの建物にあたる。2003年に空き家だったものを地元のNPOが再生し、改修は宮崎駿のデザイン画をもとにした。1階は食事処で、玉砂利の中庭を眺めながら昼の御膳を出す。2階は1日数組限定の宿。</div>
+<div class="sig"><b>一皿:</b>いろは御膳(鞆の浦で揚がる魚と地元の野菜を使った昼の御膳。小鉢・造り・煮物などを組み合わせた一汁数菜の形)／季節の創作料理(シェフが瀬戸内の魚を主に仕立てる一皿。季節で内容が替わる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>水〜日・祝・祝前日 11:30〜13:30(ホットペッパー掲載。マップルは11:00〜14:00と記載しており、来店前に電話で確認するのが確実)</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜</td></tr>
+<tr><th>住所</th><td>広島県福山市鞆町鞆670</td></tr>
+<tr><th>予約</th><td>可(ペット同伴は要相談) — <a href="tel:0849821920">☎ 084-982-1920</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鞆の浦で建物そのものが史跡にあたる店で、町歩きの途中に昼食で入れば座敷と玉砂利の中庭まで見られる。営業の根拠＝①Dive! Hiroshima(広島県観光連盟の公式観光サイト)の特集『福山(鞆の浦)の鯛』(2026-10-13 取得。店名・住所・電話084-982-1920が現行で掲載) ②ホットペッパーグルメの掲載ページ(2026-10-13 取得。2025-05-09 更新で営業時間・定休日・席数30・駐車場3台を掲載) ③鞆物語(鞆の浦の地域情報サイト)の施設ページと写真館(2026-10-15 取得) ④マップル観光ガイドの鞆の浦グルメ一覧(2026-10-13 取得。いろは御膳を掲載)。写真は鞆物語の施設ページと、同サイトの写真館で『御舟宿いろは』と明記された3点(いろはの箱庭／Lunch by Chef Skippy／Warm Hospitality)から採った。外観だけの写真は除いている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%88%9F%E5%AE%BF%20%E3%81%84%E3%82%8D%E3%81%AF%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86670">Googleマップで開く</a>
+<div class="src">写真: 鞆物語（鞆の浦の地域情報サイト）（tomonoura.life）より引用 / 参照元: <a href="https://dive-hiroshima.com/feature/seafood-tai/">Dive! Hiroshima(広島県観光連盟公式)特集『福山(鞆の浦)の鯛』(2026-10-13 取得)</a> / <a href="https://tomonoura.life/stay/12586/">鞆物語(鞆の浦の地域情報サイト)御舟宿いろは(2026-10-15 取得)</a> / <a href="https://tomonoura.life/photo/11902/">鞆物語 写真館『いろはの箱庭』(2026-10-15 取得)</a> / <a href="https://tomonoura.life/photo/11913/">鞆物語 写真館『Lunch by Chef Skippy』(2026-10-15 取得)</a> / <a href="https://tomonoura.life/photo/11810/">鞆物語 写真館『Warm Hospitality』(2026-10-15 取得)</a> / <a href="https://www.hotpepper.jp/strJ000830932/">ホットペッパーグルメ 御舟宿 いろは 掲載ページ(2025-05-09 更新／2026-10-13 取得)</a> / <a href="https://www.mapple.net/region/a0602090801_g03000000/spot/">マップル 鞆の浦観光地区のグルメ一覧(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-amochin-kawaguchi">
+<img class="hero" src="img/fukuyama/fukuyama-amochin-kawaguchi.jpg" alt="小魚阿も珍 川口店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">8</span>小魚阿も珍 川口店<span class="yomi">こざかな あもちん かわぐちてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">鞆の浦の珍味屋『阿藻珍味(あもちんみ)』が営む魚料理の店で、川口店は郊外の広い一軒家。鞆の浦の漁師から直に仕入れた魚を、刺身・煮付け・天ぷら・焼き物と持ち味に合わせて仕立てる。座敷と掘りごたつがあり、家族連れから宴会まで使える。弁当と総菜の受け渡しも昼から夕方まで受けている。</div>
+<div class="sig"><b>一皿:</b>ちーいか天ぷら(小さなイカを丸ごと甘辛く煮含めてから衣をつけて揚げる、阿藻家に伝わる店の名物)／鯛を使った刺身・煮付け(鞆の浦の漁師から直送される鯛を、造りや煮付けで出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日 11:00〜15:00(料理・ドリンクL.O. 14:30)／17:30〜20:30(料理・ドリンクL.O. 20:00)。弁当・総菜の受付は11:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜、第2・第4木曜(祝日などで変更あり)</td></tr>
+<tr><th>住所</th><td>広島県福山市東川口町3-18-18</td></tr>
+<tr><th>予約</th><td>可(宴会コースは来店3日前17時まで。ネット予約可) — <a href="tel:0849813333">☎ 084-981-3333</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鞆の浦の水産加工会社が市内で営む店で、鞆まで足を延ばさなくても鞆の魚が食べられる。福山市内に数店ある地元資本の店で、全国チェーンではない。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13 取得。料理ページの更新日が2026-09-03、コースページが2026-10-05、ネット予約の空席表に2026年10月・11月の空き状況が日ごとに出ている)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E9%AD%9A%E9%98%BF%E3%82%82%E7%8F%8D%20%E5%B7%9D%E5%8F%A3%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%9D%B1%E5%B7%9D%E5%8F%A3%E7%94%BA3-18-18">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000111726/">ホットペッパーグルメ 小魚阿も珍 川口店 掲載ページ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000111726/food/">ホットペッパーグルメ 小魚阿も珍 川口店 料理ページ(2026-09-03 更新／2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000111726/photo/">ホットペッパーグルメ 小魚阿も珍 川口店 写真ページ(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-tanto">
+<img class="hero" src="img/fukuyama/fukuyama-tanto.jpg" alt="瀬戸内料理 たんと 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">9</span>瀬戸内料理 たんと<span class="yomi">せとうちりょうり たんと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">福山駅前の元町通りの路地にある瀬戸内料理の店。地産地消を掲げ、瀬戸内で揚がる旬の魚を造りや煮付け、揚げ物で出す。掘りごたつの個室と座敷があり、2名から大人数の貸切まで対応する。昼は定食、夜はコースと一品。酒の品書きに鞆の浦の保命酒を使った梅酒と、福山特産のくわいから造った焼酎を置く。夜は宴席にも使われ、20歳未満は入店できない。</div>
+<div class="sig"><b>一皿:</b>瀬戸内食材の刺身盛合わせ(瀬戸内で揚がったその日の鮮魚を数種盛り合わせたもの)／保命酒梅酒『梅太郎』(鞆の浦で江戸時代から造られる薬味酒＝16種の生薬をみりんに漬けた保命酒を仕込みに使った梅酒。800円)／くわい焼酎『福山そだち』(福山が全国生産量の約7割を占めるくわい＝おせちに入る球根を原料にした焼酎。600円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 11:00〜14:00(料理・ドリンクL.O. 13:30)／17:00〜22:30(料理L.O. 22:00／ドリンクL.O. 22:00)、祝日・祝前日 11:30〜14:00(料理・ドリンクL.O. 13:30)</td></tr>
+<tr><th>定休日</th><td class="off">月曜(連休時は前後することあり)</td></tr>
+<tr><th>住所</th><td>広島県福山市元町13-21 宮通りビル1F</td></tr>
+<tr><th>予約</th><td>可(ネット予約可。個室・貸切は要予約) — <a href="tel:0849285465">☎ 084-928-5465</a> ／ <a href="https://attakawagaya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鞆の浦の保命酒と福山特産のくわいを、どちらも飲み物の形で常時置いている福山市内でほぼ唯一の和食店。福山市の和食ジャンル掲載76店の料理・ドリンクページを一通り当たったが、保命酒とくわいの両方を品書きに載せていたのはこの店だけだった(2026-10-13 実施)。営業の根拠＝ホットペッパーグルメの掲載ページとドリンクページ(2026-10-13 取得。口コミ145件、ネット予約の空席表に2026年10月・11月の空き状況が日ごとに出ている)。※系列に『日本料理 鞆膳』があり、ホットペッパー上の電話番号084-928-5465は両店で共通。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E6%96%99%E7%90%86%20%E3%81%9F%E3%82%93%E3%81%A8%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA13-21%20%E5%AE%AE%E9%80%9A%E3%82%8A%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000031477/">ホットペッパーグルメ 瀬戸内料理 たんと 掲載ページ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000031477/drink/">ホットペッパーグルメ 瀬戸内料理 たんと ドリンクページ(2026-10-13 取得・保命酒梅酒/くわい焼酎の記載)</a> / <a href="https://attakawagaya.jp/">あったか我家(運営会社)サイト 瀬戸内料理たんと(2026-10-13 取得)</a></div>
+</div></div>
+<h2 id="s-ramen" class="c-red">尾道系の中華そば・ラーメン</h2>
+<div class="card" id="c-fukuyama-tsutafuji-fukuyama">
+<img class="hero" src="img/fukuyama/fukuyama-tsutafuji-fukuyama.jpg" alt="つたふじ 福山支店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">10</span>つたふじ 福山支店<span class="yomi">つたふじ ふくやましてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1947年(昭和22年)に尾道で屋台から始まった中華そば店「つたふじ」の福山の店。いまの店主は尾道本店の創業者の孫にあたる。看板は中華そばと、同じスープにうどんの麺を入れた中華うどんの二本柱で、どちらも長年の名物。スープは小ぶりの背脂がたくさん浮くが、色は尾道系のなかでは淡く、飲むと甘みのあるすっきりした醤油味。麺は中細ストレートでもちっとした食感。</div>
+<div class="sig"><b>一皿:</b>中華そば(鶏ガラと瀬戸内の小魚の出汁に醤油を合わせ、小粒の背脂を浮かせた尾道系の一杯。やや黄みがかった中細ストレート麺を使う)／中華うどん(同じ尾道系の醤油スープに、ラーメンではなくうどんの麺を入れたこの店独自の一品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:30(日・祝は21:00まで)</td></tr>
+<tr><th>定休日</th><td class="off">火曜(祝日の場合は営業し、翌日休業)</td></tr>
+<tr><th>住所</th><td>広島県福山市御門町2丁目9-1</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0849242815">☎ 084-924-2815</a> ／ <a href="https://x.com/tsutafuji">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>尾道ラーメンの黎明期から続く老舗の血筋が福山市内で食べられる1軒で、福山の尾道系を語るときに必ず名前の挙がる店。営業の根拠は、公式X(旧Twitter)アカウント @tsutafuji のプロフィールが『つたふじ福山店です』として営業時間11:00〜21:30(日・祝21時まで)・火曜定休・電話084-924-2815を現在も掲示していること(2026-10-13に当方が取得・確認)。あわせてホットペッパーグルメの掲載ページ(店名表記は『つたふじ食堂』、住所・電話・営業時間が一致)に2025年11月1日来店の口コミが載っていること(2026-10-13確認)。尾道に本店があるが、福山支店は家族で営む1店舗で全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A4%E3%81%9F%E3%81%B5%E3%81%98%20%E7%A6%8F%E5%B1%B1%E6%94%AF%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%BE%A1%E9%96%80%E7%94%BA2%E4%B8%81%E7%9B%AE9-1">Googleマップで開く</a>
+<div class="src">写真: きびナビ（fuuraiki.com）より引用 / 参照元: <a href="https://x.com/tsutafuji">つたふじ福山店 公式X プロフィール(2026-10-13取得)</a> / <a href="https://www.hotpepper.jp/strJ000529123/">ホットペッパーグルメ つたふじ食堂(2026-10-13取得)</a> / <a href="https://fuuraiki.com/tsutafuji_fukuyamashi/">きびナビ『つたふじ福山支店』(2020-04-20公開・2026-10-13取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-onomichi-ramen-iccho">
+<img class="hero" src="img/fukuyama/fukuyama-onomichi-ramen-iccho.jpg" alt="尾道ラーメン 一丁 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">11</span>尾道ラーメン 一丁<span class="yomi">おのみちらーめん いっちょう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">福山駅前商店会に加盟する尾道ラーメンの専門店。ラーメンは尾道系の醤油1種類だけで、チャーシュー増しの有無を選ぶ。スープは温度が高く、濃そうな見た目に反して後口はすっきり。味のしみたとろとろの背脂がたっぷり浮き、麺は加水率低めの細い平打ち麺。席は厨房前のカウンターのみ23席で、昼時は店の外に待ち客の列ができる。</div>
+<div class="sig"><b>一皿:</b>ラーメン(鶏ガラ・豚骨と小魚の出汁に濃口醤油を合わせ、甘みのある背脂ミンチをたっぷり浮かせた尾道系の一杯。細い平打ち麺を使う)／あげギョウザ(尾道ラーメンの店では珍しい揚げ餃子)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜・第3日曜</td></tr>
+<tr><th>住所</th><td>広島県福山市三之丸町3-7 土井ビル1階</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0849285280">☎ 084-928-5280</a> ／ <a href="https://sannomaru.info/iccho/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山駅から徒歩2分という立地で、福山の尾道系のなかでも屈指の人気店。営業の根拠は、地元の福山駅前商店会の公式サイト(2025年11月に更新されたロゴを使う現行サイト)に加盟店として店舗情報ページがあり、住所・電話084-928-5280・営業時間11:00〜22:00・定休日『木曜日・第三日曜日』が掲載されていること(2026-10-13確認)。商店会という地元団体が現在も会員として掲載している点を営業の根拠とした。個人経営の1店舗のみでチェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B0%BE%E9%81%93%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E4%B8%80%E4%B8%81%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%B8%89%E4%B9%8B%E4%B8%B8%E7%94%BA3-7%20%E5%9C%9F%E4%BA%95%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: きびナビ（fuuraiki.com）より引用 / 参照元: <a href="https://sannomaru.info/iccho/">福山駅前商店会 公式サイト『尾道ラーメン一丁』(2026-10-13取得)</a> / <a href="http://sannomaru.com/?page_id=2291">福山駅近NAVI(福山駅前商店会)『尾道ラーメン 一丁』(2026-10-13取得)</a> / <a href="https://fuuraiki.com/icchoo_fukuyamashi/">きびナビ『一丁』(2020-04-20公開・2026-10-13取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-juhachiban-hikino">
+<img class="hero" src="img/fukuyama/fukuyama-juhachiban-hikino.jpg" alt="中華そば専門店 十八番 引野店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">12</span>中華そば専門店 十八番 引野店<span class="yomi">ちゅうかそばせんもんてん おはこ ひきのてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和30年代に創業し、福山市内に三吉・引野・千田の3店を構える中華そば専門店。『福山でラーメンといえばここ』という市民が多い店で、引野店は国道2号沿いにあり、広い座敷とテーブルを備える。中華そばは尾道系の醤油味だが背脂は控えめで、魚介の出汁がすっきり出た懐かしい味わい。熱々の野菜あんがのったチャンポンも長年の名物。11時から23時まで通しで開いている。</div>
+<div class="sig"><b>一皿:</b>中華そば(魚介と鶏ガラの出汁に醤油を合わせ、背脂を浮かせた尾道系。角切りの細麺に、薄切りチャーシュー・メンマ・青ねぎをのせる)／チャンポン(麺の上に熱々の野菜あんをたっぷりかけた、この店独自のあんかけ式)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜23:00(通し営業)</td></tr>
+<tr><th>定休日</th><td class="off">月曜(月曜が祝日の場合は営業し、翌火曜休業)</td></tr>
+<tr><th>住所</th><td>広島県福山市引野町4丁目6-24</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0849418918">☎ 084-941-8918</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山の尾道系の老舗として必ず名前の挙がる3軒(十八番・つたふじ福山支店・朱華楼)の筆頭。本店格の三吉店は2025年9月末に臨時休業の貼り紙が出たとの報告があるため、現在の営業が確かめられる引野店を採った。営業の根拠は、ホットペッパーグルメの掲載ページに営業時間11:00〜23:00・定休日『月曜(月曜が祝日の場合は火曜定休)』・席数55席が現在も掲載されていること(2026-10-13確認)と、2026年1月31日に引野店を訪れて中華そばを食べた地元ブログの記事(2026年2月公開)があること。市内3店の地元資本の店で、全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E5%B0%82%E9%96%80%E5%BA%97%20%E5%8D%81%E5%85%AB%E7%95%AA%20%E5%BC%95%E9%87%8E%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%BC%95%E9%87%8E%E7%94%BA4%E4%B8%81%E7%9B%AE6-24">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（のぶるさん けふはどこ行く？）（noburulife.com）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000529854/">ホットペッパーグルメ 十八番引野店(2026-10-13取得)</a> / <a href="https://noburulife.com/fukuyama-tanbo-18ban-hikino/">のぶるさん けふはどこ行く？『福山探訪｜中華そば専門店 十八番 引野店』(2026年2月公開・2026-10-13取得)</a> / <a href="https://fuuraiki.com/juuhachiban_fukuyamashi/">きびナビ『十八番』(2021-04-25公開・2026-10-13取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-shintaku-kannabe">
+<img class="hero" src="img/fukuyama/fukuyama-shintaku-kannabe.jpg" alt="中華そば しんたく 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">13</span>中華そば しんたく<span class="yomi">ちゅうかそば しんたく</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">福山市北部の神辺町、国道486号沿いの小さな商業施設サンキューランドのなかにある中華そば店。店主は2019年に休業した尾道の名店『朱華園』で約20年修業したと紹介されており、鶏ガラ醤油のスープに大粒の背脂が浮く正統派の尾道ラーメンを出す。品書きは中華そば、チャーシューメン、焼そば、ギョウザ、ライスだけ。昼は行列ができるため11時から20時まで通しで開けている。</div>
+<div class="sig"><b>一皿:</b>中華そば(鶏ガラと小魚の出汁に醤油を合わせ、大粒でぷりっとした背脂を浮かせた尾道系の一杯。やや平たいストレート麺を使う)／焼そば(中華そばと同じ中華麺を使って焼き上げた、この店の2番人気)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜20:00(通し営業・スープがなくなり次第終了)</td></tr>
+<tr><th>定休日</th><td class="off">木曜・第3水曜(10月以降は水・木休とする情報もあり)</td></tr>
+<tr><th>住所</th><td>広島県福山市神辺町十九軒屋253-2 サンキューランド内</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0849663525">☎ 084-966-3525</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>尾道ラーメンの原点である朱華園の味を受け継ぐ店として福山北部で知られ、神辺という福山駅から離れた町を押さえられる。営業の根拠は、地元ブロガーの来店記録が2026年1月下旬・2026年3月17日・2026年6月7日と続けて公開されていること(いずれも2026-10-13確認)。あわせて地域情報サイトHAMONIの店舗ページ(2026-10-13更新)に電話084-966-3525・27席・全席禁煙・駐車場ありが掲載されている。個人経営の1店舗でチェーンではない。営業時間はきびナビの取材(2020年1月時点)と2026年の来店記録がいずれも11:00〜20:00・木曜と第3水曜休で一致したが、10月以降は水木休になるという情報もあるため訪問前に確認を。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E3%81%97%E3%82%93%E3%81%9F%E3%81%8F%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%A5%9E%E8%BE%BA%E7%94%BA%E5%8D%81%E4%B9%9D%E8%BB%92%E5%B1%8B253-2%20%E3%82%B5%E3%83%B3%E3%82%AD%E3%83%A5%E3%83%BC%E3%83%A9%E3%83%B3%E3%83%89%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: きびナビ（fuuraiki.com）より引用 / 参照元: <a href="https://fuuraiki.com/shintaku_fukuyamashi_201706/">きびナビ『しんたく』(2021-09-20更新・2026-10-13取得)</a> / <a href="https://ichihiko2003.livedoor.blog/archives/30608801.html">のほほ～んと更新していくブログ『中華そば しんたく 福山市神辺町』(2026-03-17公開・2026-10-13取得)</a> / <a href="https://photoblog.t-navi.net/blog-20260120-ramen/">福山のネット屋さんの雑録ブログ『中華そば しんたく』(2026年1月来店・2026-10-13取得)</a> / <a href="https://hamoni.jp/shop/5IOqe3ol1jq2cJHSJDlV">HAMONI 中華そば しんたく(2026-10-13取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-shukaro-kawaguchi">
+<img class="hero" src="img/fukuyama/fukuyama-shukaro-kawaguchi.jpg" alt="朱華楼 川口店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">14</span>朱華楼 川口店<span class="yomi">しゅうかろう かわぐちてん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">尾道ラーメンの元祖とされる『朱華園』(1947年創業・2019年に無期限休業)で修業した店主が、1981年(昭和56年)に東深津で始めた中華そば店。いまは東深津・手城・川口の3店を福山市内で営み、川口店は1995年12月の開店。スープは尾道系では珍しく赤みのある澄んだ醤油味で塩気がしっかり立ち、ふわふわと溶けるような独特の背脂が浮く。角の立った平打ち麺を使う。</div>
+<div class="sig"><b>一皿:</b>中華そば(鶏ガラ・豚骨と小魚の出汁に醤油を合わせた尾道系。天かすのようにふわとろにほどける背脂と、角張った平打ち麺が特徴)／焼きめし(しっかり焼き色をつけた塩気の強いチャーハン。中華そばとのセットが単品より安い)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜18:00(スープがなくなり次第終了)</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>広島県福山市川口町2丁目10-50</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0849536335">☎ 084-953-6335</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山の尾道系の老舗として必ず名前の挙がる3軒(十八番・つたふじ福山支店・朱華楼)の1つで、尾道の朱華園から直接つながる味。3店のうち川口店は駐車場が広く、いちばん寄りやすい。営業の根拠は、地元ブロガーが2026年9月22日に川口店を訪れて品書きと中華そばを撮影した記事(2026-10-13確認)と、ラーメンデータベースに2026年5月1日・6月29日投稿の来店レビューがあること。福山市内3店のみの地元資本で、全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%B1%E8%8F%AF%E6%A5%BC%20%E5%B7%9D%E5%8F%A3%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%B7%9D%E5%8F%A3%E7%94%BA2%E4%B8%81%E7%9B%AE10-50">Googleマップで開く</a>
+<div class="src">写真: きびナビ（fuuraiki.com）より引用 / 参照元: <a href="https://fuuraiki.com/shukaro_fukuyamashi/">きびナビ『朱華楼』(2021-07-11公開・2026-10-13取得)</a> / <a href="https://ichihiko2003.livedoor.blog/archives/31596947.html">のほほ～んと更新していくブログ『朱華楼 川口店 福山市川口町』(2026-09-22公開・2026-10-13取得)</a> / <a href="https://ramendb.supleks.jp/s/70144/review">ラーメンデータベース 朱華楼 川口店 レビュー一覧(2026年5月・6月投稿あり・2026-10-13取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-raamen-ten-matsunaga">
+<img class="hero" src="img/fukuyama/fukuyama-raamen-ten-matsunaga.jpg" alt="らあめん 天 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">15</span>らあめん 天<span class="yomi">らあめん てん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">福山市の西端、松永地区で随一の人気を集めるラーメン店。甘みのある背脂醤油のスープに、地元クラタ食品の低加水・細ストレート麺を合わせた「天らあめん」が看板で、厚く切って味をしみ込ませたチャーシューが評判。卓上ではなく注文時に渡される香油・辛味噌・辛子モヤシの3種の薬味を少しずつ足して味を変えながら食べる。昼どきは必ず列ができる。</div>
+<div class="sig"><b>一皿:</b>天らあめん(甘みのある背脂醤油のスープに、低加水の細ストレート麺を合わせた一杯。厚切りで味のしみたチャーシューがのる)／鳥からごはん(鶏の唐揚げを甘辛いタレと海苔でごはんにのせたサイドメニュー)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜金 11:30〜15:00／18:00〜20:30、土・日・祝 11:30〜20:30(通し)</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>広島県福山市松永町7丁目3-3</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0849348662">☎ 084-934-8662</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山市の西端・松永地区を代表する店で、市内でも尾道系一辺倒ではない醤油+細麺の系統を押さえられる。営業の根拠は、Yahoo!マップに2026年8月12日付の来店レビューが載っていること(2026-10-13確認)と、地域情報サイトHAMONIの福山市ラーメンランキング(2026-10-13更新)に掲載され営業情報が出ていること。個人経営の1店舗でチェーンではない。営業時間はきびナビの取材時点(2020年3月)の数字で、月曜定休との整合のため火〜金と読み替えた。訪問前に確認を。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%82%E3%82%81%E3%82%93%20%E5%A4%A9%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%9D%BE%E6%B0%B8%E7%94%BA7%E4%B8%81%E7%9B%AE3-3">Googleマップで開く</a>
+<div class="src">写真: きびナビ（fuuraiki.com）より引用 / 参照元: <a href="https://fuuraiki.com/ten_fukuyamashi/">きびナビ『らあめん天』(2023-01-22更新・2026-10-13取得)</a> / <a href="https://hamoni.jp/shop/cFmjlD7cVgBa9YeLUp20">HAMONI 福山市のおすすめラーメン(らあめん 天／2026-10-13更新)</a> / <a href="https://map.yahoo.co.jp/v3/place/emhYKEYV1NA">Yahoo!マップ らあめん天(2026年8月12日の来店クチコミ・2026-10-13取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-ajiryu-minoshima">
+<img class="hero" src="img/fukuyama/fukuyama-ajiryu-minoshima.jpg" alt="味龍 福山箕島店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">16</span>味龍 福山箕島店<span class="yomi">あじりゅう ふくやまみのしまてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">尾道市高須の本店と福山市箕島町の2店をもつラーメン店の福山の店。看板は鶏ガラと魚介の合わせ出汁をとった尾道系醤油の「味龍らーめん」だが、煮干しを強く効かせた濃厚な「煮干しらーめん」、味噌・塩、つけ麺まで幅広くそろえる。麺は北海道産小麦「春よ恋」を使った自家製麺。カウンターのほか座敷とテーブル席が多く、夜23時まで無休で開いている。</div>
+<div class="sig"><b>一皿:</b>初代 味龍らーめん(鶏ガラと魚介の合わせ出汁に醤油を効かせた尾道系の一杯。自家製の細麺を使う)／二代目 濃厚 煮干しらーめん(煮干しを強く効かせたとろみのあるスープに、太めの縮れ麺を合わせたもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜23:00(料理・ドリンクともL.O.22:30)</td></tr>
+<tr><th>定休日</th><td class="off">なし(無休)</td></tr>
+<tr><th>住所</th><td>広島県福山市箕島町5816-222</td></tr>
+<tr><th>予約</th><td>一部可 — <a href="tel:0849548856">☎ 084-954-8856</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>尾道系一色になりがちな福山で、同じ店のなかに尾道系醤油と濃厚煮干しが並ぶ珍しい一軒。郊外で駐車場が広く、夜遅くまで開いている点でも使い道が違う。営業の根拠は、ホットペッパーグルメの掲載ページに営業時間11:00〜23:00(料理L.O.22:30)・定休日なし・問い合わせ時間9:00〜11:00/14:00〜24:00が現在も載っていること(2026-10-13確認)。尾道本店と福山箕島店の2店だけの地元資本で、全国チェーンではない。営業時間はきびナビの取材(2021年1月時点)では11:00〜21:00となっており、ホットペッパー掲載の数字を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E9%BE%8D%20%E7%A6%8F%E5%B1%B1%E7%AE%95%E5%B3%B6%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%AE%95%E5%B3%B6%E7%94%BA5816-222">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000674201/">ホットペッパーグルメ 味龍 箕島店(2026-10-13取得)</a> / <a href="https://fuuraiki.com/ajiryu/">きびナビ『味龍』(2022-07-03公開・2026-10-13取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-kusado-base">
+<img class="hero" src="img/fukuyama/fukuyama-kusado-base.jpg" alt="鶏泡そば 草戸ベース 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">17</span>鶏泡そば 草戸ベース<span class="yomi">とりあわそば くさどべーす</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">2022年3月18日に草戸町で開いた鶏白湯ラーメンの店。スープを泡立ててきめ細かい泡をのせる「泡系」で、福山では初めての店とされる。品書きは鶏泡しおと鶏泡しょうゆの2種類だけ。塩はフランス・ゲランドの塩を軸に国内外4種を合わせ、醤油は6種の醤油と数種の乾物を3〜4日寝かせたかえしを使う。麺は北海道産小麦「春よ恋」の石臼挽き全粒粉を混ぜた太めの縮れ麺。カウンター10席のみ。</div>
+<div class="sig"><b>一皿:</b>鶏泡しお(きめ細かい白い泡をのせた鶏白湯の塩ラーメン。泡の下はとろみのあるまろやかなスープで、赤たまねぎ・かいわれ・フライドオニオンがのる)／鶏泡しょうゆ(同じ鶏白湯に6種の醤油のかえしを合わせた、やや甘辛い方)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・木・日 11:00〜15:00(L.O.14:30)／金・土 17:30〜20:30(L.O.20:00) ※スープがなくなり次第終了</td></tr>
+<tr><th>定休日</th><td class="off">月曜(ほか不定休)</td></tr>
+<tr><th>住所</th><td>広島県福山市草戸町4丁目10-3</td></tr>
+<tr><th>予約</th><td>不可 — <a href="https://www.instagram.com/kusado_base/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>尾道系と豚骨が中心の福山で、系統をいちばん大きく外せる一軒。地元で初めての泡系として紹介された。営業の根拠は、地域ニュースサイト『号外NET 福山市』が2026年8月22日に現地を見に行き、2026年9月5日に営業時間の変更を記事にしていること(2026-10-13確認)と、公式Instagram(@kusado_base)が2026年5月に営業時間と日替わり限定を告知していること。個人経営の1店舗でチェーンではない。営業時間はたびたび変わるため、訪問前に公式Instagramで確認を。電話番号は公開情報が見つからず未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B6%8F%E6%B3%A1%E3%81%9D%E3%81%B0%20%E8%8D%89%E6%88%B8%E3%83%99%E3%83%BC%E3%82%B9%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%8D%89%E6%88%B8%E7%94%BA4%E4%B8%81%E7%9B%AE10-3">Googleマップで開く</a>
+<div class="src">写真: きびナビ（fuuraiki.com）より引用 / 参照元: <a href="https://fukuyama.goguynet.jp/2026/09/05/kusadobaseeigyojikanhenko/">号外NET 福山市『鶏泡そば 草戸ベースが9月中旬まで営業時間を変更しています』(2026-09-05公開／2026-08-22現地確認・2026-10-13取得)</a> / <a href="https://www.instagram.com/kusado_base/">鶏泡そば 草戸ベース 公式Instagram(2026年5月の営業時間告知・2026-10-13取得)</a> / <a href="https://fuuraiki.com/kusadobase_fukuyamashi/">きびナビ『草戸ベース』(2022-04-06公開・2026-10-13取得)</a></div>
+</div></div>
+<h2 id="s-okonomi" class="c-aqua">お好み焼き・鉄板焼き・麺類</h2>
+<div class="card" id="c-fukuyama-okonomi-mantaro">
+<img class="hero" src="img/fukuyama/fukuyama-okonomi-mantaro.jpg" alt="お好み焼き・鉄板焼き まん太郎 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>お好み焼き・鉄板焼き まん太郎<span class="yomi">おこのみやき・てっぱんやき まんたろう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市南町にある、カウンター9席とテーブル2卓の小さなお好み焼き・鉄板焼きの店。店主が目の前の鉄板で焼く。生地を薄く敷いてキャベツ・そば・卵を重ねる広島のお好み焼きが基本で、生地に具を混ぜて焼く関西風の玉子かけも品書きにある。18時開店で日曜のみ休み、深夜0時まで通し営業。ステーキ・揚げたこ焼きなど鉄板の一品も置く。</div>
+<div class="sig"><b>一皿:</b>まん太郎スペシャル(豚肉・イカ天などを盛り込んだ全部乗せのお好み焼き。生地を薄く焼いてキャベツ・そば・卵を順に重ねる広島の重ね焼き)／関西フワトロ玉子かけ(生地とキャベツを混ぜて焼く関西風に、半熟の玉子をかけた一枚)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜翌0:00(料理・ドリンクともL.O. 23:30)</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>広島県福山市南町1-18</td></tr>
+<tr><th>予約</th><td>可(ネット予約・当日22時まで) — <a href="tel:0849238733">☎ 084-923-8733</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島のお好み焼きと関西風を一枚ずつ焼き分ける店で、駅の南側に位置するため中心部の他店と重ならない。営業の根拠=ホットペッパーグルメの掲載ページ(2026年10月13日閲覧)にネット予約の空席カレンダーが2026年10月・11月分まで出ており、当日22時までの即予約を受け付けている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E3%83%BB%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E3%81%BE%E3%82%93%E5%A4%AA%E9%83%8E%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%8D%97%E7%94%BA1-18">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003649268/">ホットペッパーグルメ お好み焼き・鉄板焼き まん太郎(2026年10月13日閲覧)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-okonomi-tachimachi">
+<img class="hero" src="img/fukuyama/fukuyama-okonomi-tachimachi.jpg" alt="鉄板焼き たちまち 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>鉄板焼き たちまち<span class="yomi">てっぱんやき たちまち</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅北側の城見町にある16席の鉄板焼きの店。夕方5時から11時までの夜営業で、日曜休み。広島のお好み焼き(生地を薄く焼き、キャベツ・そば・卵を重ねる)と、隣の府中市発祥でミンチ肉を使い両面を香ばしく焼く府中焼きの両方を焼く。お好み焼きのほかにカキのソテー、せせり焼き、手包み餃子など鉄板の一品も揃う。全席喫煙可。</div>
+<div class="sig"><b>一皿:</b>ぶた玉(豚肉入りのお好み焼き。薄く焼いた生地にキャベツ・そば・卵を重ねる広島の重ね焼き)／府中焼き(府中市発祥のお好み焼き。豚バラではなく牛豚のミンチ肉を使い、出た脂で両面をカリッと焼き上げる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:00(料理L.O. 22:30 ドリンクL.O. 22:30)</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>広島県福山市城見町1丁目3-41</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0849261045">☎ 084-926-1045</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島のお好み焼きと府中焼きを一軒で焼き分ける店で、駅北側という立地も他店と重ならない。営業の根拠=ホットペッパーグルメの掲載ページ(2026年10月13日閲覧)にネット予約の空席カレンダーが2026年10月・11月分まで出ている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E3%81%9F%E3%81%A1%E3%81%BE%E3%81%A1%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%9F%8E%E8%A6%8B%E7%94%BA1%E4%B8%81%E7%9B%AE3-41">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004537128/">ホットペッパーグルメ 鉄板焼き たちまち(2026年10月13日閲覧)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-okonomi-hassei-funamachi">
+<img class="hero" src="img/fukuyama/fukuyama-okonomi-hassei-funamachi.jpg" alt="はっせい船町店。 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>はっせい船町店。<span class="yomi">はっせいふなまちてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">広島市の人気店「八誠(はっせい)」で修業した店主がのれん分けして開いた、お好み焼き・鉄板焼きの店。船町のアーケード商店街にあり、鉄板がそのままカウンターになっている。生地を薄く焼いてキャベツ・もやし・天かす・肉・そば・卵を順に重ねる重ね焼きで、そばは生麺をその場で茹でてから焼く。うどんは扱わない。福山駅南東の伏見町に姉妹店がある。</div>
+<div class="sig"><b>一皿:</b>肉玉そば(基本のお好み焼き。薄い生地にキャベツ・豚肉を重ねて蒸し、茹でたての生中華麺と卵を重ねる)／大葉焼(刻んだ大葉とチーズを入れたお好み焼き。香りととろけたチーズが合わさる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜23:00(L.O. 22:00)</td></tr>
+<tr><th>定休日</th><td class="off">日曜(日曜を含む連休の場合は日曜に営業し、連休最終日に休業)</td></tr>
+<tr><th>住所</th><td>広島県福山市船町4-6</td></tr>
+<tr><th>予約</th><td>可(19時までの来店に限る) — <a href="tel:0849220526">☎ 084-922-0526</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市の名店で修業した店主が福山で焼く重ね焼きで、地元媒体が調理工程まで取材している。営業の根拠=地域メディア「備後とことこ」の取材記事(2023年3月5日掲載、2025年8月のメニュー写真を追補)と、ホットペッパーグルメの掲載ページ(2026年10月13日閲覧)の営業時間・定休日。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AF%E3%81%A3%E3%81%9B%E3%81%84%E8%88%B9%E7%94%BA%E5%BA%97%E3%80%82%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%88%B9%E7%94%BA4-6">Googleマップで開く</a>
+<div class="src">写真: 備後とことこ（media.bintoco.com）より引用 / 参照元: <a href="https://bintoco.com/hassei-funamachi/">備後とことこ『はっせい船町店。』(2023年3月5日掲載・2025年8月メニュー追補)</a> / <a href="https://www.hotpepper.jp/strJ000724149/">ホットペッパーグルメ はっせい船町(2026年10月13日閲覧)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-okonomi-udonya-koubei">
+<img class="hero" src="img/fukuyama/fukuyama-okonomi-udonya-koubei.jpg" alt="饂飩屋 康平衛 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>饂飩屋 康平衛<span class="yomi">うどんや こうべえ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">1995年6月に福山市中心部で創業し、のちに王子町へ移った手打ちうどんの専門店。店主の岡野さんは愛媛県松山市のうどん店で修業した。小麦粉・塩・水とその日の気温・湿度を見ながら毎日手で打ち、機械切りではなく包丁で切る。硬いコシではなく「もっちりとしたコシ」を身上とする。『ミシュランガイド広島 2013年特別版』に載った。昼だけの営業で、麺が無くなり次第終了。全22席。</div>
+<div class="sig"><b>一皿:</b>かまだし(釜から上げたての麺を汁や濃いつゆで食べる一杯。茹でたての香りと食感をそのまま味わう品)／エビ入り野菜かきあげうどん(エビと野菜の大きなかき揚げを載せたうどん)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00(ラストオーダー 14:30)※麺が無くなり次第終了</td></tr>
+<tr><th>定休日</th><td class="off">水曜・金曜(2026年10月から金曜が休みに加わった)</td></tr>
+<tr><th>住所</th><td>広島県福山市王子町2-15-1</td></tr>
+<tr><th>予約</th><td>不可(持ち帰りのみ電話予約可) — <a href="tel:0849241410">☎ 084-924-1410</a> ／ <a href="https://udonya-koubei.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>機械に頼らず毎日手打ち・包丁切りを続ける昼だけのうどん専門店で、市内中心部の店と立地も時間帯も重ならない。営業の根拠=公式サイトのお知らせが2026年10月1日付で「2026年10月より水曜日と金曜日を店休日とします」と告知しており、同ページの店舗情報も現行の営業時間を載せている(2026年10月13日閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A5%82%E9%A3%A9%E5%B1%8B%20%E5%BA%B7%E5%B9%B3%E8%A1%9B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%8E%8B%E5%AD%90%E7%94%BA2-15-1">Googleマップで開く</a>
+<div class="src">写真: 備後とことこ（media.bintoco.com）より引用 / 参照元: <a href="https://udonya-koubei.jp/">饂飩屋康平衛 公式サイト(2026年10月1日のお知らせ・2026年10月13日閲覧)</a> / <a href="https://bintoco.com/kobee/">備後とことこ『饂飩屋 康平衛』(2023年3月19日掲載)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-okonomi-emmaru-fushimicho">
+<img class="hero" src="img/fukuyama/fukuyama-okonomi-emmaru-fushimicho.jpg" alt="お好み焼き鉄板焼 えんまる 伏見町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>お好み焼き鉄板焼 えんまる 伏見町店<span class="yomi">おこのみやきてっぱんやき えんまる ふしみちょうてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">店主の千葉さんが広島市の老舗「みっちゃん総本店」で修業して独立した、お好み焼き・鉄板焼きの店。生地を薄く焼いてキャベツ・豚肉を重ね、麺と卵をのせる広島の重ね焼きで、中の麺はそば(中華麺)とうどんから選べ、どちらも生麺をその場で茹でる。本店は『ミシュランガイド広島・愛媛 2018 特別版』に載った。元町の本店が夜のみなのに対し、伏見町店は昼も開ける。</div>
+<div class="sig"><b>一皿:</b>えんまる焼き(一番人気の看板のお好み焼き。韓国海苔を表面に敷き、半熟の目玉焼きをのせる)／牛しょぶり焼き(牛の希少部位のミンチ肉を使ったお好み焼き)</div>
+<table class="info">
+<tr><th>営業時間</th><td>木〜火 11:30〜14:00(L.O. 13:30)、17:30〜22:30(L.O. 22:00)／日曜 17:00〜21:30(L.O. 21:00)※材料が無くなり次第終了</td></tr>
+<tr><th>定休日</th><td class="off">水曜、第1・3・5木曜</td></tr>
+<tr><th>住所</th><td>広島県福山市伏見町3-25</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:05088843852">☎ 050-8884-3852</a> ／ <a href="https://ameblo.jp/fukuyama-okonomiyaki/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>広島市の老舗仕込みの重ね焼きを福山で出す個人店で、昼も開く数少ない一軒。営業の根拠=店主が毎日書く公式ブログ(アメーバブログ)の2026年10月13日付の記事と、同ブログ末尾に常掲されている伏見町店の住所・電話・営業時間・定休日(2026年10月13日閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E9%89%84%E6%9D%BF%E7%84%BC%20%E3%81%88%E3%82%93%E3%81%BE%E3%82%8B%20%E4%BC%8F%E8%A6%8B%E7%94%BA%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA3-25">Googleマップで開く</a>
+<div class="src">写真: 備後とことこ（media.bintoco.com）より引用 / 参照元: <a href="https://ameblo.jp/fukuyama-okonomiyaki/">えんまる 店主の公式ブログ(2026年10月13日の記事・店舗情報欄／2026年10月13日閲覧)</a> / <a href="https://bintoco.com/emmaru/">備後とことこ『お好み焼き 鉄板焼 えんまる』(2023年2月19日掲載)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-okonomi-daichinohaha-honjo">
+<img class="hero" src="img/fukuyama/fukuyama-okonomi-daichinohaha-honjo.jpg" alt="府中お好み焼き鉄板焼き 大地の母 本庄店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>府中お好み焼き鉄板焼き 大地の母 本庄店<span class="yomi">ふちゅうおこのみやきてっぱんやき だいちのはは ほんじょうてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">福山市の北西隣にある府中市のお好み焼き「府中焼き」を専門に出す店。府中焼きは広島のお好み焼きと同じ重ね焼きだが、豚バラ肉のかわりに挽き肉(ミンチ肉)を使い、挽き肉から出た脂が全体に回って麺がカリッと焼き上がるのが特徴で、もやしも入らない。全22席すべてに鉄板が据えてある。昼は定食セット、夜は鉄板焼きの一品で飲む使い方もできる。</div>
+<div class="sig"><b>一皿:</b>府中焼き 肉玉そば(府中焼きの基本。薄い生地にキャベツと挽き肉を重ね、挽き肉の脂で中華麺をカリッと焼いて卵をのせる)／牛すじ煮込み玉そば(府中焼きに煮込んだ牛すじをのせた一枚。麺を辛麺に替えたり和牛の牛脂を足したりもできる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:15〜14:30(L.O.)／17:15〜21:30(L.O.、22:00閉店)、土日祝 11:00〜14:30(L.O.)／17:00〜21:30(L.O.、22:00閉店)。麺の仕入れ日(月曜が多い)は昼の部が短くなる</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>広島県福山市本庄町中2-6-33</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0849997622">☎ 084-999-7622</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山市内で府中焼きだけを看板にしている専門店で、備後本庄駅側という立地も中心部の店と重ならない。愛媛県松山市に本店がある会社の店(愛媛3店・広島1店)だが全国チェーンではなく、広島県内では本庄店のみ。営業の根拠=ホットペッパーグルメの掲載ページ(2026年10月13日閲覧)にネット予約の空席カレンダーが2026年10月・11月分まで出ている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%9C%E4%B8%AD%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E5%A4%A7%E5%9C%B0%E3%81%AE%E6%AF%8D%20%E6%9C%AC%E5%BA%84%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%9C%AC%E5%BA%84%E7%94%BA%E4%B8%AD2-6-33">Googleマップで開く</a>
+<div class="src">写真: 備後とことこ（media.bintoco.com）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004421984/">ホットペッパーグルメ 府中お好み焼き鉄板焼き大地の母 本庄店(2026年10月13日閲覧)</a> / <a href="https://bintoco.com/daichinohaha/">備後とことこ『大地の母 本庄店』(2023年7月7日掲載)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-okonomi-kusadoan">
+<img class="hero" src="img/fukuyama/fukuyama-okonomi-kusadoan.jpg" alt="手打ちそば 草戸庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>手打ちそば 草戸庵<span class="yomi">てうちそば くさどあん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">国産のそばの実を自家製粉し、自家製麺する手打ちそばの店。挽きたて・打ちたて・茹でたての「三たて」を身上とし、そばを頼むとそば湯も出る。冷たいそば・温かいそばとも品数が多く、わかめそば・とろ三昧など季節限定の品もある。昼は炊き込みご飯とのセットがあり、夜は板わさ・がす天・にしんの旨煮といった一品とそば焼酎も置く。2024年9月に草戸町での営業を終え、同年11月に西深津町へ移転した。</div>
+<div class="sig"><b>一皿:</b>ざるそば(自家製粉・自家製麺のそばを、甘めのもり汁で手繰る。木の湯桶で出るそば湯で締める)／舞茸天ざるそば(ざるそばに揚げたての舞茸の天ぷらが付く。塩でも食べられる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜14:00／夜 17:00〜21:00(ラストオーダー 20:30頃)</td></tr>
+<tr><th>定休日</th><td class="off">水曜、および火曜の夜</td></tr>
+<tr><th>住所</th><td>広島県福山市西深津町4-7-26</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0849219058">☎ 084-921-9058</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>自家製粉から手がける手打ちそば屋で、市内中心部のお好み焼き・うどんの店と性格も立地も重ならない。営業の根拠=広島県飲食業生活衛生同業組合の店舗ページが移転先の西深津町の住所・電話・営業時間を載せていること(2026年10月13日閲覧)と、2026年7月19日撮影の写真を付けた個人ブログの訪問記(2026年8月16日公開)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E3%81%9D%E3%81%B0%20%E8%8D%89%E6%88%B8%E5%BA%B5%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%A5%BF%E6%B7%B1%E6%B4%A5%E7%94%BA4-7-26">Googleマップで開く</a>
+<div class="src">写真: 個人ブログ（はてなブログ）（cdn-ak.f.st-hatena.com）より引用 / 参照元: <a href="https://hiroshimaken-inshoku.jp/shop/%E8%8D%89%E6%88%B8%E5%BA%B5">広島県飲食業生活衛生同業組合 店舗ページ『草戸庵』(2026年10月13日閲覧)</a> / <a href="https://jazzrock.hatenablog.com/entry/2026/08/16/210000">個人ブログ The die is cast SeasonII『福山市「草戸庵」の舞茸天ざるそば』(2026年8月16日公開・写真は2026年7月19日撮影)</a> / <a href="https://fuuraiki.com/kusadoan_fukuyamashi/">きびナビ『【草戸庵】≪移転≫隠れたそばの人気店』(移転情報は2024年9月追記)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-okonomi-ikeno-hanten">
+<img class="hero" src="img/fukuyama/fukuyama-okonomi-ikeno-hanten.jpg" alt="いけの飯店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">25</span>いけの飯店<span class="yomi">いけのはんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1979年(昭和54年)6月に開店した中華料理店。日本人の料理長が脂を控えた調理で作る家庭的な中華で、昼の定食から夜の宴会まで使われる。席数は171で、1階に4〜12名の掘りごたつ個室が9部屋、5〜30名の座敷個室が6部屋、2階にはカラオケ付きの30名個室や70名の大広間がある。餃子や八宝菜、チャンポンなどの単品のほか、持ち帰りの弁当やラーメンも扱う。全席禁煙。</div>
+<div class="sig"><b>一皿:</b>いけの自慢の八宝菜(豚肉・エビ・イカと旬の野菜をとろみのある白いあんでまとめた炒め物)／焼餃子(5個単位で頼める焼き餃子。持ち帰りもできる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30(料理L.O. 14:00)、17:00〜21:30(料理L.O. 21:00)</td></tr>
+<tr><th>定休日</th><td class="off">木曜(祝日の場合は要問い合わせ)</td></tr>
+<tr><th>住所</th><td>広島県福山市春日町1-2-48</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0849430010">☎ 084-943-0010</a> ／ <a href="https://ikenohanten.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1979年開店の地元の中華料理店で、家族連れから宴会まで受ける市東部の定番。お好み焼きとうどん・そばに偏らせないために入れた。営業の根拠=公式サイト(ホットペッパーグルメ提供のオフィシャルページ)とホットペッパーグルメの掲載ページに、ネット予約の空席カレンダーが2026年10月・11月分まで出ていること(いずれも2026年10月13日閲覧)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%91%E3%81%AE%E9%A3%AF%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%98%A5%E6%97%A5%E7%94%BA1-2-48">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://ikenohanten.owst.jp">いけの飯店 公式サイト(2026年10月13日閲覧)</a> / <a href="https://www.hotpepper.jp/strJ000529870/">ホットペッパーグルメ いけの飯店(2026年10月13日閲覧)</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・郷土料理・地酒（伏見町）</h2>
+<div class="card" id="c-fukuyama-izakaya-bekkan">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-bekkan.jpg" alt="居酒屋 別館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>居酒屋 別館<span class="yomi">いざかやべっかん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅南口の元町にある居酒屋。昼12時から通しで23時まで開いており、昼飲みができる数少ない店。瀬戸内の魚介を使ったおまかせコースと刺身が柱で、品書きに「福山名物」「広島名物」と銘打った郷土の揚げ物をまとめて置いているのが特徴。日本酒は10種類以上で、福山市神辺町の天寶一(てんぽういち)、呉市の雨後の月(うごのつき)、神石高原町の神雷(しんらい)、東広島市西条の亀齢(きれい)と加茂金秀(かもきんしゅう)、呉市の宝剣(ほうけん)と広島県内の蔵をそろえる。福山産のくわいで造った焼酎や福山の山野峡(さんやきょう)のワインも置く。掘りごたつ6〜14名の席とカウンターがあり、1人でも使える。</div>
+<div class="sig"><b>一皿:</b>くわい唐揚(くわいは水田で育つ球根状の野菜で、福山市が全国生産量の約7割を占める特産。先から芽が伸びる形から「芽(め)が出る」縁起物とされ、おせちにも使う。素揚げするとホクホクした栗のような食感になる)／ネブト唐揚げ 780円(ネブトは瀬戸内でとれるテンジクダイ科の小魚。福山では骨ごと二度揚げして丸かじりする定番の酒の肴)／広島の地酒(天寶一(福山市神辺町)、雨後の月(呉市)、神雷(神石高原町)、亀齢・加茂金秀(東広島市西条)、宝剣(呉市)を1杯から出す。福山育ちのくわいで造った焼酎もある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 12:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県福山市元町8-2</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:07020230859">☎ 070-2023-0859</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で郷土料理の軸にする店。福山の郷土食である「くわい」「ネブト」「ちいちいイカ」と広島名物の小いわし天ぷらを、1軒でまとめて品書きに載せている店は市内でも多くない。昼12時開店なので、夜まで待てない旅程でも入れる点も採った理由。営業の根拠＝ホットペッパーグルメ掲載ページ(2026/09/18 更新・2026-10-13 取得)で、ネット予約カレンダーが2026年10月下旬から12月まで「◎(即予約可)」で開いていること。住所・営業時間・定休日・電話番号は同ページの店舗基本情報から取得。全国チェーンではなく、同名の系列店はホットペッパーの広島県内検索でこの1軒のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%88%A5%E9%A4%A8%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA8-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004421054/">ホットペッパーグルメ 居酒屋 別館（2026/09/18 更新・2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ004421054/drink/">ホットペッパーグルメ 居酒屋 別館 ドリンクメニュー（2026-10-13 取得・広島の地酒の銘柄を確認）</a> / <a href="https://www.hotpepper.jp/strJ004421054/photo/">ホットペッパーグルメ 居酒屋 別館 写真ギャラリー（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-izakaya-shuzenya-sancha">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-shuzenya-sancha.jpg" alt="酒膳屋 三茶 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>酒膳屋 三茶<span class="yomi">しゅぜんやさんちゃ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅南の元町、三角公園のそばの雑居ビル2階にある居酒屋。瀬戸内と広島県産の地物を仕入れ、酒に合わせる一品を出す。店の軸は広島の地酒で、呉市仁方(にがた)の蔵の酒などを季節ごとに入れ替えて置く。コの字ではなく壁付けのカウンターのほか、2名・6名の個室と掘りごたつ、最大38名の貸切席がある。福山の特産を使った酒の肴「福つまみ」の認定店を名乗る。売り切れ次第で早じまいすることがあり、休みは店のインスタグラムで知らせている。</div>
+<div class="sig"><b>一皿:</b>瀬戸内真鯛の藁焼き炙り刺し(瀬戸内でとれた真鯛を店内で藁の炎に当てて表面だけ焼き、刺身に引いたもの。藁の煙の香りが身に移る。混雑時は売り切れ、夏季は提供なし)／広島の地酒(宝剣(ほうけん・呉市仁方の宝剣酒造)、雨後の月(うごのつき・同じく仁方の相原酒造)、福山産の酒米「恋の予感」を使った酒などを季節で入れ替えて置く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土・祝前日 17:30〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）／日・祝日 17:30〜22:30（料理L.O. 22:00／ドリンクL.O. 22:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（年末年始12/30〜1/3は営業）</td></tr>
+<tr><th>住所</th><td>広島県福山市元町13-12 エスビル2F</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。真鯛の藁焼きは予約推奨） — <a href="tel:0849253780">☎ 084-925-3780</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で広島の地酒を主役にする1店として選んだ。店の写真ギャラリーに『広島の地酒』と題した棚の写真が複数あり、瓶のラベルから宝剣・雨後の月・恋の予感といった県内の銘柄が実際に読み取れたため、「地酒あり」の表示だけに頼らず銘柄まで裏が取れた。鯛を藁で炙る名物があるので、瀬戸内の魚を酒の肴として出す役回りも兼ねる。営業の根拠＝ホットペッパーグルメ掲載ページ(2026/07/31 更新・2026-10-13 取得)で、同ページに年末年始(12/30〜1/3)も営業する旨の告知が載っており、ネット予約カレンダーが12月まで開いていること。住所・営業時間・定休日・電話番号は同ページの店舗基本情報から取得。地元の個人店で系列店なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%86%B3%E5%B1%8B%20%E4%B8%89%E8%8C%B6%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA13-12%20%E3%82%A8%E3%82%B9%E3%83%93%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000529251/">ホットペッパーグルメ 酒膳屋 三茶（2026/07/31 更新・2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ000529251/photo/">ホットペッパーグルメ 酒膳屋 三茶 写真ギャラリー（2026-10-13 取得・地酒の銘柄を確認）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-izakaya-horoyoi-komachi">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-horoyoi-komachi.jpg" alt="海鮮炉端厨房 ほろよい小町 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>海鮮炉端厨房 ほろよい小町<span class="yomi">かいせんろばたちゅうぼう ほろよいこまち</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅の南側に広がる伏見町の飲み屋街の入口にある海鮮居酒屋。瀬戸内の魚介を炉端で焼いたり煮付けたりして出す一方、味つけは京料理仕立てを掲げ、だし巻き玉子を看板にしている。鯛は頭を割って焼くカブト焼きと荒煮(骨蒸し)、茶漬けの三通りで出し、牡蠣は夏は岩牡蠣、冬は殻付きの焼き牡蠣と季節で替える。福山名物のネブト唐揚げとチーイカ天ぷらも置く。カウンター8席のほか掘りごたつの個室があり、最大65名の宴会ができる。</div>
+<div class="sig"><b>一皿:</b>瀬戸内タイの荒煮・骨蒸(こつむし)(鯛の頭や中骨など身を取ったあとの部位を、醤油と砂糖で甘辛く煮たもの。骨蒸しは同じ部位を酒と塩で蒸し上げる関西の仕立て)／タイカブト焼き(鯛の頭を縦に二つに割り、塩を振って炉端で焼いたもの)／福山名物ネブト唐揚げ(ネブトは瀬戸内でとれるテンジクダイ科の小魚。骨ごと二度揚げして丸ごと食べる福山の定番の肴)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜23:30（料理L.O. 23:00／ドリンクL.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県福山市伏見町3-21</td></tr>
+<tr><th>予約</th><td>可（ネット予約可）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>伏見町の飲み屋街から選ぶ4店のうち、瀬戸内・鞆(とも)の海でとれる魚を正面から出す役回りとして採った。鯛を荒煮・骨蒸し・カブト焼き・茶漬けと複数の形で出し、牡蠣も夏の岩牡蠣と冬の殻付き焼き牡蠣で通年あるので、季節を問わず「この章の魚の店」が成立する。福山名物のネブト唐揚げとチーイカ天ぷらを置くので郷土の肴も兼ねる。営業の根拠＝ホットペッパーグルメ掲載ページ(2026/07/29 更新・2026-10-13 取得)で、ネット予約カレンダーが2026年10月下旬から12月まで開いていること。住所・営業時間・定休日は同ページの店舗基本情報から取得。電話番号は同ページに表示がなく未確認のため空欄にした。地元の個人店で系列店なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E7%82%89%E7%AB%AF%E5%8E%A8%E6%88%BF%20%E3%81%BB%E3%82%8D%E3%82%88%E3%81%84%E5%B0%8F%E7%94%BA%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA3-21">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000029988/">ホットペッパーグルメ 海鮮炉端厨房 ほろよい小町（2026/07/29 更新・2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ000029988/photo/">ホットペッパーグルメ 海鮮炉端厨房 ほろよい小町 写真ギャラリー（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-izakaya-shogetsu">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-shogetsu.jpg" alt="和彩酒膳 照月 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>和彩酒膳 照月<span class="yomi">わさいしゅぜん しょうげつ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅の東側、新幹線の高架下に入る和食寄りの居酒屋。福山の特産を使った名物の肴「福つまみ」を看板にしており、ねぶと・ちいちいいか・くわい・ガス天・鯛ちくわの5つをすべて品書きに載せている。11月から3月はとらふぐのてっさ・唐揚げ・鍋・ヒレ酒などふぐ料理に切り替わる。天井を星空に見立てた内装で、1名用から30名用まで個室が並び、フロア貸切なら50名まで入る。日本酒は神石高原町の神雷(しんらい)と呉市の宝剣(ほうけん)という広島の地酒を置き、広島レモンのサワーもある。席の利用時間は2時間半、最終入店は20時30分。</div>
+<div class="sig"><b>一皿:</b>福つまみ4種盛り合わせ(「福つまみ」は福山の特産でつくる名物の肴の総称。ねぶと(瀬戸内の小魚)、ちいちいいか(親指ほどの小さなイカ)、くわい(福山が全国生産量の約7割を占める球根野菜)、ガス天(がんす。白身魚のすり身にパン粉をつけて揚げた広島の練り物)、鯛ちくわの5つを指し、この店はその全部を置く)／とらふぐのてっさ(ふぐの身を皿の模様が透けるほど薄く引いた刺身。11月〜3月のみ)／広島の地酒(神雷(しんらい・神石高原町)と宝剣(ほうけん・呉市)。いずれも広島県内の蔵の酒で、福つまみに合わせる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜金・祝前日 17:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:30・最終入店20:30）／土 11:30〜14:00（料理L.O. 13:30）と17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜・日曜・祝日（月曜は15名以上の宴会予約なら営業可）</td></tr>
+<tr><th>住所</th><td>広島県福山市今町30-1 A区画</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。席の利用は2時間半） — <a href="tel:0849217456">☎ 084-921-7456</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で郷土料理をいちばん広く押さえる店として選び、価格帯の上側も担わせた。「福つまみ」は福山の特産でつくる肴の総称で、ホットペッパー掲載ページのウリ欄に『福山特産の食材で慣れ親しまれてきた、ねぶと、ちいちいいか、くわい、ガス天、鯛ちくわを使ったメニュー』と店自身が書いており、写真ギャラリーにも「福つまみ4種盛り合わせ」「ガス天」「鯛ちくわ」「ねぶと南蛮漬け」「ちいちいイカ天麩羅」が個別に並ぶので、看板倒れでないことが確かめられた。広島の地酒は神雷(しんらい・神石高原町)と宝剣(ほうけん・呉市)をドリンクページで確認。営業の根拠＝同ページ(2026/10/02 更新・2026-10-13 取得)で、ネット予約カレンダーが開いており、公式インスタグラムの最新投稿が2026/08/12 であること。住所・営業時間・定休日・電話番号は同ページの店舗基本情報から取得。地元の個人店で系列店なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E5%BD%A9%E9%85%92%E8%86%B3%20%E7%85%A7%E6%9C%88%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BB%8A%E7%94%BA30-1%20A%E5%8C%BA%E7%94%BB">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000797235/">ホットペッパーグルメ 和彩酒膳 照月（2026/10/02 更新・2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ000797235/drink/">ホットペッパーグルメ 和彩酒膳 照月 ドリンクメニュー（2026-10-13 取得・広島の地酒を確認）</a> / <a href="https://www.hotpepper.jp/strJ000797235/photo/">ホットペッパーグルメ 和彩酒膳 照月 写真ギャラリー（2026-10-13 取得・福つまみ各品を確認）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-izakaya-sakkuru-konosakiya">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-sakkuru-konosakiya.jpg" alt="串揚げさっくる このさきや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>串揚げさっくる このさきや<span class="yomi">くしあげさっくる このさきや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅南口を出てすぐの串揚げ屋で、自ら「福山初の立呑み屋」を名乗る。1階は立ち飲みのカウンター(1名席13)で、串揚げは約50種を1本100円(税抜)から揚げる。衣が重くならないよう練り粉の配合を開店当初から変えていないという。ソースは広島特産のカープソースに店主手製の和風だしを合わせたもの。2階はソファーの個室とテーブル席があり、座って飲みたいときはそちらへ。昼11時から通しで営業し、電車の待ち時間に1杯だけ、という使い方ができる。</div>
+<div class="sig"><b>一皿:</b>串揚げ 1本100円(税抜)〜(小さく切った具に衣をつけて串で揚げたもの。約50種類あり、注文のつど揚げる)／備後(びんご)7本セット・赤ヘル9本セットなどの盛り合わせ(いずれも串揚げの本数違いの盛り合わせ。ソースは広島特産のカープソースに和風だしを合わせた特製のもの)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 11:00〜翌0:00（料理L.O. 23:30／ドリンクL.O. 23:30）／日 11:00〜22:00（料理L.O. 21:30／ドリンクL.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>広島県福山市伏見町1-1</td></tr>
+<tr><th>予約</th><td>一部可（1階の立ち飲みは予約不要。2階の個室はネット予約可） — <a href="tel:0849315518">☎ 084-931-5518</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で唯一の立ち飲みの店として、また価格帯のいちばん下を埋める店として選んだ。福山駅から徒歩1分で、昼11時から深夜0時まで通しで開いているので、列車の待ち時間や宿に入る前の1杯に使える。ソースに広島特産のカープソースを使い、盛り合わせに「備後」「赤ヘル」と地元の名を付けている点も、全国どこにでもある串揚げ屋と違う。営業の根拠＝ホットペッパーグルメ掲載ページ(2026/03/13 更新・2026-10-13 取得)で、ネット予約カレンダーが開いていること。住所・営業時間・定休日・電話番号は同ページの店舗基本情報から取得。地元の「さっくるグループ」の店で、ホットペッパーの広島県全域のフリーワード検索でも「さっくる」の名が付く店はこの1軒だけ。全国チェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E6%8F%9A%E3%81%92%E3%81%95%E3%81%A3%E3%81%8F%E3%82%8B%20%E3%81%93%E3%81%AE%E3%81%95%E3%81%8D%E3%82%84%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA1-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001202070/">ホットペッパーグルメ 串揚げさっくる このさきや（2026/03/13 更新・2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ001202070/photo/">ホットペッパーグルメ 串揚げさっくる このさきや 写真ギャラリー（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-izakaya-taishu-sakaba-fukuyama-bat">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-taishu-sakaba-fukuyama-bat.jpg" alt="大衆酒場 福山バット 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>大衆酒場 福山バット<span class="yomi">たいしゅうさかば ふくやまばっと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅南口の飲み屋街・伏見町にある大衆酒場。生レモンサワーとハイボールを209円(税込)に抑え、肴は焼肉屋仕込みの牛すじ煮込み、炭火で焼く鶏ハラミの塩ダレ、名物の牛ハラミステーキ979円といった構成で、1杯だけの立ち寄りから長居まで受ける。日本酒は地元福山市神辺町の蔵の天宝一(てんぽういち)上撰を置く。深夜0時まで開いていて月・日が休み。カウンター5席・2名テーブルのほかテラス席10名があり、仕事帰りの1人客と2次会の両方に向く。</div>
+<div class="sig"><b>一皿:</b>名物ハラミステーキ 979円(牛の横隔膜の肉を、中に柔らかさを残した焼き加減で出すステーキ。肉汁とソースを絡めて食べる)／トロトロ牛すじ煮込み(牛すじを長時間煮込んだもの。焼肉店仕込みの仕込み方だと店が書いている)／天宝一 上撰(てんぽういち。福山市神辺町(かんなべちょう)の天宝一が造る日本酒。福山で醸される数少ない地元の銘柄)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土・祝日・祝前日 17:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・日曜</td></tr>
+<tr><th>住所</th><td>広島県福山市伏見町4-5</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0849825933">☎ 084-982-5933</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>伏見町の飲み屋街から選ぶ4店のうち、いちばん敷居が低く安い枠として採った。生レモンサワー209円という値付けと深夜0時までの営業で、他の3店(ほろよい小町・このさきや・遊酒蔵 純)とは使う場面が重ならない。地元福山市神辺町の酒蔵の銘柄「天宝一」を1種だけでも置いている点も、同価格帯の店では珍しい。営業の根拠＝ホットペッパーグルメ掲載ページ(2025/11/26 更新・2026-10-13 取得)で、ネット予約カレンダーが開いていること。日本酒の銘柄は同ページのドリンクメニュー(2026-10-13 取得)で確認した。住所・営業時間・定休日・電話番号は同ページの店舗基本情報から取得。全国チェーンではなく、ホットペッパーの広島県全域のフリーワード検索で「バット」の名が付く店は福山市内の2軒(この店と焼肉酒場 福山バット)のみの地元資本。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%20%E7%A6%8F%E5%B1%B1%E3%83%90%E3%83%83%E3%83%88%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA4-5">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001224880/">ホットペッパーグルメ 大衆酒場 福山バット（2025/11/26 更新・2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ001224880/drink/">ホットペッパーグルメ 大衆酒場 福山バット ドリンクメニュー（2026-10-13 取得・天宝一 上撰を確認）</a> / <a href="https://www.hotpepper.jp/strJ001224880/photo/">ホットペッパーグルメ 大衆酒場 福山バット 写真ギャラリー（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-izakaya-kita-no-mejiro">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-kita-no-mejiro.jpg" alt="大衆酒場北のメジロ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>大衆酒場北のメジロ<span class="yomi">たいしゅうさかばきたのめじろ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市北東部の神辺にある大衆酒場。毎日15時に開け、金曜と土曜は翌朝4時まで通すので、昼飲みにも朝までにも使える。看板は鶏白湯(とりぱいたん)のおでんで、鶏ガラを4時間強火で炊いた出汁に大根・玉子・ロールキャベツ・手羽元・餃子などを入れる。付き出しを660円のおでん食べ放題に替えられる。日本酒は地元の天宝一と神石高原町の神雷、三次の瑞冠と広島の銘柄を置く。46席でコの字カウンター(1名席14)と掘りごたつの個室があり、1人でも通せる。20歳未満は入店できない。</div>
+<div class="sig"><b>一皿:</b>鶏白湯おでん 1品100〜300円(鶏ガラを4時間強火で炊いた濃厚な出汁で煮るおでん。大根・玉子・しらたき・厚揚げ・ロールキャベツ・手羽元・餃子のほか季節の品も入る)／広島の日本酒3種(天宝一(てんぽういち・福山市神辺町)、神雷(しんらい・神石高原町)、瑞冠(ずいかん・三次市)。いずれも広島県内の蔵の酒)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・日・祝日 15:00〜23:30（料理L.O. 23:00／ドリンクL.O. 23:00）／金・土・祝前日 15:00〜翌4:00（料理L.O. 23:00／ドリンクL.O. 翌4:00）</td></tr>
+<tr><th>定休日</th><td class="off">無休と思われるが未確認（掲載ページに定休日の記載なし。予約カレンダーにも休業日の表示なし）</td></tr>
+<tr><th>住所</th><td>広島県福山市神辺町十三軒屋11-1</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。20歳未満は入店不可） — <a href="tel:0849636066">☎ 084-963-6066</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山駅前に寄りがちな章の中で、北東部の神辺(かんなべ)を押さえるために選んだ。15時開店・金土は翌4時までという営業の幅が他の8店にはなく、コの字カウンターで1人客を受ける作りも大衆酒場らしい。同じ神辺の焼鳥店と比べて、地元の天宝一を含む広島の日本酒を3銘柄そろえている点を採った。営業の根拠＝ホットペッパーグルメ掲載ページ(2026/10/13 更新・2026-10-13 取得。この章で最も新しい更新日)で、ネット予約カレンダーが10月下旬から11月初旬まで全日「◎(即予約可)」であること。日本酒の銘柄は同ページのドリンクメニュー(2026-10-13 取得)で確認。住所・営業時間・電話番号は同ページの店舗基本情報から取得。定休日の欄には注意書きしかなく定休日の記載がないため、カレンダーに休業日の表示がないことと合わせて「無休と思われるが未確認」とした。地元の個人店で系列店なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%E5%8C%97%E3%81%AE%E3%83%A1%E3%82%B8%E3%83%AD%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%A5%9E%E8%BE%BA%E7%94%BA%E5%8D%81%E4%B8%89%E8%BB%92%E5%B1%8B11-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001260399/">ホットペッパーグルメ 大衆酒場北のメジロ（2026/10/13 更新・2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ001260399/drink/">ホットペッパーグルメ 大衆酒場北のメジロ ドリンクメニュー（2026-10-13 取得・広島の日本酒3銘柄を確認）</a> / <a href="https://www.hotpepper.jp/strJ001260399/photo/">ホットペッパーグルメ 大衆酒場北のメジロ 写真ギャラリー（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-izakaya-obanzai-yamaroku">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-obanzai-yamaroku.jpg" alt="おばんざい山ろく 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>おばんざい山ろく<span class="yomi">おばんざいやまろく</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市東部、大門駅の南の住宅地にある店。京都でいう「おばんざい」、つまり家庭的な煮物や和え物を小鉢で並べ、それを肴に飲ませる作りで、かぼちゃ・さといも・なすの煮物やおでんが日替わりで出る。おでんは具を1個から頼め、こんにゃく121円から。日本酒は福山市神辺町の天宝一を熱燗1.5合と300mlで置く。カウンターのほか掘りごたつ席と個室があり、1人でも通せる。夜の最終来店は20時と早く、魚を中心にしたおまかせの会席コースは3日前までの予約が要る。</div>
+<div class="sig"><b>一皿:</b>おでん盛り(こんにゃく1個121円〜。具を1個から選んで頼める。馴染みのある味つけで、酒の肴向き)／煮物 各種(かぼちゃ・さといも・なすなど、家庭の惣菜としての煮物を小鉢で出す。日替わり)／天宝一の熱燗(てんぽういち。福山市神辺町の天宝一が造る日本酒。1.5合の熱燗と300ml瓶で置く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 11:30〜14:00（料理L.O. 13:15／ドリンクL.O. 13:15）と18:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:00・最終来店20:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・日曜（ほかに不定休あり）</td></tr>
+<tr><th>住所</th><td>広島県福山市大門町4-21-36</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。おまかせの会席コースは3日前までに予約） — <a href="tel:0849830960">☎ 084-983-0960</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章の中で唯一、福山駅周辺でも神辺でもない東部の郊外(大門)にある店として、また価格帯のいちばん上(夜6,000円)を担う店として選んだ。おばんざいとおでんという業態は他の8店と重ならず、串・炉端・揚げ物に偏った構成の中で小鉢と煮物の枠を埋める。地元福山市神辺町の天宝一を燗で置いている点も採った理由。営業の根拠＝ホットペッパーグルメ掲載ページ(2026/05/19 更新・2026-10-13 取得)で、ネット予約カレンダーが10月下旬から11月にかけて開いていること。日本酒の銘柄は同ページのドリンクメニュー(2026-10-13 取得)で確認。住所・営業時間・定休日・電話番号は同ページの店舗基本情報から取得。地元の個人店で系列店なし。夜の最終来店が20時と早いので、行くなら18〜19時台に入ること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%B0%E3%82%93%E3%81%96%E3%81%84%E5%B1%B1%E3%82%8D%E3%81%8F%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%A4%A7%E9%96%80%E7%94%BA4-21-36">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001035014/">ホットペッパーグルメ おばんざい山ろく（2026/05/19 更新・2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ001035014/drink/">ホットペッパーグルメ おばんざい山ろく ドリンクメニュー（2026-10-13 取得・天宝一の熱燗を確認）</a> / <a href="https://www.hotpepper.jp/strJ001035014/photo/">ホットペッパーグルメ おばんざい山ろく 写真ギャラリー（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-izakaya-otebi-tomonoura">
+<img class="hero" src="img/fukuyama/fukuyama-izakaya-otebi-tomonoura.jpg" alt="お食事処 おてび 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>お食事処 おてび<span class="yomi">おしょくじどころ おてび</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">鞆の浦の町なかにある食事処で、平成元年(1989年)8月の開業。店の名は7月に沼名前(ぬなくま)神社で行われる火祭り「お手火(おてび)神事」から取った。カウンターに大皿が並び、その日の小魚料理を数種、酢の物や煮物と一緒に取り分けてもらえる。惣菜は1皿から頼め、ビール・日本酒・焼酎も置くので定食屋としても一杯やる店としても使える。壁には「鞆のおさかな図鑑」が貼ってあり、ねぶと(テンジクダイ)、でべら(ガンゾウビラメ)、えびじゃこ(アカエビ)といった鞆での魚の呼び名が説明してある。昼と夜の二部制で、15時から17時は閉まる。</div>
+<div class="sig"><b>一皿:</b>小魚定食 950円(鞆の港で揚がった小魚を数種、唐揚げや煮付けにして一皿に盛り、酢の物・煮物の小鉢と汁を付けた定食。中身はその日の漁次第で替わる)／カウンターのお惣菜 320〜500円(大皿に並ぶ惣菜を1皿から取り分けてもらう。小魚、盛合わせ、冷奴、湯どうふ、カツとじなど。酒の肴にする)／おてびのそば 500円(鶏がらのあっさりしたスープに細麺、炒めた野菜をのせた中華そば。店では飲んだあとの〆として出している)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00（料理L.O. 13:45）／17:00〜21:00（料理L.O. 20:30）※15時〜17時は閉店。夜の営業は火〜土</td></tr>
+<tr><th>定休日</th><td class="off">月曜・第3日曜</td></tr>
+<tr><th>住所</th><td>広島県福山市鞆町鞆838</td></tr>
+<tr><th>予約</th><td>不要（席の予約は電話で相談） — <a href="tel:0849820808">☎ 084-982-0808</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で唯一の鞆の浦(とものうら)の店。鞆には夜まで開く酒の店がごく少なく、鯛料理の店(鯛亭・千とせ・衣笠など)は和食の章と重なるため、酒と肴という軸で残るのがこの店だった。大皿の惣菜を1皿から頼めてビール・日本酒・焼酎を置く作りは、観光地の食事処というより町の一杯飲み屋に近い。営業の根拠＝①福山市鞆の浦の観光情報サイト「VISIT鞆の浦」の店舗ページ(2026-10-15 取得)が営業時間を「11:00〜14:00(L.O.13:45)、17:00〜21:00(L.O.20:30)」、定休日を「月・第3日曜」と記載 ②Yahoo!マップの施設情報(2026-10-15 取得)が同じ営業時間・定休日・電話番号を掲載 ③地元企業サンモルトのブログ記事も同じ電話番号と定休日を記載、の3つが一致したこと。なお、ホットペッパーグルメの無料掲載ページは昼のみ・月火休と古い内容のままだったので採らなかった。住所・電話番号は上記①②から取得。写真は商用利用を禁じている鞆物語ではなく、地元のブログ(サンモルト)から採った。地元の個人店で系列店なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E3%81%8A%E3%81%A6%E3%81%B3%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86838">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sun-malt.com）より引用 / 参照元: <a href="https://visittomonoura.com/items/otebi/">VISIT鞆の浦（鞆の浦の観光情報サイト）お食事処 おてび（2026-10-15 取得・営業時間と定休日を確認）</a> / <a href="https://map.yahoo.co.jp/v3/place/eLx2DKIKqv6">Yahoo!マップ お食事処 おてび（2026-10-15 取得・営業時間・定休日・電話番号を確認）</a> / <a href="https://sun-malt.com/1975">チェック社長の鞆・福山活性化ブログ「福山市鞆町でランチ・昼食『食事処おてび』」（写真の出典・2026-10-15 取得）</a> / <a href="https://tomonoura.life/gourmet/12626/">鞆物語（鞆の浦の地域情報サイト）お食事処 おてび（2026-10-15 取得・店名の由来と品書きを確認）</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・イタリアン・各国料理</h2>
+<div class="card" id="c-fukuyama-sunsaile">
+<img class="hero" src="img/fukuyama/fukuyama-sunsaile.jpg" alt="洋食レストラン サンセール 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>洋食レストラン サンセール<span class="yomi">ようしょくれすとらん さんせーる</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅の南、船町にある洋食店。ハンバーグ・海老フライ・カニクリームコロッケといった昔ながらの洋食を、スープ・サラダ・ライスまたはパン・ソフトクリームの付くセットで出す。昼は11時30分から14時30分まで通しで営業し、夜の営業は金曜と土曜の予約限定。席は36席で、5〜7名が入るテーブル個室が1室ある。全席禁煙、駐車場はなし。</div>
+<div class="sig"><b>一皿:</b>Bセット(牛サガリステーキに海老フライとカニクリームコロッケを盛り合わせた昼の定番セット。スープ・サラダ・ライスまたはパン・ソフトクリームが付く)／和牛ヒレステーキ150g(和牛のヒレ肉を一枚焼きにした単品の肉料理)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・日 11:30〜14:30(料理L.O.14:00、ランチL.O.は13:50)／金・土 11:30〜14:30(料理L.O.14:00)、17:30〜20:00(料理L.O.18:30、ドリンクL.O.18:30)。夜の営業は金曜・土曜の予約限定で、予約は前日まで</td></tr>
+<tr><th>定休日</th><td class="off">水曜、第3火曜</td></tr>
+<tr><th>住所</th><td>広島県福山市船町1-24</td></tr>
+<tr><th>予約</th><td>可(夜は要予約・前日まで) — <a href="tel:0849313320">☎ 084-931-3320</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山駅から歩ける距離にあり、ハンバーグ・エビフライ・カニクリームコロッケという定番の洋食をセットで通している街の洋食店。地元資本の一軒だけの店で、全国チェーンではない。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13 取得)に営業時間・定休日・予算・ネット予約の受付が現行のものとして載っており、ページ内の店舗カレンダーが2026年11月・12月まで予約可否を表示している。創業年は一次情報で確認できなかったため記載していない(未確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%B5%E3%83%B3%E3%82%BB%E3%83%BC%E3%83%AB%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%88%B9%E7%94%BA1-24">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001260458/">ホットペッパーグルメ 洋食レストラン サンセール(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ001260458/photo/">ホットペッパーグルメ 洋食レストラン サンセール 写真ギャラリー(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-kadono">
+<img class="hero" src="img/fukuyama/fukuyama-kadono.jpg" alt="KaDoNo 洋食屋かどの 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>KaDoNo 洋食屋かどの<span class="yomi">かどのようしょくや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">福山市街の南、沖野上町の交差点角にある洋食店。アラカルトのほかに、約60種の料理を注文のたびに作って出す食べ放題「フリーオーダープラン」を通年で用意している。昼はメインを4種から選ぶセット、夜はコースと単品。天井の高い50席の店で、テーブル・カウンター・ソファー席があり、全席禁煙。20台の専用駐車場を備える。</div>
+<div class="sig"><b>一皿:</b>KaDoNoランチ(サラダ・スープ・選べるメイン・バゲットかライス・ドリンクが付く昼のセット。メインは海老のカダイフ揚げタルタルソース添え、チキンのバルサミコ南蛮、ポークの高菜マヨネーズ焼き、本日のパスタから選ぶ)／フリーオーダープラン(パスタだけで10種類以上、約60種の料理を注文ごとに作りたてで出す食べ放題。男性5,000円・女性4,500円 税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 11:30〜14:30(料理L.O.14:00、ドリンクL.O.14:00)／17:30〜22:00(料理L.O.21:30、ドリンクL.O.21:30)</td></tr>
+<tr><th>定休日</th><td class="off">日曜、第2月曜(店舗カレンダーあり)</td></tr>
+<tr><th>住所</th><td>広島県福山市沖野上町2-9-25</td></tr>
+<tr><th>予約</th><td>可(ネット予約は来店当日18時まで、リクエスト予約は前日17時まで) — <a href="tel:0849446005">☎ 084-944-6005</a> ／ <a href="https://kadonoyousyoku.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山駅周辺に店が集まりがちな洋食のなかで、市街南部の沖野上に構える地元資本の個人店。食べ放題を洋食のアラカルトで組んでいる点が他店と違う。営業の根拠＝店の公式サイト(2026-10-13 取得・200応答)と、ホットペッパーグルメの掲載ページ(同日取得)。ページ内の店舗カレンダーが2026年11月・12月まで予約可否を表示している。創業年は一次情報で確認できなかったため記載していない(未確認)。写真は公式サイト・ホットペッパーとも料理の実写が規定の大きさ(長辺900px)に届かず、店内の実写のみを採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=KaDoNo%20%E6%B4%8B%E9%A3%9F%E5%B1%8B%E3%81%8B%E3%81%A9%E3%81%AE%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%B2%96%E9%87%8E%E4%B8%8A%E7%94%BA2-9-25">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://kadonoyousyoku.owst.jp/">KaDoNo 洋食屋かどの 公式サイト(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ001183274/">ホットペッパーグルメ KaDoNo 洋食屋かどの(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ001183274/photo/">ホットペッパーグルメ KaDoNo 洋食屋かどの 写真ギャラリー(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-luonto">
+<img class="hero" src="img/fukuyama/fukuyama-luonto.jpg" alt="LUONTO(ルオント) 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>LUONTO(ルオント)<span class="yomi">るおんと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山駅南口から歩いて3分のイタリア料理店。自社農園を持ち、そこで採れた無農薬野菜と地元の農家から仕入れた野菜を料理の中心に据える。肉は世羅産牛や瀬戸もち豚、魚は瀬戸内産の魚介を使い、瀬戸田のレモンを絞ったソースなど広島県内の食材を組み合わせる。ワインはイタリアのナチュラルワインが主体。1階はテーブルとカウンター、2階は最大54名の貸切ができ、全81席。</div>
+<div class="sig"><b>一皿:</b>スカロピーネ(薄切りの肉を焼き、焼いたフライパンに瀬戸田のレモンを絞って作るレモンバターソースで仕上げる一皿)／タリアータ(世羅産牛を焼いて薄切りにし、自社農園の野菜を合わせた料理)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜木・日・祝日 11:30〜15:00(料理L.O.13:30)／17:30〜22:00(料理L.O.21:00、ドリンクL.O.21:30)。金・土・祝前日 11:30〜15:00(料理L.O.13:30)／17:30〜23:00(料理L.O.22:00、ドリンクL.O.22:30)。昼は食材がなくなり次第終了</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>広島県福山市三之丸町4-12</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0849245570">☎ 084-924-5570</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>瀬戸内の食材を名指しで使っている点が明確な店。自社農園の無農薬野菜に加え、瀬戸田(広島県尾道市)のレモン、瀬戸内産の魚介、世羅産牛と、広島県産の素材の出どころを料理ごとに掲げている。地元資本の単独店で全国チェーンではない。営業の根拠＝ホットペッパーグルメの掲載ページと写真ギャラリー(いずれも2026-10-13 取得)に現行の営業時間・定休日・コース価格が掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=LUONTO%28%E3%83%AB%E3%82%AA%E3%83%B3%E3%83%88%29%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%B8%89%E4%B9%8B%E4%B8%B8%E7%94%BA4-12">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001099224/">ホットペッパーグルメ LUONTO イタリア料理×自家製野菜×ワイン(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ001099224/photo/">ホットペッパーグルメ LUONTO 写真ギャラリー(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-trattoria-romano">
+<img class="hero" src="img/fukuyama/fukuyama-trattoria-romano.jpg" alt="Trattoria ロマーノ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>Trattoria ロマーノ<span class="yomi">とらっとりあ ろまーの</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市北西部の新市町、国道486号沿いにあるイタリア料理店。ミラノ風の薄焼きピッツァとパスタが中心で、エビフライやカニクリームコロッケといった洋食の皿も出す。11時から21時まで通しで営業し、15時から17時はケーキと飲み物だけのティータイムになる。64席で店内はバリアフリー、子ども用の椅子もあり、法要後の食事やオードブルの仕出しにも対応する。</div>
+<div class="sig"><b>一皿:</b>ミラノ風薄焼きピッツァ(生地を薄く伸ばして焼くミラノ風のピッツァ。マルゲリータ、照り焼きチキン、クワトロフォルマッジなどを用意)／小柱ときのこと白ネギの梅風味のスパゲッティ(貝柱ときのこ、白ネギを梅で和風に仕立てたパスタ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日 11:00〜21:00(料理L.O.20:30、ドリンクL.O.20:30)。ランチは11:00〜L.O.15:00、ティータイム15:00〜17:00(ケーキと飲み物のみ)、ディナー17:00〜21:00(L.O.20:30)</td></tr>
+<tr><th>定休日</th><td class="off">水曜(祝日は営業し翌木曜休み)、第1・第3・第5木曜</td></tr>
+<tr><th>住所</th><td>広島県福山市新市町新市322-1</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0847518768">☎ 0847-51-8768</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>福山市街から離れた新市町にあり、市の北西部をまかなう地元資本の一軒。全国チェーンではなく、法要の食事やオードブルの仕出しまで請け負う地域の店としての性格が濃い。営業の根拠＝ホットペッパーグルメの掲載ページと写真ギャラリー(いずれも2026-10-13 取得)に現行の営業時間・定休日・コース価格が掲載されている。創業年は一次情報で確認できなかったため記載していない(未確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Trattoria%20%E3%83%AD%E3%83%9E%E3%83%BC%E3%83%8E%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%96%B0%E5%B8%82%E7%94%BA%E6%96%B0%E5%B8%82322-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000527886/">ホットペッパーグルメ Trattoria ロマーノ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ000527886/photo/">ホットペッパーグルメ Trattoria ロマーノ 写真ギャラリー(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-lardoise">
+<img class="hero" src="img/fukuyama/fukuyama-lardoise.jpg" alt="L'ardoise(ラルドワーズ) 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>L'ardoise(ラルドワーズ)<span class="yomi">らるどわーず</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市北部の御幸町にあるフランス料理店。フランス・東京・神戸で修業したシェフ藤井文雄が地元に戻って開いた店で、材料は瀬戸内の漁師から直接仕入れる旬の魚介、無農薬・有機栽培の地元野菜、三原市の梶谷農園のハーブ、岡山県笠岡市うねめファームのもみじ鶏の卵を使う。パンは自家製天然酵母と国産小麦で毎日焼く。昼夜ともコース中心で、32席。14時から16時はカフェタイム。</div>
+<div class="sig"><b>一皿:</b>瀬戸内海産サワラのホワイヨ風(瀬戸内でとれたサワラを使い、鱗状に薄切りの具を重ねて焼くフランス料理の技法で仕上げた魚料理)／ラルドワーズコース 全8品(アミューズ、冷野菜と温野菜の2種の前菜、魚料理、肉料理などを組んだ夜のコース。5,750円 税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜14:00(L.O.13:00)／カフェ 14:00〜16:00(L.O.15:30)／ディナー 18:00〜21:00(L.O.20:00)</td></tr>
+<tr><th>定休日</th><td class="off">木曜、第3水曜</td></tr>
+<tr><th>住所</th><td>広島県福山市御幸町上岩成455-3</td></tr>
+<tr><th>予約</th><td>可(フルコースは要予約) — <a href="tel:0849727689">☎ 084-972-7689</a> ／ <a href="http://lardoise.tv/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の条件である瀬戸内の食材を、店側が一次情報で明示している店。公式サイトの「こだわり」に、瀬戸内の漁師から直接仕入れる旬の魚介、無農薬・有機栽培の地元野菜、三原市の梶谷農園のハーブ、笠岡市のもみじ鶏の卵と、仕入れ先まで書かれている。地元資本の単独店。営業の根拠＝公式サイト(2026-10-13 取得・200応答)で営業時間・定休日・コース価格が現行として掲載され、お知らせ欄に2026年7月付の記事がある。あわせてホットペッパーグルメの掲載ページ(同日取得)も確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=L%27ardoise%28%E3%83%A9%E3%83%AB%E3%83%89%E3%83%AF%E3%83%BC%E3%82%BA%29%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%BE%A1%E5%B9%B8%E7%94%BA%E4%B8%8A%E5%B2%A9%E6%88%90455-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://lardoise.tv/concept/">L'ardoise 公式サイト コンセプト(2026-10-13 取得)</a> / <a href="https://lardoise.tv/access/">L'ardoise 公式サイト アクセス・営業時間(2026-10-13 取得)</a> / <a href="http://lardoise.tv/menu">L'ardoise 公式サイト メニュー(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ004512001/">ホットペッパーグルメ ラルドワーズ(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-t8-tomonoura">
+<img class="hero" src="img/fukuyama/fukuyama-t8-tomonoura.jpg" alt="T8 TOMONOURA 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>T8 TOMONOURA<span class="yomi">てぃーえいと とものうら</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">鞆の浦の港町にある、築120年の古民家を使ったイタリアン・スペインバル。広島県産の牡蠣を使ったパスタやピザ、ペスカトーレなど瀬戸内の魚介を軸にした料理と、江戸期から鞆で造られてきた薬味酒「保命酒(ほうめいしゅ)」を合わせる。保命酒は4種の飲み比べがあり、保命酒を使ったチーズケーキもある。20席の小さな店で、昼は土日のみ15時まで通しで営業。</div>
+<div class="sig"><b>一皿:</b>広島県産牡蠣と海鮮ペペロンチーノ(広島県産の牡蠣と魚介を唐辛子とにんにくのオイルで和えたパスタ)／保命酒4種飲み比べ(鞆の浦で江戸期から造られてきた、みりんに生薬を漬け込んだ薬味酒。4種類を少量ずつ飲み比べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜金 11:00〜14:00(料理L.O.13:30、ドリンクL.O.13:30)／18:00〜21:00(料理L.O.20:30、ドリンクL.O.20:30)。土・日 11:00〜15:00(料理L.O.14:30)／18:00〜21:00(料理L.O.20:30)</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>広島県福山市鞆町鞆435-5</td></tr>
+<tr><th>予約</th><td>可(ネット予約あり) — <a href="tel:07010669280">☎ 070-1066-9280</a> ／ <a href="https://www.instagram.com/tomonoura.t8/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章で散らすことになっている町のかたまりのうち、鞆の浦に当たる一軒。鞆の浦の名産である保命酒と、広島県産の牡蠣など瀬戸内の魚介を実際に品書きに載せており、瀬戸内の食材という条件にも合う。築120年の古民家を使う地元資本の個人店で、全国チェーンではない。営業の根拠＝ホットペッパーグルメの掲載ページ(2026-10-13 取得)で、ページ内のネット予約カレンダーが2026年10月14日以降の空席を日ごとに表示している。公式Instagramも掲載されているが、取得時は混雑のため応答を得られなかった(未確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=T8%20TOMONOURA%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86435-5">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ004025306/">ホットペッパーグルメ T8 TOMONOURA(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ004025306/photo/">ホットペッパーグルメ T8 TOMONOURA 写真ギャラリー(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-bistro-bontore">
+<img class="hero" src="img/fukuyama/fukuyama-bistro-bontore.jpg" alt="ビストロボントレ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>ビストロボントレ<span class="yomi">びすとろぼんとれ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市南部、芦田川の河口近くの西新涯町にある洋食店。黒毛和牛のハンバーグ、デミグラスソースのオムライス、牛かつ、牛すじ肉の黒カレーなど洋食の定番をそろえ、A4〜A5等級の黒毛和牛のステーキも単品で出す。土日は11時から21時30分まで通しで営業し、17時30分からディナーメニューに替わる。51席でテーブルとカウンターがあり、全席禁煙。駐車場が広く車で行きやすい。</div>
+<div class="sig"><b>一皿:</b>黒毛和牛ハンバーグ160g(黒毛和牛の挽き肉で焼いた看板のハンバーグ)／オムライス デミグラスソース(卵で包んだライスにデミグラスソースをかけた一皿。トッピングを足せる)／牛かつ(牛肉に衣を付けて揚げたカツ。100g・150g・200gから選ぶ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜水・金・祝日・祝前日 11:00〜15:00(料理L.O.14:30、ドリンクL.O.14:30)／17:30〜21:30(料理L.O.21:00、ドリンクL.O.21:00)。土・日 11:00〜21:30(料理L.O.21:00)で通し営業、17:30からディナーメニュー</td></tr>
+<tr><th>定休日</th><td class="off">木曜(祝日の場合は営業)</td></tr>
+<tr><th>住所</th><td>広島県福山市西新涯町1-2-31</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0849542592">☎ 084-954-2592</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の条件にあるハンバーグ・オムライス・カツ・カレーの4つを、いずれも品書きに持っている数少ない店。福山駅周辺から離れた南部の郊外にあり、駐車場を備えて車で行ける立地という点でも他の店と役割が重ならない。地元資本の単独店で全国チェーンではない。営業の根拠＝ホットペッパーグルメの掲載ページと写真ギャラリー(いずれも2026-10-13 取得)に現行の営業時間・定休日・単品価格が掲載されている。創業年は一次情報で確認できなかったため記載していない(未確認)。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%E3%83%9C%E3%83%B3%E3%83%88%E3%83%AC%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E8%A5%BF%E6%96%B0%E6%B6%AF%E7%94%BA1-2-31">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001273876/">ホットペッパーグルメ ビストロボントレ(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ001273876/photo/">ホットペッパーグルメ ビストロボントレ 写真ギャラリー(2026-10-13 取得)</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-tonchanya">
+<img class="hero" src="img/fukuyama/fukuyama-tonchanya.jpg" alt="韓国創作料理 とんちゃんや 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>韓国創作料理 とんちゃんや<span class="yomi">かんこくそうさくりょうり とんちゃんや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市西部の松永にある韓国料理店。サムギョプサル、カムジャタン、スンドゥブといった韓国の定番料理を昼夜とも出し、夜は飲み放題付きの宴会コースとマッコリも用意する。54席と広く、1人でも入れる席から宴会の席まである。昼は11時から14時30分、夜は17時から22時までの二部制。全席禁煙で、店外に喫煙場所がある。</div>
+<div class="sig"><b>一皿:</b>サムギョプサル(豚バラ肉を鉄板で焼き、サンチュなどの葉野菜に包んで食べる韓国料理)／カムジャタン(豚の背骨とじゃがいもを唐辛子だれで煮込んだ韓国の鍋料理)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日・祝日・祝前日 11:00〜14:30／17:00〜22:00(料理L.O.21:15、ドリンクL.O.21:30)</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>広島県福山市松永町6-10-31 2F</td></tr>
+<tr><th>予約</th><td>可 — <a href="tel:0849341231">☎ 084-934-1231</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で散らすことになっている町のかたまりのうち松永に当たり、かつ洋食・イタリアンに偏った構成のなかでアジア系を担う一軒。松永駅から歩けて駐車場もあり、1人の食事から宴会まで受けられる規模。地元資本の単独店で、全国チェーンではない。営業の根拠＝ホットペッパーグルメの掲載ページと写真ギャラリー(いずれも2026-10-13 取得)に現行の営業時間・定休日・予算が掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E5%89%B5%E4%BD%9C%E6%96%99%E7%90%86%20%E3%81%A8%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%E3%82%84%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E6%9D%BE%E6%B0%B8%E7%94%BA6-10-31%202F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ001007062/">ホットペッパーグルメ 韓国創作料理 とんちゃんや(2026-10-13 取得)</a> / <a href="https://www.hotpepper.jp/strJ001007062/photo/">ホットペッパーグルメ 韓国創作料理 とんちゃんや 写真ギャラリー(2026-10-13 取得)</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・甘味</h2>
+<div class="card" id="c-fukuyama-cafe-toyota-coffee">
+<img class="hero" src="img/fukuyama/fukuyama-cafe-toyota-coffee.jpg" alt="とよた珈琲店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>とよた珈琲店<span class="yomi">とよたこーひーてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">福山駅のすぐ南、伏見町にある自家焙煎の喫茶店。公式サイトは「光サイフォンで抽出した香り豊かな自家焙煎珈琲」を看板に掲げる。長いカウンター席の上に光サイフォンが並び、奥にテーブル席とソファ席がある。モーニング・ランチ・ワッフル・サンドウィッチの各メニューがあり、焙煎した豆の通信販売も行う。店主は店内の棚に並ぶ多数のコーヒーカップから一客を選んで出す。</div>
+<div class="sig"><b>一皿:</b>光サイフォン抽出の自家焙煎ブレンド(ハロゲンランプの熱でお湯を上げるサイフォン式の抽出器で一杯ずつ淹れるコーヒー。豆は店で焙煎する)／ワッフル(注文を受けてから焼く厚手のワッフル。バナナチョコレート・抹茶などがある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜19:00（ラストオーダーの表記は公式サイトになく未確認）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>広島県福山市伏見町4-40</td></tr>
+<tr><th>予約</th><td>未確認（公式サイトに予約の案内なし） — <a href="tel:0849263363">☎ 084-926-3363</a> ／ <a href="https://toyotacoffee.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイト（toyotacoffee.jp）に住所・電話・営業時間・定休日と、2026年10月の休業日カレンダーが掲載されており、現在も営業していることを確認した（2026-10-13 取得）。自家焙煎と光サイフォンという特徴も同サイトの記載による。個人経営でチェーンではない。福山駅前（伏見町）の章の1軒。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%88%E3%81%9F%E7%8F%88%E7%90%B2%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E4%BC%8F%E8%A6%8B%E7%94%BA4-40">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toyotacoffee.jp）より引用 / 参照元: <a href="https://toyotacoffee.jp/">とよた珈琲店 公式サイト トップページ（2026年10月の営業カレンダー掲載／2026-10-13 取得）</a> / <a href="https://toyotacoffee.jp/thinking/">とよた珈琲店 公式サイト コーヒーへの思い（2026-10-13 取得）</a> / <a href="https://toyotacoffee.jp/menu/waffle/">とよた珈琲店 公式サイト ワッフルメニュー（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-cafe-luna-motomachi">
+<img class="hero" src="img/fukuyama/fukuyama-cafe-luna-motomachi.jpg" alt="純喫茶ルナ 元町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>純喫茶ルナ 元町店<span class="yomi">じゅんきっさるなもとまちてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1956年（昭和31年）創業の純喫茶。福山の自家焙煎コーヒー専門店「むらかみコーヒー」の直営店で、同社専属のクラシフィカドール（ブラジル政府公認のコーヒー鑑定士）が毎朝焙煎した豆を使う。店内は吹き抜けの螺旋階段に大きなシャンデリアが下がり、黒い木組みの柱と赤いソファが並ぶ洋風レトロな造り。入口には創業年の「1956」を記した飾りが掲げられている。3階は平日14時以降に貸し出す。全席禁煙。</div>
+<div class="sig"><b>一皿:</b>プリントップ(やわらかく炊いた自家製プリンに自家製ソフトクリームを重ね、下にフルーツとゼリーを隠したプリンパフェ。親子三代の常連がいる看板品)／コンビワッフル(イチゴとバナナを挟んだワッフルにミニソフトクリームとコーヒーが付くセット)</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:30〜20:00（ラストオーダーの記載なし＝未確認）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>広島県福山市元町12-8</td></tr>
+<tr><th>予約</th><td>不要（3階の打ち合わせ利用のみ要予約） — <a href="tel:0849231758">☎ 084-923-1758</a> ／ <a href="http://www.luna1956.com/motomachi.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>運営元むらかみコーヒーの公式サイト（luna1956.com）の店舗ページに、住所・電話・営業時間・定休日と「1956年誕生」「店舗内全面禁煙となりました」の現況が記載されている（2026-10-13 取得）。創業年は同ページの記述と、同ページ掲載の店内写真に写る『1956』の飾りで裏づけた。福山市内に元町店・曙店の2店と豆売りの本店を持つ地元資本で、全国チェーンではない。老舗純喫茶の1軒目、かつ自家焙煎の店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E5%96%AB%E8%8C%B6%E3%83%AB%E3%83%8A%20%E5%85%83%E7%94%BA%E5%BA%97%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%85%83%E7%94%BA12-8">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.luna1956.com）より引用 / 参照元: <a href="http://www.luna1956.com/motomachi.html">むらかみコーヒー 公式サイト ルナ元町店（2026-10-13 取得）</a> / <a href="http://www.luna1956.com/">むらかみコーヒー 公式サイト トップ（自家焙煎・コーヒー鑑定士の記載／2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-cafe-fukatsuya-tomonoura">
+<img class="hero" src="img/fukuyama/fukuyama-cafe-fukatsuya-tomonoura.jpg" alt="民芸茶処 深津屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>民芸茶処 深津屋<span class="yomi">みんげいちゃどころふかつや</span></div>
+<div class="chips"><span class="chip local">地元密着</span></div>
+<div class="desc">鞆の浦の古い町並みの中にある茶房。築150年ほどの町家を改築した純和風の店で、隣接する江戸時代創業の船具店「澤村船具店」の屋号を店名にしている。黒い梁と柱、明治期に使われた自転車や蓄音機、裸電球が残る店内で、炭焼きコーヒーと抹茶の甘味を出す。映画『崖の上のポニョ』の制作で鞆の浦に滞在した宮崎駿監督が炭焼きコーヒーを好んで注文したと伝えられる。陶器や民芸品、絵はがきの販売もしている。</div>
+<div class="sig"><b>一皿:</b>宇治金時ミルク(かき氷に宇治抹茶の蜜と粒あん、練乳をかけた夏の甘味。800円)／ぜんざい(小豆を炊いた温かい汁に餅を入れた冬の甘味。750円)／炭焼きコーヒー(炭火で焙煎した豆で淹れるコーヒー)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:30〜17:00（時期により異なる。『鞆物語』の掲載は9:00〜17:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>広島県福山市鞆町鞆852</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:0849821006">☎ 084-982-1006</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鞆の浦の地域情報サイト『鞆物語』の店舗ページで住所・電話・営業時間・定休日と店の由来を確認し、昭文社『まっぷるウェブ』の鞆の浦カフェ・喫茶スポット一覧でも現行の価格（ブレンドコーヒー480円、宇治金時ミルク800円、ぜんざい750円）と営業時間9:30〜17:00が掲載されていることを確認した（いずれも2026-10-13 取得）。和菓子・甘味の茶房の枠として選定。鞆の浦の2軒のうち和の甘味側。写真は実写2点のみ（外観写真は候補から除外）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B0%91%E8%8A%B8%E8%8C%B6%E5%87%A6%20%E6%B7%B1%E6%B4%A5%E5%B1%8B%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86852">Googleマップで開く</a>
+<div class="src">写真: 鞆物語（鞆の浦の地域情報サイト）（tomonoura.life）より引用 / 参照元: <a href="https://tomonoura.life/gourmet/12632/">鞆物語（鞆の浦のローカル情報サイト）民芸茶処 深津屋（2026-10-13 取得）</a> / <a href="https://www.mapple.net/region/a0602090800_g03040100/spot/">まっぷるウェブ 鞆の浦のカフェ・喫茶スポット一覧（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-cafe-tomonoura-a-cafe">
+<img class="hero" src="img/fukuyama/fukuyama-cafe-tomonoura-a-cafe.jpg" alt="鞆の浦@cafe 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>鞆の浦@cafe<span class="yomi">とものうらあっとかふぇ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">鞆の浦のシンボルである常夜燈のすぐ前に建つカフェ。築150年ほどの長屋をそのまま生かした造りで、天井が高く、観葉植物を多く置いた明るい店内に20席（テーブル席とソファ席）がある。窓の外は瀬戸内海で、天気のよい日は店前のテラス席も使える。ブレンドコーヒー400円、ベーコン・レタス・トマトのサンドウィッチのほか、パスタやパンナコッタ、パフェなどの軽食とスイーツを出す。</div>
+<div class="sig"><b>一皿:</b>ブレンドコーヒー(鞆港を眺めながら飲む一杯。400円)／ベーコンとレタスとトマトのサンドセット(前菜とコーヒーが付くサンドイッチのセット。1,100円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜18:00（料理ラストオーダー17:30）※『鞆物語』は11:00〜19:30、まっぷるは11:00〜17:00と記載しており情報に幅がある</td></tr>
+<tr><th>定休日</th><td class="off">水曜日（水曜が祝日の場合は木曜）</td></tr>
+<tr><th>住所</th><td>広島県福山市鞆町鞆844-3</td></tr>
+<tr><th>予約</th><td>一部可（ネット予約は現在受付停止。夜のみ10名以上で貸切可・要相談） — <a href="tel:0849820131">☎ 084-982-0131</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページで住所・営業時間・定休日・総席数20席・ソファー席ありを確認し、同ページに2026年9月20日・2026年4月16日投稿の来店口コミがあることから現在も営業していると判断した（2026-10-13 取得）。鞆の浦のローカル情報サイト『鞆物語』の同店ページ（築150年の長屋、座席20席のテーブル席、電話番号）も併せて確認した。鞆の浦の2軒のうち珈琲側。個人店でチェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9E%86%E3%81%AE%E6%B5%A6%40cafe%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86844-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000887479/">ホットペッパーグルメ 鞆の浦@cafe（口コミ最終 2026-09-20／2026-10-13 取得）</a> / <a href="https://tomonoura.life/gourmet/12630/">鞆物語（鞆の浦のローカル情報サイト）鞆の浦 a cafe（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-cafe-kissa-fine-matsunaga">
+<img class="hero" src="img/fukuyama/fukuyama-cafe-kissa-fine-matsunaga.jpg" alt="喫茶 FINE 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>喫茶 FINE<span class="yomi">きっさふぁいん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市西部の松永エリアにある喫茶店。朝8時から開き、平日と土曜は15時まで、日曜は11時30分までの営業で、1日の前半だけ店を開ける昔ながらの町の喫茶。20席のこぢんまりした店内は窓から光が入り、観葉植物が多く置かれている。コーヒーか紅茶が選べるモーニングと、豆腐入りハンバーグなど4種類のボリュームのある日替わりランチが中心。駐車場あり、全席喫煙可。</div>
+<div class="sig"><b>一皿:</b>ホットドッグのモーニング(カレー風味の玉ねぎとウインナー、卵を挟んだホットドッグにサラダとドリンクが付く。580円)／日替わり定食(豆腐入りハンバーグに玉ねぎとりんごとブラックペッパーの和風ソースをかけた一皿など。730円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝前日 8:00〜15:00／日曜 8:00〜11:30</td></tr>
+<tr><th>定休日</th><td class="off">祝日</td></tr>
+<tr><th>住所</th><td>広島県福山市南松永町3-9-20</td></tr>
+<tr><th>予約</th><td>不要</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページで住所・営業時間・定休日・総席数20席・駐車場ありを確認した（2026-10-13 取得）。同日に取得したホットペッパーの福山市カフェ・スイーツ一覧にも掲載が続いており、閉店の告知は見当たらなかった。松永（市西部）の枠として選定。個人店でチェーンではない。電話番号は掲載ページで非表示のため未確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%20FINE%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%8D%97%E6%9D%BE%E6%B0%B8%E7%94%BA3-9-20">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ000529723/">ホットペッパーグルメ 喫茶 FINE（2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/SA74/Y620/G014/">ホットペッパーグルメ 福山市のカフェ・スイーツ一覧（掲載継続を確認／2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-cafe-conoks-higashifukuyama">
+<img class="hero" src="img/fukuyama/fukuyama-cafe-conoks-higashifukuyama.jpg" alt="conoks（コノクス） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>conoks（コノクス）<span class="yomi">このくす</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">東福山駅のすぐ北にある60席のカフェ。店内に小さなケーキ屋を併設し、季節のフルーツを使ったパフェ・タルト・ワッフルと、オリジナルのバスクチーズケーキを看板にしている。食事は自家製パンチェッタのカルボナーラ、9種類のスパイスを使ったバターチキンカレー、キッシュとスープのプレートなど。米粉だけで焼くタルト生地やグルテンフリーのメニューもある。土曜のみ22時まで営業。全席禁煙、駐車場あり。</div>
+<div class="sig"><b>一皿:</b>オリジナルバスクチーズケーキ(スペイン・バスク地方発祥の、表面を高温で焦がして焼くチーズケーキ。中はとろりとした半生の食感)／季節のパフェ(旬の果物を使い中身が季節ごとに変わるパフェ。いちご・ほうじ茶・クラシックプリンなどの通年の品もある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜金・日・祝 11:00〜18:00（料理L.O.17:00／ドリンクL.O.17:00）、土 11:00〜22:00（料理L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>広島県福山市引野町1-15-2</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約と電話） — <a href="tel:0849998780">☎ 084-999-8780</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの掲載ページで住所・営業時間・定休日・総席数60席・駐車場ありを確認し、2026年10月10日来店の口コミが投稿されていることから現在も営業していると判断した（2026-10-13 取得）。電話番号は同ページの構造化データ（schema.org Restaurant）の telephone から取得。東福山（市東部）の枠として選定。個人店でチェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=conoks%EF%BC%88%E3%82%B3%E3%83%8E%E3%82%AF%E3%82%B9%EF%BC%89%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E5%BC%95%E9%87%8E%E7%94%BA1-15-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.hotpepper.jp/strJ003694070/">ホットペッパーグルメ conoks コノクス（口コミ最終 2026-10-10／2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ003694070/photo/">ホットペッパーグルメ conoks コノクス 写真ギャラリー（2026-10-13 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-cafe-torodo-tomonoura">
+<img class="hero" src="img/fukuyama/fukuyama-cafe-torodo-tomonoura.jpg" alt="茶房 とうろどう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>茶房 とうろどう<span class="yomi">さぼうとうろどう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">鞆の浦のシンボル常夜燈のすぐそばにある喫茶。「とうろどう」は常夜燈の古い呼び名。店主が定年後に妻の故郷である鞆へ移り、江戸時代中頃まで茶室として使われた古民家を2年かけて改修し、2005年に開いた。自家焙煎した豆をネルドリップで淹れるコーヒーが看板。店内は骨董品と、井伏鱒二・土屋文明ら鞆ゆかりの文学者の資料を並べた文学資料館を兼ねる。店先の石畳にもテーブル席が出る。</div>
+<div class="sig"><b>一皿:</b>自家焙煎コーヒー(店で焙煎した豆を、ネルドリップ＝布の濾し器で一杯ずつ落として淹れるコーヒー。アイス450円・ホット450〜500円)／鞆ノ津スカッシュ(生のレモン、または鞆の名産である保命酒(ほうめいしゅ＝薬味酒)を炭酸で割った自家製のスカッシュ。カステラが付く)／ぜんざい(小豆を炊いた温かい汁に餅を入れた甘味。500円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:30〜17:00（『鞆物語』は「9:00〜夕方」と記載。ラストオーダーの表記はどちらにもなく未確認）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（土曜・日曜は必ず営業）</td></tr>
+<tr><th>住所</th><td>広島県福山市鞆町鞆843</td></tr>
+<tr><th>予約</th><td>不要 — <a href="tel:09080667009">☎ 090-8066-7009</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鞆の浦の観光公式サイト『VISIT鞆の浦』（日本遺産鞆の浦魅力発信協議会・事務局は福山市文化振興課）の「食べる」一覧に現在も掲載されていることを2026-10-15に確認し、同サイトの店舗ページから住所・電話・営業時間9:30〜17:00・価格（自家焙煎アイスコーヒー450円、ぜんざい500円ほか）を取得した。営業が続いていることの日付のある裏づけとして、Yahoo!マップの同店ページに2024年12月4日（テラス席でレモンスカッシュ）と2023年4月1日（鞆ノ津スカッシュ）の来店クチコミがあることを確認した（2026-10-15 取得）。2005年の開店、古民家の改修、自家焙煎ネルドリップ、文学資料館を兼ねる点はローカル情報サイト『鞆物語』の同店ページによる。鞆の浦3軒のうち自家焙煎の珈琲側。個人店でチェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E6%88%BF%20%E3%81%A8%E3%81%86%E3%82%8D%E3%81%A9%E3%81%86%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E9%9E%86%E7%94%BA%E9%9E%86843">Googleマップで開く</a>
+<div class="src">写真: 鞆物語（鞆の浦の地域情報サイト）（tomonoura.life）より引用 / 参照元: <a href="https://visittomonoura.com/items/torodo/">VISIT鞆の浦（日本遺産鞆の浦魅力発信協議会の公式サイト）とうろどう（2026-10-15 取得）</a> / <a href="https://visittomonoura.com/meal/">VISIT鞆の浦 「食べる」一覧（掲載継続を確認／2026-10-15 取得）</a> / <a href="https://tomonoura.life/gourmet/12625/">鞆物語（鞆の浦のローカル情報サイト）茶房 とうろどう（2026-10-15 取得）</a> / <a href="https://map.yahoo.co.jp/place?gid=sPqtyy7XkRw">Yahoo!マップ 茶房 とうろどう（来店クチコミ 2024-12-04・2023-04-01／2026-10-15 取得）</a></div>
+</div></div>
+<div class="card" id="c-fukuyama-cafe-kazenotokei-minoshima">
+<img class="hero" src="img/fukuyama/fukuyama-cafe-kazenotokei-minoshima.jpg" alt="風の時計 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>風の時計<span class="yomi">かぜのとけい</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">福山市南部の箕島町にある74席のカフェ。大きな窓とウッドデッキのテラス席から瀬戸内海を見渡せる。コーヒーは「空」「海」「風」「時計」の4種のオリジナルブレンドで、うち「風」は福山市赤坂町のセガールビーンズ、「時計」は市内水呑町のルカドードゥデュという焙煎所に作らせている。店内はギャラリーを兼ね、全国の作家の絵画や人形を展示販売する。2階はレンタルルーム、敷地内に海の見えるドッグランがある。</div>
+<div class="sig"><b>一皿:</b>4種のオリジナルブレンド珈琲(「空」「海」「風」「時計」の4種。森修焼のカップで出す)／鉄板焼きカレー(国産玉ねぎ・無臭にんにく・国産牛を煮込んだオリジナルカレーを鉄板で供する一皿。玉子・ナン・チーズから1種を選べる)／ワッフル(熱した鉄板にのせて出すワッフル。冷たいアイスクリームを添える)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜17:00（ラストオーダー16:30）。ランチは11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜日・金曜日（祝日を除く）</td></tr>
+<tr><th>住所</th><td>広島県福山市箕島町6585</td></tr>
+<tr><th>予約</th><td>可（公式サイトとホットペッパーグルメのネット予約） — <a href="tel:0849713580">☎ 084-971-3580</a> ／ <a href="https://www.kazenotokei.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイト（kazenotokei.com）の店舗情報ページで住所・電話・営業時間・定休日・席数74席・駐車場を確認し、トップページに9月・10月・11月の営業スケジュールが掲示されていることから現在も営業していると判断した（2026-10-13 取得）。ホットペッパーグルメの掲載ページでもネット予約を受け付けている。市南部の郊外の枠として選定。個人経営でチェーンではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A2%A8%E3%81%AE%E6%99%82%E8%A8%88%20%E5%BA%83%E5%B3%B6%E7%9C%8C%E7%A6%8F%E5%B1%B1%E5%B8%82%E7%AE%95%E5%B3%B6%E7%94%BA6585">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 参照元: <a href="https://www.kazenotokei.com/company.html">風の時計 公式サイト 店舗情報（2026-10-13 取得）</a> / <a href="https://www.kazenotokei.com/about.html">風の時計 公式サイト CONCEPT（4種のブレンド珈琲の記載／2026-10-13 取得）</a> / <a href="https://www.hotpepper.jp/strJ003596001/">ホットペッパーグルメ 風の時計（2026-10-13 取得）</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年10月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>
