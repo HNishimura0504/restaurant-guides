@@ -116,6 +116,7 @@
 | オランダ | ロッテルダム（巻末に「キンデルダイク風車群周辺」の節・6店を含む） | 51 | [europe/netherlands/](europe/netherlands/) |
 | ドイツ | ケルン | 37 | [europe/germany/](europe/germany/) |
 | ドイツ | フランクフルト | 37 | [europe/germany/](europe/germany/) |
+| ドイツ | ハイデルベルク | 46 | [europe/germany/](europe/germany/) |
 | フランス | パリ | 36 | [europe/france/](europe/france/) |
 | フランス | モン・サン＝ミシェルと湾岸 | 44 | [europe/france/](europe/france/) |
 | ルクセンブルク | ルクセンブルク市 | 45 | [europe/luxembourg/](europe/luxembourg/) |
