@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ポツダム の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>ポツダム の食べ歩き地図<span class="n">46店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="ポツダム の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">ポツダム の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../europe/germany/potsdam.html"><span class="sn-e">📄</span>ポツダムのガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（98都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "Zum Fliegenden Holländer", "c": ["ご当地名物", "洋食・各国料理"], "v": "ベーカリー・パティスリー", "lat": 52.4030845, "lng": 13.0603075, "d": "ガンス(鵞鳥のもも肉のロースト。自家製グレイビー・赤キャベツ・ケール・ジャガイモ団子付き。1人前36.50ユーロ、丸ごとはテーブルで切り分けて4人前169ユーロ)／ハルベ・ラントエンテ(地鴨半羽。胸肉のコンフィともも肉に赤キャベツとジャガイモ団子。32ユーロ)／ブランデンブルガー・ヴュルツフライシュ(放し飼い鶏のクリーム煮をココットで焼く東独以来の定番前菜)", "a": "Benkertstraße 5, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Zum%20Fliegenden%20Holl%C3%A4nder%20Benkertstra%C3%9Fe%205%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-zum-fliegenden-hollaender", "food": "../europe/germany/img/potsdam/potsdam-zum-fliegenden-hollaender.jpg", "ext": ""}, {"i": 1, "n": "Kades Restaurant „Am Pfingstberg“", "c": ["ご当地名物"], "v": "レストラン", "lat": 52.4212536, "lng": 13.0623787, "d": "カーデス・ヴィルジングルラーデ(ちりめんキャベツで豚挽き肉を巻いた煮込み。ベーコンソースとジャガイモ添え。19.90ユーロ)／フリッシュリングスケウレの煮込み(フレーミング地方産の若い猪のもも肉のロースト。コケモモ・リンゴ入り赤キャベツ・テューリンゲン風ジャガイモ団子添え。28.50ユーロ)／フォレレ・ミュラリン風(鱒のムニエル。キュウリのサラダとジャガイモ添え。25.50ユーロ)", "a": "Große Weinmeisterstraße 43b, 14469 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Kades%20Restaurant%20%E2%80%9EAm%20Pfingstberg%E2%80%9C%20Gro%C3%9Fe%20Weinmeisterstra%C3%9Fe%2043b%2C%2014469%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-kades-am-pfingstberg", "food": "../europe/germany/img/potsdam/potsdam-kades-am-pfingstberg.jpg", "ext": ""}, {"i": 2, "n": "Restaurant Otto Hiemke", "c": ["ご当地名物", "洋食・各国料理"], "v": "レストラン", "lat": 52.3962669, "lng": 13.0964863, "d": "ブレッテ・ミット・シュモアグルケン(肉団子に、煮込んだキュウリのクリーム煮を添える「ヒームケ風」。16.30ユーロ)／ヒンメル・ウント・エアデ(焼いた血のソーセージにリンゴ・玉ねぎ・マッシュポテトを重ねる「天と地」。16.90ユーロ)／シュヴァイネレーバー・アルトベルリーナー・アート(豚レバーのソテーにリンゴと玉ねぎ、マッシュポテト。18.50ユーロ)", "a": "Karl-Gruhl-Straße 55, 14482 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Otto%20Hiemke%20Karl-Gruhl-Stra%C3%9Fe%2055%2C%2014482%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-otto-hiemke", "food": "../europe/germany/img/potsdam/potsdam-otto-hiemke.jpg", "ext": ""}, {"i": 3, "n": "Höfts in der Villa Kellermann", "c": ["ご当地名物", "洋食・各国料理"], "v": "カフェ", "lat": 52.408236, "lng": 13.0711699, "d": "ケーニヒスベルガー・ヴィルトクロプセ(ブランデンブルク産のジビエ肉団子をケッパーの白いソースで煮る。自家製マッシュポテト付き。25ユーロ)／ロートヴィルトグーラッシュ(ブランデンブルク産アカシカの煮込み。シュペッツレ・赤キャベツ・コケモモ添え。29ユーロ)／カルプスレーバー・ベルリン風(仔牛レバーのソテーに炒めたリンゴと玉ねぎ。29ユーロ)", "a": "Mangerstraße 34, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=H%C3%B6fts%20in%20der%20Villa%20Kellermann%20Mangerstra%C3%9Fe%2034%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-hoefts", "food": "../europe/germany/img/potsdam/potsdam-hoefts.jpg", "ext": ""}, {"i": 4, "n": "Fischrestaurant Der Butt", "c": ["ご当地名物"], "v": "レストラン", "lat": 52.4013444, "lng": 13.0555533, "d": "ハーフェル・アール(ハーフェル川の鰻。根菜のスープで煮てディルソースを添える「グリュン」か、焼いてジャガイモのソテーと食べる。32ユーロ)／ハーフェルレンダー・フィッシュテラー(パイクパーチ・ナマズ・鱒のフィレの盛り合わせ。ハーブソースとパセリポテト。31ユーロ)／レーゲンボーゲンフォレレ・ブラウ(ニジマスを酢を加えた湯で青く煮る伝統料理。西洋わさびクリーム添え。26.50ユーロ)", "a": "Gutenbergstraße 25, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Fischrestaurant%20Der%20Butt%20Gutenbergstra%C3%9Fe%2025%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-der-butt", "food": "../europe/germany/img/potsdam/potsdam-der-butt.jpg", "ext": ""}, {"i": 5, "n": "Kongsnæs Restaurant & Bar", "c": ["ご当地名物"], "v": "ベーカリー・パティスリー", "lat": 52.4154256, "lng": 13.0843279, "d": "シュパーゲル(春のクレメン産白アスパラガス。2027年は3月末〜6月末)／エンテンブラーテン(待降節とクリスマスの鴨のロースト。手で丸めたジャガイモ団子・赤キャベツ・ケール・栗添え)／ヴィーナー・シュニッツェル(仔牛のカツレツをラードで揚げる。34.50ユーロ)", "a": "Schwanenallee 7d, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Kongsn%C3%A6s%20Restaurant%20%26%20Bar%20Schwanenallee%207d%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-kongsnaes", "food": "../europe/germany/img/potsdam/potsdam-kongsnaes.jpg", "ext": ""}, {"i": 6, "n": "Anna Amalia Restaurant mit Seeterrasse", "c": ["ご当地名物"], "v": "レストラン", "lat": 52.361587, "lng": 13.007437, "d": "ゲンゼブラーテン(鵞鳥のロースト。赤キャベツかケール、ジャガイモかジャガイモ団子付き。要予約で47.90ユーロ、2026年11月11日から)／ファルシャー・ハーゼ(ゆで卵を包んだミートローフ「偽のウサギ」。マッシュルームのクリームソース。17.90ユーロ)／ショレ・フィンケンヴェルダー風(カレイをベーコンと玉ねぎで焼く北ドイツの料理。28.50ユーロ)", "a": "An der Pirschheide 41, 14471 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Anna%20Amalia%20Restaurant%20mit%20Seeterrasse%20An%20der%20Pirschheide%2041%2C%2014471%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-anna-amalia", "food": "../europe/germany/img/potsdam/potsdam-anna-amalia.jpg", "ext": ""}, {"i": 7, "n": "Restaurant Loft", "c": ["ご当地名物"], "v": "食材の店", "lat": 52.4005892, "lng": 13.0569692, "d": "プロイシッシェス・グーラッシュ(大きく切った牛肉を地元の根菜と煮込み、フリードリヒ大王時代の香辛料とグーズベリーで仕上げる店の名物。ジャガイモ団子と自家製赤キャベツ付き。24.90ユーロ)／ヴュルツフライシュ(七面鳥と豚肉の白ワイン煮込みをチーズで焼く前菜。12.90ユーロ)", "a": "Brandenburger Straße 30-31, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Loft%20Brandenburger%20Stra%C3%9Fe%2030-31%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-loft", "food": "../europe/germany/img/potsdam/potsdam-loft.jpg", "ext": ""}, {"i": 8, "n": "Gasthausbrauerei Meierei im Neuen Garten", "c": ["ビール・バー"], "v": "レストラン", "lat": 52.422084, "lng": 13.0696526, "d": "マイエライ・ヘル(Meierei Hell。通年で出す自家醸造の淡色ラガー。アルコール5.2%で苦味が控えめ)／ヴァイセ(Die Weisse。シロップで割らずに飲める、昔のレシピで造る酸味のあるベルリン風白ビール)／アイスバイン・ベルリナー・アート(Eisbein „Berliner Art“。塩漬けにした豚すね肉をゆでたベルリン名物。ザワークラウトとえんどう豆のピュレ添え。22ユーロ)／ブラウアース・グリルハクセ(Brauers Grillhaxe。木曜限定、皮をパリッと焼いた豚すね肉の丸焼き。自家製ヘル0.5Lが付いて17.50ユーロ)", "a": "Im Neuen Garten 10, 14469 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Gasthausbrauerei%20Meierei%20im%20Neuen%20Garten%20Im%20Neuen%20Garten%2010%2C%2014469%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-meierei-im-neuen-garten", "food": "../europe/germany/img/potsdam/potsdam-meierei-im-neuen-garten.jpg", "ext": ""}, {"i": 9, "n": "Braumanufaktur Forsthaus Templin", "c": ["ビール・バー"], "v": "レストラン", "lat": 52.3593748, "lng": 13.0234031, "d": "ポツダマー・シュタンゲ(Potsdamer Stange。約200年前から地元で造られてきた、まろやかで爽快な無ろ過のビール)／ビオ・ドゥンケル(Bio-Dunkel。こはく色の有機の黒ビール。モルトの甘みがあり苦味が穏やか)／ヴェルダーシェス(Werdersches。隣町ヴェルダーの昔のビールを再現した一杯)", "a": "Templiner Straße 102, 14473 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Braumanufaktur%20Forsthaus%20Templin%20Templiner%20Stra%C3%9Fe%20102%2C%2014473%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-braumanufaktur-forsthaus-templin", "food": "../europe/germany/img/potsdam/potsdam-braumanufaktur-forsthaus-templin.jpg", "ext": ""}, {"i": 10, "n": "Kessel & Kelle Craftbier Manufaktur", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 52.4139066, "lng": 13.0358599, "d": "ポツダム・ヘル(Potsdam Hell。ドイツ産ホップのペルレとザフィーアで仕込む、軽く飲みやすい下面発酵のラガー)／アフターアワー DDH IPA(Afterhour DDH IPA。ホップを2回たっぷり漬け込んだIPA。マンゴー、パイナップル、グレープフルーツの香り)／ホップフェンブラウゼ(Hopfenbrause。生のホップと有機ショウガで作るノンアルコールの炭酸飲料)", "a": "David-Gilly-Straße 1, 14469 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Kessel%20%26%20Kelle%20Craftbier%20Manufaktur%20David-Gilly-Stra%C3%9Fe%201%2C%2014469%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-kessel-und-kelle", "food": "../europe/germany/img/potsdam/potsdam-kessel-und-kelle.jpg", "ext": ""}, {"i": 11, "n": "Augustiner im Holländischen Viertel", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 52.4030479, "lng": 13.0616352, "d": "オバツダ(Obazda。カマンベールにバターと玉ねぎ、パプリカを練り込んだバイエルンのチーズペースト。大根とパン添え)／ヴァイスヴルスト(Weißwurst。甘いマスタードで食べる白いソーセージ)／クロッセ・ハクセ(Krosse Hinterhaxe。皮をパリッと焼き上げた約1キロの豚すね肉)／アウグスティーナー・ヘル(Augustiner Hell。樽から注ぐミュンヘンの淡色ラガー)", "a": "Mittelstraße 18, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Augustiner%20im%20Holl%C3%A4ndischen%20Viertel%20Mittelstra%C3%9Fe%2018%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-augustiner-im-hollaendischen-viertel", "food": "../europe/germany/img/potsdam/potsdam-augustiner-im-hollaendischen-viertel.jpg", "ext": ""}, {"i": 12, "n": "Bürgerbahnhof Potsdam (Augustiner im Bürgerbahnhof)", "c": ["ビール・バー"], "v": "レストラン", "lat": 52.3940867, "lng": 13.0160526, "d": "デス・カイザース・フリカッセ(Des Kaiser’s Fricassée。20世紀初めからこの駅の食堂の名物だったとされる鶏肉のクリーム煮。野菜とライス添え。17.50ユーロ)／クロッセ・ハクセ(Krosse ganze Hinterhaxe。約1キロの豚すね肉をパリッと焼いた料理。23.50ユーロ)／オバツダ(Obazda。チーズに玉ねぎやパプリカを練り込んだバイエルンのペースト。10.50ユーロ)／木樽のエーデルシュトフ(Edelstoff。ミュンヘンのアウグスティーナーの淡色ビールを木樽から注ぐ)", "a": "Geschwister-Scholl-Straße 37, 14471 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=B%C3%BCrgerbahnhof%20Potsdam%20%28Augustiner%20im%20B%C3%BCrgerbahnhof%29%20Geschwister-Scholl-Stra%C3%9Fe%2037%2C%2014471%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-buergerbahnhof", "food": "../europe/germany/img/potsdam/potsdam-buergerbahnhof.jpg", "ext": ""}, {"i": 13, "n": "Gasthof Plantagenklause", "c": ["ビール・バー"], "v": "レストラン", "lat": 52.392539, "lng": 13.1033208, "d": "クルステンブラーテン(Krustenbraten。皮をパリパリに焼いた豚のロースト)／バウエルンエンテ(Bauernente。半羽の鴨のローストにクネーデル(ジャガイモ団子)と赤キャベツを添えた皿)／ガンツェ・ガンス(Ganze Gans。予約制のガチョウ丸ごと1羽。赤キャベツ、ケール、クネーデル付き。2026年11月11日から、199ユーロ)／ヴァイスヴルスト(Weißwurst。甘いマスタードで食べる白いソーセージ)", "a": "Rudolf-Breitscheid-Straße 85, 14482 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Gasthof%20Plantagenklause%20Rudolf-Breitscheid-Stra%C3%9Fe%2085%2C%2014482%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-plantagenklause", "food": "../europe/germany/img/potsdam/potsdam-plantagenklause.jpg", "ext": ""}, {"i": 14, "n": "Bar Gelb", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 52.3991027, "lng": 13.0552358, "d": "日替わりの樽生クラフトビール(Fassbier。2026年10月はブラウハウス・バルニムのペールエール、フュルスト・ヴィアチェクのダブルドライホップIPAなど6種)／瓶・缶のIPA(オランダのウイルティエやトゥー・シェフスのIPAなど、果実の香りの強いもの)", "a": "Charlottenstraße 29, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Bar%20Gelb%20Charlottenstra%C3%9Fe%2029%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-bar-gelb", "food": "../europe/germany/img/potsdam/potsdam-bar-gelb.jpg", "ext": ""}, {"i": 15, "n": "Theaterklause – Weinbar", "c": ["ビール・バー"], "v": "レストラン", "lat": 52.3987427, "lng": 13.0421786, "d": "デアヴィッツの鴨(Derwitzer Ente。近郊デアヴィッツの農家が放し飼いで育てた鴨を、クネーデル(ジャガイモ団子)、マルメロ入り赤キャベツ、ケールと出すコース。2人から、1人50ユーロ、3日前までに予約)／ミューリッツ産イワナ(Müritzsaibling。パプリカキャベツ、レンズ豆、ディル、サワークリームと合わせた主菜。29ユーロ)／テーレン・マハト・シュパス(Teilen macht Spass。料理を次々に卓の中央へ出して皆で取り分けるおまかせ。パン・水・コーヒー付き1人69ユーロ)", "a": "Zimmerstraße 10–11, 14471 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Theaterklause%20%E2%80%93%20Weinbar%20Zimmerstra%C3%9Fe%2010%E2%80%9311%2C%2014471%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-theaterklause-weinbar", "food": "../europe/germany/img/potsdam/potsdam-theaterklause-weinbar.jpg", "ext": ""}, {"i": 16, "n": "Art & Sip Lounge", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 52.3957652, "lng": 13.0598964, "d": "オイスター&シャンパン・アワー(Oyster & Champagne Hour。木曜18〜22時。牡蠣3個とシャンパン0.1Lで18ユーロ、6個と2杯で33ユーロ)／グラスワイン(Offene Weine。国内外の100種類以上から選ぶ)／チーズとハム・ソーセージの盛り合わせ(Käse- und Wurstspezialitäten。欧州各地のチーズや生ハムをワインに合わせる小皿。ブランデンブルク風のタパスもある)", "a": "Anna-Zielenziger-Straße 3, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Art%20%26%20Sip%20Lounge%20Anna-Zielenziger-Stra%C3%9Fe%203%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-art-and-sip-lounge", "food": "../europe/germany/img/potsdam/potsdam-art-and-sip-lounge.jpg", "ext": ""}, {"i": 17, "n": "Königlicher Weinberg am Klausberg", "c": ["ビール・バー"], "v": "食材の店", "lat": 52.4062157, "lng": 13.0215439, "d": "ケーニクリッヒェ・ヴァイン・フェアフュールング(Königliche Wein-(Ver)führung。畑を歩きながら4種を試飲するガイドツアー。10時と12時、約1〜1.5時間、35ユーロ)／ケーニクリッヒェ・ヴァインフェスパー(Königliche WeinVESPER。乾杯のゼクト、畑の案内、4種の試飲に、ブランデンブルク風のパンとラード、チーズ・ソーセージ・ハムの盛り合わせが付く夕べ。16時から約2.5〜3時間、89ユーロ)／ポツダマー・ヴァインピクニック(Potsdamer Weinpicknick。ブドウ畑に敷物を広げ、地元のワイン4種とチーズ、パンを楽しむ。45ユーロ)", "a": "Maulbeerallee 4, 14469 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=K%C3%B6niglicher%20Weinberg%20am%20Klausberg%20Maulbeerallee%204%2C%2014469%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-koeniglicher-weinberg", "food": "../europe/germany/img/potsdam/potsdam-koeniglicher-weinberg.jpg", "ext": ""}, {"i": 18, "n": "kochZIMMER in der Gaststätte zur Ratswaage", "c": ["郷土料理"], "v": "レストラン", "lat": 52.3960443, "lng": 13.0574803, "d": "ブランデンブルク産食材のコース（例: ゴルトフォレレ＝金鱒をキュウリ・セロリ・骨髄と合わせた前菜、キコック鶏の胸肉のロースト、テルトー産カブのグラッセ）／ヴァルトシュパツィーアガング（「森の散歩」の意。ヘーゼルナッツ・コケモモ・マーブルチョコ・トウヒの若葉のデザート）", "a": "Am Neuen Markt 10, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=kochZIMMER%20in%20der%20Gastst%C3%A4tte%20zur%20Ratswaage%20Am%20Neuen%20Markt%2010%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-kochzimmer", "food": "../europe/germany/img/potsdam/potsdam-kochzimmer.jpg", "ext": ""}, {"i": 19, "n": "Restaurant Juliette", "c": ["郷土料理"], "v": "レストラン", "lat": 52.4024236, "lng": 13.0556297, "d": "メニュー・ジュリエット（例: フォアグラ2種とケープグーズベリー・ダークチョコ、フレーミング産イノシシ背肉のロースト、ミュンスター＝アルザスのウォッシュチーズ）／タタール・フォン・リンダーフィレ（牛ヒレのタルタル。ケッパー・ルッコラ・ライム・アンチョビ添え）／クレーム・ブリュレ", "a": "Jägerstraße 39, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Juliette%20J%C3%A4gerstra%C3%9Fe%2039%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-juliette", "food": "../europe/germany/img/potsdam/potsdam-juliette.jpg", "ext": ""}, {"i": 20, "n": "Pino", "c": ["郷土料理"], "v": "レストラン", "lat": 52.4043046, "lng": 13.0492925, "d": "ローストしたナス（クルミとイチジクを詰め、トリュフ入りマルサラソースをかける）／ホタテ（ビーツとヒヨコ豆のムース、サツマイモ、サフランとバジルのソース）／フォアグラとランゴスト（イセエビの仲間）は常備", "a": "Weinbergstraße 7, 14469 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Pino%20Weinbergstra%C3%9Fe%207%2C%2014469%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-pino", "food": "../europe/germany/img/potsdam/potsdam-pino.jpg", "ext": ""}, {"i": 21, "n": "Maison Charlotte", "c": ["郷土料理"], "v": "レストラン", "lat": 52.4030897, "lng": 13.0619626, "d": "ユイットル・グラティネ（グラタンにした牡蠣。3個15.50ユーロ）／スープ・ド・ポワソン（ブルターニュ風の魚のスープ。チーズ・ガーリックバゲット・ルイユ＝ニンニクのソース添え）／フラムクーヘン（アルザスの薄焼きピザ。石窯で焼く）", "a": "Mittelstraße 20, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Maison%20Charlotte%20Mittelstra%C3%9Fe%2020%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-maison-charlotte", "food": "../europe/germany/img/potsdam/potsdam-maison-charlotte.jpg", "ext": ""}, {"i": 22, "n": "Zanotto", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.3996092, "lng": 13.0536101, "d": "パスタ・フレスカ（店主が当日打つ生パスタ。季節の具材のソースで出す）／メヌー（店主おまかせのコース。59ユーロまたは65ユーロ）／パーネ（自家製サワードウのパン）", "a": "Dortustraße 53, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Zanotto%20Dortustra%C3%9Fe%2053%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-zanotto", "food": "../europe/germany/img/potsdam/potsdam-zanotto.jpg", "ext": ""}, {"i": 23, "n": "Assaggi", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.3999009, "lng": 13.0465236, "d": "タリアテッレ・コン・プンテ・ディ・フィレット（自家製の平打ち麺にアルゼンチン産牛ヒレの細切り、マッシュルーム、ルッコラ。19.5ユーロ）／ヴィテッロ・トンナート（薄切りの仔牛肉にツナとケッパーのソースをかけた冷製前菜。16.5ユーロ）／ペッシェ・ミスト（魚介の盛り合わせ。35.5ユーロ）", "a": "Luisenplatz 3, 14471 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Assaggi%20Luisenplatz%203%2C%2014471%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-assaggi", "food": "../europe/germany/img/potsdam/potsdam-assaggi.jpg", "ext": ""}, {"i": 24, "n": "Il Teatro", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.4034918, "lng": 13.07567, "d": "季節のパスタ（季節替わりのメニューから選ぶイタリアのパスタ料理）／魚料理・肉料理（前菜・スープに続く主菜。具体的な品は季節で替わる）", "a": "Schiffbauergasse 12, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Il%20Teatro%20Schiffbauergasse%2012%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-il-teatro", "food": "../europe/germany/img/potsdam/potsdam-il-teatro.jpg", "ext": ""}, {"i": 25, "n": "Al Dente", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.3943601, "lng": 13.0865504, "d": "トリュフのパスタ（トリュフ、ポルチーニ、アンズタケのいずれかで仕立てる店の看板パスタ）／ニョッキ・アル・カプリーノ（山羊のチーズのソースのじゃがいもニョッキ）／トリアンゴリーニ（ビーツを詰めた三角形の詰め物パスタ）／ドラード・ロイヤル（地中海の鯛の一種ヨーロッパヘダイの料理）", "a": "Alt Nowawes 34, 14482 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Al%20Dente%20Alt%20Nowawes%2034%2C%2014482%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-al-dente", "food": "../europe/germany/img/potsdam/potsdam-al-dente.jpg", "ext": ""}, {"i": 26, "n": "Le's Cyclo", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.4017429, "lng": 13.0521806, "d": "フォー・ボー（米の平麺に牛肉と香草をのせたベトナムの麺スープ。鶏・豆腐も選べる。14.9ユーロ）／ゴイ・クオン（海老、レタス、香草、米麺をライスペーパーで巻いた生春巻き。魚醤のたれで食べる。6.9ユーロ）／カリー・スア・ズア（鶏肉、ココナッツミルク、さつまいも、有機かぼちゃのベトナム風カレー。14.9ユーロ）", "a": "Lindenstraße 4, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Le%27s%20Cyclo%20Lindenstra%C3%9Fe%204%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-les-cyclo", "food": "../europe/germany/img/potsdam/potsdam-les-cyclo.jpg", "ext": ""}, {"i": 27, "n": "Alexandrowka 1", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.4110003, "lng": 13.0572468, "d": "ボルシチ（ビーツで赤く煮込んだウクライナ風のスープ。サワークリームを添える。7.5ユーロ）／ブリヌイ・ツァーリ（そば粉入りの小さなパンケーキにキャビアなどをのせた前菜。11.5ユーロ）／シビルスキー・ペリメニ（ひき肉を包んだシベリア風の水餃子。15.4ユーロ）／サモワールの紅茶（ロシア式の湯沸かし器で淹れる紅茶）", "a": "Russische Kolonie 1, 14469 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Alexandrowka%201%20Russische%20Kolonie%201%2C%2014469%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-alexandrowka-1", "food": "../europe/germany/img/potsdam/potsdam-alexandrowka-1.jpg", "ext": ""}, {"i": 28, "n": "Café à la Russe", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.4019954, "lng": 13.052271, "d": "ペリメニ（ひき肉を包んでゆでるロシアの水餃子。サワークリームとコーカサスの辛いソース、アジカを添える）／ブリヌイ（薄焼きのクレープ。牛ひき肉入りやカッテージチーズ入りがある。2枚12.9ユーロ〜）／ソリャンカ（牛肉・ソーセージ・ピクルス入りの酸味のあるスープ。13.8ユーロ）／シャシリク（コーカサス風の串焼き肉。週末のみ）", "a": "Lindenstraße 2, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20%C3%A0%20la%20Russe%20Lindenstra%C3%9Fe%202%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-cafe-a-la-russe", "food": "../europe/germany/img/potsdam/potsdam-cafe-a-la-russe.jpg", "ext": ""}, {"i": 29, "n": "De Lewante", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.4010366, "lng": 13.0515936, "d": "ゲミシュター・テラー（フムス、タブーレ、クスクス、なすのペースト、ファラフェル、ハルーミを一皿に盛った盛り合わせ。菜食14.5ユーロ）／シャワルマ（ざくろのソースに漬けた牛肉か鶏肉の細切りを焼き、ファラフェルとフムスを添える。16ユーロ）／キッベ（ひき肉と挽き割り小麦の生地で肉を包んで揚げた中東の料理）", "a": "Gutenbergstraße 103, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=De%20Lewante%20Gutenbergstra%C3%9Fe%20103%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-de-lewante", "food": "../europe/germany/img/potsdam/potsdam-de-lewante.jpg", "ext": ""}, {"i": 30, "n": "Masala Haus", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.4021945, "lng": 13.0527753, "d": "ムルグ・マッカニ（タンドールで焼いた鶏胸肉をトマトのソースで煮てバターで仕上げたバターチキン。16.9ユーロ）／タンドーリ・ミックスグリル（タンドリーチキン、チキンティッカ、カルミ・カバブ、海老の盛り合わせ。19.8ユーロ）／ラム・ビリヤニ（羊肉、野菜、レーズン、アーモンドとカシューナッツを入れて炊いたバスマティ米。17.2ユーロ）", "a": "Lindenstraße 65, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Masala%20Haus%20Lindenstra%C3%9Fe%2065%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-masala-haus", "food": "../europe/germany/img/potsdam/potsdam-masala-haus.jpg", "ext": ""}, {"i": 31, "n": "Mea Culpa Tapas Y Vino", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.397592, "lng": 13.0524955, "d": "ガンバス・アル・オルノ（海老のオーブン焼き。9.5ユーロ）／プルポ・ア・ラ・パリージャ（タコのグリル、黒いアイオリとチリ添え。11ユーロ）／タパス・バリアダス（数種のタパスを一度に頼める盛り合わせ。27ユーロ〜）／クレマ・カタラナ（カタルーニャ風の焦がしカスタード。5.5ユーロ）", "a": "Dortustraße 1, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Mea%20Culpa%20Tapas%20Y%20Vino%20Dortustra%C3%9Fe%201%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-mea-culpa", "food": "../europe/germany/img/potsdam/potsdam-mea-culpa.jpg", "ext": ""}, {"i": 32, "n": "Lewy", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 52.3935087, "lng": 13.0926672, "d": "ヴァレニキ（キャベツ、森のきのこ、ポロねぎを包んだウクライナの水餃子。ヴィーガン。18.5ユーロ）／ゲシュモアテ・オクセンベックヒェン（牛ほほ肉の煮込み、ホースラディッシュ入りマッシュポテト添え。24.5ユーロ）／ハルシュキ（ウクライナのカッテージチーズのニョッキ、ベリーとバニラソース。朝食メニュー。12.5ユーロ）", "a": "Karl-Liebknecht-Straße 16, 14482 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Lewy%20Karl-Liebknecht-Stra%C3%9Fe%2016%2C%2014482%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-lewy", "food": "../europe/germany/img/potsdam/potsdam-lewy.jpg", "ext": ""}, {"i": 33, "n": "Fischerhof Potsdam", "c": ["市場・食材店"], "v": "食材の店", "lat": 52.397867, "lng": 13.0708693, "d": "ロイヒャーアール（ウナギの燻製。3〜11月のウナギの季節の名物）／フィッシュブレートヒェン（パンに燻製魚やマリネした魚を挟んだ魚のサンドイッチ）／ラックスフォレレ（サーモントラウトの燻製）", "a": "Große Fischerstraße 12, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Fischerhof%20Potsdam%20Gro%C3%9Fe%20Fischerstra%C3%9Fe%2012%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-fischerhof", "food": "../europe/germany/img/potsdam/potsdam-fischerhof.jpg", "ext": ""}, {"i": 34, "n": "Markt am Nauener Tor", "c": ["屋台・食べ歩き", "市場・食材店"], "v": "カフェ", "lat": 52.4031037, "lng": 13.0568138, "d": "ブランデンブルク産のジビエ（シカやイノシシの肉）とハム・ソーセージ／ベルギーワッフル（屋台で焼くワッフル）／チロル産ハードチーズ", "a": "Hegelallee 55, 14467 Potsdam（ナウエン門前の広場）", "m": "https://www.google.com/maps/search/?api=1&query=Markt%20am%20Nauener%20Tor%20Hegelallee%2055%2C%2014467%20Potsdam%EF%BC%88%E3%83%8A%E3%82%A6%E3%82%A8%E3%83%B3%E9%96%80%E5%89%8D%E3%81%AE%E5%BA%83%E5%A0%B4%EF%BC%89", "u": "../europe/germany/potsdam.html#c-potsdam-markt-am-nauener-tor", "food": "../europe/germany/img/potsdam/potsdam-markt-am-nauener-tor.jpg", "ext": ""}, {"i": 35, "n": "Bäckerei & Konditorei Braune", "c": ["屋台・食べ歩き"], "v": "ベーカリー・パティスリー", "lat": 52.4002553, "lng": 13.057558, "d": "ヘルトシュリッペ（窯の床で焼くパリッとした丸パン。東ドイツ風のシュリッペ）／プファンクーヘン（ベルリン風のジャム入り揚げパン。2025年大晦日にドイツの報道番組ターゲスシャウで紹介）／モーンシュトレン（ケシの実の詰め物を巻いた菓子パン。2025年のパン・シュトレン審査で高評価）", "a": "Friedrich-Ebert-Straße 101, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=B%C3%A4ckerei%20%26%20Konditorei%20Braune%20Friedrich-Ebert-Stra%C3%9Fe%20101%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-baeckerei-braune", "food": "../europe/germany/img/potsdam/potsdam-baeckerei-braune.jpg", "ext": ""}, {"i": 36, "n": "Poffertjes en Pannekoeken", "c": ["屋台・食べ歩き"], "v": "カフェ", "lat": 52.4030308, "lng": 13.0600624, "d": "ポッフェルチェス（小さな丸いふわふわのパンケーキ。バターと粉糖、ストロープで食べる）／パンネクーケン（大きな薄焼きのオランダ風パンケーキ。温かいサワーチェリーとバニラアイスをのせる組み合わせが人気）", "a": "Mittelstraße 32, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Poffertjes%20en%20Pannekoeken%20Mittelstra%C3%9Fe%2032%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-poffertjes-en-pannekoeken", "food": "../europe/germany/img/potsdam/potsdam-poffertjes-en-pannekoeken.jpg", "ext": ""}, {"i": 37, "n": "Café Heider", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 52.4030885, "lng": 13.0581256, "d": "アプフェルシュトゥルーデル（薄い生地で煮りんごを巻いて焼いたウィーン風の菓子。温かいバニラソースと泡立てた生クリーム付き。8.90ユーロ）／カイザーシュマレン（ちぎって焼いた厚いパンケーキに粉糖をかけたオーストリアの菓子。アーモンドとレーズン入り、りんごのコンポートか温かいさくらんぼを添える）／ヴィーナー・シュニッツェル（子牛肉を薄くたたいてバターで揚げたカツレツ。店の看板料理）", "a": "Friedrich-Ebert-Straße 29, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Heider%20Friedrich-Ebert-Stra%C3%9Fe%2029%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-cafe-heider", "food": "../europe/germany/img/potsdam/potsdam-cafe-heider.jpg", "ext": ""}, {"i": 38, "n": "Café Guam", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 52.4028884, "lng": 13.0589176, "d": "ケーゼトルテ（ドイツ式のチーズケーキ。クワルクというフレッシュチーズで焼く。ケシの実、ブルーベリー、ヌガー、洋梨、卵のリキュール入りなど日替わりで8〜10種類）", "a": "Mittelstraße 39, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Guam%20Mittelstra%C3%9Fe%2039%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-cafe-guam", "food": "../europe/germany/img/potsdam/potsdam-cafe-guam.jpg", "ext": ""}, {"i": 39, "n": "Buena Vida Coffee – Café Am Bassin", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 52.4008152, "lng": 13.0589064, "d": "エスプレッソ・ブレンド「キングス・クロス」（ダークチョコ、マカダミア、タフィーの風味をうたう自家焙煎のブレンド）／フラットホワイトなどミルクを使ったコーヒー（店で焙煎した豆で淹れる）／クロワッサンとシナモンロールなどの焼き菓子", "a": "Am Bassin 7, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Buena%20Vida%20Coffee%20%E2%80%93%20Caf%C3%A9%20Am%20Bassin%20Am%20Bassin%207%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-buena-vida-cafe-am-bassin", "food": "../europe/germany/img/potsdam/potsdam-buena-vida-cafe-am-bassin.jpg", "ext": ""}, {"i": 40, "n": "Havelbohne Kaffeerösterei", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 52.4011961, "lng": 13.0525042, "d": "ハウスブレンドのコーヒー（店で焙煎した豆で淹れる。豆は「ポツダマー・メランジェ」などの名で量り売りもする）／自家製のトルテ（州観光局は、かつてのプロイセン宮廷菓子店の流れをくむトルテと紹介）／朝食（パニーニ、ベーグル、ワッフル、エッグ・ベネディクトなど。14時まで）", "a": "Lindenstraße 57, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Havelbohne%20Kaffeer%C3%B6sterei%20Lindenstra%C3%9Fe%2057%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-havelbohne", "food": "../europe/germany/img/potsdam/potsdam-havelbohne.jpg", "ext": ""}, {"i": 41, "n": "Lekker Koffie", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 52.4026448, "lng": 13.0585997, "d": "ホランディッシェ・ショコラーデ（オランダ式のホットチョコレート。4.90ユーロ、エスプレッソ入り5.90ユーロ）／ラントフラウエンクーヘン（田舎風の手作りケーキ。5.50ユーロ）／ハンバーグのバゲット（地元バーベルスベルクの精肉店ブットゲライトのブレッテ＝ドイツ風ハンバーグを挟む。11.90ユーロ）", "a": "Mittelstraße 3, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Lekker%20Koffie%20Mittelstra%C3%9Fe%203%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-lekker-koffie", "food": "../europe/germany/img/potsdam/potsdam-lekker-koffie.jpg", "ext": ""}, {"i": 42, "n": "Café Matschke Am Neuen Garten", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 52.4094646, "lng": 13.0606619, "d": "ルスィッシャー・ツプフクーヘン（「ロシア風ちぎりケーキ」。ココア生地をちぎって散らしたチーズケーキ。4.00ユーロ）／ペリメニ（ひき肉を包んだロシアの水餃子。バターであえ、サワークリームとビーツのサラダ付き。14.00ユーロ）／ルスィッシェ・ショコラーデ（ウォッカと生クリーム入りのホットチョコレート。6.50ユーロ）", "a": "Alleestraße 10, 14469 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Matschke%20Am%20Neuen%20Garten%20Alleestra%C3%9Fe%2010%2C%2014469%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-cafe-matschke", "food": "../europe/germany/img/potsdam/potsdam-cafe-matschke.jpg", "ext": ""}, {"i": 43, "n": "Café Franz", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 52.3958233, "lng": 13.0602307, "d": "サン・セバスチャン・チーズケーキ（表面を真っ黒に焦がし、中をとろりと焼くスペイン・バスク地方のチーズケーキ）／ピスタチオ・クロワッサン（ピスタチオのクリームを詰めたクロワッサン）／ストロベリー抹茶（いちごのピュレに牛乳と抹茶を重ねた冷たい飲み物）", "a": "Anna-Zielenziger-Straße 1, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Franz%20Anna-Zielenziger-Stra%C3%9Fe%201%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-cafe-franz", "food": "../europe/germany/img/potsdam/potsdam-cafe-franz.jpg", "ext": ""}, {"i": 44, "n": "Café Central", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 52.3957017, "lng": 13.0620898, "d": "季節のトルテ（ブルーベリーのクリームトルテなど、日替わりのケーキ）／フレッシュティー（クランベリーとざくろを入れて淹れる果実のお茶）", "a": "Am Alten Markt 9, 14467 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Central%20Am%20Alten%20Markt%209%2C%2014467%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-cafe-central", "food": "../europe/germany/img/potsdam/potsdam-cafe-central.jpg", "ext": ""}, {"i": 45, "n": "Café Freundlich", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 52.3819064, "lng": 13.0649845, "d": "自家製のケーキとトルテ（店のケーキ部門で焼く日替わりの品）／日替わりの昼定食（スープ、キッシュ、ベジタリアンの皿、肉か魚の皿。11:30〜14:30）", "a": "Telegrafenberg, Haus A34, 14473 Potsdam", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Freundlich%20Telegrafenberg%2C%20Haus%20A34%2C%2014473%20Potsdam", "u": "../europe/germany/potsdam.html#c-potsdam-cafe-freundlich", "food": "../europe/germany/img/potsdam/potsdam-cafe-freundlich.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([52.400059,13.057863],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('potsdam', "ポツダム");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
