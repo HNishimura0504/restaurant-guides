@@ -120,6 +120,7 @@
 | ドイツ | ニュルンベルク | 73 | [europe/germany/](europe/germany/) |
 | ドイツ | ドレスデン | 71 | [europe/germany/](europe/germany/) |
 | ドイツ | ポツダム | 46 | [europe/germany/](europe/germany/) |
+| ドイツ | ローテンブルク・オプ・デア・タウバー | 38 | [europe/germany/](europe/germany/) |
 | フランス | パリ | 36 | [europe/france/](europe/france/) |
 | フランス | モン・サン＝ミシェルと湾岸 | 44 | [europe/france/](europe/france/) |
 | ルクセンブルク | ルクセンブルク市 | 45 | [europe/luxembourg/](europe/luxembourg/) |

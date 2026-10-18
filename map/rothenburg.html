@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ローテンブルク・オプ・デア・タウバー の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>ローテンブルク・オプ・デア・タウバー の食べ歩き地図<span class="n">38店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="ローテンブルク・オプ・デア・タウバー の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">ローテンブルク・オプ・デア・タウバー の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../europe/germany/rothenburg.html"><span class="sn-e">📄</span>ローテンブルク・オプ・デア・タウバーのガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（99都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "Restaurant im Hotel Rappen", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3797416, "lng": 10.185248, "d": "ショイフェレ「フランケン風」（豚の肩肉をかりっと焼いたもの、21ユーロ）／フレンキシェ・ブラートヴルスト（地元の肉屋クレンクのフランケン風焼きソーセージ、17ユーロ）／クッチャー・プファンクーヘン（燻製ソーセージや燻製豚肉を詰めた食事のパンケーキ、16.50ユーロ）", "a": "Vorm Würzburger Tor 10, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20im%20Hotel%20Rappen%20Vorm%20W%C3%BCrzburger%20Tor%2010%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-hotel-rappen", "food": "../europe/germany/img/rothenburg/rothenburg-hotel-rappen.jpg", "ext": ""}, {"i": 1, "n": "Restaurant im Hotel Tilman Riemenschneider", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3781587, "lng": 10.179888, "d": "シュパンフェルケル・ショイフェレ（子豚の肩肉をかりっと焼いたもの。ビールとキャラウェイのソース、じゃがいも団子添え、22ユーロ）／4本のフレンキシェ・ローストブラートヴルステン（フランケンの細い焼きソーセージ4本をベーコン入りザワークラウトに、12.50ユーロ）／フレンキシェ・ホッホツァイツズッペ（「結婚式のスープ」。牛のコンソメにパンケーキの細切り・セモリナ団子・ベーコン団子が入る、7ユーロ）", "a": "Georgengasse 11-13, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20im%20Hotel%20Tilman%20Riemenschneider%20Georgengasse%2011-13%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-tilman-riemenschneider", "food": "../europe/germany/img/rothenburg/rothenburg-tilman-riemenschneider.jpg", "ext": ""}, {"i": 2, "n": "Gasthaus Schranne", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3797074, "lng": 10.1797756, "d": "バイエリッシェ・シュラハトプラッテ（自家製の血のソーセージ・レバーソーセージと塩ゆで豚の盛り合わせ）／ピカンター・ザウアーブラーテン（牛肉の酢漬け煮込み。レープクーヘン＝香辛料入り焼き菓子のソースとじゃがいも団子2個、20.90ユーロ）／レーブラーテン（地元で獲れた鹿のもも肉の煮込み。ねずの実のソース、26.90ユーロ。9月〜11月初め）", "a": "Schrannenplatz 6, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Gasthaus%20Schranne%20Schrannenplatz%206%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-gasthaus-schranne", "food": "../europe/germany/img/rothenburg/rothenburg-gasthaus-schranne.jpg", "ext": ""}, {"i": 3, "n": "Hotel-Gasthof Goldener Greifen", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3766351, "lng": 10.1795978, "d": "クヌスプリゲス・ショイフェレ（皮をかりっと焼いた豚の肩肉。じゃがいも団子添え、19.40ユーロ）／フレンキシェ・ブラートヴルステ（フランケンの焼きソーセージ。ザワークラウトと塩ゆでじゃがいも、13.70ユーロ）／フレンキシェス・ビアフライシュ（黒ビールとザワークラウトで煮込んだ牛肉のグーラッシュ、シュペッツレ＝卵入りの短い麺添え、19.70ユーロ）", "a": "Obere Schmiedgasse 5, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Hotel-Gasthof%20Goldener%20Greifen%20Obere%20Schmiedgasse%205%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-goldener-greifen", "food": "../europe/germany/img/rothenburg/rothenburg-goldener-greifen.jpg", "ext": ""}, {"i": 4, "n": "Gasthaus Alter Keller", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3764832, "lng": 10.1807737, "d": "ショイフェレ（豚の肩肉のロースト）／ケーゼシュペッツレ（卵入りの短い麺をチーズで焼いたもの）／ハクセ（豚のすね肉を丸ごと焼いたもの）", "a": "Alter Keller 8, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Gasthaus%20Alter%20Keller%20Alter%20Keller%208%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-gasthaus-alter-keller", "food": "../europe/germany/img/rothenburg/rothenburg-gasthaus-alter-keller.jpg", "ext": ""}, {"i": 5, "n": "Hotel Gasthof Bezold", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3802554, "lng": 10.1852898, "d": "ベツォルト・バーガー（厚切りのフライシュケーゼ＝南ドイツのミートローフを挟んだ店の看板の一品）／パニーアテス・コテレット（豚の骨付きロースのカツレツ。ポテトサラダ添え）／ザウレ・ツィプフル（酢と玉ねぎの煮汁で煮るフランケンのソーセージ。クリスマスイブの定番として提供）", "a": "Vorm Würzburger Tor 11, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Hotel%20Gasthof%20Bezold%20Vorm%20W%C3%BCrzburger%20Tor%2011%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-gasthof-bezold", "food": "../europe/germany/img/rothenburg/rothenburg-gasthof-bezold.jpg", "ext": ""}, {"i": 6, "n": "Agnes Stüberl（Hotel Eisenhut）", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3767779, "lng": 10.1779018, "d": "カルプス・ターフェルシュピッツ（子牛のもも肉を煮たもの。西洋わさびのソース、29ユーロ）／フレンキシェ・ケーゼシュペッツレ・グラティニーアト（卵入りの短い麺をチーズで焼いたフランケン風。揚げ玉ねぎ、18.90ユーロ）／ヴィーナー・シュニッツェル（子牛の背肉のカツレツ、34ユーロ）", "a": "Herrngasse 3-7, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Agnes%20St%C3%BCberl%EF%BC%88Hotel%20Eisenhut%EF%BC%89%20Herrngasse%203-7%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-agnes-stueberl-eisenhut", "food": "../europe/germany/img/rothenburg/rothenburg-agnes-stueberl-eisenhut.jpg", "ext": ""}, {"i": 7, "n": "Hotel Restaurant Klosterstüble", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3765169, "lng": 10.1757999, "d": "フランケン・バイエルンの郷土料理（料理長が季節の地元食材で作る。個々の料理名は公式サイトに記載なし）", "a": "Heringsbronnengässchen 5, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Hotel%20Restaurant%20Klosterst%C3%BCble%20Heringsbronneng%C3%A4sschen%205%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-klosterstueble", "food": "../europe/germany/img/rothenburg/rothenburg-klosterstueble.jpg", "ext": ""}, {"i": 8, "n": "Weinstube „Zum Pulverer“", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3766823, "lng": 10.175184, "d": "フランケンの郷土の軽食（シュマンカール。個々の料理名は公式サイトに記載なし）／フランケンワイン", "a": "Herrngasse 31, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Weinstube%20%E2%80%9EZum%20Pulverer%E2%80%9C%20Herrngasse%2031%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-weinstube-zum-pulverer", "food": "../europe/germany/img/rothenburg/rothenburg-weinstube-zum-pulverer.jpg", "ext": ""}, {"i": 9, "n": "Restaurant im Romantik Hotel Markusturm", "c": ["ご当地名物"], "v": "レストラン", "lat": 49.3771302, "lng": 10.1813728, "d": "ザウアーブラーテン・ヴィー・ツア・キルヒヴァイ（教会の祭りの日風の牛肉の酢漬け煮込み。赤キャベツとじゃがいも団子、25.50ユーロ）／ホッホツァイツエッセン（「結婚式の料理」。ゆでた牛肉に西洋わさびとこけももを添える、23ユーロ）／トゥルムブロイ（館内で醸造する無ろ過のビール）", "a": "Rödergasse 1, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20im%20Romantik%20Hotel%20Markusturm%20R%C3%B6dergasse%201%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-markusturm", "food": "../europe/germany/img/rothenburg/rothenburg-markusturm.jpg", "ext": ""}, {"i": 10, "n": "Landwehr-Bräu am Turm", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 49.3738446, "lng": 10.1804979, "d": "ケラービア(Kellerbier。ろ過しない濁りのある熟成ビールで、酵母由来の柔らかな口当たり。0.5L 4.00ユーロ)／ヘル(Hell。麦芽の味が濃い淡色ラガー。0.5L 3.80ユーロ)／レンナー(Renner。自家製ニワトコシロップ・レモン・炭酸水にヘルを合わせた店の一杯。0.5L 4.00ユーロ)／ピルツラーム(Pilzrahm。自家製ブレーツェルの団子(ブレーツェンクネーデル)にマッシュルームとポルチーニのクリームソースをかけた週末の皿。12.50ユーロ)", "a": "Spitalgasse 1, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Landwehr-Br%C3%A4u%20am%20Turm%20Spitalgasse%201%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-landwehr-braeu-am-turm", "food": "../europe/germany/img/rothenburg/rothenburg-landwehr-braeu-am-turm.jpg", "ext": ""}, {"i": 11, "n": "Glocke Weingut und Hotel", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 49.374376, "lng": 10.180323, "d": "自家醸造のフランケンワイン(シルヴァーナー・バッカス・リースリングのほか、アーデルフレンキッシュなど古い品種も醸す。伝統の丸瓶ボックスボイテルと鐘形の自社瓶で出す)／グロッケンヴィルツ・ヴァインズッペ(„Glockenwirts“ Weinsuppe。ワインで仕立てた店名を冠するクリームスープ。8.50ユーロ)／ブラウエ・ツィプフル(Blaue Zipfl。玉ねぎとワインの煮汁で煮るフランケンの酢漬けソーセージ。12.90ユーロ〜)／ヴィンツァールラーデ(„Winzerroulade“。ブルグンダーのソースで煮た牛肉の巻き煮にベーコンとブドウを添える。27.50ユーロ)", "a": "Plönlein 1, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Glocke%20Weingut%20und%20Hotel%20Pl%C3%B6nlein%201%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-glocke-weingut", "food": "../europe/germany/img/rothenburg/rothenburg-glocke-weingut.jpg", "ext": ""}, {"i": 12, "n": "Weinstube Zur Höll", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 49.375921, "lng": 10.1778536, "d": "フランケンの銘醸ワイン(シルヴァーナーなどを0.25Lの昔ながらの量で。20〜40名ならボックスボイテル瓶のカビネットからアイスヴァインまでの試飲も受ける)／フレンキッシェス・フェスパー(Fränkisches Vesper。フランケンの農家ハム・ソーセージ・自家製ラード・チーズ・田舎パンの盛り合わせ)／日替わり料理(定番の品書きに加えて毎日3〜4品。16.50〜24.50ユーロ)", "a": "Burggasse 8, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Weinstube%20Zur%20H%C3%B6ll%20Burggasse%208%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-zur-hoell", "food": "../europe/germany/img/rothenburg/rothenburg-zur-hoell.jpg", "ext": ""}, {"i": 13, "n": "Weinstube Löchle（Hotel Reichsküchenmeister）", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 49.3779806, "lng": 10.1786597, "d": "フランケンワイン(ワイン酒場で食前酒や寝酒としてグラスで。2026年10月版のワインリストを公開)／カルプフェン(Karpfen。自前の養殖場で育てた鯉の料理。フランケンでは秋冬に丸ごと揚げて食べる名物)／ロストブラートヴルスト(Rostbratwürste。フランケン風の焼きソーセージ)／シェーフェレ(Schäufele。豚の肩肉を皮ごとかりっと焼くフランケンの郷土料理)", "a": "Kirchplatz 8, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Weinstube%20L%C3%B6chle%EF%BC%88Hotel%20Reichsk%C3%BCchenmeister%EF%BC%89%20Kirchplatz%208%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-weinstube-loechle", "food": "../europe/germany/img/rothenburg/rothenburg-weinstube-loechle.jpg", "ext": ""}, {"i": 14, "n": "Gasthof Butz", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 49.3778361, "lng": 10.1798549, "d": "フレンキッシェ・ブラートヴュルステ(Fränkische Bratwürste。フランケン風焼きソーセージにザワークラウトと炒めたジャガイモを添える。12.50ユーロ)／シュヴァインスハクセ(Schweinshaxe。豚すね肉をかりっと焼き上げ団子(クネーデル)を添える。15.80ユーロ)／ズュルツェ(Sülze。牛の胸肉を煮こごりにした自家製の冷製に、カボチャの種油をかけ炒めたジャガイモを添える。13.10ユーロ)", "a": "Kapellenplatz 4, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Gasthof%20Butz%20Kapellenplatz%204%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-gasthof-butz", "food": "../europe/germany/img/rothenburg/rothenburg-gasthof-butz.jpg", "ext": ""}, {"i": 15, "n": "Weinwirtschaft & Paula's Biergarten（Hotel Eisenhut）", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "カフェ", "lat": 49.37688, "lng": 10.17805, "d": "フランケンワイン(ワイン酒場でグラスの一杯と軽食)／樽生ビール(パウラズ・ビアガルテンで夏季に。タウバー谷側の庭の段に座る)", "a": "Herrngasse 3-5/7, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Weinwirtschaft%20%26%20Paula%27s%20Biergarten%EF%BC%88Hotel%20Eisenhut%EF%BC%89%20Herrngasse%203-5/7%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-eisenhut-weinwirtschaft", "food": "../europe/germany/img/rothenburg/rothenburg-eisenhut-weinwirtschaft.jpg", "ext": ""}, {"i": 16, "n": "Unter den Linden（Bronnenmühle）", "c": ["ビール・バー"], "v": "レストラン", "lat": 49.3812737, "lng": 10.1712858, "d": "ビアガーデンの一杯(川辺の芝生と木陰の席で。料理は日替わりで毎日手作り)", "a": "Kurze Steige 7b, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Unter%20den%20Linden%EF%BC%88Bronnenm%C3%BChle%EF%BC%89%20Kurze%20Steige%207b%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-unter-den-linden", "food": "../europe/germany/img/rothenburg/rothenburg-unter-den-linden.jpg", "ext": ""}, {"i": 17, "n": "Gasthof Rödertor（Rothenburger Kartoffelstube・Biergarten）", "c": ["ビール・バー"], "v": "レストラン", "lat": 49.376431, "lng": 10.1855427, "d": "ツィルンドルファー・ケラービア(Zirndorfer Kellerbier。近郊ツィルンドルフの醸造所の、ろ過しない熟成ビールを陶器のジョッキ(トンクルーク)で)／ジャガイモ料理(Kartoffelgerichte。フランケンの郷土料理をジャガイモ尽くしで)／シェーフェレ(Schäufele。豚の肩肉を皮ごとかりっと焼くフランケンの郷土料理)", "a": "Ansbacher Straße 7, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Gasthof%20R%C3%B6dertor%EF%BC%88Rothenburger%20Kartoffelstube%E3%83%BBBiergarten%EF%BC%89%20Ansbacher%20Stra%C3%9Fe%207%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-roedertor-biergarten", "food": "../europe/germany/img/rothenburg/rothenburg-roedertor-biergarten.jpg", "ext": ""}, {"i": 18, "n": "Restaurant Mittermeier (Villa Mittermeier)", "c": ["郷土料理"], "v": "レストラン", "lat": 49.3802059, "lng": 10.1850709, "d": "ミヤザキ・ヴァーギュー・ビーフ(宮崎産和牛のメイン。ロスコフ産の玉ねぎとタイムのソースを添える)／カーベルヤウ(タラ。マッシュルームとクリームほうれん草を合わせた一皿)／アムール・カルプフェン(地元の川魚であるソウギョ＝鯉の仲間を、コンブチャ(発酵茶)とディルで仕立てた前菜)／ヒンベーレン(木いちごとブリア・サヴァラン(濃厚な白かびチーズ)の甘い皿)", "a": "Vorm Würzburger Tor 7, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Mittermeier%20%28Villa%20Mittermeier%29%20Vorm%20W%C3%BCrzburger%20Tor%207%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-villa-mittermeier", "food": "../europe/germany/img/rothenburg/rothenburg-villa-mittermeier.jpg", "ext": ""}, {"i": 19, "n": "HerR – Restaurant im Herrnschlösschen", "c": ["郷土料理"], "v": "レストラン", "lat": 49.3769814, "lng": 10.1763936, "d": "タウバータール・ヴァーギュー・ビーフ・タタール(地元タウバー谷産の和牛の生肉のたたきを、ごま・柚子・キャビアで仕立てた皿)／ゲルプフロッセン・トゥンフィッシュ・サシミ(キハダマグロの刺身。きゅうり・ポン酢・ズッキーニを合わせる)／フランツェージッシェ・ヴァハテルブルスト(フランス産うずらの胸肉。かぼちゃ・ポルチーニ・ぶどう添え)", "a": "Herrngasse 20, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=HerR%20%E2%80%93%20Restaurant%20im%20Herrnschl%C3%B6sschen%20Herrngasse%2020%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-herr-restaurant-im-herrnschloesschen", "food": "../europe/germany/img/rothenburg/rothenburg-herr-restaurant-im-herrnschloesschen.jpg", "ext": ""}, {"i": 20, "n": "Restaurant Topinambur (Prinzhotel Rothenburg)", "c": ["郷土料理"], "v": "レストラン", "lat": 49.3776946, "lng": 10.1839768, "d": "レーリュッケン(地元オーベルンツェンの猟で獲れたノロジカの背肉。サワーチェリーと芽キャベツを添えた秋の主菜)／ツヴィッベルローストブラーテン(フランケン方言で「玉ねぎのせロースト」。牛肉を焼いて揚げ玉ねぎと赤ワインソースをかけた地方料理)／ゲロイヒャーター・アール(燻製うなぎの前菜。りんご・ビーツ・西洋わさびを合わせる)", "a": "An der Hofstatt 3, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20Topinambur%20%28Prinzhotel%20Rothenburg%29%20An%20der%20Hofstatt%203%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-topinambur-prinzhotel", "food": "../europe/germany/img/rothenburg/rothenburg-topinambur-prinzhotel.jpg", "ext": ""}, {"i": 21, "n": "Trattoria Pane e Vino", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 49.378629, "lng": 10.1812133, "d": "パスタ・フレスカ・ヴォンゴレ（毎日打つ自家製生パスタのアサリ和え。18.00ユーロ）／ニョッキ・ゴルゴンゾーラ（ジャガイモのニョッキの青かびチーズソース。14.50ユーロ）／ピッツァ・ガンベリ（トマト・モッツァレラにエビ・ルッコラ・ニンニクをのせたピザ。13.50ユーロ）", "a": "Galgengasse 13, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Trattoria%20Pane%20e%20Vino%20Galgengasse%2013%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-pane-e-vino", "food": "../europe/germany/img/rothenburg/rothenburg-pane-e-vino.jpg", "ext": ""}, {"i": 22, "n": "Ristorante Eiscafé Italia", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 49.3770192, "lng": 10.1775854, "d": "スパゲッティ・カルボナーラ（卵・豚ほほ肉の塩漬け・グラナ・ペコリーノ・黒こしょうの本式。13.00ユーロ）／ブルスケッテ・ウンブレ（ウンブリア風ににんにくとオリーブ油で食べる焼きパン。4.50ユーロ）／アンティパスト・デッラ・カーサ（イタリアのハム・チーズ・野菜・ブルスケッタの2人前盛り合わせ。29.00ユーロ）", "a": "Herrngasse 8, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Ristorante%20Eiscaf%C3%A9%20Italia%20Herrngasse%208%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-italia", "food": "../europe/germany/img/rothenburg/rothenburg-italia.jpg", "ext": ""}, {"i": 23, "n": "Vito Restaurant – Café – Bar", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 49.3778978, "lng": 10.1795656, "d": "ボローニャ・ビアンカ（トマトを使わない白いピザに、モルタデッラ・ピスタチオ・水牛モッツァレラ・トリュフオイル。19ユーロ）／ヴェローナ・ビアンカ（クレームフレーシュ・くるみ・野花のはちみつ・パルマハム・水牛モッツァレラの白いピザ。21ユーロ）／タリアテッレ・ポルチーニ（ポルチーニ茸とトリュフのクリームの平打ちパスタ。17.50ユーロ）", "a": "Georgengasse 2, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Vito%20Restaurant%20%E2%80%93%20Caf%C3%A9%20%E2%80%93%20Bar%20Georgengasse%202%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-vito", "food": "../europe/germany/img/rothenburg/rothenburg-vito.jpg", "ext": ""}, {"i": 24, "n": "Trattoria Volare", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 49.3906, "lng": 10.2185, "d": "ピッツァ・ボローニャ（トマトを使わない白いピザに、ブッラータ・バジルペースト・モルタデッラ・ピスタチオ。16.90ユーロ）／ピッツァ・カルパッチョ（ブッラータ・牛ヒレの薄切り生肉・ルッコラの白いピザ。18.50ユーロ）／フォカッチャ・ロマーナ（ローマ風の薄いフォカッチャにモルタデッラ・ペースト・ミニトマト。16.70ユーロ）", "a": "Am Bauerngraben 1, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Trattoria%20Volare%20Am%20Bauerngraben%201%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-trattoria-volare", "food": "../europe/germany/img/rothenburg/rothenburg-trattoria-volare.jpg", "ext": ""}, {"i": 25, "n": "Hung Anh Sushi & Asian Cuisine", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 49.3770002, "lng": 10.1827362, "d": "フォー（Phở。5時間煮出した牛骨スープに八角・カルダモン・しょうがで香りをつけた米の平麺のスープ）／ブン・ボー・サイゴン（Bún Bò Sài Gòn。マリネした牛ヒレと米麺をライムだれ・揚げ玉ねぎ・ピーナッツで和える南部風の汁なし麺。16.90ユーロ）／ネム・ハノイ（Nem Hà Nội。豚ひき肉・春雨・キクラゲなどを巻いた自家製の揚げ春巻き。5.90ユーロ）", "a": "Rödergasse 22, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Hung%20Anh%20Sushi%20%26%20Asian%20Cuisine%20R%C3%B6dergasse%2022%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-hung-anh", "food": "../europe/germany/img/rothenburg/rothenburg-hung-anh.jpg", "ext": ""}, {"i": 26, "n": "Don Gallo – Comida Mexicana", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 49.375949, "lng": 10.1798682, "d": "タコス・ドラドス・デ・ビリア（煮込んだ牛胸肉とチーズを詰めて焼いたトルティーヤを、煮汁のスープにつけて食べる。17.90ユーロ）／フランク・メックス・タコス（フランケン名物の豚肩肉の煮込み〈シェウフェレ〉を具にしたタコス。17.90ユーロ）／ソパ・デ・トルティーヤ（鶏のスープにトルティーヤの細切り・トマト・アボカド・フレッシュチーズ。8.60ユーロ）", "a": "Obere Schmiedgasse 21, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Don%20Gallo%20%E2%80%93%20Comida%20Mexicana%20Obere%20Schmiedgasse%2021%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-don-gallo", "food": "../europe/germany/img/rothenburg/rothenburg-don-gallo.jpg", "ext": ""}, {"i": 27, "n": "Die Molkerei", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 49.3810102, "lng": 10.1884999, "d": "グラスヌードル・ボウル（春雨・紫キャベツ・枝豆・きゅうり・香草にライムとピーナッツのたれ。ヴィーガン。14.20ユーロ）／テリヤキ・ビーフのバオ（ほぐした照り焼き牛肉を蒸しパン〈バオ〉で挟む。15.40ユーロ）／ハーブ・コーンフレーク衣のシュニッツェル（豚カツをコーンフレーク入りの衣で揚げ、ポテトとコケモモのマヨネーズを添える。16.20ユーロ）", "a": "Schweinsdorfer Str. 25b, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Die%20Molkerei%20Schweinsdorfer%20Str.%2025b%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-die-molkerei", "food": "../europe/germany/img/rothenburg/rothenburg-die-molkerei.jpg", "ext": ""}, {"i": 28, "n": "Bäckerei Striffler", "c": ["屋台・食べ歩き"], "v": "カフェ", "lat": 49.3757675, "lng": 10.1797818, "d": "シュネーバレン(ショートクラスト生地の帯を丸めて揚げ、粉砂糖をふった町の名物菓子)／ツィムト・ウント・ツッカー(シナモン砂糖をまぶしたシュネーバレン)／ヴィーガン・シュネーバレン(動物性素材を使わない版。2022年から定番)", "a": "Untere Schmiedgasse 1, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=B%C3%A4ckerei%20Striffler%20Untere%20Schmiedgasse%201%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-baeckerei-striffler", "food": "../europe/germany/img/rothenburg/rothenburg-baeckerei-striffler.jpg", "ext": ""}, {"i": 29, "n": "Diller Schneeballenträume", "c": ["屋台・食べ歩き"], "v": "カフェ", "lat": 49.3765347, "lng": 10.1795264, "d": "オリギナール・シュネーバレン(粉砂糖をかけた原形。約100g)／ツィムトバレン(シナモン砂糖をまぶしたもの)／バレン・ミット・ヌスヌガート・フュルング(ヘーゼルナッツのヌガーを詰め、チョコの衣と刻みナッツをかけたもの)／ピスタツィエン・マルツィパン(ピスタチオ入りのマジパンを詰めたもの)", "a": "Obere Schmiedgasse 7, 91541 Rothenburg ob der Tauber（カフェ）／Am Markt 4（売店）", "m": "https://www.google.com/maps/search/?api=1&query=Diller%20Schneeballentr%C3%A4ume%20Obere%20Schmiedgasse%207%2C%2091541%20Rothenburg%20ob%20der%20Tauber%EF%BC%88%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%89%EF%BC%8FAm%20Markt%204%EF%BC%88%E5%A3%B2%E5%BA%97%EF%BC%89", "u": "../europe/germany/rothenburg.html#c-rothenburg-diller-schneeballentraeume", "food": "../europe/germany/img/rothenburg/rothenburg-diller-schneeballentraeume.jpg", "ext": ""}, {"i": 30, "n": "Bäckerei-Konditorei-Café Walter Friedel", "c": ["屋台・食べ歩き"], "v": "カフェ", "lat": 49.3777489, "lng": 10.1792664, "d": "ローテンブルガー・タウバークーゲル(シュネーバレンに詰め物を入れ、チョコなどの衣をかけた店の看板菓子)／シュネーバレン(細長い生地を球状にまとめて揚げた町の名物)／プティフール(ひと口サイズの小さなケーキ)", "a": "Markt 8, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=B%C3%A4ckerei-Konditorei-Caf%C3%A9%20Walter%20Friedel%20Markt%208%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-cafe-walter-friedel", "food": "../europe/germany/img/rothenburg/rothenburg-cafe-walter-friedel.jpg", "ext": ""}, {"i": 31, "n": "Metzgerei Trumpp (Filiale Rothenburg)", "c": ["屋台・食べ歩き"], "v": "食材の店", "lat": 49.3761453, "lng": 10.179401, "d": "シュロット・エンゲレ(フランケン風の焼きソーセージを、ブナとナラの薪で煙突燻製した細身の品。そのまま食べられる)／ローテンブルガー・カノーネンクーゲル(「大砲の弾」の名の、豚の頭肉などを固めた丸い燻製の煮こごりソーセージ)／ローテンブルガー・フォイアーリング(パプリカと胡椒のきいた輪形の乾燥ソーセージ)", "a": "Obere Schmiedgasse 18, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Metzgerei%20Trumpp%20%28Filiale%20Rothenburg%29%20Obere%20Schmiedgasse%2018%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-metzgerei-trumpp", "food": "../europe/germany/img/rothenburg/rothenburg-metzgerei-trumpp.jpg", "ext": ""}, {"i": 32, "n": "Allegra Schokolade", "c": ["屋台・食べ歩き"], "v": "ベーカリー・パティスリー", "lat": 49.3780361, "lng": 10.1796169, "d": "プレーンライン／タウバータール／ローテンブルク(町の名所の名を付けた板チョコ。ホワイト・ミルク・ビターの3種)／プラリネ(保存料なしの自家製の一口チョコ。季節で替わる)／ビアショコラーデ(ビールを使ったチョコ)", "a": "Georgengasse 9, 91541 Rothenburg ob der Tauber（現在は仮店舗 Rödergasse 2-4 で営業）", "m": "https://www.google.com/maps/search/?api=1&query=Allegra%20Schokolade%20Georgengasse%209%2C%2091541%20Rothenburg%20ob%20der%20Tauber%EF%BC%88%E7%8F%BE%E5%9C%A8%E3%81%AF%E4%BB%AE%E5%BA%97%E8%88%97%20R%C3%B6dergasse%202-4%20%E3%81%A7%E5%96%B6%E6%A5%AD%EF%BC%89", "u": "../europe/germany/rothenburg.html#c-rothenburg-allegra-schokolade", "food": "../europe/germany/img/rothenburg/rothenburg-allegra-schokolade.jpg", "ext": ""}, {"i": 33, "n": "Café einzigARTig", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 49.3790226, "lng": 10.1822059, "d": "グリュックスフリューシュテュック(Glücksfrühstück。チーズ・ハム・サーモン・ゆで卵・果物と野菜・パン籠を組み合わせる朝食。15.90ユーロ)／ホルツフェラー(Holzfäller。目玉焼きにベーコンとハムを添えた「きこり」の名のボリューム朝食。16.90ユーロ)／自家製ケーキとトルテ(日替わり。ショーケースの中から選ぶ)", "a": "Galgengasse 33, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20einzigARTig%20Galgengasse%2033%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-cafe-einzigartig", "food": "../europe/germany/img/rothenburg/rothenburg-cafe-einzigartig.jpg", "ext": ""}, {"i": 34, "n": "Café Lebenslust", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 49.3775511, "lng": 10.177313, "d": "朝食・ブランチ(公式サイトにメニューの掲載はなく、品名・価格は未確認。地元の紹介サイトは朝食・ブランチ・自家製ケーキ・ビーガン料理を出すと記す)／中庭でのコーヒーとケーキ", "a": "Kirchgasse 5, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Lebenslust%20Kirchgasse%205%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-cafe-lebenslust", "food": "../europe/germany/img/rothenburg/rothenburg-cafe-lebenslust.jpg", "ext": ""}, {"i": 35, "n": "Café im Hotel Gotisches Haus", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 49.3767321, "lng": 10.1772666, "d": "アプフェルシュトゥルーデル(Apfelstrudel。薄い生地でりんごを巻いて焼いた菓子を温めて、バニラアイスと生クリームを添える。7.20ユーロ)／リューデスハイマー・カフェ(Rüdesheimer Kaffee。ブランデーのアスバッハ・ウーラルトを入れた熱いコーヒーに生クリームをのせる。9.80ユーロ)／日替わりのケーキ(Kuchen。品は日により替わる)", "a": "Herrngasse 13, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20im%20Hotel%20Gotisches%20Haus%20Herrngasse%2013%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-cafe-gotisches-haus", "food": "../europe/germany/img/rothenburg/rothenburg-cafe-gotisches-haus.jpg", "ext": ""}, {"i": 36, "n": "Gusto Kaffeemanufaktur & Spezialitäten", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 49.3784531, "lng": 10.1812695, "d": "焙煎したてのコーヒー(店で焼いた豆をその場で淹れる1杯。豆の産地ごとに焙煎を変える)／木曜のライブ焙煎(Live-Kaffeerösten。売り場の焙煎機で焙煎する様子を見られる)", "a": "Galgengasse 12, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Gusto%20Kaffeemanufaktur%20%26%20Spezialit%C3%A4ten%20Galgengasse%2012%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-gusto-kaffeemanufaktur", "food": "../europe/germany/img/rothenburg/rothenburg-gusto-kaffeemanufaktur.jpg", "ext": ""}, {"i": 37, "n": "Grand Cru Chocolaterie & Patisserie am Plönlein", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 49.3741905, "lng": 10.1802863, "d": "テルトヒェン(Törtchen。季節のトルテを1人分に仕立てた小さなケーキ。2026年秋冬はピスタチオクリームにカシスを入れたもの、ペカンナッツのムースなど)／プラリネ(Praline。ヴァローナのチョコレートで作る一口チョコ。季節ごとに6〜9種)／アイスプラリネ(Eispraline。自家製アイスをチョコで包んだ夏の品。店頭のみ)", "a": "Plönlein 3, 91541 Rothenburg ob der Tauber", "m": "https://www.google.com/maps/search/?api=1&query=Grand%20Cru%20Chocolaterie%20%26%20Patisserie%20am%20Pl%C3%B6nlein%20Pl%C3%B6nlein%203%2C%2091541%20Rothenburg%20ob%20der%20Tauber", "u": "../europe/germany/rothenburg.html#c-rothenburg-grand-cru-chocolaterie", "food": "../europe/germany/img/rothenburg/rothenburg-grand-cru-chocolaterie.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([49.377784,10.181112],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('rothenburg', "ローテンブルク・オプ・デア・タウバー");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
