@@ -1,15 +1,17 @@
-GERMANY / COLOGNE / KOLN 🇩🇪
+EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 🇩🇪
 
-ブラウハウス・ライン郷土料理・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選37スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)です。
+ライン川のほとり、大聖堂の双塔がそびえるドイツ第4の都市。ケルシュ（細いグラスで出す淡色のビール）のブラウハウス、ハルフェ・ハーンやヒンメル・ウン・Ädのラインラントの郷土料理、移民の多い街らしいトルコ・中東・アジアの店。大聖堂の下の旧市街、ベルギー地区、エーレンフェルト、南地区から厳選73スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写（公式サイト・公式SNS等からの引用。出典は各カードに明記）。
 
-> 2026年7月調査 / 営業時間・定休日は変動あり・訪問前にマップで最終確認を
+> 2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を
 
 **タグの意味**
 
-- `ブログ推薦` — 個人・公式ブログ/メディアで名店として言及
-- `口コミ突出` — 同カテゴリで口コミ・行列が突出
+- `ブログ推薦` — 在住者・個人ブログやローカルメディアで名店として言及
+- `口コミ突出` — 同カテゴリで口コミ・行列・百名店選出が突出
 - `老舗・歴史` — 地元に根ざした歴史ある店
-- `食の専門街・市場` — 食の専門街・市場の立地
+- `地元密着` — 観光客より地元客に愛される店
+- `隣接市` — 市外(隣接市)の店 — 本文に市名を明記
+- `子連れ歓迎` — ハイチェア・ベビーカー可などが出典に明記された店
 
 > 📷 各店の写真は上が**料理**、下が**店構え**の実写です（Google の店舗写真 ©各投稿者/Google ／ 一部は Google Street View ©Google）。店構えが確認できなかった店は料理の1枚だけです。
 
@@ -17,384 +19,248 @@ GERMANY / COLOGNE / KOLN 🇩🇪
 
 ## 🗾 店舗マップ
 
-**🗺️ 店舗マップ — 全域マップ**
+**全域マップ**
 
 @@IMG:europe/germany/img/cologne/_map.png@@
 
-**🗺️ 店舗マップ — 中心部拡大**
+@@MAPTOC:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73@@
+
+**中心部拡大1 旧市街 大聖堂・アルター・マルクト・ホイマルクト**
 
 @@IMG:europe/germany/img/cologne/_map2.png@@
 
-> Map © OpenStreetMap contributors／ピンの番号は下の一覧と同じ ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
+@@MAPTOC:1,4,5,9,10,13,18,19,30,31,35,61,65@@
+
+**中心部拡大2 西 リング・ベルギー地区・ツュルピッヒャー通り**
+
+@@IMG:europe/germany/img/cologne/_map3.png@@
+
+@@MAPTOC:2,7,11,12,15,26,27,33,37,38,39,40,41,53,54,55,57,63,64,68,69,73@@
+
+**中心部拡大3 北西 エーレンフェルト**
+
+@@IMG:europe/germany/img/cologne/_map4.png@@
+
+@@MAPTOC:6,16,32,43,44,47,48,49@@
+
+**中心部拡大4 北 アイゲルシュタイン・アグネス地区・ニッペス**
+
+@@IMG:europe/germany/img/cologne/_map5.png@@
+
+@@MAPTOC:14,17,21,22,23,28,36,42,50,60@@
+
+**中心部拡大5 南 フォルクスガルテン・南地区・ズュルツ**
+
+@@IMG:europe/germany/img/cologne/_map6.png@@
+
+@@MAPTOC:7,8,11,12,15,20,24,25,26,27,29,46,53,54,55,56,57,58,66,67,71@@
+
+> ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors ／ この画像のピンはタップできません。各店の位置はカード内の「地図」リンク（Googleマップ）から開いてください。
 
 ---
 
-## ブラウハウス・ライン郷土料理
+## ケルシュのブラウハウス・醸造所
 
-### Brauhaus FRÜH am Dom（ブラウハウス・フリュー・アム・ドーム）
+### 1. FRÜH am Dom（フリュー・アム・ドーム）
 
-@@IMG:europe/germany/img/cologne/frueh-am-dom.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-frueh-am-dom.jpg@@
 
-`老舗・歴史` `口コミ突出`
+`official` `tourism`
 
-1904年創業、大聖堂の目の前に構えるケルンで最も有名なブラウハウス。青い前掛けの給仕ケベスが小さなグラスのフリュー・ケルシュを次々と運ぶ、ケルン流ビアホール文化の象徴的存在。
+1904年に自家醸造所を併設した酒場として開業した、ケルシュ醸造所フリューの直営ブラウハウス。1階の本館は木の卓と古いタイル暖炉、天井画の残る伝統的な造りで、樽から注ぐ「ツァペス」と給仕「ケーベス」が客席を回る。地下には中世の円天井を持つブラウハウスケラー、2階に暖炉の間、夏はガラス屋根の中庭テラスとビアガーデンを開ける。
 
-- **一皿**: ハルヴァー・ハーン(熟成ゴーダチーズを厚切りにしてライ麦パン(レゲルヒェン)に載せ、マスタードと玉ねぎを添えるケルシュの定番つまみ)
-- **営業時間**: 月〜木 11:00〜23:00 / 金 11:00〜0:00 / 土 10:00〜0:00 / 日 10:00〜23:00
-- **定休日**: なし
-- **住所**: Am Hof 12-18, 50667 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 2613215 ／ [公式サイト](https://www.frueh-am-dom.de/brauhaus.html)
-- **公式**: [公式サイト](https://www.frueh-am-dom.de/brauhaus.html)
-- **選定理由**: Ausländer Blogのケルン・ブラウハウスガイドが「最も象徴的なブラウパブ」として筆頭に挙げ、公式サイトでも1904年からの歴史を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brauhaus%20FR%C3%9CH%20am%20Dom%20Am%20Hof%2012-18%2C%2050667%20K%C3%B6ln)
-- **参照元**: [frueh-am-dom.de](https://www.frueh-am-dom.de/) / [auslanderblog.com](https://auslanderblog.com/best-cologne-beer-halls/)
-
-### Brauhaus Päffgen（ブラウハウス・ペフゲン）
-
-@@IMG:europe/germany/img/cologne/paeffgen.jpg@@
-
-`老舗・歴史` `ブログ推薦`
-
-1883年から続くケルン最古の自家醸造ブラウハウス。コンピューターも機械も使わず100年前と同じ手仕事で醸すペフゲン・ケルシュは瓶詰めされず、ここと少数の直営店でしか飲めない。
-
-- **一皿**: シュヴァインスハクセ(豚すね肉を皮ごとカリカリに焼き上げたドイツ名物のロースト。ザワークラウトやジャガイモと共に供される)
-- **営業時間**: 毎日12:00開店(公式)
+- **一皿**: ハルヴェ・ハーン(ライ麦の丸パン「レゲルヒェン」に自家熟成のオランダ産チーズとバターを添えたケルシュのつまみ。名前は「半羽の鶏」だが鶏は入らない。7.80ユーロ)／ヒンメル・ウン・エード(「天と地」の意。焼いた血のソーセージに、リンゴ入りのマッシュポテトと炒め玉ねぎを合わせたケルンの名物。16.00ユーロ)／ライニッシャー・ザウアーブラーテン(酢とスパイスに漬けて煮込んだ牛肉の煮込み。アーモンドとリンゴのコンポート、ジャガイモ団子付き。23.10ユーロ)
+- **営業時間**: 月〜木 11:00〜23:00／金 11:00〜24:00／土 10:00〜24:00／日・祝 10:00〜23:00（料理の提供時間は別に設定あり）
 - **定休日**: 無休
+- **住所**: Am Hof 12-18, 50667 Köln
+- **予約**: 可（公式サイトのオンライン予約。10名以上は催事用フォーム） — ☎ +49 221 2613215 ／ [公式サイト](https://www.frueh-am-dom.de/)
+- **選定理由**: ケルシュ醸造所の直営店として最も知られた一軒で、ケルン観光局の公式サイトもブラウハウスとして掲載している。営業の根拠＝公式サイトのブラウハウスのページ（2026-10-19閲覧）が月〜木11〜23時・金11〜24時・土10〜24時・日祝10〜23時の営業時間とオンライン予約を掲示し、トップページには2026年10月16日・23日付の催しの告知が並ぶ。料理名と価格は同サイトのPDF献立（2026-10-19取得）による。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=FR%C3%9CH%20am%20Dom%20Am%20Hof%2012-18%2C%2050667%20K%C3%B6ln)
+- **参照元**: [FRÜH am Dom 公式サイト ブラウハウス（2026-10-19閲覧。営業時間・館内の各部屋の説明）](https://www.frueh-am-dom.de/brauhaus.html) / [FRÜH am Dom 公式サイト トップ（2026-10-19閲覧。1904年創業、2026年10月の催しの告知）](https://www.frueh-am-dom.de/) / [FRÜH am Dom 公式 献立PDF（2026-10-19取得）](https://www.frueh-am-dom.de/fileadmin/menus/Brauhaus/SpeisekarteBrauhaus.pdf) / [ケルン観光局 公式サイト「FRÜH am Dom」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/frueh-am-dom)
+
+### 2. Brauhaus Päffgen（ブラウハウス・ペフゲン）
+
+@@IMG:europe/germany/img/cologne/cologne-paeffgen.jpg@@
+
+`official` `tourism`
+
+1883年にヘルマン・ペフゲンが創業した醸造所の直営店で、公式サイトは「ケルン最後のハウスブラウエライ（自家醸造酒場）」と名乗る。ケルシュは向かいのイム・クラッパーホーフの醸造所で造り、フリーゼン通りの店では樽からだけ注ぐ。中庭のビアガーデンと、店主が座った「ベーヒトシュトゥール（告解室）」と呼ばれる帳場が残る。
+
+- **一皿**: ペフゲン・ケルシュ(自家醸造のケルシュを木樽から注ぐ。0.2L 2.40ユーロ)／ハルヴェン・ハーン(ライ麦パンにチーズを添えたつまみ。7.50ユーロ)／ヒンメル・ウン・エード・ミット・フレンツ(リンゴ入りマッシュポテトに、ケルン方言でフレンツと呼ぶ血のソーセージを添えた名物。13.50ユーロ)／オリジナル・ペフゲン・ビアハクセ(皮をかりっと焼いた豚すね肉の丸焼き。炒めたジャガイモ付き。24.90ユーロ)
+- **営業時間**: 毎日 12:00〜（閉店時刻の記載なし）
+- **定休日**: 無休（公式サイトに定休日の記載なし）
 - **住所**: Friesenstraße 64-66, 50670 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 135461 ／ [公式サイト](http://www.paeffgen-koelsch.de/)
-- **公式**: [公式サイト](http://www.paeffgen-koelsch.de/)
-- **選定理由**: ケルン観光局(koelntourismus.de)が「最古の自家醸造所にして唯一無二の存在」と紹介。公式サイトで営業情報を確認。
+- **予約**: 可（電話のみ。12時以降に受付） — ☎ +49 221 135461 ／ [公式サイト](https://paeffgen-koelsch.de/)
+- **選定理由**: ケルシュを店内の自家醸造所で造って出す数少ない一軒で、ケルン観光局の公式サイトもブラウハウスとして掲載。営業の根拠＝公式サイト（2026-10-19閲覧。2025年11月に刷新、表記は©2026）が、ブラウハウスは毎日12時から・電話予約は12時以降、の営業案内と現行の献立・価格を掲示している。前の版にも載せた店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brauhaus%20P%C3%A4ffgen%20Friesenstra%C3%9Fe%2064-66%2C%2050670%20K%C3%B6ln)
-- **参照元**: [paeffgen-koelsch.de](https://paeffgen-koelsch.de/) / [koelntourismus.de](https://www.koelntourismus.de/genuss-diversitaet/gastronomie/detail/brauhaus-paeffgen)
+- **参照元**: [Päffgen Kölsch 公式サイト トップ（2026-10-19閲覧。1883年創業・営業時間・予約）](https://paeffgen-koelsch.de/) / [Päffgen Kölsch 公式サイト 料理と飲み物（2026-10-19閲覧。献立と価格）](https://paeffgen-koelsch.de/speisen-und-getraenke/) / [ケルン観光局 公式サイト「Brauhaus Päffgen」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/brauhaus-paeffgen)
 
-### Lommerzheim（ロメルツハイム）
+### 3. Gaststätte Lommerzheim（ロンマーツハイム）
 
-@@IMG:europe/germany/img/cologne/lommerzheim.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-lommerzheim.jpg@@
 
-`老舗・歴史` `ブログ推薦`
+`official` `tourism` `地元密着`
 
-1959年開店当時の姿をほぼ残すドイツ側デュッツ地区の伝説的居酒屋で、「最もケルンらしい酒場」と呼ばれる。野外博物館が建物ごと収蔵を申し出たという逸話を持ち、ペフゲン・ケルシュを樽から注ぐ。
+ライン川右岸ドイツ地区の古い酒場で、公式サイトは「人によっては居間のような店」と記す。ペフゲン・ケルシュを樽から注ぎ、料理は分厚い豚のコテレット（骨付きロース）とソーセージが中心の短い献立。木の内装と地下の煉瓦造りのケラーが残る。
 
-- **一皿**: コテレット(厚切り豚カツレツ)(骨付き豚ロースを豪快に焼いた分厚いチョップに炒め玉ねぎを載せた名物。自家製ポテトサラダと共に)
-- **営業時間**: 月〜土 11:00〜14:30 / 16:30〜0:00 / 日 11:00〜14:30 / 4:30〜23:00
+- **一皿**: コテレット(骨付きの厚い豚ロースを焼いたこの店の看板。フライドポテトか自家製ポテトサラダ、ライ麦パン、炒め玉ねぎから付け合わせを選ぶ)／ハルヴェン・ハーン(熟成12か月のゴーダとライ麦パン「レゲルヒェン」)／ペフゲン・ケルシュに漬けたマインツァーチーズ(香りの強い酸乳チーズをケルシュに漬けたつまみ)
+- **営業時間**: 月・水〜土 11:00〜14:30、16:30〜24:00／日・祝 11:00〜14:30、16:30〜23:00
 - **定休日**: 火曜
 - **住所**: Siegesstraße 18, 50679 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 814392 ／ [公式サイト](https://www.lommerzheim.koeln/)
-- **公式**: [公式サイト](https://www.lommerzheim.koeln/)
-- **選定理由**: ケルン観光局が「最もケルンらしい酒場」として詳細に紹介し、Ausländer Blogも名物コテレットを特筆。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Lommerzheim%20Siegesstra%C3%9Fe%2018%2C%2050679%20K%C3%B6ln)
-- **参照元**: [koelntourismus.de](https://www.koelntourismus.de/genuss-diversitaet/gastronomie/detail/lommerzheim) / [auslanderblog.com](https://auslanderblog.com/best-cologne-beer-halls/)
+- **予約**: 可（電話・留守番電話で依頼し、折り返しで確定。夜は16:30の入店のみ） — ☎ +49 221 814392 ／ [公式サイト](https://www.lommerzheim.koeln/)
+- **選定理由**: 観光地の旧市街から川を渡った先で、地元客の多い昔ながらの酒場として知られる。ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が火曜定休と曜日ごとの営業時間を掲示し、予約ページに「2027年分の予約は2026年10月から受付」と書いている。前の版にも載せた店。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Gastst%C3%A4tte%20Lommerzheim%20Siegesstra%C3%9Fe%2018%2C%2050679%20K%C3%B6ln)
+- **参照元**: [Lommerzheim 公式サイト（2026-10-19閲覧。営業時間・献立の抜粋・予約の方法、2027年分の予約は2026年10月から）](https://www.lommerzheim.koeln/) / [Lommerzheim 公式サイト（別ドメイン lommerzheim.de、2026-10-19閲覧。同内容）](https://www.lommerzheim.de/) / [ケルン観光局 公式サイト「Lommerzheim」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/lommerzheim)
 
-### Brauhaus zur Malzmühle（ブラウハウス・ツア・マルツミューレ）
+### 4. Brauerei zur Malzmühle（ブラウエライ・ツア・マルツミューレ）
 
-@@IMG:europe/germany/img/cologne/malzmuehle.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-brauerei-zur-malzmuehle.jpg@@
 
-`老舗・歴史` `口コミ突出`
+`official` `tourism`
 
-1858年から続くホイマルクト広場の老舗醸造所兼食堂で、麦芽の甘みが特徴のミューレン・ケルシュ発祥の地。クリントン米大統領も訪れた、地元客の多いブラウハウスとして知られる。
+1858年からミューレン・ケルシュを造ってきた醸造所の直営ブラウハウス。旧市街のホイマルクトにあり、木の内装の大広間で樽のケルシュと伝統料理を出す。系列のジュンナー蒸留所の酒や、自家製の清涼飲料「ケルシェス・ヴァッサー」も置く。平日昼は日替わりの昼定食がある。
 
-- **一皿**: ザウアーブラーテン(酢とワインに数日漬け込んだ牛肉を煮込み、レーズン入りの甘酸っぱいソースで供するライン地方の郷土ロースト)
-- **営業時間**: 月〜木 12:00〜23:00 / 金・土 12:00〜0:00 / 日 12:00〜23:00
-- **定休日**: なし
+- **一皿**: マルツシュニッツェル(麦芽を混ぜた濃い色の衣で揚げた豚のカツ。フライドポテト付き)／ヒンメル・ウン・エード(血のソーセージとリンゴ入りマッシュポテト。16.50ユーロ)／シュヴァインスハクセ(1200gの豚すね肉の丸焼き。ザワークラウトとマッシュポテト付き。27.90ユーロ)
+- **営業時間**: 月〜木 12:00〜23:00／金・土 12:00〜24:00／日・祝 12:00〜23:00（平日 12:00〜16:00 は昼定食あり）
+- **定休日**: 無休
 - **住所**: Heumarkt 6, 50667 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 92160613 ／ [公式サイト](http://brauereizurmalzmuehle.de/)
-- **公式**: [公式サイト](http://brauereizurmalzmuehle.de/)
-- **選定理由**: 公式サイトが165年超の歴史を明記し、Brauhaustourのケルン・ブラウハウスガイドでも定番として掲載。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brauhaus%20zur%20Malzm%C3%BChle%20Heumarkt%206%2C%2050667%20K%C3%B6ln)
-- **参照元**: [muehlenkoelsch.de](https://muehlenkoelsch.de/) / [brauhaustour.com](https://www.brauhaustour.com/ratgeber/brauhaeuser-koeln/)
+- **予約**: 可（公式サイトの予約ページ・電話・メール） — ☎ +49 221 92160613 ／ [公式サイト](https://brauereizurmalzmuehle.de/)
+- **選定理由**: 旧市街の老舗ブラウハウスの一つで、ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が月〜木12〜23時・金土12〜24時・日祝12〜23時の営業時間と予約窓口を掲示し、2026年9月版の献立ページ、2026年10月12〜16日の昼定食を出している。前の版にも載せた店。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brauerei%20zur%20Malzm%C3%BChle%20Heumarkt%206%2C%2050667%20K%C3%B6ln)
+- **参照元**: [Brauerei zur Malzmühle 公式サイト トップ（2026-10-19閲覧。営業時間・1858年からの醸造）](https://brauereizurmalzmuehle.de/) / [Brauerei zur Malzmühle 公式サイト 献立 2026年9月版（2026-10-19閲覧。価格）](https://brauereizurmalzmuehle.de/speisenkarte-sept-2026/) / [Brauerei zur Malzmühle 公式サイト 料理のページ（2026-10-19閲覧）](https://brauereizurmalzmuehle.de/speisekarte/) / [ケルン観光局 公式サイト「Brauerei zur Malzmühle」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/brauerei-zur-malzmuehle)
 
-### Brauhaus Sion（ブラウハウス・ジオン）
+### 5. Brauhaus Sion（ブラウハウス・ジオン）
 
-@@IMG:europe/germany/img/cologne/brauhaus-sion.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-brauhaus-sion.jpg@@
 
-`老舗・歴史`
+`official` `tourism`
 
-大聖堂と市庁舎の間、旧市街の中心で1318年に遡る記録を持つ由緒あるブラウハウス。自家銘柄ジオン・ケルシュと共に、ライン地方郷土料理の定番が一通り揃う。
+1318年からこの地にあったとする醸造酒場の流れをくみ、2018年に700周年を祝ったブラウハウス。1942年の空襲で全壊したのち、醸造者ハンス・ジオンが再建した。ハンス・ジオンはケルシュを地域の名物ビールとして広め、ケルシュ協定の推進に関わったことから「ケルシュの父」と呼ばれる。系列のホテル・ジオンを併設し、カーニバルや音楽の催しも多い。
 
-- **一皿**: ヒンメル・ウン・エード(「天(リンゴ)と地(ジャガイモ)」を意味する郷土料理。リンゴソースとマッシュポテトに焼いた血のソーセージを載せる)
-- **営業時間**: 毎日12:00開店(公式)
+- **一皿**: ヒンメル・ウン・エード(血のソーセージとリンゴ入りマッシュポテト。15.80ユーロ)／ザウアーブラーテン(酢漬けの牛肉の煮込み。24.30ユーロ)／ハルヴェ・ハーン(ライ麦パンとチーズ。7.90ユーロ)／ライベクーヘン(すりおろしたジャガイモを揚げ焼きにしたパンケーキ。リンゴのコンポートを添える)
+- **営業時間**: 毎日 12:00〜（閉店時刻の記載なし）
 - **定休日**: 無休
 - **住所**: Unter Taschenmacher 5-7, 50667 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 2578540 ／ [公式サイト](http://www.brauhaus-sion.de/)
-- **公式**: [公式サイト](http://www.brauhaus-sion.de/)
-- **選定理由**: CYHITのケルシュ醸造所ガイドが「ジオンではヒンメル・ウン・エードを試すべし」と名指しで推薦。営業情報は公式サイトで確認。
+- **予約**: 可（電話・公式サイトの予約。10名以上は問い合わせフォーム） — ☎ +49 221 2578540 ／ [公式サイト](https://www.brauhaus-sion.de/)
+- **選定理由**: ケルシュの歴史に名を残す醸造家の店で、ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が毎日12時からの営業、電話・フォームでの予約、2026年10月26日・11月23日のパブクイズや2026年11月11日のカーニバル開幕の催しを掲示し、献立のページに現行の価格を載せている。前の版にも載せた店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brauhaus%20Sion%20Unter%20Taschenmacher%205-7%2C%2050667%20K%C3%B6ln)
-- **参照元**: [brauhaus-sion.de](https://www.brauhaus-sion.de/) / [cyhitours.com](https://www.cyhitours.com/cologne/kolsch-breweries/)
+- **参照元**: [Brauhaus Sion 公式サイト トップ（2026-10-19閲覧。毎日12時から・2026年10〜12月の催し）](https://www.brauhaus-sion.de/) / [Brauhaus Sion 公式サイト 献立（2026-10-19閲覧。価格）](https://www.brauhaus-sion.de/speisekarte/) / [Brauhaus Sion 公式サイト 歴史（2026-10-19閲覧。ハンス・ジオンと再建）](https://www.brauhaus-sion.de/tradition/) / [Brauhaus Sion 公式サイト 700周年（2026-10-19閲覧。写真）](https://www.brauhaus-sion.de/700-jahre/) / [ケルン観光局 公式サイト「Brauhaus Sion」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/brauhaus-sion)
 
-### Bei Oma Kleinmann（バイ・オーマ・クラインマン）
+### 6. Braustelle（ブラウシュテレ）
 
-@@IMG:europe/germany/img/cologne/bei-oma-kleinmann.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-braustelle.jpg@@
 
-`ブログ推薦` `口コミ突出`
+`official` `tourism` `地元密着`
 
-学生街ツュルピッヒャー通りの名物食堂で、90歳過ぎまで厨房に立った「クラインマンおばあちゃん」の名を受け継ぐシュニッツェルの聖地。週替わりメニューと飼育にこだわった肉が自慢で、夜は予約必須の人気。
+醸造士ペーター・エッサーが営む、店内で醸造するエーレンフェルトの酒場で、公式サイトは「25年近く」この地区で手造りのビールを造ってきたと記す。看板は淡色で苦みのある「ヘリオス」で、ケルシュの名を名乗らないケルン流の淡色ビール。ほかにアルト、ハイビスカスを使ったエール「ピンク・パンサー」など季節の特別醸造を黒板に書き出す。醸造所見学や醸造講座も開く。
 
-- **一皿**: シュニッツェル(薄くたたいた豚や仔牛の肉に衣を付けて揚げ焼きにするドイツ定番のカツレツ。ここでは多彩なソースと大盛りで供される)
-- **営業時間**: 月〜木17:00〜23:00、金土17:00〜24:00(公式)
-- **定休日**: 日曜
-- **住所**: Zülpicher Str. 9, 50674 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 232346 ／ [公式サイト](https://www.beiomakleinmann.de/)
-- **公式**: [公式サイト](https://www.beiomakleinmann.de/)
-- **選定理由**: 地元メディアで「ケルンのシュニッツェルの代名詞」として定番掲載の人気店。営業時間は公式サイトで確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bei%20Oma%20Kleinmann%20Z%C3%BClpicher%20Str.%209%2C%2050674%20K%C3%B6ln)
-- **参照元**: [beiomakleinmann.de](https://www.beiomakleinmann.de/) / [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2026/urige-brauhaeuser/)
-
-## 食べ歩き — ライベクーヘン・カリーヴルスト
-
-### Rievkoochebud（リーフコーヘブート）
-
-@@IMG:europe/germany/img/cologne/rievkoochebud.jpg@@
-
-`食の専門街・市場` `ブログ推薦`
-
-旧市街ザルツガッセの小さな屋台で、店名はケルン方言で「ライベクーヘン小屋」。注文ごとに揚げるジャガイモのパンケーキは薄くカリカリで油っぽくなく、行列必至のテイクアウト専門店。
-
-- **一皿**: ライベクーヘン(すりおろしたジャガイモを薄く円形に揚げ焼きにするドイツ名物のパンケーキ。リンゴソースを付けて食べるのが定番)
-- **営業時間**: 水〜土 12:00〜20:00 / 日 12:00〜18:00
-- **定休日**: 月・火曜
-- **住所**: Salzgasse 6, 50667 Köln
-- **予約**: 不要(店頭) — [公式サイト](http://instagram.de/rievkoochebud)
-- **公式**: [公式サイト](http://instagram.de/rievkoochebud)
-- **選定理由**: koeln.deのインビスガイドと在住者ブログverliebtinkoeln.comが「旧市街で最高のライベクーヘン」として推薦。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Rievkoochebud%20Salzgasse%206%2C%2050667%20K%C3%B6ln)
-- **参照元**: [koeln.de](https://www.koeln.de/leben/ll/imbisse-und-fast-food-in-koeln/rievkoochebud/) / [verliebtinkoeln.com](https://verliebtinkoeln.com/rievkoochebud-die-besten-reibekuchen-in-der-koelner-altstadt/)
-
-### Curry B.（カリー・ベー）
-
-@@IMG:europe/germany/img/cologne/curry-b.jpg@@
-
-`食の専門街・市場` `口コミ突出`
-
-エーレン通りとブライテ通りの間、ヴィリー・ミロヴィッチュ広場に立つ市中心部で最も知られたインビス。メニューはカリーヴルストとポメス(フライドポテト)にほぼ絞られ、客の回転が速いため常に揚げたて焼きたてが出てくる。ケルン気質の軽口をたたく店員も名物。
-
-- **一皿**: カリーヴルスト+ポメス(焼きソーセージを刻んでカレー粉入りトマトソースをかけるドイツ国民食に、カリカリのフライドポテトを添えた定番セット)
-- **営業時間**: 毎日 11:00〜18:00
-- **定休日**: 無休
-- **住所**: Willy-Millowitsch-Platz (Breite Str./Ehrenstr.間), 50667 Köln
-- **予約**: 不要(店頭) — [公式サイト](https://mapspad.pw/curry-b-y9n3c64)
-- **公式**: [公式サイト](https://mapspad.pw/curry-b-y9n3c64)
-- **選定理由**: 在住者ブログverliebtinkoeln.com(2025年3月)が「市中心部で一番有名なポメス屋台」として詳細に紹介し、TripAdvisorでも「ケルンのインビスで最高のカリーヴルスト」と評される。2026年時点の営業を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Curry%20B.%20Willy-Millowitsch-Platz%20%28Breite%20Str./Ehrenstr.%E9%96%93%29%2C%2050667%20K%C3%B6ln)
-- **参照元**: [verliebtinkoeln.com](https://verliebtinkoeln.com/curry-b-die-bekannteste-pommes-bude-in-der-koelner-city/) / [tripadvisor.de](https://www.tripadvisor.de/ShowUserReviews-g187371-d4156709-r703970976-Curry_B-Cologne_North_Rhine_Westphalia.html)
-
-### ABA Yaprak Döner（アバ・ヤプラック・ドネル）
-
-@@IMG:europe/germany/img/cologne/aba-yaprak-doener.jpg@@
-
-`食の専門街・市場` `口コミ突出`
-
-「ケルンのリトル・イスタンブール」と呼ばれるミュールハイム地区ケップ通りの実力店。プレス肉ではなく、マリネした薄切り肉を職人が一枚ずつ串に重ねる本格ヤプラック・ドネルを出す。
-
-- **一皿**: ヤプラック・ドネル(薄切りの牛肉を何層にも重ねて焼き上げる職人仕込みのドネルケバブ。パンやデュリュム(薄焼きパン巻き)で味わう)
-- **営業時間**: 月〜日 Open 24 hours
-- **定休日**: なし
-- **住所**: Keupstraße 19-21, 51063 Köln
-- **予約**: 不要(店頭)
-- **選定理由**: トルコ系グルメガイドfiyaka.netがケップ通りの職人ドネルとして詳細に紹介。ケップ通り自体が地元メディアで「ケルン随一のトルコ料理街」とされる。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=ABA%20Yaprak%20D%C3%B6ner%20Keupstra%C3%9Fe%2019-21%2C%2051063%20K%C3%B6ln)
-- **参照元**: [fiyaka.net](https://www.fiyaka.net/gastroguide/fast-food/aba-yaprak-doener-koeln-keupstrasse) / [geheimtipp-koeln.de](https://geheimtipp-koeln.de/geheimtipp/kebap-mit-alles-die-7-besten-doenerlaeden-in-koeln/)
-
-## チーズ・加工肉・惣菜・市場
-
-### Metzgerei Schmitz (Salon Schmitz)（メツゲライ・シュミッツ）
-
-@@IMG:europe/germany/img/cologne/metzgerei-schmitz.jpg@@
-
-`ブログ推薦` `老舗・歴史`
-
-ベルギー地区の人気店サロン・シュミッツの一角。ケルン最古級の精肉店だった店舗のタイル装飾をそのまま生かし、ショーケースにキッシュ・サラダ・ケーキなどの惣菜が並ぶデリカテッセン兼カフェ。
-
-- **一皿**: キッシュと日替わり惣菜(卵と生クリームを注いで焼くフランス風の塩味タルト。ショーケースからサラダと組み合わせて選ぶスタイル)
-- **営業時間**: 毎日9:00〜24:00頃
-- **定休日**: 無休
-- **住所**: Aachener Straße 30, 50674 Köln
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 221 1395577 ／ [公式サイト](http://salonschmitz.com/metzgerei)
-- **公式**: [公式サイト](http://salonschmitz.com/metzgerei)
-- **選定理由**: koeln.deが人気ストリートカフェ特集で紹介する定番店。歴史的な精肉店店舗を使ったデリとして各種ガイドの常連。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Metzgerei%20Schmitz%20%28Salon%20Schmitz%29%20Aachener%20Stra%C3%9Fe%2030%2C%2050674%20K%C3%B6ln)
-- **参照元**: [salonschmitz.com](https://salonschmitz.com/metzgerei) / [koeln.de](https://www.koeln.de/leben/ll/beliebte-koelner-strassencafes/schmitz-metzgerei-salon-bar/)
-
-### Käseglück（ケーゼグリュック）
-
-@@IMG:europe/germany/img/cologne/kaeseglueck-dellbrueck.jpg@@
-
-`ブログ推薦`
-
-デルブリュック地区イダ通りのチーズ専門店。農家・修道院・アルプスの山小屋チーズ工房から仕入れる原産地保護の生乳(ロホミルヒ)チーズが主役で、店主によるチーズセミナーやフォンデュ用チーズの量り売りも人気。
-
-- **一皿**: ロホミルヒケーゼ(生乳チーズ)(殺菌しない生乳から伝統製法で造るチーズ。熟成による産地ごとの風味の違いが濃く出るのが特徴で、ハード・ウォッシュ・青カビまで揃う)
-- **営業時間**: 火〜金 10:00〜13:30/14:30〜18:30、土 9:00〜14:00
+- **一皿**: ヘリオス(店内で造る淡色で苦みの効いた上面発酵ビール。0.2L 2.40ユーロ)／エーレンフェルダー・アルト(濃い色で麦芽の甘みが強いビール)／ビアグーラッシュ(ビールで煮込んだ牛肉のシチュー。仕込みの麦芽かすを焼き込んだ自家製パン「マルツトレーバー・ブロート」付き。11.80ユーロ)／ファラフェル・ケルシェ・アルト(ひよこ豆のコロッケをケルン風に麦芽かすパンと出す菜食の一皿。9.40ユーロ)
+- **営業時間**: 火〜木 18:00〜23:00／金・土 18:00〜24:00（料理は21:00まで。献立ページでは22:00までと記載）
 - **定休日**: 日曜・月曜
-- **住所**: Idastraße 46, 51069 Köln
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 221 79003642 ／ [公式サイト](http://www.kaese-glueck.de/)
-- **公式**: [公式サイト](http://www.kaese-glueck.de/)
-- **選定理由**: geheimtipp-koeln.deの市内チーズ専門店特集に選出され、公式サイトも稼働中(Yelp掲載は2026年1月更新)。2026年時点の営業を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=K%C3%A4segl%C3%BCck%20Idastra%C3%9Fe%2046%2C%2051069%20K%C3%B6ln)
-- **参照元**: [kaese-glueck.de](https://kaese-glueck.de/) / [geheimtipp-koeln.de](https://geheimtipp-koeln.de/geheimtipp/say-cheese-7-mal-kaese-in-koeln/)
-
-### Friedrichs Die Metzgerei（フリードリヒス・ディー・メツゲライ）
-
-@@IMG:europe/germany/img/cologne/friedrichs-metzgerei.jpg@@
-
-`ブログ推薦`
-
-ジュルツ地区の新世代メツゲライ(精肉店)。オーバーベルギッシュ地方の自社農場で放牧飼育した肉のみを扱い、透明性と地域性を掲げる。ソーセージや惣菜も店内仕込み。
-
-- **一皿**: 自家製ソーセージと熟成肉(自社農場の放牧豚・牛から作るハムやメットヴルスト(生食用挽肉ソーセージ)などライン地方の精肉店文化を味わえる)
-- **営業時間**: 火〜金9:00〜18:00、土9:00〜14:00
-- **定休日**: 月曜
-- **住所**: Sülzburgstraße 126, 50937 Köln
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 221 42307878 ／ [公式サイト](http://friedrichs-diemetzgerei.de/)
-- **公式**: [公式サイト](http://friedrichs-diemetzgerei.de/)
-- **選定理由**: Stilpunkteのケルン・デリカテッセン特集が「透明性と地域性、放牧肉のみ」を評価して選出。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Friedrichs%20Die%20Metzgerei%20S%C3%BClzburgstra%C3%9Fe%20126%2C%2050937%20K%C3%B6ln)
-- **参照元**: [friedrichs-diemetzgerei.de](https://www.friedrichs-diemetzgerei.de/) / [stilpunkte.de](https://www.stilpunkte.de/koeln/eintraege/friedrichs-die-metzgerei-koeln-suelz/)
-
-### Wochenmarkt Wilhelmplatz (Nippes)（ヴィルヘルムプラッツ朝市）
-
-@@IMG:europe/germany/img/cologne/wochenmarkt-wilhelmplatz.jpg@@
-
-`食の専門街・市場` `口コミ突出`
-
-ニッペス地区ヴィルヘルム広場で月〜土の午前に立つ、ケルンで最も庶民的で活気ある常設朝市のひとつ。野菜・果物からチーズ、精肉、パン、花まで揃い、地元の台所として愛される。
-
-- **一皿**: 市場の食べ歩き(チーズや焼きたてパン、季節の果物を屋台で買い集めるのが市場流。ライベクーヘンの屋台が出る日もある)
-- **営業時間**: 月〜金7:00〜13:00、土7:00〜14:30
-- **定休日**: 日曜
-- **住所**: Wilhelmplatz, 50733 Köln
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 221 346430
-- **選定理由**: ケルン市公式サイトが市場データを公開し、Geheimtipp Kölnなどの「ケルンのベスト週市」特集の常連。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Wochenmarkt%20Wilhelmplatz%20%28Nippes%29%20Wilhelmplatz%2C%2050733%20K%C3%B6ln)
-- **参照元**: [stadt-koeln.de](https://www.stadt-koeln.de/artikel/67509/index.html) / [geheimtipp-koeln.de](https://geheimtipp-koeln.de/geheimtipp/frisch-vom-markt-die-besten-wochenmaerkte-in-koeln/)
-
-## パン・スイーツ
-
-### Törtchen Törtchen（テルトヒェン・テルトヒェン）
-
-@@IMG:europe/germany/img/cologne/toertchen-toertchen.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-アポステルン通りの人気パティスリーで、フランス菓子の技法による小さなタルトやケーキ、マカロンを自家工房で作る。ケルンのパティスリー特集で必ず名前が挙がる代表格。
-
-- **一皿**: テルトヒェン(ミニタルト)(店名の由来でもある一人分の小さなタルト。季節のフルーツやクリームを飾ったフランス菓子仕立て)
-- **営業時間**: 毎日11:00〜18:00(祝日も同様・公式)
-- **定休日**: 無休
-- **住所**: Apostelnstraße 19, 50667 Köln
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 221 1707108 ／ [公式サイト](http://www.toertchentoertchen.de/)
-- **公式**: [公式サイト](http://www.toertchentoertchen.de/)
-- **選定理由**: Mit Vergnügen Kölnのパティスリー特集掲載の定番店。営業時間・住所は公式サイトで確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=T%C3%B6rtchen%20T%C3%B6rtchen%20Apostelnstra%C3%9Fe%2019%2C%2050667%20K%C3%B6ln)
-- **参照元**: [toertchentoertchen.de](https://www.toertchentoertchen.de/) / [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2025/patisserie/)
-
-### Konditorei Café Riese（コンディトライ・カフェ・リーゼ）
-
-@@IMG:europe/germany/img/cologne/cafe-riese.jpg@@
-
-`老舗・歴史`
-
-1901年創業、繁華街シルダーガッセで100年以上続くケルンの老舗コンディトライ(菓子店兼カフェ)。大聖堂を模したドーム型菓子など、ケルンならではの銘菓を今も手作りする。
-
-- **一皿**: ドームヴァッフェルンとツィムトドームヒェン(大聖堂(ドーム)にちなんだワッフルとシナモン菓子。バウムクーヘンや自家製アイスも看板商品)
-- **営業時間**: 月〜土9:00〜19:00(公式)
-- **定休日**: 日曜
-- **住所**: Schildergasse 103, 50667 Köln
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 221 9258260 ／ [公式サイト](http://www.caferiese.de/)
-- **公式**: [公式サイト](http://www.caferiese.de/)
-- **選定理由**: 公式サイトが1901年からの歴史を明記する老舗で、Genusstourenなど地元カフェ特集の常連。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Konditorei%20Caf%C3%A9%20Riese%20Schildergasse%20103%2C%2050667%20K%C3%B6ln)
-- **参照元**: [caferiese.de](https://caferiese.de/en/about-us/tradition/) / [genusstouren-koeln.de](https://www.genusstouren-koeln.de/die-besten-caf%C3%A9s-in-k%C3%B6ln/)
-
-### Bäckerei Zimmermann（ベッカライ・ツィマーマン）
-
-@@IMG:europe/germany/img/cologne/baeckerei-zimmermann.jpg@@
-
-`老舗・歴史`
-
-1875年創業、エーレン通りに本店を構えるケルンの伝統ベッカライ。代々の手書きレシピを守り、添加物を使わない職人パンを焼き続ける。ライン地方の黒パンは市外にも知られる名物。
-
-- **一皿**: ライン風黒パン(シュヴァルツブロート)(ライ麦を長時間発酵させて焼く目の詰まった黒パン。薄く切ってバターやチーズ、フルンツと合わせるのが地元流)
-- **営業時間**: 火〜金 7:30〜15:00 / 土 7:00〜15:00
-- **定休日**: 日月・祝日
-- **住所**: Ehrenstraße 75, 50672 Köln
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 221 255632 ／ [公式サイト](http://baeckereizimmermann.de/)
-- **公式**: [公式サイト](http://baeckereizimmermann.de/)
-- **選定理由**: ケルン観光局が「1875年からの伝統ベッカライ、ケルンの真のインスティテューション」として公式紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=B%C3%A4ckerei%20Zimmermann%20Ehrenstra%C3%9Fe%2075%2C%2050672%20K%C3%B6ln)
-- **参照元**: [koelntourismus.de](https://www.koelntourismus.de/genuss-diversitaet/gastronomie/detail/baeckerei-zimmermann) / [baeckereizimmermann.de](https://baeckereizimmermann.de/)
-
-### Schokoladenmuseum Köln (Chocolat Grand Café & ショップ)（ショコラーデンムゼウム・ケルン）
-
-@@IMG:europe/germany/img/cologne/schokoladenmuseum.jpg@@
-
-`口コミ突出`
-
-ライン川の半島に建つチョコレート博物館。館内のチョコレート噴水やリントと提携したショップ、川を望むショコラ・グラン・カフェで、ホットチョコレートやトリュフを楽しめるケルン随一の甘味スポット。
-
-- **一皿**: ホットチョコレートと生トリュフ(併設カフェの名物。博物館ではカカオ栽培から板チョコ製造までの工程も見学でき、出来たてチョコの試食もある)
-- **営業時間**: 毎日10:00〜18:00(公式)
-- **定休日**: 無休
-- **住所**: Am Schokoladenmuseum 1a, 50678 Köln
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 221 9318880 ／ [公式サイト](https://www.schokoladenmuseum.de/)
-- **公式**: [公式サイト](https://www.schokoladenmuseum.de/)
-- **選定理由**: 公式サイトで営業情報を確認。年間60万人超が訪れるケルン有数の人気施設で、カフェ・ショップ併設。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Schokoladenmuseum%20K%C3%B6ln%20%28Chocolat%20Grand%20Caf%C3%A9%20%26%20%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%29%20Am%20Schokoladenmuseum%201a%2C%2050678%20K%C3%B6ln)
-- **参照元**: [schokoladenmuseum.de](https://www.schokoladenmuseum.de/en/)
-
-## ケルシュ醸造所・ビアハウス
-
-### Brauhaus Schreckenskammer（ブラウハウス・シュレッケンスカンマー）
-
-@@IMG:europe/germany/img/cologne/schreckenskammer.jpg@@
-
-`老舗・歴史` `ブログ推薦`
-
-1442年に遡る記録を持つケルン最古級の醸造所居酒屋。床に砂を撒く昔ながらの流儀を守り、炭酸を加えず古い家伝レシピで仕込むシュレッケンスカンマー・ケルシュはこの店でしか飲めない。
-
-- **一皿**: 自家醸造ケルシュとヘムシェン(ここだけの無添加ケルシュに、茹でた豚すね肉の郷土料理ヘムシェンなど素朴なブラウハウス料理を合わせる)
-- **営業時間**: 火〜木16:30〜23:00、金土11:00〜14:00/16:30〜24:00(公式)
-- **定休日**: 日月・祝日
-- **住所**: Ursulagartenstraße 11-15, 50668 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 132581 ／ [公式サイト](http://www.schreckenskammer.com/)
-- **公式**: [公式サイト](http://www.schreckenskammer.com/)
-- **選定理由**: 公式サイトが1442年からの歴史と4代続く家族経営を明記。「ここでしか飲めないケルシュ」としてビアガイドでも特筆される。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brauhaus%20Schreckenskammer%20Ursulagartenstra%C3%9Fe%2011-15%2C%2050668%20K%C3%B6ln)
-- **参照元**: [schreckenskammer.com](https://www.schreckenskammer.com/) / [biergartenkoeln.de](https://www.biergartenkoeln.de/koelsch/schreckenskammer-koelsch/)
-
-### Braustelle (Helios-Braustelle)（ブラウシュテレ）
-
-@@IMG:europe/germany/img/cologne/braustelle.jpg@@
-
-`ブログ推薦`
-
-2001年開業、エーレンフェルト地区にあるケルン最小の醸造所。定番ケルシュ系「ヘリオス」のほか、ハイビスカス入りエールなど実験的なクラフトビールを醸し、団子やミートボールなど家庭的な料理も出す。
-
-- **一皿**: 自家醸造ヘリオスと醸造所ごはん(醸造タンクの隣で飲む出来たてビール。クヌーデル(団子)やフリカデレ(ミートボール)などドイツの家庭料理と合わせる)
-- **営業時間**: 火水17:00〜24:00、木〜土17:00〜翌1:00(公式)
-- **定休日**: 日月
 - **住所**: Christianstraße 2, 50825 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 2856932 ／ [公式サイト](https://braustelle.com/)
-- **公式**: [公式サイト](https://braustelle.com/)
-- **選定理由**: ケルン観光局のマガジンが「ケルン最小の醸造所」として紹介する実験派ブルワリー。営業時間は公式サイトで確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Braustelle%20%28Helios-Braustelle%29%20Christianstra%C3%9Fe%202%2C%2050825%20K%C3%B6ln)
-- **参照元**: [braustelle.com](https://braustelle.com/) / [magazin.koelntourismus.de](https://magazin.koelntourismus.de/kulinarik/brauhaeuser-koeln-beste-adressen/)
+- **予約**: 可（公式サイトの予約ページ） — ☎ +49 221 2856932 ／ [公式サイト](https://braustelle.com/)
+- **選定理由**: 老舗の大醸造所とは違う、地区の小さな醸造所酒場として前の版から載せている店で、ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が火〜土の営業時間と現行の献立・価格を掲示し、2026年4月付の新聞記事画像と2026年7月付の写真を載せている。なお厨房の時間はトップページが21時まで、献立ページが22時までと食い違う。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Braustelle%20Christianstra%C3%9Fe%202%2C%2050825%20K%C3%B6ln)
+- **参照元**: [Braustelle 公式サイト トップ（2026-10-19閲覧。営業時間）](https://braustelle.com/) / [Braustelle 公式サイト 料理・飲み物（2026-10-19閲覧。価格）](https://braustelle.com/speise-getraenkekarte/) / [Braustelle 公式サイト 連絡先（2026-10-19閲覧。住所・電話）](https://braustelle.com/kontakt/) / [ケルン観光局 公式サイト「Braustelle」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/braustelle)
 
-### Hellers Volksgarten（ヘラース・フォルクスガルテン）
+### 7. HELLERS Brauhaus（ヘラーズ・ブラウハウス）
 
-@@IMG:europe/germany/img/cologne/hellers-volksgarten.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-hellers-brauhaus.jpg@@
 
-`口コミ突出`
+`official` `tourism`
 
-南市街フォルクスガルテン公園の池畔に広がるビアガーデン。ケルンでは珍しい有機認証のヘラース・ケルシュを、湖を眺めながら味わえる夏の定番スポット。
+1996年に前身の「ドイチェス・ビアハウス」を引き継いで開いた、ブラウエライ・ヘラーのブラウハウスで、2026年に30周年を迎えた。ガラス屋根の下に植物を茂らせ小さな噴水を置いた「ヴィンターガルテン（温室席）」が名物。自社のヘラーズ・ケルシュのほか、百種類以上の薬草を使う自家の薬草リキュール「カレンドレッサー」を出す。料理はソースを自家製とし、菜食・ヴィーガンの皿も多い。
 
-- **一皿**: ビオ・ケルシュと湖畔の軽食(有機栽培のホップと麦芽で醸すヘラース・ケルシュ。フラムクーヘンやソーセージなどビアガーデン料理と共に)
-- **営業時間**: 火〜金 2:00〜23:00 / 土・日 13:00〜0:00
-- **定休日**: 月曜
+- **一皿**: ヒンメル・ウン・エード(血のソーセージとリンゴ入りマッシュポテト。15.60ユーロ)／ライニッシャー・ザウアーブラーテン(酢漬け牛肉の煮込み。22.80ユーロ)／グリルハクセ(豚すね肉のグリル。28.90ユーロ)／コールラビシュニッツェル(カブの一種コールラビを衣揚げにしたヴィーガンのカツ。15.20ユーロ)
+- **営業時間**: 火〜土 17:00〜（閉店時刻の記載なし）
+- **定休日**: 日曜・月曜
+- **住所**: Roonstraße 33, 50674 Köln
+- **予約**: 可（電話 火〜土17時以降、または公式サイトのフォーム） — ☎ +49 221 2401881 ／ [公式サイト](https://www.hellers.koeln/brauhaus-hellers/)
+- **選定理由**: 自社銘柄のケルシュを出す醸造会社直営の店で、ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が火〜土17時からの営業、電話予約、30周年の告知と2026年11月11日の催しを掲示し、献立PDFは2026年7月更新。前の版の「HELLERS Volksgarten」と同じ会社の本店。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=HELLERS%20Brauhaus%20Roonstra%C3%9Fe%2033%2C%2050674%20K%C3%B6ln)
+- **参照元**: [HELLERS 公式サイト ブラウハウス（2026-10-19閲覧。1996年開業・30周年・営業時間・予約）](https://www.hellers.koeln/brauhaus-hellers/) / [HELLERS Brauhaus 献立PDF（2026年7月更新、2026-10-19取得）](https://www.hellers.koeln/wp-content/uploads/Karten/Hellers-Brauhaus-Speisekarte.pdf) / [HELLERS Brauhaus 飲み物PDF（2026年6月更新、2026-10-19取得）](https://www.hellers.koeln/wp-content/uploads/Karten/Brauhaus-Hellers-Getraenkekarte.pdf) / [ケルン観光局 公式サイト「HELLERS Brauhaus」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/hellers-brauhaus)
+
+### 8. HELLERS Volksgarten（ヘラーズ・フォルクスガルテン）
+
+@@IMG:europe/germany/img/cologne/cologne-hellers-volksgarten.jpg@@
+
+`official` `tourism` `seasonal`
+
+南部の公園フォルクスガルテンの池に面した大きなビアガーデンで、ヘラーズ・ケルシュのほか、無ろ過の「ヴィース」や樽の小麦ビールを出す。池では貸しボート（足こぎボート）も営業する。天気の良い季節だけの営業で、2026年は10月にシーズンを終え、11月はクリスマス市として開く予定。
+
+- **一皿**: ヘラーズ・ケルシュ(ブラウエライ・ヘラーのケルシュ)／ヘラーズ・ヴィース(ろ過していない白濁したケルン流の淡色ビール)／シュニッツェル・ヴィーナー・アート(薄く叩いた豚肉のカツ。18.40ユーロ)
+- **営業時間**: 営業期間中・晴天時のみ：火〜金 14:00〜／土・日 13:00〜
+- **定休日**: 月曜。冬季は休業（2026年は10月で営業終了、11月にクリスマス市を開く予定）
 - **住所**: Volksgartenstraße 27, 50677 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 382626 ／ [公式サイト](https://www.hellers.koeln/volksgarten-hellers/)
-- **公式**: [公式サイト](https://www.hellers.koeln/volksgarten-hellers/)
-- **選定理由**: biergartenkoeln.deがヘラース系3ビアガーデンの筆頭として掲載。ヘラース醸造所公式サイトでも有機ケルシュの提供を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Hellers%20Volksgarten%20Volksgartenstra%C3%9Fe%2027%2C%2050677%20K%C3%B6ln)
-- **参照元**: [biergartenkoeln.de](https://www.biergartenkoeln.de/koelsch/hellers/) / [hellers.koeln](https://www.hellers.koeln/)
+- **予約**: 不可（ビアガーデンは予約を受けない） — ☎ +49 221 382626 ／ [公式サイト](https://www.hellers.koeln/volksgarten-hellers/)
+- **選定理由**: 旧市街の外で緑と水辺のなかでケルシュを飲める場所として、前の版から載せている。ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が、営業期間中の時間（月曜休・火〜金14時から・土日13時から）を掲示し、当日（2026年10月19日）付で「今季の営業を終了、11月のクリスマス市まで休業」と告知している。献立PDFは2026年7月更新。訪問は春〜秋の晴天日に限られる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=HELLERS%20Volksgarten%20Volksgartenstra%C3%9Fe%2027%2C%2050677%20K%C3%B6ln)
+- **参照元**: [HELLERS 公式サイト フォルクスガルテン（2026-10-19閲覧。営業時間・2026年シーズン終了の告知・貸しボート）](https://www.hellers.koeln/volksgarten-hellers/) / [HELLERS Volksgarten 献立PDF（2026年7月更新、2026-10-19取得）](https://www.hellers.koeln/wp-content/uploads/Karten/Volksgarten-Hellers-Speisekarte.pdf) / [ケルン観光局 公式サイト「HELLERS Volksgarten」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/hellers-volksgarten)
 
-## 非ドイツ欧州料理
+### 9. Gaffel am Dom（ガッフェル・アム・ドーム）
+
+@@IMG:europe/germany/img/cologne/cologne-gaffel-am-dom.jpg@@
+
+`official` `tourism`
+
+2008年から中央駅前の歴史建築ダイヒマンハウスに入るガッフェル・ケルシュの直営ブラウハウス。3層で約700席、屋外に約300席があり、1階の大きな酒場には銅の仕込み釜と古いビール広告が並ぶ。2階のドームシュトゥーベからは大聖堂が正面に見える。ケルシュは醸造所から蛇口まで冷やしたまま運ぶ地下樽方式で注ぐ。金曜夜は歌手ビョルン・ホイザーの合唱会がある。
+
+- **一皿**: ヒンメル・ウン・エード(血のソーセージとリンゴ入りマッシュポテト。17.50ユーロ)／ザウアーブラーテン・イン・ロジーネンゾーセ(干しぶどうのソースで仕上げた酢漬け牛肉の煮込み。紫キャベツとジャガイモ団子付き。26.90ユーロ)／ハルヴェ・ハーン(ライ麦パンにベームスターチーズ、赤玉ねぎ、マスタード。7.90ユーロ)／ライベクーヘン(揚げ焼きのジャガイモのパンケーキ3枚)
+- **営業時間**: 日〜木 10:00〜24:00／金・土 10:00〜翌1:30（料理は23:00まで。10:00〜11:30は朝食の献立）
+- **定休日**: 無休
+- **住所**: Bahnhofsvorplatz 1, 50667 Köln
+- **予約**: 可（公式サイトの予約ページ） — ☎ +49 221 9139260 ／ [公式サイト](https://gaffelamdom.de/)
+- **選定理由**: 中央駅を出てすぐ入れる大型ブラウハウスで、ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が日〜木10〜24時・金土10〜翌1:30の営業時間、2026年10月15日付の告知、2026年11月11日の催しの前売りを掲示し、献立PDFは2026年7月16日付。電話番号は同サイトの運営者情報による。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Gaffel%20am%20Dom%20Bahnhofsvorplatz%201%2C%2050667%20K%C3%B6ln)
+- **参照元**: [Gaffel am Dom 公式サイト トップ（2026-10-19閲覧。営業時間・2026年10月の告知）](https://gaffelamdom.de/) / [Gaffel am Dom 公式サイト 当店について（2026-10-19閲覧。2008年・約700席・屋外約300席）](https://gaffelamdom.de/ueber-uns/) / [Gaffel am Dom 献立PDF（2026年7月16日付、2026-10-19取得）](https://gaffelamdom.de/wp-content/uploads/2026/07/260716_Speise-u-Getraenkekarte-GaD_EG_de-en-FINAL_Online.pdf) / [Gaffel am Dom 公式サイト 運営者情報（2026-10-19閲覧。電話番号）](https://gaffelamdom.de/impressum/) / [ケルン観光局 公式サイト「Gaffel am Dom」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/gaffel-am-dom)
+
+### 10. Peters Brauhaus（ペータース・ブラウハウス）
+
+@@IMG:europe/germany/img/cologne/cologne-peters-brauhaus.jpg@@
+
+`official` `tourism`
+
+1994年から旧市街で営むペータース・ケルシュのブラウハウス。献立を方言で「フーダーカート」と呼び、ケルンの伝統料理を中心に出す。2023年にハーネン通りに2号店「ペータース・アム・ハーネントーア」（180席）を開いた。
+
+- **一皿**: ヒンメル・ウン・エード(血のソーセージとリンゴ入りマッシュポテト、炒め玉ねぎ)／ザウアーブラーテン(干しぶどうのソースの酢漬け牛肉の煮込み。25.50ユーロ)／ペータース・ブラウハウステラー(ハム、血のソーセージ、焼きソーセージなどをザワークラウトとマッシュポテトに盛り合わせた皿)／ハルヴェ・ハーン(ライ麦パンとチーズ。8.20ユーロ)
+- **営業時間**: 月〜木 11:30〜23:00／金・土 11:30〜24:00／日 11:30〜21:30
+- **定休日**: 無休
+- **住所**: Mühlengasse 1, 50667 Köln
+- **予約**: 可（公式サイトの予約ページ） — ☎ +49 221 2573950 ／ [公式サイト](https://peters-brauhaus.de/)
+- **選定理由**: 旧市街の定番ブラウハウスの一つで、ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が月〜木11:30〜23時・金土11:30〜24時・日11:30〜21:30の営業時間と予約を掲示し、2025年8月5日の社内行事の報告を載せている。献立ページに現行価格がある。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Peters%20Brauhaus%20M%C3%BChlengasse%201%2C%2050667%20K%C3%B6ln)
+- **参照元**: [Peters Brauhaus 公式サイト トップ（2026-10-19閲覧。1994年開業・営業時間・2号店）](https://peters-brauhaus.de/) / [Peters Brauhaus 公式サイト 献立（2026-10-19閲覧。料理写真と価格）](https://peters-brauhaus.de/speisenkarten-neu/) / [ケルン観光局 公式サイト「Peters Brauhaus」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/peters-brauhaus)
+
+### 11. Brauhaus Reissdorf am Griechenmarkt（ブラウハウス・ライスドルフ）
+
+@@IMG:europe/germany/img/cologne/cologne-brauhaus-reissdorf.jpg@@
+
+`official` `tourism` `地元密着`
+
+ケルシュ醸造所ライスドルフが1992年に開いた直営のブラウハウスで、1907年から醸造酒場があった建物に入る。屋内180席と、店の前に60席のビアガーデン。ケルン有数の長さのカウンターがあり、全自動のケーゲル（9本ピンのボウリング）場も備える。1.FCケルンの試合は音声つきで中継する。
+
+- **一皿**: ヒンメル・ウン・エード(血のソーセージとリンゴ入りマッシュポテト、炒め玉ねぎ。16ユーロ)／ザウアーブラーテン・ライニッシェ・アート(アーモンドと干しぶどうのソースの酢漬け牛肉の煮込み。23ユーロ)／シュニッツェル(ウィーン風・猟師風などソース違いで出す豚のカツ。シュニッツェルの日もある)／ハルヴェ・ハーン(ライ麦パンとベームスターチーズ。7ユーロ)
+- **営業時間**: 月〜金 12:00〜24:00／土・日 11:30〜24:00
+- **定休日**: 無休
+- **住所**: Kleiner Griechenmarkt 40, 50676 Köln
+- **予約**: 可（公式サイトのオンライン予約・電話。ケーゲル場は要予約） — ☎ +49 221 219254 ／ [公式サイト](https://www.brauhaus-reissdorf.de/)
+- **選定理由**: 観光客の少ない旧市街南部で地元客の多い醸造所直営店。ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が月〜金12〜24時・土日11:30〜24時の営業時間とオンライン予約を掲示し、献立PDFは2026年9月23日作成、2026年のカーニバル期間の営業時間とシュニッツェルの日の告知画像も載せている。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brauhaus%20Reissdorf%20am%20Griechenmarkt%20Kleiner%20Griechenmarkt%2040%2C%2050676%20K%C3%B6ln)
+- **参照元**: [Brauhaus Reissdorf 公式サイト（2026-10-19閲覧。営業時間・席数・ケーゲル場）](https://www.brauhaus-reissdorf.de/) / [Brauhaus Reissdorf 献立PDF（2026年9月23日作成、2026-10-19取得）](https://www.brauhaus-reissdorf.de/PDF-Speisekarten/Speisekarte_Brauhaus.pdf) / [ケルン観光局 公式サイト「Brauhaus Reissdorf」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/brauhaus-reissdorf)
+
+### 12. Haus Töller（ハウス・テラー）
+
+@@IMG:europe/germany/img/cologne/cologne-haus-toeller.jpg@@
+
+`official` `tourism`
+
+1871年にテオドール・テラーが醸造所を開いた建物で営むブラウハウス。1945年の空襲を免れた数少ない建物で、19世紀の酒場の間取りが残る。入口の土間には店主の帳場「テーケンシャーフ」と樽台があり、ペフゲン・ケルシュを地下から鎖の巻き上げ機で樽ごと上げて注ぐ。テレビも音楽もない店内に、87席の客間と1915年増築の199席の広間がある。
+
+- **一皿**: シンケンヘムヒェン(塩漬けにした豚すね肉をゆっくり煮て、皮と脂を除いて出すケルンの古い名物。ザワークラウトとマッシュポテト付き。24ユーロ)／ライニッシャー・ザウアーブラーテン(自家製の酢漬け牛肉の煮込み。ジャガイモ団子と紫キャベツ付き。24ユーロ)／ヒンメル・ウン・エード(17ユーロ)／ローストビーフ・ミット・ブラートカルトッフェルン(自家製ローストビーフに炒めたジャガイモとレムラードソース。24ユーロ)
+- **営業時間**: 月〜土 17:00〜閉店まで
+- **定休日**: 日曜
+- **住所**: Weyerstraße 96, 50676 Köln
+- **予約**: 推奨（団体は電話で。予約は電話のみ） — ☎ +49 221 2589316 ／ [公式サイト](https://www.haus-toeller.de/)
+- **選定理由**: ケルン観光局の公式サイトが「19世紀のケルンの酒場の趣を味わえる」と紹介する、最も古い造りを残すブラウハウスの一つ。営業の根拠＝公式サイト（2026-10-19閲覧、表記©2026）が月〜土17時からの営業・日曜定休・電話予約・現金のみと、全品の現行価格を掲示している。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Haus%20T%C3%B6ller%20Weyerstra%C3%9Fe%2096%2C%2050676%20K%C3%B6ln)
+- **参照元**: [Haus Töller 公式サイト トップ（2026-10-19閲覧。営業時間・現金のみ・沿革）](https://www.haus-toeller.de/) / [Haus Töller 公式サイト 献立（2026-10-19閲覧。価格・ヘムヒェンの説明）](https://www.haus-toeller.de/speisekarte/) / [ケルン観光局 公式サイト「Haus Töller」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/haus-toeller)
