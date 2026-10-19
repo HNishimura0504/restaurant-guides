@@ -1,319 +1,224 @@
-### NOI Cologne（ノイ・ケルン）
+### 13. Gilden im Zims（ギルデン・イム・ツィムス）
 
-@@IMG:europe/germany/img/cologne/noi-cologne.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-gilden-im-zims.jpg@@
 
-`口コミ突出`
+`official`
 
-ベルギー地区アントヴェルペナー通りに2024年開店したイタリア料理店。4人の友人が立ち上げ、オープンキッチンから毎日仕込む生パスタと薪窯ピッツァを出す。2026年のドイツ・ガストロ創業賞で「ドイツ最高の新ガストロノミー・コンセプト」に選ばれた注目株。
+ホイマルクト77番地の館に入るギルデン・ケルシュのブラウハウス。1568年に建てられた正面の外壁が残り、1920年にヨハン・ツィムスが酒場を開いた。2006年の改装で、戦後に埋められていたローマ時代の基礎に届く円天井の地下室が見つかり、客席として使っている。店内はケルンの名物人物の写真や記念品で飾る。
 
-- **一皿**: 自家製生パスタ(週替わり)(毎日店内で打つイタリアの生麺パスタ。カルボナーラや季節野菜のソースなど週替わりで、ブッラータ(生クリーム入りモッツァレラ)の前菜や薪窯ピッツァも看板)
-- **営業時間**: 火〜木 17:00〜22:00、金土 15:00〜23:00
-- **定休日**: 日曜・月曜
-- **住所**: Antwerpener Straße 5, 50672 Köln
-- **予約**: 可(推奨) — [公式サイト](https://noi-cologne.com/)
-- **公式**: [公式サイト](https://noi-cologne.com/)
-- **選定理由**: 公式サイトで営業時間を確認。Deutscher Gastro-Gründerpreis 2026受賞、Googleレビュー4.9(219件)と評価が高い。2026年時点の営業を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=NOI%20Cologne%20Antwerpener%20Stra%C3%9Fe%205%2C%2050672%20K%C3%B6ln)
-- **参照元**: [noi-cologne.com](https://noi-cologne.com/)
-
-### Jamas Griechische Taverne（ヤマス・グリーヒッシェ・タヴェルネ）
-
-@@IMG:europe/germany/img/cologne/jamas-taverne.jpg@@
-
-`口コミ突出`
-
-ギリシャ料理。北部ニッペス地区の住宅街にある人気タベルナで、前菜からメインまで本場そのままの味と評判。タコのグリルなど魚介料理にも定評がある。
-
-- **一皿**: スブラキとタコのグリル(炭火で焼く豚肉の串焼きスブラキと、柔らかく香ばしいタコのグリルがギリシャ定番の看板)
-- **営業時間**: 月 17:30〜22:30、水・木 17:30〜23:00、金・土 17:30〜24:00、日 17:30〜22:30
-- **定休日**: 火曜
-- **住所**: Sechzigstraße 1, 50733 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 78947500 ／ [公式サイト](http://jamas-restaurant.de/)
-- **公式**: [公式サイト](http://jamas-restaurant.de/)
-- **選定理由**: 検索横断で「本格ギリシャ料理の人気店」として挙がり、口コミサイトでスブラキ・ムサカ・タコ料理が高評価。営業時間はローカル情報サイトで確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Jamas%20Griechische%20Taverne%20Sechzigstra%C3%9Fe%201%2C%2050733%20K%C3%B6ln)
-- **参照元**: [finde-offen.de](https://finde-offen.de/koeln/jamas-griechische-taverne-2146838) / [restaurantguru.com](https://restaurantguru.com/Jamas-Cologne)
-
-### Mesón El Cordobés（メソン・エル・コルドベス）
-
-@@IMG:europe/germany/img/cologne/meson-el-cordobes.jpg@@
-
-`老舗・歴史` `ブログ推薦`
-
-スペイン料理。フリーゼン地区で40年以上続く老舗で、グラナダ・コルドバ・セビリアなどアンダルシア地方の料理とタパスバーを備える。ケルンのスペイン料理の草分け的存在。
-
-- **一皿**: アンダルシア風タパス盛り合わせ(小皿で少しずつ楽しむスペイン式前菜。ガーリックシュリンプやトルティージャ等を注文ごとに手作り)
-- **営業時間**: 月〜金 12:00〜14:30 / 17:00〜0:00 / 土 17:00〜0:00 / 日 1:00〜22:00
-- **定休日**: なし
-- **住所**: Gladbacher Straße 11, 50672 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 515506 ／ [公式サイト](http://www.meson-el-cordobes.de/)
-- **公式**: [公式サイト](http://www.meson-el-cordobes.de/)
-- **選定理由**: 地元グルメブログmrkoeln.deのタパス特集で「40年以上スペイン料理を提供する店」として紹介され、口コミランキングサイトでも上位常連。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Mes%C3%B3n%20El%20Cordob%C3%A9s%20Gladbacher%20Stra%C3%9Fe%2011%2C%2050672%20K%C3%B6ln)
-- **参照元**: [mrkoeln.de](https://www.mrkoeln.de/toplisten/essen-trinken/top-tapas-bars-in-koeln) / [werkenntdenbesten.de](https://www.werkenntdenbesten.de/spanisches-restaurant/koeln)
-
-### LeBistrot99（ル・ビストロ・ノインウントノインツィヒ）
-
-@@IMG:europe/germany/img/cologne/le-bistrot-99.jpg@@
-
-`ブログ推薦`
-
-フランス料理。2010年からアーヘナー通りで続くパリ風ビストロで、ブッフ・ブルギニョンなどの仏定番に独・地中海の要素を織り交ぜる。併設ギャラリーでアート展示も行う。
-
-- **一皿**: ブッフ・ブルギニョン(牛肉を赤ワインで長時間煮込むブルゴーニュ地方の代表的煮込み料理)
-- **営業時間**: 月〜金 12:00〜、土 18:00〜(キッチンは22:00まで)
-- **定休日**: 日曜(要確認)
-- **住所**: Aachener Straße 1002, 50858 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 17044392 ／ [公式サイト](https://www.lebistrot99.com/)
-- **公式**: [公式サイト](https://www.lebistrot99.com/)
-- **選定理由**: 地元メディアMit Vergnügen Kölnのフランス料理特集で「パリの魅力と典型的な仏ビストロの雰囲気」と紹介。公式サイトで住所・営業を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=LeBistrot99%20Aachener%20Stra%C3%9Fe%201002%2C%2050858%20K%C3%B6ln)
-- **参照元**: [lebistrot99.com](https://www.lebistrot99.com/standorte/aachener-strasse) / [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2024/franzoesich-essen/)
-
-## 中東・トルコ料理
-
-### Restaurant Kilim（レストラン・キリム）
-
-@@IMG:europe/germany/img/cologne/kilim.jpg@@
-
-`食の専門街・市場` `老舗・歴史`
-
-トルコ料理。ケルンのトルコ人街キープ通り(Keupstraße)にある家族経営店で、1985年創業のベーカリーが2004年にレストランへ発展。深夜まで営業し、最初のチャイは無料という下町流のもてなしが名物。
-
-- **一皿**: ラフマジュン(トルコ風ピザ)とピデ(薄い生地にスパイス入りひき肉を載せて石窯で焼くトルコの定番粉物。同店のものは市内最高との呼び声)
-- **営業時間**: 月〜木・日 8:00〜翌1:00、金・土 8:00〜翌3:00
+- **一皿**: ヒンメル・ウン・エード(血のソーセージとリンゴ入りマッシュポテト、炒め玉ねぎ。16.90ユーロ)／ライベクーヘン(揚げたてのジャガイモのパンケーキ3枚にリンゴのコンポート。11.90ユーロ)／ザウアーブラーテン・フォム・リント(アーモンドと干しぶどう、紫キャベツ、小さなジャガイモ団子を添えた酢漬け牛肉の煮込み。24.90ユーロ)／クヌスプリゲ・シュヴァインスハクセ(1200gの豚すね肉の丸焼き。28.50ユーロ)
+- **営業時間**: 月〜金 12:00〜／土・日 11:00〜（料理は22:00まで）
 - **定休日**: 無休
-- **住所**: Keupstraße 69, 51063 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 616597 ／ [公式サイト](https://www.kilim-restaurant.de/)
-- **公式**: [公式サイト](https://www.kilim-restaurant.de/)
-- **選定理由**: TripAdvisorのレビューで「キープ通りで一番の店。トルコピザとピデは無敵」と評され、Yelpでも同通りのトルコ料理上位。公式サイトで沿革を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20Kilim%20Keupstra%C3%9Fe%2069%2C%2051063%20K%C3%B6ln)
-- **参照元**: [kilim-restaurant.de](https://www.kilim-restaurant.de/) / [tripadvisor.de](https://www.tripadvisor.de/ShowUserReviews-g187371-d2546580-r344917403-Kilim-Cologne_North_Rhine_Westphalia.html)
+- **住所**: Heumarkt 77, 50667 Köln
+- **予約**: 可（公式サイトの予約ページ・電話） — ☎ +49 221 16866110 ／ [公式サイト](https://www.zims.de/)
+- **選定理由**: 旧市街の中心にあり、歴史の古い建物と地下の円天井の客席が見どころ。営業の根拠＝公式サイト（2026-10-19閲覧）が月〜金12時から・土日11時からの営業、料理の提供時間、現行の献立・価格を掲示し、2026年7月付のハロウィーンの催しの告知を載せている。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Gilden%20im%20Zims%20Heumarkt%2077%2C%2050667%20K%C3%B6ln)
+- **参照元**: [Gilden im Zims 公式サイト トップ（2026-10-19閲覧。営業時間・料理と価格）](https://www.zims.de/) / [Gilden im Zims 公式サイト 当店について（2026-10-19閲覧。1568年の外壁・1920年開業・地下室の発見）](https://www.zims.de/ueber-uns/) / [Gilden im Zims 公式サイト 連絡先（2026-10-19閲覧。住所・電話）](https://www.zims.de/kontakt/) / [Gilden im Zims 公式サイト 飲み物（2026-10-19閲覧。ケルシュの価格）](https://www.zims.de/speisen-getraenke/getraenkekarte/)
 
-### Mevlana an der Keupstraße（メヴラーナ・アン・デア・キープシュトラーセ）
+### 14. FRÜH „Em Golde Kappes“（フリュー・エム・ゴルデ・カペス）
 
-@@IMG:europe/germany/img/cologne/mevlana-keupstrasse.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-frueh-em-golde-kappes.jpg@@
 
-`食の専門街・市場` `ブログ推薦`
+`official` `地元密着`
 
-トルコ料理。「ケルン・ミュールハイムの小さなイスタンブール」と呼ばれるキープ通りの人気グリル店。石窯で焼く出来立ての平焼きパンと炭火グリルの盛り合わせが看板。
+1913年にニッペスの酒場主マティアス・ベッカーが開いた街角の酒場で、何代も家族経営が続いたのち2009年にフリュー醸造所が引き継いだ。改装後も木の内装と古い間取りを残し、店の前に約120席のビアガーデンがある。2階に宴会用の部屋が2つ。毎週月曜は自家製のライベクーヘンを出す。
 
-- **一皿**: グリルテラー(混合グリル)(ケバブ・キョフテ・チキン等を炭火で焼き、焼き立てパンと共に盛る豪快なトルコ式グリル盛り合わせ)
-- **営業時間**: 月〜木 7:00〜2:00 / 金・土 7:00〜3:00 / 日 7:00〜2:00
-- **定休日**: なし
-- **住所**: Keupstraße 64, 51063 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 626559 ／ [公式サイト](http://mevlanakoeln.de/)
-- **公式**: [公式サイト](http://mevlanakoeln.de/)
-- **選定理由**: グルメブログcitytasting.deのケルン・トルコ料理ベスト12で「石窯の焼き立てパンとグリル皿が自慢、評価4.5/5」として紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Mevlana%20an%20der%20Keupstra%C3%9Fe%20Keupstra%C3%9Fe%2064%2C%2051063%20K%C3%B6ln)
-- **参照元**: [citytasting.de](https://citytasting.de/tuerkische-restaurants-koeln/)
-
-### Bethlehem（ベツレヘム）
-
-@@IMG:europe/germany/img/cologne/bethlehem.jpg@@
-
-`ブログ推薦`
-
-レバノン料理。エーレンフェルト北部のレナウ広場で10年以上続く店で、フムスやババガヌーシュ、ファラフェルから溶岩石グリルの肉料理まで幅広い中東メゼが揃う。夏は広場を望むテラス席が心地よい。
-
-- **一皿**: フムス・スペツィアル(牛ひき肉のせフムス)(ひよこ豆のペーストに炒めた牛ひき肉と松の実を載せる看板メニュー。パンですくって食べる)
-- **営業時間**: 月・水〜日 17:30〜24:00
-- **定休日**: 火曜
-- **住所**: Lenauplatz 8, 50825 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 53098883 ／ [公式サイト](http://www.restaurant-bethlehem.de/)
-- **公式**: [公式サイト](http://www.restaurant-bethlehem.de/)
-- **選定理由**: Mit Vergnügen Kölnの中東料理特集で「レナウ広場のガストロシーンを10年以上豊かにしてきた店」としてフムス・スペツィアルとグリル盛りを名指しで推薦。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bethlehem%20Lenauplatz%208%2C%2050825%20K%C3%B6ln)
-- **参照元**: [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2024/restaurants-orientalische-kueche/)
-
-## アフリカ料理
-
-### Fasika Äthiopisches Restaurant（ファシカ）
-
-@@IMG:europe/germany/img/cologne/fasika.jpg@@
-
-`口コミ突出` `ブログ推薦`
-
-エチオピア料理。2002年創業、大学地区のルクセンブルガー通りにある素朴で居心地のよい店。エチオピア直輸入のスパイスを使い、手で食べる伝統スタイルを大切にしている。
-
-- **一皿**: ゲミシュター・テラー(ミックスプラッター)(酸味のある発酵クレープ「インジェラ」の上に肉・豆・野菜の煮込みを彩りよく盛り、手でちぎって食べる盛り合わせ)
-- **営業時間**: 毎日 17:00〜23:00
+- **一皿**: ヒンメル・ウン・エード(焼いた血のソーセージ、リンゴ入りマッシュポテト、炒め玉ねぎ。14.10ユーロ)／ライベクーヘン(毎週月曜の自家製ジャガイモのパンケーキ。リンゴのコンポートを添える)／ライニッシャー・ザウアーブラーテン(酢漬け牛肉の煮込み。22.10ユーロ)／ハルヴェ・ハーン(自家熟成のオランダ産チーズとライ麦パン。7.10ユーロ)
+- **営業時間**: 月〜木 11:30〜22:30／金・土 11:30〜24:00／日 12:00〜22:00
 - **定休日**: 無休
-- **住所**: Luxemburger Straße 17, 50674 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 4204891 ／ [公式サイト](https://www.fasikarestaurant.de/)
-- **公式**: [公式サイト](https://www.fasikarestaurant.de/)
-- **選定理由**: TripAdvisorで「ケルン最高のエチオピア料理」と評され、Mit Vergnügenのアフリカ料理特集にも掲載。公式サイトで営業時間と創業年を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Fasika%20%C3%84thiopisches%20Restaurant%20Luxemburger%20Stra%C3%9Fe%2017%2C%2050674%20K%C3%B6ln)
-- **参照元**: [fasikarestaurant.de](https://www.fasikarestaurant.de/) / [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2025/restaurants-afrikanisch-essen/)
+- **住所**: Neusser Straße 295, 50733 Köln
+- **予約**: 可（電話・公式サイトのオンライン予約） — ☎ +49 221 92292640 ／ [公式サイト](https://www.emgoldekappes.de/)
+- **選定理由**: 旧市街の外の住宅街で地元の常連が集う「フェーデル（地区）の酒場」の代表例として選んだ。営業の根拠＝公式サイト（2026-10-19閲覧）が月〜木11:30〜22:30・金土11:30〜24時・日12〜22時の営業時間、電話・オンライン予約、現行の献立PDFを掲示している。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=FR%C3%9CH%20%E2%80%9EEm%20Golde%20Kappes%E2%80%9C%20Neusser%20Stra%C3%9Fe%20295%2C%2050733%20K%C3%B6ln)
+- **参照元**: [FRÜH „Em Golde Kappes“ 公式サイト トップ（2026-10-19閲覧。1913年創業・2009年にフリューが継承・営業時間・約120席のビアガーデン）](https://www.emgoldekappes.de/) / [FRÜH „Em Golde Kappes“ 公式サイト 部屋の案内（2026-10-19閲覧。写真）](https://www.emgoldekappes.de/veedelskneipe-mit-veranstaltuntsraeumen-nippes.html) / [FRÜH „Em Golde Kappes“ 献立PDF（2026-10-19取得）](https://www.emgoldekappes.de/fileadmin/menus/Golde_Kappes/SpeisekarteKappes.pdf)
 
-### Selam Restaurant（セラム）
+## ケルン・ラインラント料理
 
-@@IMG:europe/germany/img/cologne/selam.jpg@@
+### 15. Bei Oma Kleinmann（バイ・オーマ・クラインマン）
 
-`老舗・歴史`
+@@IMG:europe/germany/img/cologne/cologne-bei-oma-kleinmann.jpg@@
 
-エチオピア料理。1999年開業のケルン最古のエチオピア料理店で、家族に受け継がれたレシピで伝統料理を供する。ヴィーガン・グルテンフリー対応の品揃えも豊富。
+`official` `地元密着`
 
-- **一皿**: ドロ・ワット(Doro Key Wot)(鶏肉とゆで卵をベルベレという唐辛子スパイスでじっくり煮込むエチオピアの国民的シチュー)
-- **営業時間**: 月〜土 5:00〜22:00 / 日 4:00〜21:00
-- **定休日**: なし
-- **住所**: Ehrenfeldgürtel 91, 50823 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 9520352 ／ [公式サイト](http://www.selamrestaurant.de/)
-- **公式**: [公式サイト](http://www.selamrestaurant.de/)
-- **選定理由**: 公式サイトが「ケルンで最初で最古のエチオピア料理店(1999年〜)」と明記し、Mit Vergnügenのアフリカ料理特集でも老舗として紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Selam%20Restaurant%20Ehrenfeldg%C3%BCrtel%2091%2C%2050823%20K%C3%B6ln)
-- **参照元**: [selamrestaurant.de](https://www.selamrestaurant.de/) / [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2025/restaurants-afrikanisch-essen/)
+1949年にパウラ・クラインマン夫妻が戦災で壊れた酒場を再建して開いた「ツム・ゴルデネン・クルーク」が前身で、孫の代に祖母の名を取って改称した。2003年からヴォルフ家とキューター＝ヤンコヴィッチ家が家族経営で引き継ぐ。壁一面に昔の写真が掛かる古い食堂で、肉はすべてビオ農場シュタウテンホーフの適正飼育のものを使う。週替わりの夜のメニューと通年のシュニッツェルのメニューを出す。
 
-## アジア料理
-
-### Ramen Bar Takezo（ラーメンバー・タケゾー）
-
-@@IMG:europe/germany/img/cologne/takezo.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-日本のラーメン。2018年冬に開店したケルン中心部のラーメンバーで、日本のオリジナルレシピにこだわった一杯と日本酒を出す。日本文化誌にも取り上げられた本格派。
-
-- **一皿**: 豚骨ラーメン(豚骨を長時間炊いた濃厚スープに自家製麺を合わせる日本の定番ラーメン。チャーシューと味玉付き)
-- **営業時間**: 月〜土 11:30〜22:00
+- **一皿**: シュニッツェル（豚または子牛の薄切り肉のカツレツ。店の看板で、専用のメニューがある）／週替わりの夜のメニュー（パウラ・クラインマンから伝わるレシピやケルンとアイフェル地方の郷土料理を週ごとに入れ替える）／ゲンゼエッセン（秋冬のがちょうのロースト。創業時からの名物）
+- **営業時間**: 月〜木 17:00〜23:00（料理は21:45まで）／金・土 17:00〜24:00（料理は22:00まで）
 - **定休日**: 日曜
-- **住所**: Mathiasstraße 24-26, 50676 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 95628690 ／ [公式サイト](https://takezo.de/)
-- **公式**: [公式サイト](https://takezo.de/)
-- **選定理由**: 日本文化メディアJAPANDIGESTが「本格的なラーメンと日本酒の店」として特集し、Mit Vergnügenも「日本の本物のレシピにこだわる新ラーメンバー」と紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ramen%20Bar%20Takezo%20Mathiasstra%C3%9Fe%2024-26%2C%2050676%20K%C3%B6ln)
-- **参照元**: [japandigest.de](https://www.japandigest.de/japan-in-deutschland/genuss/takezo-koeln/) / [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2019/takezo-koelns-neue-ramen-bar-setzt-auf-authentische-rezepte-aus-japan/)
+- **住所**: Zülpicher Str. 9, 50674 Köln
+- **予約**: 推奨（公式サイトの予約フォーム。問い合わせはreservierung@beiomakleinmann.de） — ☎ +49 221 232346 ／ [公式サイト](https://www.beiomakleinmann.de/)
+- **選定理由**: ケルン市の情報サイトkoeln.deの特集「ケルン料理・ラインラント料理の店」（2026-10-19閲覧）に「学生街の中のケルンらしいもてなしの静かなオアシス」として掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間（月〜木17:00〜23:00、金土17:00〜24:00、日曜定休）とウェブ予約を掲示し、お知らせ欄に2025年7月のイベント「Green Nights」、2025年8月の告知の記載がある。なお同サイトのフッターには月〜木17:00〜24:00、金土17:00〜1:00と別の時間も載っており、ページ本文（上記）とずれる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bei%20Oma%20Kleinmann%20Z%C3%BClpicher%20Str.%209%2C%2050674%20K%C3%B6ln)
+- **参照元**: [Bei Oma Kleinmann 公式サイト（歴史・営業時間・連絡先・写真）（2026-10-19閲覧）](https://www.beiomakleinmann.de/) / [Bei Oma Kleinmann 公式サイト お知らせ（2025年の告知）（2026-10-19閲覧）](https://www.beiomakleinmann.de/aktuelles) / [Bei Oma Kleinmann 公式サイト 料理（肉の仕入れ先）（2026-10-19閲覧）](https://www.beiomakleinmann.de/speisen) / [koeln.de 特集「ケルン料理・ラインラント料理の店」（2026-10-19閲覧）](https://www.koeln.de/tourismus/ll/koelner-lokale-mit-koelscher-und-rheinischer-kueche/)
 
-### Chum Chay（チュムチャイ）
+### 16. Haus Scholzen（ハウス・ショルツェン）
 
-@@IMG:europe/germany/img/cologne/chum-chay.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-haus-scholzen.jpg@@
 
-`ブログ推薦` `口コミ突出`
+`official` `地元密着` `historic`
 
-ベトナム料理。フリーゼンヴァルにある完全ベジタリアン/ヴィーガンのベトナム料理店で、肉を使わずに本場の味を再現する独自路線が人気。地元メディアに「ケルン随一のベジ食堂」と評される。
+1907年からショルツェン家が営む家族経営の店で、現在4代目。オーク材の内装の広い食堂を持つ。ラインラントの郷土料理に加え、季節ごとに春のアスパラガス、秋のきのこと野禽、11月からのがちょう料理を出す。
 
-- **一皿**: ベジタリアン・フォー(香草香る澄んだ野菜出汁の米麺スープ。豆腐や湯葉で作る具で伝統のフォーを肉なしで表現)
-- **営業時間**: 月〜土 12:00〜22:00
-- **定休日**: 日曜
-- **住所**: Friesenwall 29, 50672 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 79003798 ／ [公式サイト](http://www.chum-chay.de/)
-- **公式**: [公式サイト](http://www.chum-chay.de/)
-- **選定理由**: Mit Vergnügenが「ケルンでおそらく最高のベジレストラン」と単独記事で紹介し、ケルン観光局公式サイトにも掲載されている。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Chum%20Chay%20Friesenwall%2029%2C%2050672%20K%C3%B6ln)
-- **参照元**: [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2023/chum-chay/) / [koelntourismus.de](https://www.koelntourismus.de/genuss-diversitaet/gastronomie/detail/chum-chay)
+- **一皿**: エーレンフェルダー・ゼンフロストブラーテン（からしを塗り玉ねぎの衣で焼いた牛肉のステーキ。地区の名を冠した店の名物で通年出す）／ライニッシャー・ザウアーブラーテン（酢漬けの牛肉を干しぶどう入りの甘酸っぱいソースで煮込み、クヌーデルとりんごのピュレを添える）／ヒンメル・ウン・エード（焼いた血のソーセージに、じゃがいもとりんごのピュレと揚げ玉ねぎを添える）
+- **営業時間**: 水〜日 11:30〜15:00・17:00〜23:00（料理は12:00〜14:00・17:30〜21:00）
+- **定休日**: 月曜・火曜。2026年12月24〜31日は休業
+- **住所**: Venloer Str. 236, 50823 Köln
+- **予約**: 推奨（メールinfo@haus-scholzen.deまたは電話。予約サイトは不可。8人以上は会計がまとめて1回） — ☎ +49 221 515919 ／ [公式サイト](https://haus-scholzen.de/)
+- **選定理由**: koeln.de の特集「ケルン料理・ラインラント料理の店」と、ケルンの街情報誌Mit Vergnügen Kölnの記事「ケルン料理の11店」（2024年）の両方に掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が「2026年11〜12月の予約は12月21〜23日のみ受付、12月24〜31日は休業、2027年1月1日17時に再開」と告知しており、現行の営業時間・電話も掲示。予約サイトは使わず、メールで直接受ける方針。koeln.deは営業時間を水〜日11:30〜15:00・17:00〜23:00と記載しており、公式サイトの記載（下記）とほぼ一致する。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Haus%20Scholzen%20Venloer%20Str.%20236%2C%2050823%20K%C3%B6ln)
+- **参照元**: [Haus Scholzen 公式サイト（告知・営業時間・アクセス・写真）（2026-10-19閲覧）](https://haus-scholzen.de/) / [Haus Scholzen 公式サイト 料理（2026-10-19閲覧）](https://haus-scholzen.de/speisen/) / [koeln.de 特集 Haus Scholzen（2026-10-19閲覧）](https://www.koeln.de/tourismus/ll/koelner-lokale-mit-koelscher-und-rheinischer-kueche/haus-scholzen/) / [Mit Vergnügen Köln「ケルン料理の11店」（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2024/koelsche-kost/)
 
-### Bulgogi-Haus（ブルゴギハウス）
+### 17. Max Stark（マックス・シュタルク）
 
-@@IMG:europe/germany/img/cologne/bulgogi-haus.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-max-stark.jpg@@
 
-`口コミ突出`
+`official` `地元密着`
 
-韓国料理。北部ヴァイデンペシュ地区で長年愛される韓国焼肉店で、卓上グリルで焼くコリアンBBQが名物。人気が高く予約推奨。
+クニベルト地区の古い食堂（ガストシュテッテ）で、パッフゲンのケルシュを出す。狭い店内に昼から地元客が集まる。定番のメニューに加え、日替わりのメニュー（ターゲスカルテ）と季節の料理（11月のがちょう、冬のムール貝など）を出す。料理は毎日11時から22:30まで通しで出す。
 
-- **一皿**: プルコギ(卓上焼き)(甘辛いタレに漬けた薄切り牛肉を席で焼く韓国の代表的焼肉。ナムル等の副菜と共に供される)
-- **営業時間**: 火〜木 18:00〜22:00、金・土 17:00〜23:00、日 17:00〜22:00
-- **定休日**: 月曜
-- **住所**: Neusser Straße 654, 50737 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 177 5147920 ／ [公式サイト](http://www.bulgogi-haus.de/)
-- **公式**: [公式サイト](http://www.bulgogi-haus.de/)
-- **選定理由**: 地元ポータルkoeln.deに掲載され、Yelpで約200件のレビューを集める定番店。地元フードブロガーも「伝統的コリアンBBQで何年も通う店」と評価。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bulgogi-Haus%20Neusser%20Stra%C3%9Fe%20654%2C%2050737%20K%C3%B6ln)
-- **参照元**: [bulgogi-haus.de](https://www.bulgogi-haus.de/) / [koeln.de](https://www.koeln.de/gastro/eintrag/10746/restaurants/koreanisches-restaurant-bulgogi-haus)
+- **一皿**: ライニッシャー・ザウアーブラーテン・フォム・プフェルト（馬肉を酢漬けにして甘酸っぱいソースで煮込む昔ながらのザウアーブラーテン。クヌーデルとりんごのコンポート添え。21.90ユーロ）／ハルフェ・ハーン（熟成ゴーダとライ麦の小型パン「レッゲルヒェン」の軽食。8.50ユーロ）／ザウレ・ニーアヒェン（豚の腎臓の酸味のある煮込み。店で出すのは珍しい一品）／ヒンメル・ウン・エード・ミット・フレンツ（血のソーセージに、じゃがいもとりんごのピュレを添える）
+- **営業時間**: 毎日 11:00〜（料理は22:30まで通し）
+- **定休日**: なし（公式サイトに定休日の記載なし）
+- **住所**: Unter Kahlenhausen 47, 50668 Köln
+- **予約**: 推奨（公式サイトのウェブ予約。電話での予約は不可） — ☎ +49 221 2005633 ／ [公式サイト](https://www.max-stark.de/)
+- **選定理由**: koeln.de の特集「ケルン料理・ラインラント料理の店」と Mit Vergnügen Köln「ケルン料理の11店」（2024年）に掲載。後者は「予約無しなら運と忍耐が要るほど人気」「焼きじゃがいもは市内屈指」と書く。営業の根拠＝公式サイトの日替わりメニューのPDF（2026-10-19閲覧）が「2026年10月18日（日）」の日付で、毎日更新されている。営業時間は公式サイトに「毎日11時から、料理は22:30まで通し」。電話での予約は受けず、公式サイトの予約フォーム（teburio）がある。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Max%20Stark%20Unter%20Kahlenhausen%2047%2C%2050668%20K%C3%B6ln)
+- **参照元**: [Max Stark 公式サイト（営業時間・連絡先）（2026-10-19閲覧）](https://www.max-stark.de/) / [Max Stark 公式サイト メニューと料理写真（2026-10-19閲覧）](https://www.max-stark.de/menu) / [Max Stark 日替わりメニューPDF（2026年10月18日付）（2026-10-19閲覧）](http://files.max-stark.de/Max_Stark_Tageskarte.pdf) / [Max Stark メニューPDF（価格）（2026-10-19閲覧）](http://files.max-stark.de/Speisekarte_D_Netz.pdf) / [koeln.de 特集 Max Stark（2026-10-19閲覧）](https://www.koeln.de/tourismus/ll/koelner-lokale-mit-koelscher-und-rheinischer-kueche/max-stark/) / [Mit Vergnügen Köln「ケルン料理の11店」（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2024/koelsche-kost/)
 
-### Chok Dee（チョクディー）
+### 18. Haxenhaus zum Rheingarten（ハクセンハウス・ツム・ラインガルテン）
 
-@@IMG:europe/germany/img/cologne/chok-dee.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-haxenhaus-zum-rheingarten.jpg@@
 
-`ブログ推薦` `口コミ突出`
+`official` `historic`
 
-タイ料理。ノイマルクト裏の小路にある人気店で、地元メディアに「ケルン最高のタイ料理」と紹介される。夏は気持ちのよいテラス席もある。
+1178年に「フーズ・アム・ボーテルマーテ」として初めて文書に現れる古い建物の中の店で、約30年前から現在の形で営業する。豚と子羊のすね肉（ハクセ）を14種以上の調理法で出し、食肉職人「レーヴェ・ヴィル」のレシピの自家製ソーセージも名物。1階は110席で、ライン川を望む宴会用の部屋もある。
 
-- **一皿**: パッタイとタイカレー(米麺を甘酸っぱいタマリンドだれで炒めるタイの国民食パッタイと、ココナッツミルク香る各種カレー)
-- **営業時間**: 月〜金 11:30〜22:30 / 土 12:00〜22:30 / 日 12:00〜22:00
-- **定休日**: 水曜
-- **住所**: Bayardsgasse 4, 50676 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 16834442 ／ [公式サイト](http://chokdeethairestaurant.metro.rest/)
-- **公式**: [公式サイト](http://chokdeethairestaurant.metro.rest/)
-- **選定理由**: Mit Vergnügen Kölnのタイ料理特集(2026年版)で「ケルン最高のタイ料理」として筆頭級の扱い。著名コメディアンの推薦エピソードも添えられている。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Chok%20Dee%20Bayardsgasse%204%2C%2050676%20K%C3%B6ln)
-- **参照元**: [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2026/restaurants-thailaendisch-thai/)
-
-### Restaurant Kamasutra（レストラン・カーマスートラ）
-
-@@IMG:europe/germany/img/cologne/kamasutra.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-インド料理。バルバロッサ広場に面した高級インド料理店で、ビハール出身のシェフ、ラジヴ・ランジャン氏が南インドやハイデラバード、ベンガルなど各地方料理を供する。複数誌で「ケルン・ボン圏最高のインド料理店」に選ばれた。
-
-- **一皿**: タンドリー・ラムチョップ(スパイスとヨーグルトに漬けた仔羊を土窯タンドールで香ばしく焼き上げるシェフの看板料理)
-- **営業時間**: 月〜木 11:30〜15:00 / 17:00〜22:30、金〜日・祝 12:00〜22:30
-- **定休日**: 無休(要確認)
-- **住所**: Weyerstraße 114, 50676 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 34892828 ／ [公式サイト](http://www.kamasutra-koeln.de/)
-- **公式**: [公式サイト](http://www.kamasutra-koeln.de/)
-- **選定理由**: 公式サイトによればPrinz等の複数媒体で「ケルン・ボン圏ベストインディアン」受賞歴あり。Mit Vergnügenのインド料理特集にも掲載。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20Kamasutra%20Weyerstra%C3%9Fe%20114%2C%2050676%20K%C3%B6ln)
-- **参照元**: [kamasutra-koeln.de](https://www.kamasutra-koeln.de/) / [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2025/indisch-essen/)
-
-## 中南米料理
-
-### Flor y Canela（フロール・イ・カネラ）
-
-@@IMG:europe/germany/img/cologne/flor-y-canela.jpg@@
-
-`ブログ推薦`
-
-ペルー料理。南市街カロリンガーリングにある店で、フランス修行を経たペルー人シェフが伝統ペルー料理に日本・欧州の影響を融合させたニッケイ系創作料理を出す。
-
-- **一皿**: セビーチェ・フロール・イ・カネラ(白身魚をライムと唐辛子でしめ、サツマイモを添えるペルーの国民的マリネ料理)
-- **営業時間**: 水〜土 18:00〜23:00
-- **定休日**: 日〜火曜
-- **住所**: Karolingerring 40, 50678 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 95811553 ／ [公式サイト](https://www.florycanela.de/)
-- **公式**: [公式サイト](https://www.florycanela.de/)
-- **選定理由**: 公式サイトで営業とメニューを確認。地域ランキングサイトでケルンのペルー料理店の代表格として掲載されている。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Flor%20y%20Canela%20Karolingerring%2040%2C%2050678%20K%C3%B6ln)
-- **参照元**: [florycanela.de](https://www.florycanela.de/) / [koelnerbranchen.de](https://www.koelnerbranchen.de/peruanisches-restaurant)
-
-### Casita Mexicana (Südstadt)（カシータ・メヒカーナ）
-
-@@IMG:europe/germany/img/cologne/casita-mexicana.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-メキシコ料理。南市街ゼヴェリン通りのカラフルな店で、フライヤーを使わず新鮮な素材で作る本場寄りのメキシカン・ストリートフードが売り。ベルギー地区にも姉妹店がある。
-
-- **一皿**: タコス(本場スタイル)(トウモロコシのトルティーヤに肉や野菜、パクチー、サルサを載せるメキシコの国民食)
-- **営業時間**: 月〜木 12:00〜23:00 / 金 12:00〜0:00 / 土 13:00〜0:00 / 日 1:00〜22:30
+- **一皿**: シュヴァインスハクセ・ケルナー・アート（豚のすね肉をケルン風にグリルした看板料理）／ハクセンシュテーク・ブラウンシュヴァイク（すね肉をステーキ状にした店の創作料理。24ユーロ）／ハウスゲマハテ・ブラートヴルスト（自家製の焼きソーセージ）
+- **営業時間**: 毎日 11:30〜24:00（料理は12:00から閉店の1時間前まで）
 - **定休日**: なし
-- **住所**: Severinstraße 10-12, 50678 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 95936466 ／ [公式サイト](https://casitamexicana.de/koln-sudstadt/)
-- **公式**: [公式サイト](https://casitamexicana.de/koln-sudstadt/)
-- **選定理由**: Mit Vergnügen Kölnのメキシコ料理特集で「メキシコの原点に忠実な本格ストリートフード・クラシック」と紹介される。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Casita%20Mexicana%20%28S%C3%BCdstadt%29%20Severinstra%C3%9Fe%2010-12%2C%2050678%20K%C3%B6ln)
-- **参照元**: [koeln.mitvergnuegen.com](https://koeln.mitvergnuegen.com/2025/mexikanisch-essen/)
+- **住所**: Frankenwerft 19, 50667 Köln
+- **予約**: 可（公式サイトのウェブ予約・無料。団体は問い合わせフォーム） — ☎ +49 221 2704990 ／ [公式サイト](https://www.haxenhaus.de/de/)
+- **選定理由**: ノルトライン＝ヴェストファーレン州観光局のサイト（nrw-tourismus.de）に掲載のある旧市街の老舗で、ライン川沿いで観光客が入りやすい。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間（毎日11:30〜24:00）・カード払い可を掲示し、ブログ欄に2026年10月の記事（「Der Eenboom」）、2026年8月撮影の1階の写真を載せている。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Haxenhaus%20zum%20Rheingarten%20Frankenwerft%2019%2C%2050667%20K%C3%B6ln)
+- **参照元**: [Haxenhaus 公式サイト トップ（営業時間・住所・2026年の記事）（2026-10-19閲覧）](https://www.haxenhaus.de/de/) / [Haxenhaus 公式サイト 料理（2026-10-19閲覧）](https://www.haxenhaus.de/de/speisekarte/) / [Haxenhaus 公式サイト 歴史（2026-10-19閲覧）](https://www.haxenhaus.de/de/unser-restaurant/die-geschichte/) / [Haxenhaus 公式サイト 部屋（110席）（2026-10-19閲覧）](https://www.haxenhaus.de/de/unser-restaurant/raeumlichkeiten-raummiete/) / [nrw-tourismus.de Haxenhaus zum Rheingarten（2026-10-19閲覧）](https://www.nrw-tourismus.de/produzent/haxenhaus-zum-rheingarten)
 
-### Pantanal Rodizio（パンタナル・ロジージオ）
+### 19. Em Krützche（エム・クリュッツヒェ）
 
-@@IMG:europe/germany/img/cologne/pantanal-rodizio.jpg@@
+@@IMG:europe/germany/img/cologne/cologne-em-kruetzche.jpg@@
 
-`口コミ突出`
+`official` `historic` `terrace`
 
-ブラジル料理。中心部マイバッハ通りのシュラスコ専門店(シュラスケリア)で、串刺しの肉を店員がテーブルで切り分けるロジージオ形式が名物。週末はサンバショーも開催される。
+中世の市壁にあった小さな十字架の祠（クリュッツヒェ）が名の由来で、港の門の近くに400年以上前から食堂があったと記録される。木の内装の部屋がいくつもあり、夏はライン川沿いのテラスにビアガーデンを開く。ラインラントの定番料理のほか、秋の山のきのこ（ジーガーラント産ポルチーニ）や年末のがちょう料理など季節の料理を出す。
 
-- **一皿**: シュラスコ食べ放題(ロジージオ)(ピカーニャ等の牛肉を大串で炭火焼きし、席で好きなだけ切り分けてくれるブラジル式BBQ)
-- **営業時間**: 火〜木 18:00〜23:00、金・土 17:00〜23:30、日・祝 17:00〜22:00
+- **一皿**: ライニッシャー・ザウアーブラーテン（酢漬けの牛肉の甘酸っぱい煮込み、クヌーデル添え。通年）／ライベクーヘン（すりおろしたじゃがいもを揚げ焼きにしたパンケーキ。リーヴクーヘ）／ゲンゼエッセン（年末までのがちょうのロースト。4人以上はテーブルで切り分ける）
+- **営業時間**: 水〜土 10:00〜23:00（料理は12:00〜21:30）／日 10:00〜22:00（料理は12:00〜21:00）
+- **定休日**: 月曜・火曜
+- **住所**: Am Frankenturm 1-3, 50667 Köln
+- **予約**: 推奨（公式サイトの予約・電話） — ☎ +49 221 2580839 ／ [公式サイト](https://em-kruetzche.de/)
+- **選定理由**: ケルン旧市街のライン川沿いで最も古い部類の料理店。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間、「2026年1月2〜13日は休業、14日から営業」の告知、9月からのポルチーニ料理と年末までのがちょう料理の案内、週替わりの昼のメニューPDFを掲載。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Em%20Kr%C3%BCtzche%20Am%20Frankenturm%201-3%2C%2050667%20K%C3%B6ln)
+- **参照元**: [Em Krützche 公式サイト（営業時間・告知・写真）（2026-10-19閲覧）](https://em-kruetzche.de/) / [Em Krützche 公式サイト 週替わりメニューPDF（2026-10-19閲覧）](https://em-kruetzche.de/wp-content/uploads/Wochenmenue.pdf) / [Em Krützche 公式サイト 部屋（2026-10-19閲覧）](https://em-kruetzche.de/raeumlichkeiten/)
+
+### 20. Haus Unkelbach（ハウス・ウンケルバッハ）
+
+@@IMG:europe/germany/img/cologne/cologne-haus-unkelbach.jpg@@
+
+`official` `地元密着` `beer-garden`
+
+70年以上続くズュルツ地区の酒場で、緑がかった色ガラスの正面が目印。広いビアガーデンとボウリング（ケーゲル）のレーンを持ち、ライスドルフのケルシュを出す。ラインラントの定番料理に加え、ベジタリアン・ヴィーガンの料理や春のアスパラガス・冬のがちょうを出す。
+
+- **一皿**: ヒンメル・ウン・エード（焼いた血のソーセージに、じゃがいものピュレとりんごのコンポート、揚げ玉ねぎを添える。17.90ユーロ）／ライベクーヘン（毎週火曜のじゃがいものパンケーキ。りんごのコンポートや黒パンを添える）／ハルフェ・ハーン（熟成ゴーダとレッゲルヒェン、玉ねぎ。6.90ユーロ）／グリルハクセ（約1.2キロの豚すね肉のグリル。24.90ユーロ）
+- **営業時間**: 月〜木 17:00〜23:00／金・土 17:00〜24:00／日 12:00〜22:00
+- **定休日**: なし（祝日の扱いは未確認）
+- **住所**: Luxemburger Str. 260, 50937 Köln
+- **予約**: 可（公式サイトのウェブ予約、1〜14人。電話も可） — ☎ +49 221 414184 ／ [公式サイト](https://www.hausunkelbach.de/)
+- **選定理由**: Mit Vergnügen Köln「ケルン料理の11店」（2024年）に掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間・ウェブ予約・価格つきメニューを掲示し、「2026年のイースター・ブランチ（4月5日）」「2026年のヴァイバーファストナハト（カーニバルの女性の日）」の告知、2026年3月付の団体向けメニューPDFを載せている。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Haus%20Unkelbach%20Luxemburger%20Str.%20260%2C%2050937%20K%C3%B6ln)
+- **参照元**: [Haus Unkelbach 公式サイト（営業時間・2026年の告知・写真）（2026-10-19閲覧）](https://www.hausunkelbach.de/) / [Haus Unkelbach 公式サイト メニュー（価格）（2026-10-19閲覧）](https://www.hausunkelbach.de/speisenkarte/) / [Haus Unkelbach 公式サイト ビアガーデンの写真（2026-10-19閲覧）](https://www.hausunkelbach.de/projects/unser-biergarten/) / [Mit Vergnügen Köln「ケルン料理の11店」（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2024/koelsche-kost/)
+
+### 21. Em Altertümche（エム・アルタートゥームヒェ）
+
+@@IMG:europe/germany/img/cologne/cologne-em-altertuemche.jpg@@
+
+`official` `地元密着`
+
+1992年開業の家庭料理の店。リッターザール（騎士の間、50人まで）には、この場所で見つかったローマ時代の建物の遺構が内装に組み込まれ、古い暖炉の鉄板やタイルが代々残されている。市内で数少なくなった本物のケーゲル（ボウリング）のレーンもある。
+
+- **一皿**: ライベクーヘン（すりおろしたじゃがいもの揚げ焼き。黒パン・バター・りんごのピュレ添えで8.90ユーロ。焼いた血のソーセージと玉ねぎ添えや燻製サーモン添えもある）／ハルフェ・ハーン（熟成ゴーダとライ麦パン。7.50ユーロ）
+- **営業時間**: 月〜金 15:00〜（料理は18:00〜21:00）
+- **定休日**: 土曜・日曜・祝日（土曜は貸切の相談可）
+- **住所**: Ritterstraße 57, 50670 Köln
+- **予約**: 可（公式サイトの予約・電話・メールinfo@em-altertuemche.de） — ☎ +49 221 131434 ／ [公式サイト](https://www.em-altertuemche.de/)
+- **選定理由**: ライベクーヘン専用のメニューを持つ店で、手軽にラインラントの軽食を試せる。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間と価格つきのメニュー、「2027年2月5日（金）のカーニバルの夕べ（Freitagsfieber）」の前売りの告知を掲載。料理の写真は公式サイトのものが実写でないおそれがあるため、店内の写真のみ使う。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Em%20Altert%C3%BCmche%20Ritterstra%C3%9Fe%2057%2C%2050670%20K%C3%B6ln)
+- **参照元**: [Em Altertümche 公式サイト（営業時間・2027年のカーニバルの告知）（2026-10-19閲覧）](https://www.em-altertuemche.de/) / [Em Altertümche 公式サイト ライベクーヘンのメニュー（2026-10-19閲覧）](https://www.em-altertuemche.de/reibekuchenkarte/) / [Em Altertümche 公式サイト メニュー（2026-10-19閲覧）](https://www.em-altertuemche.de/speisekarte/) / [Em Altertümche 公式サイト 写真（2026-10-19閲覧）](https://www.em-altertuemche.de/galerie/)
+
+### 22. Weinhaus Vogel（ヴァインハウス・フォーゲル）
+
+@@IMG:europe/germany/img/cologne/cologne-weinhaus-vogel.jpg@@
+
+`official` `地元密着` `beer-garden`
+
+中世の交易路アイゲルシュタイン通りで1898年から営業するビールとワインの酒場。ガッフェルのケルシュと自家銘柄のビール、20種のグラスワインを出す。雨の日も使える60席のビアガーデンがある。定番の料理に加え、曜日ごとの特別料理（火曜シュニッツェル、水曜ライベクーヘン、木曜フラムクーヘン）を出す。
+
+- **一皿**: フォーゲルス・ヒンメル・ウン・エード・デラックス（衣をつけて焼いた血のソーセージ「フレンツ」に、炒め玉ねぎ・自家製マッシュポテト・りんごを添える）／ライニッシャー・ザウアーブラーテン（酢漬けの牛肉の甘酸っぱい煮込み。じゃがいものクヌーデルと赤キャベツ添え）／ライベクーヘン（水曜限定。3枚で8.90ユーロから）／ハルフェ・ハーン（チーズとレッゲルヒェン。6.20ユーロ）
+- **営業時間**: 火〜日 12:00〜（料理は12:00〜22:00）
 - **定休日**: 月曜
-- **住所**: Maybachstraße 22, 50670 Köln
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 221 1301767 ／ [公式サイト](http://www.pantanal-rodizio.de/)
-- **公式**: [公式サイト](http://www.pantanal-rodizio.de/)
-- **選定理由**: TripAdvisorで「ケルン最高のシュラスケリア!」とのレビューを持つ定番店で、地元口コミサイトgolocalでも高評価。公式サイトで営業を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Pantanal%20Rodizio%20Maybachstra%C3%9Fe%2022%2C%2050670%20K%C3%B6ln)
-- **参照元**: [pantanal-rodizio.de](https://www.pantanal-rodizio.de/) / [tripadvisor.de](https://www.tripadvisor.de/ShowUserReviews-g187371-d803968-r505851842-Pantanal_Rodizio-Cologne_North_Rhine_Westphalia.html)
+- **住所**: Eigelstein 74, 50668 Köln
+- **予約**: 可（電話・メールweinhaus.vogel@t-online.de） — ☎ +49 221 1399134 ／ [公式サイト](https://www.weinhaus-vogel.de/)
+- **選定理由**: 観光客の多い大聖堂周辺から少し北の、地元色の濃いアイゲルシュタイン地区の老舗。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間（月曜定休、火〜日12時から）と価格つきのメニューを掲示し、サイトの最終更新日（サーバーの記録）は2026年8月20日。外部の推薦記事は今回確認できていない。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Weinhaus%20Vogel%20Eigelstein%2074%2C%2050668%20K%C3%B6ln)
+- **参照元**: [Weinhaus Vogel 公式サイト（紹介・メニュー・営業時間・写真）（2026-10-19閲覧）](https://www.weinhaus-vogel.de/)
 
-## 半日モデルルート
+### 23. Haus Schnackertz（ハウス・シュナッカーツ）
 
----
+@@IMG:europe/germany/img/cologne/cologne-haus-schnackertz.jpg@@
 
-> 選考基準: ①個人・公式ブログ/現地メディアでの名店言及 ②複数レビューサイトでの口コミ・行列の突出 ③創業年・代替わりのある老舗 ④食の専門街・市場立地 ⑤受賞歴・ガイド掲載。写真は各店の料理・店内の実写(Google Maps投稿写真、© Google)。予約は各カードの「予約」欄のリンク(電話/予約サイト)から。営業時間・定休日は2026年7月時点の各種サイト情報で、変更があり得ます。
+`official` `地元密着`
+
+1912年にニッペス地区に建った建物で、当初から料理店が入る。現在の経営者は2007年から。肉は近隣の適正飼育の生産者から、魚はアイスランド産の天然物を仕入れ、添加物・化学調味料を使わずに店で一から作る。春のアスパラガス、夏以降のあんず茸、冬のがちょうと季節の料理を出す。
+
+- **一皿**: ライニッシャー・ザウアーブラーテン（アイフェル産の牛肉の甘酸っぱい煮込み。りんご入り赤キャベツと、じゃがいもとベーコンを焼いた郷土料理「デッペクーヘ」を添える。25.90ユーロ）／ニッペザー・ゼンフロストブラーテン（叩いて薄くしたランプステーキを桃色に焼き、玉ねぎとからしの衣をのせる地区の名物。焼きじゃがいもとサラダ付き。24.90ユーロ）
+- **営業時間**: 火〜土 17:00〜22:00（23:00まで軽食）／日 11:30〜14:00・17:00〜21:00
+- **定休日**: 月曜
+- **住所**: Bülowstraße 2, 50733 Köln
+- **予約**: 推奨（公式サイトの予約・電話・メールinfo@schnackertz.koeln） — ☎ +49 221 766839 ／ [公式サイト](https://schnackertz.koeln/)
+- **選定理由**: Mit Vergnügen Köln「ケルン料理の11店」（2024年）で「上質なドイツの家庭料理」として掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間・価格つきメニューを掲示し、ページの更新日時が2026年10月16日、著作権表示が「© 2026」。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Haus%20Schnackertz%20B%C3%BClowstra%C3%9Fe%202%2C%2050733%20K%C3%B6ln)
+- **参照元**: [Haus Schnackertz 公式サイト（紹介・メニュー・営業時間・写真）（2026-10-19閲覧）](https://schnackertz.koeln/) / [Mit Vergnügen Köln「ケルン料理の11店」（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2024/koelsche-kost/)
+
+### 24. Kölsch Kultur（ケルシュ・クルトゥーア）
+
+@@IMG:europe/germany/img/cologne/cologne-koelsch-kultur.jpg@@
+
+`official` `地元密着`
+
+2003年開業の地元の酒場で、ガッフェルのケルシュを出す。ラインラントの定番料理に加え、毎週火曜から替わる週替わりのメニューと、冬のがちょう、灰の水曜日の魚、春のアスパラガス（近郊のベラー農場産）を出す。テラス席がある。
+
+- **一皿**: ライニッシャー・ザウアーブラーテン（馬肉の甘酸っぱい煮込み。じゃがいものクヌーデルとりんごのピュレ添え。22.50ユーロ）／ヒンメル・ウン・エード（血のソーセージに、じゃがいもとりんごのピュレを添える。13.90ユーロ）／ヘムヒェンズュルツェ（豚すね肉の自家製ゼリー寄せ。焼きじゃがいもとレムラードソース添え。13.90ユーロ）
+- **営業時間**: 月〜土 17:00〜翌1:00／日 12:00〜翌1:00
+- **定休日**: なし
+- **住所**: Petersbergstraße 1-3, 50939 Köln
+- **予約**: 可（営業時間中に電話） — ☎ +49 221 4927010 ／ [公式サイト](https://www.koelsch-kultur.koeln/)
+- **選定理由**: Mit Vergnügen Köln の記事「ズュルツの知っておきたいバーと酒場11軒」2025年版で、ヒンメル・ウン・エード、馬肉のザウアーブラーテン、自家製のヘムヒェンズュルツェを出す店として掲載（2026-10-19閲覧）。同誌の「ケルン料理の11店」（2024年）にも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が営業時間と価格つきメニュー、週替わりメニューの案内を掲示（ただし公式サイト上に日付つきの告知は無く、2025年の日付がある根拠は上記の記事のみ）。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=K%C3%B6lsch%20Kultur%20Petersbergstra%C3%9Fe%201-3%2C%2050939%20K%C3%B6ln)
+- **参照元**: [Kölsch Kultur 公式サイト（営業時間・住所・写真）（2026-10-19閲覧）](https://www.koelsch-kultur.koeln/) / [Kölsch Kultur 公式サイト メニュー（価格）（2026-10-19閲覧）](https://www.koelsch-kultur.koeln/speisekarte/) / [Mit Vergnügen Köln「ズュルツのバーと酒場11軒」2025年版（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2025/bars-kneipen-suelz) / [Mit Vergnügen Köln「ケルン料理の11店」（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2024/koelsche-kost/)
+
+## モダン料理・ファインダイニング
+
+### 25. Ox & Klee（オクス・ウント・クレー）
+
+@@IMG:europe/germany/img/cologne/cologne-ox-und-klee.jpg@@
+
+`michelin` `official`
+
+ダニエル・ゴットシュリヒが率いるケルン唯一のミシュラン二つ星。塩味・甘味・苦味・脂・酸味・旨味の六つの味覚を軸に組む「The Art of Taste」を出し、最初に六つの小皿を詰めた「ブラックボックス」が届く。肉魚のコースと菜食のコースがあり、厨房に入って一皿を受け取る「キッチン・エクスペリエンス」版もある。サービスと厨房を分けない運営を公式サイトで掲げる。
+
+- **一皿**: ブラックボックス（六つの味覚を一口ずつ表した前菜6種の箱）／ハルヴェ・ハーン（ライ麦パンにチーズと玉ねぎを載せるケルンの軽食「ハルフェ・ハーン」を美食に組み直した一皿）／マクレーレ（ブリの一種のさばにキャビア、熟成ゴーダのクリーム、カラマンシーのジェルを合わせたシーザーサラダ風の皿）
+- **営業時間**: 水〜土 18:30〜24:00
+- **定休日**: 日・月・火
+- **住所**: Im Zollhafen 18, 50678 Köln
+- **予約**: 要（公式サイトの予約フォーム。満席時はウェイティングリストあり） — ☎ +49 170 3284835 ／ [公式サイト](https://oxundklee.de/)
+- **選定理由**: ミシュランガイド2026年版で二つ星（ミシュランのページの掲載データに dateAwarded 2026。2026-10-19閲覧）。営業の根拠＝公式サイトの「Food, Drinks & Wein」ページ（2026-10-19閲覧）が「Menüs ab Juni 2025」として The Art of Taste 260ユーロ・菜食245ユーロ・キッチン・エクスペリエンス310ユーロ（菜食295ユーロ）を掲示し、連絡先ページが水〜土18:30〜24:00・日〜火休みと掲示。電話は公式サイトが +49 170 3284835（携帯・WhatsApp兼用）、ミシュランが +49 221 16956603 と食い違うため、予約は公式サイトの番号か予約フォームを優先。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ox%20%26%20Klee%20Im%20Zollhafen%2018%2C%2050678%20K%C3%B6ln)
+- **参照元**: [Ox & Klee 公式サイト Food, Drinks & Wein（2026-10-19閲覧。2025年6月からのメニューと価格）](https://oxundklee.de/food-drinks-wein/) / [Ox & Klee 公式サイト 連絡先（2026-10-19閲覧。住所・営業時間・定休日）](https://oxundklee.de/kontakt/) / [ミシュランガイド ドイツ版 Ox & Klee（2026年版 二つ星）（2026-10-19閲覧）](https://guide.michelin.com/de/de/nordrhein-westfalen/koln/restaurant/ox-klee)
