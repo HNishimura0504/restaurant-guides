@@ -1,6 +1,46 @@
+### 65. Jansen by Fassbender（ヤンセン・バイ・ファスベンダー）
+
+@@IMG:europe/germany/img/cologne/cologne-jansen-by-fassbender.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-jansen-by-fassbender_exterior.jpg@@
+
+`official` `historic`
+
+19世紀半ばに家族経営の「カフェ・ヤンセン」として始まった店で、運営会社はケルン最古の3軒のカフェの1つと説明する。現在は近郊ジークブルクに本店を置くコンディトライのファスベンダーが営み、記念物保護の対象となった1950〜60年代の内装を残す。赤い絨毯とガラスのショーケースの売り場に面して客席が並ぶ。全館空調。
+
+- **一皿**: ファスベンダーのトルテとケーキ（生クリームやバタークリームを重ねたドイツ式の大型ケーキを切り分けて出す）／自家製の焼き菓子とプラリネ
+- **営業時間**: 毎日 10:00〜18:00（日曜・祝日も同じ）
+- **定休日**: なし
+- **住所**: Obenmarspforten 7, 50667 Köln
+- **予約**: 可（電話またはメール） — ☎ +49 221 2727390 ／ [公式サイト](https://www.fassbender.de/)
+- **選定理由**: 観光局の雑誌『K wie Köln』の記事「Historical Cologne cafés」（2024-01-26）が「A trip down memory lane」として推薦。ファスベンダーはジークブルク・ボンにも店を持つ地域の老舗コンディトライだが、この店は歴史的内装そのものに名物性がある。営業の根拠＝ファスベンダー公式サイト（2026-10-19閲覧）が現行の営業時間（毎日10:00〜18:00）を掲示し、ヤンセン店の献立表PDF「Fassbender_Speisekarte_KöJa_0826」（2026年8月版）を公開。営業時間は公式サイトの毎日10〜18時に従った（2024年の雑誌記事は月〜金9:00〜18:30・土9:00〜19:00・日11:00〜18:00と記載）。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Jansen%20by%20Fassbender%20Obenmarspforten%207%2C%2050667%20K%C3%B6ln)
+- **参照元**: [Fassbender 公式サイト（ヤンセン店の住所・営業時間・内装の記載）（2026-10-19閲覧）](https://www.fassbender.de/) / [Fassbender ヤンセン店の献立表（2026年8月版PDF）（2026-10-19閲覧）](https://www.fassbender.de/wp-content/uploads/Fassbender_Speisekarte_K%C3%B6Ja_0826.pdf) / [K wie Köln Historical Cologne cafés that coffee lovers won't want to miss（2024-01-26掲載）（2026-10-19閲覧）](https://magazine.cologne-tourism.com/culinary/historical-cologne-cafes-that-coffee-lovers-wont-want-to-miss/)
+
+### 66. Café Osterspey（カフェ・オスタースパイ）
+
+@@IMG:europe/germany/img/cologne/cologne-cafe-osterspey.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-cafe-osterspey_exterior.jpg@@
+
+`official` `guide` `historic`
+
+1919年からオスタースパイ家が営んだコンディトライを、2021年に若い菓子職人レア・シュロッサーとケヴィン・トーマス・クレーバーが店名と家具ごと引き継いだ。毎日店内で焼き、地元産の材料を多く使う。生クリーム・メレンゲ・バタークリームのトルテ、果物とチョコレートのテルトヒェン、レモンのタルトレット、プチフール、クロワッサン、自家製プラリネが並ぶ。店内で朗読会や演奏会も開く。
+
+- **一皿**: ケルナー・マルガレーテンクーヘン（ケルンの昔ながらの花形の焼き菓子）／ツィトローネン・タルトレット（レモンクリームの小さなタルト）／アイスシュプリッター・トルテ（削ったチョコレートを混ぜた冷たいクリームのトルテ）／自家製プラリネ
+- **営業時間**: 火〜日 10:00〜17:00
+- **定休日**: 月曜
+- **住所**: Luxemburger Straße 267, 50939 Köln
+- **予約**: 不要（ホールケーキの注文は電話・フォームで受付） — ☎ +49 221 42360987 ／ [公式サイト](https://cafe-osterspey.de/)
+- **選定理由**: 美食誌『Der Feinschmecker』の「Die besten Cafés & Röstereien in Deutschland 2025」（ドイツの最良のカフェと焙煎所2025）に選ばれ、公式サイトがその認定証を掲示。観光局の雑誌『K wie Köln』の記事「Historical Cologne cafés」（2024-01-26）も推薦。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間（火〜日10:00〜17:00）を掲示し、2026年8月に掲載した店内行事の案内（9月〜12月の朗読会・演奏会の日程）を載せる。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Osterspey%20Luxemburger%20Stra%C3%9Fe%20267%2C%2050939%20K%C3%B6ln)
+- **参照元**: [Café Osterspey 公式サイト（営業時間・沿革・Feinschmecker 2025の認定・2026年の行事案内）（2026-10-19閲覧）](https://cafe-osterspey.de/) / [Café Osterspey 公式サイト Kreationen（プラリネ・トルテ）（2026-10-19閲覧）](https://cafe-osterspey.de/kreationen/) / [K wie Köln Historical Cologne cafés that coffee lovers won't want to miss（2024-01-26掲載）（2026-10-19閲覧）](https://magazine.cologne-tourism.com/culinary/historical-cologne-cafes-that-coffee-lovers-wont-want-to-miss/)
+
 ### 67. Chocolat Grand Café（Schokoladenmuseum Köln）（ショコラ・グラン・カフェ（ケルン・チョコレート博物館））
 
 @@IMG:europe/germany/img/cologne/cologne-chocolat-grand-cafe.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-chocolat-grand-cafe_exterior.jpg@@
 
 `official` `museum` `chocolate`
 
@@ -19,6 +59,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-baeckerei-zimmermann.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-baeckerei-zimmermann_exterior.jpg@@
+
 `official` `tourism` `historic` `bakery`
 
 1875年にパン職人カスパー・ツィマーマンが市壁の基礎の上に開いたパン屋で、現在はマルクスとアンドレアスのツィマーマン兄弟が5代目として営む。手書きの古いレシピを守り、保存料や化学的な添加物を使わず、アイフェル地方の契約農家の穀物で焼く。ライ麦の黒パンが名物で、店頭のショーケースには菓子パンや焼き菓子も並ぶ。店は持ち帰りが中心。
@@ -35,6 +77,8 @@
 ### 69. Heilandt Kaffeeladen Belgisches Viertel（ハイラント・カフェーラーデン・ベルギー街店）
 
 @@IMG:europe/germany/img/cologne/cologne-heilandt-belgisches-viertel.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-heilandt-belgisches-viertel_exterior.jpg@@
 
 `official` `地元密着` `roaster`
 
@@ -70,6 +114,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-ernst-kaffeeroester-suedstadt.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-ernst-kaffeeroester-suedstadt_exterior.jpg@@
+
 `official` `地元密着` `roaster`
 
 ケルンのスペシャルティコーヒー焙煎所エルンストが営む1号店のコーヒーバー。高い窓から光が入り、黄色い金属の机と古材の大きなカウンターなどの古い家具でそろえる。ラ・マルゾッコ社のエスプレッソマシン「ストラーダAV」で淹れ、2台目のグラインダーには入れ替わりのシングルオリジン（単一産地）の豆を置く。ズュルツのヴァイヤータールに2号店がある。
@@ -103,6 +149,8 @@
 ### 73. Kaffeesaurus（カフェーザウルス）
 
 @@IMG:europe/germany/img/cologne/cologne-kaffeesaurus.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-kaffeesaurus_exterior.jpg@@
 
 `official` `tourism` `roaster`
 

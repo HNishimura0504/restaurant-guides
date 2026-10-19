@@ -1,6 +1,29 @@
+### 52. Hanedan（ハネダン）
+
+@@IMG:europe/germany/img/cologne/cologne-hanedan.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-hanedan_exterior.jpg@@
+
+`official` `地元密着`
+
+アナトリアの肉料理をもとに、炭火焼きと店内の熟成庫で寝かせたドライエージングのステーキを出すトルコ料理店。肉はハラールかつオーガニック（地元誌の記載）。料理はカウンター奥で一皿ずつ焼く。店主はタヒル・チェリクで、ボンにも店がある（2店）。
+
+- **一皿**: アダナ・ケバブ（唐辛子を利かせた羊・牛のひき肉を平たい串で炭火焼きにしたトルコ南部アダナの名物。米とブルグル付き）／クズ・ピルゾラ（子羊の骨付きロース4本の炭火焼き）／ドライエイジド・リブアイ（店内の熟成庫で寝かせたリブロースのステーキ。ローズマリーポテト付き、重さで値段が決まる）
+- **営業時間**: 毎日 11:30〜24:00
+- **定休日**: なし
+- **住所**: Peter-Huppertz-Straße 1-3, 51063 Köln
+- **予約**: 可（電話・メール reservierung@hanedancgn.de） — ☎ +49 221 50060977 ／ [公式サイト](https://hanedan.de/hanedan-koln)
+- **選定理由**: 営業の根拠＝公式サイトのケルン店ページ（2026-10-19閲覧）に曜日別の営業時間・住所・予約用メールと「© Hanedan 2026」があり、ページの公開日時は2026-08-19。推薦の根拠＝地元ウェブマガジンMit Vergnügen Kölnの「トルコ料理11軒」（2026年版、{D}閲覧）が、ケウプ通りから目と鼻の先の炭火焼きの名店として、自前の熟成庫とハラールかつオーガニックの肉を紹介。写真は公式サイトのもので、ケルン店とボン店のどちらで撮ったかは不明。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Hanedan%20Peter-Huppertz-Stra%C3%9Fe%201-3%2C%2051063%20K%C3%B6ln)
+- **参照元**: [Hanedan 公式サイト ケルン店（2026-10-19閲覧。営業時間・住所・電話）](https://hanedan.de/hanedan-koln) / [同 メニュー（2026-10-19閲覧。料理名と説明。価格の記載なし）](https://hanedan.de/menu) / [同 店について（2026-10-19閲覧。店主と熟成肉）](https://hanedan.de/uber-uns) / [Mit Vergnügen Köln「11 Orte in Köln, an denen ihr lecker Türkisch essen könnt」（2026年、2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2026/tuerkisch-essen)
+
+## 食べ歩き・市場・軽食
+
 ### 53. Habibi（ハビービ）
 
 @@IMG:europe/germany/img/cologne/cologne-habibi.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-habibi_exterior.jpg@@
 
 `official` `takeaway` `vegetarian`
 
@@ -19,6 +42,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-ferkulum.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-ferkulum_exterior.jpg@@
+
 `takeaway` `latenight`
 
 学生街の老舗ギロス店で、koeln.de は「数十年続く軽食店の名所」と書く。豚肉を回転串で焼いて削ぐギロスを、ピタに巻くか、フライドポテト・ツァツィキ・サラダと皿に盛って出す。店内は豚の絵で飾られている。深夜まで開いていて、近くの酒場から流れてくる客が多い。
@@ -35,6 +60,8 @@
 ### 55. Oruc Kebap（オルチ・ケバプ）
 
 @@IMG:europe/germany/img/cologne/cologne-oruc-kebap.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-oruc-kebap_exterior.jpg@@
 
 `official` `takeaway` `latenight`
 
@@ -87,6 +114,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-friedrichs-die-metzgerei.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-friedrichs-die-metzgerei_exterior.jpg@@
+
 `official` `butcher` `takeaway`
 
 自家の農場で牛を飼う肉屋で、ズュルツとロデンキルヒェンに店を持つ。ハム・ソーセージ・精肉を対面のケースで売り、昼には温かい料理「ミッタークスティッシュ」を出す（日替わりの献立は公式のインスタグラムで告知）。
@@ -104,6 +133,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-kaeseglueck.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-kaeseglueck_exterior.jpg@@
+
 `official` `shop`
 
 フランスのAOPチーズなどを量り売りするチーズ専門店。対面のケースで切り分けてもらえ、チーズを重ねたウエディング用の「ケーゼトルテ」の注文や、チーズとワインの試食会・チーズ作りの講座も開く。
@@ -120,6 +151,8 @@
 ### 60. Wochenmarkt Wilhelmplatz（ヴォッヘンマルクト・ヴィルヘルムプラッツ）
 
 @@IMG:europe/germany/img/cologne/cologne-wochenmarkt-wilhelmplatz.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-wochenmarkt-wilhelmplatz_exterior.jpg@@
 
 `market` `official`
 
@@ -139,6 +172,8 @@
 ### 61. Café Reichard（カフェ・ライヒャルト）
 
 @@IMG:europe/germany/img/cologne/cologne-cafe-reichard.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-cafe-reichard_exterior.jpg@@
 
 `official` `tourism` `historic`
 
@@ -174,6 +209,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-toertchentoertchen.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-toertchentoertchen_exterior.jpg@@
+
 `official` `tourism` `patisserie`
 
 2005年10月にアルテ・ヴァルガッセの12平方メートルの売り場から始まったパティスリーで、ケルンで最初のフランス式パティスリーを名乗る。現在のカフェはアポステルン通りの歴史ある建物にあり、全商品の販売と製菓用品・贈答品も扱う。コーヒーはケルンの焙煎所ハイラントの豆、牛乳はヴィッツヘルデンのヒールシャー農場のもの。2026年初めにニッペスとブラウンスフェルトのカフェを閉め、営業中のカフェはこの1店。
@@ -191,6 +228,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-cafe-konditorei-wahlen.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-cafe-konditorei-wahlen_exterior.jpg@@
+
 `official` `tourism` `historic`
 
 1911年にハインリヒ・ヴァーレンがホイマルクトで開き、1938年から現在のホーエンシュタウフェンリング64番地で営業する家族経営のコンディトライ。1942年の空襲で全壊し、1949年に再開した。1949年の黒大理石の売り台と鉛ガラスの窓、1959年から使うビロード張りで籐の背もたれの椅子、1962年のシャンデリアと壁布が残る。給仕は黒い制服に白いエプロン姿。
@@ -203,37 +242,3 @@
 - **選定理由**: ケルン観光局の雑誌『K wie Köln』の記事「Historical Cologne cafés」（2024-01-26）が最初に挙げる老舗で、観光局の英語サイトも紹介（2026-10-19閲覧）。営業の根拠＝公式サイトの「Aktuelles」（2026-10-19閲覧）が2026年10月12〜18日・19〜25日の週替わり献立表を掲載し、トップページが現行の営業時間（火〜金11:00〜18:00、土日10:00〜18:00、月曜休み）を掲示。沿革は公式サイトの「Historie」による。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Konditorei%20Wahlen%20Hohenstaufenring%2064%2C%2050674%20K%C3%B6ln)
 - **参照元**: [Café Wahlen 公式サイト トップ（営業時間）（2026-10-19閲覧）](https://www.cafe-wahlen.de/) / [Café Wahlen 公式サイト Aktuelles（2026年10月の週替わり献立表）（2026-10-19閲覧）](https://www.cafe-wahlen.de/aktuelles/) / [Café Wahlen 公式サイト Historie（1911年からの沿革と内装）（2026-10-19閲覧）](https://www.cafe-wahlen.de/historie/) / [ケルン観光局 Café Konditorei Wahlen 店舗紹介（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/cafe-konditorei-wahlen) / [K wie Köln Historical Cologne cafés that coffee lovers won't want to miss（2024-01-26掲載）（2026-10-19閲覧）](https://magazine.cologne-tourism.com/culinary/historical-cologne-cafes-that-coffee-lovers-wont-want-to-miss/)
-
-### 65. Jansen by Fassbender（ヤンセン・バイ・ファスベンダー）
-
-@@IMG:europe/germany/img/cologne/cologne-jansen-by-fassbender.jpg@@
-
-`official` `historic`
-
-19世紀半ばに家族経営の「カフェ・ヤンセン」として始まった店で、運営会社はケルン最古の3軒のカフェの1つと説明する。現在は近郊ジークブルクに本店を置くコンディトライのファスベンダーが営み、記念物保護の対象となった1950〜60年代の内装を残す。赤い絨毯とガラスのショーケースの売り場に面して客席が並ぶ。全館空調。
-
-- **一皿**: ファスベンダーのトルテとケーキ（生クリームやバタークリームを重ねたドイツ式の大型ケーキを切り分けて出す）／自家製の焼き菓子とプラリネ
-- **営業時間**: 毎日 10:00〜18:00（日曜・祝日も同じ）
-- **定休日**: なし
-- **住所**: Obenmarspforten 7, 50667 Köln
-- **予約**: 可（電話またはメール） — ☎ +49 221 2727390 ／ [公式サイト](https://www.fassbender.de/)
-- **選定理由**: 観光局の雑誌『K wie Köln』の記事「Historical Cologne cafés」（2024-01-26）が「A trip down memory lane」として推薦。ファスベンダーはジークブルク・ボンにも店を持つ地域の老舗コンディトライだが、この店は歴史的内装そのものに名物性がある。営業の根拠＝ファスベンダー公式サイト（2026-10-19閲覧）が現行の営業時間（毎日10:00〜18:00）を掲示し、ヤンセン店の献立表PDF「Fassbender_Speisekarte_KöJa_0826」（2026年8月版）を公開。営業時間は公式サイトの毎日10〜18時に従った（2024年の雑誌記事は月〜金9:00〜18:30・土9:00〜19:00・日11:00〜18:00と記載）。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Jansen%20by%20Fassbender%20Obenmarspforten%207%2C%2050667%20K%C3%B6ln)
-- **参照元**: [Fassbender 公式サイト（ヤンセン店の住所・営業時間・内装の記載）（2026-10-19閲覧）](https://www.fassbender.de/) / [Fassbender ヤンセン店の献立表（2026年8月版PDF）（2026-10-19閲覧）](https://www.fassbender.de/wp-content/uploads/Fassbender_Speisekarte_K%C3%B6Ja_0826.pdf) / [K wie Köln Historical Cologne cafés that coffee lovers won't want to miss（2024-01-26掲載）（2026-10-19閲覧）](https://magazine.cologne-tourism.com/culinary/historical-cologne-cafes-that-coffee-lovers-wont-want-to-miss/)
-
-### 66. Café Osterspey（カフェ・オスタースパイ）
-
-@@IMG:europe/germany/img/cologne/cologne-cafe-osterspey.jpg@@
-
-`official` `guide` `historic`
-
-1919年からオスタースパイ家が営んだコンディトライを、2021年に若い菓子職人レア・シュロッサーとケヴィン・トーマス・クレーバーが店名と家具ごと引き継いだ。毎日店内で焼き、地元産の材料を多く使う。生クリーム・メレンゲ・バタークリームのトルテ、果物とチョコレートのテルトヒェン、レモンのタルトレット、プチフール、クロワッサン、自家製プラリネが並ぶ。店内で朗読会や演奏会も開く。
-
-- **一皿**: ケルナー・マルガレーテンクーヘン（ケルンの昔ながらの花形の焼き菓子）／ツィトローネン・タルトレット（レモンクリームの小さなタルト）／アイスシュプリッター・トルテ（削ったチョコレートを混ぜた冷たいクリームのトルテ）／自家製プラリネ
-- **営業時間**: 火〜日 10:00〜17:00
-- **定休日**: 月曜
-- **住所**: Luxemburger Straße 267, 50939 Köln
-- **予約**: 不要（ホールケーキの注文は電話・フォームで受付） — ☎ +49 221 42360987 ／ [公式サイト](https://cafe-osterspey.de/)
-- **選定理由**: 美食誌『Der Feinschmecker』の「Die besten Cafés & Röstereien in Deutschland 2025」（ドイツの最良のカフェと焙煎所2025）に選ばれ、公式サイトがその認定証を掲示。観光局の雑誌『K wie Köln』の記事「Historical Cologne cafés」（2024-01-26）も推薦。営業の根拠＝公式サイト（2026-10-19閲覧）が現行の営業時間（火〜日10:00〜17:00）を掲示し、2026年8月に掲載した店内行事の案内（9月〜12月の朗読会・演奏会の日程）を載せる。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Osterspey%20Luxemburger%20Stra%C3%9Fe%20267%2C%2050939%20K%C3%B6ln)
-- **参照元**: [Café Osterspey 公式サイト（営業時間・沿革・Feinschmecker 2025の認定・2026年の行事案内）（2026-10-19閲覧）](https://cafe-osterspey.de/) / [Café Osterspey 公式サイト Kreationen（プラリネ・トルテ）（2026-10-19閲覧）](https://cafe-osterspey.de/kreationen/) / [K wie Köln Historical Cologne cafés that coffee lovers won't want to miss（2024-01-26掲載）（2026-10-19閲覧）](https://magazine.cologne-tourism.com/culinary/historical-cologne-cafes-that-coffee-lovers-wont-want-to-miss/)
