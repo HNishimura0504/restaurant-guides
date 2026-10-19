@@ -1,6 +1,27 @@
+### 12. Haus Töller（ハウス・テラー）
+
+@@IMG:europe/germany/img/cologne/cologne-haus-toeller.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-haus-toeller_exterior.jpg@@
+
+`official` `tourism`
+
+1871年にテオドール・テラーが醸造所を開いた建物で営むブラウハウス。1945年の空襲を免れた数少ない建物で、19世紀の酒場の間取りが残る。入口の土間には店主の帳場「テーケンシャーフ」と樽台があり、ペフゲン・ケルシュを地下から鎖の巻き上げ機で樽ごと上げて注ぐ。テレビも音楽もない店内に、87席の客間と1915年増築の199席の広間がある。
+
+- **一皿**: シンケンヘムヒェン(塩漬けにした豚すね肉をゆっくり煮て、皮と脂を除いて出すケルンの古い名物。ザワークラウトとマッシュポテト付き。24ユーロ)／ライニッシャー・ザウアーブラーテン(自家製の酢漬け牛肉の煮込み。ジャガイモ団子と紫キャベツ付き。24ユーロ)／ヒンメル・ウン・エード(17ユーロ)／ローストビーフ・ミット・ブラートカルトッフェルン(自家製ローストビーフに炒めたジャガイモとレムラードソース。24ユーロ)
+- **営業時間**: 月〜土 17:00〜閉店まで
+- **定休日**: 日曜
+- **住所**: Weyerstraße 96, 50676 Köln
+- **予約**: 推奨（団体は電話で。予約は電話のみ） — ☎ +49 221 2589316 ／ [公式サイト](https://www.haus-toeller.de/)
+- **選定理由**: ケルン観光局の公式サイトが「19世紀のケルンの酒場の趣を味わえる」と紹介する、最も古い造りを残すブラウハウスの一つ。営業の根拠＝公式サイト（2026-10-19閲覧、表記©2026）が月〜土17時からの営業・日曜定休・電話予約・現金のみと、全品の現行価格を掲示している。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Haus%20T%C3%B6ller%20Weyerstra%C3%9Fe%2096%2C%2050676%20K%C3%B6ln)
+- **参照元**: [Haus Töller 公式サイト トップ（2026-10-19閲覧。営業時間・現金のみ・沿革）](https://www.haus-toeller.de/) / [Haus Töller 公式サイト 献立（2026-10-19閲覧。価格・ヘムヒェンの説明）](https://www.haus-toeller.de/speisekarte/) / [ケルン観光局 公式サイト「Haus Töller」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/haus-toeller)
+
 ### 13. Gilden im Zims（ギルデン・イム・ツィムス）
 
 @@IMG:europe/germany/img/cologne/cologne-gilden-im-zims.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-gilden-im-zims_exterior.jpg@@
 
 `official`
 
@@ -18,6 +39,8 @@
 ### 14. FRÜH „Em Golde Kappes“（フリュー・エム・ゴルデ・カペス）
 
 @@IMG:europe/germany/img/cologne/cologne-frueh-em-golde-kappes.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-frueh-em-golde-kappes_exterior.jpg@@
 
 `official` `地元密着`
 
@@ -38,6 +61,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-bei-oma-kleinmann.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-bei-oma-kleinmann_exterior.jpg@@
+
 `official` `地元密着`
 
 1949年にパウラ・クラインマン夫妻が戦災で壊れた酒場を再建して開いた「ツム・ゴルデネン・クルーク」が前身で、孫の代に祖母の名を取って改称した。2003年からヴォルフ家とキューター＝ヤンコヴィッチ家が家族経営で引き継ぐ。壁一面に昔の写真が掛かる古い食堂で、肉はすべてビオ農場シュタウテンホーフの適正飼育のものを使う。週替わりの夜のメニューと通年のシュニッツェルのメニューを出す。
@@ -54,6 +79,8 @@
 ### 16. Haus Scholzen（ハウス・ショルツェン）
 
 @@IMG:europe/germany/img/cologne/cologne-haus-scholzen.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-haus-scholzen_exterior.jpg@@
 
 `official` `地元密着` `historic`
 
@@ -72,6 +99,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-max-stark.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-max-stark_exterior.jpg@@
+
 `official` `地元密着`
 
 クニベルト地区の古い食堂（ガストシュテッテ）で、パッフゲンのケルシュを出す。狭い店内に昼から地元客が集まる。定番のメニューに加え、日替わりのメニュー（ターゲスカルテ）と季節の料理（11月のがちょう、冬のムール貝など）を出す。料理は毎日11時から22:30まで通しで出す。
@@ -88,6 +117,8 @@
 ### 18. Haxenhaus zum Rheingarten（ハクセンハウス・ツム・ラインガルテン）
 
 @@IMG:europe/germany/img/cologne/cologne-haxenhaus-zum-rheingarten.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-haxenhaus-zum-rheingarten_exterior.jpg@@
 
 `official` `historic`
 
@@ -106,6 +137,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-em-kruetzche.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-em-kruetzche_exterior.jpg@@
+
 `official` `historic` `terrace`
 
 中世の市壁にあった小さな十字架の祠（クリュッツヒェ）が名の由来で、港の門の近くに400年以上前から食堂があったと記録される。木の内装の部屋がいくつもあり、夏はライン川沿いのテラスにビアガーデンを開く。ラインラントの定番料理のほか、秋の山のきのこ（ジーガーラント産ポルチーニ）や年末のがちょう料理など季節の料理を出す。
@@ -122,6 +155,8 @@
 ### 20. Haus Unkelbach（ハウス・ウンケルバッハ）
 
 @@IMG:europe/germany/img/cologne/cologne-haus-unkelbach.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-haus-unkelbach_exterior.jpg@@
 
 `official` `地元密着` `beer-garden`
 
@@ -140,6 +175,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-em-altertuemche.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-em-altertuemche_exterior.jpg@@
+
 `official` `地元密着`
 
 1992年開業の家庭料理の店。リッターザール（騎士の間、50人まで）には、この場所で見つかったローマ時代の建物の遺構が内装に組み込まれ、古い暖炉の鉄板やタイルが代々残されている。市内で数少なくなった本物のケーゲル（ボウリング）のレーンもある。
@@ -156,6 +193,8 @@
 ### 22. Weinhaus Vogel（ヴァインハウス・フォーゲル）
 
 @@IMG:europe/germany/img/cologne/cologne-weinhaus-vogel.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-weinhaus-vogel_exterior.jpg@@
 
 `official` `地元密着` `beer-garden`
 
@@ -174,6 +213,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-haus-schnackertz.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-haus-schnackertz_exterior.jpg@@
+
 `official` `地元密着`
 
 1912年にニッペス地区に建った建物で、当初から料理店が入る。現在の経営者は2007年から。肉は近隣の適正飼育の生産者から、魚はアイスランド産の天然物を仕入れ、添加物・化学調味料を使わずに店で一から作る。春のアスパラガス、夏以降のあんず茸、冬のがちょうと季節の料理を出す。
@@ -191,6 +232,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-koelsch-kultur.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-koelsch-kultur_exterior.jpg@@
+
 `official` `地元密着`
 
 2003年開業の地元の酒場で、ガッフェルのケルシュを出す。ラインラントの定番料理に加え、毎週火曜から替わる週替わりのメニューと、冬のがちょう、灰の水曜日の魚、春のアスパラガス（近郊のベラー農場産）を出す。テラス席がある。
@@ -205,20 +248,3 @@
 - **参照元**: [Kölsch Kultur 公式サイト（営業時間・住所・写真）（2026-10-19閲覧）](https://www.koelsch-kultur.koeln/) / [Kölsch Kultur 公式サイト メニュー（価格）（2026-10-19閲覧）](https://www.koelsch-kultur.koeln/speisekarte/) / [Mit Vergnügen Köln「ズュルツのバーと酒場11軒」2025年版（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2025/bars-kneipen-suelz) / [Mit Vergnügen Köln「ケルン料理の11店」（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2024/koelsche-kost/)
 
 ## モダン料理・ファインダイニング
-
-### 25. Ox & Klee（オクス・ウント・クレー）
-
-@@IMG:europe/germany/img/cologne/cologne-ox-und-klee.jpg@@
-
-`michelin` `official`
-
-ダニエル・ゴットシュリヒが率いるケルン唯一のミシュラン二つ星。塩味・甘味・苦味・脂・酸味・旨味の六つの味覚を軸に組む「The Art of Taste」を出し、最初に六つの小皿を詰めた「ブラックボックス」が届く。肉魚のコースと菜食のコースがあり、厨房に入って一皿を受け取る「キッチン・エクスペリエンス」版もある。サービスと厨房を分けない運営を公式サイトで掲げる。
-
-- **一皿**: ブラックボックス（六つの味覚を一口ずつ表した前菜6種の箱）／ハルヴェ・ハーン（ライ麦パンにチーズと玉ねぎを載せるケルンの軽食「ハルフェ・ハーン」を美食に組み直した一皿）／マクレーレ（ブリの一種のさばにキャビア、熟成ゴーダのクリーム、カラマンシーのジェルを合わせたシーザーサラダ風の皿）
-- **営業時間**: 水〜土 18:30〜24:00
-- **定休日**: 日・月・火
-- **住所**: Im Zollhafen 18, 50678 Köln
-- **予約**: 要（公式サイトの予約フォーム。満席時はウェイティングリストあり） — ☎ +49 170 3284835 ／ [公式サイト](https://oxundklee.de/)
-- **選定理由**: ミシュランガイド2026年版で二つ星（ミシュランのページの掲載データに dateAwarded 2026。2026-10-19閲覧）。営業の根拠＝公式サイトの「Food, Drinks & Wein」ページ（2026-10-19閲覧）が「Menüs ab Juni 2025」として The Art of Taste 260ユーロ・菜食245ユーロ・キッチン・エクスペリエンス310ユーロ（菜食295ユーロ）を掲示し、連絡先ページが水〜土18:30〜24:00・日〜火休みと掲示。電話は公式サイトが +49 170 3284835（携帯・WhatsApp兼用）、ミシュランが +49 221 16956603 と食い違うため、予約は公式サイトの番号か予約フォームを優先。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ox%20%26%20Klee%20Im%20Zollhafen%2018%2C%2050678%20K%C3%B6ln)
-- **参照元**: [Ox & Klee 公式サイト Food, Drinks & Wein（2026-10-19閲覧。2025年6月からのメニューと価格）](https://oxundklee.de/food-drinks-wein/) / [Ox & Klee 公式サイト 連絡先（2026-10-19閲覧。住所・営業時間・定休日）](https://oxundklee.de/kontakt/) / [ミシュランガイド ドイツ版 Ox & Klee（2026年版 二つ星）（2026-10-19閲覧）](https://guide.michelin.com/de/de/nordrhein-westfalen/koln/restaurant/ox-klee)

@@ -1,3 +1,22 @@
+### 39. Tigermilch（ティーガーミルヒ）
+
+@@IMG:europe/germany/img/cologne/cologne-tigermilch.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-tigermilch_exterior.jpg@@
+
+`official` `award`
+
+ペルーに家族を持つ店主たちが開いた、ペルー料理を現代風に小皿で出す店。店名はセビーチェの漬け汁「レチェ・デ・ティグレ（虎の乳）」のドイツ語訳。ペルーのぶどう蒸留酒ピスコのカクテルを出すバーを併設し、土日はペルー風のブランチも出す。
+
+- **一皿**: セビーチェ(生の魚介をライム汁と唐辛子でしめたペルーの国民的料理。ヴィーガン版もある)／ピスコサワー(ピスコにライム汁と卵白を合わせて泡立てたペルーの代表的なカクテル)
+- **営業時間**: 火〜木 18:00〜23:00、金・土 18:00〜翌1:00、ブランチ 土 10:00〜13:30・日 10:30〜15:00
+- **定休日**: 月曜
+- **住所**: Brüsseler Straße 12, 50674 Köln
+- **予約**: 推奨（公式サイトの予約ページ） — ☎ +49 221 75985821 ／ [公式サイト](https://www.tigermilch.kitchen/)
+- **選定理由**: 公式サイトの「私たちについて」ページによれば、Gault&Millauドイツ版で2022年と2023/24年に1ハウベ（コック帽）、Falstaffのストリートフード・ガイドに2024・2025・2026年と掲載。Mit Vergnügen Kölnの「ベルギー地区で食べる21軒」（2026年版）にも載る。営業の根拠＝公式サイト（2026-10-19閲覧）が営業時間・電話を掲示し、2026年版Falstaffの認定証を掲げている。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Tigermilch%20Br%C3%BCsseler%20Stra%C3%9Fe%2012%2C%2050674%20K%C3%B6ln)
+- **参照元**: [Tigermilch 公式サイト（2026-10-19閲覧。住所・営業時間・電話）](https://www.tigermilch.kitchen/) / [Tigermilch 公式サイト「Über Uns」（2026-10-19閲覧。Gault&Millau・Falstaff 2026の掲載）](https://www.tigermilch.kitchen/über-uns/) / [Mit Vergnügen Köln「21 Mal lecker essen im Belgischen Viertel」2026年版（2026-10-19閲覧。セビーチェとピスコサワー）](https://koeln.mitvergnuegen.com/2026/restaurants-belgisches-viertel/)
+
 ### 40. Shaka Zulu（シャカ・ズールー）
 
 @@IMG:europe/germany/img/cologne/cologne-shaka-zulu.jpg@@
@@ -52,6 +71,8 @@
 ### 43. Bethlehem oriental kitchen（ベトレヘム・オリエンタル・キッチン）
 
 @@IMG:europe/germany/img/cologne/cologne-bethlehem-oriental-kitchen.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-bethlehem-oriental-kitchen_exterior.jpg@@
 
 `official` `地元密着`
 
@@ -138,6 +159,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-masala-empire.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-masala-empire_exterior.jpg@@
+
 `official` `地元密着`
 
 レストラン・カフェ・バーを兼ねるインド料理店。南インドにルーツを持つオーナーがインドから料理人を招き、品書きを北インドと南インドに分けて伝統的なカレーと創作料理を出す。タンドール料理、ビリヤニ、アーユルヴェーダの料理もある。真鍮と熱帯の木材を使った明るい店内で、夏は広場に面したテラスが開く。
@@ -189,6 +212,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-haldispoon.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-haldispoon_exterior.jpg@@
+
 `official` `地元密着`
 
 インドの屋台料理を現代風に組み替える家族経営の店で、店名のハルディはヒンディー語でウコン。注文は4段階の組み立て式で、カレーの土台（ティッカ、ほうれん草のパラク、黄色いレンズ豆など）・具（大豆ミート、パニール、ハラールの鶏）・形（カレー、ナーン生地のピザ、ロール）・辛さを選ぶ。全品ヴィーガンにでき、テラス席がある。
@@ -201,22 +226,3 @@
 - **選定理由**: 営業の根拠＝公式サイト（2026-10-19閲覧）のフッター「© 2026, Haldispoon」と、現行の組み立て式メニュー（価格つき）・住所・営業時間・「予約は17時以降に電話で」の案内。推薦の根拠＝地元ウェブマガジンMit Vergnügen Kölnの「各国料理21軒」（2024年）への掲載と同誌2021年の取材記事、地元ウェブマガジンGeheimtipp Kölnの記事（いずれも{D}閲覧）。営業終了時刻は公式サイト内で「21:30」と「21:00」が食い違うため、遅い時間の来店は電話で確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=HaldiSpoon%20D%C3%BCnnwalder%20Str.%2049%2C%2051063%20K%C3%B6ln)
 - **参照元**: [HaldiSpoon 公式サイト（2026-10-19閲覧。© 2026・店内写真・料理写真）](https://www.haldispoon.com/) / [同 メニュー（2026-10-19閲覧。組み立て式メニューと価格）](https://www.haldispoon.com/pages/speisekarte) / [同 連絡先・アクセス（2026-10-19閲覧。住所・電話・営業時間）](https://www.haldispoon.com/pages/anfahrt) / [Mit Vergnügen Köln「Indisch mal anders: Naanizza und Roti Roll bei Haldi Spoon in Mülheim」（2021年、2026-10-19閲覧。料理と店内の写真）](https://koeln.mitvergnuegen.com/2021/haldi-spoon-muelheim/) / [Geheimtipp Köln「Haldi Spoon: authentisch, gelb und würzig in Köln-Mülheim」（2021年、2026-10-19閲覧。料理写真）](https://geheimtipp-koeln.de/geheimtipp/haldi-spoon-authentisch-gelb-und-wuerzig-in-koeln-muelheim/) / [Mit Vergnügen Köln「Internationale Küche: 21 Restaurants」（2024年、2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2024/internationale-kueche)
-
-### 52. Hanedan（ハネダン）
-
-@@IMG:europe/germany/img/cologne/cologne-hanedan.jpg@@
-
-`official` `地元密着`
-
-アナトリアの肉料理をもとに、炭火焼きと店内の熟成庫で寝かせたドライエージングのステーキを出すトルコ料理店。肉はハラールかつオーガニック（地元誌の記載）。料理はカウンター奥で一皿ずつ焼く。店主はタヒル・チェリクで、ボンにも店がある（2店）。
-
-- **一皿**: アダナ・ケバブ（唐辛子を利かせた羊・牛のひき肉を平たい串で炭火焼きにしたトルコ南部アダナの名物。米とブルグル付き）／クズ・ピルゾラ（子羊の骨付きロース4本の炭火焼き）／ドライエイジド・リブアイ（店内の熟成庫で寝かせたリブロースのステーキ。ローズマリーポテト付き、重さで値段が決まる）
-- **営業時間**: 毎日 11:30〜24:00
-- **定休日**: なし
-- **住所**: Peter-Huppertz-Straße 1-3, 51063 Köln
-- **予約**: 可（電話・メール reservierung@hanedancgn.de） — ☎ +49 221 50060977 ／ [公式サイト](https://hanedan.de/hanedan-koln)
-- **選定理由**: 営業の根拠＝公式サイトのケルン店ページ（2026-10-19閲覧）に曜日別の営業時間・住所・予約用メールと「© Hanedan 2026」があり、ページの公開日時は2026-08-19。推薦の根拠＝地元ウェブマガジンMit Vergnügen Kölnの「トルコ料理11軒」（2026年版、{D}閲覧）が、ケウプ通りから目と鼻の先の炭火焼きの名店として、自前の熟成庫とハラールかつオーガニックの肉を紹介。写真は公式サイトのもので、ケルン店とボン店のどちらで撮ったかは不明。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Hanedan%20Peter-Huppertz-Stra%C3%9Fe%201-3%2C%2051063%20K%C3%B6ln)
-- **参照元**: [Hanedan 公式サイト ケルン店（2026-10-19閲覧。営業時間・住所・電話）](https://hanedan.de/hanedan-koln) / [同 メニュー（2026-10-19閲覧。料理名と説明。価格の記載なし）](https://hanedan.de/menu) / [同 店について（2026-10-19閲覧。店主と熟成肉）](https://hanedan.de/uber-uns) / [Mit Vergnügen Köln「11 Orte in Köln, an denen ihr lecker Türkisch essen könnt」（2026年、2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2026/tuerkisch-essen)
-
-## 食べ歩き・市場・軽食

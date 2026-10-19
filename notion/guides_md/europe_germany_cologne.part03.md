@@ -1,6 +1,25 @@
+### 25. Ox & Klee（オクス・ウント・クレー）
+
+@@IMG:europe/germany/img/cologne/cologne-ox-und-klee.jpg@@
+
+`michelin` `official`
+
+ダニエル・ゴットシュリヒが率いるケルン唯一のミシュラン二つ星。塩味・甘味・苦味・脂・酸味・旨味の六つの味覚を軸に組む「The Art of Taste」を出し、最初に六つの小皿を詰めた「ブラックボックス」が届く。肉魚のコースと菜食のコースがあり、厨房に入って一皿を受け取る「キッチン・エクスペリエンス」版もある。サービスと厨房を分けない運営を公式サイトで掲げる。
+
+- **一皿**: ブラックボックス（六つの味覚を一口ずつ表した前菜6種の箱）／ハルヴェ・ハーン（ライ麦パンにチーズと玉ねぎを載せるケルンの軽食「ハルフェ・ハーン」を美食に組み直した一皿）／マクレーレ（ブリの一種のさばにキャビア、熟成ゴーダのクリーム、カラマンシーのジェルを合わせたシーザーサラダ風の皿）
+- **営業時間**: 水〜土 18:30〜24:00
+- **定休日**: 日・月・火
+- **住所**: Im Zollhafen 18, 50678 Köln
+- **予約**: 要（公式サイトの予約フォーム。満席時はウェイティングリストあり） — ☎ +49 170 3284835 ／ [公式サイト](https://oxundklee.de/)
+- **選定理由**: ミシュランガイド2026年版で二つ星（ミシュランのページの掲載データに dateAwarded 2026。2026-10-19閲覧）。営業の根拠＝公式サイトの「Food, Drinks & Wein」ページ（2026-10-19閲覧）が「Menüs ab Juni 2025」として The Art of Taste 260ユーロ・菜食245ユーロ・キッチン・エクスペリエンス310ユーロ（菜食295ユーロ）を掲示し、連絡先ページが水〜土18:30〜24:00・日〜火休みと掲示。電話は公式サイトが +49 170 3284835（携帯・WhatsApp兼用）、ミシュランが +49 221 16956603 と食い違うため、予約は公式サイトの番号か予約フォームを優先。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ox%20%26%20Klee%20Im%20Zollhafen%2018%2C%2050678%20K%C3%B6ln)
+- **参照元**: [Ox & Klee 公式サイト Food, Drinks & Wein（2026-10-19閲覧。2025年6月からのメニューと価格）](https://oxundklee.de/food-drinks-wein/) / [Ox & Klee 公式サイト 連絡先（2026-10-19閲覧。住所・営業時間・定休日）](https://oxundklee.de/kontakt/) / [ミシュランガイド ドイツ版 Ox & Klee（2026年版 二つ星）（2026-10-19閲覧）](https://guide.michelin.com/de/de/nordrhein-westfalen/koln/restaurant/ox-klee)
+
 ### 26. NeoBiota（ネオビオタ）
 
 @@IMG:europe/germany/img/cologne/cologne-neobiota.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-neobiota_exterior.jpg@@
 
 `michelin` `official` `vegetarian`
 
@@ -36,6 +55,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-maximilian-lorenz.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-maximilian-lorenz_exterior.jpg@@
+
 `michelin` `official`
 
 料理長マクシミリアン・ローレンツが郷土の料理を美食に仕立てる一つ星。肉魚の6皿「Nose to Fin」と菜食の6皿の二本立てで、ワインはドイツ産だけを合わせる。厨房を見渡すシェフズテーブルでは担当の料理人が皿を運んで説明する。同じ建物に昼も営業するワイン酒場「heinzhermann」がある。
@@ -52,6 +73,8 @@
 ### 29. Pottkind（ポットキント）
 
 @@IMG:europe/germany/img/cologne/cologne-pottkind.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-pottkind_exterior.jpg@@
 
 `michelin` `official`
 
@@ -140,6 +163,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-meson-el-cordobes.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-meson-el-cordobes_exterior.jpg@@
+
 `official` `oldest`
 
 家族経営のスペイン料理店で、公式サイトに「40年以上」祖父母のレシピで作ると記す。グラナダ・コルドバ・セビリアなどアンダルシア地方の料理を出すレストランに、隣接のタパスバーが付く。フラメンコギターの生演奏の夜もある。
@@ -174,6 +199,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-le-moissonnier-bistro.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-le-moissonnier-bistro_exterior.jpg@@
+
 `official` `oldest` `bistro`
 
 1987年創業。長くミシュラン二つ星を掲げたケルンの美食の名店で、2023年夏にいったん閉店した後、時間を短縮した「ビストロ」として再開した。アール・デコ調の赤い座席の店内で、昼のアラカルト・4皿のコース・日替わり皿を出す。金曜夜は予約制の特別企画「ヴァンサンの金曜（Les Vendredis de Vincent）」を開く。ワイン店と持ち帰り料理の通販も営む。
@@ -190,6 +217,8 @@
 ### 37. Petit Frère（プティ・フレール）
 
 @@IMG:europe/germany/img/cologne/cologne-petit-frere.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-petit-frere_exterior.jpg@@
 
 `official` `wine`
 
@@ -208,6 +237,8 @@
 
 @@IMG:europe/germany/img/cologne/cologne-belgischer-hof.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-belgischer-hof_exterior.jpg@@
+
 `official` `terrace`
 
 2009年開業。ブリュッセラー通りの建物の奥、緑の多い中庭に面して店を構える。ブラッスリー（最大70人）、ベルギーとフランスの古家具を置いたバー、アルザスの小屋風の「フラムクーヘン小屋」など趣の違う部屋に分かれ、フランスとドイツのワインをそろえる。
@@ -220,20 +251,3 @@
 - **選定理由**: Mit Vergnügen Kölnの「ベルギー地区で食べる21軒」（2026年版）・「夕食におすすめの21軒」（2026年版）・フランス料理特集の3本に載る。営業の根拠＝公式サイト（2026-10-19閲覧）が「2026年10月」の料理メニューと営業時間・予約電話を掲示している。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Belgischer%20Hof%20Br%C3%BCsseler%20Stra%C3%9Fe%2054%2C%2050674%20K%C3%B6ln)
 - **参照元**: [Belgischer Hof 公式サイト（2026-10-19閲覧。2026年10月のメニュー・営業時間・電話・部屋の案内）](https://belgischer-hof.de/) / [Belgischer Hof 公式サイト ギャラリー（2026-10-19閲覧）](https://www.belgischer-hof.de/galerie/) / [Mit Vergnügen Köln「21 Mal lecker essen im Belgischen Viertel」2026年版（2026-10-19閲覧）](https://koeln.mitvergnuegen.com/2026/restaurants-belgisches-viertel/)
-
-### 39. Tigermilch（ティーガーミルヒ）
-
-@@IMG:europe/germany/img/cologne/cologne-tigermilch.jpg@@
-
-`official` `award`
-
-ペルーに家族を持つ店主たちが開いた、ペルー料理を現代風に小皿で出す店。店名はセビーチェの漬け汁「レチェ・デ・ティグレ（虎の乳）」のドイツ語訳。ペルーのぶどう蒸留酒ピスコのカクテルを出すバーを併設し、土日はペルー風のブランチも出す。
-
-- **一皿**: セビーチェ(生の魚介をライム汁と唐辛子でしめたペルーの国民的料理。ヴィーガン版もある)／ピスコサワー(ピスコにライム汁と卵白を合わせて泡立てたペルーの代表的なカクテル)
-- **営業時間**: 火〜木 18:00〜23:00、金・土 18:00〜翌1:00、ブランチ 土 10:00〜13:30・日 10:30〜15:00
-- **定休日**: 月曜
-- **住所**: Brüsseler Straße 12, 50674 Köln
-- **予約**: 推奨（公式サイトの予約ページ） — ☎ +49 221 75985821 ／ [公式サイト](https://www.tigermilch.kitchen/)
-- **選定理由**: 公式サイトの「私たちについて」ページによれば、Gault&Millauドイツ版で2022年と2023/24年に1ハウベ（コック帽）、Falstaffのストリートフード・ガイドに2024・2025・2026年と掲載。Mit Vergnügen Kölnの「ベルギー地区で食べる21軒」（2026年版）にも載る。営業の根拠＝公式サイト（2026-10-19閲覧）が営業時間・電話を掲示し、2026年版Falstaffの認定証を掲げている。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Tigermilch%20Br%C3%BCsseler%20Stra%C3%9Fe%2012%2C%2050674%20K%C3%B6ln)
-- **参照元**: [Tigermilch 公式サイト（2026-10-19閲覧。住所・営業時間・電話）](https://www.tigermilch.kitchen/) / [Tigermilch 公式サイト「Über Uns」（2026-10-19閲覧。Gault&Millau・Falstaff 2026の掲載）](https://www.tigermilch.kitchen/über-uns/) / [Mit Vergnügen Köln「21 Mal lecker essen im Belgischen Viertel」2026年版（2026-10-19閲覧。セビーチェとピスコサワー）](https://koeln.mitvergnuegen.com/2026/restaurants-belgisches-viertel/)

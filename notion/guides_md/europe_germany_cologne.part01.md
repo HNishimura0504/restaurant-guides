@@ -65,6 +65,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 
 @@IMG:europe/germany/img/cologne/cologne-frueh-am-dom.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-frueh-am-dom_exterior.jpg@@
+
 `official` `tourism`
 
 1904年に自家醸造所を併設した酒場として開業した、ケルシュ醸造所フリューの直営ブラウハウス。1階の本館は木の卓と古いタイル暖炉、天井画の残る伝統的な造りで、樽から注ぐ「ツァペス」と給仕「ケーベス」が客席を回る。地下には中世の円天井を持つブラウハウスケラー、2階に暖炉の間、夏はガラス屋根の中庭テラスとビアガーデンを開ける。
@@ -81,6 +83,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 ### 2. Brauhaus Päffgen（ブラウハウス・ペフゲン）
 
 @@IMG:europe/germany/img/cologne/cologne-paeffgen.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-paeffgen_exterior.jpg@@
 
 `official` `tourism`
 
@@ -99,6 +103,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 
 @@IMG:europe/germany/img/cologne/cologne-lommerzheim.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-lommerzheim_exterior.jpg@@
+
 `official` `tourism` `地元密着`
 
 ライン川右岸ドイツ地区の古い酒場で、公式サイトは「人によっては居間のような店」と記す。ペフゲン・ケルシュを樽から注ぎ、料理は分厚い豚のコテレット（骨付きロース）とソーセージが中心の短い献立。木の内装と地下の煉瓦造りのケラーが残る。
@@ -115,6 +121,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 ### 4. Brauerei zur Malzmühle（ブラウエライ・ツア・マルツミューレ）
 
 @@IMG:europe/germany/img/cologne/cologne-brauerei-zur-malzmuehle.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-brauerei-zur-malzmuehle_exterior.jpg@@
 
 `official` `tourism`
 
@@ -133,6 +141,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 
 @@IMG:europe/germany/img/cologne/cologne-brauhaus-sion.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-brauhaus-sion_exterior.jpg@@
+
 `official` `tourism`
 
 1318年からこの地にあったとする醸造酒場の流れをくみ、2018年に700周年を祝ったブラウハウス。1942年の空襲で全壊したのち、醸造者ハンス・ジオンが再建した。ハンス・ジオンはケルシュを地域の名物ビールとして広め、ケルシュ協定の推進に関わったことから「ケルシュの父」と呼ばれる。系列のホテル・ジオンを併設し、カーニバルや音楽の催しも多い。
@@ -149,6 +159,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 ### 6. Braustelle（ブラウシュテレ）
 
 @@IMG:europe/germany/img/cologne/cologne-braustelle.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-braustelle_exterior.jpg@@
 
 `official` `tourism` `地元密着`
 
@@ -167,6 +179,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 
 @@IMG:europe/germany/img/cologne/cologne-hellers-brauhaus.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-hellers-brauhaus_exterior.jpg@@
+
 `official` `tourism`
 
 1996年に前身の「ドイチェス・ビアハウス」を引き継いで開いた、ブラウエライ・ヘラーのブラウハウスで、2026年に30周年を迎えた。ガラス屋根の下に植物を茂らせ小さな噴水を置いた「ヴィンターガルテン（温室席）」が名物。自社のヘラーズ・ケルシュのほか、百種類以上の薬草を使う自家の薬草リキュール「カレンドレッサー」を出す。料理はソースを自家製とし、菜食・ヴィーガンの皿も多い。
@@ -183,6 +197,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 ### 8. HELLERS Volksgarten（ヘラーズ・フォルクスガルテン）
 
 @@IMG:europe/germany/img/cologne/cologne-hellers-volksgarten.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-hellers-volksgarten_exterior.jpg@@
 
 `official` `tourism` `seasonal`
 
@@ -201,6 +217,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 
 @@IMG:europe/germany/img/cologne/cologne-gaffel-am-dom.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-gaffel-am-dom_exterior.jpg@@
+
 `official` `tourism`
 
 2008年から中央駅前の歴史建築ダイヒマンハウスに入るガッフェル・ケルシュの直営ブラウハウス。3層で約700席、屋外に約300席があり、1階の大きな酒場には銅の仕込み釜と古いビール広告が並ぶ。2階のドームシュトゥーベからは大聖堂が正面に見える。ケルシュは醸造所から蛇口まで冷やしたまま運ぶ地下樽方式で注ぐ。金曜夜は歌手ビョルン・ホイザーの合唱会がある。
@@ -217,6 +235,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 ### 10. Peters Brauhaus（ペータース・ブラウハウス）
 
 @@IMG:europe/germany/img/cologne/cologne-peters-brauhaus.jpg@@
+
+@@IMG:europe/germany/img/cologne/cologne-peters-brauhaus_exterior.jpg@@
 
 `official` `tourism`
 
@@ -235,6 +255,8 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 
 @@IMG:europe/germany/img/cologne/cologne-brauhaus-reissdorf.jpg@@
 
+@@IMG:europe/germany/img/cologne/cologne-brauhaus-reissdorf_exterior.jpg@@
+
 `official` `tourism` `地元密着`
 
 ケルシュ醸造所ライスドルフが1992年に開いた直営のブラウハウスで、1907年から醸造酒場があった建物に入る。屋内180席と、店の前に60席のビアガーデン。ケルン有数の長さのカウンターがあり、全自動のケーゲル（9本ピンのボウリング）場も備える。1.FCケルンの試合は音声つきで中継する。
@@ -247,20 +269,3 @@ EUROPE / GERMANY・ノルトライン＝ヴェストファーレン州ケルン 
 - **選定理由**: 観光客の少ない旧市街南部で地元客の多い醸造所直営店。ケルン観光局の公式サイトにも掲載。営業の根拠＝公式サイト（2026-10-19閲覧）が月〜金12〜24時・土日11:30〜24時の営業時間とオンライン予約を掲示し、献立PDFは2026年9月23日作成、2026年のカーニバル期間の営業時間とシュニッツェルの日の告知画像も載せている。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brauhaus%20Reissdorf%20am%20Griechenmarkt%20Kleiner%20Griechenmarkt%2040%2C%2050676%20K%C3%B6ln)
 - **参照元**: [Brauhaus Reissdorf 公式サイト（2026-10-19閲覧。営業時間・席数・ケーゲル場）](https://www.brauhaus-reissdorf.de/) / [Brauhaus Reissdorf 献立PDF（2026年9月23日作成、2026-10-19取得）](https://www.brauhaus-reissdorf.de/PDF-Speisekarten/Speisekarte_Brauhaus.pdf) / [ケルン観光局 公式サイト「Brauhaus Reissdorf」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/brauhaus-reissdorf)
-
-### 12. Haus Töller（ハウス・テラー）
-
-@@IMG:europe/germany/img/cologne/cologne-haus-toeller.jpg@@
-
-`official` `tourism`
-
-1871年にテオドール・テラーが醸造所を開いた建物で営むブラウハウス。1945年の空襲を免れた数少ない建物で、19世紀の酒場の間取りが残る。入口の土間には店主の帳場「テーケンシャーフ」と樽台があり、ペフゲン・ケルシュを地下から鎖の巻き上げ機で樽ごと上げて注ぐ。テレビも音楽もない店内に、87席の客間と1915年増築の199席の広間がある。
-
-- **一皿**: シンケンヘムヒェン(塩漬けにした豚すね肉をゆっくり煮て、皮と脂を除いて出すケルンの古い名物。ザワークラウトとマッシュポテト付き。24ユーロ)／ライニッシャー・ザウアーブラーテン(自家製の酢漬け牛肉の煮込み。ジャガイモ団子と紫キャベツ付き。24ユーロ)／ヒンメル・ウン・エード(17ユーロ)／ローストビーフ・ミット・ブラートカルトッフェルン(自家製ローストビーフに炒めたジャガイモとレムラードソース。24ユーロ)
-- **営業時間**: 月〜土 17:00〜閉店まで
-- **定休日**: 日曜
-- **住所**: Weyerstraße 96, 50676 Köln
-- **予約**: 推奨（団体は電話で。予約は電話のみ） — ☎ +49 221 2589316 ／ [公式サイト](https://www.haus-toeller.de/)
-- **選定理由**: ケルン観光局の公式サイトが「19世紀のケルンの酒場の趣を味わえる」と紹介する、最も古い造りを残すブラウハウスの一つ。営業の根拠＝公式サイト（2026-10-19閲覧、表記©2026）が月〜土17時からの営業・日曜定休・電話予約・現金のみと、全品の現行価格を掲示している。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Haus%20T%C3%B6ller%20Weyerstra%C3%9Fe%2096%2C%2050676%20K%C3%B6ln)
-- **参照元**: [Haus Töller 公式サイト トップ（2026-10-19閲覧。営業時間・現金のみ・沿革）](https://www.haus-toeller.de/) / [Haus Töller 公式サイト 献立（2026-10-19閲覧。価格・ヘムヒェンの説明）](https://www.haus-toeller.de/speisekarte/) / [ケルン観光局 公式サイト「Haus Töller」（2026-10-19閲覧）](https://www.cologne-tourism.com/food-drink/gastronomy/haus-toeller)
