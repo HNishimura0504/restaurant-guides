@@ -1,6 +1,6 @@
 BELGIUM / BRUSSELS 🇧🇪
 
-ベルギー料理・レストラン・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選36スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)です。
+ベルギー料理・レストラン・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選36スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)と、見つかった店の外観写真(公式サイト・観光局・地域メディア等。出典は各カード)です。
 
 > 2026年7月調査 / 営業時間・定休日は変動あり・訪問前にマップで最終確認を
 
@@ -53,6 +53,8 @@ BELGIUM / BRUSSELS 🇧🇪
 
 @@IMG:europe/belgium/img/brussels/nuetnigenough.jpg@@
 
+@@IMG:europe/belgium/img/brussels/nuetnigenough_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 グランプラス至近ながら観光ずれしていない、ビール料理専門の小さなエスタミネ。店名はブリュッセル方言で「まだ足りない」の意で、料理に合うビールを店員が選んでくれる。
@@ -65,11 +67,13 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](http://www.nuetnigenough.be/)
 - **選定理由**: TasteAtlasでカルボナードの推薦店(複数のフードライターが推奨)、Le Foodingにも掲載。Yelp 430件超のレビューで観光店でない本格派と評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=N%C3%BCetnigenough%20Rue%20du%20Lombard%2025%2C%201000%20Bruxelles)
-- **参照元**: [tasteatlas.com](https://www.tasteatlas.com/nuetnigenough/carbonnade) / [nuetnigenough.be](http://www.nuetnigenough.be/)
+- **参照元**: 外観写真: La Troupe（地域ガイド記事） / 参照元: [tasteatlas.com](https://www.tasteatlas.com/nuetnigenough/carbonnade) / [nuetnigenough.be](http://www.nuetnigenough.be/)
 
 ### Aux Armes de Bruxelles（オー・ザルム・ド・ブリュッセル）
 
 @@IMG:europe/belgium/img/brussels/auxarmes.jpg@@
+
+@@IMG:europe/belgium/img/brussels/auxarmes_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -83,11 +87,13 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](https://www.auxarmesdebruxelles.com/)
 - **選定理由**: 公式サイトで営業確認(2026年)。ミシュランガイド掲載、Yelp(2026年6月更新)でも営業中。Petit Futéが「厨房に再び火が入った百年の名店」と評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Aux%20Armes%20de%20Bruxelles%20Rue%20des%20Bouchers%2013%2C%201000%20Bruxelles)
-- **参照元**: [auxarmesdebruxelles.com](https://auxarmesdebruxelles.com/en/home-2/) / [guide.michelin.com](https://guide.michelin.com/en/bruxelles-capitale/bruxelles/restaurant/aux-armes-de-bruxelles)
+- **参照元**: 外観写真: 公式サイト auxarmesdebruxelles.com / 参照元: [auxarmesdebruxelles.com](https://auxarmesdebruxelles.com/en/home-2/) / [guide.michelin.com](https://guide.michelin.com/en/bruxelles-capitale/bruxelles/restaurant/aux-armes-de-bruxelles)
 
 ### Le Pré Salé（ル・プレ・サレ）
 
 @@IMG:europe/belgium/img/brussels/presale.jpg@@
+
+@@IMG:europe/belgium/img/brussels/presale_exterior.jpg@@
 
 `口コミ突出` `老舗・歴史`
 
@@ -101,7 +107,7 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](http://www.lepresale.be/)
 - **選定理由**: Yelp・TripAdvisorでムール・フリットの定番店として高評価。観光通りのぼったくり店を避けてムールを食べる際の地元御用達としてガイド類が挙げる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Pr%C3%A9%20Sal%C3%A9%20Rue%20de%20Flandre%2020%2C%201000%20Bruxelles)
-- **参照元**: [yelp.com](https://www.yelp.com/biz/le-pr%C3%A9-sal%C3%A9-bruxelles-2) / [restaurantguru.com](https://restaurantguru.com/Le-Pre-Sale-Brussels)
+- **参照元**: 外観写真: BXLpositive（地域メディア） / 参照元: [yelp.com](https://www.yelp.com/biz/le-pr%C3%A9-sal%C3%A9-bruxelles-2) / [restaurantguru.com](https://restaurantguru.com/Le-Pre-Sale-Brussels)
 
 ### In 't Spinnekopke（イント・スピネコプケ）
 
@@ -145,6 +151,8 @@ BELGIUM / BRUSSELS 🇧🇪
 
 @@IMG:europe/belgium/img/brussels/maisonantoine.jpg@@
 
+@@IMG:europe/belgium/img/brussels/maisonantoine_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 1948年創業、ジュルダン広場のキオスクで3代続くブリュッセルで最も有名なフリットコット。牛脂で二度揚げする伝統製法と30種近いソースで行列が絶えない。
@@ -157,11 +165,13 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](http://www.maisonantoine.be/)
 - **選定理由**: visit.brussels公式が「本物の名物」として紹介、NYタイムズの称賛歴も各誌が引用。地元ブログ(Tips from a Waitress等)のベストフリッツ企画の常連。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Maison%20Antoine%20Place%20Jourdan%201%2C%201040%20Etterbeek)
-- **参照元**: [visit.brussels](https://www.visit.brussels/en/visitors/what-to-do/brussels-real-secrets/maison-antoine-place-jourdan) / [maisonantoine.be](http://www.maisonantoine.be/)
+- **参照元**: 外観写真: 公式サイト maisonantoine.be / 参照元: [visit.brussels](https://www.visit.brussels/en/visitors/what-to-do/brussels-real-secrets/maison-antoine-place-jourdan) / [maisonantoine.be](http://www.maisonantoine.be/)
 
 ### Frit'Flagey（フリット・フラジェ）
 
 @@IMG:europe/belgium/img/brussels/fritflagey.jpg@@
+
+@@IMG:europe/belgium/img/brussels/fritflagey_exterior.jpg@@
 
 `口コミ突出` `食の専門街・市場`
 
@@ -174,11 +184,13 @@ BELGIUM / BRUSSELS 🇧🇪
 - **予約**: 不要(店頭)
 - **選定理由**: 地元ブログTips from a Waitress、Cohabs等が「ベルギー流フリットコットの頂点」と評価。行列のできる地元密着店として複数メディアが一致して推薦。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Frit%27Flagey%20Place%20Eug%C3%A8ne%20Flagey%2C%201050%20Ixelles)
-- **参照元**: [tipsfromawaitress.be](https://www.tipsfromawaitress.be/best-fries-in-brussels) / [cohabs.com](https://cohabs.com/blog/international-fries-day-best-places-to-eat-fritjes-in-brussels)
+- **参照元**: 外観写真: 個人ブログ Tips from a Waitress（tipsfromawaitress.be） / 参照元: [tipsfromawaitress.be](https://www.tipsfromawaitress.be/best-fries-in-brussels) / [cohabs.com](https://cohabs.com/blog/international-fries-day-best-places-to-eat-fritjes-in-brussels)
 
 ### Fritland（フリットランド）
 
 @@IMG:europe/belgium/img/brussels/fritland.jpg@@
+
+@@IMG:europe/belgium/img/brussels/fritland_exterior.jpg@@
 
 `口コミ突出` `食の専門街・市場`
 
@@ -192,11 +204,13 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](http://fritlandbrussels.be/acceuil)
 - **選定理由**: Together Magazine・Wanderlustingk等のベストフリッツ特集が中心部の定番として掲載。夜遊び帰りの地元民にも観光客にも支持される。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Fritland%20Rue%20Henri%20Maus%2049%2C%201000%20Bruxelles)
-- **参照元**: [togethermag.eu](https://togethermag.eu/best-friteries-in-brussels/) / [wanderlustingk.com](https://www.wanderlustingk.com/travel-blog/where-to-get-the-best-fries-in-brussels)
+- **参照元**: 外観写真: 公式サイト fritlandbrussels.be / 参照元: [togethermag.eu](https://togethermag.eu/best-friteries-in-brussels/) / [wanderlustingk.com](https://www.wanderlustingk.com/travel-blog/where-to-get-the-best-fries-in-brussels)
 
 ### Le Funambule（ル・フュナンビュル）
 
 @@IMG:europe/belgium/img/brussels/funambule.jpg@@
+
+@@IMG:europe/belgium/img/brussels/funambule_exterior.jpg@@
 
 `ブログ推薦` `食の専門街・市場`
 
@@ -209,13 +223,15 @@ BELGIUM / BRUSSELS 🇧🇪
 - **予約**: 不要(店頭)
 - **選定理由**: Colive「地元民が選ぶワッフル7選」やLaptops and Landscapes等のブログが観光地立地ながら実力派の屋台系として推薦。TasteAtlas推薦店にも掲載。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Funambule%20Rue%20de%20l%27%C3%89tuve%2042%2C%201000%20Bruxelles)
-- **参照元**: [colive.eu](https://colive.eu/en/the-7-best-waffles-in-brussels-according-to-locals-get-ready-to-drool/) / [tasteatlas.com](https://www.tasteatlas.com/lefunambule)
+- **参照元**: 外観写真: TasteAtlas / 参照元: [colive.eu](https://colive.eu/en/the-7-best-waffles-in-brussels-according-to-locals-get-ready-to-drool/) / [tasteatlas.com](https://www.tasteatlas.com/lefunambule)
 
 ## チーズ・加工肉・惣菜・市場
 
 ### Noordzee - Mer du Nord（ノールドゼー(メール・デュ・ノール)）
 
 @@IMG:europe/belgium/img/brussels/noordzee.jpg@@
+
+@@IMG:europe/belgium/img/brussels/noordzee_exterior.jpg@@
 
 `食の専門街・市場` `口コミ突出`
 
@@ -229,11 +245,13 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](https://noordzeemerdunord.be/)
 - **選定理由**: visit.brussels掲載、Brussels' Kitchen・S Marks The Spots等の現地グルメブログが「街最高のシーフード」と紹介する地元定番。公式サイトで営業時間確認済み。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Noordzee%20-%20Mer%20du%20Nord%20Rue%20Sainte-Catherine%2045%2C%201000%20Bruxelles)
-- **参照元**: [noordzeemerdunord.be](https://noordzeemerdunord.be/contact/?lang=en) / [brusselskitchen.com](https://www.brusselskitchen.com/en/addresses/noordzee-mer-du-nord/)
+- **参照元**: 外観写真: 公式サイト noordzeemerdunord.be / 参照元: [noordzeemerdunord.be](https://noordzeemerdunord.be/contact/?lang=en) / [brusselskitchen.com](https://www.brusselskitchen.com/en/addresses/noordzee-mer-du-nord/)
 
 ### La Crèmerie de Linkebeek（ラ・クレムリー・ド・リンケベーク）
 
 @@IMG:europe/belgium/img/brussels/linkebeek.jpg@@
+
+@@IMG:europe/belgium/img/brussels/linkebeek_exterior.jpg@@
 
 `老舗・歴史` `食の専門街・市場`
 
@@ -247,7 +265,7 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](http://cremeriedelinkebeek.be/)
 - **選定理由**: visit.brussels公式のチーズ店特集に掲載。「108年以上の歴史を持つ市内最古のチーズ店」としてTripAdvisor・Petit Futéでも高評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Cr%C3%A8merie%20de%20Linkebeek%20Rue%20du%20Vieux%20March%C3%A9%20aux%20Grains%204%2C%201000%20Bruxelles)
-- **参照元**: [visit.brussels](https://www.visit.brussels/en/visitors/where-to-eat/cheeseshops-brussels) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188644-d6947920-Reviews-La_Cremerie_de_Linkebeek-Brussels.html)
+- **参照元**: 外観写真: 公式サイト cremeriedelinkebeek.be／visit.brussels / 参照元: [visit.brussels](https://www.visit.brussels/en/visitors/where-to-eat/cheeseshops-brussels) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188644-d6947920-Reviews-La_Cremerie_de_Linkebeek-Brussels.html)
 
 ### Fernand Obb Delicatessen（フェルナン・オブ・デリカテッセン）
 
@@ -271,6 +289,8 @@ BELGIUM / BRUSSELS 🇧🇪
 
 @@IMG:europe/belgium/img/brussels/marcheflagey.jpg@@
 
+@@IMG:europe/belgium/img/brussels/marcheflagey_exterior.jpg@@
+
 `食の専門街・市場` `口コミ突出`
 
 イクセル池のほとりで週末に開かれる、ブリュッセル市民に最も愛される食のマルシェ。生産者の野菜やチーズに加え、生牡蠣やムール・フリットをその場で立ち食いできる。
@@ -283,13 +303,15 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](http://www.ixelles.be/site/421-Marches)
 - **選定理由**: visit.brusselsとブリュッセル市公式サイトが定期市として掲載。La Troupe等のガイドが「地元民のお気に入り市場」として紹介し、屋台飯の充実ぶりを特筆。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=March%C3%A9%20de%20la%20Place%20Flagey%20Place%20Eug%C3%A8ne%20Flagey%2C%201050%20Ixelles)
-- **参照元**: [visit.brussels](https://www.visit.brussels/en/visitors/venue-details.Place-Flagey-Market.278197) / [brussels.be](https://www.brussels.be/outdoor-markets)
+- **参照元**: 外観写真: visit.brussels／Wikimedia Commons / 参照元: [visit.brussels](https://www.visit.brussels/en/visitors/venue-details.Place-Flagey-Market.278197) / [brussels.be](https://www.brussels.be/outdoor-markets)
 
 ## パン・スイーツ
 
 ### Maison Dandoy（メゾン・ダンドワ）
 
 @@IMG:europe/belgium/img/brussels/dandoy.jpg@@
+
+@@IMG:europe/belgium/img/brussels/dandoy_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -303,7 +325,7 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](https://maisondandoy.com/fr/boutiques/rue-au-beurre)
 - **選定理由**: Wikipedia・Paris Match等が「ブリュッセル最古のビスケット店、スペキュロスの名家」と紹介。ワッフルでもRedditや複数ブログの合意的ナンバーワン。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Maison%20Dandoy%20Rue%20au%20Beurre%2031%2C%201000%20Bruxelles)
-- **参照元**: [en.wikipedia.org](https://en.wikipedia.org/wiki/Maison_Dandoy) / [maisondandoy.com](https://maisondandoy.com/news/gaufres)
+- **参照元**: 外観写真: 公式サイト maisondandoy.com／Wikimedia Commons / 参照元: [en.wikipedia.org](https://en.wikipedia.org/wiki/Maison_Dandoy) / [maisondandoy.com](https://maisondandoy.com/news/gaufres)
 
 ### Pierre Marcolini (Sablon)（ピエール・マルコリーニ(サブロン本店)）
 
@@ -347,6 +369,8 @@ BELGIUM / BRUSSELS 🇧🇪
 
 @@IMG:europe/belgium/img/brussels/cantillon.jpg@@
 
+@@IMG:europe/belgium/img/brussels/cantillon_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦`
 
 1900年創業、ブリュッセルに唯一残る家族経営のランビック醸造所で「グーズ博物館」を兼ねる。100年前と変わらない自然発酵の現場を見学し、木樽の並ぶ蔵で試飲できる。
@@ -359,42 +383,4 @@ BELGIUM / BRUSSELS 🇧🇪
 - **公式**: [公式サイト](http://www.cantillon.be/)
 - **選定理由**: visit.brussels・Lonely Planetが必見スポットとして掲載し、世界のビールファンの巡礼地。公式サイトで2026年の見学情報・休業日を確認済み。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brasserie%20Cantillon%20Rue%20Gheude%2056%2C%201070%20Anderlecht)
-- **参照元**: [cantillon.be](https://www.cantillon.be/visites?lang=en) / [visit.brussels](https://www.visit.brussels/en/visitors/venue-details.Cantillon-Brewery-Brussels-Museum-of-the-Gueuze.235618)
-
-### Moeder Lambic Fontainas（ムーデル・ランビック・フォンテナス）
-
-@@IMG:europe/belgium/img/brussels/moederlambic.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-2006年から「良いビールを注ぐ」ことに徹してきたブリュッセルを代表するビアカフェの中心街店。カンティヨンをはじめ樽生ランビックと職人ビールが常時40タップ以上並ぶ。
-
-- **一皿**: 樽生ランビックと小皿盛り(酸味の効いた樽出しランビックに、地元産チーズやシャルキュトリーの盛り合わせを合わせる)
-- **営業時間**: 月〜木・日 11:00〜翌1:00 / 金土 11:00〜翌2:00
-- **定休日**: なし
-- **住所**: Place Fontainas 8, 1000 Bruxelles
-- **予約**: 可(推奨) — ☎ 電話で予約 +32 2 503 60 68 ／ [公式サイト](https://moederlambic.com/)
-- **公式**: [公式サイト](https://moederlambic.com/)
-- **選定理由**: visit.brussels掲載のビアバーの定番で、In Your Pocket等のガイドやビール系ブログがカンティヨン訪問とセットで推薦する。Yelp 240件超で高評価。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Moeder%20Lambic%20Fontainas%20Place%20Fontainas%208%2C%201000%20Bruxelles)
-- **参照元**: [moederlambic.com](https://moederlambic.com/?lang=en) / [visit.brussels](https://www.visit.brussels/en/professionals/venue-details.Moeder-Lambic-Fontainas.248624)
-
-## 非ベルギー欧州料理
-
-### Senzanome（センツァノーメ）
-
-@@IMG:europe/belgium/img/brussels/senzanome.jpg@@
-
-`ブログ推薦`
-
-プティ・サブロン広場に面するイタリア料理の名店で、ミシュラン1つ星を保持。シチリア出身のジョヴァンニ・ブルーノシェフが故郷の伝統を現代的に昇華させた料理で、ブリュッセルのイタリアンの頂点と評される。
-
-- **一皿**: シチリア料理のテイスティングコース(魚介やシチリア産食材を主役に、古典を遊び心をもって再構築するコース仕立ての料理。)
-- **営業時間**: 火〜金 12:00-13:30 / 19:00-21:00
-- **定休日**: 土・日・月
-- **住所**: Place du Petit Sablon 1, 1000 Bruxelles
-- **予約**: 可(推奨) — ☎ 電話で予約 +32 2 223 16 17 ／ [公式サイト](http://www.senzanome.be/)
-- **公式**: [公式サイト](http://www.senzanome.be/)
-- **選定理由**: ミシュランガイド公式で1つ星として掲載。Gault&Millau 16/20で「ブリュッセル最高のイタリアン」との評価が複数媒体で一致。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Senzanome%20Place%20du%20Petit%20Sablon%201%2C%201000%20Bruxelles)
-- **参照元**: [guide.michelin.com](https://guide.michelin.com/en/bruxelles-capitale/bruxelles/restaurant/senzanome) / [brusselskitchen.com](https://www.brusselskitchen.com/senzanome/bruxelles/restaurant?lang=en)
+- **参照元**: 外観写真: 公式サイト cantillon.be（536px） / 参照元: [cantillon.be](https://www.cantillon.be/visites?lang=en) / [visit.brussels](https://www.visit.brussels/en/visitors/venue-details.Cantillon-Brewery-Brussels-Museum-of-the-Gueuze.235618)
