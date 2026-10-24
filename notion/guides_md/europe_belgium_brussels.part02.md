@@ -1,3 +1,43 @@
+### Moeder Lambic Fontainas（ムーデル・ランビック・フォンテナス）
+
+@@IMG:europe/belgium/img/brussels/moederlambic.jpg@@
+
+@@IMG:europe/belgium/img/brussels/moederlambic_exterior.jpg@@
+
+`ブログ推薦` `口コミ突出`
+
+2006年から「良いビールを注ぐ」ことに徹してきたブリュッセルを代表するビアカフェの中心街店。カンティヨンをはじめ樽生ランビックと職人ビールが常時40タップ以上並ぶ。
+
+- **一皿**: 樽生ランビックと小皿盛り(酸味の効いた樽出しランビックに、地元産チーズやシャルキュトリーの盛り合わせを合わせる)
+- **営業時間**: 月〜木・日 11:00〜翌1:00 / 金土 11:00〜翌2:00
+- **定休日**: なし
+- **住所**: Place Fontainas 8, 1000 Bruxelles
+- **予約**: 可(推奨) — ☎ 電話で予約 +32 2 503 60 68 ／ [公式サイト](https://moederlambic.com/)
+- **公式**: [公式サイト](https://moederlambic.com/)
+- **選定理由**: visit.brussels掲載のビアバーの定番で、In Your Pocket等のガイドやビール系ブログがカンティヨン訪問とセットで推薦する。Yelp 240件超で高評価。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Moeder%20Lambic%20Fontainas%20Place%20Fontainas%208%2C%201000%20Bruxelles)
+- **参照元**: 外観写真: visit.brussels / 参照元: [moederlambic.com](https://moederlambic.com/?lang=en) / [visit.brussels](https://www.visit.brussels/en/professionals/venue-details.Moeder-Lambic-Fontainas.248624)
+
+## 非ベルギー欧州料理
+
+### Senzanome（センツァノーメ）
+
+@@IMG:europe/belgium/img/brussels/senzanome.jpg@@
+
+`ブログ推薦`
+
+プティ・サブロン広場に面するイタリア料理の名店で、ミシュラン1つ星を保持。シチリア出身のジョヴァンニ・ブルーノシェフが故郷の伝統を現代的に昇華させた料理で、ブリュッセルのイタリアンの頂点と評される。
+
+- **一皿**: シチリア料理のテイスティングコース(魚介やシチリア産食材を主役に、古典を遊び心をもって再構築するコース仕立ての料理。)
+- **営業時間**: 火〜金 12:00-13:30 / 19:00-21:00
+- **定休日**: 土・日・月
+- **住所**: Place du Petit Sablon 1, 1000 Bruxelles
+- **予約**: 可(推奨) — ☎ 電話で予約 +32 2 223 16 17 ／ [公式サイト](http://www.senzanome.be/)
+- **公式**: [公式サイト](http://www.senzanome.be/)
+- **選定理由**: ミシュランガイド公式で1つ星として掲載。Gault&Millau 16/20で「ブリュッセル最高のイタリアン」との評価が複数媒体で一致。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Senzanome%20Place%20du%20Petit%20Sablon%201%2C%201000%20Bruxelles)
+- **参照元**: [guide.michelin.com](https://guide.michelin.com/en/bruxelles-capitale/bruxelles/restaurant/senzanome) / [brusselskitchen.com](https://www.brusselskitchen.com/senzanome/bruxelles/restaurant?lang=en)
+
 ### Strofilia（ストロフィリア）
 
 @@IMG:europe/belgium/img/brussels/strofilia.jpg@@
@@ -38,6 +78,8 @@
 
 @@IMG:europe/belgium/img/brussels/coimbra.jpg@@
 
+@@IMG:europe/belgium/img/brussels/coimbra_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 ポルトガル移民が多いサン・ジル地区で1977年から続くポルトガル料理の老舗。タコ料理や干し鱈料理など本国そのままの味で、「ブリュッセルのポルトガル美食の必訪店」と称される。
@@ -50,7 +92,7 @@
 - **公式**: [公式サイト](http://www.restaurant-coimbra.be/)
 - **選定理由**: 公式サイトで1977年創業を明記。TripAdvisorでサン・ジル地区のポルトガル料理上位、資料サイトla-carte.beも「必訪の老舗」と評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20Coimbra%20Avenue%20Jean%20Volders%2054%2C%201060%20Saint-Gilles)
-- **参照元**: [restaurant-coimbra.be](https://www.restaurant-coimbra.be/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188644-d1028293-Reviews-Coimbra-Brussels.html)
+- **参照元**: 外観写真: 公式サイト（ギャラリー） / 参照元: [restaurant-coimbra.be](https://www.restaurant-coimbra.be/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188644-d1028293-Reviews-Coimbra-Brussels.html)
 
 ## 中東・モロッコ料理
 
@@ -113,6 +155,8 @@
 
 @@IMG:europe/belgium/img/brussels/horloge-du-sud.jpg@@
 
+@@IMG:europe/belgium/img/brussels/horloge-du-sud_exterior.jpg@@
+
 `ブログ推薦` `食の専門街・市場`
 
 コンゴ人街マトンゲ地区の縁、トローヌ通りにあるコンゴ・西アフリカ料理店。「南の時計」の名の通りアフリカの時間が流れる店内では金曜夜にライブ演奏もあり、多様な客が入り交じる文化拠点として愛される。
@@ -125,11 +169,13 @@
 - **公式**: [公式サイト](http://www.horlogedusud.be/)
 - **選定理由**: Le Foodingで営業中と確認(テイクアウト含む)。Lonely Planet・visit.brusselsにも掲載され、モアンブ等コンゴ料理とライブ音楽の定番店として評価が確立。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=L%27Horloge%20du%20Sud%20Rue%20du%20Tr%C3%B4ne%20141%2C%201050%20Ixelles)
-- **参照元**: [lefooding.com](https://lefooding.com/en/restaurants/lhorloge-du-sud) / [lonelyplanet.com](https://www.lonelyplanet.com/belgium/brussels/restaurants/l-horloge-du-sud/a/poi-eat/1328360/358708)
+- **参照元**: 外観写真: 公式サイト / 参照元: [lefooding.com](https://lefooding.com/en/restaurants/lhorloge-du-sud) / [lonelyplanet.com](https://www.lonelyplanet.com/belgium/brussels/restaurants/l-horloge-du-sud/a/poi-eat/1328360/358708)
 
 ### Toukoul（トゥクル）
 
 @@IMG:europe/belgium/img/brussels/toukoul.jpg@@
+
+@@IMG:europe/belgium/img/brussels/toukoul_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -143,7 +189,7 @@
 - **公式**: [公式サイト](http://www.toukoul.be/)
 - **選定理由**: Yelp(2026年7月更新)で営業確認、Gault&Millau 12/20。Brusselslife・Spotted by Localsが「ブリュッセル最高のエチオピア料理」と紹介。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Toukoul%20Rue%20de%20Laeken%2034%2C%201000%20Bruxelles)
-- **参照元**: [yelp.com](https://www.yelp.com/biz/toukoul-bruxelles) / [resto.be](https://en.resto.be/restaurant/brussels/1000-brussels-center/142222-toukoul/)
+- **参照元**: 外観写真: 公式サイト toukoulresto.be / 参照元: [yelp.com](https://www.yelp.com/biz/toukoul-bruxelles) / [resto.be](https://en.resto.be/restaurant/brussels/1000-brussels-center/142222-toukoul/)
 
 ## アジア料理
 
@@ -169,6 +215,8 @@
 
 @@IMG:europe/belgium/img/brussels/hanoi-station.jpg@@
 
+@@IMG:europe/belgium/img/brussels/hanoi-station_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 メロード駅近くに本店を構える北ベトナム料理店。ハノイの屋台料理を再現したフォーやブンチャーが評判で、「街で最高のフォー」との呼び声も高く市内に複数店舗へ拡大中。
@@ -181,7 +229,7 @@
 - **公式**: [公式サイト](https://hanoistation.be/)
 - **選定理由**: 仏グルメガイドLe Foodingが掲載。Yelp・TripAdvisorの口コミでも「ブリュッセルで最高レベルのフォー」と評価が突出。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Hanoi%20Station%20Avenue%20des%20Celtes%206%2C%201040%20Etterbeek)
-- **参照元**: [hanoistation.be](https://hanoistation.be/en) / [lefooding.com](https://lefooding.com/en/restaurants/hanoi-station)
+- **参照元**: 外観写真: 公式サイト hanoistation.be / 参照元: [hanoistation.be](https://hanoistation.be/en) / [lefooding.com](https://lefooding.com/en/restaurants/hanoi-station)
 
 ### Villa Singha（ヴィラ・シンハ）
 
@@ -261,6 +309,8 @@
 
 @@IMG:europe/belgium/img/brussels/sanzaru.jpg@@
 
+@@IMG:europe/belgium/img/brussels/sanzaru_exterior.jpg@@
+
 `ブログ推薦`
 
 テルヴューレン大通りの歴史的邸宅を改装した、ペルーと日本の食文化が融合する「ニッケイ料理」をブリュッセルに広めた代表店。銅装飾とフレスコ画の贅沢な空間で、現在は若手シェフがニッケイの遺産に世界の味を採り入れたモダンガストロノミーを展開する。
@@ -273,7 +323,7 @@
 - **公式**: [公式サイト](http://www.sanzaru.be/)
 - **選定理由**: 公式サイトで営業確認(2026年、火〜土営業)。ミシュランガイドのセレクションに掲載され、Yelp(2026年6月更新)でも営業中。visit.brussels掲載店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Sanzar%C3%B9%20Avenue%20de%20Tervueren%20292%2C%201150%20Woluwe-Saint-Pierre)
-- **参照元**: [sanzaru.be](https://www.sanzaru.be/) / [brussels-express.eu](https://brussels-express.eu/brussels-little-asia-viii-sanzaru/)
+- **参照元**: 外観写真: 公式サイト（Contact ページ） / 参照元: [sanzaru.be](https://www.sanzaru.be/) / [brussels-express.eu](https://brussels-express.eu/brussels-little-asia-viii-sanzaru/)
 
 ### Los Agaves（ロス・アガベス）
 
