@@ -28,7 +28,7 @@
  "phone": "083-000-0000",
  "website": "https://…（無ければ空文字）",
  "resv": "可（電話のみ。前日まで）",
- "sources": [{"label": "ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数）2026-10-20 取得", "url": "https://www.hotpepper.jp/strJ0000xxxxx/"}],
+ "sources": [{"label": "ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数）2026-10-20 取得", "url": "https://www.hotpepper.jp/<店のページのID>/"}],   ← URL-CHECK-SKIP（雛形。実際は開いたページのURLをそのまま書く）
  "photo_urls": ["https://…1.jpg", "https://…2.jpg"],
  "ext_urls": ["https://…gaikan.jpg"]
 }
@@ -140,7 +140,7 @@ im.crop((int(w*0.40),int(h*0.70),w,h)).save('/tmp/corner.png')"
 
 - `website` と `sources[].url` は、**実際に開いたページの URL をそのまま**書く。
   **店名のローマ字からドメインを推測しない**（過去に3件とも誤り、別会社・存在しないドメイン・別県の旅館に当たりました）。
-- ホットペッパーの画像は `https://imgfp.hotp.jp/…` の形です。`_480` を外すと大きくなることがありますが、**必ず大きさを測って確かめてください**（外しても変わらない場合があります）。
+- ホットペッパーの画像は `https://imgfp.hotp.jp/<以下は店ごとに違う>` の形です（URL-CHECK-SKIP＝雛形）。`_480` を外すと大きくなることがありますが、**必ず大きさを測って確かめてください**（外しても変わらない場合があります）。
 
 ```bash
 python3 -c "
@@ -229,7 +229,7 @@ https://r.gnavi.co.jp/<12桁のID>/photo/
 画像の直URLはこの形です。
 
 ```
-https://rimage.gnst.jp/.../s_<画像のID>.jpg
+https://rimage.gnst.jp/rest/img/<12桁のID>/s_<画像のID>.jpg   ← URL-CHECK-SKIP（雛形）
 ```
 
 ### 営業の根拠にそのまま使える公式のリスト
