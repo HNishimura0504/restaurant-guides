@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>下関 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>下関 の食べ歩き地図<span class="n">50店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="下関 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">下関 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/yamaguchi/shimonoseki.html"><span class="sn-e">📄</span>下関のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（101都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "旬楽館", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.957153, "lng": 130.943176, "d": "とらふく刺し(薄造り。単品4,500円。コースでは菊盛りで出る)／あんこうコース(10〜3月の冬季限定。あん肝のみそ漬け・味噌棒葉焼き・風呂吹き大根とあん肝のソテー・あんこう鍋まで10品で13,500円)", "a": "山口県下関市唐戸町3-10", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E6%A5%BD%E9%A4%A8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA3-10", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-shunrakukan", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-shunrakukan.jpg", "ext": ""}, {"i": 1, "n": "下関鯨屋 日新丸", "c": ["寿司・海鮮"], "v": "食材の店", "lat": 33.957825, "lng": 130.944885, "d": "鯨の刺身5種盛り(赤身・ベーコン・百尋・百畳・姫綿を各1切れ。1,250円)／鯨の竜田揚げ(良質の赤身をサクッと揚げる定番。880円)／長州鯨骨らぁめん(鯨の軟骨と長州黒かしわの鶏がらを合わせた醤油味。鯨ベーコンとさえずりを乗せる。1,100円)", "a": "山口県下関市中之町6-3 第2松栄ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E9%96%A2%E9%AF%A8%E5%B1%8B%20%E6%97%A5%E6%96%B0%E4%B8%B8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E4%B8%AD%E4%B9%8B%E7%94%BA6-3%20%E7%AC%AC2%E6%9D%BE%E6%A0%84%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-nisshinmaru", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-nisshinmaru.jpg", "ext": ""}, {"i": 2, "n": "市場食堂 よし", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.956585, "lng": 130.943588, "d": "生うに定食(板うに1枚がまるごと付く。2,500円)／よし定食(自家製パン粉の大えびフライ・ふくの唐揚げ・その日の刺盛・小鉢。2,000円)／海鮮丼(1,800円)", "a": "山口県下関市唐戸町5-50 唐戸市場2階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B8%82%E5%A0%B4%E9%A3%9F%E5%A0%82%20%E3%82%88%E3%81%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA5-50%20%E5%94%90%E6%88%B8%E5%B8%82%E5%A0%B42%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-ichiba-shokudo-yoshi", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-ichiba-shokudo-yoshi.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-ichiba-shokudo-yoshi_exterior.jpg"}, {"i": 3, "n": "ふく・長州料理 KATSUMOTO", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.958828, "lng": 130.940582, "d": "とらふくフルコース(南風泊市場直送のとらふく。前菜・刺身・にぎり・唐揚・茶碗蒸し・ふくちり・雑炊まで8品で11,000円、2人前から)／とらふく唐揚（あら）／うに釜飯／関門穴子の白焼き", "a": "山口県下関市田中町8-11", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%8F%E3%83%BB%E9%95%B7%E5%B7%9E%E6%96%99%E7%90%86%20KATSUMOTO%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%94%B0%E4%B8%AD%E7%94%BA8-11", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-katsumoto", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-katsumoto.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-katsumoto_exterior.jpg"}, {"i": 4, "n": "ふぐ料理・懐石料理 たまや本店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.946003, "lng": 130.908371, "d": "ふぐさし(直径22.5cmの皿に引く薄造り)／とらふぐ白子の塩焼き(表面はこんがり、中は柔らかい。冬の白子尽くしコースもある)／ふぐグラタン(コースに組み込む当店の工夫の一品)／ひれ酒", "a": "山口県下関市彦島老町2丁目5番9号", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%90%E6%96%99%E7%90%86%E3%83%BB%E6%87%90%E7%9F%B3%E6%96%99%E7%90%86%20%E3%81%9F%E3%81%BE%E3%82%84%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%BD%A6%E5%B3%B6%E8%80%81%E7%94%BA2%E4%B8%81%E7%9B%AE5%E7%95%AA9%E5%8F%B7", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-tamaya-honten", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-tamaya-honten.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-tamaya-honten_exterior.jpg"}, {"i": 5, "n": "ふくの関 カモンワーフ店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.956284, "lng": 130.943527, "d": "ふくの関定食(とらふく刺身・唐揚げ・ふく汁などを一膳に。2,640円)／海鮮七色丼(ふぐ・うに・たい・ひらそ・まぐろ・いくら・かにの7種)／ふく天丼／鯨定食", "a": "山口県下関市唐戸町6-1 カモンワーフ1階（海側）", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%8F%E3%81%AE%E9%96%A2%20%E3%82%AB%E3%83%A2%E3%83%B3%E3%83%AF%E3%83%BC%E3%83%95%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA6-1%20%E3%82%AB%E3%83%A2%E3%83%B3%E3%83%AF%E3%83%BC%E3%83%951%E9%9A%8E%EF%BC%88%E6%B5%B7%E5%81%B4%EF%BC%89", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-fukunoseki-kamonwharf", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-fukunoseki-kamonwharf.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-fukunoseki-kamonwharf_exterior.jpg"}, {"i": 6, "n": "下関ふく百花 関とら本店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.966583, "lng": 130.956467, "d": "関とらのとらふくフルコース(皮刺し・ふく刺し・ふく唐揚げ・白子付きふくちり鍋・ふく雑炊・フルーツ。13,200円)／ふく刺し(大輪の菊のように1枚ずつ盛る薄造り)／ふく唐揚げ", "a": "山口県下関市みもすそ川町6-20（関門橋横）", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E9%96%A2%E3%81%B5%E3%81%8F%E7%99%BE%E8%8A%B1%20%E9%96%A2%E3%81%A8%E3%82%89%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E3%81%BF%E3%82%82%E3%81%99%E3%81%9D%E5%B7%9D%E7%94%BA6-20%EF%BC%88%E9%96%A2%E9%96%80%E6%A9%8B%E6%A8%AA%EF%BC%89", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-sekitora-honten", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-sekitora-honten.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-sekitora-honten_exterior.jpg"}, {"i": 7, "n": "魚正本陣", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.959625, "lng": 130.942795, "d": "生きいか(特牛〈こっとい〉のヤリイカを活けのまま造る。皿の上で透き通る)／さしみ盛り合わせ(唐戸に揚がったその日の地魚)／コチ唐揚げ／あんこう料理(秋〜冬)", "a": "山口県下関市赤間町4-20", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E6%AD%A3%E6%9C%AC%E9%99%A3%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B5%A4%E9%96%93%E7%94%BA4-20", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-uomasa-honjin", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-uomasa-honjin.jpg", "ext": ""}, {"i": 8, "n": "土井ヶ浜海鮮食堂 晴海", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.300562, "lng": 130.88645, "d": "海鮮舟盛り丼(山陰の魚の刺身をおひつの上に舟盛りに。専用の出汁と薬味で海鮮茶漬けにもできる。3,080円)／舟盛りうに丼(季節により入荷が無い時期あり。3,000円〜時価)／天ぷら舟盛り丼／唐揚げ定食(刺身付き。1,760円)", "a": "山口県下関市豊北町神田上787", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BA%95%E3%83%B6%E6%B5%9C%E6%B5%B7%E9%AE%AE%E9%A3%9F%E5%A0%82%20%E6%99%B4%E6%B5%B7%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%8C%97%E7%94%BA%E7%A5%9E%E7%94%B0%E4%B8%8A787", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-fuku-doigahama-harumi", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-doigahama-harumi.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-fuku-doigahama-harumi_exterior.jpg"}, {"i": 9, "n": "中久寿し", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.978638, "lng": 130.935867, "d": "特上にぎり(7貫)(マグロのトロや車海老のおどりなど種にこだわった握り。3,850円税込)／細工寿司(切り口に絵柄が出るよう仕込んだ祝い用の寿司。4〜5人で囲む寿司ケーキもある。要予約・有料)", "a": "山口県下関市幡生町1丁目4-23", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E4%B9%85%E5%AF%BF%E3%81%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B9%A1%E7%94%9F%E7%94%BA1%E4%B8%81%E7%9B%AE4-23", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-nakahisazushi", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-nakahisazushi.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-nakahisazushi_exterior.jpg"}, {"i": 10, "n": "浜寿司 唐戸店", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.95657, "lng": 130.943298, "d": "昼にぎり定食(昼の一番人気。行列ができることもある)／松にぎり(トロや海老を入れた上の握り)", "a": "山口県下関市唐戸町5-2 関門ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E5%AF%BF%E5%8F%B8%20%E5%94%90%E6%88%B8%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA5-2%20%E9%96%A2%E9%96%80%E3%83%93%E3%83%AB1F", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-hamazushi-karato", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-hamazushi-karato.jpg", "ext": ""}, {"i": 11, "n": "海転からと市場寿司", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.956585, "lng": 130.943588, "d": "とらふくの握り(下関産のとらふくを握りに。身が締まってコリコリした歯ごたえ)／鯨のさえずり(鯨の舌。脂がのった下関ならではの一貫)／鯨のベーコン(癖がなく、はじめての人にも勧められる)", "a": "山口県下関市唐戸町5-50 唐戸市場2階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E8%BB%A2%E3%81%8B%E3%82%89%E3%81%A8%E5%B8%82%E5%A0%B4%E5%AF%BF%E5%8F%B8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA5-50%20%E5%94%90%E6%88%B8%E5%B8%82%E5%A0%B42%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-kaiten-karato-ichibazushi", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-kaiten-karato-ichibazushi.jpg", "ext": ""}, {"i": 12, "n": "炭焼うなぎ ふく田", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.956284, "lng": 130.943527, "d": "名物一本うなぎ重(1尾を切らずに1本のまま載せた重。4,510円)／うな玉丼(炭火で焼いたうなぎと玉子を合わせた丼。半身2,750円・1尾4,890円)", "a": "山口県下関市唐戸町6-1 カモンワーフ2階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%86%E3%81%AA%E3%81%8E%20%E3%81%B5%E3%81%8F%E7%94%B0%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA6-1%20%E3%82%AB%E3%83%A2%E3%83%B3%E3%83%AF%E3%83%BC%E3%83%952%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-unagi-fukuda", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-unagi-fukuda.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-unagi-fukuda_exterior.jpg"}, {"i": 13, "n": "寿し 創作和食 丸山", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.952198, "lng": 130.930145, "d": "おまかせ(その日の仕入れから予算に合わせて組む。寿司と和食が交互に出る)／握り(唐戸・小倉の両市場から仕入れた地魚を江戸前の仕事で)", "a": "山口県下関市細江町1-3-27", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%20%E5%89%B5%E4%BD%9C%E5%92%8C%E9%A3%9F%20%E4%B8%B8%E5%B1%B1%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA1-3-27", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-maruyama", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-maruyama.jpg", "ext": ""}, {"i": 14, "n": "離れ 竜胆", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.952656, "lng": 130.928848, "d": "季節のおまかせコース(刺身・握りのほか焼き物や茶碗蒸しまで少しずつ出る。5,000円〜)／すっぽん鍋(6,000円。囲炉裏の座敷で囲む冬の看板)", "a": "山口県下関市豊前田町2丁目1-8", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9B%A2%E3%82%8C%20%E7%AB%9C%E8%83%86%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE1-8", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-hanare-rindou", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-hanare-rindou.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-hanare-rindou_exterior.jpg"}, {"i": 15, "n": "氣吹寄", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.951099, "lng": 130.935226, "d": "天ぷらの定食(松・竹・梅から紅葉・いぶきまで段がある昼の定食。海老・旬の野菜・魚を一品ずつ揚げたてで)／天丼(揚げたての天ぷらにたれを回しかける昼の丼)", "a": "山口県下関市岬之町11-18", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B0%A3%E5%90%B9%E5%AF%84%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B2%AC%E4%B9%8B%E7%94%BA11-18", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-ibukiyose", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-ibukiyose.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-ibukiyose_exterior.jpg"}, {"i": 16, "n": "創作料理 四季の味 ひろなか", "c": ["和食"], "v": "レストラン", "lat": 34.023617, "lng": 131.0047, "d": "瓦そば御膳(下関の名物の瓦そばに天ぷらや小鉢を添えた御膳)／会席料理「あじさい」(四季の食材を使った会席。前日までに要予約)", "a": "山口県下関市長府才川2-4-15", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E6%96%99%E7%90%86%20%E5%9B%9B%E5%AD%A3%E3%81%AE%E5%91%B3%20%E3%81%B2%E3%82%8D%E3%81%AA%E3%81%8B%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E6%89%8D%E5%B7%9D2-4-15", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-hironaka", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-hironaka.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-hironaka_exterior.jpg"}, {"i": 17, "n": "季節の庭 宮の内茶寮", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.998329, "lng": 130.987549, "d": "海鮮ちらし御膳(海鮮ちらしに天麩羅と茶碗蒸しを付けた昼の御膳。平日2,420円・土日祝2,530円 税込)／たこ唐揚げ(関門のたこを揚げた単品。770円 税込)", "a": "山口県下関市長府宮の内町1-18", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AD%A3%E7%AF%80%E3%81%AE%E5%BA%AD%20%E5%AE%AE%E3%81%AE%E5%86%85%E8%8C%B6%E5%AF%AE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E5%AE%AE%E3%81%AE%E5%86%85%E7%94%BA1-18", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-washoku-miyanouchi-saryo", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-miyanouchi-saryo.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-washoku-miyanouchi-saryo_exterior.jpg"}, {"i": 18, "n": "元祖瓦そば たかせ 川棚本館・南本館", "c": ["麺類"], "v": "レストラン", "lat": 34.137531, "lng": 130.936844, "d": "元祖瓦そば（熱した日本瓦の上の茶そばに牛肉と錦糸卵を載せ、温かいつゆにつけて食べる。最後は瓦に接してパリパリに焦げた麺を楽しむ）／うなめし（たれを塗って焼いた国産うなぎの飯を、最後に熱いだしをかけて茶漬けにする）", "a": "山口県下関市豊浦町大字川棚5437", "m": "https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%E7%93%A6%E3%81%9D%E3%81%B0%20%E3%81%9F%E3%81%8B%E3%81%9B%20%E5%B7%9D%E6%A3%9A%E6%9C%AC%E9%A4%A8%E3%83%BB%E5%8D%97%E6%9C%AC%E9%A4%A8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E6%B5%A6%E7%94%BA%E5%A4%A7%E5%AD%97%E5%B7%9D%E6%A3%9A5437", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-men-takase", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-takase.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-takase_exterior.jpg"}, {"i": 19, "n": "瓦そば 藤屋", "c": ["麺類"], "v": "レストラン", "lat": 33.956284, "lng": 130.943527, "d": "瓦そば（熱した瓦の上の茶そばに牛肉と錦糸卵。お茶漬けとのセットが定番）／海鮮丼デラックス（唐戸市場から仕入れた魚を盛った丼）／くじら竜田揚げ（鯨問屋直営ならではの一品）", "a": "山口県下関市唐戸町6-1 カモンワーフ2階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%93%A6%E3%81%9D%E3%81%B0%20%E8%97%A4%E5%B1%8B%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA6-1%20%E3%82%AB%E3%83%A2%E3%83%B3%E3%83%AF%E3%83%BC%E3%83%952%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-men-fujiya", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-fujiya.jpg", "ext": ""}, {"i": 20, "n": "手打ち 田舎そば", "c": ["麺類"], "v": "レストラン", "lat": 33.95858, "lng": 130.942688, "d": "ざるそば（3時間かけて打つ手打ちそばをそのまま味わう看板。650円）／肉南ばんカレー（地元テレビでも紹介されたカレー南蛮そば。七味を足すとよい。650円）／ぶっかけ（山いもとだしを絡めた夏の定番。750円）", "a": "山口県下関市赤間町2-10", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%20%E7%94%B0%E8%88%8E%E3%81%9D%E3%81%B0%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B5%A4%E9%96%93%E7%94%BA2-10", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-men-inakasoba", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-inakasoba.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-inakasoba_exterior.jpg"}, {"i": 21, "n": "ダイニング囃子", "c": ["麺類"], "v": "レストラン", "lat": 34.006741, "lng": 130.950226, "d": "瓦そば（熱した瓦の上の茶そばに牛肉と錦糸卵。1人前1,300円）／ふく天（下関のふくの天ぷら。1,300円）／くじら刺し（1,200円）", "a": "山口県下関市秋根南町1-8-13（ビジネスホテルはやし1階）", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%E5%9B%83%E5%AD%90%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%A7%8B%E6%A0%B9%E5%8D%97%E7%94%BA1-8-13%EF%BC%88%E3%83%93%E3%82%B8%E3%83%8D%E3%82%B9%E3%83%9B%E3%83%86%E3%83%AB%E3%81%AF%E3%82%84%E3%81%971%E9%9A%8E%EF%BC%89", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-men-hayashi", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-hayashi.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-hayashi_exterior.jpg"}, {"i": 22, "n": "豚骨らーめん まる龍", "c": ["麺類"], "v": "レストラン", "lat": 33.950855, "lng": 130.927734, "d": "黒ラーメン（焦がしニンニクの特製マー油が香る一番人気）／豚骨らーめん（国産黒豚の骨を48時間炊いたスープにもっちり中太麺）／焼き飯（ラーメンと合わせる定番）／豚サガリ鉄板（脂身の少ない豚の希少部位の鉄板焼き）", "a": "山口県下関市豊前田町3-2-7 下関第1ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B1%9A%E9%AA%A8%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E3%81%BE%E3%82%8B%E9%BE%8D%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA3-2-7%20%E4%B8%8B%E9%96%A2%E7%AC%AC1%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-men-maruryu", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-maruryu.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-maruryu_exterior.jpg"}, {"i": 23, "n": "山の田らーめん", "c": ["麺類"], "v": "レストラン", "lat": 34.024155, "lng": 130.932983, "d": "山の田らーめん（豚骨のスープにチャーシューとねぎ。創業から受け継ぐ看板）／チャーシュー麺（厚めのチャーシューを重ねた一杯）／味玉入りらーめん（とろりとした半熟の味玉を落とす）", "a": "山口県下関市大字蒲生野805-7", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E3%81%AE%E7%94%B0%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%A4%A7%E5%AD%97%E8%92%B2%E7%94%9F%E9%87%8E805-7", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-men-yamanota", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-yamanota.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-yamanota_exterior.jpg"}, {"i": 24, "n": "蕎麦処 はしもと", "c": ["麺類"], "v": "レストラン", "lat": 33.999504, "lng": 130.988434, "d": "せいろ蕎麦（二八の手打ち。しなやかなコシとのど越しが身上。800円）／天ぷらせいろ（大きな海老天と季節の野菜。1,800円）／蕎麦湯（出汁の効いたつゆを最後まで飲み干すための一杯）", "a": "山口県下関市長府土居の内町7-16", "m": "https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%E5%87%A6%20%E3%81%AF%E3%81%97%E3%82%82%E3%81%A8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E5%9C%9F%E5%B1%85%E3%81%AE%E5%86%85%E7%94%BA7-16", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-men-hashimoto", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-hashimoto.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-hashimoto_exterior.jpg"}, {"i": 25, "n": "中華料理 太平楽 本店", "c": ["麺類"], "v": "レストラン", "lat": 33.95126, "lng": 130.934158, "d": "チャンポン（650円。下関で町中華のちゃんぽんを食べるならここ）／石焼きトマトらーめん（890円。残ったスープにご飯を入れてリゾット風に）／四川風焼きそば（750円）／北京ダック（6,800円。3〜4日前までの要予約）", "a": "山口県下関市岬之町16-11", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E5%A4%AA%E5%B9%B3%E6%A5%BD%20%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B2%AC%E4%B9%8B%E7%94%BA16-11", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-men-taiheiraku", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-taiheiraku.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-men-taiheiraku_exterior.jpg"}, {"i": 26, "n": "美食 宝仙", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.951965, "lng": 130.928131, "d": "とらふく刺し（下関名物のとらふぐの薄造り）／関門地ダコ酢（関門海峡で獲れたタコの酢の物）／くじら三点盛り（赤身刺・オバイケ・ベーコン刺）／山口の地酒（獺祭・雁木・五橋ほか）", "a": "山口県下関市豊前田町2-1-22 国宝ビルNo.2 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E9%A3%9F%20%E5%AE%9D%E4%BB%99%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA2-1-22%20%E5%9B%BD%E5%AE%9D%E3%83%93%E3%83%ABNo.2%201F", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-izakaya-bishoku-housen", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-bishoku-housen.jpg", "ext": ""}, {"i": 27, "n": "創作居酒屋 ゑびす門", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 33.952316, "lng": 130.930557, "d": "鮮魚のゑびす盛り（下関近海の刺身の盛合せ）／酒仙コース（山口の地酒6種が付く全8品のコース）／大根の唐揚げ（名物の一品）", "a": "山口県下関市細江町1-3-31", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%82%91%E3%81%B3%E3%81%99%E9%96%80%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA1-3-31", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-izakaya-ebisumon", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-ebisumon.jpg", "ext": ""}, {"i": 28, "n": "炭焼き たぬき", "c": ["居酒屋・焼肉"], "v": "食べ歩き", "lat": 33.952698, "lng": 130.931641, "d": "ばらし焼（赤鶏・親鶏上ももを備長炭で焼いたもの）／安岡ネギの一銭焼き（下関・安岡産のネギを使った粉もの）／日本海の刺身盛り合わせ", "a": "山口県下関市細江町1-5-6", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%8D%20%E3%81%9F%E3%81%AC%E3%81%8D%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA1-5-6", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-izakaya-sumiyaki-tanuki", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-sumiyaki-tanuki.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-sumiyaki-tanuki_exterior.jpg"}, {"i": 29, "n": "さかなやの酒場 おかもと", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.952847, "lng": 130.935608, "d": "刺身盛合せ（併設の鮮魚店から選んだ魚をその場で造る）／揚げ出し白子豆腐／おかもと丼", "a": "山口県下関市岬之町9-15", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%95%E3%81%8B%E3%81%AA%E3%82%84%E3%81%AE%E9%85%92%E5%A0%B4%20%E3%81%8A%E3%81%8B%E3%82%82%E3%81%A8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B2%AC%E4%B9%8B%E7%94%BA9-15", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-izakaya-sakanaya-okamoto", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-sakanaya-okamoto.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-sakanaya-okamoto_exterior.jpg"}, {"i": 30, "n": "和や 唐戸店", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 33.958546, "lng": 130.943527, "d": "長州どりの焼きとり（創業以来つぎ足しのタレ）／ふく白焼き・ふく茶漬け（下関のふくを焼きとり屋の値段で）／本日の刺し盛り（唐戸市場から仕入れた日替わり）", "a": "山口県下関市赤間町1-2", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%82%84%20%E5%94%90%E6%88%B8%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B5%A4%E9%96%93%E7%94%BA1-2", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-izakaya-nagoya-karato", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-nagoya-karato.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-nagoya-karato_exterior.jpg"}, {"i": 31, "n": "旬彩工房 まるほ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.956959, "lng": 130.940323, "d": "活け造り・刺身の盛合せ（店内の水槽の魚を選んで調理）／季節のおまかせコース（会席仕立て）／100種を超える和の創作一品", "a": "山口県下関市南部町3-16", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E5%BD%A9%E5%B7%A5%E6%88%BF%20%E3%81%BE%E3%82%8B%E3%81%BB%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%8D%97%E9%83%A8%E7%94%BA3-16", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-izakaya-shunsai-kobo-maruho", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-shunsai-kobo-maruho.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-shunsai-kobo-maruho_exterior.jpg"}, {"i": 32, "n": "創作厨房 ポンポン船 長府店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.002258, "lng": 130.989944, "d": "おばあちゃんの厚焼き卵（特大／750円・昔ながらの甘い厚焼き）／ポンポン船のカリカリ手羽先／山陰の刺身盛り", "a": "山口県下関市長府金屋町2-17", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%8E%A8%E6%88%BF%20%E3%83%9D%E3%83%B3%E3%83%9D%E3%83%B3%E8%88%B9%20%E9%95%B7%E5%BA%9C%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E9%87%91%E5%B1%8B%E7%94%BA2-17", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-izakaya-ponponsen-chofu", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-ponponsen-chofu.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-ponponsen-chofu_exterior.jpg"}, {"i": 33, "n": "紫陽花", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.005875, "lng": 130.924896, "d": "日替り定食（主菜は魚・肉・中華と日替わり）／約10種の小鉢／串揚げおまかせコース", "a": "山口県下関市綾羅木本町1-15-30 FTビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B4%AB%E9%99%BD%E8%8A%B1%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B6%BE%E7%BE%85%E6%9C%A8%E6%9C%AC%E7%94%BA1-15-30%20FT%E3%83%93%E3%83%AB1F", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-izakaya-ajisai-ayaragi", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-izakaya-ajisai-ayaragi.jpg", "ext": ""}, {"i": 34, "n": "レストラン高津（restaurant takatsu）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.951595, "lng": 130.935196, "d": "おまかせコース（地元下関の食材を中心に、季節ごとに構成が変わる一斉スタートのコース。苦手な食材やアレルギーは予約時に相談できる）／グラスワイン（フランスを軸に赤・白・泡が常時5〜6種類ずつ。山口の地酒も数種類）", "a": "山口県下関市岬之町13-7", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%AB%98%E6%B4%A5%EF%BC%88restaurant%20takatsu%EF%BC%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B2%AC%E4%B9%8B%E7%94%BA13-7", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-yoshoku-takatsu", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-takatsu.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-takatsu_exterior.jpg"}, {"i": 35, "n": "まるた屋 火の山店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.969723, "lng": 130.954086, "d": "サガリステーキ（ハラミの一部で腰椎側にあたる稀少部位。赤身が多くあっさりとした味わいで、180gから1kgまで7段階）／黒毛和牛100％ハンバーグステーキ（国産和牛100％。ソースは4種類から選べ、チーズや目玉焼きのトッピングも可）", "a": "山口県下関市みもすそ川町10-17", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%82%8B%E3%81%9F%E5%B1%8B%20%E7%81%AB%E3%81%AE%E5%B1%B1%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E3%81%BF%E3%82%82%E3%81%99%E3%81%9D%E5%B7%9D%E7%94%BA10-17", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-yoshoku-marutaya-hinoyama", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-marutaya-hinoyama.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-marutaya-hinoyama_exterior.jpg"}, {"i": 36, "n": "なすび食堂", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.985275, "lng": 130.932251, "d": "煮込みハンバーグ＆チキンカツ定食（鉄鍋のビーフシチュータイプの煮込みハンバーグに、サクサクのチキンカツを合わせた一番人気）／オムライス（半熟でとろとろの卵をトマトソースで）", "a": "山口県下関市幡生宮の下町26-8", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%81%99%E3%81%B3%E9%A3%9F%E5%A0%82%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B9%A1%E7%94%9F%E5%AE%AE%E3%81%AE%E4%B8%8B%E7%94%BA26-8", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-yoshoku-nasubi", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-nasubi.jpg", "ext": ""}, {"i": 37, "n": "Trattoria ALBERI（トラットリア アルベリ）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.958103, "lng": 130.946121, "d": "イタリアの素材と下関の魚介を使ったコース（ランチ4,400円、ディナー7,000円・11,000円の3本立て）／イタリア産ワイン（国家認定ソムリエが料理に合わせて選ぶ）", "a": "山口県下関市中之町8-20", "m": "https://www.google.com/maps/search/?api=1&query=Trattoria%20ALBERI%EF%BC%88%E3%83%88%E3%83%A9%E3%83%83%E3%83%88%E3%83%AA%E3%82%A2%20%E3%82%A2%E3%83%AB%E3%83%99%E3%83%AA%EF%BC%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E4%B8%AD%E4%B9%8B%E7%94%BA8-20", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-yoshoku-alberi", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-alberi.jpg", "ext": ""}, {"i": 38, "n": "Osteria WAKKA。（オステリア ワッカ。）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.952305, "lng": 130.930344, "d": "おまかせコース 9,680円（全7〜9品。お通しから前菜・スープ・手打ちパスタ・メイン・デザートまで、その日の仕入れで組み立てる）／ペアリングのワイン（カウンターでコースに合わせて供される）", "a": "山口県下関市細江町1-4-18 ハーアインビル201", "m": "https://www.google.com/maps/search/?api=1&query=Osteria%20WAKKA%E3%80%82%EF%BC%88%E3%82%AA%E3%82%B9%E3%83%86%E3%83%AA%E3%82%A2%20%E3%83%AF%E3%83%83%E3%82%AB%E3%80%82%EF%BC%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA1-4-18%20%E3%83%8F%E3%83%BC%E3%82%A2%E3%82%A4%E3%83%B3%E3%83%93%E3%83%AB201", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-yoshoku-osteria-wakka", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-osteria-wakka.jpg", "ext": ""}, {"i": 39, "n": "韓国屋台 サンコッテギ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.950855, "lng": 130.927734, "d": "サムギョプサル（国産豚肉を鉄板で焼き、サンチュに巻いて食べる看板。2人前から。サンチュ・キムチ・ポックンパのセットを追加できる）／サンコッテギ鍋（老舗精肉店から直卸しのホルモンを使った鍋。1人前1,780円・2人前から）", "a": "山口県下関市豊前田町3丁目2番7 下関第一ビル", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E5%B1%8B%E5%8F%B0%20%E3%82%B5%E3%83%B3%E3%82%B3%E3%83%83%E3%83%86%E3%82%AE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA3%E4%B8%81%E7%9B%AE2%E7%95%AA7%20%E4%B8%8B%E9%96%A2%E7%AC%AC%E4%B8%80%E3%83%93%E3%83%AB", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-yoshoku-sankotteki", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-sankotteki.jpg", "ext": ""}, {"i": 40, "n": "生野飯店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.951874, "lng": 130.923859, "d": "豚の角煮（蒸しパン添え）／ホタテのオイスターソース炒め（どちらもホットペッパーグルメのおすすめ料理。ほかに賄いから生まれたというピリ辛ラーメンが看板）", "a": "山口県下関市竹崎町2-11-12", "m": "https://www.google.com/maps/search/?api=1&query=%E7%94%9F%E9%87%8E%E9%A3%AF%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%AB%B9%E5%B4%8E%E7%94%BA2-11-12", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-yoshoku-ikuno-hanten", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-ikuno-hanten.jpg", "ext": ""}, {"i": 41, "n": "石窯Ristorante 結-yu-（石窯リストランテ 結）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.009247, "lng": 130.98085, "d": "石窯で焼くピッツァ（マルゲリータ、クワトロフォルマッジなど。公式サイトのギャラリーに石窯で焼く様子が載る）／石窯の肉料理（牛ハラミの石窯グリル、ローストビーフなど）", "a": "山口県下関市長府安養寺1-2-23 チェリーブロッサム1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%9F%B3%E7%AA%AFRistorante%20%E7%B5%90-yu-%EF%BC%88%E7%9F%B3%E7%AA%AF%E3%83%AA%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%86%20%E7%B5%90%EF%BC%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E5%AE%89%E9%A4%8A%E5%AF%BA1-2-23%20%E3%83%81%E3%82%A7%E3%83%AA%E3%83%BC%E3%83%96%E3%83%AD%E3%83%83%E3%82%B5%E3%83%A01F", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-yoshoku-ristorante-yu", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-yoshoku-ristorante-yu.jpg", "ext": ""}, {"i": 42, "n": "コーヒーハウス ブリッヂ", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.983593, "lng": 130.985016, "d": "スペシャルモーニング(お冷のコップと同じ高さの極厚トーストに、サラダ・エッグ・フルーツ・ヨーグルトを添えたワンプレート。950円)／鉄板イタリアン(熱した鉄板で供する昭和の喫茶の定番。玉子＋100円、大盛り＋200円)", "a": "山口県下関市長府黒門町4-7", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%E3%83%8F%E3%82%A6%E3%82%B9%20%E3%83%96%E3%83%AA%E3%83%83%E3%83%82%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E9%BB%92%E9%96%80%E7%94%BA4-7", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-cafe-coffee-house-bridge", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-coffee-house-bridge.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-coffee-house-bridge_exterior.jpg"}, {"i": 43, "n": "喫茶わすれじの…", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.958321, "lng": 130.947372, "d": "ナポリタン(熱々の鉄板にのせて供する定番。ピーマン・玉ねぎ・ベーコンにケチャップを絡めた王道の味。900円)／日替わり定食(平日限定。開業当初から続く人気メニュー。2名以上・要予約の「日替わりプラス」1,800円もある)", "a": "山口県下関市阿彌陀寺町1-6 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%8F%E3%81%99%E3%82%8C%E3%81%98%E3%81%AE%E2%80%A6%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%98%BF%E5%BD%8C%E9%99%80%E5%AF%BA%E7%94%BA1-6%201%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-cafe-kissa-wasurezino", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-kissa-wasurezino.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-kissa-wasurezino_exterior.jpg"}, {"i": 44, "n": "PORTO HAUS", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.954712, "lng": 130.940811, "d": "シュガーバタークレープ(注文後に一枚ずつ焼くもちもちの生地に粉糖とバター。イートイン限定650円)／カフェラテ(直輸入・有機栽培の「HAGAN ORGANIC COFFEE」の豆を使用。エスプレッソをシングルとダブルから選べる)", "a": "山口県下関市南部町26-15 1F", "m": "https://www.google.com/maps/search/?api=1&query=PORTO%20HAUS%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%8D%97%E9%83%A8%E7%94%BA26-15%201F", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-cafe-porto-haus", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-porto-haus.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-porto-haus_exterior.jpg"}, {"i": 45, "n": "茶房 風舞", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.958004, "lng": 130.940323, "d": "乙女のゆきごろも(松琴堂の人気商品「ゆきごろも」を茶房だけの仕様にしたもの。焼きたての生地が温かくサクサクのうちに出すため、店は「賞味期限は三十秒」と言う)／主菓子と一服のコース(店主がその場で作る生菓子に、濃茶・薄茶・煎茶から選んだ一服を合わせる)", "a": "山口県下関市南部町2-5（松琴堂内）", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E6%88%BF%20%E9%A2%A8%E8%88%9E%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%8D%97%E9%83%A8%E7%94%BA2-5%EF%BC%88%E6%9D%BE%E7%90%B4%E5%A0%82%E5%86%85%EF%BC%89", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-cafe-sabo-fuwari", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-sabo-fuwari.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-sabo-fuwari_exterior.jpg"}, {"i": 46, "n": "喫茶むぎまめ舎", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.952084, "lng": 130.932495, "d": "手作りドーナツ(パン屋で修行した店主が焼く素朴な生地。プレーンとシナモンがあり、取り置き・持ち帰り可)／日替わりの焼き菓子(常時5〜6種類。コーヒーと合わせて供される)", "a": "山口県下関市細江町2丁目2-10 和田ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%80%E3%81%8E%E3%81%BE%E3%82%81%E8%88%8E%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA2%E4%B8%81%E7%9B%AE2-10%20%E5%92%8C%E7%94%B0%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-cafe-mugimamesha", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-mugimamesha.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-mugimamesha_exterior.jpg"}, {"i": 47, "n": "スパイスと喫茶 ムチトアメ", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.950642, "lng": 130.927917, "d": "プリン(プレーン・ブリュレ・バニラアイスのせの3種類。固めのカスタードで、ドリンクとのデザートセットにできる)／黒カレー(14種類以上のスパイスとたっぷりの野菜を4時間煮込む看板のカレー。内容は日替わり)", "a": "山口県下関市豊前田町3-2-7 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%E3%81%A8%E5%96%AB%E8%8C%B6%20%E3%83%A0%E3%83%81%E3%83%88%E3%82%A2%E3%83%A1%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA3-2-7%201%E9%9A%8E", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-cafe-muchitoame", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-muchitoame.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-muchitoame_exterior.jpg"}, {"i": 48, "n": "SOU/ZAEMON by TAKADA COFFEE", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.994869, "lng": 130.986893, "d": "自家焙煎のスペシャルティコーヒー(世界の生産地から買い付けた豆を自社で焙煎。競技会の審査員を務める焙煎士が選ぶ)／珈琲屋のチーズケーキ(屋敷内の製造所で作る自家製。珈琲屋のプリン、夏は珈琲屋のかき氷も出る)", "a": "山口県下関市長府侍町1-2-39", "m": "https://www.google.com/maps/search/?api=1&query=SOU/ZAEMON%20by%20TAKADA%20COFFEE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E4%BE%8D%E7%94%BA1-2-39", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-cafe-souzaemon-takada-coffee", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-souzaemon-takada-coffee.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-souzaemon-takada-coffee_exterior.jpg"}, {"i": 49, "n": "POLANO", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.987061, "lng": 130.93219, "d": "焼きたてのパン(バゲット・食パン・惣菜パン。食パンは5枚切と6枚切から選べる)／ホットドッグとアイスドリンクのイートインセット(店のパンをその場で食べられる。ミントを添えたドリンクと合わせる)", "a": "山口県下関市大学町1丁目4-7", "m": "https://www.google.com/maps/search/?api=1&query=POLANO%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%A4%A7%E5%AD%A6%E7%94%BA1%E4%B8%81%E7%9B%AE4-7", "u": "../japan/yamaguchi/shimonoseki.html#c-shimonoseki-cafe-polano", "food": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-polano.jpg", "ext": "../japan/yamaguchi/img/shimonoseki/shimonoseki-cafe-polano_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.977441,130.943345],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('shimonoseki', "下関");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

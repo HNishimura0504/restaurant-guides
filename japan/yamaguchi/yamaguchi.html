@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>山口美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  /* 外観写真（2026-10-19・外観写真の欠落3度目）: 料理・店内の hero の下に、店構えを1枚添える。
+     地図のポップアップと Notion 記事は <sid>_exterior.jpg を別に拾うので、ここは PDF・ガイド本文で見せるための行。 */
+  .extfig{position:relative; margin:0;}
+  .extfig img{display:block; width:100%; height:40mm; object-fit:cover; border-top:2px solid #fff;}
+  .extfig figcaption{position:absolute; left:2mm; bottom:1.5mm; background:rgba(0,0,0,.55); color:#fff; font-size:7pt; padding:.3mm 1.6mm; border-radius:1mm;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">山口美食ガイド<span class="sn-n">44店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/yamaguchi.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="山口ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">山口ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/yamaguchi.html"><span class="sn-e">🗺️</span>山口の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-kyodo"><span class="sn-e">・</span>郷土料理・長州の味（外郎・瓦そば・長州どり）</a><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・割烹</a><a href="#s-men"><span class="sn-e">・</span>ラーメン・うどん・そば・麺類</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・地酒（湯田温泉・米屋町）</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・イタリアン・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・甘味</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全101都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全101都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / YAMAGUCHI・山口県山口市 🇯🇵</div>
+  <h1>山口美食ガイド</h1>
+  <div class="sub">西の京と呼ばれた大内氏の城下町。室町の町割りが今も残り、国宝の瑠璃光寺五重塔（るりこうじごじゅうのとう）が建つ。名物は外郎（ういろう）とけんちょう、長州どり、そして湯田温泉（ゆだおんせん）の夜の店。中心部の米屋町（こめやちょう）・道場門前（どうじょうもんぜん）から湯田温泉、新山口駅前、小郡（おごおり）・阿知須（あじす）・徳地（とくぢ）まで厳選45スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/yamaguchi/_map.jpg" alt="全域マップ">
+<a href="#c-yamaguchi-kyodo-toushirou-sakuraan" style="left:53.46%;top:25.08%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-kyodo-hondaya-kaikoan" style="left:51.93%;top:22.85%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-kyodo-kawarasoba-yanagiya-ichinosaka" style="left:51.04%;top:19.79%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-kyodo-choshuen-kozan" style="left:48.85%;top:16.29%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-kyodo-sakana-ichiyanagi" style="left:49.41%;top:24.48%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-kyodo-choshu-izakaya-tomo" style="left:40.39%;top:26.28%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-kyodo-yamaguchi-kawarasoba-sakura" style="left:10.71%;top:54.3%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-kyodo-yakitori-ichiriki-shinyamaguchi" style="left:7.95%;top:54.12%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-washoku-kappo-fukusuke" style="left:40.02%;top:26.59%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-washoku-saikyo-genya" style="left:51.02%;top:22.12%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-washoku-ichiryu-sushidokoro" style="left:48.99%;top:22.07%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-washoku-sushi-haru" style="left:40.01%;top:26.4%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-washoku-kuriyabito-soushun" style="left:50.95%;top:22.07%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-washoku-nonta-zushi-yamaguchi" style="left:58.69%;top:28.94%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-washoku-umibouzu" style="left:7.98%;top:53.91%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-washoku-asano" style="left:40.84%;top:92.48%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-men-kaisugi" style="left:49.99%;top:21.32%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-men-tokyoan" style="left:48.95%;top:16.3%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-men-issui" style="left:28.66%;top:36.8%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-men-ranran" style="left:31.44%;top:26.24%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-men-yudaseimen" style="left:38.42%;top:26.08%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-men-touge" style="left:70.15%;top:7.84%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-men-wanodashi-goto" style="left:40.78%;top:26.53%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-men-samurai" style="left:92.05%;top:7.54%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-izakaya-kingyo" style="left:39.22%;top:27.22%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-izakaya-himari-shoten" style="left:39.79%;top:25.83%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-izakaya-toracchi" style="left:10.49%;top:54.11%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-izakaya-subarashiki-kana-jinsei" style="left:50.71%;top:21.88%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-izakaya-maru" style="left:39.64%;top:25.72%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-izakaya-bar-speyside" style="left:49.95%;top:21.29%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-izakaya-ajidokoro-keisuke" style="left:40.83%;top:25.98%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-yoshoku-bechee" style="left:51.7%;top:17.95%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-yoshoku-volpe-bianca" style="left:40.2%;top:26.61%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-yoshoku-chinesekitchen-taka" style="left:37.25%;top:25.82%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-yoshoku-kogumaya-curry" style="left:40.63%;top:26.42%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-yoshoku-nick-house" style="left:9.68%;top:53.91%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-yoshoku-saint-remy-de-provence" style="left:69.25%;top:36.75%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-cafe-log-coffee-roasters" style="left:51.18%;top:20.83%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-cafe-kohaku" style="left:51.02%;top:19.49%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-cafe-machinakaan" style="left:50.1%;top:21.66%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-cafe-imoshogun-okunohosomichi" style="left:40.87%;top:26.1%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-cafe-lancre" style="left:51.66%;top:20.47%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-cafe-sai-coffee-roastery" style="left:34.25%;top:31.29%;width:2.98%;height:1.9%;"></a>
+<a href="#c-yamaguchi-cafe-ouchicafe-pokapoka" style="left:25.88%;top:19.89%;width:2.98%;height:1.9%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（44店・番号はピンと同じ）</div>
+<div class="sec red">郷土料理・長州の味（外郎・瓦そば・長州どり）</div>
+<div class="links">
+<a href="#c-yamaguchi-kyodo-toushirou-sakuraan"><span class="tn" style="background:#e34948;">1</span>わらび粉の山口外郎を庭の見える茶房で</a>
+<a href="#c-yamaguchi-kyodo-hondaya-kaikoan"><span class="tn" style="background:#e34948;">2</span>わらび粉の外郎を喫茶の席で味わう</a>
+<a href="#c-yamaguchi-kyodo-kawarasoba-yanagiya-ichinosaka"><span class="tn" style="background:#e34948;">3</span>桜と蛍の川沿いで石州瓦の瓦そば</a>
+<a href="#c-yamaguchi-kyodo-choshuen-kozan"><span class="tn" style="background:#e34948;">4</span>五重塔の門前で瓦そばと飲む外郎</a>
+<a href="#c-yamaguchi-kyodo-sakana-ichiyanagi"><span class="tn" style="background:#e34948;">5</span>魚市場直送、名物は鯛のあら炊き</a>
+<a href="#c-yamaguchi-kyodo-choshu-izakaya-tomo"><span class="tn" style="background:#e34948;">6</span>長州黒かしわと外郎の天ぷらを一品で</a>
+<a href="#c-yamaguchi-kyodo-yamaguchi-kawarasoba-sakura"><span class="tn" style="background:#e34948;">7</span>新山口駅3分、瓦そばと垰下牛の鉄板焼</a>
+<a href="#c-yamaguchi-kyodo-yakitori-ichiriki-shinyamaguchi"><span class="tn" style="background:#e34948;">8</span>長州どりを備長炭で、炭焼牛の瓦そばも</a>
+</div>
+<div class="sec blue">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-yamaguchi-washoku-kappo-fukusuke"><span class="tn" style="background:#2a78d6;">9</span>全室個室で味わう天然とらふく会席</a>
+<a href="#c-yamaguchi-washoku-saikyo-genya"><span class="tn" style="background:#2a78d6;">10</span>商店街の中の国産うなぎ専門店</a>
+<a href="#c-yamaguchi-washoku-ichiryu-sushidokoro"><span class="tn" style="background:#2a78d6;">11</span>一の坂川沿い、昭和28年創業の鮨と釜飯</a>
+<a href="#c-yamaguchi-washoku-sushi-haru"><span class="tn" style="background:#2a78d6;">12</span>カウンター6席、おまかせだけの鮨</a>
+<a href="#c-yamaguchi-washoku-kuriyabito-soushun"><span class="tn" style="background:#2a78d6;">13</span>白い暖簾の小料理屋、全て手作り</a>
+<a href="#c-yamaguchi-washoku-nonta-zushi-yamaguchi"><span class="tn" style="background:#2a78d6;">14</span>柳井港の自社市場から届く瀬戸内の地魚</a>
+<a href="#c-yamaguchi-washoku-umibouzu"><span class="tn" style="background:#2a78d6;">15</span>新山口駅前、近海の魚と土鍋ご飯</a>
+<a href="#c-yamaguchi-washoku-asano"><span class="tn" style="background:#2a78d6;">16</span>瀬戸内を見下ろす車えびの料亭</a>
+</div>
+<div class="sec brown">ラーメン・うどん・そば・麺類</div>
+<div class="links">
+<a href="#c-yamaguchi-men-kaisugi"><span class="tn" style="background:#8a5a2b;">17</span>米屋町アーケードの汁なし担担麺</a>
+<a href="#c-yamaguchi-men-tokyoan"><span class="tn" style="background:#8a5a2b;">18</span>瑠璃光寺の門前・創業100年のそば</a>
+<a href="#c-yamaguchi-men-issui"><span class="tn" style="background:#8a5a2b;">19</span>色で選ぶ山口の豚骨ラーメン</a>
+<a href="#c-yamaguchi-men-ranran"><span class="tn" style="background:#8a5a2b;">20</span>吉敷の町中華・豚キムチと皿うどん</a>
+<a href="#c-yamaguchi-men-yudaseimen"><span class="tn" style="background:#8a5a2b;">21</span>朝8時から開く湯田の手打ちうどん</a>
+<a href="#c-yamaguchi-men-touge"><span class="tn" style="background:#8a5a2b;">22</span>宮野の街道沿い・地産地消のうどん</a>
+<a href="#c-yamaguchi-men-wanodashi-goto"><span class="tn" style="background:#8a5a2b;">23</span>板前がひく出汁のラーメン</a>
+<a href="#c-yamaguchi-men-samurai"><span class="tn" style="background:#8a5a2b;">24</span>竹で打つ麺と炭火焼きチャーシュー</a>
+</div>
+<div class="sec beer">居酒屋・地酒（湯田温泉・米屋町）</div>
+<div class="links">
+<a href="#c-yamaguchi-izakaya-kingyo"><span class="tn" style="background:#0d366b;">25</span>山口の地酒と原始焼きの海鮮居酒屋</a>
+<a href="#c-yamaguchi-izakaya-himari-shoten"><span class="tn" style="background:#0d366b;">26</span>湯けむり横丁の、昼から開く大衆居酒屋</a>
+<a href="#c-yamaguchi-izakaya-toracchi"><span class="tn" style="background:#0d366b;">27</span>新山口駅前の炭火焼きと地酒</a>
+<a href="#c-yamaguchi-izakaya-subarashiki-kana-jinsei"><span class="tn" style="background:#0d366b;">28</span>山口の地酒を蔵ごとに揃える商店街の居酒屋</a>
+<a href="#c-yamaguchi-izakaya-maru"><span class="tn" style="background:#0d366b;">29</span>赤いのれんの、深夜まで開く湯田の店</a>
+<a href="#c-yamaguchi-izakaya-bar-speyside"><span class="tn" style="background:#0d366b;">30</span>昭和5年から続く米屋町の酒場</a>
+<a href="#c-yamaguchi-izakaya-ajidokoro-keisuke"><span class="tn" style="background:#0d366b;">31</span>色紙が並ぶ湯田温泉の味処</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-yamaguchi-yoshoku-bechee"><span class="tn" style="background:#4a3aa7;">32</span>古民家で食べる山口のイタリアン</a>
+<a href="#c-yamaguchi-yoshoku-volpe-bianca"><span class="tn" style="background:#4a3aa7;">33</span>湯田温泉の薪窯ピッツェリア</a>
+<a href="#c-yamaguchi-yoshoku-chinesekitchen-taka"><span class="tn" style="background:#4a3aa7;">34</span>県産の肉と魚で組む四川の味</a>
+<a href="#c-yamaguchi-yoshoku-kogumaya-curry"><span class="tn" style="background:#4a3aa7;">35</span>全室個室、2種がけのカレー</a>
+<a href="#c-yamaguchi-yoshoku-nick-house"><span class="tn" style="background:#4a3aa7;">36</span>新山口駅高架下の炭火グリル</a>
+<a href="#c-yamaguchi-yoshoku-saint-remy-de-provence"><span class="tn" style="background:#4a3aa7;">37</span>鳴滝の高台、地ビールと洋食</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-yamaguchi-cafe-log-coffee-roasters"><span class="tn" style="background:#eda100;">38</span>商店街の水色の自家焙煎店</a>
+<a href="#c-yamaguchi-cafe-kohaku"><span class="tn" style="background:#eda100;">39</span>一の坂川の昭和レトロ喫茶</a>
+<a href="#c-yamaguchi-cafe-machinakaan"><span class="tn" style="background:#eda100;">40</span>昭和5年創業の茶商の甘味処</a>
+<a href="#c-yamaguchi-cafe-imoshogun-okunohosomichi"><span class="tn" style="background:#eda100;">41</span>温泉街の路地奥の古民家カフェ</a>
+<a href="#c-yamaguchi-cafe-lancre"><span class="tn" style="background:#eda100;">42</span>常時8種のチーズケーキ専門</a>
+<a href="#c-yamaguchi-cafe-sai-coffee-roastery"><span class="tn" style="background:#eda100;">43</span>焙煎機を見ながら浅煎りを</a>
+<a href="#c-yamaguchi-cafe-ouchicafe-pokapoka"><span class="tn" style="background:#eda100;">44</span>築100年の家で焼く酒種パン</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 米屋町(こめやちょう)・道場門前(どうじょうもんぜん)・中央（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/yamaguchi/_map2.jpg" alt="中心部拡大1 米屋町(こめやちょう)・道場門前(どうじょうもんぜん)・中央">
+<a href="#c-yamaguchi-kyodo-hondaya-kaikoan" style="left:67.15%;top:47.37%;width:2.4%;height:3.14%;"></a>
+<a href="#c-yamaguchi-kyodo-sakana-ichiyanagi" style="left:34.59%;top:90.74%;width:2.4%;height:3.14%;"></a>
+<a href="#c-yamaguchi-washoku-saikyo-genya" style="left:55.35%;top:27.97%;width:2.4%;height:3.14%;"></a>
+<a href="#c-yamaguchi-washoku-ichiryu-sushidokoro" style="left:29.2%;top:26.73%;width:2.4%;height:3.14%;"></a>
+<a href="#c-yamaguchi-washoku-kuriyabito-soushun" style="left:54.53%;top:26.6%;width:2.4%;height:3.14%;"></a>
+<a href="#c-yamaguchi-men-kaisugi" style="left:42.12%;top:6.68%;width:2.4%;height:3.14%;"></a>
+<a href="#c-yamaguchi-izakaya-subarashiki-kana-jinsei" style="left:51.38%;top:21.55%;width:2.4%;height:3.14%;"></a>
+<a href="#c-yamaguchi-izakaya-bar-speyside" style="left:41.51%;top:5.97%;width:2.4%;height:3.14%;"></a>
+<a href="#c-yamaguchi-cafe-machinakaan" style="left:43.55%;top:15.64%;width:2.4%;height:3.14%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（9店・番号はピンと同じ）</div>
+<div class="sec red">郷土料理・長州の味（外郎・瓦そば・長州どり）</div>
+<div class="links">
+<a href="#c-yamaguchi-kyodo-hondaya-kaikoan"><span class="tn" style="background:#e34948;">2</span>わらび粉の外郎を喫茶の席で味わう</a>
+<a href="#c-yamaguchi-kyodo-sakana-ichiyanagi"><span class="tn" style="background:#e34948;">5</span>魚市場直送、名物は鯛のあら炊き</a>
+</div>
+<div class="sec blue">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-yamaguchi-washoku-saikyo-genya"><span class="tn" style="background:#2a78d6;">10</span>商店街の中の国産うなぎ専門店</a>
+<a href="#c-yamaguchi-washoku-ichiryu-sushidokoro"><span class="tn" style="background:#2a78d6;">11</span>一の坂川沿い、昭和28年創業の鮨と釜飯</a>
+<a href="#c-yamaguchi-washoku-kuriyabito-soushun"><span class="tn" style="background:#2a78d6;">13</span>白い暖簾の小料理屋、全て手作り</a>
+</div>
+<div class="sec brown">ラーメン・うどん・そば・麺類</div>
+<div class="links">
+<a href="#c-yamaguchi-men-kaisugi"><span class="tn" style="background:#8a5a2b;">17</span>米屋町アーケードの汁なし担担麺</a>
+</div>
+<div class="sec beer">居酒屋・地酒（湯田温泉・米屋町）</div>
+<div class="links">
+<a href="#c-yamaguchi-izakaya-subarashiki-kana-jinsei"><span class="tn" style="background:#0d366b;">28</span>山口の地酒を蔵ごとに揃える商店街の居酒屋</a>
+<a href="#c-yamaguchi-izakaya-bar-speyside"><span class="tn" style="background:#0d366b;">30</span>昭和5年から続く米屋町の酒場</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-yamaguchi-cafe-machinakaan"><span class="tn" style="background:#eda100;">40</span>昭和5年創業の茶商の甘味処</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 中市町・大市・一の坂川・後河原〜香山(こうざん)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/yamaguchi/_map3.jpg" alt="中心部拡大2 中市町・大市・一の坂川・後河原〜香山(こうざん)">
+<a href="#c-yamaguchi-kyodo-kawarasoba-yanagiya-ichinosaka" style="left:46.38%;top:72.44%;width:2.0%;height:2.2%;"></a>
+<a href="#c-yamaguchi-kyodo-choshuen-kozan" style="left:22.81%;top:6.9%;width:2.0%;height:2.2%;"></a>
+<a href="#c-yamaguchi-men-tokyoan" style="left:23.91%;top:7.19%;width:2.0%;height:2.2%;"></a>
+<a href="#c-yamaguchi-yoshoku-bechee" style="left:53.5%;top:38.05%;width:2.0%;height:2.2%;"></a>
+<a href="#c-yamaguchi-cafe-log-coffee-roasters" style="left:47.9%;top:91.79%;width:2.0%;height:2.2%;"></a>
+<a href="#c-yamaguchi-cafe-kohaku" style="left:46.12%;top:66.79%;width:2.0%;height:2.2%;"></a>
+<a href="#c-yamaguchi-cafe-lancre" style="left:53.07%;top:85.1%;width:2.0%;height:2.2%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（7店・番号はピンと同じ）</div>
+<div class="sec red">郷土料理・長州の味（外郎・瓦そば・長州どり）</div>
+<div class="links">
+<a href="#c-yamaguchi-kyodo-kawarasoba-yanagiya-ichinosaka"><span class="tn" style="background:#e34948;">3</span>桜と蛍の川沿いで石州瓦の瓦そば</a>
+<a href="#c-yamaguchi-kyodo-choshuen-kozan"><span class="tn" style="background:#e34948;">4</span>五重塔の門前で瓦そばと飲む外郎</a>
+</div>
+<div class="sec brown">ラーメン・うどん・そば・麺類</div>
+<div class="links">
+<a href="#c-yamaguchi-men-tokyoan"><span class="tn" style="background:#8a5a2b;">18</span>瑠璃光寺の門前・創業100年のそば</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-yamaguchi-yoshoku-bechee"><span class="tn" style="background:#4a3aa7;">32</span>古民家で食べる山口のイタリアン</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-yamaguchi-cafe-log-coffee-roasters"><span class="tn" style="background:#eda100;">38</span>商店街の水色の自家焙煎店</a>
+<a href="#c-yamaguchi-cafe-kohaku"><span class="tn" style="background:#eda100;">39</span>一の坂川の昭和レトロ喫茶</a>
+<a href="#c-yamaguchi-cafe-lancre"><span class="tn" style="background:#eda100;">42</span>常時8種のチーズケーキ専門</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 湯田温泉(ゆだおんせん)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/yamaguchi/_map4.jpg" alt="中心部拡大3 湯田温泉(ゆだおんせん)">
+<a href="#c-yamaguchi-kyodo-choshu-izakaya-tomo" style="left:76.14%;top:39.06%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-washoku-kappo-fukusuke" style="left:68.59%;top:53.62%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-washoku-sushi-haru" style="left:68.43%;top:44.8%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-men-yudaseimen" style="left:35.98%;top:30.04%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-men-wanodashi-goto" style="left:84.01%;top:50.69%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-izakaya-kingyo" style="left:52.21%;top:82.47%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-izakaya-himari-shoten" style="left:63.77%;top:18.66%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-izakaya-maru" style="left:60.72%;top:13.65%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-izakaya-ajidokoro-keisuke" style="left:84.97%;top:25.24%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-yoshoku-volpe-bianca" style="left:72.13%;top:54.51%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-yoshoku-chinesekitchen-taka" style="left:12.05%;top:18.31%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-yoshoku-kogumaya-curry" style="left:80.96%;top:45.78%;width:1.9%;height:2.72%;"></a>
+<a href="#c-yamaguchi-cafe-imoshogun-okunohosomichi" style="left:85.78%;top:30.86%;width:1.9%;height:2.72%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（13店・番号はピンと同じ）</div>
+<div class="sec red">郷土料理・長州の味（外郎・瓦そば・長州どり）</div>
+<div class="links">
+<a href="#c-yamaguchi-kyodo-choshu-izakaya-tomo"><span class="tn" style="background:#e34948;">6</span>長州黒かしわと外郎の天ぷらを一品で</a>
+</div>
+<div class="sec blue">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-yamaguchi-washoku-kappo-fukusuke"><span class="tn" style="background:#2a78d6;">9</span>全室個室で味わう天然とらふく会席</a>
+<a href="#c-yamaguchi-washoku-sushi-haru"><span class="tn" style="background:#2a78d6;">12</span>カウンター6席、おまかせだけの鮨</a>
+</div>
+<div class="sec brown">ラーメン・うどん・そば・麺類</div>
+<div class="links">
+<a href="#c-yamaguchi-men-yudaseimen"><span class="tn" style="background:#8a5a2b;">21</span>朝8時から開く湯田の手打ちうどん</a>
+<a href="#c-yamaguchi-men-wanodashi-goto"><span class="tn" style="background:#8a5a2b;">23</span>板前がひく出汁のラーメン</a>
+</div>
+<div class="sec beer">居酒屋・地酒（湯田温泉・米屋町）</div>
+<div class="links">
+<a href="#c-yamaguchi-izakaya-kingyo"><span class="tn" style="background:#0d366b;">25</span>山口の地酒と原始焼きの海鮮居酒屋</a>
+<a href="#c-yamaguchi-izakaya-himari-shoten"><span class="tn" style="background:#0d366b;">26</span>湯けむり横丁の、昼から開く大衆居酒屋</a>
+<a href="#c-yamaguchi-izakaya-maru"><span class="tn" style="background:#0d366b;">29</span>赤いのれんの、深夜まで開く湯田の店</a>
+<a href="#c-yamaguchi-izakaya-ajidokoro-keisuke"><span class="tn" style="background:#0d366b;">31</span>色紙が並ぶ湯田温泉の味処</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-yamaguchi-yoshoku-volpe-bianca"><span class="tn" style="background:#4a3aa7;">33</span>湯田温泉の薪窯ピッツェリア</a>
+<a href="#c-yamaguchi-yoshoku-chinesekitchen-taka"><span class="tn" style="background:#4a3aa7;">34</span>県産の肉と魚で組む四川の味</a>
+<a href="#c-yamaguchi-yoshoku-kogumaya-curry"><span class="tn" style="background:#4a3aa7;">35</span>全室個室、2種がけのカレー</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-yamaguchi-cafe-imoshogun-okunohosomichi"><span class="tn" style="background:#eda100;">41</span>温泉街の路地奥の古民家カフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 新山口駅・小郡(おごおり)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/yamaguchi/_map5.jpg" alt="中心部拡大4 新山口駅・小郡(おごおり)">
+<a href="#c-yamaguchi-kyodo-yamaguchi-kawarasoba-sakura" style="left:87.42%;top:60.35%;width:2.44%;height:3.74%;"></a>
+<a href="#c-yamaguchi-kyodo-yakitori-ichiriki-shinyamaguchi" style="left:15.24%;top:49.0%;width:2.44%;height:3.74%;"></a>
+<a href="#c-yamaguchi-washoku-umibouzu" style="left:16.07%;top:35.55%;width:2.44%;height:3.74%;"></a>
+<a href="#c-yamaguchi-izakaya-toracchi" style="left:81.64%;top:48.25%;width:2.44%;height:3.74%;"></a>
+<a href="#c-yamaguchi-yoshoku-nick-house" style="left:60.41%;top:35.55%;width:2.44%;height:3.74%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（5店・番号はピンと同じ）</div>
+<div class="sec red">郷土料理・長州の味（外郎・瓦そば・長州どり）</div>
+<div class="links">
+<a href="#c-yamaguchi-kyodo-yamaguchi-kawarasoba-sakura"><span class="tn" style="background:#e34948;">7</span>新山口駅3分、瓦そばと垰下牛の鉄板焼</a>
+<a href="#c-yamaguchi-kyodo-yakitori-ichiriki-shinyamaguchi"><span class="tn" style="background:#e34948;">8</span>長州どりを備長炭で、炭焼牛の瓦そばも</a>
+</div>
+<div class="sec blue">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-yamaguchi-washoku-umibouzu"><span class="tn" style="background:#2a78d6;">15</span>新山口駅前、近海の魚と土鍋ご飯</a>
+</div>
+<div class="sec beer">居酒屋・地酒（湯田温泉・米屋町）</div>
+<div class="links">
+<a href="#c-yamaguchi-izakaya-toracchi"><span class="tn" style="background:#0d366b;">27</span>新山口駅前の炭火焼きと地酒</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-yamaguchi-yoshoku-nick-house"><span class="tn" style="background:#4a3aa7;">36</span>新山口駅高架下の炭火グリル</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>山口市の店は5つのかたまりに分かれる。①米屋町（こめやちょう）・道場門前（どうじょうもんぜん）・中市（なかいち）＝市の中心部のアーケード街と、その周りの飲み屋。県庁と市役所が近い ②湯田温泉（ゆだおんせん）＝市の南西にある温泉街で、山口市で最大の夜の街。JR湯田温泉駅から歩いて10分、中心部からバスで15分 ③新山口（しんやまぐち）駅・小郡（おごおり）＝新幹線の駅がある市の南の玄関口。中心部へは在来線で約20分、バスで約30分かかるので、泊まる場所を決めるときは注意が要る ④大内（おおうち）・平川・吉敷（よしき）＝車で行く郊外の店 ⑤秋穂（あいお）・阿知須（あじす）・徳地（とくぢ）＝2005年の合併で市域に入った地域。瀬戸内の海（秋穂のえび）と中国山地の野菜がある。山口市の名物＝**外郎（ういろう）**（名古屋のものと違い、わらび粉で作るので透き通っていて、冷やして食べる。室町時代に大内氏が明から招いた医師が伝えたと言われる）、**けんちょう**（大根・人参・豆腐を炒めて煮た山口県全域の家庭料理。精進料理が元で、冬の定番。**ただしこれは家庭で作るもので、店の品書きに常時載せている店は山口市内では見つからなかった**＝ホットペッパーの山口市掲載125店の本文を全件調べて0件、県と市の公式観光サイト・各店の公式のおしながきまで当たっても0件。農林水産省・JA・市の資料もすべて家庭料理として扱っている。**冬に郷土料理の会席を頼むと出てくることがある、という扱いで考えるのがよい**）、**長州どり**（県内で育てる鶏。唐揚げと水炊きで出す店が多い）、**瓦そば**（熱した瓦の上に茶そばと牛肉・錦糸卵を載せる。発祥は下関市川棚温泉だが山口市の店でも出す）、**山口の地酒**（**獺祭〈だっさい〉は岩国市**、**東洋美人は萩市**で、山口市内の蔵は**金分銅〈きんふんどう〉**など。店の品書きは県内各地の蔵を集めたものが多い）、**秋穂（あいお）のえび**（車えびの養殖が日本で最初に成功した土地）。**湯田温泉へは、新山口駅からバスで約35分・JR山口線で約20分。** 中心部（米屋町）から湯田温泉までは歩くと30分ほどかかるのでバスかタクシーを使う。</div>
+
+<h2 id="s-kyodo" class="c-red">郷土料理・長州の味（外郎・瓦そば・長州どり）</h2>
+<div class="card" id="c-yamaguchi-kyodo-toushirou-sakuraan">
+<img class="hero" src="img/yamaguchi/yamaguchi-kyodo-toushirou-sakuraan.jpg" alt="豆子郎 総本店 茶藏唵 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-kyodo-toushirou-sakuraan_exterior.jpg" alt="豆子郎 総本店 茶藏唵 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>豆子郎 総本店 茶藏唵<span class="yomi">とうしろう そうほんてん さくらあん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip tourism-official">tourism-official</span></div>
+<div class="desc">山口の外郎は名古屋のものと違い、米粉ではなくわらび粉で練るので半透明で、冷やして食べる。1948年創業の豆子郎はその系譜を継ぐ造り手で、総本店の奥に日本庭園「大内四季庭」を望む茶房「茶藏館」を構える。庭に面した席で、できたての豆子郎や季節の甘味を抹茶とともに味わえる。昼には外郎を椀物や天ぷらに仕立てた「小豆御膳」（1日10食・完全予約制、受付11時〜14時）も出す。売店は朝7時から開き、外郎の全種類がそろう。敷地内にはギャラリー「御迎処」も併設。</div>
+<div class="sig"><b>一皿:</b>豆子郎／生絹豆子郎（わらび粉で練る山口外郎。冷やして食べる半透明の棹菓子）／小豆御膳（外郎を椀物・天ぷら・辛し和えに仕立てた昼の御膳。赤飯と抹茶付き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>売店 7:00〜19:00／併設茶房「茶藏館」11月1日〜6月30日は10:00〜17:00（L.O.16:30）、7月1日〜10月31日は10:30〜17:30（L.O.17:00）</td></tr>
+<tr><th>定休日</th><td class="off">月ごとの店休日を公式サイトのお知らせで告知（茶房は12月31日休み）</td></tr>
+<tr><th>住所</th><td>山口県山口市大内御堀一丁目1番3号</td></tr>
+<tr><th>予約</th><td>小豆御膳は完全予約制（本社お客様窓口 0120-21-5655／受付10:00〜16:00・日曜定休）。茶房の席そのものの予約は受け付けていない — <a href="tel:0839252882">☎ 083-925-2882</a> ／ <a href="https://toushirou.info/shop/sakuraan">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口外郎を今も自家で蒸して売る老舗のうち、店内に腰を落ち着けて食べられる席と庭を持つのはここだけなので、この章の入口に据えた。営業の根拠＝公式サイトのお知らせ欄に2026年10月20日付で「11月の店休日のお知らせ」が掲載されており（2026-10-20 確認）、同日時点で店舗ページの営業時間・電話番号も現行のまま掲出されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%B1%86%E5%AD%90%E9%83%8E%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E8%8C%B6%E8%97%8F%E5%94%B5%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%A4%A7%E5%86%85%E5%BE%A1%E5%A0%80%E4%B8%80%E4%B8%81%E7%9B%AE1%E7%95%AA3%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toushirou.info）より引用 / 外観: 出典ページ / 参照元: <a href="https://toushirou.info/shop/sakuraan">豆子郎 公式サイト 総本店 茶藏唵 店舗ページ（住所・電話・売店と茶房の営業時間）2026-10-20 取得</a> / <a href="https://toushirou.info/">豆子郎 公式サイト トップ（2026年10月20日付「11月の店休日のお知らせ」＝営業の根拠）2026-10-20 取得</a> / <a href="https://yamaguchi-tourism.jp/blog/detail_310.html">おいでませ山口へ（山口県公式観光サイト）ブログ記事 2025-11-07 公開（小豆御膳2,200円・1日10食・完全予約制、翡翠白玉1,650円）</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-kyodo-hondaya-kaikoan">
+<img class="hero" src="img/yamaguchi/yamaguchi-kyodo-hondaya-kaikoan.jpg" alt="蕨菓匠 本多屋 本店 懐古庵 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-kyodo-hondaya-kaikoan_exterior.jpg" alt="蕨菓匠 本多屋 本店 懐古庵 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>蕨菓匠 本多屋 本店 懐古庵<span class="yomi">わらびかしょう ほんだや ほんてん かいこあん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip machinaka">machinaka</span><span class="chip tourism-official">tourism-official</span></div>
+<div class="desc">大正6年、初代の福武四郎が山口駅前に構えた「福武商店」が始まり。閑散期に徳佐方面の山間部から農家がわらび根を背負って売りに来たのを使い、でんぷんを取り出して外郎を作ったのが和菓子屋としての起源で、屋号の「蕨菓匠」もそこから来ている。本店「懐古庵」は物販と喫茶が分かれ、喫茶は一枚板の大テーブルと庭に向いた席で、季節の生菓子と外郎をお茶と合わせられる。季節外郎は桜・夏みかん・栗・黒糖の4種を季節に応じて用意。物販と喫茶で定休日が違う。</div>
+<div class="sig"><b>一皿:</b>本多屋の外郎（わらび粉で練る山口外郎。小豆・こし餡・抹茶に季節外郎を加えた詰合せ）／庭の菓（季節の生菓子と外郎を盛り合わせる喫茶の一皿。秋は1,800円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>物販 9:00〜18:00（日曜は17:00閉店）／喫茶 9:00〜17:00（L.O. 16:00）</td></tr>
+<tr><th>定休日</th><td class="off">物販は水曜／喫茶は火曜・水曜</td></tr>
+<tr><th>住所</th><td>山口県山口市駅通り1丁目4番5号</td></tr>
+<tr><th>予約</th><td>喫茶は予約不要（席の予約は受けていない）。贈答・配送は電話 083-925-1600 — <a href="tel:0839251600">☎ 083-925-1600</a> ／ <a href="https://hondaya.co.jp/pages/shops">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口外郎を今も自社で蒸し、しかも中心商店街の入口で腰を落ち着けて食べられる席を持つ数少ない老舗。郊外の豆子郎と対になる中心部の一軒として入れた。営業の根拠＝公式サイトのお知らせが2026年10月19日付「小倉井筒屋出店のご案内」、2026年10月1日付「本店懐古庵 ラボにおける職人実演販売のご案内」と更新されている（2026-10-22 確認）。「本多屋 山口市 外郎 食中毒」で1回検索し、当店に関する食中毒・営業停止の報は見つからなかった（2026-10-22 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%95%A8%E8%8F%93%E5%8C%A0%20%E6%9C%AC%E5%A4%9A%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E6%87%90%E5%8F%A4%E5%BA%B5%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E9%A7%85%E9%80%9A%E3%82%8A1%E4%B8%81%E7%9B%AE4%E7%95%AA5%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（hondaya.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://hondaya.co.jp/pages/shops">蕨菓匠 本多屋 公式サイト「店舗のご案内」（住所・電話・物販と喫茶の営業時間と定休日・喫茶メニューと価格）2026-10-22 取得</a> / <a href="https://hondaya.co.jp/">蕨菓匠 本多屋 公式サイト トップ（2026年10月19日付・10月1日付のお知らせ＝営業の根拠）2026-10-22 取得</a> / <a href="https://www.yamaguchi-machinaka.com/shop/hondaya/">山口街中（山口市商店街連合会）本多屋 本店 懐古庵（大正6年の創業の経緯、わらび根と外郎の由来、季節外郎4種）2026-10-22 取得</a> / <a href="https://yamaguchi-tourism.jp/blog/detail_353.html">おいでませ山口へ（山口県公式観光サイト）ブログ（本店での外郎作り体験の紹介）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-kyodo-kawarasoba-yanagiya-ichinosaka">
+<img class="hero" src="img/yamaguchi/yamaguchi-kyodo-kawarasoba-yanagiya-ichinosaka.jpg" alt="瓦そば柳屋 山口 一の坂川店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-kyodo-kawarasoba-yanagiya-ichinosaka_exterior.jpg" alt="瓦そば柳屋 山口 一の坂川店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>瓦そば柳屋 山口 一の坂川店<span class="yomi">かわらそばやなぎや やまぐち いちのさかがわてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip tourism-official">tourism-official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">店内12席の瓦そば専門店。熱した石州瓦に風味の強い茶そば、手作りの錦糸卵、甘辛く煮た牛肉とネギを盛って出す。上層はもちもち、下層は瓦の熱でおこげになり、半分食べたら輪切りのレモンと紅葉おろしをつゆに落として味を変える。ご飯は「萩・井上のしそわかめ」のわかめむすび、牛めし、北浦産の釜揚げしらすをのせたしらすめしから選べる。席の予約は受けておらず、提携駐車場もないので県道沿いのコインパーキングを使う。持ち帰りの瓦そばとみたらし団子もある。</div>
+<div class="sig"><b>一皿:</b>瓦そば（熱した石州瓦に茶そば・錦糸卵・牛肉。つゆは甘口でおかわり自由）／しらすめしセット（北浦の釜揚げしらすに大津醤油の甘口醤油）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00（テイクアウトは17:00まで）</td></tr>
+<tr><th>定休日</th><td class="off">水曜・第3木曜</td></tr>
+<tr><th>住所</th><td>山口県山口市新馬場2-2</td></tr>
+<tr><th>予約</th><td>不可（席の予約は受け付けていない） — <a href="tel:09058230924">☎ 090-5823-0924</a> ／ <a href="https://kawarasoba.co.jp/tenpo">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>発祥は下関市川棚温泉だが、山口市の中心部で瓦そばだけを専門に出し、室町期に大内氏が京の鴨川に見立てた一の坂川沿いという土地の記憶とセットで食べられる店として選んだ。営業の根拠＝公式サイトのお知らせが2026-05-31付「6月の営業につきまして」まで更新されており、ホットペッパーグルメの掲載情報も2026/09/25 更新（2026-10-20 確認）。さらに山口市観光情報サイト「西の京やまぐち」の郷土料理ページに、瓦そばが食べられる現行の店として住所・電話つきで掲載されている（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%93%A6%E3%81%9D%E3%81%B0%E6%9F%B3%E5%B1%8B%20%E5%B1%B1%E5%8F%A3%20%E4%B8%80%E3%81%AE%E5%9D%82%E5%B7%9D%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%96%B0%E9%A6%AC%E5%A0%B42-2">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kawarasoba.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://kawarasoba.co.jp/tenpo">瓦そば柳屋 公式サイト 店舗案内（住所・電話・営業時間・定休日・席数12席）2026-10-20 取得</a> / <a href="https://kawarasoba.co.jp/menu">瓦そば柳屋 公式サイト お品書き（価格・内容）2026-10-20 取得</a> / <a href="https://yamaguchi-city.jp/souvenir/cuisine.html">山口市観光情報サイト「西の京やまぐち」郷土料理ページ（瓦そばが食べられる店として住所・電話・営業時間を掲載）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ004699140/">ホットペッパーグルメ 店舗ページ（掲載情報 2026/09/25 更新）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-kyodo-choshuen-kozan">
+<img class="hero" src="img/yamaguchi/yamaguchi-kyodo-choshuen-kozan.jpg" alt="長州苑 お食事処 香山 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-kyodo-choshuen-kozan_exterior.jpg" alt="長州苑 お食事処 香山 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>長州苑 お食事処 香山<span class="yomi">ちょうしゅうえん おしょくじどころ こうざん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip tourism-official">tourism-official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">創業40年を超える物産館で、売店・食事処・カフェ・工芸体験が一棟に入る。併設のお食事処「香山」は個人客向けで、本物の瓦に2〜3人前を一枚盛りにする瓦そばが一番人気。美祢市の美東ごぼうを麺に練り込んだごぼうラーメン、和牛の牛すじを煮込んだ黒カレーなど地のものを使った品が並ぶ。2022年に開いたテイクアウトの5縁CAFEでは、わらび粉の山口外郎を鍋で煮詰めて冷やし、ストローで飲めるとろみに仕立てた「飲む外郎」を出す。売店は外郎・大内塗・萩焼がそろい、団体用の食事会場は最大360席。</div>
+<div class="sig"><b>一皿:</b>瓦そば（熱した本物の瓦に茶そば・錦糸卵・牛肉。2〜3人前を一枚に盛る）／飲む外郎 黒蜜＆きなこ（わらび粉の山口外郎を煮詰めて冷やした5縁CAFEのドリンク。小豆は北海道産100%）</div>
+<table class="info">
+<tr><th>営業時間</th><td>お食事処 香山 11:00〜14:00（L.O.）／売店「長州おみや」8:30〜17:00／問い合わせ受付 8:30〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>山口県山口市木町1-6</td></tr>
+<tr><th>予約</th><td>お食事処 香山は席の予約を受けていない（団体向けの食事会場は要予約。電話 083-925-5850） — <a href="tel:0839255850">☎ 083-925-5850</a> ／ <a href="https://choshuen.co.jp/kozan/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>五重塔を見たあとそのまま山口の味に移れる位置にあり、瓦そばと外郎という章の二本柱を一度に出す店として選んだ。営業の根拠＝公式サイトの5縁CAFEのページに2026年秋の期間限定「飲む外郎 黒ごま＆ほうじ茶」の案内が出ており、同ページで使う画像のアップロード日も2026年10月（2026-10-20 確認）。あわせて山口市観光情報サイト「西の京やまぐち」の郷土料理ページに、瓦そばが食べられる店として住所・電話・営業時間つきで掲載されている（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B7%9E%E8%8B%91%20%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E9%A6%99%E5%B1%B1%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%9C%A8%E7%94%BA1-6">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（choshuen.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://choshuen.co.jp/kozan/">長州苑 公式サイト お食事処「香山」ページ（営業時間・瓦そばほかの価格・年中無休）2026-10-20 取得</a> / <a href="https://choshuen.co.jp/5encafe/">長州苑 公式サイト 5縁CAFEページ（飲む外郎の説明と価格、2026年秋の期間限定メニュー＝営業の根拠）2026-10-20 取得</a> / <a href="https://yamaguchi-city.jp/souvenir/cuisine.html">山口市観光情報サイト「西の京やまぐち」郷土料理ページ（住所 木町1-6・電話・年中無休・8:30〜14:00）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ001027111/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-kyodo-sakana-ichiyanagi">
+<img class="hero" src="img/yamaguchi/yamaguchi-kyodo-sakana-ichiyanagi.jpg" alt="酒菜いちやなぎ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>酒菜いちやなぎ<span class="yomi">さかな いちやなぎ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip tourism-official">tourism-official</span></div>
+<div class="desc">仕出し・弁当・鮮魚を手がける地元のいちやなぎが営む和食レストラン。魚市場から直に仕入れる刺身と寿司を軸に、創業以来の名物「鯛のあら炊き」を今も出す。昼は毎月内容が変わる月替わり御膳のほか、大あじ御膳、あさり貝汁御膳、海鮮天丼、瓦そば（2〜3人前）まで御膳が20種ほど並ぶ。夜は会席の予約のみ。収容は最大50名で、大広間と「姫山」の座敷があり、法要や顔合わせにも対応する。隣は惣菜と弁当の売店「味の駅いちやなぎ」。外観写真なし（公式サイトの外観・内観の写真はいずれも長辺900px未満で、ほかに実写の掲載元を確認できなかった）。</div>
+<div class="sig"><b>一皿:</b>鯛のあら炊き（創業以来の名物。甘辛く炊いた鯛のかぶと）／月替わり御膳（天ぷら・刺身・焼物・煮物・茶碗蒸しを少しずつ。10月は栗ご飯と土瓶蒸し）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼の部 11:30〜14:00（L.O. 13:30）／夜の部は会席の予約のみ</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜</td></tr>
+<tr><th>住所</th><td>山口県山口市旭通り2丁目10-23</td></tr>
+<tr><th>予約</th><td>昼は予約なしでも可。夜と会席・松花堂御膳は要予約（電話 083-924-0014／公式サイトのフォームも可） — <a href="tel:0839240014">☎ 083-924-0014</a> ／ <a href="https://ichi-yanagi.jp/pages/53/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市の中心部で、県内の魚を市場から直に通す和食の御膳を昼から手頃に食べられる店として選んだ。山口市のご当地おかず「チキンチキンごぼう」の提供店として山口市観光情報サイトに載る「味の駅いちやなぎ」と同じ会社の食堂でもある。営業の根拠＝公式サイトの「酒菜いちやなぎ」ページに2026年10月の月替わり御膳（栗ご飯・土瓶蒸し）の案内が出ており、同ページで使う御膳の写真のアップロード日も2026年10月10日（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%8F%9C%E3%81%84%E3%81%A1%E3%82%84%E3%81%AA%E3%81%8E%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%97%AD%E9%80%9A%E3%82%8A2%E4%B8%81%E7%9B%AE10-23">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（ichi-yanagi.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://ichi-yanagi.jp/pages/53/">株式会社いちやなぎ 公式サイト「酒菜いちやなぎ」（住所・営業時間・定休日・収容人数・御膳と会席の価格、2026年10月の月替わり御膳＝営業の根拠）2026-10-20 取得</a> / <a href="https://ichi-yanagi.jp/">株式会社いちやなぎ 公式サイト トップ（会社所在地・電話番号）2026-10-20 取得</a> / <a href="https://yamaguchi-city.jp/chicken2-gobo/">山口市観光情報サイト「西の京やまぐち」チキンチキンごぼうの店一覧（味の駅いちやなぎ 旭通り2-10-23・083-924-0014）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-kyodo-choshu-izakaya-tomo">
+<img class="hero" src="img/yamaguchi/yamaguchi-kyodo-choshu-izakaya-tomo.jpg" alt="長州居酒屋とも 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-kyodo-choshu-izakaya-tomo_exterior.jpg" alt="長州居酒屋とも 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>長州居酒屋とも<span class="yomi">ちょうしゅういざかや とも</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip tourism-official">tourism-official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">日本家屋の土間を思わせる22席の居酒屋。山口のブランド鶏を二つとも置いているのが身上で、歯ごたえのある長州黒かしわは肉厚のたたき、長州どりはジューシーなから揚げにする。学校給食から広まった山口のおかず「チキンチキンごぼう」、魚のすり身を揚げた「ぎょろっけ」、萩の小魚の干物「平太郎」、唐戸市場の塩えいひれなど、県内各地の名物を一品で少しずつ頼める。締めの甘味は山口外郎を揚げた「外郎の天ぷら」。米は長門産の「人粒」。駐車場はなく近くのコインパーキングを使う。</div>
+<div class="sig"><b>一皿:</b>長州黒かしわ 肉厚たたき（県産ブランド地鶏。つやと弾力のある肉質）／外郎の天ぷら（わらび粉の山口外郎を揚げた甘味。＋150円でアイスをのせられる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉1丁目11-19</td></tr>
+<tr><th>予約</th><td>可（電話 083-923-2618／ホットペッパーグルメからネット予約も可） — <a href="tel:0839232618">☎ 083-923-2618</a> ／ <a href="https://chosyuizakayatomo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長州どりと長州黒かしわを両方置き、しかも外郎を甘味として出す店は珍しく、この章の「長州の味」をひと晩で一通り押さえられる。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月分まで「即予約可」で埋まっており、掲載情報も2026/03/16 更新（2026-10-20 確認）。山口市観光情報サイトのチキンチキンごぼうの店一覧にも、住所・電話・営業時間つきで掲載されている（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B7%9E%E5%B1%85%E9%85%92%E5%B1%8B%E3%81%A8%E3%82%82%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%891%E4%B8%81%E7%9B%AE11-19">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（cdn.goope.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://chosyuizakayatomo.com/">長州居酒屋とも 公式サイト（住所・電話・営業時間・定休日・席の案内）2026-10-20 取得</a> / <a href="https://chosyuizakayatomo.com/menu">長州居酒屋とも 公式サイト「おしながき」（長州黒かしわ・長州どり・チキンチキンごぼう・外郎の天ぷらの価格）2026-10-20 取得</a> / <a href="https://yamaguchi-city.jp/chicken2-gobo/">山口市観光情報サイト「西の京やまぐち」チキンチキンごぼうの店一覧（住所・電話・営業時間）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ001229673/">ホットペッパーグルメ 店舗ページ（席数22席、掲載情報2026/03/16更新、ネット予約カレンダーは2026年11月分まで即予約可＝営業の根拠）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-kyodo-yamaguchi-kawarasoba-sakura">
+<img class="hero" src="img/yamaguchi/yamaguchi-kyodo-yamaguchi-kawarasoba-sakura.jpg" alt="やまぐち瓦そば さくら 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-kyodo-yamaguchi-kawarasoba-sakura_exterior.jpg" alt="やまぐち瓦そば さくら 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>やまぐち瓦そば さくら<span class="yomi">やまぐちかわらそば さくら</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip gnavi">gnavi</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">ホテル1階の鉄板焼ダイニングで、長年「ダイニング＆鉄板焼 さくら」を名乗ってきたが2026年1月1日に「やまぐち瓦そば さくら」へ屋号を変えた。自家製の錦糸卵とそばつゆにこだわる瓦そばに、広島県竹原で育てた交雑種の雌牛「垰下牛」の鉄板焼を合わせられるのが身上で、瓦そばの牛肉をサーロインステーキに替えた一皿もある。朝6時から朝食営業、昼は定食、夜は宴会に対応し36名まで。専用駐車場28台（食事客は15時まで）。外観写真なし（公式サイト・ぐるなび・ホットペッパーのいずれにも長辺900px以上の外観写真がなく、ホテル1階のため建物正面の実写を確保できなかった）。</div>
+<div class="sig"><b>一皿:</b>垰下牛使用 瓦そば（熱した瓦に茶そばと垰下牛）／瓦そば＆垰下牛サーロインステーキ（瓦そばに鉄板焼ステーキを合わせた当店オリジナル）</div>
+<table class="info">
+<tr><th>営業時間</th><td>朝 6:00〜9:00（オーダーストップ）／昼 平日11:00〜14:00・土曜11:30〜14:30（オーダーストップ13:30）／夜 17:30〜20:00（オーダーストップ19:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（朝食は年中無休）</td></tr>
+<tr><th>住所</th><td>山口県山口市小郡高砂町2-1 ホテルアムゼ新山口</td></tr>
+<tr><th>予約</th><td>可（電話 083-976-0600／公式サイトからオンライン予約も可） — <a href="tel:0839760600">☎ 083-976-0600</a> ／ <a href="https://ogoori-sakura.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新山口駅に着いてすぐ山口の名物にたどり着ける位置にあり、郷土料理の瓦そばを県内のブランド牛と組み合わせて出す点が土地のものとして濃い。全国チェーンではなく単独店。営業の根拠＝公式サイトのトップに2026年1月1日付の屋号変更の告知が出ており、営業時間・電話番号・駐車場の案内も現行（2026-10-20 確認）。ホットペッパーグルメのネット予約カレンダーも同日時点で先の日付まで受付中。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%BE%E3%81%90%E3%81%A1%E7%93%A6%E3%81%9D%E3%81%B0%20%E3%81%95%E3%81%8F%E3%82%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%B0%8F%E9%83%A1%E9%AB%98%E7%A0%82%E7%94%BA2-1%20%E3%83%9B%E3%83%86%E3%83%AB%E3%82%A2%E3%83%A0%E3%82%BC%E6%96%B0%E5%B1%B1%E5%8F%A3">Googleマップで開く</a>
+<div class="src">写真: ぐるなび（rimage.gnst.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://ogoori-sakura.com/">やまぐち瓦そば さくら 公式サイト（住所・電話・営業時間・定休日・価格・2026年1月1日の屋号変更の告知）2026-10-20 取得</a> / <a href="https://ogoori-sakura.com/about">やまぐち瓦そば さくら 公式サイト「お店について」（垰下牛の説明・新山口駅から徒歩3分）2026-10-20 取得</a> / <a href="https://r.gnavi.co.jp/mg3z1yzt0000/">楽天ぐるなび 店舗ページ（料理・店内の写真）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ003624535/">ホットペッパーグルメ 店舗ページ（ネット予約の空席状況）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-kyodo-yakitori-ichiriki-shinyamaguchi">
+<img class="hero" src="img/yamaguchi/yamaguchi-kyodo-yakitori-ichiriki-shinyamaguchi.jpg" alt="焼鳥一力 新山口店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-kyodo-yakitori-ichiriki-shinyamaguchi_exterior.jpg" alt="焼鳥一力 新山口店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>焼鳥一力 新山口店<span class="yomi">やきとりいちりき しんやまぐちてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip gnavi">gnavi</span><span class="chip hotpepper">hotpepper</span><span class="chip local-news">local-news</span></div>
+<div class="desc">宇部市で「焼鳥 一力」などを営むチカラ商会が2025年10月8日に新山口駅前へ開いた店で、山口市内では湯田店に次ぐ2軒目。県外には出していない。約37坪に焼き場を囲むカウンターとテーブル、個室を合わせて最大60席。焼き鳥は県産ブランド鶏「長州どり」を備長炭でじっくり焼き上げ、串は皮・ねぎまから月見つくね、野菜を豚バラで巻いたレタス巻きまで約19種。炭で炙った牛肉をのせた炭焼牛の瓦そば、下関産のとらふぐの唐揚げ、岩国産のれんこん焼きなど県内各地のものが一品で頼め、フグひれ酒を含む地酒もそろう。</div>
+<div class="sig"><b>一皿:</b>長州どりの炭火焼鳥（県産ブランド鶏を備長炭で。皮・ねぎま各275円、約19種）／炭焼牛の瓦そば（炭で炙った牛肉をのせた瓦そば。並1,089円・大1,958円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>16:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（ほかに不定休）</td></tr>
+<tr><th>住所</th><td>山口県山口市小郡明治2丁目12-1 1F</td></tr>
+<tr><th>予約</th><td>可（電話 083-929-3553／公式サイトとホットペッパーグルメからネット予約も可） — <a href="tel:0839293553">☎ 083-929-3553</a> ／ <a href="https://yakitoriichirikishinyamaguchi.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新幹線を降りて2分で、長州どり・瓦そば・下関のふくという章の柱を一度に押さえられる。宇部市の会社が県内だけで営む店で、全国チェーンではない。営業の根拠＝ホットペッパーグルメの掲載情報が2026/08/14 更新で、ネット予約カレンダーが2026年11月分まで「即予約可」で並んでいる（2026-10-22 確認）。開店は2025年10月8日（山口宇部経済新聞 2025-10-10）。「焼鳥一力 新山口店 食中毒」で1回検索し、当店に関する食中毒・営業停止の報は見つからなかった（2026-10-22 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E4%B8%80%E5%8A%9B%20%E6%96%B0%E5%B1%B1%E5%8F%A3%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%B0%8F%E9%83%A1%E6%98%8E%E6%B2%BB2%E4%B8%81%E7%9B%AE12-1%201F">Googleマップで開く</a>
+<div class="src">写真: ぐるなび（rimage.gnst.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://yakitoriichirikishinyamaguchi.owst.jp/">焼鳥一力新山口店 公式サイト（住所・アクセス・電話・営業時間・定休日・席の構成、炭焼肉の瓦そばととらふぐの唐揚げの案内）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004469973/">ホットペッパーグルメ 店舗ページ（掲載情報 2026/08/14 更新、ネット予約カレンダーは2026年11月分まで即予約可＝営業の根拠）2026-10-22 取得</a> / <a href="https://yamaguchi.keizai.biz/headline/5240/">山口宇部経済新聞 2025-10-10「新山口に『焼鳥一力』 湯田に次ぐ新店舗、「山口を楽しめる」メニュー提供」（2025年10月8日開店・運営会社・最大60席・長州どり・炭焼牛の瓦そば・とらふぐの唐揚げ・串の価格）</a> / <a href="https://r.gnavi.co.jp/ptnz9hbb0000/">楽天ぐるなび 店舗ページ（料理の写真）2026-10-22 取得</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・割烹</h2>
+<div class="card" id="c-yamaguchi-washoku-kappo-fukusuke">
+<img class="hero" src="img/yamaguchi/yamaguchi-washoku-kappo-fukusuke.jpg" alt="割烹 福助 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-washoku-kappo-fukusuke_exterior.jpg" alt="割烹 福助 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">9</span>割烹 福助<span class="yomi">かっぽう ふくすけ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">湯田温泉の住宅街にある日本家屋の割烹。総席数75席がすべて個室で、座敷も椅子席の個室もある。最大45名の大広間を備え、駐車場は7台。山口では縁起をかついでふぐを「ふく」と呼び、当店は地元の専門業者からのみ上質なふくを仕入れる。夜のみの営業で、会席コースは6,600円から、天然とらふくのコースは15,400円から。全席禁煙、Wi-Fiあり。ネット予約は来店3日前まで受け付ける。</div>
+<div class="sig"><b>一皿:</b>天然活きとらふくミニコース(てっさ・てっぴ・唐揚げから雑炊まで付く15,400円税込のコース)／会席コース(旬の素材を使った彩りの会席。6,600円税込から)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜21:45（料理L.O. 19:30／ドリンクL.O. 21:30）月〜土・祝前日</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（連休の場合は営業）</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉2丁目2-19</td></tr>
+<tr><th>予約</th><td>可（電話、またはホットペッパーグルメのリクエスト予約。来店3日前まで） — <a href="tel:0839251616">☎ 083-925-1616</a> ／ <a href="https://www.fukusuke-yamaguchi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市でふぐを個室の会席で出す代表的な割烹で、全室個室という構えは書籍の「特別な日」の章に向く。営業の根拠＝ホットペッパーグルメ店舗ページの店舗情報が2026/03/23更新であること、および同ページの口コミの来店日が2026/02/22・2026/02/07と2026年に入ってからのものであること（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E7%A6%8F%E5%8A%A9%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%892%E4%B8%81%E7%9B%AE2-19">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000535136/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・2026/03/23更新・口コミ来店日）2026-10-20 取得</a> / <a href="https://www.fukusuke-yamaguchi.com/">割烹 福助 公式サイト（電話番号・営業時間・住所・外観写真）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-washoku-saikyo-genya">
+<img class="hero" src="img/yamaguchi/yamaguchi-washoku-saikyo-genya.jpg" alt="うなぎ専門店 西京げんや 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-washoku-saikyo-genya_exterior.jpg" alt="うなぎ専門店 西京げんや 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">10</span>うなぎ専門店 西京げんや<span class="yomi">うなぎせんもんてん さいきょうげんや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2008年9月に開いた山口市で初めてのうなぎ専門店。「うな重」「ひつまぶし」と書かれた大きな暖簾が目印で、木のカウンターとテーブル席を合わせて16席。鹿児島県産・宮崎県産の国産うなぎを使い、外はカリッと中はふわっと焼き上げる。夜はうなぎの串焼きやう巻玉子など酒の肴も出す。持ち帰りができ、店舗から2km圏内は配送料550円で配達も受ける。駐車場は商店街駐車場（駐車券あり）を使う。</div>
+<div class="sig"><b>一皿:</b>鰻ひつまぶし(薬味と出汁で三通りに食べる名物。並2,840円)／鰻重(国産うなぎの蒲焼を重ねたもの。並2,790円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30／17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜</td></tr>
+<tr><th>住所</th><td>山口県山口市道場門前2-5-11</td></tr>
+<tr><th>予約</th><td>可（電話・FAX。持ち帰りと配達も電話／FAXで受付） — <a href="tel:0839200908">☎ 083-920-0908</a> ／ <a href="http://unagigenya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で1店だけ入れるうなぎの店として、中心商店街にあり昼も夜も使える点で選んだ。営業の根拠＝公式サイトのお知らせが2026年10月15日「秋土用の丑の日、ご予約承ります」、2026年10月12日「11月の店休日のお知らせ」と直近で更新されていること（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E5%B0%82%E9%96%80%E5%BA%97%20%E8%A5%BF%E4%BA%AC%E3%81%92%E3%82%93%E3%82%84%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E9%81%93%E5%A0%B4%E9%96%80%E5%89%8D2-5-11">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="http://unagigenya.jp/">西京げんや 公式サイト（住所・電話・営業時間・席数・定休日・2026年10月のお知らせ）2026-10-20 取得</a> / <a href="http://unagigenya.jp/order">西京げんや 公式サイト ご注文・テイクアウト（価格）2026-10-20 取得</a> / <a href="https://www.yamaguchi-machinaka.com/shop/saikyougenya/">山口街中（山口市中心商店街 公式）店舗ページ（開業年・席数・店主名・紹介文）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000790999/">ホットペッパーグルメ 店舗ページ（料理写真・席数16席）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-washoku-ichiryu-sushidokoro">
+<img class="hero" src="img/yamaguchi/yamaguchi-washoku-ichiryu-sushidokoro.jpg" alt="一柳鮨処 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">11</span>一柳鮨処<span class="yomi">いちりゅうすしどころ</span></div>
+<div class="chips"><span class="chip machinaka">machinaka</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">一の坂川のほとりに建つ鮨の店で、春は桜、初夏は蛍、秋は紅葉と川の景色が変わる。席はカウンター10席とテーブル8席の計18席。大将は大阪の福喜鮨で修業し、天然ものの魚を熟成させて予約の時間に合わせて出す。魚は下関・萩・長門と瀬戸内海の両方から仕入れ、米と野菜はほぼ自家栽培でまかなう。おまかせコースは要予約。昼はサラダと吸い物の付く鮨ランチがある。釜飯も看板で、店は「釜めし鮨処 一柳」とも名乗る。外観写真なし（公式サイトを持たず、店の外観を自前で公開している媒体が見つからなかったため）。</div>
+<div class="sig"><b>一皿:</b>大将おまかせコース(その日の一番良い魚を熟成させて出す。8,000円税抜から。要予約)／釜飯(注文を受けてから炊く名物。鮨と並ぶ看板)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30（L.O. 14:00）／17:00〜22:00（L.O. 21:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山口県山口市中央3-7-10</td></tr>
+<tr><th>予約</th><td>可（電話。おまかせコースは要予約） — <a href="tel:0839286629">☎ 083-928-6629</a> ／ <a href="https://www.instagram.com/ichiryuu_545/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>日本海（下関・萩・長門）と瀬戸内海の両方から魚を入れることを店自身が明言しており、この章で「山口市にはどちらの海の魚も入る」ことを説明できる1軒。営業の根拠＝2026年10月8日付のInstagram投稿（来店報告。「釜めし鮨処一柳 山口市 創業昭和28年の老舗」と記載）と、山口市中心商店街の公式サイト「山口街中」の加盟店ページに現在も掲載されていること（同サイトの新着情報は2026.10.19付）。2026-10-20 確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E6%9F%B3%E9%AE%A8%E5%87%A6%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E4%B8%AD%E5%A4%AE3-7-10">Googleマップで開く</a>
+<div class="src">写真: 山口街中（山口市中心商店街 公式）（www.yamaguchi-machinaka.com）より引用 / 外観: 写真なし / 参照元: <a href="https://www.yamaguchi-machinaka.com/shop/sushidokoro/">山口街中（山口市中心商店街 公式）店舗ページ（仕入れ先・コース価格・住所・電話・定休日・紹介文・写真）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000535226/">ホットペッパーグルメ 店舗ページ（住所・営業時間・席数18席・定休日・夜の予算）2026-10-20 取得</a> / <a href="https://takeout-yamaguchi.com/%E9%AE%A8%E5%87%A6%E4%B8%80%E6%9F%B3/">テイクアウトdeやまぐち（山口市）店舗ページ（電話・受取時間・価格・紹介文・料理写真）2026-10-20 取得</a> / <a href="https://www.instagram.com/p/DeO36eIkx-E/">Instagram 投稿 2026年10月8日（来店報告・創業昭和28年の記載）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-washoku-sushi-haru">
+<img class="hero" src="img/yamaguchi/yamaguchi-washoku-sushi-haru.jpg" alt="鮨 はる 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-washoku-sushi-haru_exterior.jpg" alt="鮨 はる 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">12</span>鮨 はる<span class="yomi">すし はる</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">店主の矢次雄治さんは1978年に山口県阿武町で生まれ、東京の銀座・恵比寿・六本木と、フランスおよびモナコのジョエル・ロブションで寿司と懐石を学び、東京ステーションホテルの「すし青柳」で店長を務めたのち、故郷に戻って湯田温泉にこの店を開いた。席はカウンター6席と2〜5名の個室のみで、完全予約制。料理は2種類のおまかせコースだけで、旬の食材と選りすぐりの酒を合わせる。予約は電話かInstagramのダイレクトメッセージで受け付ける。支払いは現金とクレジットカード。</div>
+<div class="sig"><b>一皿:</b>おまかせコース16,000円(税込・サービス料込。その日の旬の握りとつまみ)／おまかせコース18,000円(税込・サービス料込。上位のコース)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜22:00（L.O. 21:30）／昼は応相談</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉2-1-11</td></tr>
+<tr><th>予約</th><td>完全予約制（電話、またはInstagramのダイレクトメッセージ。受付は10:00以降〜営業終了まで） — <a href="tel:0839022780">☎ 083-902-2780</a> ／ <a href="https://www.sushiharu0820.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>東京とヨーロッパで修業した職人が山口に戻って開いた、県内でも数少ない「おまかせだけ」の鮨店で、湯田温泉に泊まる読者の夜の目的地になる。営業の根拠＝公式Instagram（@sushiharu0820）に結び付いた来店投稿が2026年10月13日付・2026年9月25日付で確認できること、および公式サイトに現行のコース価格と予約方法が掲載されていること（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E3%81%AF%E3%82%8B%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%892-1-11">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（static.wixstatic.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sushiharu0820.com/">鮨はる 公式サイト（店主の経歴・コース価格・席数・営業時間・定休日・住所・電話・写真）2026-10-20 取得</a> / <a href="https://www.instagram.com/sushiharu0820/">鮨はる 公式Instagram（@sushiharu0820。営業時間の記載と2026年の投稿）2026-10-20 取得</a> / <a href="https://r.gnavi.co.jp/16ktbgs30000/">楽天ぐるなび 店舗ページ（住所・電話番号）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-washoku-kuriyabito-soushun">
+<img class="hero" src="img/yamaguchi/yamaguchi-washoku-kuriyabito-soushun.jpg" alt="厨人そう旬 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-washoku-kuriyabito-soushun_exterior.jpg" alt="厨人そう旬 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">13</span>厨人そう旬<span class="yomi">くりやびと そうしゅん</span></div>
+<div class="chips"><span class="chip machinaka">machinaka</span></div>
+<div class="desc">駅通りを山口駅方面へ歩くと見えてくる白い暖簾が目印の小料理屋。東京や神戸で修業を重ねた店主の本郷さんが和食を作る。「山口県は手作りのものを出す店が意外と少ない」という考えから、料理だけでなくドレッシング・ポン酢・醤油の配合まで手作りする。席はカウンター5席、4名掛けのテーブルが2つ、半個室が1室で、全席禁煙。日本酒は県内外のものを30〜40種そろえ、ワインと焼酎は置かない。店内は日本酒のラベルが一面に貼られている。</div>
+<div class="sig"><b>一皿:</b>旬の野菜と肴の一品料理(店主が「旬の野菜や肴を食べに来てほしい」と挙げる看板)／手作りのポン酢・ドレッシングで食べる和の小皿</div>
+<table class="info">
+<tr><th>営業時間</th><td>日 17:00〜22:30（L.O. 22:00）／火〜金 17:30〜23:00（L.O. 22:30）※土曜の営業時間は未確認</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>山口県山口市道場門前2-5-9 輝らビル1階</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0839245188">☎ 083-924-5188</a> ／ <a href="https://www.facebook.com/kuriyabito.sousyun/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市の中心商店街で、郷土料理ではない正統な和食を少人数で味わえる店として選んだ。営業の根拠＝山口市中心商店街の公式サイト「山口街中」の加盟店として現在も掲載されていること（同サイトの新着情報は2026.10.19付）と、2026年8月14日付の来店投稿（8/12に訪問、道場門前2丁目と明記）が確認できること（2026-10-20 確認）。「厨人そう旬 閉店」で検索しても閉店の報は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8E%A8%E4%BA%BA%E3%81%9D%E3%81%86%E6%97%AC%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E9%81%93%E5%A0%B4%E9%96%80%E5%89%8D2-5-9%20%E8%BC%9D%E3%82%89%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 山口街中（山口市中心商店街 公式）（www.yamaguchi-machinaka.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.yamaguchi-machinaka.com/shop/soushun/">山口街中（山口市中心商店街 公式）店舗ページ（住所・電話・定休日・営業時間・紹介文・写真）2026-10-20 取得</a> / <a href="https://r.gnavi.co.jp/jh8d5ua90000/">楽天ぐるなび 店舗ページ（住所・電話番号）2026-10-20 取得</a> / <a href="https://www.facebook.com/kuriyabito.sousyun/">厨人そう旬 公式Facebookページ（席の構成・全席禁煙）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-washoku-nonta-zushi-yamaguchi">
+<img class="hero" src="img/yamaguchi/yamaguchi-washoku-nonta-zushi-yamaguchi.jpg" alt="のん太鮨 山口店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-washoku-nonta-zushi-yamaguchi_exterior.jpg" alt="のん太鮨 山口店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">14</span>のん太鮨 山口店<span class="yomi">のんたずし やまぐちてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">創業70年の地元企業フジマグループが営む回転寿司で、同グループが直営する柳井港魚市場から瀬戸内の地魚が毎日入る。仙崎から届く夜鳴き貝のような日本海側のネタも出る。席は40席で、ボックス席とテーブル席があり家族連れが多い。注文はネタを職人がその場で握る方式。昼の時間帯には山口店だけのオリジナルランチがある。水曜定休。外観写真なし（公式サイトとグルメサイトのいずれにも長辺900px以上の店構えの写真が無かったため）。</div>
+<div class="sig"><b>一皿:</b>瀬戸内の地魚の握り(直営の柳井港魚市場から毎日入荷。活はまちなど)／山口店オリジナルランチ(平日昼のセット。店舗限定)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理L.O. 14:30）／16:30〜21:00（料理L.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山口県山口市大内千坊5-3-8</td></tr>
+<tr><th>予約</th><td>不可（席の予約は受け付けていない。来店順の案内） — <a href="tel:0839410350">☎ 083-941-0350</a> ／ <a href="https://fujima-g.jp/nonta">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で1店だけ入れる郊外・大内地区の店。全国チェーンではなく山口県と広島に6店を持つ地元グループの店で、「直営の魚市場から瀬戸内の地魚が入る」という仕入れの筋が本文に書ける。営業の根拠＝ホットペッパーグルメの口コミの来店日が2026/10/06・2026/10/02・2026/09/04と直近であること（2026-10-20 確認）。「のん太鮨 山口店 閉店」で検索しても閉店の報は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AE%E3%82%93%E5%A4%AA%E9%AE%A8%20%E5%B1%B1%E5%8F%A3%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%A4%A7%E5%86%85%E5%8D%83%E5%9D%8A5-3-8">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003872962/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数40席・口コミ来店日2026/10/06ほか・料理写真）2026-10-20 取得</a> / <a href="https://fujima-g.jp/nonta">フジマグループ 公式サイト のん太鮨（直営柳井港魚市場・瀬戸内の地魚・店舗一覧・山口店オリジナルランチ）2026-10-20 取得</a> / <a href="https://r.gnavi.co.jp/spga9pmg0000/">楽天ぐるなび 店舗ページ（住所・電話番号・平均予算1,150円）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-washoku-umibouzu">
+<img class="hero" src="img/yamaguchi/yamaguchi-washoku-umibouzu.jpg" alt="酒と肴 海坊主 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-washoku-umibouzu_exterior.jpg" alt="酒と肴 海坊主 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">15</span>酒と肴 海坊主<span class="yomi">さけとさかな うみぼうず</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">新山口駅の北口から歩いてすぐのビルの1階にある和モダンの店。黒い暖簾に「酒と肴 海坊主」と白く染め抜いてある。山口の近海で揚がった魚を店主が選んで刺身にし、注文を受けてから炊く土鍋ご飯と合わせる。席は60席で、大人数のテーブル席のほか個室も備える。山口の地酒をそろえ、刺身盛り合わせは1,180円（税込）、山口県近海の鯵を薄い衣で揚げた「レア鯵フライ」は890円（税込）。月曜定休だが祝日の関係で変わることがある。</div>
+<div class="sig"><b>一皿:</b>刺身盛り合わせ(山口の近海で獲れた魚を店主が選んで盛る。1,180円税込)／炊き立て土鍋ご飯(注文のたびに土鍋で炊く名物)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（祝日などの関係で変更あり。不定休あり）</td></tr>
+<tr><th>住所</th><td>山口県山口市小郡明治2丁目11-10 オーヴィジョン新山口駅前ザプライム1階</td></tr>
+<tr><th>予約</th><td>可（電話、またはホットペッパーグルメのネット予約） — <a href="tel:0839023707">☎ 083-902-3707</a> ／ <a href="https://umibouzu8.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で新山口駅・小郡から入れる1店。新幹線で着いたその足で山口の近海の魚を食べられる位置にあり、駅前という利便と地魚という中身が両立している。営業の根拠＝ホットペッパーグルメの口コミの来店日が2026/10/10・2026/10/03・2026/10/01と直近であること、および同ページの店舗情報が2026/07/30更新であること（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E3%81%A8%E8%82%B4%20%E6%B5%B7%E5%9D%8A%E4%B8%BB%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%B0%8F%E9%83%A1%E6%98%8E%E6%B2%BB2%E4%B8%81%E7%9B%AE11-10%20%E3%82%AA%E3%83%BC%E3%83%B4%E3%82%A3%E3%82%B8%E3%83%A7%E3%83%B3%E6%96%B0%E5%B1%B1%E5%8F%A3%E9%A7%85%E5%89%8D%E3%82%B6%E3%83%97%E3%83%A9%E3%82%A4%E3%83%A01%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004591447/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・席数60席・予算・2026/07/30更新・口コミ来店日2026/10/10ほか・写真）2026-10-20 取得</a> / <a href="https://umibouzu8.owst.jp">海坊主 公式サイト（電話番号・店の紹介・おすすめ料理と価格）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-washoku-asano">
+<img class="hero" src="img/yamaguchi/yamaguchi-washoku-asano.jpg" alt="あさの 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-washoku-asano_exterior.jpg" alt="あさの 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">16</span>あさの<span class="yomi">あさの</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip hitosara">hitosara</span></div>
+<div class="desc">車えびの養殖発祥の地といわれる秋穂（あいお）の海を見下ろす高台に建つ料亭。座敷はすべて個室で総席数45席、どの部屋からも瀬戸内海が見える。仕入れを予約後に行う完全予約制で、予約の無い日と時間は休む。料理は車えびのフルコースが中心で、活けづくり・塩焼き・天ぷら・煮物と一尾を使い切る。結納や法事、同窓会にも使われる。15名以上なら新山口駅・大道駅・四辻駅への送迎がある。</div>
+<div class="sig"><b>一皿:</b>車えびのフルコース(秋穂の車えびを活けづくり・塩焼き・天ぷらで出す看板。コース9,000〜10,000円)／えびフルコース「漁火(いさりび)」(車えびに瀬戸内の魚の造りを添えた構成)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜20:30（完全予約制。予約の無い時間帯は休み）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（完全予約制のため予約の無い日は休み）</td></tr>
+<tr><th>住所</th><td>山口県山口市秋穂東697</td></tr>
+<tr><th>予約</th><td>完全予約制（電話。予約を受けてから仕入れるため早めの連絡が必要） — <a href="tel:0839842868">☎ 083-984-2868</a> ／ <a href="http://fms9.com/asano/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市の瀬戸内側＝秋穂の車えびを正面から扱う唯一級の店で、「内陸の山口市に瀬戸内と日本海の両方から魚が入る」という章の説明を、瀬戸内の側から担える。営業の根拠＝公式サイトの新着情報が2026年9月付（「秋の飾り付けを致しました」）で更新されていること、ホットペッパーグルメの店舗情報が2026/06/26更新で口コミの来店日が2026/09/26・2026/08/22であること（2026-10-20 確認）。「あさの 秋穂 車えび 閉店」で検索しても閉店の報は無い。外観写真なし（公式サイトとグルメサイトのいずれにも長辺900px以上の店構えの写真が無かったため。かわりに店から見える秋穂の浜と、海に面した座敷の写真を入れている）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%95%E3%81%AE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E7%A7%8B%E7%A9%82%E6%9D%B1697">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="http://fms9.com/asano/">あさの 公式サイト（完全予約制・座敷と海の眺め・送迎・電話番号・2026年9月の新着情報）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ004637001/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・席数45席・予算・2026/06/26更新・口コミ来店日2026/09/26ほか・料理写真）2026-10-20 取得</a> / <a href="https://hitosara.com/0002082426/">ヒトサラ 店舗ページ（料理・座敷・秋穂の海の写真）2026-10-20 取得</a></div>
+</div></div>
+<h2 id="s-men" class="c-brown">ラーメン・うどん・そば・麺類</h2>
+<div class="card" id="c-yamaguchi-men-kaisugi">
+<img class="hero" src="img/yamaguchi/yamaguchi-men-kaisugi.jpg" alt="汁なし担担麺 階杉 山口店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-men-kaisugi_exterior.jpg" alt="汁なし担担麺 階杉 山口店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">17</span>汁なし担担麺 階杉 山口店<span class="yomi">しるなしたんたんめん かいすぎ やまぐちてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip machinaka">machinaka</span></div>
+<div class="desc">岩国市麻里布町の「ラーメン階杉」が広げた汁なし担担麺の専門店で、山口市中心商店街の米屋町ビル1階に入る。カウンター中心の小さな店で、昼は11時から、夜は17時から、土日祝は通しで21時まで営業する。看板の汁なし担担麺は胡麻のコクと花椒の痺れを合わせたタレに肉味噌を乗せたもので、辛さは0辛から段階で選べる。残ったタレに白飯を入れる「担担ご飯」で締めるのが店の勧める食べ方。</div>
+<div class="sig"><b>一皿:</b>汁なし担担麺（胡麻ダレ＋花椒＋肉味噌。辛さは0辛から選べる）／担担ご飯（食べ終えたタレに追い飯を入れて締める）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【月〜水・金】11:00〜15:00（L.O. 14:45）／17:00〜21:00（L.O. 20:45）　【土日祝】11:00〜21:00（L.O. 20:45）</td></tr>
+<tr><th>定休日</th><td class="off">木曜日</td></tr>
+<tr><th>住所</th><td>山口県山口市米屋町1-3-2</td></tr>
+<tr><th>予約</th><td>未確認（公式サイトにも山口街中の店舗ページにも予約の案内なし） — <a href="tel:0839206355">☎ 083-920-6355</a> ／ <a href="http://kaisugi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>中心商店街の米屋町にある数少ない麺専門店で、昼夜とも通し営業に近く観光の合間に寄りやすい。営業の根拠＝①公式サイト kaisugi.jp のニュース欄の最新投稿が2026年7月16日（2026-10-20 取得）で、同サイトの店舗一覧に山口店の住所・電話・営業時間・定休日（木曜）が現行情報として載っている ②旅行メディア「なっぷ」の『山口市で絶対に食べたいおすすめラーメン10選』（2026年10月1日更新、2026-10-20 取得）に山口店が掲載されている。【写真について】料理の写真は山口街中の店舗ページに載る1点（長辺2108px）のみ。公式サイトのギャラリーは長辺800pxで条件を満たさないため採用していない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B1%81%E3%81%AA%E3%81%97%E6%8B%85%E6%8B%85%E9%BA%BA%20%E9%9A%8E%E6%9D%89%20%E5%B1%B1%E5%8F%A3%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E7%B1%B3%E5%B1%8B%E7%94%BA1-3-2">Googleマップで開く</a>
+<div class="src">写真: 山口街中（山口市中心商店街 公式）（www.yamaguchi-machinaka.com）より引用 / 外観: 出典ページ / 参照元: <a href="http://kaisugi.jp/">ラーメン階杉 公式サイト 店舗一覧（山口店の住所・電話・営業時間・定休日／ニュース最新 2026年7月16日）2026-10-20 取得</a> / <a href="https://www.yamaguchi-machinaka.com/shop/kaisugi/">山口街中（山口市商店街連合会）店舗ページ 汁なし担担麺階杉山口店（所在地・電話・定休日・営業時間・写真）2026-10-20 取得</a> / <a href="https://www.nap-camp.com/mag/62189">なっぷ『山口市で絶対に食べたいおすすめラーメン10選』2026年10月1日更新（掲載継続の確認）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-men-tokyoan">
+<img class="hero" src="img/yamaguchi/yamaguchi-men-tokyoan.jpg" alt="東京庵 香山店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-men-tokyoan_exterior.jpg" alt="東京庵 香山店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">18</span>東京庵 香山店<span class="yomi">とうきょうあん こうざんてん</span></div>
+<div class="chips"><span class="chip yahoo-map">yahoo-map</span><span class="chip yamaguchi-san">yamaguchi-san</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">国宝・瑠璃光寺五重塔の門前に立つそば屋で、2024年に創業100年を迎えた。大正12年の関東大震災で倒壊した東京・神田の「東京庵」で働いていた山口県出身の職人を初代が引き取り、その名と技を継いで開いたのが始まり。元は湯田温泉にあり、五重塔のそばのこの香山店は平成8年の開店で、16年前に湯田の本店が閉じてからは当店が暖簾を守っている。山口県産のそばの実を石臼で挽いた自家製の「長州生そば」を出し、カウンター・テーブル・座敷を合わせて35席。駐車場あり、全席禁煙。</div>
+<div class="sig"><b>一皿:</b>そば寿司（1人前10切れ1,300円。酢飯の代わりにそばを巻いた看板。1963年の山口国体に合わせて2代目が考案）／長州生そば（山口県産のそばの実を石臼挽きにした自家製麺）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜15:30（火〜日。Yahoo!マップ掲載）※ホットペッパーグルメは11:00〜17:00と記載。食い違うので要確認</td></tr>
+<tr><th>定休日</th><td class="off">月曜・毎月第4火曜</td></tr>
+<tr><th>住所</th><td>山口県山口市香山町6-16</td></tr>
+<tr><th>予約</th><td>未確認（ホットペッパーのネット予約は受け付けていない。電話は 083-920-7575） — <a href="tel:0839207575">☎ 083-920-7575</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>五重塔の門前という立地で、県産そばの石臼挽きを掲げる市内でも数少ない老舗のそば専門店。名物のそば寿司は60年以上続く山口の名物。営業の根拠＝①Yahoo!マップのクチコミに2026年8月26日・8月9日・7月21日の投稿があり、評価は3.56（29件）（2026-10-20 取得） ②山口朝日放送の地元ウェブマガジン「山口さん」の2024年8月31日の記事で、創業100年とそば寿司の由来が取材されている。【注意】営業時間は資料で食い違う＝Yahoo!マップは10:30〜15:30、ホットペッパーグルメは11:00〜17:00。定休もホットペッパーは月曜・第4火曜、Yahoo!マップの営業時間には月曜が入っていない。行く前に電話（083-920-7575）での確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%B1%E4%BA%AC%E5%BA%B5%20%E9%A6%99%E5%B1%B1%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E9%A6%99%E5%B1%B1%E7%94%BA6-16">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://map.yahoo.co.jp/v3/place/0QV0PGsVck-">Yahoo!マップ 東京庵 香山店（住所・電話・営業時間・全面禁煙・駐車場・クチコミ 3.56／29件、最新 2026年8月26日）2026-10-20 取得</a> / <a href="https://yamaguchi-san.com/post-24237/">山口さん（山口朝日放送）『創業100年！名物「そば寿司」はいかが？ 山口市「長州そば 東京庵」』2024年8月31日（創業の由来・香山店は平成8年開店・そば寿司の来歴と価格）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000534856/">ホットペッパーグルメ 東京庵 山口 店舗ページ（総席数35席・予算1,000円・駐車場・全席禁煙・写真）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000534856/tel/">ホットペッパーグルメ 東京庵 山口 電話番号ページ（083-920-7575）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-men-issui">
+<img class="hero" src="img/yamaguchi/yamaguchi-men-issui.jpg" alt="一髄 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-men-issui_exterior.jpg" alt="一髄 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">19</span>一髄<span class="yomi">いっずい</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">フジグラン山口の裏手にある豚骨ラーメンの店で、カウンターを中心に20席。臭みを抑えたクリーミーな豚骨スープに、白・赤（辛味）・青（青じそ）・黄（コーン＋バター）・黒と色で呼び分けるラーメンを揃える。辛子高菜や辛もやしなどの薬味は卓上から好きなだけ取れる。待ち時間用に漫画が置かれ、小学生以下にはお菓子のサービスがある。クレジットカード・電子マネーは使えない。</div>
+<div class="sig"><b>一皿:</b>青ラーメン（豚骨スープに青じそを合わせた一杯・600円）／赤ラーメン（辛味を重ねた看板の一杯・600円）／黄ラーメン（コーンとバターを落とした一杯・600円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00／17:00〜20:00（ホットペッパー掲載。なっぷ2026年10月1日更新の記事では夜は18:00〜20:30と記載。夜の時間は要確認）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜</td></tr>
+<tr><th>住所</th><td>山口県山口市黒川117-2</td></tr>
+<tr><th>予約</th><td>不可（ホットペッパーのネット予約は受け付けていない） — <a href="tel:0839415999">☎ 083-941-5999</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市の豚骨を代表する一軒で、色で選ぶ構成が本に載せたときに分かりやすい。営業の根拠＝①旅行メディア「なっぷ」の『山口市で絶対に食べたいおすすめラーメン10選』（2026年10月1日更新、2026-10-20 取得）に住所・営業時間・定休日つきで掲載されている ②2026-10-20 に「一髄 山口市黒川 ラーメン 閉店」でウェブ検索し、閉店・休業の報がないことを確認した。【注意】ホットペッパーの口コミ最新は2014年5月で、ネット予約は受け付けていない。なお、なっぷ記載の夜の営業は18:00〜20:30、ホットペッパー記載は17:00〜20:00で食い違うため、夜の時間は要確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E9%AB%84%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E9%BB%92%E5%B7%9D117-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000534839/">ホットペッパーグルメ 一髄 店舗ページ（住所・アクセス・営業時間・定休日・総席数20席・予算650円・メニュー価格）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000534839/tel/">ホットペッパーグルメ 一髄 電話番号ページ（083-941-5999）2026-10-20 取得</a> / <a href="https://www.nap-camp.com/mag/62189">なっぷ『山口市で絶対に食べたいおすすめラーメン10選』2026年10月1日更新（一髄の住所・営業時間・定休日）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-men-ranran">
+<img class="hero" src="img/yamaguchi/yamaguchi-men-ranran.jpg" alt="蘭蘭 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-men-ranran_exterior.jpg" alt="蘭蘭 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">20</span>蘭蘭<span class="yomi">らんらん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">吉敷中東の国道沿いに立つ町中華で、ラーメン・ちゃんぽん・炒飯・餃子をひと通り揃える。テーブルと座敷で35席、駐車場は10台あり、全席禁煙で子ども連れも受け入れる。看板は豚キムチラーメンで、豚肉の旨みとキムチの酸味・辛味を合わせた一杯。あっさりした豚骨にチャーシューを重ねた定番のラーメン、野菜をたっぷり炒めて載せたちゃんぽんも地元客に長く使われている。カード・電子マネー・QR決済は使えない。</div>
+<div class="sig"><b>一皿:</b>豚キムチラーメン（豚肉とキムチを合わせた辛味のある看板の一杯）／ちゃんぽん（野菜をたっぷり炒めて載せた一杯）／餃子・炒飯（ラーメンと合わせる定番）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理L.O. 14:30）／17:00〜21:00（料理L.O. 20:30）※なっぷ2026年10月1日更新の記事では 11:00〜14:00／17:00〜20:00 と記載。要確認</td></tr>
+<tr><th>定休日</th><td class="off">火曜（火曜が祝日の場合は営業し、翌日が代休）</td></tr>
+<tr><th>住所</th><td>山口県山口市吉敷中東4-12-15</td></tr>
+<tr><th>予約</th><td>未確認（ホットペッパーのネット予約は受け付けていない。貸切不可） — <a href="tel:0839321878">☎ 083-932-1878</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ラーメンだけでなくちゃんぽん・炒飯・餃子まで一軒で足りる、吉敷の日常使いの町中華。営業の根拠＝①旅行メディア「なっぷ」の『山口市で絶対に食べたいおすすめラーメン10選』（2026年10月1日更新、2026-10-20 取得）に住所・営業時間・定休日つきで掲載されている ②2026-10-20 時点でホットペッパーグルメの掲載店ページ（席数・駐車場・喫煙区分まで入る）が生きていることを確認した。【注意】ホットペッパー記載の営業は 11:00〜15:00／17:00〜21:00、なっぷ記載は 11:00〜14:00／17:00〜20:00 で食い違うため、時間は要確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%98%AD%E8%98%AD%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%90%89%E6%95%B7%E4%B8%AD%E6%9D%B14-12-15">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000648248/">ホットペッパーグルメ 蘭蘭 山口市 店舗ページ（住所・アクセス・営業時間・定休日・総席数35席・駐車場10台・予算700円）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000648248/tel/">ホットペッパーグルメ 蘭蘭 山口市 電話番号ページ（083-932-1878）2026-10-20 取得</a> / <a href="https://www.nap-camp.com/mag/62189">なっぷ『山口市で絶対に食べたいおすすめラーメン10選』2026年10月1日更新（蘭蘭の住所・営業時間・定休日・看板の豚キムチラーメン）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-men-yudaseimen">
+<img class="hero" src="img/yamaguchi/yamaguchi-men-yudaseimen.jpg" alt="湯田製麺 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-men-yudaseimen_exterior.jpg" alt="湯田製麺 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">21</span>湯田製麺<span class="yomi">ゆだせいめん</span></div>
+<div class="chips"><span class="chip yahoo-map">yahoo-map</span><span class="chip yuda-onsen">yuda-onsen</span><span class="chip tryangle">tryangle</span></div>
+<div class="desc">湯田温泉で長く親しまれた讃岐うどんの店「讃岐弘法」が、2022年4月に場所と名前を変えて開いた店。国産小麦を20時間かけて熟成させた手打ち麺は、本場よりコシを少し落とし、細めに仕立てて山口県民の好みに合わせている。出汁は利尻昆布と周防大島産のいりこ。52席のフロアは個食スペースで仕切ったテーブル席とボックス席に分かれ、一人でも家族連れでも使いやすい。朝8時から開くので朝食にも使える。</div>
+<div class="sig"><b>一皿:</b>かけうどん（420円。20時間熟成の手打ち麺に利尻昆布と周防大島産いりこの出汁）／肉うどん（甘辛く煮た肉をのせた看板。単品770円）／天ぷら・かき揚げ（持ち帰りだけを頼む客もいる揚げたて）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【平日】8:00〜15:00／17:30〜22:00（21:30 L.O.）　【土日祝】8:00〜22:00（21:30 L.O.）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉6-4-1</td></tr>
+<tr><th>予約</th><td>未確認（ネット予約の受付は見つからなかった。電話は 083-932-3699） — <a href="tel:0839323699">☎ 083-932-3699</a> ／ <a href="https://www.instagram.com/yudaseimen/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>湯田温泉の宿に泊まった翌朝に歩いて行けるうどん屋で、朝8時から夜22時まで通しに近い営業が旅程に組みやすい。旧「讃岐弘法」の麺と出汁をそのまま引き継いでいる点も本に書ける来歴。営業の根拠＝①Yahoo!マップのクチコミに2026年9月23日・9月14日・8月11日・7月12日の投稿があり、評価は3.96（18件）（2026-10-20 取得） ②湯田温泉観光回遊拠点施設「狐の足あと」の飲食店ページに現住所・電話・営業時間・定休日が掲載されている。【注意1】住所は資料で食い違う＝Yahoo!マップと「狐の足あと」は湯田温泉6-4-1、湯田温泉料飲社交組合とタウン情報トライアングルは6-4-2。電話番号（083-932-3699）は旧「讃岐弘法」と同じ。【注意2】駐車場は「狐の足あと」が「無」、Yahoo!マップとタウン情報トライアングルが「あり」で食い違うため要確認。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B9%AF%E7%94%B0%E8%A3%BD%E9%BA%BA%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%896-4-1">Googleマップで開く</a>
+<div class="src">写真: 湯田温泉旅館協同組合（www.yuda-onsen.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://map.yahoo.co.jp/v3/place/mpmhULC7JgE">Yahoo!マップ 湯田製麺（住所・電話・アクセス・営業時間・全面禁煙・クチコミ 3.96／18件、最新 2026年9月23日）2026-10-20 取得</a> / <a href="https://www.yuda-onsen.jp/restaurant/%E6%B9%AF%E7%94%B0%E8%A3%BD%E9%BA%BA/">湯田温泉観光回遊拠点施設「狐の足あと」飲食店ページ 湯田製麺（営業時間・定休日・住所・電話・肉うどん770円・2022年4月に讃岐弘法から改名し新装開店）2026-10-20 取得</a> / <a href="https://yudaryoin.com/shop/%E6%B9%AF%E7%94%B0%E8%A3%BD%E9%BA%BA/">湯田温泉料飲社交組合 掲載店ページ 湯田製麺（席数52席・麺と出汁の説明）2026-10-20 取得</a> / <a href="https://tryangle.yamaguchi.jp/tryangle/yamaguchi-yudaseimen">月刊タウン情報トライアングル『【山口オープン】旧「讃岐弘法」が場所も店名もあらたにNEW OPEN／湯田製麺』2022年9月13日（改名の経緯・国産小麦20時間熟成・利尻昆布と周防大島産いりこ・価格）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-men-touge">
+<img class="hero" src="img/yamaguchi/yamaguchi-men-touge.jpg" alt="峠 宮野 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">22</span>峠 宮野<span class="yomi">とうげ みやの</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">山口市の北の入口、宮野上の街道沿いに立つうどん・そば・丼の店。座席は76席と広く、小上がり風のボックス席とテーブル席を備え、駐車場もあるので家族連れや車での移動の途中に使いやすい。山口県産の食材を使った地産地消のメニューを掲げ、うどんやそばに天ぷら・茶碗蒸し・小鉢を組み合わせた定食、カツ丼や親子丼などの丼物まで幅広い。全席禁煙でクレジットカードが使える。外観写真なし（ホットペッパーグルメの掲載写真9点がいずれも料理と店内で、建物の正面を写したものが1点もないため）。</div>
+<div class="sig"><b>一皿:</b>天ぷらうどん定食（うどんに天ぷらと小鉢・茶碗蒸しを合わせた定食）／親子丼とうどんのセット（丼と麺を組み合わせた定番）／地産地消メニュー（山口県産の食材を使った品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00／17:00〜20:00（月〜水・金〜日・祝日）</td></tr>
+<tr><th>定休日</th><td class="off">木曜（木曜が休日の場合は水曜休み）</td></tr>
+<tr><th>住所</th><td>山口県山口市宮野上1712-6</td></tr>
+<tr><th>予約</th><td>未確認（ホットペッパーのネット予約は受け付けていない。貸切不可） — <a href="tel:0839224743">☎ 083-922-4743</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>市街地から萩・長門へ抜ける国道9号沿いにあり、車での移動の途中に寄れる広い店。山口県産の食材を使う地産地消のメニューを掲げている点も本の見どころになる。営業の根拠＝ホットペッパーグルメの口コミに2026年6月12日投稿のものがあり（評価5.0、会計1,001〜1,500円／人、「地産地消のメニューもあります」「茶碗蒸しも美味しいです」）、2026年の来店が確認できる（2026-10-20 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B3%A0%20%E5%AE%AE%E9%87%8E%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%AE%AE%E9%87%8E%E4%B8%8A1712-6">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001026836/">ホットペッパーグルメ 峠 宮野 店舗ページ（住所・アクセス・営業時間・定休日・総席数76席・予算1,100円・駐車場・全席禁煙・カード可）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ001026836/tel/">ホットペッパーグルメ 峠 宮野 電話番号ページ（083-922-4743）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ001026836/report/">ホットペッパーグルメ 峠 宮野 口コミ一覧（2026年6月12日投稿の口コミで営業を確認）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-men-wanodashi-goto">
+<img class="hero" src="img/yamaguchi/yamaguchi-men-wanodashi-goto.jpg" alt="和のだし ごとう 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-men-wanodashi-goto_exterior.jpg" alt="和のだし ごとう 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">23</span>和のだし ごとう<span class="yomi">わのだし ごとう</span></div>
+<div class="chips"><span class="chip yamaguchi-san">yamaguchi-san</span><span class="chip keizai">keizai</span><span class="chip yahoo-map">yahoo-map</span></div>
+<div class="desc">和食の板前を約25年務めた後藤智数さんが2024年5月10日に開いた店で、湯田温泉の観光案内所「狐の足あと」のすぐ近く。白いのれんが目印で、店内は掘りごたつ席14席とカウンター席3席。看板の「和のだしラーメン」は化学調味料を使わず、瀬戸内のいりこと下関のカツオでひいた出汁に、砂糖やみりんの代わりに蜂蜜を使ったかえしを合わせる。麺は山口市の製麺所に特注した全粒粉入り。夜は予約制の和食のコースも出す。</div>
+<div class="sig"><b>一皿:</b>和のだしラーメン（950円。カツオといりこの出汁＋蜂蜜のかえし、全粒粉入りの細麺）／和のだしラーメン 宝（1,200円。長州どりの軟骨つくねと海老のつみれ、味玉、レアチャーシュー入り）／和のだしお膳（1,650円。長州鶏塩麹焼き・海鮮かきあげ・本日の煮魚から選ぶ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:00〜14:00／夜 18:00〜22:00（なっぷ2026年10月1日更新の記載。山口宇部経済新聞とYahoo!マップは昼のみ11:00〜14:00。夜は予約制との記述もあり要確認）</td></tr>
+<tr><th>定休日</th><td class="off">水曜・第1月曜・第2日曜・第3火曜（山口宇部経済新聞 2024年6月20日。店はInstagramで休みを告知している）</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉1-9-5 アビターレYuda101</td></tr>
+<tr><th>予約</th><td>可（夜は予約制の和食コース。電話は 083-600-0951） — <a href="tel:0836000951">☎ 083-600-0951</a> ／ <a href="https://www.instagram.com/wanodashi.goto/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>湯田温泉の宿から歩ける距離で、豚骨一辺倒になりがちな山口の麺の章に和風だしの一杯を入れられる。板前が25年の経験でひく出汁という来歴も本向き。営業の根拠＝①Yahoo!マップのクチコミに2026年8月19日と2026年5月4日の投稿がある（2026-10-20 取得） ②公式Instagram（@wanodashi.goto）に2026年6月1日付の臨時休業の告知があり、「夜営業は18時より通常通りに営業いたします」と書かれている ③旅行メディア「なっぷ」の『山口市で絶対に食べたいおすすめラーメン10選』（2026年10月1日更新）に掲載されている。【注意】営業時間は資料で食い違う。山口宇部経済新聞（2024年6月20日）とYahoo!マップは昼のみ11:00〜14:00、なっぷ（2026年10月1日更新）は11:00〜14:00と18:00〜22:00。夜は予約制とする記述もあるので、夜に行くなら電話（083-600-0951）での確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%81%AE%E3%81%A0%E3%81%97%20%E3%81%94%E3%81%A8%E3%81%86%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%891-9-5%20%E3%82%A2%E3%83%93%E3%82%BF%E3%83%BC%E3%83%ACYuda101">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi.keizai.biz/headline/4859/">山口宇部経済新聞『山口・湯田温泉に和食店「ごとう」 板前が出店、カツオ出汁のラーメン提供』2024年6月20日（店主名・開業日・席数・価格・営業時間・定休日・電話）2026-10-20 取得</a> / <a href="https://yamaguchi-san.com/post-19290/">山口さん（山口朝日放送）『湯田温泉街に身体に優しい「だしラーメン」登場 山口市「和のだしごとう」』2024年6月20日（住所・駐車場・出汁と麺の説明・写真）2026-10-20 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/se-wfLwfPzo">Yahoo!マップ 和のだしごとう（住所・電話・クチコミ 2026年8月19日／2026年5月4日・営業時間）2026-10-20 取得</a> / <a href="https://www.nap-camp.com/mag/62189">なっぷ『山口市で絶対に食べたいおすすめラーメン10選』2026年10月1日更新（和のだし ごとうの住所・営業時間・定休日）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-men-samurai">
+<img class="hero" src="img/yamaguchi/yamaguchi-men-samurai.jpg" alt="手打ち中華そば 侍 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-men-samurai_exterior.jpg" alt="手打ち中華そば 侍 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">24</span>手打ち中華そば 侍<span class="yomi">てうちちゅうかそば さむらい</span></div>
+<div class="chips"><span class="chip yahoo-map">yahoo-map</span><span class="chip yamaguchi-san">yamaguchi-san</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">道の駅「仁保の郷」の近くで10年以上続く中華そばの店。店主の宮部さんは竹藪で選んだ一本の竹で生地を伸ばし、細めなのに強い弾力のある自家製麺に仕上げる。スープは山口県産「長州どり」の鶏ガラ2羽分を6〜8時間煮て一日寝かせ、出す直前にかつお節を加えて香りを立たせる。チャーシューは豚肩ロースを炭火で30分〜1時間焼いてから醤油ダレで2時間煮込む。カウンター15席のみで、食券制。</div>
+<div class="sig"><b>一皿:</b>中華そば（850円。長州どりの鶏ガラと鰹、竹で打つ自家製細麺）／チャーシュー麺（1,150円。炭火焼きの自家製チャーシューで器を覆う）／わがままチャーハン（500円。券売機になく店主に直接頼む。忙しいときは5,000円になる貼り紙も）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金 11:13〜14:30／土・日・祝 11:13〜15:00（スープがなくなり次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（ホットペッパーグルメ掲載。なっぷ2026年10月1日更新の記事では「なし」と記載。要確認）</td></tr>
+<tr><th>住所</th><td>山口県山口市仁保中郷760-6</td></tr>
+<tr><th>予約</th><td>不可（カウンター15席の食券制。ネット予約の受付なし） — <a href="tel:0839290812">☎ 083-929-0812</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>竹で麺を打ち、チャーシューを炭火で焼くという作り方が写真でも文章でも伝わる一軒で、章の中でいちばん「手仕事」を見せられる。営業の根拠＝①Yahoo!マップのクチコミに2026年10月4日・8月30日・8月19日の投稿があり、評価は3.65（27件）（2026-10-20 取得） ②山口朝日放送の地元ウェブマガジン「山口さん」の2025年10月31日の記事（同局『You!どきっ』2025年10月7日放送の記事化）で店主への取材が載っている ③旅行メディア「なっぷ」の『山口市で絶対に食べたいおすすめラーメン10選』（2026年10月1日更新）にも掲載されている。【注意】定休日は資料で食い違う＝ホットペッパーグルメは火曜定休、なっぷは「なし」。Yahoo!マップの営業時間には火曜が入っていないため、火曜に行くなら電話（083-929-0812）での確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E4%BE%8D%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E4%BB%81%E4%BF%9D%E4%B8%AD%E9%83%B7760-6">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi-san.com/post-37926/">山口さん（山口朝日放送）『至福の一杯に出会う、山口の愛されラーメン店 山口市「手打ち中華そば 侍」』2025年10月31日（店主名・竹の手打ち・長州どりのスープ・炭火焼きチャーシュー・価格・写真）2026-10-20 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/OSFZtsk_6lA">Yahoo!マップ 手打ち中華そば 侍（住所・電話・営業時間・全面禁煙・駐車場・クチコミ 3.65／27件、最新 2026年10月4日）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000831255/">ホットペッパーグルメ 手打ち中華そば 侍 店舗ページ（住所・営業時間・定休日・総席数15席（カウンター15席）・駐車場・予算）2026-10-20 取得</a> / <a href="https://www.nap-camp.com/mag/62189">なっぷ『山口市で絶対に食べたいおすすめラーメン10選』2026年10月1日更新（侍の住所・営業時間・手打ち麺の説明）2026-10-20 取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・地酒（湯田温泉・米屋町）</h2>
+<div class="card" id="c-yamaguchi-izakaya-kingyo">
+<img class="hero" src="img/yamaguchi/yamaguchi-izakaya-kingyo.jpg" alt="酒ト魚 金魚 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-izakaya-kingyo_exterior.jpg" alt="酒ト魚 金魚 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>酒ト魚 金魚<span class="yomi">さけとさかな きんぎょ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">三方を海に囲まれた山口の魚を、刺身・原始焼き・炉端焼き・藁焼き・しゃぶしゃぶと、素材ごとに合う調理法で出す海鮮居酒屋。57席で個室はなく、長いカウンターと木のテーブル席が中心。日本酒は獺祭・貴・雁木・五橋・東洋美人といった山口の銘柄を揃える。店名は山口の名産品・金魚ちょうちんにちなむ。駐車場は系列店との共用で台数に限りがある。全席喫煙可。外観写真なし（公式サイトとホットペッパーグルメのどちらにも建物正面を写した画像がないため）。</div>
+<div class="sig"><b>一皿:</b>地魚の刺身盛り(その日に水揚げされた山口の魚を数種盛り合わせる)／原始焼き(魚を串に刺し、炉端の炭火のそばに立てて時間をかけて焼く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜24:00（公式サイト）。ホットペッパーグルメは月〜木・日・祝 17:30〜23:30（L.O. 23:00）、金・土・祝前日 17:30〜翌0:00 と記載しており差があるため、遅い時間に行くなら電話で確認を</td></tr>
+<tr><th>定休日</th><td class="off">なし（公式サイト。ホットペッパーグルメは「不定休」と記載）</td></tr>
+<tr><th>住所</th><td>山口県山口市周布町1-10</td></tr>
+<tr><th>予約</th><td>可（電話 083-920-9155。ホットペッパーグルメのネット予約には対応していない） — <a href="tel:0839209155">☎ 083-920-9155</a> ／ <a href="https://yuda-kingyo.site/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市内で「山口の地酒×地魚」をいちばん明確に打ち出している店で、章の軸になる。営業している根拠＝公式サイト https://yuda-kingyo.site/ のフッター著作権表示が「Copyright © 2026 SAカンパニー」で2026年の更新が確認でき、同ページに現在の営業時間（17:30〜24:00）・定休日なし・電話番号が掲載されている（2026-10-20 取得）。あわせてホットペッパーグルメの店舗ページも同じ住所・席数で掲載が続いている（2026-10-20 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E3%83%88%E9%AD%9A%20%E9%87%91%E9%AD%9A%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%91%A8%E5%B8%83%E7%94%BA1-10">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://yuda-kingyo.site/">酒ト魚 金魚 公式サイト（店名・住所・電話・営業時間・定休日・料理の内容・地酒の銘柄）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ004656000/">ホットペッパーグルメ 店舗ページ（住所・アクセス・席数・予算・日本酒充実・駐車場・喫煙）2026-10-20 取得</a> / <a href="https://yuda-kingyo.site/?page_id=41">酒ト魚 金魚 公式サイト 店内のご紹介ページ（席の構成・店内写真）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-izakaya-himari-shoten">
+<img class="hero" src="img/yamaguchi/yamaguchi-izakaya-himari-shoten.jpg" alt="湯田温泉三丁目 ひまり商店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-izakaya-himari-shoten_exterior.jpg" alt="湯田温泉三丁目 ひまり商店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>湯田温泉三丁目 ひまり商店<span class="yomi">ゆだおんせんさんちょうめ ひまりしょうてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">湯田温泉の飲食店がまとまって入る「湯けむり横丁」の一軒。店内40席と屋根なしテラス24席の計64席で、平日は16時、土日祝は14時から開き、定休日はない。料理218円・ドリンク328円からという値付けで、厚切りの牛タン、ユッケ、いくらをのせただし巻き玉子などを小皿で少しずつ頼める。日本酒・焼酎・ワイン・カクテルがいずれも充実とホットペッパーグルメの設備欄に記載がある。店内は分煙で、喫煙とペット同伴はテラス席のみ。駐車場はなく隣に有料パーキングがある。</div>
+<div class="sig"><b>一皿:</b>いくらをのせただし巻き玉子(だし巻きの上にいくらを盛る一皿)／厚切りの牛タン(塩とわさびを添えて出す)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 16:00〜翌0:00／土・日・祝日 14:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉3-7-7-1 湯けむり横丁内</td></tr>
+<tr><th>予約</th><td>可（電話 083-923-1717、またはホットペッパーグルメのネット予約。即予約は来店日当日22時まで受付） — <a href="tel:0839231717">☎ 083-923-1717</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>湯田温泉の夜の入口である「湯けむり横丁」にあって、平日16時・土日祝14時から開き定休日がない。温泉に入る前の明るいうちから一杯やれる店として、夜からの店ばかりになるこの章に入れた。小皿が218円からで、ひとりでも少しずつ頼める。営業している根拠＝ホットペッパーグルメのネット予約カレンダーが2026年10月10日から12月31日まで全日「◎（即予約可）」になっていることを確認した（2026-10-20 時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%89%E4%B8%89%E4%B8%81%E7%9B%AE%20%E3%81%B2%E3%81%BE%E3%82%8A%E5%95%86%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%893-7-7-1%20%E6%B9%AF%E3%81%91%E3%82%80%E3%82%8A%E6%A8%AA%E4%B8%81%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001258131/">ホットペッパーグルメ 店舗ページ（住所・電話・アクセス・営業時間・定休日なし・席数64席（店内40＋テラス24）・予算・日本酒ほか充実・分煙・駐車場・ネット予約カレンダー）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ001258131/photo/">ホットペッパーグルメ 店舗写真ページ（横丁の店頭・テラス席・カウンター・料理の写真）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-izakaya-toracchi">
+<img class="hero" src="img/yamaguchi/yamaguchi-izakaya-toracchi.jpg" alt="旨いもん酒場 とらっ家 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-izakaya-toracchi_exterior.jpg" alt="旨いもん酒場 とらっ家 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>旨いもん酒場 とらっ家<span class="yomi">うまいもんさかば とらっち</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">新山口駅の新幹線口側にある54席の居酒屋。薩摩地鶏を備長炭の炭火で焼く焼き鳥と炙り料理が看板で、カウンター・テーブル・掘りごたつの座敷がある。壁一面の棚に日本酒の四合瓶が並び、獺祭（だっさい＝岩国市・旭酒造）や東洋美人（とうようびじん＝萩市・澄川酒造場）など山口の地酒を揃える。店の前に駐車場3台、近くの原田駐車場を使うと駐車券がもらえる。新幹線の待ち時間に一杯、という使い方ができる立地。</div>
+<div class="sig"><b>一皿:</b>薩摩地鶏の炭火焼き(炭火で炙る焼き鳥。もも炭火焼きは宴会コースにも入る)／だし巻き玉子(大根おろしを添えて出す定番)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 17:30〜24:00／土・祝日 17:00〜23:00（公式サイト。ホットペッパーグルメは月〜土 18:00〜24:00、日 17:00〜23:00 と記載しており差がある）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（または祝日の月曜日）</td></tr>
+<tr><th>住所</th><td>山口県山口市小郡御幸町5-24</td></tr>
+<tr><th>予約</th><td>可（電話 083-972-8123、または公式サイトのWEB予約） — <a href="tel:0839728123">☎ 083-972-8123</a> ／ <a href="https://toracchi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新山口駅前は全国チェーンの居酒屋が並ぶ一角だが、この店は自前の公式サイトで山口の地酒（獺祭・東洋美人）を明記しており、新幹線を使う読者が最初に寄れる地酒の店として入れた。営業している根拠＝公式サイトの新着情報に2026年9月14日付「駐車場に関するお知らせ」、2026年5月15日付「コース料理の内容、新しくなりました！」、2026年4月2日付「ゴールデンウィーク営業のお知らせ」が並び、2026年の更新が複数確認できる（2026-10-20 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A8%E3%81%84%E3%82%82%E3%82%93%E9%85%92%E5%A0%B4%20%E3%81%A8%E3%82%89%E3%81%A3%E5%AE%B6%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%B0%8F%E9%83%A1%E5%BE%A1%E5%B9%B8%E7%94%BA5-24">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（toracchi.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://toracchi.com/">旨いもん酒場 とらっ家 公式サイト 営業案内（店名・住所・電話・営業時間・定休日・席数54席・駐車場）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000766109/">ホットペッパーグルメ 店舗ページ（住所・席数・予算・座敷・駐車場）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-izakaya-subarashiki-kana-jinsei">
+<img class="hero" src="img/yamaguchi/yamaguchi-izakaya-subarashiki-kana-jinsei.jpg" alt="素晴らしきかな人生 山口店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-izakaya-subarashiki-kana-jinsei_exterior.jpg" alt="素晴らしきかな人生 山口店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>素晴らしきかな人生 山口店<span class="yomi">すばらしきかなじんせい やまぐちてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">昔の日本家屋のような構えで、道場門前の商店街に2000年に開いた居酒屋。80席あり、掘りごたつの個室と座敷で最大80名の宴会まで受ける。目を引くのは「山口地酒」と大書した一枚もののお品書きで、東洋美人（萩市・澄川酒造場）、長門峡（萩市・岡崎酒造場）、長陽福娘（萩市・岩崎酒造）、ROOM（萩市・八千代酒造）、獺祭（岩国市・旭酒造）などを蔵元と精米歩合まで書いて並べ、グラスと一合で値段を分けている。料理は5〜7種を盛る刺身の桶盛が看板。全席禁煙、専用駐車場はなし、年中無休。</div>
+<div class="sig"><b>一皿:</b>刺身の桶盛(5〜7種の刺身を木の桶に盛り合わせる看板料理)／山口地酒の飲み比べ(蔵元と精米歩合を書いた地酒のお品書きから、グラスまたは一合で選ぶ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜翌0:00（料理L.O. 23:30／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">年中無休（12/31と1/1〜3は会計時5%増）</td></tr>
+<tr><th>住所</th><td>山口県山口市道場門前2-4-21</td></tr>
+<tr><th>予約</th><td>可（電話 083-928-6770、またはホットペッパーグルメのネット予約） — <a href="tel:0839286770">☎ 083-928-6770</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市の中心商店街で、山口県内の蔵の酒を蔵元つきで並べているのはこの店がいちばん分かりやすく、章の中心部の軸にした。営業している根拠＝ホットペッパーグルメのネット予約カレンダーが2026年10月24日から12月31日まで全日「◎（即予約可）」になっていることを確認した（2026-10-20 時点）。あわせて山口市商店街連合会の公式サイト「山口街中」にも現住所・電話・営業時間で掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%A0%E6%99%B4%E3%82%89%E3%81%97%E3%81%8D%E3%81%8B%E3%81%AA%E4%BA%BA%E7%94%9F%20%E5%B1%B1%E5%8F%A3%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E9%81%93%E5%A0%B4%E9%96%80%E5%89%8D2-4-21">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001296193/">ホットペッパーグルメ 店舗ページ（住所・電話・アクセス・営業時間・定休日・席数80席・個室/座敷・日本酒充実・予算・ネット予約カレンダー）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ001296193/photo/">ホットペッパーグルメ 店舗写真ページ（山口地酒のお品書き・料理・座敷・外観の写真）2026-10-20 取得</a> / <a href="https://www.yamaguchi-machinaka.com/shop/subajin/">山口街中（山口市商店街連合会の公式サイト）店舗ページ（2000年オープン・刺身の桶盛・宴会50人規模・所在地・電話）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-izakaya-maru">
+<img class="hero" src="img/yamaguchi/yamaguchi-izakaya-maru.jpg" alt="居酒屋まる 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-izakaya-maru_exterior.jpg" alt="居酒屋まる 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>居酒屋まる<span class="yomi">いざかや まる</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span><span class="chip gnavi">gnavi</span></div>
+<div class="desc">赤いのれんが目印の、カウンターと座敷で21〜23席の店。湯田温泉料飲社交組合は「旬の食材や山口の食材を使った料理から定番料理まで、幅広いメニューが揃う」と紹介している。刺身のほか、グラタンのような洋風の自家製メニューも出し、カウンターの棚には自家製の果実酒や梅酒の甕が並ぶ。水曜以外は深夜2時まで開いているので、湯田温泉に泊まった日の2軒目や締めに使える。全席喫煙可。駐車場は店前と斜め向かいにある。</div>
+<div class="sig"><b>一皿:</b>旬の地魚の刺身(その日の魚を盛り合わせる。山口の食材を使った料理が軸)／自家製の果実酒・梅酒(カウンターの棚に甕が並ぶ。居酒屋ながら自家製メニューが多いのが特徴)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜土・祝前日 18:00〜翌2:00／日・祝日 18:00〜翌0:00（ホットペッパーグルメ。湯田温泉料飲社交組合も平日 翌2:00・L.O.翌1:30 と同じ。ただしYahoo!マップは翌3:00までと記載しており差がある）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉3-7-11 和光レジデンス湯の町103</td></tr>
+<tr><th>予約</th><td>可（電話 083-928-8740。ホットペッパーグルメのネット予約には対応していない） — <a href="tel:0839288740">☎ 083-928-8740</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>湯田温泉の飲食店の多くが23時前後に閉まるなかで、深夜2時まで開いていて温泉宿に泊まった人が2軒目に使える店。ホットペッパーグルメの紹介文も「良い物をお手頃価格で10周年。地元料理はもちろん、多彩な自家製メニューも楽しめる」と地元料理を軸に据えている。営業している根拠＝Yahoo!マップの店舗ページが2026-10-20時点で営業状況「営業中」を表示し、口コミの最新が2026年8月16日付、その前が2026年6月1日付（2026-10-20 確認）。あわせて湯田温泉料飲社交組合の公式サイト「遊食回廊」の掲載店一覧に、現住所・電話・席数21席で載っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%E3%81%BE%E3%82%8B%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%893-7-11%20%E5%92%8C%E5%85%89%E3%83%AC%E3%82%B8%E3%83%87%E3%83%B3%E3%82%B9%E6%B9%AF%E3%81%AE%E7%94%BA103">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000535237/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・席数23席・予算・駐車場・喫煙）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000535237/photo/">ホットペッパーグルメ 店舗写真ページ（外観・カウンター・座敷・料理・果実酒の甕の写真）2026-10-20 取得</a> / <a href="https://yudaryoin.com/shop/%E5%B1%85%E9%85%92%E5%B1%8B%E3%80%80%E3%81%BE%E3%82%8B/">湯田温泉料飲社交組合「遊食回廊」店舗ページ（店名・営業時間とL.O.・定休日・住所・電話・席数21席・店の紹介文）2026-10-20 取得</a> / <a href="https://r.gnavi.co.jp/e5scjk0x0000/">楽天ぐるなび 店舗ページ（電話番号・住所・営業時間・定休日・平均予算）2026-10-20 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/f-aScQVkSUc">Yahoo!マップ 店舗ページ（営業状況の表示・曜日別の営業時間・口コミの日付 最新2026-08-16）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-izakaya-bar-speyside">
+<img class="hero" src="img/yamaguchi/yamaguchi-izakaya-bar-speyside.jpg" alt="BAR SPEYSIDE 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-izakaya-bar-speyside_exterior.jpg" alt="BAR SPEYSIDE 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>BAR SPEYSIDE<span class="yomi">ばー すぺいさいど</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和5年（1930年）創業の「BARシロ」を受け継ぎ、2011年5月24日に「BAR SPEYSIDE」として改装開店した酒場。店名はスコットランドのウイスキー産地スペイサイドから採った。入口はれんが積みで小さいが、中はカウンター12席とテーブル26席の計38席と広く、アーチ型の棚にボトルが並ぶ。スコッチウイスキーが看板で、ドリンクは全体で200種類以上、マスターはウイスキー検定2級を持つ。軽い食事も出すので、居酒屋のあとの2軒目に使える。</div>
+<div class="sig"><b>一皿:</b>シングルモルトのスコッチウイスキー(公式サイトの表記で60銘柄以上。選び方はマスターに相談できる)／今月のカクテル(毎月替わる900円のカクテル。公式サイトのNEWSで告知)</div>
+<table class="info">
+<tr><th>営業時間</th><td>19:00〜23:00（L.O. 22:30）。金・土・祝前日は不定（公式サイト。ホットペッパーグルメは18:00〜翌0:30、山口街中は18:30〜25:00と記載しており差があるため、遅い時間は電話で確認を）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（ホットペッパーグルメおよび山口街中。公式サイトは「毎日」営業と書いており差がある）</td></tr>
+<tr><th>住所</th><td>山口県山口市米屋町1-2</td></tr>
+<tr><th>予約</th><td>可（電話 083-922-1307、または携帯 090-4575-9847） — <a href="tel:0839221307">☎ 083-922-1307</a> ／ <a href="https://barspeyside.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章の目安にある米屋町で、創業年がはっきりしていて写真も揃う唯一の酒場。山口の地酒の店ではないが、担当の基準である「酒を飲ませる店」に当たり、商店街で飲んだあとに寄る1軒として入れた。営業している根拠＝公式サイトのNEWSの記事アーカイブが2025年1月から2026年10月まで毎月途切れずに続いており、トップページの「今月のカクテル」の画像が2026年10月アップロードのファイル（/wp-content/uploads/2026/10/）であることを確認した（2026-10-20 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=BAR%20SPEYSIDE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E7%B1%B3%E5%B1%8B%E7%94%BA1-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://barspeyside.jp/">BAR SPEYSIDE 公式サイト（創業年・改装開店日・席数カウンター12＋テーブル26・ドリンク200種類以上・住所・電話・営業時間・今月のカクテルの価格）2026-10-20 取得</a> / <a href="https://barspeyside.jp/category/news">BAR SPEYSIDE 公式サイト NEWS一覧（2025年1月〜2026年10月の記事アーカイブ）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ001026951/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数38席）2026-10-20 取得</a> / <a href="https://www.yamaguchi-machinaka.com/shop/speyside/">山口街中（山口市商店街連合会の公式サイト）店舗ページ（所在地・電話・定休日）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-izakaya-ajidokoro-keisuke">
+<img class="hero" src="img/yamaguchi/yamaguchi-izakaya-ajidokoro-keisuke.jpg" alt="味処 圭介 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-izakaya-ajidokoro-keisuke_exterior.jpg" alt="味処 圭介 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>味処 圭介<span class="yomi">あじどころ けいすけ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">瓦屋根の軒に「圭介」の暖簾を出した、湯田温泉の昔ながらの味処。カウンター・テーブル・座敷で45席あり、座敷は8人用1卓、4人用4卓。カウンターの向こうがそのまま調理場で、その上の壁には来店した人の色紙がぎっしり並ぶ。棚には獺祭（岩国市・旭酒造）などの一升瓶と、店名「圭介」のラベルが入った瓶が置かれている。ホットペッパーグルメの設備欄は日本酒・焼酎・ワインがいずれも充実と記載。全席禁煙で、隣にコインパーキングがある。水曜は定休だが、予約が入れば水曜も開ける。</div>
+<div class="sig"><b>一皿:</b>カウンター越しに出る一品料理(調理場がカウンターの正面にあり、その日の料理が見える)／日本酒と「圭介」ラベルの瓶(獺祭などの山口の酒と、店名を冠したラベルの瓶が棚に並ぶ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜23:00（料理L.O. 22:00／ドリンクL.O. 22:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（予約が入った場合は水曜も営業）</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉1-11-4</td></tr>
+<tr><th>予約</th><td>可（電話 083-925-6248、またはホットペッパーグルメのネット予約） — <a href="tel:0839256248">☎ 083-925-6248</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>大箱の新しい店が増えた湯田温泉で、座敷と長いカウンターを持つ昔ながらの味処として入れた。営業している根拠＝ホットペッパーグルメのネット予約カレンダーが2026年10月24日から12月31日まで、水曜の定休日を除いて「◎（即予約可）」になっていることを確認した（2026-10-20 時点）。なお店の公式サイト（ajidokoro-keisuke.com）は 2026-10-20 時点でアクセスすると403が返り内容を確認できなかったため、website欄は空にしてある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E5%87%A6%20%E5%9C%AD%E4%BB%8B%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%891-11-4">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000535151/">ホットペッパーグルメ 店舗ページ（住所・電話・アクセスの道順・営業時間・定休日・席数45席・座敷の卓数・日本酒/焼酎/ワイン充実・お通し550円・駐車場）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ000535151/photo/">ホットペッパーグルメ 店舗写真ページ（外観・カウンター・座敷・酒の棚の写真）2026-10-20 取得</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・イタリアン・各国料理</h2>
+<div class="card" id="c-yamaguchi-yoshoku-bechee">
+<img class="hero" src="img/yamaguchi/yamaguchi-yoshoku-bechee.jpg" alt="イタリア食堂 ベケ!? 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-yoshoku-bechee_exterior.jpg" alt="イタリア食堂 ベケ!? 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">32</span>イタリア食堂 ベケ!?<span class="yomi">いたりあしょくどう べけ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">イタリア人アーティストのロベルトと、イタリアで修業した料理人の粉川妙（こかわ たえ）が夫婦で営む店。古い日本家屋を使い、中部イタリア・スポレートの家庭料理を月替わりで出す。昼はミニコース「プランツォ バルカッチャ」1本（前菜盛合せ・パスタ・デザート、2,500円）だけ。夜は木・金・土のみ、前日までの予約制で、一部屋に一組だけを通す。長州鶏・鹿野高原豚・山口県産牛など県内の食材を使う。総席数24席、全席禁煙、駐車場あり。ベジタリアン・ビーガン向けの献立も相談できる。</div>
+<div class="sig"><b>一皿:</b>長州鶏の悪魔風(山口県産の鶏を4種のソースで。カジュアルコース6,000円のメインの一つ)／山口県産牛のタリアータ(イタリア風のステーキ。牛肉を選ぶと＋1,000円)／月替わりの手打ちパスタ(昼のコースで＋330円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜14:30（料理L.O. 13:30）／夜 18:00〜21:30（木・金・土のみ。前日までの予約制）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>山口県山口市野田2</td></tr>
+<tr><th>予約</th><td>可（昼はネット予約も可。夜は前日までの予約制で、2名から20名まで） — <a href="tel:0839965230">☎ 083-996-5230</a> ／ <a href="https://bechee.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市の公式観光サイト「西の京やまぐち」が、県のブランド鶏を使う「長州チキンステーキ」を出す店として挙げている点と、古民家を使ったイタリアンという成り立ちを採った。章の中では市の中心部（大殿地区）のイタリアンに当てる。営業の根拠＝ホットペッパーグルメのネット予約カレンダーを2026-10-20に確認したところ、2026年10月24日〜12月31日が定休日（火曜）を除いて「◎（即予約可）」または「TEL（要問い合わせ）」で埋まっており、12月31日まで受け付けている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E9%A3%9F%E5%A0%82%20%E3%83%99%E3%82%B1%21%3F%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E9%87%8E%E7%94%B02">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（bechee.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://bechee.com/">イタリア食堂ベケ!? 公式サイト（店の成り立ち・昼夜の営業時間・コース内容と価格・住所・電話）2026-10-20 取得</a> / <a href="https://www.hotpepper.jp/strJ003916481/">ホットペッパーグルメ 店舗ページ（住所・電話・定休日・席数・ネット予約カレンダー）2026-10-20 取得</a> / <a href="https://yamaguchi-city.jp/sin-gourmet/">山口市観光情報サイト「西の京やまぐち」 山口・新ご当地グルメ（長州チキンステーキを出す店として掲載）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-yoshoku-volpe-bianca">
+<img class="hero" src="img/yamaguchi/yamaguchi-yoshoku-volpe-bianca.jpg" alt="ピッツェリア ヴォルペ ビアンカ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-yoshoku-volpe-bianca_exterior.jpg" alt="ピッツェリア ヴォルペ ビアンカ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">33</span>ピッツェリア ヴォルペ ビアンカ<span class="yomi">ぴっつぇりあ ゔぉるぺ びあんか</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">温泉街の路地に立つピッツェリア。イタリアから取り寄せた薪窯を据え、自家製の生地を焼く。チーズ工房での修業を生かした自家製チーズを使い、小麦とビールも産地を選んで仕入れる。山口県産の食材を主に使い、県産の夏みかんを使った酒も置く。2023年秋に店内を改装し、総席数は25席（うちカウンター7席で、1席ごとに照明がある）。最大19名までの貸切にも応じる。昼はピッツァ1枚にドリンクが付くセット、夜はアラカルトと飲み放題もある。駐車場あり、全席禁煙。ピッツァは全品持ち帰りもできる（箱代150円）。外観写真なし（公式サイトの外観写真が長辺900px未満のため）。</div>
+<div class="sig"><b>一皿:</b>マルゲリータ(トマトソース・モッツァレラ・バジルの定番／2,680円)／クワトロフォルマッジ(4種のチーズ／3,780円)／アランチーニ(チーズ入りのライスコロッケ／1,580円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00（料理L.O. 13:30／ドリンクL.O. 13:30）／17:00〜21:00（料理L.O. 20:30／ドリンクL.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉2丁目2-15</td></tr>
+<tr><th>予約</th><td>可（ネット予約・電話とも。即予約は来店日当日19時まで、リクエスト予約は前日17時まで） — <a href="tel:0839021594">☎ 083-902-1594</a> ／ <a href="https://www.pizzeria-volpebianca.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>湯田温泉のイタリアンとして、イタリア製の薪窯で焼く本格ピッツァという売りがはっきりしている点を採った。営業の根拠＝ホットペッパーグルメのネット予約カレンダーを2026-10-20に確認したところ、2026年10月21日〜12月31日のほぼ全日が「◎（即予約可）」で、12月31日まで受け付けている。あわせて同ページのクーポン・コース情報の更新日が2026/08/21。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%94%E3%83%83%E3%83%84%E3%82%A7%E3%83%AA%E3%82%A2%20%E3%83%B4%E3%82%A9%E3%83%AB%E3%83%9A%20%E3%83%93%E3%82%A2%E3%83%B3%E3%82%AB%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%892%E4%B8%81%E7%9B%AE2-15">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001260207/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・予算・ネット予約カレンダー・メニュー価格）2026-10-20 取得</a> / <a href="https://www.pizzeria-volpebianca.com/">ピッツェリア ヴォルペ ビアンカ 公式サイト（アクセス・昼夜のメニュー・持ち帰り・電話番号）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-yoshoku-chinesekitchen-taka">
+<img class="hero" src="img/yamaguchi/yamaguchi-yoshoku-chinesekitchen-taka.jpg" alt="チャイニーズキッチン 貴 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-yoshoku-chinesekitchen-taka_exterior.jpg" alt="チャイニーズキッチン 貴 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>チャイニーズキッチン 貴<span class="yomi">ちゃいにーずきっちん たか</span></div>
+<div class="desc">東京で修業した料理人が地元の山口に開いた中華料理店。旨味調味料を使わず、鹿野（かの）豚・長州鶏・宇部の市場から毎日仕入れる魚介・阿東（あとう）産のコシヒカリといった県内の食材に、中国から特別な経路で仕入れる乾物や珍しい食材を合わせる。夜は2026年7月から完全予約制になり、当日11時までに「選べるコース」か「お任せコース」を伝えて予約する。昼はセット1,700円と麺・飯の単品が中心。中国の醸造酒「黄酒（ファンチュウ）」を10種そろえ、3種を選ぶ利き酒セットもある。席数は未確認（公式サイトに記載が無い）。外観写真なし（公式サイトの外観写真が長辺900px未満のため）。</div>
+<div class="sig"><b>一皿:</b>「貴」特製 四川麻婆豆腐(昼はセットで1,700円。＋100円で赤山椒を使ったしびれる麻婆豆腐に変えられる)／鹿野豚の濃厚黒酢スブタ(県産の豚を使う。夜の選べるコースの肉料理)／長州鶏の四川唐揚げ(県産の鶏を使う。夜の選べるコースの肉料理)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜14:30（最終入店13:30・L.O. 14:00）／夜 18:00〜22:00（最終入店20:30・L.O. 21:30）。夜は完全予約制</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイトのカレンダーで公表。2026年10〜12月はおおむね月曜・火曜）</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉6丁目8-61</td></tr>
+<tr><th>予約</th><td>夜は必要（完全予約制・当日11時まで電話で受付）。昼は3名以上でランチメニューのみの利用は予約時間が11:30か13:00になる — <a href="tel:0839321139">☎ 083-932-1139</a> ／ <a href="https://chinesekitchen-taka.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の中の「中華」の枠。県内の食材（鹿野豚・長州鶏・宇部の魚介・阿東のコシヒカリ）を使う点が条件に合う。営業の根拠＝公式サイトの「News 最新情報」の最新が2026年10月19日付で、同じページの「Calender 店休日」に2026年10月・11月・12月と2027年1月の休みが掲げられている（2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%81%E3%83%A3%E3%82%A4%E3%83%8B%E3%83%BC%E3%82%BA%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%20%E8%B2%B4%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%896%E4%B8%81%E7%9B%AE8-61">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（chinesekitchen-taka.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://chinesekitchen-taka.com/">チャイニーズキッチン貴 公式サイト（住所・電話・営業時間・店休日カレンダー・夜の完全予約制の告知・最新情報2026年10月19日）2026-10-20 取得</a> / <a href="https://chinesekitchen-taka.com/concept/">同 コンセプトのページ（使っている県産食材・料理人の経歴）2026-10-20 取得</a> / <a href="https://chinesekitchen-taka.com/lunch/">同 ランチのページ（昼のセット・麺飯の価格）2026-10-20 取得</a> / <a href="https://chinesekitchen-taka.com/course/">同 コースのページ（夜のコース内容と価格）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-yoshoku-kogumaya-curry">
+<img class="hero" src="img/yamaguchi/yamaguchi-yoshoku-kogumaya-curry.jpg" alt="小熊屋咖喱 湯田店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-yoshoku-kogumaya-curry_exterior.jpg" alt="小熊屋咖喱 湯田店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>小熊屋咖喱 湯田店<span class="yomi">こぐまやかれー ゆだてん</span></div>
+<div class="desc">湯の町通りにあるカレーの専門店。皿の真ん中にご飯を置き、その両側に好きな2種類のカレーを盛る形で出す。これまでに作った11種類の味の中から、季節ごとに6種類を選んで並べる。おかずも季節と仕入れで替わる。湯田店は全室が個室で、2人用が2部屋、4人用が6部屋、ほかにカウンターが3席。仕切りを外して最大10名まで入れる部屋もある。食事の時間に制限がある。山口の地酒（獺祭・雁木）をグラスで置く。宇部店と、2025年10月に開いた宮島口店がある。外観写真なし（公式サイトに外観の実写が無いため）。</div>
+<div class="sig"><b>一皿:</b>小熊屋プレート(看板の一皿。ご飯を挟んで好きな2種のカレーを盛る／単品1,800円・セット2,000円)／大熊プレート(量を増やした一皿／単品2,100円・セット2,300円)／パンナコッタ・ド・ラッシー(ラッシーを固めた自家製のデザート。オレンジ・苺・桃／各440円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜15:00（L.O. 14:30）／夜 18:00〜21:00（L.O. 20:30）。アフタヌーンティーの時間帯（13:30〜17:00）は当面休み</td></tr>
+<tr><th>定休日</th><td class="off">なし（祝日も営業）</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉1丁目9-1</td></tr>
+<tr><th>予約</th><td>一部可（平日の昼は11:00〜12:00の来店、土日祝の昼は11:00の来店に限り予約できる。夜は全日予約可） — <a href="tel:0839293129">☎ 083-929-3129</a> ／ <a href="https://kogumaya-curry.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の中の「カレー」の枠。山口市から出て宇部・宮島口へ広がった店で、全室個室という造りも含めて土地の名物として挙げられる。営業の根拠＝公式サイトの「お知らせ」の最新が2026年4月4日付（湯田温泉の交通規制の案内）で、メニューのページの料理写真が2026年6月と2026年10月にアップロードされている（ファイルの保存先が /storage/2026/06/ と /storage/2026/10/。2026-10-20 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E7%86%8A%E5%B1%8B%E5%92%96%E5%96%B1%20%E6%B9%AF%E7%94%B0%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%891%E4%B8%81%E7%9B%AE9-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kogumaya-curry.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://kogumaya-curry.jp/">小熊屋咖喱 公式サイト（住所・電話・営業時間・定休日・席数・駐車場・予約の可否・お知らせ2026年4月4日）2026-10-20 取得</a> / <a href="https://kogumaya-curry.jp/menu/">同 メニューのページ（プレートとセットの価格・デザート・山口の地酒）2026-10-20 取得</a> / <a href="https://kogumaya-curry.jp/taste/">同 テイストのページ（11種類のカレーの味）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-yoshoku-nick-house">
+<img class="hero" src="img/yamaguchi/yamaguchi-yoshoku-nick-house.jpg" alt="GRILL&amp;CAFE NICK HOUSE 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-yoshoku-nick-house_exterior.jpg" alt="GRILL&amp;CAFE NICK HOUSE 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>GRILL&amp;CAFE NICK HOUSE<span class="yomi">ぐりるあんどかふぇ にっくはうす</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">新山口駅の高架下にある炭火グリルの店。肉の部位ごとに焼き方と火加減を変えて出す。総席数61席で、最大70名の宴会・貸切にも応じる。仕切り板を立てられる席があり、仕切れば8名、外せば16名まで使える。昼は宮崎牛の自家製ハンバーグや農園直送の野菜を使った品が中心。岩国れんこんのバターソテーなど県内の食材を使う一品もある（収穫の都合で4〜8月は佐賀れんこん）。年中無休で、Wi-Fiと英語の品書きがある。駐車場は無く、近くのコインパーキングを使う。外観写真なし（公式サイト・掲載媒体の外観写真がいずれも長辺900px未満のため）。</div>
+<div class="sig"><b>一皿:</b>NICK MOUNTAIN(総量1kgの肉盛り。4人前／7,678円。ハーフもある)／黒毛牛の炭焼きこぶしハンバーグ(牛肉100%を炭で焼き、熱した鉄板で客の前で仕上げる／200g 1,628円)／ウニホーレン(バゲット付き／1,628円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・祝前日 11:30〜15:00（料理L.O. 14:00）／17:00〜23:00（料理L.O. 22:00、ドリンクL.O. 22:30）、土・日・祝 11:30〜23:00（料理L.O. 22:00、ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>山口県山口市小郡令和1丁目2-1 JR西日本新山口駅 高架下アイスタ1F</td></tr>
+<tr><th>予約</th><td>可（ネット予約は来店日当日21時まで。人数の変更と取消は3日前まで） — <a href="tel:0839001287">☎ 083-900-1287</a> ／ <a href="https://nick-house.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新幹線の駅に着いてすぐ食べられる洋食として、章の「新山口・小郡」の枠に当てた。岩国れんこんなど県内の食材を使う点も条件に合う。営業の根拠＝ホットペッパーグルメのネット予約カレンダーを2026-10-20に確認したところ、2026年10月21日〜12月31日の全日が「◎（即予約可）」か「□（リクエスト予約可）」で埋まっている。あわせて同ページのクーポン情報の更新日が2026/02/19、公式サイト（nick-house.net）の飲み放題の品書きの画像が2026年2月のアップロード。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=GRILL%26CAFE%20NICK%20HOUSE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%B0%8F%E9%83%A1%E4%BB%A4%E5%92%8C1%E4%B8%81%E7%9B%AE2-1%20JR%E8%A5%BF%E6%97%A5%E6%9C%AC%E6%96%B0%E5%B1%B1%E5%8F%A3%E9%A7%85%20%E9%AB%98%E6%9E%B6%E4%B8%8B%E3%82%A2%E3%82%A4%E3%82%B9%E3%82%BF1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001193430/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・予算・ネット予約カレンダー・メニュー価格）2026-10-20 取得</a> / <a href="https://nick-house.net/">GRILL&amp;CAFE NICK HOUSE 公式サイト（所在地・営業時間）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-yoshoku-saint-remy-de-provence">
+<img class="hero" src="img/yamaguchi/yamaguchi-yoshoku-saint-remy-de-provence.jpg" alt="山口地ビール サン・レミ・ド・プロヴァンス 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-yoshoku-saint-remy-de-provence_exterior.jpg" alt="山口地ビール サン・レミ・ド・プロヴァンス 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>山口地ビール サン・レミ・ド・プロヴァンス<span class="yomi">やまぐちじびーる さん・れみ・ど・ぷろゔぁんす</span></div>
+<div class="desc">1997年創業の山口地ビール株式会社が営むレストラン。醸造所に併設し、スタウト・ペールエール・ヴァイツェン・ピルズナーなど10種ほどのクラフトビールを出す。料理は山口の食材を使った洋食で、特大のローストビーフ、ピザ職人が焼く大きなピッツァ、パスタ11種ほど、パエリア、鮮魚のカルパッチョなどが並ぶ。平日の昼は22種類が並ぶイタリアンランチビュッフェ（1,980円）、土日祝は目の前で肉と野菜を焼くBBQランチバイキング（3,980円・90分）。コース料理は2名から、事前予約制。宴会や法要にも使われる。休みは12月31日と1月1日だけ。外観写真なし（公式サイトの外観写真が長辺900px未満のため）。</div>
+<div class="sig"><b>一皿:</b>鳴滝ワイルドステーキ(肉料理は1,380円〜。黒毛和牛ヒレのステーキやローストビーフもある)／鳴滝はちみつとたっぷりベーコンのピッツァ(ピッツァは1,590円〜で8種ほど)／山口地ビール(スタウト・ペールエール・ヴァイツェン・ピルズナーなど10種ほど／590円〜)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日（月〜金）11:00〜15:30（L.O. 14:30）／17:00〜22:00（L.O. 21:30）、土・日・祝 11:00〜22:00（L.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">12月31日・1月1日</td></tr>
+<tr><th>住所</th><td>山口県山口市下小鯖1360-4</td></tr>
+<tr><th>予約</th><td>可（ウェブ予約と電話。コース料理は2名から事前予約制。平日の昼のビュッフェも前日までなら座席の予約ができる） — <a href="tel:0839410100">☎ 083-941-0100</a> ／ <a href="https://www.yamaguchi-jibeer.com/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の中の「郊外」の枠。県内で地ビールを造る会社が併設するレストランで、山口の食材を使う点も条件に合う。営業の根拠＝公式サイトのレストランのページに2026年3月と2026年7月にアップロードした料理写真が並んでいる（ファイルの保存先が /uploads/2026/03/ と /uploads/2026/07/。2026-10-20 確認）。土日祝のBBQランチバイキングの案内も2026年7月の掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E5%8F%A3%E5%9C%B0%E3%83%93%E3%83%BC%E3%83%AB%20%E3%82%B5%E3%83%B3%E3%83%BB%E3%83%AC%E3%83%9F%E3%83%BB%E3%83%89%E3%83%BB%E3%83%97%E3%83%AD%E3%83%B4%E3%82%A1%E3%83%B3%E3%82%B9%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E4%B8%8B%E5%B0%8F%E9%AF%961360-4">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.yamaguchi-jibeer.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.yamaguchi-jibeer.com/restaurant/">山口地ビール｜サン・レミ・ド・プロヴァンス 公式サイト レストランのページ（住所・電話・営業時間・定休日・昼夜のメニューと価格・創業年）2026-10-20 取得</a> / <a href="https://www.yamaguchi-jibeer.com/craftbeer/">同 クラフトビールのページ（醸造するビールの種類）2026-10-20 取得</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・甘味</h2>
+<div class="card" id="c-yamaguchi-cafe-log-coffee-roasters">
+<img class="hero" src="img/yamaguchi/yamaguchi-cafe-log-coffee-roasters.jpg" alt="LOG COFFEE ROASTERS 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-cafe-log-coffee-roasters_exterior.jpg" alt="LOG COFFEE ROASTERS 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">38</span>LOG COFFEE ROASTERS<span class="yomi">ろぐこーひーろーすたーず</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">山口井筒屋のすぐ横、中心商店街の一角にある水色の外装の店。自動車メーカーの元エンジニアだった店主・武本直樹さんが2019年4月に開いたスペシャルティコーヒーの専門店で、世界各地から仕入れた生豆を毎朝自分で焙煎する。扱う豆はシングルオリジン9種・ブレンド1種・カフェインレス1種の計11種類。浅煎りから深煎りまであり、好みを伝えれば店主がその日の1杯を選んでくれる。席は2人掛けのテーブル3卓と4人掛け1卓、ほかにベンチ。持ち帰りもでき、豆と器具の販売も行う。専用駐車場はなく近くのコインパーキングを使う。</div>
+<div class="sig"><b>一皿:</b>ハンドドリップ(注文を受けてから豆を挽き、1杯ずつ目の前で淹れる。本日のコーヒー500円)／自家製焼き菓子「Koseling」(店内で焼くスコーン280円、レモンケーキ350円など)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜18:30（ドリンクのラストオーダー18:00。公式インスタグラムのプロフィール記載。商店街公式サイトは11:00〜19:00と記載しており差があるため、訪問前に確認を）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（月曜が祝日の場合は営業し、翌火曜が振替休み）</td></tr>
+<tr><th>住所</th><td>山口県山口市中市町4-14</td></tr>
+<tr><th>予約</th><td>未確認（席数が少ないため混み合う時間帯あり） — <a href="tel:0839021371">☎ 083-902-1371</a> ／ <a href="https://log-coffee-roasters.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市の中心商店街で唯一の自家焙煎スペシャルティコーヒー専門店で、商店街の公式サイト「山口街中」と、山口情報芸術センター（YCAM）の周辺案内の両方が掲載している。営業の根拠＝公式インスタグラム @log_coffee_roasters に2026年5月10日付の「5月の営業のお知らせ」の投稿があり、投稿総数は280件。あわせて中心商店街の公式フェイスブックが2025年11月13日に当店の新商品の告知を転載しており、2026年6月3日付の来店投稿も確認した（いずれも2026-10-20 時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=LOG%20COFFEE%20ROASTERS%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E4%B8%AD%E5%B8%82%E7%94%BA4-14">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi-san.com/post-169/">地元ウェブマガジン「山口さん」記事（店主の経歴・豆の構成・席数・価格・焙煎）2023-03-02公開／2026-10-20 取得</a> / <a href="https://www.yamaguchi-machinaka.com/shop/log-coffee-roasters/">山口街中（山口市中心商店街公式サイト）店舗ページ（住所・電話・定休日・営業時間）2026-10-20 取得</a> / <a href="https://log-coffee-roasters.com/concept">公式サイト CONCEPT ページ（所在地・代表者名）2026-10-20 取得</a> / <a href="https://www.ycam.jp/guide/access/tourism/log-coffee-roasters/">山口情報芸術センター（YCAM）周辺案内（住所・電話・曜日別営業時間）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-cafe-kohaku">
+<img class="hero" src="img/yamaguchi/yamaguchi-cafe-kohaku.jpg" alt="珈琲館 琥珀 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-cafe-kohaku_exterior.jpg" alt="珈琲館 琥珀 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">39</span>珈琲館 琥珀<span class="yomi">こーひーかん こはく</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip pop">口コミ突出</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">桜と蛍で知られる一の坂川沿いに建つ、1976年創業の喫茶店。現在は2代目のマスターが切り盛りし、半世紀にわたって地元の客と観光客の両方に使われてきた。コーヒーは種類の多い豆から選べて、注文を受けてから挽き、1杯ずつ手で淹れる。壁一面の飾り棚に並ぶカップ＆ソーサーの収集が有名で、出てくる器が毎回違うのも楽しみのひとつ。オムライスやミートソースなど昔ながらの喫茶の軽食もそろう。専用駐車場14台。朝9時から夜8時まで通しで開いているので、散策の途中にも使いやすい。</div>
+<div class="sig"><b>一皿:</b>琥珀プリン(固めの昔ながらのプリンにバニラアイスとカラメル、コーンフレークを重ねた名物。改良を重ねている)／オムライス(赤いケチャップを引いた昔ながらの一皿)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">なし（山口さん掲載時は不定休）</td></tr>
+<tr><th>住所</th><td>山口県山口市後河原136</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0839252423">☎ 083-925-2423</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1976年創業・2代目という山口市では数少ない半世紀級の喫茶店で、一の坂川の散策路の途中という位置も良い。全国チェーンではない地元の個人店。営業の根拠＝地元情報誌トライアングルのウェブ版が2026年1月14日に取材記事を公開（タウン情報トライアングル2025年12月号掲載）、さらに2026年5月3日と2026年3月31日付の来店インスタグラム投稿を確認した（2026-10-20 時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E9%A4%A8%20%E7%90%A5%E7%8F%80%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%BE%8C%E6%B2%B3%E5%8E%9F136">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://tryangle.yamaguchi.jp/tryangle/yamaguchi-kohaku">地元情報誌トライアングル ウェブ版（創業年・2代目・名物プリン・住所・営業時間・定休日・駐車場）2026-01-14 公開／2026-10-20 取得</a> / <a href="https://yamaguchi-san.com/post-33314/">地元ウェブマガジン「山口さん」記事（住所・電話・営業時間・定休日・駐車場・店内写真）2025-05-05 公開／2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-cafe-machinakaan">
+<img class="hero" src="img/yamaguchi/yamaguchi-cafe-machinakaan.jpg" alt="清香園茶店 茶房まちなか庵 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-cafe-machinakaan_exterior.jpg" alt="清香園茶店 茶房まちなか庵 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">40</span>清香園茶店 茶房まちなか庵<span class="yomi">せいこうえんちゃてん さぼうまちなかあん</span></div>
+<div class="chips"><span class="chip hist">老舗・歴史</span><span class="chip local">地元密着</span></div>
+<div class="desc">昭和5年（1930年）創業、95年続く日本茶専門店「清香園茶店」が、店の隣に設けた和カフェ。赤い野点傘が目印で、道場門前のアーケードを歩いていると見つかる。抹茶は永寿・和光・涼雲の3種から、煎茶や玉露も品評会入選の茶葉まで選べ、それぞれ和菓子か干菓子が付く。甘味は抹茶ソフト、ほうじ茶ソフト、抹茶・ほうじ茶のパフェ、抹茶ぜんざい、夏はかき氷。店では自家焙煎のほうじ茶も扱う。席は9席と小さく、散策や買い物の合間の一服に向く。</div>
+<div class="sig"><b>一皿:</b>抹茶「和光」和菓子付(800円。気軽に本格的な抹茶を楽しめる一服)／抹茶パフェ(750円。自家の抹茶を使った看板の甘味)</div>
+<table class="info">
+<tr><th>営業時間</th><td>茶房まちなか庵 11:00〜17:00（清香園茶店の物販は10:00〜18:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（祝日を除く）</td></tr>
+<tr><th>住所</th><td>山口県山口市道場門前1-3-14</td></tr>
+<tr><th>予約</th><td>不可（9席） — <a href="tel:0839220304">☎ 083-922-0304</a> ／ <a href="https://www.seikoenchaten.jp/machinakaan.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>外郎（ういろう）の菓子店ではなく、95年続く茶商が営む茶席という点でこの章に合い、場所も中心商店街の道場門前。全国チェーンではない地元の老舗。営業の根拠＝公式インスタグラム @machinakaan に2026年9月12日付の「かき氷は9月末まで」の投稿があり、2026年6月20日・2025年11月17日の投稿も確認した。山口市中心商店街の公式サイト「山口街中」の店舗一覧にも現役店として掲載されている（いずれも2026-10-20 時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B8%85%E9%A6%99%E5%9C%92%E8%8C%B6%E5%BA%97%20%E8%8C%B6%E6%88%BF%E3%81%BE%E3%81%A1%E3%81%AA%E3%81%8B%E5%BA%B5%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E9%81%93%E5%A0%B4%E9%96%80%E5%89%8D1-3-14">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.seikoenchaten.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.seikoenchaten.jp/machinakaan.html">清香園茶店 公式サイト「まちなか庵のご紹介」（品書き・価格）2026-10-20 取得</a> / <a href="https://www.seikoenchaten.jp/shop.html">清香園茶店 公式サイト 店舗案内（創業95年・住所・電話・営業時間・定休日・自家焙煎）2026-10-20 取得</a> / <a href="https://www.yamaguchi-machinaka.com/shop/seikouen/">山口街中（山口市中心商店街公式サイト）店舗ページ（まちなか庵の営業時間11:00-17:00・定休日）2026-10-20 取得</a> / <a href="https://www.yamacci.or.jp/choco/seikoenchaten/">山口商工会議所 まちなか情報（住所・電話・営業時間・定休日）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-cafe-imoshogun-okunohosomichi">
+<img class="hero" src="img/yamaguchi/yamaguchi-cafe-imoshogun-okunohosomichi.jpg" alt="芋将軍CAFE 奥の細道 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-cafe-imoshogun-okunohosomichi_exterior.jpg" alt="芋将軍CAFE 奥の細道 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">41</span>芋将軍CAFE 奥の細道<span class="yomi">いもしょうぐんかふぇ おくのほそみち</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">湯田温泉の飲食店が並ぶ通りから細い路地を奥へ入った先にある古民家のカフェ。山口市阿知須（あじす）の青果店「ふじみや」が営む壺焼き芋専門店「芋将軍」の2号店として2025年8月に開いた。民家を改装した店内にはテーブル席のほか、縁側にあたる座敷席と2階席があり、靴を脱いで上がる。一角には棚ごとに貸し出す私設図書館「みんなの図書館 AITUNCHI（あいつんち）」があり、置かれた本は客が無料で読める。テラスに据えた壺で1時間半から2時間かけて芋を焼き、犬を連れてテラス席で過ごす客も多い。席数8。</div>
+<div class="sig"><b>一皿:</b>壺焼き芋(テラスの壺で1時間半〜2時間かけて焼く。Mサイズ430円〜・Lサイズ480円〜)／くだもの屋のパフェ(親店が青果店。旬の果物をたっぷり使う。いちごパフェ1,300円)／たまごかけご飯(800円。醤油5種・薬味5種から選べ、ご飯と卵のおかわりは無料)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜・水曜</td></tr>
+<tr><th>住所</th><td>山口県山口市湯田温泉1-10-14</td></tr>
+<tr><th>予約</th><td>未確認（食べログの店舗情報は「予約可」） — <a href="tel:09040847516">☎ 090-4084-7516</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>湯田温泉の夜の繁華街のただ中にありながら、路地の奥で静かに過ごせる築古の民家を使ったカフェで、この章の「古い建物を使ったカフェ」に当たる。外郎（ういろう）を主役にしない甘味の店でもある。営業の根拠＝公式インスタグラム @imoshogun_yamaguchi_yuda に2026年4月5日付の休業日の告知があり、2026年9月11日付の季節メニューの投稿も確認した。地域情報サイト「もってけ」の店舗ページは2026年10月10日の投稿を取り込んでおり、山口宇部経済新聞系の媒体も2026年9月9日に取り上げている。『芋将軍CAFE 奥の細道 閉店』で検索し、閉店の報が無いことも確かめた（いずれも2026-10-20 時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8A%8B%E5%B0%86%E8%BB%8DCAFE%20%E5%A5%A5%E3%81%AE%E7%B4%B0%E9%81%93%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E6%B9%AF%E7%94%B0%E6%B8%A9%E6%B3%891-10-14">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi-san.com/post-41433/">地元ウェブマガジン「山口さん」記事（開店時期・古民家の構成・私設図書館・品書きと価格・住所・営業時間・定休日・電話・駐車場）2026-03-28 公開／2026-10-20 取得</a> / <a href="https://yamaguchi.keizai.biz/headline/5187/">山口宇部経済新聞 開店記事（2号店としての開店・2025年8月）2025-08-14 公開／2026-10-20 取得</a> / <a href="https://mtke.jp/lunch/208568/">地域情報サイト「もってけ」店舗ページ（店の紹介・2026年10月の投稿）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-cafe-lancre">
+<img class="hero" src="img/yamaguchi/yamaguchi-cafe-lancre.jpg" alt="Cafe L'ancre 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-cafe-lancre_exterior.jpg" alt="Cafe L'ancre 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>Cafe L'ancre<span class="yomi">かふぇ らあんかー</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip pop">口コミ突出</span></div>
+<div class="desc">2016年3月に大市の通りに開いたチーズケーキの専門カフェ。ガラス張りの入口と立て看板が目印で、店内は木目で整えられ、4人掛けと2人掛けを合わせて4卓ほどの小さな店。ショーケースにはバスクチーズケーキやチーズスフレなど常時8種ほどが並び、「はちみつレモンレアチーズ」のような季節のものや、冬の3か月だけ出るチョコレートの菓子もある。国産チーズだけを使うバスクは甘さを抑えた本格派。店主の大林さんは長年市内の病院で調理師を務めた人で、開店当初は他の菓子も作っていたが、評判が立ったチーズケーキ一本に絞った。持ち帰りもできる。</div>
+<div class="sig"><b>一皿:</b>バスクのチーズ(540円。国産チーズだけを使い、甘さを抑えてコクを前に出した一番人気)／アンカーブレンド(550円。チーズケーキに合わせて山口市のカピン珈琲と組んで作ったブレンド。豆とドリップバッグの販売もあり)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜18:00（商品がなくなり次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（ほかに月1回の不定休あり）</td></tr>
+<tr><th>住所</th><td>山口県山口市大市町1-21</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0839293582">☎ 083-929-3582</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>中心商店街の徒歩圏にある個人の菓子店で、この章の「ケーキ屋の喫茶」に当たる。コーヒーも市内の自家焙煎店と組んだ専用ブレンドで、章の他の店とつながりがある。営業の根拠＝地元ブログが2026年10月10日に来店記事を公開しており、食べログの口コミにも2026年9月・2026年4月の訪問がある。山口市中心商店街の公式サイト「山口街中」の店舗一覧にも現役店として掲載。『カフェラアンカー 閉店』で検索して閉店の報が無いことも確かめた（いずれも2026-10-20 時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Cafe%20L%27ancre%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%A4%A7%E5%B8%82%E7%94%BA1-21">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.yamaguchi-machinaka.com/shop/lancre/">山口街中（山口市中心商店街公式サイト）店舗ページ（開店日2016年3月1日・住所・電話・定休日・営業時間）2026-10-20 取得</a> / <a href="https://yamaguchi-san.com/post-24817/">地元ウェブマガジン「山口さん」記事（店主の経歴・ケーキの種類・席数・価格・アンカーブレンド）2024-09-12 公開／2026-10-20 取得</a> / <a href="https://yamaguchi.keizai.biz/headline/3852/">山口宇部経済新聞 5周年記事（開店からの歩み）2021-03-16 公開／2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-cafe-sai-coffee-roastery">
+<img class="hero" src="img/yamaguchi/yamaguchi-cafe-sai-coffee-roastery.jpg" alt="Saï Coffee Roastery 山口店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-cafe-sai-coffee-roastery_exterior.jpg" alt="Saï Coffee Roastery 山口店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>Saï Coffee Roastery 山口店<span class="yomi">さい こーひー ろーすたりー やまぐちてん</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip local">地元密着</span></div>
+<div class="desc">黒い外壁に「齊」の一字を掲げた、スペシャルティコーヒーの専門店。下松市の喫茶店に生まれ育った店主の齊藤さんが、福岡で飲んだ浅煎りのコーヒーに衝撃を受けて2019年に開いた。店内にディードリッヒ社の焙煎機を2台据えており、そばで焙煎を見ることができる。常時10種類ほどの豆を扱い、直接買い付けたエチオピアを軸にインドネシアやブラジルなども100gから量り売りする。浅煎りは柑橘のような酸味とはちみつのような甘さが立ち、冷めると紅茶に近い飲み口になる。席は15席、駐車場は5台。下松市にもう1店ある。</div>
+<div class="sig"><b>一皿:</b>浅煎りのシングルオリジン(エチオピア ゴチチ ウォッシュドなど600円前後。計量と湯温・注湯量を決めて淹れる)／店内焙煎のコーヒー豆(常時10種前後・100gから量り売り。贈答用もあり)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜18:30（ラストオーダー18:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（公式サイトのお知らせで2024年11月から毎週水曜）</td></tr>
+<tr><th>住所</th><td>山口県山口市矢原1154-7</td></tr>
+<tr><th>予約</th><td>不可 — <a href="tel:0839293722">☎ 083-929-3722</a> ／ <a href="https://saicoffeeroastery.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>山口市でもっとも早くスペシャルティコーヒーの浅煎りを看板にした自家焙煎店で、焙煎機のそばで豆が焼ける様子を見られる点が中心部のLOG COFFEE ROASTERSと性格が違う。湯田温泉と新山口駅の中間にあり、章の中で場所も散る。営業の根拠＝公式インスタグラム @sai_coffee_roastery に2026年7月22日付の「山口店限定」のメニュー告知があり、2026年10月2日にはコーヒーの催事の出店者として紹介されている。公式サイトの店舗ページも山口店の営業時間・席数を現役の情報として掲載している（いずれも2026-10-20 時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Sa%C3%AF%20Coffee%20Roastery%20%E5%B1%B1%E5%8F%A3%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E7%9F%A2%E5%8E%9F1154-7">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://saicoffeeroastery.com/shops/">公式サイト SHOP ページ（山口店の住所・電話・営業時間・席数・下松店の存在）2026-10-20 取得</a> / <a href="https://saicoffeeroastery.com/">公式サイト お知らせ（2024年11月から山口店の定休日を毎週水曜に変更）2024-11-06 公開／2026-10-20 取得</a> / <a href="https://yamaguchi-san.com/post-2655/">地元ウェブマガジン「山口さん」記事（店主の経歴・2019年開店・焙煎機・豆の構成・駐車場・席数・価格）2023-05-14 公開／2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-yamaguchi-cafe-ouchicafe-pokapoka">
+<img class="hero" src="img/yamaguchi/yamaguchi-cafe-ouchicafe-pokapoka.jpg" alt="お家カフェ ぽかぽか 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/yamaguchi/yamaguchi-cafe-ouchicafe-pokapoka_exterior.jpg" alt="お家カフェ ぽかぽか 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>お家カフェ ぽかぽか<span class="yomi">おうちかふぇ ぽかぽか</span></div>
+<div class="chips"><span class="chip blog">ブログ推薦</span><span class="chip pop">口コミ突出</span><span class="chip kids">子連れ歓迎</span></div>
+<div class="desc">吉敷の赤田神社のそばに建つ、築100年ほどの民家を改装したカフェ。2024年4月に開いた。店主の山本奈美さんは市内でパン教室を6年続けてきた人で、米と麹と水から起こす酒種酵母を使い、前日から半日以上かけて低温で発酵させたパンを毎日焼く。ランチは肉と魚の2種のプレートで、日替わり4種から2つ選ぶパン、季節のサラダ、スープ、飲み物、デザートが付く。外ののどかな景色が見えるカウンター席のほか、テーブル席とソファ席があり、子ども連れにも使われている。総席数28。駐車場へ渡る橋が車1台ぶんの幅しかないので運転に注意。</div>
+<div class="sig"><b>一皿:</b>酒種酵母のパン(米・麹・水で起こした酵母を使い半日以上かけて低温発酵させる。日替わり4種から2つを選べ、おかわりは150円。持ち帰り用の販売もあり)／お魚プレート・お肉プレート(各2,200円。パン2種・季節のサラダ・スープ・飲み物・デザート付き)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00（料理・飲み物ともラストオーダー17:00）。17時以降は完全予約制のディナー</td></tr>
+<tr><th>定休日</th><td class="off">木曜・金曜</td></tr>
+<tr><th>住所</th><td>山口県山口市吉敷赤田5-5-10</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約。来店日の前日17時まで受付。17時以降のディナーは完全予約制） — <a href="tel:09078987708">☎ 090-7898-7708</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>築100年の民家を使った古民家カフェであり、同時に自家製パンの喫茶でもあるので、章の中で中心部のコーヒー店や菓子店と性格が重ならない。市街地から離れた郊外にあり、場所も散る。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年10月24日から12月31日まで、定休日の木・金を除くほぼ全日で「即予約可」になっていることを確認した。同ページの口コミには2026年9月21日・2026年9月14日の来店が複数あり、店舗情報は2025年11月9日更新。公式インスタグラム @ouchicafepocapoca の紹介文も「open 土日月火水 lunchとcafe 11-17」と現行の営業を示している（いずれも2026-10-20 時点）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%AE%B6%E3%82%AB%E3%83%95%E3%82%A7%20%E3%81%BD%E3%81%8B%E3%81%BD%E3%81%8B%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E5%B1%B1%E5%8F%A3%E5%B8%82%E5%90%89%E6%95%B7%E8%B5%A4%E7%94%B05-5-10">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003762455/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・総席数28・駐車場・予約方法・ネット予約カレンダー・口コミの来店日。店舗情報は2025-11-09 更新）2026-10-20 取得</a> / <a href="https://yamaguchi-san.com/post-21579/">地元ウェブマガジン「山口さん」記事（築100年の古民家・2024年4月開店・店主の経歴・酒種酵母のパン・プレートランチの中身と価格・電話）2024-07-20 公開／2026-10-20 取得</a> / <a href="https://tryangle.yamaguchi.jp/tryangle/yamaguchi-pokapoka">地元情報誌トライアングル ウェブ版 開店記事 2024-09-06 公開／2026-10-20 取得</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年10月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>
