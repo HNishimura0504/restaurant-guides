@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>下関美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  /* 外観写真（2026-10-19・外観写真の欠落3度目）: 料理・店内の hero の下に、店構えを1枚添える。
+     地図のポップアップと Notion 記事は <sid>_exterior.jpg を別に拾うので、ここは PDF・ガイド本文で見せるための行。 */
+  .extfig{position:relative; margin:0;}
+  .extfig img{display:block; width:100%; height:40mm; object-fit:cover; border-top:2px solid #fff;}
+  .extfig figcaption{position:absolute; left:2mm; bottom:1.5mm; background:rgba(0,0,0,.55); color:#fff; font-size:7pt; padding:.3mm 1.6mm; border-radius:1mm;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">下関美食ガイド<span class="sn-n">50店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/shimonoseki.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="下関ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">下関ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/shimonoseki.html"><span class="sn-e">🗺️</span>下関の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-fuku"><span class="sn-e">・</span>ふく・くじら・うに — 下関の魚</a><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・割烹</a><a href="#s-men"><span class="sn-e">・</span>瓦そば・ラーメン・麺類</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・郷土料理・地酒（豊前田）</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・イタリアン・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・甘味</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全101都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全101都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / SHIMONOSEKI・山口県下関市 🇯🇵</div>
+  <h1>下関美食ガイド</h1>
+  <div class="sub">本州の西の端、関門海峡（かんもんかいきょう）に面した港町。ふく（ふぐ）とあんこうの水揚げは日本一で、くじらと雲丹（うに）の加工でも知られる。唐戸（からと）市場の朝から、豊前田（ぶぜんだ）の夜の店、長府（ちょうふ）の城下町、川棚（かわたな）温泉の瓦そばまで厳選50スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/shimonoseki/_map.jpg" alt="全域マップ">
+<a href="#c-shimonoseki-fuku-shunrakukan" style="left:49.22%;top:90.32%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-fuku-nisshinmaru" style="left:49.78%;top:90.16%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-fuku-ichiba-shokudo-yoshi" style="left:49.36%;top:90.46%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-fuku-katsumoto" style="left:48.38%;top:89.92%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-fuku-tamaya-honten" style="left:37.95%;top:93.02%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-fuku-fukunoseki-kamonwharf" style="left:49.34%;top:90.54%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-fuku-sekitora-honten" style="left:53.53%;top:88.04%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-fuku-uomasa-honjin" style="left:49.1%;top:89.73%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-fuku-doigahama-harumi" style="left:30.85%;top:7.01%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-nakahisazushi" style="left:46.86%;top:85.12%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-hamazushi-karato" style="left:49.26%;top:90.47%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-kaiten-karato-ichibazushi" style="left:49.36%;top:90.46%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-unagi-fukuda" style="left:49.34%;top:90.54%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-maruyama" style="left:45.0%;top:91.52%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-hanare-rindou" style="left:44.58%;top:91.41%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-ibukiyose" style="left:46.65%;top:91.79%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-hironaka" style="left:69.15%;top:74.23%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-washoku-miyanouchi-saryo" style="left:63.6%;top:80.35%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-men-takase" style="left:47.17%;top:46.6%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-men-fujiya" style="left:49.34%;top:90.54%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-men-inakasoba" style="left:49.06%;top:89.98%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-men-hayashi" style="left:51.51%;top:78.31%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-men-maruryu" style="left:44.22%;top:91.85%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-men-yamanota" style="left:45.92%;top:74.1%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-men-hashimoto" style="left:63.88%;top:80.07%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-men-taiheiraku" style="left:46.3%;top:91.75%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-izakaya-bishoku-housen" style="left:44.35%;top:91.58%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-izakaya-ebisumon" style="left:45.14%;top:91.5%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-izakaya-sumiyaki-tanuki" style="left:45.49%;top:91.4%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-izakaya-sakanaya-okamoto" style="left:46.77%;top:91.37%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-izakaya-nagoya-karato" style="left:49.34%;top:89.99%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-izakaya-shunsai-kobo-maruho" style="left:48.3%;top:90.37%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-izakaya-ponponsen-chofu" style="left:64.37%;top:79.4%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-izakaya-ajisai-ayaragi" style="left:43.3%;top:78.52%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-yoshoku-takatsu" style="left:46.64%;top:91.67%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-yoshoku-marutaya-hinoyama" style="left:52.76%;top:87.28%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-yoshoku-nasubi" style="left:45.68%;top:83.51%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-yoshoku-alberi" style="left:50.18%;top:90.09%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-yoshoku-osteria-wakka" style="left:45.07%;top:91.5%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-yoshoku-sankotteki" style="left:44.22%;top:91.85%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-yoshoku-ikuno-hanten" style="left:42.97%;top:91.6%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-yoshoku-ristorante-yu" style="left:61.43%;top:77.71%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-cafe-coffee-house-bridge" style="left:62.78%;top:83.92%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-cafe-kissa-wasurezino" style="left:50.58%;top:90.04%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-cafe-porto-haus" style="left:48.46%;top:90.92%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-cafe-sabo-fuwari" style="left:48.3%;top:90.12%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-cafe-mugimamesha" style="left:45.76%;top:91.55%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-cafe-muchitoame" style="left:44.28%;top:91.9%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-cafe-souzaemon-takada-coffee" style="left:63.38%;top:81.19%;width:3.74%;height:2.32%;"></a>
+<a href="#c-shimonoseki-cafe-polano" style="left:45.66%;top:83.08%;width:3.74%;height:2.32%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（50店・番号はピンと同じ）</div>
+<div class="sec blue">ふく・くじら・うに — 下関の魚</div>
+<div class="links">
+<a href="#c-shimonoseki-fuku-shunrakukan"><span class="tn" style="background:#2a78d6;">1</span>唐戸でふくとあんこうを通年で</a>
+<a href="#c-shimonoseki-fuku-nisshinmaru"><span class="tn" style="background:#2a78d6;">2</span>捕鯨母船の名を継いだ鯨専門店</a>
+<a href="#c-shimonoseki-fuku-ichiba-shokudo-yoshi"><span class="tn" style="background:#2a78d6;">3</span>板うにが丸ごと一枚のる定食</a>
+<a href="#c-shimonoseki-fuku-katsumoto"><span class="tn" style="background:#2a78d6;">4</span>昭和52年から続く長州料理の店</a>
+<a href="#c-shimonoseki-fuku-tamaya-honten"><span class="tn" style="background:#2a78d6;">5</span>南風泊のそばの完全予約制の離れ</a>
+<a href="#c-shimonoseki-fuku-fukunoseki-kamonwharf"><span class="tn" style="background:#2a78d6;">6</span>仲卸直営、ふくを定食と丼で</a>
+<a href="#c-shimonoseki-fuku-sekitora-honten"><span class="tn" style="background:#2a78d6;">7</span>関門橋の横、とらふくのフルコース一本</a>
+<a href="#c-shimonoseki-fuku-uomasa-honjin"><span class="tn" style="background:#2a78d6;">8</span>赤間町で47年、地魚の大衆酒処</a>
+<a href="#c-shimonoseki-fuku-doigahama-harumi"><span class="tn" style="background:#2a78d6;">9</span>全席が窓際、響灘を見ながらの舟盛り丼</a>
+</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-shimonoseki-washoku-nakahisazushi"><span class="tn" style="background:#1baf7a;">10</span>細工寿司で祝う、幡生の町の寿司屋</a>
+<a href="#c-shimonoseki-washoku-hamazushi-karato"><span class="tn" style="background:#1baf7a;">11</span>唐戸で仕入れた魚を昼だけ握る10席</a>
+<a href="#c-shimonoseki-washoku-kaiten-karato-ichibazushi"><span class="tn" style="background:#1baf7a;">12</span>唐戸市場2階、海峡を見ながらの回転寿司</a>
+<a href="#c-shimonoseki-washoku-unagi-fukuda"><span class="tn" style="background:#1baf7a;">13</span>蒸さずに炭火で焼く、海峡そばのうなぎ</a>
+<a href="#c-shimonoseki-washoku-maruyama"><span class="tn" style="background:#1baf7a;">14</span>細江の路地裏、唐戸と小倉の魚を握る</a>
+<a href="#c-shimonoseki-washoku-hanare-rindou"><span class="tn" style="background:#1baf7a;">15</span>路地裏の一軒家、囲炉裏を囲む握りと鍋</a>
+<a href="#c-shimonoseki-washoku-ibukiyose"><span class="tn" style="background:#1baf7a;">16</span>カウンターで一品ずつ揚がる天ぷら</a>
+<a href="#c-shimonoseki-washoku-hironaka"><span class="tn" style="background:#1baf7a;">17</span>長府の完全予約制、個室でいただく御膳</a>
+<a href="#c-shimonoseki-washoku-miyanouchi-saryo"><span class="tn" style="background:#1baf7a;">18</span>忌宮神社の境内、庭を見ながらの日本料理</a>
+</div>
+<div class="sec red">瓦そば・ラーメン・麺類</div>
+<div class="links">
+<a href="#c-shimonoseki-men-takase"><span class="tn" style="background:#e34948;">19</span>1962年に瓦そばを生んだ発祥の店</a>
+<a href="#c-shimonoseki-men-fujiya"><span class="tn" style="background:#e34948;">20</span>唐戸の海峡を見ながら食べる瓦そば</a>
+<a href="#c-shimonoseki-men-inakasoba"><span class="tn" style="background:#e34948;">21</span>市役所前の手打ち蕎麦、470円から</a>
+<a href="#c-shimonoseki-men-hayashi"><span class="tn" style="background:#e34948;">22</span>新下関駅前で瓦そばとふくを出す食事処</a>
+<a href="#c-shimonoseki-men-maruryu"><span class="tn" style="background:#e34948;">23</span>豊前田の夜に効く国産黒豚の豚骨</a>
+<a href="#c-shimonoseki-men-yamanota"><span class="tn" style="background:#e34948;">24</span>1981年から続く下関のらーめん</a>
+<a href="#c-shimonoseki-men-hashimoto"><span class="tn" style="background:#e34948;">25</span>城下町長府の昼だけの二八蕎麦</a>
+<a href="#c-shimonoseki-men-taiheiraku"><span class="tn" style="background:#e34948;">26</span>岬之町の町中華、チャンポン650円</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（豊前田）</div>
+<div class="links">
+<a href="#c-shimonoseki-izakaya-bishoku-housen"><span class="tn" style="background:#0d366b;">27</span>生け簀の活魚と山口の地酒</a>
+<a href="#c-shimonoseki-izakaya-ebisumon"><span class="tn" style="background:#0d366b;">28</span>古民家風の完全個室で山口の地酒</a>
+<a href="#c-shimonoseki-izakaya-sumiyaki-tanuki"><span class="tn" style="background:#0d366b;">29</span>豊前田の老舗、備長炭の串と地魚</a>
+<a href="#c-shimonoseki-izakaya-sakanaya-okamoto"><span class="tn" style="background:#0d366b;">30</span>鮮魚店が併設、魚を選んで調理</a>
+<a href="#c-shimonoseki-izakaya-nagoya-karato"><span class="tn" style="background:#0d366b;">31</span>創業50年、長州どりの焼きとり</a>
+<a href="#c-shimonoseki-izakaya-shunsai-kobo-maruho"><span class="tn" style="background:#0d366b;">32</span>市役所裏、水槽の魚を選んで和の創作</a>
+<a href="#c-shimonoseki-izakaya-ponponsen-chofu"><span class="tn" style="background:#0d366b;">33</span>城下町長府の、家庭の味の居酒屋</a>
+<a href="#c-shimonoseki-izakaya-ajisai-ayaragi"><span class="tn" style="background:#0d366b;">34</span>綾羅木の、おふくろの味の小さな店</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-shimonoseki-yoshoku-takatsu"><span class="tn" style="background:#4a3aa7;">35</span>大正の洋館で味わうおまかせコース</a>
+<a href="#c-shimonoseki-yoshoku-marutaya-hinoyama"><span class="tn" style="background:#4a3aa7;">36</span>関門海峡を望む創業50余年のステーキ店</a>
+<a href="#c-shimonoseki-yoshoku-nasubi"><span class="tn" style="background:#4a3aa7;">37</span>煮込みハンバーグが看板の町の洋食食堂</a>
+<a href="#c-shimonoseki-yoshoku-alberi"><span class="tn" style="background:#4a3aa7;">38</span>唐戸の路地で22年続くイタリア料理</a>
+<a href="#c-shimonoseki-yoshoku-osteria-wakka"><span class="tn" style="background:#4a3aa7;">39</span>6席だけのコース専門イタリアン</a>
+<a href="#c-shimonoseki-yoshoku-sankotteki"><span class="tn" style="background:#4a3aa7;">40</span>豊前田で味わう本場釜山の屋台料理</a>
+<a href="#c-shimonoseki-yoshoku-ikuno-hanten"><span class="tn" style="background:#4a3aa7;">41</span>リトル釜山の一角に立つ町中華</a>
+<a href="#c-shimonoseki-yoshoku-ristorante-yu"><span class="tn" style="background:#4a3aa7;">42</span>長府の石窯で焼くピッツァと肉料理</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-shimonoseki-cafe-coffee-house-bridge"><span class="tn" style="background:#eda100;">43</span>関門海峡を望む半世紀の喫茶</a>
+<a href="#c-shimonoseki-cafe-kissa-wasurezino"><span class="tn" style="background:#eda100;">44</span>海峡の見える窓際とサザンの名曲</a>
+<a href="#c-shimonoseki-cafe-porto-haus"><span class="tn" style="background:#eda100;">45</span>唐戸の一枚焼きクレープの店</a>
+<a href="#c-shimonoseki-cafe-sabo-fuwari"><span class="tn" style="background:#eda100;">46</span>創業160年の和菓子屋の茶席</a>
+<a href="#c-shimonoseki-cafe-mugimamesha"><span class="tn" style="background:#eda100;">47</span>元うに工場のビルのレトロ喫茶</a>
+<a href="#c-shimonoseki-cafe-muchitoame"><span class="tn" style="background:#eda100;">48</span>豊前田のカレーとプリンの喫茶</a>
+<a href="#c-shimonoseki-cafe-souzaemon-takada-coffee"><span class="tn" style="background:#eda100;">49</span>武家屋敷で飲む下関最初の自家焙煎</a>
+<a href="#c-shimonoseki-cafe-polano"><span class="tn" style="background:#eda100;">50</span>観葉植物に埋もれたパン屋の喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 豊前田(ぶぜんだ)・細江(ほそえ)・岬之町〜下関駅前（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/shimonoseki/_map2.jpg" alt="中心部拡大1 豊前田(ぶぜんだ)・細江(ほそえ)・岬之町〜下関駅前">
+<a href="#c-shimonoseki-washoku-maruyama" style="left:54.96%;top:47.53%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-washoku-hanare-rindou" style="left:44.98%;top:41.8%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-washoku-ibukiyose" style="left:94.05%;top:61.26%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-men-maruryu" style="left:36.42%;top:64.31%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-men-taiheiraku" style="left:85.83%;top:59.25%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-izakaya-bishoku-housen" style="left:39.47%;top:50.44%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-izakaya-ebisumon" style="left:58.13%;top:46.05%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-izakaya-sumiyaki-tanuki" style="left:66.47%;top:41.28%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-izakaya-sakanaya-okamoto" style="left:96.98%;top:39.41%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-yoshoku-takatsu" style="left:93.82%;top:55.06%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-yoshoku-osteria-wakka" style="left:56.49%;top:46.19%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-yoshoku-sankotteki" style="left:36.42%;top:64.31%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-yoshoku-ikuno-hanten" style="left:6.61%;top:51.58%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-cafe-mugimamesha" style="left:73.04%;top:48.95%;width:2.78%;height:3.74%;"></a>
+<a href="#c-shimonoseki-cafe-muchitoame" style="left:37.82%;top:66.98%;width:2.78%;height:3.74%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（15店・番号はピンと同じ）</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-shimonoseki-washoku-maruyama"><span class="tn" style="background:#1baf7a;">14</span>細江の路地裏、唐戸と小倉の魚を握る</a>
+<a href="#c-shimonoseki-washoku-hanare-rindou"><span class="tn" style="background:#1baf7a;">15</span>路地裏の一軒家、囲炉裏を囲む握りと鍋</a>
+<a href="#c-shimonoseki-washoku-ibukiyose"><span class="tn" style="background:#1baf7a;">16</span>カウンターで一品ずつ揚がる天ぷら</a>
+</div>
+<div class="sec red">瓦そば・ラーメン・麺類</div>
+<div class="links">
+<a href="#c-shimonoseki-men-maruryu"><span class="tn" style="background:#e34948;">23</span>豊前田の夜に効く国産黒豚の豚骨</a>
+<a href="#c-shimonoseki-men-taiheiraku"><span class="tn" style="background:#e34948;">26</span>岬之町の町中華、チャンポン650円</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（豊前田）</div>
+<div class="links">
+<a href="#c-shimonoseki-izakaya-bishoku-housen"><span class="tn" style="background:#0d366b;">27</span>生け簀の活魚と山口の地酒</a>
+<a href="#c-shimonoseki-izakaya-ebisumon"><span class="tn" style="background:#0d366b;">28</span>古民家風の完全個室で山口の地酒</a>
+<a href="#c-shimonoseki-izakaya-sumiyaki-tanuki"><span class="tn" style="background:#0d366b;">29</span>豊前田の老舗、備長炭の串と地魚</a>
+<a href="#c-shimonoseki-izakaya-sakanaya-okamoto"><span class="tn" style="background:#0d366b;">30</span>鮮魚店が併設、魚を選んで調理</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-shimonoseki-yoshoku-takatsu"><span class="tn" style="background:#4a3aa7;">35</span>大正の洋館で味わうおまかせコース</a>
+<a href="#c-shimonoseki-yoshoku-osteria-wakka"><span class="tn" style="background:#4a3aa7;">39</span>6席だけのコース専門イタリアン</a>
+<a href="#c-shimonoseki-yoshoku-sankotteki"><span class="tn" style="background:#4a3aa7;">40</span>豊前田で味わう本場釜山の屋台料理</a>
+<a href="#c-shimonoseki-yoshoku-ikuno-hanten"><span class="tn" style="background:#4a3aa7;">41</span>リトル釜山の一角に立つ町中華</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-shimonoseki-cafe-mugimamesha"><span class="tn" style="background:#eda100;">47</span>元うに工場のビルのレトロ喫茶</a>
+<a href="#c-shimonoseki-cafe-muchitoame"><span class="tn" style="background:#eda100;">48</span>豊前田のカレーとプリンの喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 唐戸(からと)・赤間町(あかまちょう)・南部町(なべちょう)（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/shimonoseki/_map3.jpg" alt="中心部拡大2 唐戸(からと)・赤間町(あかまちょう)・南部町(なべちょう)">
+<a href="#c-shimonoseki-fuku-shunrakukan" style="left:43.25%;top:47.45%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-fuku-nisshinmaru" style="left:63.35%;top:36.25%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-fuku-ichiba-shokudo-yoshi" style="left:48.09%;top:56.92%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-fuku-katsumoto" style="left:12.73%;top:19.53%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-fuku-fukunoseki-kamonwharf" style="left:47.38%;top:61.93%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-fuku-uomasa-honjin" style="left:38.76%;top:6.25%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-washoku-hamazushi-karato" style="left:44.68%;top:57.17%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-washoku-kaiten-karato-ichibazushi" style="left:48.09%;top:56.92%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-washoku-unagi-fukuda" style="left:47.38%;top:61.93%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-men-fujiya" style="left:47.38%;top:61.93%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-men-inakasoba" style="left:37.51%;top:23.67%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-izakaya-nagoya-karato" style="left:47.38%;top:24.23%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-izakaya-shunsai-kobo-maruho" style="left:9.68%;top:50.68%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-yoshoku-alberi" style="left:77.89%;top:31.62%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-cafe-kissa-wasurezino" style="left:92.61%;top:27.98%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-cafe-porto-haus" style="left:15.42%;top:88.13%;width:2.12%;height:2.5%;"></a>
+<a href="#c-shimonoseki-cafe-sabo-fuwari" style="left:9.68%;top:33.27%;width:2.12%;height:2.5%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（17店・番号はピンと同じ）</div>
+<div class="sec blue">ふく・くじら・うに — 下関の魚</div>
+<div class="links">
+<a href="#c-shimonoseki-fuku-shunrakukan"><span class="tn" style="background:#2a78d6;">1</span>唐戸でふくとあんこうを通年で</a>
+<a href="#c-shimonoseki-fuku-nisshinmaru"><span class="tn" style="background:#2a78d6;">2</span>捕鯨母船の名を継いだ鯨専門店</a>
+<a href="#c-shimonoseki-fuku-ichiba-shokudo-yoshi"><span class="tn" style="background:#2a78d6;">3</span>板うにが丸ごと一枚のる定食</a>
+<a href="#c-shimonoseki-fuku-katsumoto"><span class="tn" style="background:#2a78d6;">4</span>昭和52年から続く長州料理の店</a>
+<a href="#c-shimonoseki-fuku-fukunoseki-kamonwharf"><span class="tn" style="background:#2a78d6;">6</span>仲卸直営、ふくを定食と丼で</a>
+<a href="#c-shimonoseki-fuku-uomasa-honjin"><span class="tn" style="background:#2a78d6;">8</span>赤間町で47年、地魚の大衆酒処</a>
+</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-shimonoseki-washoku-hamazushi-karato"><span class="tn" style="background:#1baf7a;">11</span>唐戸で仕入れた魚を昼だけ握る10席</a>
+<a href="#c-shimonoseki-washoku-kaiten-karato-ichibazushi"><span class="tn" style="background:#1baf7a;">12</span>唐戸市場2階、海峡を見ながらの回転寿司</a>
+<a href="#c-shimonoseki-washoku-unagi-fukuda"><span class="tn" style="background:#1baf7a;">13</span>蒸さずに炭火で焼く、海峡そばのうなぎ</a>
+</div>
+<div class="sec red">瓦そば・ラーメン・麺類</div>
+<div class="links">
+<a href="#c-shimonoseki-men-fujiya"><span class="tn" style="background:#e34948;">20</span>唐戸の海峡を見ながら食べる瓦そば</a>
+<a href="#c-shimonoseki-men-inakasoba"><span class="tn" style="background:#e34948;">21</span>市役所前の手打ち蕎麦、470円から</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（豊前田）</div>
+<div class="links">
+<a href="#c-shimonoseki-izakaya-nagoya-karato"><span class="tn" style="background:#0d366b;">31</span>創業50年、長州どりの焼きとり</a>
+<a href="#c-shimonoseki-izakaya-shunsai-kobo-maruho"><span class="tn" style="background:#0d366b;">32</span>市役所裏、水槽の魚を選んで和の創作</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-shimonoseki-yoshoku-alberi"><span class="tn" style="background:#4a3aa7;">38</span>唐戸の路地で22年続くイタリア料理</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-shimonoseki-cafe-kissa-wasurezino"><span class="tn" style="background:#eda100;">44</span>海峡の見える窓際とサザンの名曲</a>
+<a href="#c-shimonoseki-cafe-porto-haus"><span class="tn" style="background:#eda100;">45</span>唐戸の一枚焼きクレープの店</a>
+<a href="#c-shimonoseki-cafe-sabo-fuwari"><span class="tn" style="background:#eda100;">46</span>創業160年の和菓子屋の茶席</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 長府(ちょうふ)の城下町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/shimonoseki/_map4.jpg" alt="中心部拡大3 長府(ちょうふ)の城下町">
+<a href="#c-shimonoseki-washoku-miyanouchi-saryo" style="left:56.45%;top:24.63%;width:3.0%;height:2.84%;"></a>
+<a href="#c-shimonoseki-men-hashimoto" style="left:60.14%;top:19.03%;width:3.0%;height:2.84%;"></a>
+<a href="#c-shimonoseki-izakaya-ponponsen-chofu" style="left:66.43%;top:5.91%;width:3.0%;height:2.84%;"></a>
+<a href="#c-shimonoseki-cafe-coffee-house-bridge" style="left:45.9%;top:94.8%;width:3.0%;height:2.84%;"></a>
+<a href="#c-shimonoseki-cafe-souzaemon-takada-coffee" style="left:53.72%;top:41.1%;width:3.0%;height:2.84%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（5店・番号はピンと同じ）</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-shimonoseki-washoku-miyanouchi-saryo"><span class="tn" style="background:#1baf7a;">18</span>忌宮神社の境内、庭を見ながらの日本料理</a>
+</div>
+<div class="sec red">瓦そば・ラーメン・麺類</div>
+<div class="links">
+<a href="#c-shimonoseki-men-hashimoto"><span class="tn" style="background:#e34948;">25</span>城下町長府の昼だけの二八蕎麦</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（豊前田）</div>
+<div class="links">
+<a href="#c-shimonoseki-izakaya-ponponsen-chofu"><span class="tn" style="background:#0d366b;">33</span>城下町長府の、家庭の味の居酒屋</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-shimonoseki-cafe-coffee-house-bridge"><span class="tn" style="background:#eda100;">43</span>関門海峡を望む半世紀の喫茶</a>
+<a href="#c-shimonoseki-cafe-souzaemon-takada-coffee"><span class="tn" style="background:#eda100;">49</span>武家屋敷で飲む下関最初の自家焙煎</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 幡生(はたぶ)・大学町・綾羅木(あやらぎ)・新下関・山の田（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/shimonoseki/_map5.jpg" alt="中心部拡大4 幡生(はたぶ)・大学町・綾羅木(あやらぎ)・新下関・山の田">
+<a href="#c-shimonoseki-washoku-nakahisazushi" style="left:47.49%;top:85.11%;width:2.22%;height:2.06%;"></a>
+<a href="#c-shimonoseki-men-hayashi" style="left:69.58%;top:36.66%;width:2.22%;height:2.06%;"></a>
+<a href="#c-shimonoseki-men-yamanota" style="left:43.05%;top:6.63%;width:2.22%;height:2.06%;"></a>
+<a href="#c-shimonoseki-izakaya-ajisai-ayaragi" style="left:30.61%;top:38.15%;width:2.22%;height:2.06%;"></a>
+<a href="#c-shimonoseki-yoshoku-nasubi" style="left:41.92%;top:73.67%;width:2.22%;height:2.06%;"></a>
+<a href="#c-shimonoseki-cafe-polano" style="left:41.83%;top:70.59%;width:2.22%;height:2.06%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（6店・番号はピンと同じ）</div>
+<div class="sec aqua">寿司・和食・割烹</div>
+<div class="links">
+<a href="#c-shimonoseki-washoku-nakahisazushi"><span class="tn" style="background:#1baf7a;">10</span>細工寿司で祝う、幡生の町の寿司屋</a>
+</div>
+<div class="sec red">瓦そば・ラーメン・麺類</div>
+<div class="links">
+<a href="#c-shimonoseki-men-hayashi"><span class="tn" style="background:#e34948;">22</span>新下関駅前で瓦そばとふくを出す食事処</a>
+<a href="#c-shimonoseki-men-yamanota"><span class="tn" style="background:#e34948;">24</span>1981年から続く下関のらーめん</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理・地酒（豊前田）</div>
+<div class="links">
+<a href="#c-shimonoseki-izakaya-ajisai-ayaragi"><span class="tn" style="background:#0d366b;">34</span>綾羅木の、おふくろの味の小さな店</a>
+</div>
+<div class="sec violet">洋食・イタリアン・各国料理</div>
+<div class="links">
+<a href="#c-shimonoseki-yoshoku-nasubi"><span class="tn" style="background:#4a3aa7;">37</span>煮込みハンバーグが看板の町の洋食食堂</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・甘味</div>
+<div class="links">
+<a href="#c-shimonoseki-cafe-polano"><span class="tn" style="background:#eda100;">50</span>観葉植物に埋もれたパン屋の喫茶</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>下関市の店は5つのかたまりに分かれる。①唐戸（からと）・赤間町（あかまちょう）＝市場と海峡沿い。**唐戸市場は金・土・日と祝日の朝から昼に『活きいき馬関街（かんがい）』が立ち、寿司や海鮮丼をその場で買って海峡を見ながら食べられる**（平日は業者向けで食べ歩きの店は少ない） ②豊前田（ぶぜんだ）・細江（ほそえ）＝JR下関駅の東側にある最大の夜の街。駅から歩いて5分 ③長府（ちょうふ）＝市の東、毛利家の城下町。土塀の小路が残る。下関駅からバスで約20分 ④新下関・綾羅木（あやらぎ）・彦島（ひこしま）＝新幹線の駅と住宅地。地元の人が通う店 ⑤川棚（かわたな）温泉・豊浦（とようら）・豊北（ほうほく）＝市の北側。**瓦そばの発祥地**で、下関駅から山陰線で約25分。下関の名物＝**ふく**（下関では「ふぐ」を**濁らせずに「ふく」**と言う。福に通じるため。てっさ〈刺身〉・てっちり〈鍋〉・唐揚げ・ひれ酒で出す。**南風泊〈はえどまり〉市場は国内のとらふぐの取扱量で最大**。旬は10月〜3月）、**くじら**（下関は近代捕鯨の基地だった町で、刺身・竜田揚げ・さえずり〈舌〉を出す店が今も残る）、**雲丹（うに）**（**粒うに・練りうにの加工は下関が発祥**で、明治の初めに始まった）、**あんこう**（水揚げは日本一。冬の鍋と共酢〈ともず〉で出す）、**瓦そば**（熱した瓦の上に茶そばを載せ、牛肉と錦糸卵を散らして温かいつゆにつける。**川棚温泉で1962年に始まった**）、**関門海峡のたこ**（潮が速いので身が締まる）。**ふくは旬が10月〜3月**なので、それ以外の時期は唐揚げや刺身を通年で出す店を選ぶとよい。</div>
+
+<h2 id="s-fuku">ふく・くじら・うに — 下関の魚</h2>
+<div class="card" id="c-shimonoseki-fuku-shunrakukan">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-shunrakukan.jpg" alt="旬楽館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">1</span>旬楽館<span class="yomi">しゅんらくかん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip gnavi">gnavi</span></div>
+<div class="desc">「女性ひとりでも気軽にふぐを食べられる店を」という考えで始めた店で、ふくを特別な日のものにせず通年で出す。1階はカウンターとテーブル、2階は和モダンの個室3室（2〜8名）で総席数50席。下関があんこうの水揚げ日本一であることから、10月から3月末はあんこうのフルコースも組む。平日はメインを3種から選ぶランチもあり、昼の平均予算は2,000円。ネット予約と電話予約の両方を受ける。外観写真なし（公式サイト・楽天ぐるなび・ホットペッパーのいずれにも店構えの実写が無く、掲載されている屋外写真はカモンワーフと海響館の風景だった）。</div>
+<div class="sig"><b>一皿:</b>とらふく刺し(薄造り。単品4,500円。コースでは菊盛りで出る)／あんこうコース(10〜3月の冬季限定。あん肝のみそ漬け・味噌棒葉焼き・風呂吹き大根とあん肝のソテー・あんこう鍋まで10品で13,500円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜15:00（L.O. 14:00）／夜 17:30〜21:00（L.O. 20:00）※ホットペッパーは夜を17:00〜22:00と記載しており食い違う。公式サイトの記載を採った</td></tr>
+<tr><th>定休日</th><td class="off">水曜（水曜が祝日の場合は翌日）・大晦日・元旦</td></tr>
+<tr><th>住所</th><td>山口県下関市唐戸町3-10</td></tr>
+<tr><th>予約</th><td>可（電話 083-228-2452、または公式サイトの WEB 予約。懐石料理は3日前まで、夏ふくコースは5日前までの要予約） — <a href="tel:0832282452">☎ 083-228-2452</a> ／ <a href="https://www.syunrakukan.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関のふくとあんこうを一軒で見せられる、唐戸の中核の一軒。高級店に寄りすぎないよう平日1,500円のランチがある点も章の条件に合う。営業の根拠＝公式サイト（www.syunrakukan.com）が 2026年9月〜10月に更新されている（favicon の保存先が /wp-content/uploads/2026/09/、スタイルシートの更新時刻が 2026-10-15。いずれも 2026-10-22 に確認）。あわせて楽天ぐるなびの店舗ページが現行の営業時間・コース価格を載せている（2026-10-22 取得）。下関市内の 2025年2月のノロウイルス食中毒は赤間町の「唐戸寿し仁」であり当店ではない（KRY NEWS 2025-02-26 の本文で店名を確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E6%A5%BD%E9%A4%A8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA3-10">Googleマップで開く</a>
+<div class="src">写真: ぐるなび（rimage.gnst.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.syunrakukan.com/">旬楽館 公式サイト トップ（住所・営業時間・定休日・電話）2026-10-22 取得</a> / <a href="https://www.syunrakukan.com/course/">旬楽館 公式サイト コース料理（ふく・あんこうのコース価格）2026-10-22 取得</a> / <a href="https://www.syunrakukan.com/menu/">旬楽館 公式サイト ランチ・御膳・一品料理（ランチ価格）2026-10-22 取得</a> / <a href="https://r.gnavi.co.jp/y198100/">楽天ぐるなび 旬楽館 店舗ページ（総席数50席・個室・駐車場・平均予算・写真）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000111903/">ホットペッパーグルメ 旬楽館（住所・定休日の照合）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-fuku-nisshinmaru">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-nisshinmaru.jpg" alt="下関鯨屋 日新丸 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">2</span>下関鯨屋 日新丸<span class="yomi">しものせきくじらや にっしんまる</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2023年に開いた鯨料理の専門店。店名は、操業36年で2023年11月に引退した日本初の国産捕鯨母船「三代目 日新丸」から公認を得て引き継いだもの。28席で、調理場が見えるカウンター22席と6名の個室がある。赤身・ベーコン・百尋（小腸）・百畳（胃袋）・姫綿（食道）・さえずり（舌）など部位を揃え、低温調理で臭みを抜いてから炭火で焼くといった新しい作り方を押し出す。ふく料理の関とら本店と同じ運営。外観写真なし（公式サイト・ホットペッパーのいずれにも店構えの実写が無い）。</div>
+<div class="sig"><b>一皿:</b>鯨の刺身5種盛り(赤身・ベーコン・百尋・百畳・姫綿を各1切れ。1,250円)／鯨の竜田揚げ(良質の赤身をサクッと揚げる定番。880円)／長州鯨骨らぁめん(鯨の軟骨と長州黒かしわの鶏がらを合わせた醤油味。鯨ベーコンとさえずりを乗せる。1,100円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>夜 17:30〜22:00（L.O. 21:00）／昼 11:00〜14:00（L.O. 13:30）※昼は平日の営業なし（土日祝のみ）、日曜は夜の営業なし</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山口県下関市中之町6-3 第2松栄ビル1階</td></tr>
+<tr><th>予約</th><td>可（電話 083-242-0444・受付9:00〜17:00、または公式サイトとホットペッパーの WEB 予約） — <a href="tel:0832420444">☎ 083-242-0444</a> ／ <a href="https://kujira-nisshinmaru.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>近代捕鯨の基地だった下関で、刺身・竜田揚げ・さえずりを今も出す数少ない鯨専門店。コースが5,500円、らぁめんやカレーが1,000円前後と手が届く値段なのも章の条件に合う。営業の根拠＝公式サイトのお知らせが 2026年10月10日「笠戸島檸檬サワー、販売開始！」、2026年9月30日「生鯨フェア 開催のお知らせ」と更新されている（2026-10-22 確認）。あわせてホットペッパーのネット予約カレンダーが 2026年12月31日まで「即予約可」で開いている（2026-10-22 確認）。店名＋食中毒で引いても当店の報道は無く、出てくるのは2024年の鯨肉加工業者の破産報道など別件だった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E9%96%A2%E9%AF%A8%E5%B1%8B%20%E6%97%A5%E6%96%B0%E4%B8%B8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E4%B8%AD%E4%B9%8B%E7%94%BA6-3%20%E7%AC%AC2%E6%9D%BE%E6%A0%84%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://kujira-nisshinmaru.com/">下関鯨屋 日新丸 公式サイト トップ（店名の由来・営業時間・定休日・電話・お知らせの日付）2026-10-22 取得</a> / <a href="https://kujira-nisshinmaru.com/menu/">下関鯨屋 日新丸 公式サイト お品書き（コース・単品の価格と部位）2026-10-22 取得</a> / <a href="https://kujira-nisshinmaru.com/shop-info/">下関鯨屋 日新丸 公式サイト 店舗情報（住所・営業時間）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003609012/">ホットペッパーグルメ 下関鯨屋 日新丸（席数28席・個室・予約カレンダー・写真）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-fuku-ichiba-shokudo-yoshi">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-ichiba-shokudo-yoshi.jpg" alt="市場食堂 よし 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-fuku-ichiba-shokudo-yoshi_exterior.jpg" alt="市場食堂 よし 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">3</span>市場食堂 よし<span class="yomi">いちばしょくどう よし</span></div>
+<div class="chips"><span class="chip karatoichiba">karatoichiba</span></div>
+<div class="desc">唐戸市場の2階にある食堂で、市場へ仕入れに来る料理人も通う。看板は板うにが丸ごと一枚のる生うに定食で、粒うに・練りうにの加工が明治の初めに下関で始まったことを思い出させる一品。ほかにえびフライとふくの唐揚げとその日の刺盛を合わせたよし定食、海鮮丼など。はまち・ヒラソ・うに・ふく・甘鯛・いかなど、その日に市場へ入った魚を使う。朝6時から昼2時までの営業で、朝食にも使える。外観写真なし（市場の建物の中の店舗で、公式サイト・唐戸市場公式のいずれにも独立した店構えの実写が無い）。</div>
+<div class="sig"><b>一皿:</b>生うに定食(板うに1枚がまるごと付く。2,500円)／よし定食(自家製パン粉の大えびフライ・ふくの唐揚げ・その日の刺盛・小鉢。2,000円)／海鮮丼(1,800円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 6:00〜14:00（L.O. 13:00）／日・祝 8:00〜14:00（L.O. 13:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜・水曜（祝日の場合は営業）※不定休あり</td></tr>
+<tr><th>住所</th><td>山口県下関市唐戸町5-50 唐戸市場2階</td></tr>
+<tr><th>予約</th><td>不可（席は先着順。電話 083-232-4069 は問い合わせ用） — <a href="tel:0832324069">☎ 083-232-4069</a> ／ <a href="https://www.shimonoseki-yoshi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>粒うに・練りうにの加工発祥地である下関で、生のうにを板ごと定食で出す店。唐戸市場そのものではなく市場の中の店舗なので章の条件に合い、値段も2,000〜2,500円と手が届く。営業の根拠＝公式サイト（www.shimonoseki-yoshi.com）のお知らせ「【臨時休業のお知らせ】」が 2026年9月28日に更新され「11月3日（火）は臨時休業日を追加しました」と書かれている（2026-10-22 確認）。あわせて唐戸市場公式サイトの店舗ページが現行の営業時間と定食価格を載せている（2026-10-22 取得）。2025年2月の下関市内の食中毒は赤間町のすし店「唐戸寿し仁」で、当店ではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B8%82%E5%A0%B4%E9%A3%9F%E5%A0%82%20%E3%82%88%E3%81%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA5-50%20%E5%94%90%E6%88%B8%E5%B8%82%E5%A0%B42%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（static.wixstatic.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.karatoichiba.com/stores/261/">唐戸市場 公式サイト 店舗ページ「市場食堂 よし」（住所・電話・営業時間・定休日・定食価格）2026-10-22 取得</a> / <a href="https://www.shimonoseki-yoshi.com/">市場食堂 よし 公式サイト（お知らせの更新日 2026-09-28・写真）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-fuku-katsumoto">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-katsumoto.jpg" alt="ふく・長州料理 KATSUMOTO 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-fuku-katsumoto_exterior.jpg" alt="ふく・長州料理 KATSUMOTO 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">4</span>ふく・長州料理 KATSUMOTO<span class="yomi">ふく・ちょうしゅうりょうり かつもと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">昭和52年（1977年）創業。96席と大きく、4〜8名の個室が8部屋ある。ふぐ専用の市場である南風泊（はえどまり）市場から直送したとらふくを看板にしつつ、くじら・あんこう・むつみ豚・長州鶏・下関和牛と長州の食材をひと通り出すのが特徴で、郷土料理の瓦そばもある。火〜金の昼は1,800円からの御膳があり、ふくのコースは5,500円のミニから11,000円のフルコースまで。土日祝の昼はコースの完全予約制で、前日までの予約が要る。店舗隣に駐車場3台。</div>
+<div class="sig"><b>一皿:</b>とらふくフルコース(南風泊市場直送のとらふく。前菜・刺身・にぎり・唐揚・茶碗蒸し・ふくちり・雑炊まで8品で11,000円、2人前から)／とらふく唐揚（あら）／うに釜飯／関門穴子の白焼き</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜14:00（L.O. 13:30）※土・日曜の昼は予約制／夕 17:00〜22:00（料理L.O. 21:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>山口県下関市田中町8-11</td></tr>
+<tr><th>予約</th><td>可（電話 083-232-8694、またはホットペッパーのネット予約。とらふくフルコース等は前日までの要予約・2人前から。土日祝の昼は完全予約制） — <a href="tel:0832328694">☎ 083-232-8694</a> ／ <a href="https://katsumoto-fugu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関のふくを11,000円のフルコースから1,800円の昼の御膳まで幅をもって出す店で、章の「高い老舗だけに偏らせない」条件に合う。くじら・あんこうも同じ店で食べられる。営業の根拠＝公式サイトのお知らせが 2026年10月11日「長州おすすめコース 秋メニューがスタートしました！」と更新され、宴会ページにも「2026年 秋の長州おすすめコース①〜④」が掲載されている（2026-10-22 確認）。あわせてホットペッパーのネット予約カレンダーが 2026年12月20日まで「即予約可／リクエスト予約可」で開いている（2026-10-22 確認）。店名＋食中毒で引いても当店の報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%8F%E3%83%BB%E9%95%B7%E5%B7%9E%E6%96%99%E7%90%86%20KATSUMOTO%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%94%B0%E4%B8%AD%E7%94%BA8-11">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://katsumoto-fugu.com/">ふく・長州料理 KATSUMOTO 公式サイト トップ（創業年・営業時間・定休日・電話・お知らせの日付）2026-10-22 取得</a> / <a href="https://katsumoto-fugu.com/menu/">ふく・長州料理 KATSUMOTO 公式サイト お食事（昼の御膳の価格・ランチの条件）2026-10-22 取得</a> / <a href="https://katsumoto-fugu.com/course/">ふく・長州料理 KATSUMOTO 公式サイト 各種プラン（ふくコースの価格・南風泊市場直送の記載・2026年秋のコース）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000531555/">ホットペッパーグルメ ふく・長州料理 KATSUMOTO（住所・席数96席・個室8部屋・駐車場・予約カレンダー・写真）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-fuku-tamaya-honten">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-tamaya-honten.jpg" alt="ふぐ料理・懐石料理 たまや本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-fuku-tamaya-honten_exterior.jpg" alt="ふぐ料理・懐石料理 たまや本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">5</span>ふぐ料理・懐石料理 たまや本店<span class="yomi">ふぐりょうり・かいせきりょうり たまやほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">彦島にある完全予約制のふぐ専門店で、来店の2日前までに予約が要る。総席数20席がすべて完全個室（椅子テーブルの座敷）で、20名の座敷のほか6名・8名・10名の個室がある。南風泊市場に近い立地を生かして活とらふぐを仕入れ、個体ごとに身の締まりと水分量を見て包丁の入れ方を変えるという引き方をする。ふぐさしは直径22.5cmの皿で出す。ふぐグラタンやふぐ茶碗蒸しなど懐石寄りの一品も組み込む。駐車場7台。山口県知事認証の店で、ふぐ処理師免許の登録番号を公開している。</div>
+<div class="sig"><b>一皿:</b>ふぐさし(直径22.5cmの皿に引く薄造り)／とらふぐ白子の塩焼き(表面はこんがり、中は柔らかい。冬の白子尽くしコースもある)／ふぐグラタン(コースに組み込む当店の工夫の一品)／ひれ酒</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜21:30（予約の最終受付19:30、ドリンクL.O. 21:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（不定休あり）・年末年始</td></tr>
+<tr><th>住所</th><td>山口県下関市彦島老町2丁目5番9号</td></tr>
+<tr><th>予約</th><td>完全予約制（来店の2日前まで。電話 083-267-7804、公式サイトの予約フォーム、またはホットペッパーのネット予約。キャンセルは3日前まで） — <a href="tel:0832677804">☎ 083-267-7804</a> ／ <a href="https://www.fugutamaya.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>とらふぐの取扱量が国内最大の南風泊市場のそばで、彦島という市街から離れた場所に構える完全予約制の店。章の場所の配分で彦島を受け持つ。営業の根拠＝ホットペッパーのネット予約カレンダーが 2026年12月30日まで「即予約可」で開いている（2026-10-22 確認。12月は水曜と不定休の日だけが「休」で、それ以外はほぼ◎）。あわせて公式サイト（www.fugutamaya.jp）が現行の営業時間・完全予約制・インボイス登録番号を載せている（2026-10-22 取得）。店名＋食中毒で引いても当店の報道は無い（2026年8月の下関のふぐ食中毒は、70代男性が自分で調理した事例）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%90%E6%96%99%E7%90%86%E3%83%BB%E6%87%90%E7%9F%B3%E6%96%99%E7%90%86%20%E3%81%9F%E3%81%BE%E3%82%84%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%BD%A6%E5%B3%B6%E8%80%81%E7%94%BA2%E4%B8%81%E7%9B%AE5%E7%95%AA9%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.fugutamaya.jp/">ふぐ料理・懐石料理 たまや本店 公式サイト（住所・電話・営業時間・定休日・総席数20席・駐車場・完全予約制）2026-10-22 取得</a> / <a href="https://www.fugutamaya.jp/course.html">ふぐ料理・懐石料理 たまや本店 公式サイト ふぐのコース（14,000円コースの内容）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000532170/">ホットペッパーグルメ ふぐ料理 たまや本店（個室の構成・予約カレンダー・写真・南風泊市場に近い立地の記載）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-fuku-fukunoseki-kamonwharf">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-fukunoseki-kamonwharf.jpg" alt="ふくの関 カモンワーフ店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-fuku-fukunoseki-kamonwharf_exterior.jpg" alt="ふくの関 カモンワーフ店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">6</span>ふくの関 カモンワーフ店<span class="yomi">ふくのせき かもんわーふてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">ふく・くじらの仲卸である株式会社関門シーフレッシュの直営店。親会社から届く本場下関のふくとくじらに、市場直送の魚を合わせて定食と丼に仕立てる。50席で年中無休、関門海峡と対岸の門司港を見ながら食べられる窓際の席がある。ふく唐揚・ふくフライ・ふくステーキの定食がいずれも1,760円前後、ふく天丼が手頃と、ふくを構えずに食べられるのが身上。鯨定食や鯨ステーキ丼、下関の郷土料理の瓦そばもある。観光のついでに寄れるよう土産物も並ぶ。</div>
+<div class="sig"><b>一皿:</b>ふくの関定食(とらふく刺身・唐揚げ・ふく汁などを一膳に。2,640円)／海鮮七色丼(ふぐ・うに・たい・ひらそ・まぐろ・いくら・かにの7種)／ふく天丼／鯨定食</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:00（O.S. 20:00）※施設カモンワーフ側の店舗紹介ページは 11:00〜16:00（O.S.15:00）／17:00〜20:00（O.S.19:00）と短い時間を載せており食い違う。店の公式サイトの記載を採った（カモンワーフのサイトは当方の実行環境から接続できず、検索結果の要約で確認）</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>山口県下関市唐戸町6-1 カモンワーフ1階（海側）</td></tr>
+<tr><th>予約</th><td>不要（席は先着順。団体は電話 083-234-2981 で相談。ホットペッパーのネット予約もあり） — <a href="tel:0832342981">☎ 083-234-2981</a> ／ <a href="https://www.fukunoseki.com/kamonwharf/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>仲卸の直営で、ふくを唐揚げ・フライ・天丼といった手軽な形で出す店。章の「唐揚げや定食で手軽に食べられる店も混ぜる」条件をここで満たす。くじらと関門の魚も扱う。営業の根拠＝公式サイトの定食・丼のメニューPDFが 2026年5月18日付で差し替えられている（ファイル名のクエリが ?20260518。2026-10-22 確認）。あわせて店名で引くと 2026年10月13日・10月15日付の口コミ紹介記事が出る（2026-10-22 確認）。店名＋食中毒で引いても当店の報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%8F%E3%81%AE%E9%96%A2%20%E3%82%AB%E3%83%A2%E3%83%B3%E3%83%AF%E3%83%BC%E3%83%95%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA6-1%20%E3%82%AB%E3%83%A2%E3%83%B3%E3%83%AF%E3%83%BC%E3%83%951%E9%9A%8E%EF%BC%88%E6%B5%B7%E5%81%B4%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.fukunoseki.com/kamonwharf/">ふくの関 カモンワーフ店 公式サイト（住所・電話・営業時間・定休日・店内写真）2026-10-22 取得</a> / <a href="https://www.fukunoseki.com/images/teshoku_menu.pdf?20260518">ふくの関 公式サイト 定食メニューPDF（2026-05-18 更新。定食とコースの価格）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000531655/">ホットペッパーグルメ ふくの関 カモンワーフ店（メニュー構成・写真）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-fuku-sekitora-honten">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-sekitora-honten.jpg" alt="下関ふく百花 関とら本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-fuku-sekitora-honten_exterior.jpg" alt="下関ふく百花 関とら本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">7</span>下関ふく百花 関とら本店<span class="yomi">しものせきふくひゃっか せきとらほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">関門橋の横に建つ和の料亭で、出す料理は「とらふくフルコース」ひと品に絞っている。完全予約制で、4日前までの予約が要る。正門を抜けると枯山水の庭があり、振り返れば関門海峡の夜景が見える。席は洋室（2〜8名）と和室（2〜12名）の個室だけで総席数20席、掛軸や壺などの美術品を置く。ふく刺しは大輪の菊のように1枚ずつ盛り、鍋は白子付きのふくちりで、最後は雑炊まで。くじら専門店の下関鯨屋 日新丸と同じ運営。駐車場5台（ホットペッパーの掲載は「なし」で食い違う）。</div>
+<div class="sig"><b>一皿:</b>関とらのとらふくフルコース(皮刺し・ふく刺し・ふく唐揚げ・白子付きふくちり鍋・ふく雑炊・フルーツ。13,200円)／ふく刺し(大輪の菊のように1枚ずつ盛る薄造り)／ふく唐揚げ</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜22:00（料理L.O. 21:30・ドリンクL.O. 21:30）※公式サイトは「17時〜22時」と幅を大きく書いており食い違う。予約の電話受付は17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山口県下関市みもすそ川町6-20（関門橋横）</td></tr>
+<tr><th>予約</th><td>完全予約制（4日前までに。電話 083-227-4431・受付17:00〜22:00、公式サイトの WEB 予約、またはホットペッパーのネット予約） — <a href="tel:0832274431">☎ 083-227-4431</a> ／ <a href="https://fuku-sekitora.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関の章の背骨になる、とらふく一本の料亭。てっさ・てっちり・唐揚げが一度に通しで出てくるので、ふく料理の型をそのまま見せられる。営業の根拠＝公式サイトのお知らせが 2026年10月17日「【ようこそ、関とらへ】」、10月10日、10月3日と毎週更新されている（2026-10-25 確認）。あわせてホットペッパーのネット予約カレンダーが 2026年12月30日まで「即予約可」で開いている（12月は日曜だけが「休」。2026-10-25 確認）。店名を空白ありと空白なしの2通り（「関とら本店 閉店」「下関ふく百花関とら本店 閉店」）で引いても閉店の報は無く、出てくるのは公式サイトと予約サイトだった。店名＋食中毒でも当店の報道は無い（出てくるのは岐阜県関市の中華料理店の事例と、昭和の坂東三津五郎の事件の解説記事）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E9%96%A2%E3%81%B5%E3%81%8F%E7%99%BE%E8%8A%B1%20%E9%96%A2%E3%81%A8%E3%82%89%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E3%81%BF%E3%82%82%E3%81%99%E3%81%9D%E5%B7%9D%E7%94%BA6-20%EF%BC%88%E9%96%A2%E9%96%80%E6%A9%8B%E6%A8%AA%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（fuku-sekitora.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://fuku-sekitora.com/">下関ふく百花 関とら本店 公式サイト トップ（住所・電話・営業時間・定休日・座席・駐車場・お知らせの日付）2026-10-25 取得</a> / <a href="https://fuku-sekitora.com/course/">下関ふく百花 関とら本店 公式サイト コース料理（とらふくフルコース13,200円の内容）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ004657003/">ホットペッパーグルメ 下関ふく百花 関とら本店（営業時間・定休日・総席数20席・予約カレンダー・夏のふくフルコース11,000円）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-fuku-uomasa-honjin">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-uomasa-honjin.jpg" alt="魚正本陣 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">8</span>魚正本陣<span class="yomi">うおまさほんじん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1977年創業の大衆酒処で、下関の地魚にこだわり続けて47年になる。110席と大きく、カウンター1名から、座敷・掘りごたつ・離れ・宴会場まで部屋を揃える（団体は60名まで）。扱うのはふく・うに・くじら・あんこう・特牛（こっとい）のヤリイカと下関の海のもの全般で、イカは水槽から上げて活けのまま造る。秋から冬はあんこうを出し、自前の通販でもあんこうの鍋や珍味を売る。駐車場3台。外観写真なし（ホットペッパー・下関観光コンベンション協会の掲載・公式の通販サイトのいずれにも店構えの実写が無く、載っているのは店内と料理だけだった）。</div>
+<div class="sig"><b>一皿:</b>生きいか(特牛〈こっとい〉のヤリイカを活けのまま造る。皿の上で透き通る)／さしみ盛り合わせ(唐戸に揚がったその日の地魚)／コチ唐揚げ／あんこう料理(秋〜冬)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:00（料理L.O. 22:30・ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（祝日・祝前日は営業）※下関観光コンベンション協会の掲載は定休日を12月30日・31日・1月1日だけとしており食い違う。公式インスタグラムとホットペッパーが一致する「月曜定休」を採った</td></tr>
+<tr><th>住所</th><td>山口県下関市赤間町4-20</td></tr>
+<tr><th>予約</th><td>可（電話 083-234-0732、またはホットペッパー・楽天ぐるなびのネット予約。コースによっては3日前までの予約が要る） — <a href="tel:0832340732">☎ 083-234-0732</a> ／ <a href="https://uomasahonjin.theshop.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>関門と響灘の魚を、構えずに食べられる値段で出す一軒。ふく・くじら・うに・あんこう・ヤリイカと下関の魚がひと通り並ぶので、章の締めに置ける。唐戸・赤間町の配分もここで埋まる。営業の根拠＝公式インスタグラム（@uomasahonjin）に「2026年も頑張って新鮮なお魚を提供致しますので」という投稿があり、地元の情報サイトのクーポンが「2026年10月31日まで有効」で出ている（いずれも 2026-10-25 に検索結果の要約で確認）。あわせてホットペッパーの店舗ページが「ただいま営業中 17:00〜23:00」と表示し、楽天ぐるなびに席のみの予約プランが現行で載っている（2026-10-25 確認）。店名を空白ありと空白なしの2通りで「閉店」と引いても閉店の報は無い。店名＋食中毒でも当店の報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E6%AD%A3%E6%9C%AC%E9%99%A3%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B5%A4%E9%96%93%E7%94%BA4-20">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000531638/">ホットペッパーグルメ 魚正本陣（住所・営業時間・定休日・総席数110席・写真）2026-10-25 取得</a> / <a href="https://fugunohonba.jp/gourmet/1218/">ふくの本場下関（下関観光コンベンション協会）魚正本陣（電話・扱う魚・駐車場・平均予算・アクセス）2026-10-25 取得</a> / <a href="https://uomasahonjin.theshop.jp/">魚正本陣 公式オンラインショップ（創業年・あんこう料理・ふぐの取り扱い）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-fuku-doigahama-harumi">
+<img class="hero" src="img/shimonoseki/shimonoseki-fuku-doigahama-harumi.jpg" alt="土井ヶ浜海鮮食堂 晴海 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-fuku-doigahama-harumi_exterior.jpg" alt="土井ヶ浜海鮮食堂 晴海 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">9</span>土井ヶ浜海鮮食堂 晴海<span class="yomi">どいがはまかいせんしょくどう はるみ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2023年2月に開いた食堂で、以前この場所にあったのは夏だけ開く自炊式のバンガロー（海の家）だった。ロッジ風の木の建物で40席、全席が窓際なので響灘の水平線がそのまま見える。店長はもとは高級料亭の料理人。山陰で揚がった魚と地元の野菜を使い、看板は刺身や天ぷらをおひつの上に舟盛りにした丼で、そのまま食べる・タレをかける・出汁をかけて茶漬けにする、の3段階で食べさせる。季節が合えば板うにを使った舟盛りうに丼も出る。食材が無くなり次第閉めるので早い時間に行くほうがよい。駐車場20台。</div>
+<div class="sig"><b>一皿:</b>海鮮舟盛り丼(山陰の魚の刺身をおひつの上に舟盛りに。専用の出汁と薬味で海鮮茶漬けにもできる。3,080円)／舟盛りうに丼(季節により入荷が無い時期あり。3,000円〜時価)／天ぷら舟盛り丼／唐揚げ定食(刺身付き。1,760円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理L.O. 14:30・ドリンクL.O. 14:30）※食材が無くなり次第、時間内でも閉店することがある。食べログ・ヒトサラは10:30〜16:00（L.O.15:30）と記載しており食い違うため、ホットペッパーと公式インスタグラムの記載が一致する11:00〜15:00を採った</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜（大雪・台風等で営業が難しい日は臨時休業）</td></tr>
+<tr><th>住所</th><td>山口県下関市豊北町神田上787</td></tr>
+<tr><th>予約</th><td>可だが席数に限りあり（電話 083-242-1645。団体は要相談）。公式サイトは無く、店の情報発信はインスタグラム @kaisenshokudou_harumi — <a href="tel:0832421645">☎ 083-242-1645</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊浦・豊北の配分を受け持つ一軒。角島大橋へ向かう道筋にあり、下関の北側で揚がる魚とうにを、1,760円からの定食で食べられる。営業の根拠＝2026年7月31日付の第三者の訪問記（ダイハツ広島販売の店舗ブログ）が「角島大橋から数分走った所にある #土井ヶ浜海鮮食堂 晴海」で海鮮舟盛り丼を食べたと写真つきで書いている（2026-10-25 確認）。あわせてホットペッパーの店舗ページが現行の営業時間・定休日・料理メニュー（2024-08-30 更新）を載せている。店名を空白ありと空白なしの2通りで「閉店」と引いても閉店の報は無い。店名＋食中毒でも当店の報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BA%95%E3%83%B6%E6%B5%9C%E6%B5%B7%E9%AE%AE%E9%A3%9F%E5%A0%82%20%E6%99%B4%E6%B5%B7%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%8C%97%E7%94%BA%E7%A5%9E%E7%94%B0%E4%B8%8A787">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003498274/">ホットペッパーグルメ 土井ヶ浜海鮮食堂 晴海（住所・営業時間・定休日・総席数40席・駐車場20台・写真）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ003498274/food/">ホットペッパーグルメ 土井ヶ浜海鮮食堂 晴海 料理メニュー（定食・丼の価格。2024-08-30 更新）2026-10-25 取得</a> / <a href="https://yamaguchi-san.com/post-2200/">山口さん（地元ウェブマガジン）「これぞ下関！オーシャンビューで楽しむ新鮮な海鮮料理！『土井ヶ浜海鮮食堂 晴海』」2023-04-27 掲載。開店の経緯・海の家だった来歴・3段階の食べ方／2026-10-25 取得</a> / <a href="https://www.daihatsu-hiroshima.co.jp/office_blog/54541/">ダイハツ広島販売 店舗ブログ「山口県｜絶景の角島大橋へ！海鮮ランチとおすすめ絶景スポットを巡るドライブ」2026-07-31 掲載。2026年の訪問記で営業の根拠／2026-10-25 取得</a> / <a href="https://hitosara.com/0031634375/tel.html">ヒトサラ 土井ヶ浜海鮮食堂 晴海（電話番号）2026-10-25 取得</a></div>
+</div></div>
+<h2 id="s-washoku" class="c-aqua">寿司・和食・割烹</h2>
+<div class="card" id="c-shimonoseki-washoku-nakahisazushi">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-nakahisazushi.jpg" alt="中久寿し 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-washoku-nakahisazushi_exterior.jpg" alt="中久寿し 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">10</span>中久寿し<span class="yomi">なかひさずし</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">下関駅の北どなり、幡生の住宅地にある夜だけの寿司屋。総席数26席で、カウンター6席のほか4人掛けの座敷が3卓、テーブルが2卓。2023年1月に外観をシックに改装した。30年以上のキャリアを持つ店主が自ら産地と旬を見て仕入れ、品書きに「時価」を置かず値段を示すのが流儀。誕生日や記念日には絵柄を仕込んだ細工寿司や寿司ケーキを作る（要予約）。店主手作りの葉蘭切りが寿司に添えられる。全席禁煙、駐車場・Wi-Fiあり、バリアフリー。昼の利用（店内・配達・持ち帰り）は前日までに予約が必要。</div>
+<div class="sig"><b>一皿:</b>特上にぎり(7貫)(マグロのトロや車海老のおどりなど種にこだわった握り。3,850円税込)／細工寿司(切り口に絵柄が出るよう仕込んだ祝い用の寿司。4〜5人で囲む寿司ケーキもある。要予約・有料)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝日・祝前日 17:00〜22:00（料理L.O. 21:30／ドリンクL.O. 21:30）※昼の利用は前日までに要予約</td></tr>
+<tr><th>定休日</th><td class="off">月曜（月曜が祝日の場合は営業し翌日休み。変則的に休むことがあるので要確認）</td></tr>
+<tr><th>住所</th><td>山口県下関市幡生町1丁目4-23</td></tr>
+<tr><th>予約</th><td>可（電話、またはホットペッパーグルメのネット予約） — <a href="tel:0832522740">☎ 083-252-2740</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>関門の魚を扱う個人店でありながら値段を明示する姿勢が書籍の「普段づかい」の面に向き、細工寿司という祝いの技がこの店だけの見どころになる。営業の根拠＝ホットペッパーグルメ店舗ページの店舗情報が2026/03/24更新であること、同ページのメニュー「特上にぎり(7貫)」が2025/07/10更新であること、および同ページの口コミの投稿日が2026/08/16であること（2026-10-22 確認）。店名に「食中毒」を添えて検索したが当店の報道は無く、2025年2月に下関市が営業停止処分にしたのは赤間町の別の寿司店（唐戸寿し仁）だった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E4%B9%85%E5%AF%BF%E3%81%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B9%A1%E7%94%9F%E7%94%BA1%E4%B8%81%E7%9B%AE4-23">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000531839/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・予算・2026/03/24更新・口コミ投稿日2026/08/16）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000531839/photo/">ホットペッパーグルメ 中久寿し 写真ページ（料理・店内・外観写真と説明文）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-washoku-hamazushi-karato">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-hamazushi-karato.jpg" alt="浜寿司 唐戸店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">11</span>浜寿司 唐戸店<span class="yomi">はまずし からとてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">唐戸の国道9号沿い、関門ビル1階にある10席だけの寿司屋。綾羅木（あやらぎ）に本店を置く浜寿司の唐戸店で、店主が毎日すぐそばの唐戸市場で自ら仕入れる。シャリには山口米のコシヒカリを使う。営業は朝の仕込みが済み次第はじまり、昼過ぎには終わる昼だけの店。カウンター中心なので一人でも入りやすく、暖簾をくぐると女将が生けた花が出迎える。地酒は清酒「巌流島」や「関娘」を置く。出前は下関市内全域と北九州市門司区・小倉北区まで届ける。店内飲食は消費税10％、出前と持ち帰りは8％。外観写真なし（関門ビル1階のテナントで、公式サイトとホットペッパーグルメのいずれにも建物の正面を写した写真が無かったため）。</div>
+<div class="sig"><b>一皿:</b>昼にぎり定食(昼の一番人気。行列ができることもある)／松にぎり(トロや海老を入れた上の握り)</div>
+<table class="info">
+<tr><th>営業時間</th><td>朝、準備ができ次第〜14:30（公式サイトの記載）。ホットペッパーグルメでは月〜水・金〜日・祝日・祝前日 10:00〜15:00（料理L.O. 14:30）と表記されており、開始時刻の記載が媒体で食い違う</td></tr>
+<tr><th>定休日</th><td class="off">木曜（公式サイトは「木曜日と月1〜2回の不定休」）</td></tr>
+<tr><th>住所</th><td>山口県下関市唐戸町5-2 関門ビル1F</td></tr>
+<tr><th>予約</th><td>電話で相談（ネット予約は不可。出前は電話またはフリーダイヤル0120-394-418） — <a href="tel:0832318105">☎ 083-231-8105</a> ／ <a href="http://www.hamazushi.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸市場から徒歩圏で、市場で仕入れた関門の魚をその日のうちに握る昼の店。唐戸の章に「朝から昼に食べる寿司」を1軒置くための選定。営業の根拠＝公式サイト「お知らせ」の最新が2026.3.11（すし職人募集）であること、およびホットペッパーグルメ店舗ページの店舗情報が2026/06/03更新であること（2026-10-22 確認）。店名に「食中毒」を添えて検索したが当店の報道は無い（2025年2月の下関市の営業停止処分は赤間町の別の寿司店）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E5%AF%BF%E5%8F%B8%20%E5%94%90%E6%88%B8%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA5-2%20%E9%96%A2%E9%96%80%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="http://www.hamazushi.net/">浜寿司 公式サイト（唐戸店の住所・電話・営業時間・定休日・品書きの値段・お知らせ2026.3.11）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000953850/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・席数・予算・2026/06/03更新）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000953850/photo/">ホットペッパーグルメ 浜寿司 唐戸店 写真ページ（料理・店内写真と説明文）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-washoku-kaiten-karato-ichibazushi">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-kaiten-karato-ichibazushi.jpg" alt="海転からと市場寿司 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">12</span>海転からと市場寿司<span class="yomi">かいてんからといちばずし</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">唐戸市場の建物の2階に入る54席の回転寿司。1階の市場から直に仕入れた魚貝を、板前がカウンター越しに握る。窓の向こうに関門海峡と関門橋が見え、行き交う船を眺めながら食べられる。下関ならではの種としてとらふくの握り、鯨のさえずり（舌）、鯨のベーコンを通年で置く。昼の11時から15時までの営業で、定休日は月に1〜2日の不定休。会計は現金のみ（クレジットカード・電子マネーは使えない）。食事のついでに1階の市場で魚を買って帰ることもできる。外観写真なし（唐戸市場の建物の2階に入る店で、公式サイト・唐戸市場公式サイト・ホットペッパーグルメのいずれにも店構えを写した写真が無かったため）。</div>
+<div class="sig"><b>一皿:</b>とらふくの握り(下関産のとらふくを握りに。身が締まってコリコリした歯ごたえ)／鯨のさえずり(鯨の舌。脂がのった下関ならではの一貫)／鯨のベーコン(癖がなく、はじめての人にも勧められる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理L.O. 14:30／ドリンクL.O. 14:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（月に1〜2日。公式サイトで確認）</td></tr>
+<tr><th>住所</th><td>山口県下関市唐戸町5-50 唐戸市場2階</td></tr>
+<tr><th>予約</th><td>不可（席は先着順） — <a href="tel:0832332611">☎ 083-233-2611</a> ／ <a href="http://www.kaitenkaratoichibazusi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸市場そのものの中で、関門海峡を見ながら座って食べられる手軽な一軒。市場の食べ歩き（活きいき馬関街）が金・土・日と祝日に限られるのに対し、こちらは平日も開いているので旅程を組みやすい。営業の根拠＝唐戸市場公式サイトの店舗ページに現行の営業時間・電話が載っていること、公式インスタグラム（@kaitenkarato）の投稿が2026/04/17・2026年10月中旬にあること、およびホットペッパーグルメ店舗ページの投稿写真の最新撮影日が2026/04/30であること（2026-10-22 確認）。店名に「食中毒」を添えて検索したが当店の報道は無い（2025年2月の下関市の営業停止処分は赤間町の別の寿司店）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E8%BB%A2%E3%81%8B%E3%82%89%E3%81%A8%E5%B8%82%E5%A0%B4%E5%AF%BF%E5%8F%B8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA5-50%20%E5%94%90%E6%88%B8%E5%B8%82%E5%A0%B42%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.karatoichiba.com/stores/262/">唐戸市場 公式サイト 店舗ページ（住所・電話・営業時間・扱う食材）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000111911/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・席数・予算）2026-10-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000111911/photo/">ホットペッパーグルメ 海転からと市場寿司 写真ページ（料理・店内写真と説明文／投稿写真の撮影日2026/04/30）2026-10-22 取得</a> / <a href="https://www.instagram.com/kaitenkarato/">海転からと市場寿司 公式インスタグラム（投稿日2026/04/17ほか）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-washoku-unagi-fukuda">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-unagi-fukuda.jpg" alt="炭焼うなぎ ふく田 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-washoku-unagi-fukuda_exterior.jpg" alt="炭焼うなぎ ふく田 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">13</span>炭焼うなぎ ふく田<span class="yomi">すみやきうなぎ ふくだ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">唐戸市場の隣、海峡に面した商業施設カモンワーフの2階にあるうなぎ専門店。総席数30席（テーブル23席、カウンター7席）で、ロールスクリーンで隣席と仕切れる。愛知県三河の養鰻場から選んで仕入れたうなぎを、関東のように蒸さず、炭火で直に焼く「地焼き」で出す。余分な水分を飛ばしながら焼くので外は香ばしく、中はふっくらと仕上がる。店内禁煙、駐車場はカモンワーフの共用駐車場を使える。席も持ち帰りも予約でき、ウェブ予約の窓口がある（時期により予約を受けないことがある）。</div>
+<div class="sig"><b>一皿:</b>名物一本うなぎ重(1尾を切らずに1本のまま載せた重。4,510円)／うな玉丼(炭火で焼いたうなぎと玉子を合わせた丼。半身2,750円・1尾4,890円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（L.O. 14:00）／17:00〜21:00（L.O. 20:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>山口県下関市唐戸町6-1 カモンワーフ2階</td></tr>
+<tr><th>予約</th><td>可（電話、またはウェブ予約 https://app.tablerequest.jp/shops/7f7b46e2f650a8b5 。持ち帰りの予約も可。時期により予約を受けないことがある） — <a href="tel:0832272917">☎ 083-227-2917</a> ／ <a href="https://unagi-fukuda.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸で寿司と海鮮が続くなかに、焼きものの章を1軒入れるための選定。蒸さずに炭で焼く地焼きは関門海峡をはさんだ九州側の流儀に近く、下関の立地が料理に出ている点が読み物になる。営業の根拠＝公式サイトの「お知らせ」の最新記事が2026-08-04であること（ほかに2026-06-25・2026-04-13の記事あり）、および同サイトにウェブ予約の窓口が現行で置かれていること（2026-10-25 確認）。店名に「食中毒」「閉店」を添えて、空白を入れた形（炭焼うなぎ ふく田）と詰めた形（炭焼うなぎふく田）の2通りで検索したが、当店に関する報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%86%E3%81%AA%E3%81%8E%20%E3%81%B5%E3%81%8F%E7%94%B0%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA6-1%20%E3%82%AB%E3%83%A2%E3%83%B3%E3%83%AF%E3%83%BC%E3%83%952%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（unagi-fukuda.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://unagi-fukuda.com/">炭焼うなぎ ふく田 公式サイト トップ（こだわり・お品書きの値段・住所・電話）2026-10-25 取得</a> / <a href="https://unagi-fukuda.com/shop/">炭焼うなぎ ふく田 公式サイト 店舗案内（営業時間・定休日・席数・駐車場・支払方法・アクセス）2026-10-25 取得</a> / <a href="https://unagi-fukuda.com/blog/">炭焼うなぎ ふく田 公式サイト お知らせ（最新記事2026-08-04）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-washoku-maruyama">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-maruyama.jpg" alt="寿し 創作和食 丸山 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">14</span>寿し 創作和食 丸山<span class="yomi">すし そうさくわしょく まるやま</span></div>
+<div class="chips"><span class="chip gnavi">gnavi</span></div>
+<div class="desc">2016年7月、長く修業した有名店から独立した店主が開いた寿司と和食の店。一階は無垢の一枚板のカウンターと、2〜12人の掘りごたつ個室。二階には宴会用の半個室があり、総席数は40席。魚は唐戸市場と小倉の魚市場の2つから毎日仕入れ、寿司・造り・焼魚・煮魚に仕立てる。予算に合わせた「おまかせ」が基本だが、単品でも頼める。酒は山口の地酒のほか焼酎・ワインも置く。駐車場は無く、近くのコインパーキングを使う。営業時間は媒体により食い違いがあり、楽天ぐるなびは18:00〜翌1:00、ヒトサラは12:00〜14:00と18:00〜深夜と表記している。外観写真なし（公式のウェブサイトが無く、楽天ぐるなびの掲載写真16枚はすべて店内と料理だったため）。</div>
+<div class="sig"><b>一皿:</b>おまかせ(その日の仕入れから予算に合わせて組む。寿司と和食が交互に出る)／握り(唐戸・小倉の両市場から仕入れた地魚を江戸前の仕事で)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜翌1:00（楽天ぐるなびの記載。仕入れの状況により早く閉めることがある）※ヒトサラは12:00〜14:00と18:00〜深夜と表記しており、昼の営業の有無は媒体で食い違う</td></tr>
+<tr><th>定休日</th><td class="off">日曜（楽天ぐるなびは「不定休日あり」とも記載）</td></tr>
+<tr><th>住所</th><td>山口県下関市細江町1-3-27</td></tr>
+<tr><th>予約</th><td>可（電話、または楽天ぐるなびのネット予約） — <a href="tel:0832274605">☎ 083-227-4605</a> ／ <a href="https://y890600.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関駅から歩ける範囲で、関門の地魚をカウンターで握ってもらえる店。唐戸の市場系と、長府の懐石のあいだを埋める「夜の一軒」として入れた。営業の根拠＝店名を添えたインスタグラムの投稿が2026/10/04にあること、および楽天ぐるなびの店舗ページでネット予約が現行で受け付けられていること（2026-10-25 確認）。店名に「閉店」を添えて、空白を入れた形（鮨 創作和食 丸山）と詰めた形（寿し創作和食丸山）の2通りで検索したが閉店の報は無く、「食中毒」を添えた検索でも当店の報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%20%E5%89%B5%E4%BD%9C%E5%92%8C%E9%A3%9F%20%E4%B8%B8%E5%B1%B1%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA1-3-27">Googleマップで開く</a>
+<div class="src">写真: ぐるなび（rimage.gnst.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://r.gnavi.co.jp/2szwxhty0000/">楽天ぐるなび 店舗ページ（住所・営業時間・定休日・席数・個室・平均予算・店の成り立ち・仕入れ先）2026-10-25 取得</a> / <a href="https://r.gnavi.co.jp/2szwxhty0000/photo/">楽天ぐるなび 寿し 創作和食 丸山 写真ページ（料理・店内写真）2026-10-25 取得</a> / <a href="https://y890600.gorp.jp/">寿し 創作和食 丸山 オフィシャルページ（楽天ぐるなび提供。住所・アクセス・駐車場）2026-10-25 取得</a> / <a href="https://shimonosekinight.com/shop/food/maruyama/">しものせきナイトウォーカー 店舗ページ（電話番号083-227-4605・営業時間・定休日・席数）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-washoku-hanare-rindou">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-hanare-rindou.jpg" alt="離れ 竜胆 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-washoku-hanare-rindou_exterior.jpg" alt="離れ 竜胆 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">15</span>離れ 竜胆<span class="yomi">はなれ りんどう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">豊前田の喧騒を外れた路地裏に建つ一軒家の店。カウンターのほかに囲炉裏を切った座敷があり、畳の席は12人まで。店主が自ら市場で目利きした魚を、握りと巻きに仕立てるほか、焼き物・天ぷら・鍋で出す。すっぽん鍋を看板にしており、土瓶蒸しや鮪酒盗、酒盗チーズ、チーズの西京漬けなど酒に寄せた一品も置く。日本酒は新潟の鶴齢・八海山などを揃え、ふぐのひれ酒もある。おまかせコースは5,000円から。貸切もでき、10人以上の宴会や接待にも使われる。</div>
+<div class="sig"><b>一皿:</b>季節のおまかせコース(刺身・握りのほか焼き物や茶碗蒸しまで少しずつ出る。5,000円〜)／すっぽん鍋(6,000円。囲炉裏の座敷で囲む冬の看板)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜（公式サイト。閉店時間は問い合わせ。公式インスタグラムは「18:00〜24:00位まで」、昼は予約があれば開けるとしている）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（公式インスタグラムは「日曜日、予約の無い祝日」としている）</td></tr>
+<tr><th>住所</th><td>山口県下関市豊前田町2丁目1-8</td></tr>
+<tr><th>予約</th><td>可（電話。まず電話で問い合わせるよう公式が案内している） — <a href="tel:0832420100">☎ 083-242-0100</a> ／ <a href="https://shimonoseki-rindou.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸の市場や昼の寿司とは対照的な、夜だけ開く隠れ家の一軒。囲炉裏の座敷という構えが下関の章に変化をつける。ふぐは品書きの一部（ひれ酒）にとどまり、ふぐ専門店ではない。営業の根拠＝公式サイトのブログの最新記事が2026/02/28であること（2026/02/24・2026/02/18などの記事が続く）、および公式インスタグラム（@hanare.rindou）が現行で営業時間と定休日を掲げていること（2026-10-25 確認）。店名に「食中毒」「閉店」を添えて、空白を入れた形（離れ 竜胆）と詰めた形（離れ竜胆）の2通りで検索したが、当店に関する報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9B%A2%E3%82%8C%20%E7%AB%9C%E8%83%86%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE1-8">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（shimonoseki-rindou.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://shimonoseki-rindou.jp/">離れ 竜胆 公式サイト トップ（料理の内容・おしながき・囲炉裏の座敷）2026-10-25 取得</a> / <a href="https://shimonoseki-rindou.jp/access/">離れ 竜胆 公式サイト 店舗情報（住所・電話・営業時間・定休日）2026-10-25 取得</a> / <a href="https://shimonoseki-rindou.jp/blog/">離れ 竜胆 公式サイト ブログ（最新記事2026/02/28）2026-10-25 取得</a> / <a href="https://hitosara.com/0008100172/">ヒトサラ 店舗ページ（アクセス・営業時間・おまかせコース5,000円〜・すっぽん鍋6,000円・座敷12名）2026-10-25 取得</a> / <a href="https://www.instagram.com/hanare.rindou/">離れ 竜胆 公式インスタグラム（営業時間18:00〜24:00位まで・定休日）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-washoku-ibukiyose">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-ibukiyose.jpg" alt="氣吹寄 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-washoku-ibukiyose_exterior.jpg" alt="氣吹寄 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>氣吹寄<span class="yomi">いぶき</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">下関で長く続く天ぷらの専門店。カウンターを中心にした造りで、職人が目の前で一品ずつ揚げて出す。座敷の席もある。店内には活魚の水槽があり、天ぷらだけでなく刺身も出す。昼は松・竹・梅に始まり紅葉、いぶきと段が上がる定食で、海老の本数や焼き魚・茶碗蒸しの有無が変わる。天丼もある。夜はコース（気吹寄コースなど）が中心。全席禁煙。支払いは現金とクレジットカード（VISA・Mastercard・JCB・American Express・Diners Club・UnionPay・デビットカード）で、電子マネーとQRコード決済は使えない。祝日は休みで、祝日の翌日も休む。</div>
+<div class="sig"><b>一皿:</b>天ぷらの定食(松・竹・梅から紅葉・いぶきまで段がある昼の定食。海老・旬の野菜・魚を一品ずつ揚げたてで)／天丼(揚げたての天ぷらにたれを回しかける昼の丼)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日 11:30〜14:00（L.O. 13:30）／17:30〜21:00（L.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・祝日（祝日の翌日も休み）</td></tr>
+<tr><th>住所</th><td>山口県下関市岬之町11-18</td></tr>
+<tr><th>予約</th><td>可（電話 083-231-8866、または公式サイトのネット予約） — <a href="tel:0832318866">☎ 083-231-8866</a> ／ <a href="http://ibuki-tempura.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関の和食の章に、揚げものの専門店を1軒入れるための選定。海峡の魚を刺身でも出すので、寿司屋とは別の角度で下関の魚に触れられる。営業の根拠＝店名と住所を記したインスタグラムの投稿が2026/10/05と2025/11/18にあること、および公式サイトにネット予約の窓口（AutoReserve）が現行で置かれていること（2026-10-25 確認）。店名に「食中毒」「閉店」を添えて、空白を入れた形（氣吹寄 いぶき）と詰めた形（氣吹寄／気吹寄）の2通りで検索したが、当店に関する報道は無い（2025年8月に下関市が営業禁止にしたのは鶏の刺身を出す別の店）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B0%A3%E5%90%B9%E5%AF%84%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B2%AC%E4%B9%8B%E7%94%BA11-18">Googleマップで開く</a>
+<div class="src">写真: かんもんノート（関門エリアの地域情報サイト）（www.kanmonnote.com）より引用 / 外観: 出典ページ / 参照元: <a href="http://ibuki-tempura.com/">氣吹寄 公式サイト（住所・電話・営業時間・定休日・支払方法・駐車場・料理写真）2026-10-25 取得</a> / <a href="https://r.gnavi.co.jp/5gdkmg1f0000/">楽天ぐるなび 店舗ページ（電話・営業時間・定休日・平均予算 昼2,000円／夜5,000円）2026-10-25 取得</a> / <a href="https://www.kanmonnote.com/ibuki/">かんもんノート（関門エリアの地域情報サイト）氣吹寄の取材記事。外観・店内・天ぷらの写真2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-washoku-hironaka">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-hironaka.jpg" alt="創作料理 四季の味 ひろなか 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-washoku-hironaka_exterior.jpg" alt="創作料理 四季の味 ひろなか 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">17</span>創作料理 四季の味 ひろなか<span class="yomi">そうさくりょうり しきのあじ ひろなか</span></div>
+<div class="chips"><span class="chip hitosara">hitosara</span></div>
+<div class="desc">2010年6月に開いた、長府駅のそばの創作和食の店。6人用の個室が3部屋あり、人数に応じて個室をつないだり大広間にしたりでき、最大30人まで。貸切もできる。昼も夜も3日前までの完全予約制で、予約のときに人数と予算を伝えると、四季の食材でその日の献立を組んでくれる。昼は品数11品ほどの御膳が2,750円から、夜は料理プランが4,000円から。会席料理「あじさい」は前日までの予約が要る。瓦そば御膳や佐賀牛のステーキ御膳、よせ鍋コース、牛しゃぶの鍋懐石もある。駐車場は店の前に3台、ほかに5〜6台分。</div>
+<div class="sig"><b>一皿:</b>瓦そば御膳(下関の名物の瓦そばに天ぷらや小鉢を添えた御膳)／会席料理「あじさい」(四季の食材を使った会席。前日までに要予約)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・金〜日・祝・祝前 昼 12:00〜14:00（L.O. 13:30）／夜 17:30〜21:00（L.O. 20:30）※昼夜とも3日前までの完全予約制</td></tr>
+<tr><th>定休日</th><td class="off">火曜・木曜（ほかに月に数日休むことがある）</td></tr>
+<tr><th>住所</th><td>山口県下関市長府才川2-4-15</td></tr>
+<tr><th>予約</th><td>要予約（3日前まで。電話 083-248-5635、またはヒトサラのネット予約） — <a href="tel:0832485635">☎ 083-248-5635</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>城下町の長府で、観光のあとに腰を落ち着けて食べられる個室の店。完全予約制なので旅程に組み込みやすく、瓦そばを御膳の形で味わえるのが下関らしい。営業の根拠＝ヒトサラ店舗ページのネット予約カレンダーが2026年10月26日から11月30日まで「○（予約可）」で埋まっており、定休日の火曜・木曜だけが「休」になっていること（2026-10-25 確認）。店名に「食中毒」「閉店」を添えて、空白を入れた形（四季の味 ひろなか）と詰めた形（四季の味ひろなか）の2通りで検索したが、当店に関する報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E6%96%99%E7%90%86%20%E5%9B%9B%E5%AD%A3%E3%81%AE%E5%91%B3%20%E3%81%B2%E3%82%8D%E3%81%AA%E3%81%8B%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E6%89%8D%E5%B7%9D2-4-15">Googleマップで開く</a>
+<div class="src">写真: ヒトサラ（rimage.hitosara.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://hitosara.com/0005016683/">ヒトサラ 店舗ページ（住所・電話・アクセス・営業時間・定休日・予算・席数・駐車場・ネット予約カレンダー）2026-10-25 取得</a> / <a href="https://retty.me/area/PRE35/ARE229/SUB22901/100000622265/">Retty 店舗ページ（2010年6月18日開店という記述）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-washoku-miyanouchi-saryo">
+<img class="hero" src="img/shimonoseki/shimonoseki-washoku-miyanouchi-saryo.jpg" alt="季節の庭 宮の内茶寮 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-washoku-miyanouchi-saryo_exterior.jpg" alt="季節の庭 宮の内茶寮 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>季節の庭 宮の内茶寮<span class="yomi">きせつのにわ みやのうちさりょう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">長府の忌宮神社の境内に建つ日本料理の店。名のとおり庭を見ながら食べられ、ホールは最大80名、ほかに掘りごたつ35名・座敷20名・テーブル12名、4〜16名の完全個室の離れがある。昼は各10食限定の御膳が中心で、お昼の御膳は小鉢3種・刺身・あら炊き・海老フライ・サラダが付いて1,870円（税込）。単品では関門のたこの唐揚げ770円、鯛のあら炊き1,320円、刺身盛合せ1,870円などがある（いずれも税込）。夜は会席ととらふくのコース。2026年から土曜・日曜の夜は予約なしでも入れるようになったが、平日の夜は前日まで、会席は曜日を問わず2日前までの予約が要る。支払いはVISA・マスター・DC・UFJのカードが使える。</div>
+<div class="sig"><b>一皿:</b>海鮮ちらし御膳(海鮮ちらしに天麩羅と茶碗蒸しを付けた昼の御膳。平日2,420円・土日祝2,530円 税込)／たこ唐揚げ(関門のたこを揚げた単品。770円 税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（オーダーストップ14:00）／17:00〜21:00（オーダーストップ20:00）※19:00以降は要問い合わせ</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイトの店舗情報ページに月ごとの休業日が出る）</td></tr>
+<tr><th>住所</th><td>山口県下関市長府宮の内町1-18</td></tr>
+<tr><th>予約</th><td>可（電話 083-245-5500。平日の夜は前日まで、会席は2日前までに要予約。土日の夜は予約なしでも可） — <a href="tel:0832455500">☎ 083-245-5500</a> ／ <a href="http://miyanouchi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>城下町長府の神社の境内という立地が、この章のなかで最も「場所を見に行く」価値がある一軒。関門のたこや鯛を単品で頼め、昼の御膳が2,000円前後と手が届く点も旅の昼に向く。ふぐのコースも置くが看板は日本料理で、ふぐ専門店ではない。営業の根拠＝公式サイトのトップに「土曜日・日曜日はご予約なしでもご利用いただけるようになりました」という現行の案内が出ており、同サイトの店舗情報ページが2026-10-02に再生成されていること（画像URLのビルド識別子で確認）、および下関長府観光協会の公式サイトに現行の営業時間・電話が載っていること（2026-10-25 確認）。店名に「食中毒」「閉店」を添えて、空白を入れた形（宮の内 茶寮）と詰めた形（宮の内茶寮）の2通りで検索したが、当店に関する報道は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AD%A3%E7%AF%80%E3%81%AE%E5%BA%AD%20%E5%AE%AE%E3%81%AE%E5%86%85%E8%8C%B6%E5%AF%AE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E5%AE%AE%E3%81%AE%E5%86%85%E7%94%BA1-18">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（miyanouchi.com）より引用 / 外観: 出典ページ / 参照元: <a href="http://miyanouchi.com/">宮の内茶寮 公式サイト トップ（土日夜の予約不要化の案内・会席の予約期限）2026-10-25 取得</a> / <a href="http://miyanouchi.com/pg165.html">宮の内茶寮 公式サイト 店舗情報（住所・営業時間・休業日・席数・クレジットカード）2026-10-25 取得</a> / <a href="http://miyanouchi.com/pg162.html">宮の内茶寮 公式サイト ランチ・単品メニュー（御膳と単品の値段）2026-10-25 取得</a> / <a href="https://chofukankou.com/%e5%ad%a3%e7%af%80%e3%81%ae%e5%ba%ad%e3%80%80%e5%ae%ae%e3%81%ae%e5%86%85%e8%8c%b6%e5%af%ae/">下関長府観光協会 公式サイト 店舗ページ（電話083-245-5500・営業時間・外観写真）2026-10-25 取得</a></div>
+</div></div>
+<h2 id="s-men" class="c-red">瓦そば・ラーメン・麺類</h2>
+<div class="card" id="c-shimonoseki-men-takase">
+<img class="hero" src="img/shimonoseki/shimonoseki-men-takase.jpg" alt="元祖瓦そば たかせ 川棚本館・南本館 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-men-takase_exterior.jpg" alt="元祖瓦そば たかせ 川棚本館・南本館 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">19</span>元祖瓦そば たかせ 川棚本館・南本館<span class="yomi">がんそかわらそば たかせ かわたなほんかん・みなみほんかん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1962年（昭和37年）に初代・高瀬慎一が、西南の役で薩軍の兵士が瓦で肉や野草を焼いたという古老の話をもとに考案したのが瓦そばで、この店がその発祥。京都・宇治の抹茶と北海道産そば粉を練り込んだ茶そばを、数十年を経た日本瓦の上で焼き、牛肉・錦糸卵・海苔・もみじおろし・レモンを載せ、かつおと昆布の甘めのつゆにつけて食べる。薬味のねぎは下関・安岡産。築約100年の建物を改装した川棚本館（1階お座敷34名・テーブル18名、2階テーブル16名。鯉の泳ぐ中庭がある）は土日祝の昼のみの営業で、平日を含めて通年で開いているのは向かいの川棚南本館（1階テーブル66名、繁忙期は2階大広間80名）。瓦そばと並ぶ名物にうなめしがある。クレジットカードは使えない。</div>
+<div class="sig"><b>一皿:</b>元祖瓦そば（熱した日本瓦の上の茶そばに牛肉と錦糸卵を載せ、温かいつゆにつけて食べる。最後は瓦に接してパリパリに焦げた麺を楽しむ）／うなめし（たれを塗って焼いた国産うなぎの飯を、最後に熱いだしをかけて茶漬けにする）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【川棚南本館】月〜金 11:00〜15:00（最終受付14:30）／土・日 11:00〜20:00（最終受付19:30）　【川棚本館】土・日・祝のみ営業 11:00〜15:00　※下関観光コンベンション協会の特集ページは南本館を「11:00〜20:00（L.O.19:30）」と記載しており、公式サイトの記載と食い違う。訪問前に電話で確認のこと</td></tr>
+<tr><th>定休日</th><td class="off">【川棚南本館】不定休（公式サイト）　【川棚本館】平日（土・日・祝のみ営業）　※下関観光コンベンション協会の特集ページは南本館を「毎週木・金曜（祝日の場合は営業）」と記載</td></tr>
+<tr><th>住所</th><td>山口県下関市豊浦町大字川棚5437</td></tr>
+<tr><th>予約</th><td>会席・セットメニューは3日前までの要予約（2名から）。瓦そば単品は予約不要。お盆などの繁忙期は予約を受け付けず当日受付のみ。電話受付 9:00〜17:00 — <a href="tel:0837722680">☎ 083-772-2680</a> ／ <a href="https://www.kawarasoba.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>瓦そばという料理そのものを1962年に生んだ店で、この章の起点になる。営業の根拠＝①公式サイト kawarasoba.jp のお知らせ欄の最新掲載が2026年10月10日「川棚店限定メニューについて」、その前が2026年9月20日「シルバーウィーク営業案内」（いずれも 2026-10-22 取得） ②2026年4月25日に角島岬店をグランドオープンした告知が同欄にある ③下関観光コンベンション協会が事務局を務める「ふく・くじら・あんこう祭り」公式サイトの瓦そば特集に川棚南本館が掲載されている（2026-10-22 取得）。【営業時間について】公式サイトの南本館ページは月〜金 11:00〜15:00・土日 11:00〜20:00、祭り公式サイトは 11:00〜20:00（定休 木・金）と食い違うため、両方を hours に併記した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%E7%93%A6%E3%81%9D%E3%81%B0%20%E3%81%9F%E3%81%8B%E3%81%9B%20%E5%B7%9D%E6%A3%9A%E6%9C%AC%E9%A4%A8%E3%83%BB%E5%8D%97%E6%9C%AC%E9%A4%A8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E6%B5%A6%E7%94%BA%E5%A4%A7%E5%AD%97%E5%B7%9D%E6%A3%9A5437">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.kawarasoba.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.kawarasoba.jp/">元祖瓦そば たかせ 公式サイト トップ（お知らせ最新 2026年10月10日／瓦そば・うなめしの価格）2026-10-22 取得</a> / <a href="https://www.kawarasoba.jp/honkan.php">元祖瓦そば たかせ 公式サイト 川棚本館ページ（住所・営業時間・定休日・座席・電話）2026-10-22 取得</a> / <a href="https://www.kawarasoba.jp/s_honkan.php">元祖瓦そば たかせ 公式サイト 川棚南本館ページ（営業時間・座席）2026-10-22 取得</a> / <a href="https://www.kawarasoba.jp/kawarasoba.php">元祖瓦そば たかせ 公式サイト 元祖瓦そばページ（1962年の由来・茶そば・つゆ・薬味）2026-10-22 取得</a> / <a href="https://www.shimonoseki-fka.jp/special_soba.html">ふく・くじら・あんこう祭り（下関観光コンベンション協会）瓦そば特集（川棚南本館の営業時間・定休日・価格）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-men-fujiya">
+<img class="hero" src="img/shimonoseki/shimonoseki-men-fujiya.jpg" alt="瓦そば 藤屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">20</span>瓦そば 藤屋<span class="yomi">かわらそば ふじや</span></div>
+<div class="chips"><span class="chip gnavi">gnavi</span><span class="chip official">official</span></div>
+<div class="desc">唐戸市場のとなりにある海沿いの商業施設カモンワーフの2階で、瓦そばと海鮮丼を出す店。活魚・鯨の問屋の直営で、板前が唐戸市場から仕入れた魚を扱うため、瓦そばに刺身やふくの天ぷら、くじらの竜田揚げを組み合わせた御膳が充実している。52席。年中無休で、朝10時半から開いているので唐戸市場の朝の買い物のあとにそのまま入れる。夕方で閉まる館内の店が多いなか、土日祝は16時まで開けている。</div>
+<div class="sig"><b>一皿:</b>瓦そば（熱した瓦の上の茶そばに牛肉と錦糸卵。お茶漬けとのセットが定番）／海鮮丼デラックス（唐戸市場から仕入れた魚を盛った丼）／くじら竜田揚げ（鯨問屋直営ならではの一品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜15:00（月〜金）／10:30〜16:00（土・日・祝）　※店の公式ページ（楽天ぐるなび提供）は「10:50〜」と記載</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>山口県下関市唐戸町6-1 カモンワーフ2階</td></tr>
+<tr><th>予約</th><td>未確認（カモンワーフ公式・店舗公式ページとも予約の案内なし。団体はカモンワーフ事務局 083-228-0330 へ） — <a href="tel:0832220890">☎ 083-222-0890</a> ／ <a href="https://y848300.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>川棚まで足を延ばせない旅程でも、唐戸市場の観光と同じ場所で瓦そばが食べられる。鯨問屋直営で瓦そばと下関の海の幸を一皿に組み合わせられるのもこの店ならでは。営業の根拠＝①カモンワーフ公式サイトの店舗詳細に営業時間・席数・定休日が現行情報として載っている（2026-10-22 取得） ②個人ブログ「はるたべ」の『瓦そば 藤屋』が2026年10月7日付 ③Instagram の投稿「下関のカモンワーフにある瓦そば…」が2026年9月25日付、別の投稿が2026年9月26日付。【注意】同名の「元祖瓦そば藤屋」が北九州市門司港の海峡プラザにあったが2021年12月に閉店しており、別店舗。こちらの下関カモンワーフ店は営業中。【写真について】カモンワーフ公式サイトの掲載写真は600×315で条件を満たさないため、楽天ぐるなびの店舗ページの写真（1200〜1280px）を使った。外観写真は900px以上のものが見つからず ext_urls は空。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%93%A6%E3%81%9D%E3%81%B0%20%E8%97%A4%E5%B1%8B%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%94%90%E6%88%B8%E7%94%BA6-1%20%E3%82%AB%E3%83%A2%E3%83%B3%E3%83%AF%E3%83%BC%E3%83%952%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ぐるなび（rimage.gnst.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://kamonwharf.com/shoplist/fujiya/">カモンワーフ 公式サイト 店舗詳細「藤屋」（営業時間・席数52席・定休日・電話）2026-10-22 取得</a> / <a href="https://y848300.gorp.jp/">瓦そば 藤屋 公式ページ（住所・営業時間・緯度経度・メニュー）2026-10-22 取得</a> / <a href="https://r.gnavi.co.jp/3fw81h820000/photo/">楽天ぐるなび 瓦そば 藤屋 写真ページ（料理写真の出典）2026-10-22 取得</a> / <a href="https://ameblo.jp/harutabe/entry-12977632829.html">ブログ「はるたべ」瓦そば 藤屋（2026年10月7日付・営業継続の確認）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-men-inakasoba">
+<img class="hero" src="img/shimonoseki/shimonoseki-men-inakasoba.jpg" alt="手打ち 田舎そば 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-men-inakasoba_exterior.jpg" alt="手打ち 田舎そば 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">21</span>手打ち 田舎そば<span class="yomi">てうち いなかそば</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip gnavi">gnavi</span></div>
+<div class="desc">下関市役所の斜め向かいで40年近く続く手打ち蕎麦の店。国産のそば粉を使い、足で踏む・伸ばす・切るまで機械を使わずすべて手作業で打つ。午後に行くと打っているところが見られることがある。そばは470円から、看板のざるそばが650円と値段が低いまま据え置かれており、昼は行列ができる。20席のみで個室や座敷はなく、ひとりでも入りやすいカウンター中心の造り。希望するとそば湯が出され、そば湯で割った焼酎も置いている。全席禁煙。支払いは現金とPayPay（クレジットカード・電子マネーは使えない）。売り切れ次第終了。</div>
+<div class="sig"><b>一皿:</b>ざるそば（3時間かけて打つ手打ちそばをそのまま味わう看板。650円）／肉南ばんカレー（地元テレビでも紹介されたカレー南蛮そば。七味を足すとよい。650円）／ぶっかけ（山いもとだしを絡めた夏の定番。750円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 11:00〜15:00／17:30〜21:00（料理L.O. 20:30・ドリンクL.O. 20:30）　祝日 11:00〜15:00　※売り切れ次第終了</td></tr>
+<tr><th>定休日</th><td class="off">日曜日</td></tr>
+<tr><th>住所</th><td>山口県下関市赤間町2-10</td></tr>
+<tr><th>予約</th><td>未確認（ホットペッパーグルメはネット予約を受け付けていない。20席のみで行列ができるため、昼は時間をずらすとよい） — <a href="tel:0832320712">☎ 083-232-0712</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関で瓦そば以外の「そば」を食べるならここという手打ちの店で、観光の中心である唐戸から歩いて行ける。営業の根拠＝①公式Instagram（@inaka_soba）の投稿「明日12/30は、年越しそばの準備のため早めに閉店させていただきます」が2025年12月29日付、別の投稿が2026年にも続いている（2026-10-22 取得） ②ホットペッパーグルメの店舗ページに営業時間・定休日・席数が掲載されている ③楽天ぐるなびの店舗ページに電話番号・駐車場が掲載されている。【写真について】ホットペッパーグルメの画像はURLの `_480` などの接尾辞を外すと1280pxになる（下関市の掲載店で実測）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E6%89%93%E3%81%A1%20%E7%94%B0%E8%88%8E%E3%81%9D%E3%81%B0%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B5%A4%E9%96%93%E7%94%BA2-10">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000531442/">ホットペッパーグルメ 田舎そば 下関（住所・営業時間・定休日・席数20席・価格・写真）2026-10-22 取得</a> / <a href="https://r.gnavi.co.jp/sew3jtph0000/">楽天ぐるなび 田舎そば（住所・電話 083-232-0712・駐車場5台・営業時間）2026-10-22 取得</a> / <a href="https://www.instagram.com/inaka_soba/">手打ち 田舎そば 公式Instagram（@inaka_soba。2025年12月29日の年末営業の告知ほか／営業継続の確認）2026-10-22 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-men-hayashi">
+<img class="hero" src="img/shimonoseki/shimonoseki-men-hayashi.jpg" alt="ダイニング囃子 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-men-hayashi_exterior.jpg" alt="ダイニング囃子 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">22</span>ダイニング囃子<span class="yomi">だいにんぐはやし</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">新下関駅のすぐ前にあるビジネスホテルはやしに併設された食事処で、宿泊客以外も利用できる。瓦そばを1人前1,300円で出しており、川棚まで足を延ばさなくても新幹線の乗り継ぎのあいだに食べられるのが利点。ふぐ刺し・ふく天・子ふくの唐揚げ・くじら刺しといった下関の名物も同じ品書きに並ぶ。30席（座敷8席・テーブル18席・カウンター3席）の小ぶりな店で、全席禁煙。夕食は日曜が休みで、朝食（和朝食・洋朝食とも1,000円）は年中無休で6:30から出している。</div>
+<div class="sig"><b>一皿:</b>瓦そば（熱した瓦の上の茶そばに牛肉と錦糸卵。1人前1,300円）／ふく天（下関のふくの天ぷら。1,300円）／くじら刺し（1,200円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜21:00（L.O. 20:30）　朝食 6:30〜9:00（L.O. 8:30）　※ホットペッパーグルメは「15:00〜22:00（料理L.O. 21:30）」と記載しており、公式サイトの記載と食い違う</td></tr>
+<tr><th>定休日</th><td class="off">夕食は日曜日休み（朝食は年中無休）</td></tr>
+<tr><th>住所</th><td>山口県下関市秋根南町1-8-13（ビジネスホテルはやし1階）</td></tr>
+<tr><th>予約</th><td>未確認（ホットペッパーグルメはネット予約を受け付けていない。宴会・会議室の利用はホテル代表 083-256-3888 へ） — <a href="http://www.hotel-hayashi.jp/restaurant.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新下関で新幹線を降りてすぐに瓦そばを食べられる数少ない店で、ふく・くじらも同じ品書きで頼める。営業の根拠＝①ビジネスホテルはやし公式サイトのお食事ページが現行の品書き（画像ファイル名が menu2025）と営業時間・席数・直通電話を掲載している（2026-10-25 取得） ②同サイトに「ダイニング囃子 営業時間変更のお知らせ」「ダイニング囃子 定休日のお知らせ」が掲載されている ③ホットペッパーグルメの店舗ページが現行情報として残っている。【営業時間について】ホテル公式サイトは17:00〜21:00（L.O.20:30）、ホットペッパーグルメは15:00〜22:00（L.O.21:30）と食い違うため、公式サイトの記載を採り、差があることを hours に明記した。【写真について】料理の写真はホットペッパーグルメ掲載の瓦そば1点のみ（1280×854）。ホテル公式サイトの料理写真は240×160で条件を満たさないため採用していない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%E5%9B%83%E5%AD%90%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%A7%8B%E6%A0%B9%E5%8D%97%E7%94%BA1-8-13%EF%BC%88%E3%83%93%E3%82%B8%E3%83%8D%E3%82%B9%E3%83%9B%E3%83%86%E3%83%AB%E3%81%AF%E3%82%84%E3%81%971%E9%9A%8E%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="http://www.hotel-hayashi.jp/restaurant.html">ビジネスホテルはやし 公式サイト お食事ページ（瓦そば1,300円ほかの品書き・営業時間・席数30席・直通電話）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000532051/">ホットペッパーグルメ ダイニング囃子（住所・アクセス・席数・瓦そば1,300円・写真）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-men-maruryu">
+<img class="hero" src="img/shimonoseki/shimonoseki-men-maruryu.jpg" alt="豚骨らーめん まる龍 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-men-maruryu_exterior.jpg" alt="豚骨らーめん まる龍 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">23</span>豚骨らーめん まる龍<span class="yomi">とんこつらーめん まるりゅう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">豊前田の飲み屋街にある豚骨ラーメンの店で、銀行員だった店主が脱サラして2017年ごろに開いた。国産黒豚の骨だけを水とともに48時間以上炊き続けるスープは、見た目のわりに後味が軽い。麺は地元の製麺所と組んで作ったもっちりした中太の生麺で、チャーシューは8時間かけて仕上げる。一番人気は焦がしニンニクのマー油を垂らした黒ラーメン。焼き飯や豚サガリ鉄板といった一品も評判で、夜は23時まで（媒体によっては深夜1時まで）開けているので飲んだあとの締めに使える。</div>
+<div class="sig"><b>一皿:</b>黒ラーメン（焦がしニンニクの特製マー油が香る一番人気）／豚骨らーめん（国産黒豚の骨を48時間炊いたスープにもっちり中太麺）／焼き飯（ラーメンと合わせる定番）／豚サガリ鉄板（脂身の少ない豚の希少部位の鉄板焼き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00／18:00〜23:00　※媒体により「日〜木は翌1:00まで、金・土は翌2:00まで」「18:00〜24:00」の記載もある</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（公式Instagramは「火曜日の夜」と記載）</td></tr>
+<tr><th>住所</th><td>山口県下関市豊前田町3-2-7 下関第1ビル1階</td></tr>
+<tr><th>予約</th><td>予約不可（席数が少なく、夜は混み合う） — <a href="tel:0832422206">☎ 083-242-2206</a> ／ <a href="https://www.instagram.com/ramen_maruryu/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊前田で飲んだあとの締めに使える個人店で、国産黒豚だけを使う豚骨は下関の豚骨ラーメンの現在形。営業の根拠＝①地域ニュースサイト「号外NET下関市」の記事『海峡の冬に寄り添う一杯、豚骨らーめん まる龍さん。』が2025年12月9日付（2026-10-25 取得） ②公式Instagram（@ramen_maruryu）の紹介文に「開店8周年」「終日11:30〜15:00、18:00〜23:00／定休日 火曜日の夜」と現行の営業情報がある ③フリーペーパー「ほっぷ下関」の下関ラーメンMAP（2025年9月12日更新）に掲載。【注意】同じ屋号の「まる龍 勝谷店」は2019年に閉店しており、長崎県の「MARU龍ラーメン佐々店」は別経営。豊前田町の本店は営業中。【写真について】写真は店が提供したグルメ紹介サイトの掲載分（1125〜1514px）を使った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%B1%9A%E9%AA%A8%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E3%81%BE%E3%82%8B%E9%BE%8D%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA3-2-7%20%E4%B8%8B%E9%96%A2%E7%AC%AC1%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: クリーングルメ（official-caption.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://official-caption.com/maruryu/">クリーングルメ『まる龍ラーメン』（住所・電話・営業時間・定休日・こだわり／店舗提供写真）2026-10-25 取得</a> / <a href="https://shimonoseki.goguynet.jp/2025/12/09/maruryuu/">号外NET下関市『海峡の冬に寄り添う一杯、豚骨らーめん まる龍さん。』2025年12月9日付（営業継続の確認）2026-10-25 取得</a> / <a href="https://www.hop-s.jp/column/gourmet/7210">ほっぷ下関『下関ラーメンMAP』2025年9月12日更新（住所・営業時間・定休日）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-men-yamanota">
+<img class="hero" src="img/shimonoseki/shimonoseki-men-yamanota.jpg" alt="山の田らーめん 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-men-yamanota_exterior.jpg" alt="山の田らーめん 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">24</span>山の田らーめん<span class="yomi">やまのたらーめん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">1981年に山の田で始まり、現在は二代目の白川礼人さんが蒲生野の新店舗で続けている下関の老舗。洋食のコックだった父と母が始めた店で、2023年に創業42周年を迎えた。豚骨のスープは見た目ほど重くなく、化学調味料の尖りがないのが特徴で、地元では「下関ラーメンの雄」と呼ばれる。34席、駐車場16台で、郊外型の広い造り。支払いは現金とPayPayのみ。火曜は昼だけの営業で、通販用の生麺セットも扱っている。</div>
+<div class="sig"><b>一皿:</b>山の田らーめん（豚骨のスープにチャーシューとねぎ。創業から受け継ぐ看板）／チャーシュー麺（厚めのチャーシューを重ねた一杯）／味玉入りらーめん（とろりとした半熟の味玉を落とす）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00／17:00〜21:00　※火曜日は 11:00〜14:30 のみ営業</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>山口県下関市大字蒲生野805-7</td></tr>
+<tr><th>予約</th><td>不可（席のみの店。支払いは現金とPayPay） — <a href="tel:0832495791">☎ 083-249-5791</a> ／ <a href="https://yamanotaramen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関三大ラーメンの一つに数えられる老舗で、創業1981年の味を二代目が継いでいる。営業の根拠＝①公式サイトのお知らせ欄の最新掲載が2025年12月7日「当店Instagramアカウントについて重大なお知らせ」（乗っ取り被害の告知と新アカウント @rein424yamanota の案内。2026-10-25 取得） ②同サイトの店舗情報ページに住所・電話・営業時間・定休日・席数34席・駐車場16台が現行情報として載っている ③号外NET下関市の取材記事（2023年7月30日・創業42周年）。【写真について】公式サイトの写真は店舗の外観と客席のみ（1000×630）で料理が無いため、ラーメンの写真は号外NET下関市の取材写真（1280×853）を使った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E3%81%AE%E7%94%B0%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%A4%A7%E5%AD%97%E8%92%B2%E7%94%9F%E9%87%8E805-7">Googleマップで開く</a>
+<div class="src">写真: 号外NET 下関市（shimonoseki.goguynet.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamanotaramen.com/about/">山の田らーめん 公式サイト 店舗情報（住所・電話・営業時間・定休日・席数34席・駐車場16台・支払い方法）2026-10-25 取得</a> / <a href="https://yamanotaramen.com/news/">山の田らーめん 公式サイト お知らせ（最新 2025年12月7日／創業42周年の告知 2023年6月17日・二代目店主 白川礼人）2026-10-25 取得</a> / <a href="https://shimonoseki.goguynet.jp/2023/07/30/ramenyamanota/">号外NET下関市『下関で知らない人はいない人気店。山の田らーめんさんに、４２周年の花輪があったのでお邪魔してきました。』2023年7月30日付（取材写真の出典）2026-10-25 取得</a> / <a href="https://michinoeki-houhoku.jp/news/blog/2024110311992.html">道の駅北浦街道ほうほく スタッフブログ『これぞレジェンドの味！下関三大ラーメン！』2024年11月3日（下関三大ラーメンの一つとしての言及）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-men-hashimoto">
+<img class="hero" src="img/shimonoseki/shimonoseki-men-hashimoto.jpg" alt="蕎麦処 はしもと 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-men-hashimoto_exterior.jpg" alt="蕎麦処 はしもと 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">25</span>蕎麦処 はしもと<span class="yomi">そばどころ はしもと</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">城下町長府の土塀の小路に2021年11月に開いた手打ち蕎麦の店。うどんの文化が強い下関では珍しく、二八の手打ち蕎麦をのど越しで食べさせる。その日に使うそば粉の産地が店内に掲示され、産地ごとの味の違いを確かめながら食べられる。お茶と一緒に揚げ蕎麦が出てくるのも楽しみの一つ。つゆは出汁の香りが強く、最後は蕎麦湯で飲み干す客が多い。昼だけの営業で、売り切れ次第終了のため、確実に食べたいなら電話で予約しておくとよい。駐車場は4台。</div>
+<div class="sig"><b>一皿:</b>せいろ蕎麦（二八の手打ち。しなやかなコシとのど越しが身上。800円）／天ぷらせいろ（大きな海老天と季節の野菜。1,800円）／蕎麦湯（出汁の効いたつゆを最後まで飲み干すための一杯）</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:30〜13:45（L.O. 13:30）／土・日・祝 11:30〜14:00（L.O. 13:45）　昼のみの営業・売り切れ次第終了</td></tr>
+<tr><th>定休日</th><td class="off">毎週火曜日・第3および第5月曜日（日曜日は不定休のため電話で確認のこと）</td></tr>
+<tr><th>住所</th><td>山口県下関市長府土居の内町7-16</td></tr>
+<tr><th>予約</th><td>可（電話予約。売り切れ次第終了のため、確実に食べたい場合は事前に電話しておくとよい） — <a href="tel:05088830628">☎ 050-8883-0628</a> ／ <a href="https://hashimoto-soba.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>瓦そばとは別の「下関のそば」を見せられる店で、城下町長府の散策と組み合わせられる。営業の根拠＝①公式Instagramの投稿「昨日10月17日は、蕎麦切れ完売しました」が2026年10月17日付、同「本日10月7日は完売蕎麦切れとなりました」が2026年10月7日付、同「本日、蕎麦切れ完売しました」が2026年9月30日付（2026-10-25 取得） ②公式サイト hashimoto-soba.com に営業日・営業時間・定休日・住所・電話が現行情報として載っている ③号外NET下関市の取材記事（2025年3月7日）。【写真について】公式サイトは画像をほとんど持たないため、号外NET下関市の取材写真（1280×851）を使った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%E5%87%A6%20%E3%81%AF%E3%81%97%E3%82%82%E3%81%A8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E5%9C%9F%E5%B1%85%E3%81%AE%E5%86%85%E7%94%BA7-16">Googleマップで開く</a>
+<div class="src">写真: 号外NET 下関市（shimonoseki.goguynet.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://hashimoto-soba.com/about">蕎麦処はしもと 公式サイト 店舗情報（営業日・営業時間・定休日・住所・電話）2026-10-25 取得</a> / <a href="https://shimonoseki.goguynet.jp/2025/03/07/hasimoto/">号外NET下関市『一口目の感動は、最後の一滴まで。のどを抜ける二八蕎麦の至福の一杯。』2025年3月7日付（2021年11月開店・価格・駐車場・取材写真の出典）2026-10-25 取得</a> / <a href="https://www.instagram.com/p/Dem0YxXknQs/">蕎麦処はしもと 公式Instagram（2026年10月17日・10月7日・9月30日の完売報告／営業継続の確認）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-men-taiheiraku">
+<img class="hero" src="img/shimonoseki/shimonoseki-men-taiheiraku.jpg" alt="中華料理 太平楽 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-men-taiheiraku_exterior.jpg" alt="中華料理 太平楽 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">26</span>中華料理 太平楽 本店<span class="yomi">ちゅうかりょうり たいへいらく ほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">下関駅と唐戸のあいだ、岬之町にある町の大衆中華食堂。本格的な四川料理を看板にしながら、麺類の品書きが広いのがこの店の持ち味で、中華そば600円、チャンポン650円、皿うどん650円、揚げ焼そば650円、四川風焼きそば750円、担々麺750円、五目タンメン750円が並ぶ。変わり種の石焼きトマトらーめんは、残ったスープに100円足してご飯を入れリゾット風にできる。20席（カウンター5席・座敷は6名1席と4名2席）の小さな店で、全席禁煙。3〜4日前に頼めば長崎から仕入れた生のアヒルで北京ダックも出す。</div>
+<div class="sig"><b>一皿:</b>チャンポン（650円。下関で町中華のちゃんぽんを食べるならここ）／石焼きトマトらーめん（890円。残ったスープにご飯を入れてリゾット風に）／四川風焼きそば（750円）／北京ダック（6,800円。3〜4日前までの要予約）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 11:00〜14:00／17:30〜21:00　※食べログ等には「11:30〜15:00／17:00〜22:00」の記載もある</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（お盆と正月は休み。ほかに臨時休業あり）</td></tr>
+<tr><th>住所</th><td>山口県下関市岬之町16-11</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約とも可。即予約は来店日の前日17時まで、リクエスト予約は3日前まで。貸切は20〜25名で応相談） — <a href="tel:0832327857">☎ 083-232-7857</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で唯一のちゃんぽんと焼きそばの店で、下関駅から歩ける町中華。麺類だけで8品あり、値段も600〜890円と軽い。営業の根拠＝①ホットペッパーグルメのネット予約カレンダーで2026年10月27日〜31日が「即予約可（◎）」になっていることを確認（2026-10-25 時点） ②同ページの店舗情報の更新日が2026年2月21日 ③同ページに「2026年宴会コース」の案内と2025年の宴会コースの写真が掲載されている ④公式Instagramに「【営業時間変更のお知らせ】いつも中華料理『太平楽』を…」の投稿が2026年2月17日付。【注意】2026年8月16日に閉店した「太平らーめん」は別の店。【写真について】ホットペッパーグルメの画像はURLの `_480` などの接尾辞を外すと原寸（908〜1280px）になる（下関市の掲載店で実測）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E5%A4%AA%E5%B9%B3%E6%A5%BD%20%E6%9C%AC%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B2%AC%E4%B9%8B%E7%94%BA16-11">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000531535/">ホットペッパーグルメ 太平楽 本店（住所・営業時間・定休日・席数20席・駐車場4台・ネット予約の空席状況・2026年2月21日更新）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000531535/food/">ホットペッパーグルメ 太平楽 本店 料理ページ（麺類の品書きと価格）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000531535/tel/">ホットペッパーグルメ 太平楽 本店 電話番号ページ（083-232-7857）2026-10-25 取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・郷土料理・地酒（豊前田）</h2>
+<div class="card" id="c-shimonoseki-izakaya-bishoku-housen">
+<img class="hero" src="img/shimonoseki/shimonoseki-izakaya-bishoku-housen.jpg" alt="美食 宝仙 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>美食 宝仙<span class="yomi">びしょく ほうせん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">44席。カウンターと座敷があり、店の奥に生け簀を据えて、さざえ・あわび・活魚をその場で取り上げてさばく。看板はとらふくの刺身とちり鍋だが、関門海峡で獲れる関門地ダコの酢の物、のどぐろの塩焼き、熊本直送の馬刺しまで品書きは広い。ランチは11時から通しで営業し、仕入れ次第では早じまいすることもある。日曜定休（祝日にあたる日は営業）。くじら三点盛り（赤身刺・オバイケ・ベーコン刺）やあんこうとくじらの竜田揚げといった下関らしい品も置く。山口の地酒は獺祭・雁木・五橋などを常備。外観写真なし（ホットペッパーグルメの「店内・外観」に公開されている写真が店内と料理だけで、建物の正面を写したものが無かったため）。</div>
+<div class="sig"><b>一皿:</b>とらふく刺し（下関名物のとらふぐの薄造り）／関門地ダコ酢（関門海峡で獲れたタコの酢の物）／くじら三点盛り（赤身刺・オバイケ・ベーコン刺）／山口の地酒（獺祭・雁木・五橋ほか）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 11:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）／金・土 11:00〜23:30（料理L.O. 22:30／ドリンクL.O. 22:45）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（定休日が祝日にあたる場合は営業）・12月31日・1月1日</td></tr>
+<tr><th>住所</th><td>山口県下関市豊前田町2-1-22 国宝ビルNo.2 1F</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可） — <a href="tel:0832340385">☎ 083-234-0385</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊前田町の通り沿いで、生け簀を持つ海鮮居酒屋として山口の地酒まで揃う一軒。営業の根拠＝①ホットペッパーグルメのネット予約カレンダーが2026-10-25 時点で 2026年10月26日〜11月30日まで「即予約可（◎）」で埋まっている（日曜は「休」表示。2026-10-25 確認） ②同サイトの口コミに 2026年8月31日・2026年8月23日・2026年6月18日 の投稿がある。店名に「食中毒」を付けて検索したが、この店を名指しした報道はない（2026-10-25 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E9%A3%9F%20%E5%AE%9D%E4%BB%99%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA2-1-22%20%E5%9B%BD%E5%AE%9D%E3%83%93%E3%83%ABNo.2%201F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001281976/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・写真）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ001281976/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ001281976/yoyaku/">ホットペッパーグルメ ネット予約カレンダー（2026年10月26日〜11月30日が即予約可）2026-10-25 確認</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-izakaya-ebisumon">
+<img class="hero" src="img/shimonoseki/shimonoseki-izakaya-ebisumon.jpg" alt="創作居酒屋 ゑびす門 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>創作居酒屋 ゑびす門<span class="yomi">そうさくいざかや えびすもん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">46席。カウンター6席のほか完全個室が7部屋あり、掘りごたつの2名室から12名の貸切まで分かれている。内装は古民家風で、下関近海の鮮魚、山口のブランド地鶏「黒かしわ」、熊本直送の馬刺しなど地元食材を軸にした創作料理を出す。店主は日本酒検定の有資格者で、山口の地酒を中心に飲み比べ3種セットや利き猪口の選べる酒器を用意する。定休日は不定休で、公式インスタグラムで告知される。外観写真なし（路地裏の一軒で、ホットペッパーグルメの「店内・外観」に公開されている写真が店内と料理だけだったため）。</div>
+<div class="sig"><b>一皿:</b>鮮魚のゑびす盛り（下関近海の刺身の盛合せ）／酒仙コース（山口の地酒6種が付く全8品のコース）／大根の唐揚げ（名物の一品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜23:00（料理L.O. 23:00／ドリンクL.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式インスタグラムで告知）</td></tr>
+<tr><th>住所</th><td>山口県下関市細江町1-3-31</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可） — <a href="tel:0832327027">☎ 083-232-7027</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊前田の裏手で、地元食材の創作料理と山口の地酒を一緒に出す個室の店。地酒の章の軸に据えた。営業の根拠＝①ホットペッパーグルメのネット予約カレンダーが2026-10-25 時点で 2026年10月27日〜11月30日まで「即予約可（◎）」（2026-10-25 確認） ②同サイトの口コミに 2026年9月30日・9月23日・9月21日・9月20日・9月9日 の投稿が並ぶ。店名に「閉店」「食中毒」を付けて検索したが該当する報道はない（2026-10-25 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%82%91%E3%81%B3%E3%81%99%E9%96%80%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA1-3-31">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001266129/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・写真）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ001266129/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ001266129/yoyaku/">ホットペッパーグルメ ネット予約カレンダー（2026年10月27日〜11月30日が即予約可）2026-10-25 確認</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-izakaya-sumiyaki-tanuki">
+<img class="hero" src="img/shimonoseki/shimonoseki-izakaya-sumiyaki-tanuki.jpg" alt="炭焼き たぬき 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-izakaya-sumiyaki-tanuki_exterior.jpg" alt="炭焼き たぬき 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>炭焼き たぬき<span class="yomi">すみやき たぬき</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip shimonosekinight">shimonosekinight</span></div>
+<div class="desc">100席（掲載により130席）。もとは豊前田にあり、現在の細江町へ移った地元の老舗で、個室が6部屋ある。上質の備長炭で焼く串焼きが16種、赤鶏や親鶏上ももの「ばらし焼」、日本海の刺身盛り、下関・安岡のネギを使った一銭焼きなど、炭火焼と地魚と創作料理が同じ品書きに並ぶ。昼は11時半から昼ご膳を出す。焼酎と日本酒の瓶が壁一面に並ぶ。</div>
+<div class="sig"><b>一皿:</b>ばらし焼（赤鶏・親鶏上ももを備長炭で焼いたもの）／安岡ネギの一銭焼き（下関・安岡産のネギを使った粉もの）／日本海の刺身盛り合わせ</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜14:00／夜 17:00〜翌0:00（祝日は17:00〜23:00、料理L.O. 22:30・ドリンクL.O. 23:00）※しものせきナイトウォーカーは夜の終わりを24:00（L.O.23:30）と記載</td></tr>
+<tr><th>定休日</th><td class="off">日曜（月曜が祝日の場合は日曜営業・月曜定休）</td></tr>
+<tr><th>住所</th><td>山口県下関市細江町1-5-6</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0832324781">☎ 083-232-4781</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊前田・細江の夜の街で古くから続く炭火焼の居酒屋。地元の人が通う側の店として入れた。営業の根拠＝①下関の夜の店を扱う地元サイト「しものせきナイトウォーカー」の店舗ページが現行の品書きと営業時間を載せ、サイトの更新情報が 2026年10月1日 付 ②ホットペッパーグルメの口コミに 2026年7月5日・2026年2月16日 の投稿がある。店名を「炭焼たぬき」「炭焼き たぬき」の両方（空白あり・なし）で検索したが閉店の報はなく、「食中毒」を付けた検索でもこの店を名指しした報道はない（2026-10-25 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%8D%20%E3%81%9F%E3%81%AC%E3%81%8D%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA1-5-6">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000620697/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・写真）2026-10-25 取得</a> / <a href="https://shimonosekinight.com/shop/food/tanuki/">しものせきナイトウォーカー 店舗ページ（品書き・席数130席・電話・営業時間。サイト更新情報は2026年10月1日付）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-izakaya-sakanaya-okamoto">
+<img class="hero" src="img/shimonoseki/shimonoseki-izakaya-sakanaya-okamoto.jpg" alt="さかなやの酒場 おかもと 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-izakaya-sakanaya-okamoto_exterior.jpg" alt="さかなやの酒場 おかもと 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>さかなやの酒場 おかもと<span class="yomi">さかなやのさかば おかもと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">35席。テーブル席・座敷・掘りごたつ席があり、座敷の宴会は22名まで。店に鮮魚店が併設されていて、ショーケースに並ぶその日の魚を客が自分で選び、刺身・焼物・煮物・鍋のどれにするかを決めて調理してもらえるのが看板。値札が付いたまま並ぶので値段が見える。白子豆腐の揚げ出しや天ぷら盛合せなど一品も厚い。同じ下関市内に「おかもと 竹崎駅前店」があるので電話番号を間違えないよう店側が注意書きを出している。</div>
+<div class="sig"><b>一皿:</b>刺身盛合せ（併設の鮮魚店から選んだ魚をその場で造る）／揚げ出し白子豆腐／おかもと丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜23:00（料理L.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（日曜が祝日の場合は月曜定休、月曜が祝日の場合は日曜営業）</td></tr>
+<tr><th>住所</th><td>山口県下関市岬之町9-15</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0832223868">☎ 083-222-3868</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鮮魚店が併設され、客が魚を選んで調理法まで指定できる店。下関の市場の町らしい一軒として入れた。営業の根拠＝ホットペッパーグルメの口コミに 2026年10月12日・2026年3月28日 の投稿がある（2026-10-25 確認）。店名を「さかなやの酒場おかもと」「さかなやの酒場 おかもと」の両方（空白あり・なし）で検索したが閉店の報はなく、「食中毒」を付けた検索でもこの店を名指しした報道はない（2026-10-25 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%95%E3%81%8B%E3%81%AA%E3%82%84%E3%81%AE%E9%85%92%E5%A0%B4%20%E3%81%8A%E3%81%8B%E3%82%82%E3%81%A8%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B2%AC%E4%B9%8B%E7%94%BA9-15">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000553450/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・写真・口コミ日付）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000553450/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-izakaya-nagoya-karato">
+<img class="hero" src="img/shimonoseki/shimonoseki-izakaya-nagoya-karato.jpg" alt="和や 唐戸店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-izakaya-nagoya-karato_exterior.jpg" alt="和や 唐戸店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>和や 唐戸店<span class="yomi">なごや からとてん</span></div>
+<div class="chips"><span class="chip kanmonnote">kanmonnote</span><span class="chip shimonosekinight">shimonosekinight</span></div>
+<div class="desc">34席（カウンター20席・テーブル15席）。創業50年の焼きとり屋で、創業以来つぎ足したタレで山口のブランド地鶏「長州どり」を焼く。職人が一本ずつ手で刺し、ネタごとに焼く時間を変える。唐戸市場がすぐ近くなので、その日の刺し盛りやふくの白焼き、くじらといった下関の食材も品書きに並ぶ。2023年5月から新築工事に入り、同年11月6日にリニューアル開店した。駐車場はなく、近くの市営駐車場を使う。</div>
+<div class="sig"><b>一皿:</b>長州どりの焼きとり（創業以来つぎ足しのタレ）／ふく白焼き・ふく茶漬け（下関のふくを焼きとり屋の値段で）／本日の刺し盛り（唐戸市場から仕入れた日替わり）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 17:00〜24:30（L.O. 24:00）／日・祝 17:00〜24:00（L.O. 23:30）※かんもんノートの記事は「17:00〜24:00（L.O. 23:30）」と記載しており、媒体で食い違う</td></tr>
+<tr><th>定休日</th><td class="off">なし（しものせきナイトウォーカー）※かんもんノートの記事は「不定休」と記載</td></tr>
+<tr><th>住所</th><td>山口県下関市赤間町1-2</td></tr>
+<tr><th>予約</th><td>可（電話。宴会予約も受け付け） — <a href="tel:0832313241">☎ 083-231-3241</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸・赤間町でいちばん古株の焼きとり屋で、山口のブランド地鶏「長州どり」とふく・くじらが同じ品書きに載る。営業の根拠＝①下関の夜の店を扱う地元サイト「しものせきナイトウォーカー」の店舗ページが現行の品書き・席数・営業時間を載せ、サイトの更新情報が 2026年10月1日 付 ②地元媒体「かんもんノート」の取材記事（2023年12月12日公開・2023年12月15日更新）が2023年11月6日のリニューアル開店と店内外を記録している ③食べログに 2025年12月14日 付のメニュー写真の投稿がある。店名を「和や唐戸店」「和や 唐戸店」の両方（空白あり・なし）で検索したが閉店の報はなく、「食中毒」を付けた検索でもこの店を名指しした報道はない（2026-10-25 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E3%82%84%20%E5%94%90%E6%88%B8%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B5%A4%E9%96%93%E7%94%BA1-2">Googleマップで開く</a>
+<div class="src">写真: かんもんノート（関門エリアの地域情報サイト）（www.kanmonnote.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://shimonosekinight.com/shop/food/nagoyakarato/">しものせきナイトウォーカー 店舗ページ（席数34席・品書き・営業時間・定休日・電話。サイト更新情報は2026年10月1日付）2026-10-25 取得</a> / <a href="https://www.kanmonnote.com/nagoya/">かんもんノート 取材記事「創業50年…新築工事を終えてリニューアルオープン」2023年12月12日公開・2023年12月15日更新（住所・電話・営業時間・写真）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-izakaya-shunsai-kobo-maruho">
+<img class="hero" src="img/shimonoseki/shimonoseki-izakaya-shunsai-kobo-maruho.jpg" alt="旬彩工房 まるほ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-izakaya-shunsai-kobo-maruho_exterior.jpg" alt="旬彩工房 まるほ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>旬彩工房 まるほ<span class="yomi">しゅんさいこうぼう まるほ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">40席。カウンター8席とテーブル、30名まで座れる座敷があり、20名以上なら貸切にできる。店内の水槽で泳ぐ魚を好みに合わせて調理し、和の創作料理の一品が100種を超える。地産地消を掲げ、季節で仕入れが変わるため刺身の内容は日によって違う。カウンターの背には焼酎と日本酒の一升瓶が並ぶ。昼は11時半から営業し、日曜・祝日は休みだが宴会の予約なら定休日でも相談に応じる。</div>
+<div class="sig"><b>一皿:</b>活け造り・刺身の盛合せ（店内の水槽の魚を選んで調理）／季節のおまかせコース（会席仕立て）／100種を超える和の創作一品</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00（料理L.O. 13:30／ドリンクL.O. 13:30）／17:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（宴会の予約のみ定休日でも対応可）</td></tr>
+<tr><th>住所</th><td>山口県下関市南部町3-16</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0832225007">☎ 083-222-5007</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸と南部町の旧市街で、水槽の魚を選んで和の創作に仕立ててもらえる店。市場の町らしい一軒として入れた。営業の根拠＝公式インスタグラム（@beteran.kazunari0727）に 2026年9月12日 付の投稿（テイクアウト・お持ち帰りの案内）がある（2026-10-25 確認）。店名を「旬彩工房まるほ」「旬彩工房 まるほ」の両方（空白あり・なし）で検索したが閉店の報はなく、「食中毒」を付けた検索でもこの店を名指しした報道はない（2026-10-25 確認）。ホットペッパーグルメに載る公式サイトのアドレス（syunsai-maruho.sakura.ne.jp）は現在つながらないため website は空にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E5%BD%A9%E5%B7%A5%E6%88%BF%20%E3%81%BE%E3%82%8B%E3%81%BB%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%8D%97%E9%83%A8%E7%94%BA3-16">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000737484/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・写真）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000737484/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-izakaya-ponponsen-chofu">
+<img class="hero" src="img/shimonoseki/shimonoseki-izakaya-ponponsen-chofu.jpg" alt="創作厨房 ポンポン船 長府店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-izakaya-ponponsen-chofu_exterior.jpg" alt="創作厨房 ポンポン船 長府店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>創作厨房 ポンポン船 長府店<span class="yomi">そうさくちゅうぼう ぽんぽんせん ちょうふてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">52席。1階に28名、2階に16名＋8名の部屋があり、2階は貸切にできる。テーブル・座敷・カウンターが揃う。看板は「おばあちゃんの厚焼き卵」で、大きく切り分けて出る昔ながらの味。山陰で揚がった魚の刺身盛り、カリカリに焼いた手羽先、焼き鶏など家庭的な品が中心で値段は抑えめ。仕入れが尽きると早じまいすることがある。水曜定休だが12月は水曜も宴会の予約を受ける（電話のみ）。</div>
+<div class="sig"><b>一皿:</b>おばあちゃんの厚焼き卵（特大／750円・昔ながらの甘い厚焼き）／ポンポン船のカリカリ手羽先／山陰の刺身盛り</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）※仕入れが尽きると早じまいすることがある</td></tr>
+<tr><th>定休日</th><td class="off">水曜（12月は水曜も宴会予約を受け付け・電話のみ）</td></tr>
+<tr><th>住所</th><td>山口県下関市長府金屋町2-17</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0832455656">☎ 083-245-5656</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>城下町長府で地元の人が普段づかいする居酒屋。家庭の味を看板にした店として、観光地の店と対になるよう入れた。営業の根拠＝①ホットペッパーグルメの店舗ページが現行の営業時間・定休日（水曜）・席数52席・「12月は水曜日も宴会予約を受け付けます」という季節の告知を載せている（2026-10-25 取得） ②じゃらんnetの店舗ページが 2025年11月26日 時点で生きている。店名を「ポンポン船長府店」「創作厨房ポンポン船」の両方（空白あり・なし）で検索したが閉店の報はなく、「食中毒」を付けた検索でもこの店を名指しした報道はない（2026-10-25 確認）。【注】口コミの最新は2015年で、2025〜2026年の日付入りの投稿は確認できなかった。来店前の電話確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%8E%A8%E6%88%BF%20%E3%83%9D%E3%83%B3%E3%83%9D%E3%83%B3%E8%88%B9%20%E9%95%B7%E5%BA%9C%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E9%87%91%E5%B1%8B%E7%94%BA2-17">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000979547/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・写真）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000979547/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000979547/food/">ホットペッパーグルメ 料理ページ（おばあちゃんの厚焼き卵 750円 ほか）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-izakaya-ajisai-ayaragi">
+<img class="hero" src="img/shimonoseki/shimonoseki-izakaya-ajisai-ayaragi.jpg" alt="紫陽花 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>紫陽花<span class="yomi">あじさい</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">20席の小さな店。下関市街の飲み屋街から離れた綾羅木の住宅地にあり、地元の人が仕事帰りに通う。看板は日替わり定食と約10種の小鉢で、魚・肉・中華と日替わりの主菜が変わる。夜は串揚げのおまかせコースや広島風お好み焼きも出す。「おふくろの味」を掲げた手作りの和風料理が中心で、値段は抑えめ。下関市福江の海鮮店「seafood kitchen BOW」は姉妹店。外観写真なし（公開されている写真に店の正面を写したものが無かったため）。</div>
+<div class="sig"><b>一皿:</b>日替り定食（主菜は魚・肉・中華と日替わり）／約10種の小鉢／串揚げおまかせコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>山口県下関市綾羅木本町1-15-30 FTビル1F</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0832945231">☎ 083-294-5231</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>観光客向けではなく、綾羅木の地元の人が通う側の店として入れた。営業の根拠＝①公式インスタグラム（@sandaime.ajisai）が現行の電話番号と「随時、ご予約承り中」、姉妹店 seafood kitchen BOW での商品販売を告知している ②駅探の店舗ページが 2026年10月14日 時点で生きている ③姉妹店の seafood kitchen BOW（下関市福江709-1）はホットペッパーグルメに 2026年10月8日 の口コミがあり、2026年12月まで即予約可。店名を「紫陽花 綾羅木」「紫陽花綾羅木」の両方（空白あり・なし）で検索したが閉店の報はなく、「食中毒」を付けた検索でもこの店を名指しした報道はない（2026-10-25 確認）。【注】この店自体の口コミの最新は2014年で、日付入りの来店記録は確認できなかった。来店前の電話確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%AB%E9%99%BD%E8%8A%B1%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B6%BE%E7%BE%85%E6%9C%A8%E6%9C%AC%E7%94%BA1-15-30%20FT%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000790813/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・写真・行き方）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000790813/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000790813/food/">ホットペッパーグルメ 料理ページ（日替り定食・串揚げおまかせコース）2026-10-25 取得</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・イタリアン・各国料理</h2>
+<div class="card" id="c-shimonoseki-yoshoku-takatsu">
+<img class="hero" src="img/shimonoseki/shimonoseki-yoshoku-takatsu.jpg" alt="レストラン高津（restaurant takatsu） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-yoshoku-takatsu_exterior.jpg" alt="レストラン高津（restaurant takatsu） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>レストラン高津（restaurant takatsu）<span class="yomi">れすとらんたかつ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">大正時代に建てられた元捕鯨会社の洋館（国の登録有形文化財）を改装し、2017年に開いた完全予約制の店。シェフの高津健一は下関の出身で、高校卒業後に福岡でイタリアンとフレンチを4年修業し、下関の「アルベリ」とニューヨークの「バスタパスタ」を経て、福岡「ラ メゾン ドゥ ナチュール ゴウ」でスーシェフを務めた。料理はフレンチとイタリアンの技法を使いながらジャンルにとらわれないおまかせコースのみで、ランチもディナーも一斉スタート。8席のカウンターはムラを出すためにモルタルへ墨を混ぜて仕上げてあり、中央に飾られた花木が店の象徴になっている。ワインはフランス産を軸に南アフリカ・オーストラリア・日本産を揃え、グラスは赤・白・泡が常時5〜6種類ずつ。山口県の地酒も数種類置く。窓からは下関の海を望む。</div>
+<div class="sig"><b>一皿:</b>おまかせコース（地元下関の食材を中心に、季節ごとに構成が変わる一斉スタートのコース。苦手な食材やアレルギーは予約時に相談できる）／グラスワイン（フランスを軸に赤・白・泡が常時5〜6種類ずつ。山口の地酒も数種類）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【ランチ】12:00 一斉スタート（土・日のみ。貸切の場合は要相談。14:30頃コース終了予定）　【ディナー】19:00 一斉スタート（21:30頃コース終了予定）　※コースは一斉スタートのため10分前までに来店のこと</td></tr>
+<tr><th>定休日</th><td class="off">不定休（Japan Brand Collection 2026年8月22日更新）　※Yahoo!検索の店舗情報欄は「水曜日」と表示しており食い違う。訪問前に電話で確認のこと</td></tr>
+<tr><th>住所</th><td>山口県下関市岬之町13-7</td></tr>
+<tr><th>予約</th><td>完全予約制（コースのみ）。電話 083-234-2299、またはメール info@restaurant-takatsu.com。1名から利用可。苦手な食材・アレルギーは予約時に申し出る — <a href="tel:0832342299">☎ 083-234-2299</a> ／ <a href="https://restaurant-takatsu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>大正期の洋館（登録有形文化財）という下関の近代建築をそのまま使った一軒で、この章の「旧洋館のレストラン」の柱になる。営業の根拠＝①Japan Brand Collection の店舗紹介ページが2026年8月22日更新で、住所・電話・営業時間・平均予算19,800円を現行情報として掲載（2026-10-25 取得）②公式サイト restaurant-takatsu.com の MENU ページが「完全予約制・全日19:00〜／土日12:00〜」の現行の営業形態を掲載（2026-10-25 取得）③ポケットコンシェルジュにディナー「おまかせ」19,800円のコースが掲載（2026-10-25 取得）。【定休日に食い違いあり】Japan Brand Collection は「不定休」、Yahoo!検索の店舗情報欄は「水曜日」と表示する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%AB%98%E6%B4%A5%EF%BC%88restaurant%20takatsu%EF%BC%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B2%AC%E4%B9%8B%E7%94%BA13-7">Googleマップで開く</a>
+<div class="src">写真: 一休.comレストラン（restaurant.img-ikyu.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://restaurant-takatsu.com/access">restaurant takatsu 公式サイト ACCESS（郵便番号・住所・電話・メール・駐車場の案内）2026-10-25 取得</a> / <a href="https://restaurant-takatsu.com/menu">restaurant takatsu 公式サイト MENU（完全予約制・コースの開始時刻・一斉スタートの注意）2026-10-25 取得</a> / <a href="https://restaurant-takatsu.com/gallery">restaurant takatsu 公式サイト GALLERY（外観・店内・調理の写真16点）2026-10-25 取得</a> / <a href="https://jbc-web.info/%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%AB%98%E6%B4%A5-3/">Japan Brand Collection「レストラン高津」2026年8月22日更新（洋館の由来・登録有形文化財・シェフの経歴・8席のカウンター・ワイン・住所・電話・営業時間・平均予算・定休日）2026-10-25 取得</a> / <a href="https://www.pocket-concierge.jp/restaurants/244751">ポケットコンシェルジュ Restaurant Takatsu（ディナーおまかせコース 19,800円）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-yoshoku-marutaya-hinoyama">
+<img class="hero" src="img/shimonoseki/shimonoseki-yoshoku-marutaya-hinoyama.jpg" alt="まるた屋 火の山店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-yoshoku-marutaya-hinoyama_exterior.jpg" alt="まるた屋 火の山店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>まるた屋 火の山店<span class="yomi">まるたや ひのやまてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">昭和50年（1975年）創業のステーキ・ハンバーグ専門店で、壇ノ浦と火の山のふもと、関門橋のたもとに建つ。総席数88席で、ボックス席のほかに半個室と掘りごたつの座敷があり、掘りごたつ席の一部は関門海峡を見渡せる。最大20名までの宴会に対応する。ステーキにはアメリカ産ブラックアンガス牛の冷凍していないものを使い、鉄板の温度を部位ごとに調節し、牛脂で黒毛和牛の香りを移し、ガーリックを加え、白ワインでフランベして焼き上げる。ハンバーグはハンバーグ専用に選んだ国産和牛100％で、複数の部位を独自の比率で配合する。全品にライス・スープ・サラダ・ドリンクが付く。店内は完全禁煙。</div>
+<div class="sig"><b>一皿:</b>サガリステーキ（ハラミの一部で腰椎側にあたる稀少部位。赤身が多くあっさりとした味わいで、180gから1kgまで7段階）／黒毛和牛100％ハンバーグステーキ（国産和牛100％。ソースは4種類から選べ、チーズや目玉焼きのトッピングも可）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（L.O.14:00）／17:30〜22:00（L.O.21:00）　※閉店時刻の都合で、昼は13:15〜13:30頃、夜は20:15〜20:30頃に受付を終了することがあると公式Instagram・公式Facebookが告知している。20時以降に行く場合は電話で確認を</td></tr>
+<tr><th>定休日</th><td class="off">木曜日（祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>山口県下関市みもすそ川町10-17</td></tr>
+<tr><th>予約</th><td>電話 083-232-7091 で受付（公式サイトに「ホームページを見た」と伝えるとスムーズ、と記載）。貸切は不可 — <a href="tel:0832327091">☎ 083-232-7091</a> ／ <a href="https://www.marutaya-hinoyamaten.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>関門海峡を見渡す席を持つ洋食店で、港町・下関の「海峡を望むレストラン」として章の軸になる。営業の根拠＝①公式サイト marutaya-hinoyamaten.com が現行で、営業時間11:00〜15:00／17:30〜22:00・定休木曜・総席数88席・駐車場30台を掲載（2026-10-25 取得）②第三者のInstagram投稿 2026年9月14日が「夕方17:30からの営業開始には平日でも順番待ち」と現況を伝えている ③ホットペッパーグルメの店舗ページに写真45点が掲載されている（2026-10-25 取得）。【注意】検索結果に「すでに閉店」と書く記事が2件（user.mountaintrek.com・bizilabe.elhuyar.eus）出るが、どちらも生成記事を自動投稿するドメインで、火の山山頂の別施設と取り違えている。公式サイト・公式Instagramとも現行で、閉店の告知は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%82%8B%E3%81%9F%E5%B1%8B%20%E7%81%AB%E3%81%AE%E5%B1%B1%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E3%81%BF%E3%82%82%E3%81%99%E3%81%9D%E5%B7%9D%E7%94%BA10-17">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.marutaya-hinoyamaten.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marutaya-hinoyamaten.com/access.html">まるた屋 火の山店 公式サイト 店舗情報（住所・アクセス・営業時間・定休日・総席数88席・駐車場30台・支払い方法）2026-10-25 取得</a> / <a href="https://www.marutaya-hinoyamaten.com/concept.html">まるた屋 火の山店 公式サイト こだわり／メニュー（創業50余年・ブラックアンガス牛・サガリステーキとハンバーグの価格）2026-10-25 取得</a> / <a href="https://www.marutaya-hinoyamaten.com/menu.html">まるた屋 火の山店 公式サイト メニュー（料理写真）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000553458/">ホットペッパーグルメ まるた屋 火の山店（営業時間・定休日・外観と店内の写真）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-yoshoku-nasubi">
+<img class="hero" src="img/shimonoseki/shimonoseki-yoshoku-nasubi.jpg" alt="なすび食堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>なすび食堂<span class="yomi">なすびしょくどう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">下関市内で長年続く食堂で、看板は鉄鍋のビーフシチュータイプの煮込みハンバーグ。マスターが一つずつ手で作る。煮込みハンバーグとチキンカツを合わせた定食が一番人気で、ほかに豆腐とチーズに大葉を効かせた豆腐チーズコロッケ定食、手作りの甘めのタルタルソースをかけた鶏もも柔らか揚げ定食（南蛮風）、半熟でとろとろの卵をトマトソースで食べるオムライス、昭和の味わいのスパゲッティナポリタンが並ぶ。夜は日替わりのおばんざいを数種類用意し、一杯だけの立ち寄りにも応じる。弁当と惣菜の持ち帰り、オードブルの注文も可。日曜は通常営業を休み、不定期でミニライブや貸切パーティーに使われる。外観写真なし（公式サイト・公式SNSとも料理と店内の写真しか載せておらず、建物の正面を写したものが見つからなかった）。</div>
+<div class="sig"><b>一皿:</b>煮込みハンバーグ＆チキンカツ定食（鉄鍋のビーフシチュータイプの煮込みハンバーグに、サクサクのチキンカツを合わせた一番人気）／オムライス（半熟でとろとろの卵をトマトソースで）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼の部 11:00〜15:00（L.O.14:30）／夜の部 18:00〜21:30（L.O.21:00）　※品物が無くなり次第閉店。公式Instagramは「水・土・祝祭日は昼の部のみ営業、昼 11:00〜14:30／夜 17:30〜21:30」と記載しており公式サイトと食い違う。営業日は公式サイトの月間カレンダーで確認のこと</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜（日曜は貸切予約のみ受付）。臨時休業あり</td></tr>
+<tr><th>住所</th><td>山口県下関市幡生宮の下町26-8</td></tr>
+<tr><th>予約</th><td>貸切パーティーは要予約（電話 083-254-3120）。弁当・惣菜・オードブルも電話で注文可。通常の席の予約可否は未確認 — <a href="tel:0832543120">☎ 083-254-3120</a> ／ <a href="https://nasubi-shokudo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ふぐと海鮮に偏りがちな下関で、地元の人が日常的に通う洋食の食堂として入れた。営業の根拠＝公式サイトのお知らせ欄の最新が2026年10月6日（10月22日・24日・31日の夜の部を営業する告知）、その前が2026年9月27日（10月の営業カレンダーを掲載）で、月ごとの営業カレンダーが現在も更新されている（2026-10-25 取得）。【営業時間に食い違いあり】公式サイトは昼 11:00〜15:00／夜 18:00〜21:30、公式Instagramは「水・土・祝祭日は昼の部のみ。昼 11:00〜14:30／夜 17:30〜21:30」と書いており、両方を hours に併記した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%81%99%E3%81%B3%E9%A3%9F%E5%A0%82%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%B9%A1%E7%94%9F%E5%AE%AE%E3%81%AE%E4%B8%8B%E7%94%BA26-8">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（nasubi-shokudo.com）より引用 / 外観: 写真なし / 参照元: <a href="https://nasubi-shokudo.com/">なすび食堂 公式サイト トップ（営業時間・定休日・お知らせ 2026年10月6日／看板メニューの説明）2026-10-25 取得</a> / <a href="https://nasubi-shokudo.com/access.html">なすび食堂 公式サイト アクセス（住所・電話・駐車場）2026-10-25 取得</a> / <a href="https://nasubi-shokudo.com/menu.html">なすび食堂 公式サイト メニュー（料理写真・品目）2026-10-25 取得</a> / <a href="https://www.instagram.com/nasubi_shokudo/">なすび食堂 公式Instagram（営業時間の別記載）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-yoshoku-alberi">
+<img class="hero" src="img/shimonoseki/shimonoseki-yoshoku-alberi.jpg" alt="Trattoria ALBERI（トラットリア アルベリ） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>Trattoria ALBERI（トラットリア アルベリ）<span class="yomi">とらっとりあ あるべり</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">唐戸市場のすぐ裏手、中之町の路地にあるイタリア料理店。下関で揚がる魚介や鮮魚、野菜、ジビエなど四季の素材を使った料理を出し、イタリア国家認定ソムリエが料理に合わせてイタリア産ワインを選ぶ。2024年2月に改装し、総席数62席。入口付近の席は開放感があり、奥にはランチコースかフルコース利用者だけが使える12名までのプライベートルームがある。40名以上なら貸切の相談も可。レストランウェディングや1.5次会にも使われる。この店はレストラン高津のシェフ高津健一が修業した店の一つでもある。外観写真なし（公式サイト・ホットペッパーグルメとも店内と料理の写真だけで、建物の正面を写したものが無い。路地の奥にあり看板も控えめ）。</div>
+<div class="sig"><b>一皿:</b>イタリアの素材と下関の魚介を使ったコース（ランチ4,400円、ディナー7,000円・11,000円の3本立て）／イタリア産ワイン（国家認定ソムリエが料理に合わせて選ぶ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝日・祝前日 11:00〜14:30（料理L.O.14:00／ドリンクL.O.14:00）／18:00〜22:00（料理L.O.21:00／ドリンクL.O.21:30）　※第三者のInstagram投稿（2026年10月6日）は夜を「17:30〜22:00」と記載しており、ホットペッパーグルメの記載と食い違う</td></tr>
+<tr><th>定休日</th><td class="off">月曜・第3火曜（祝日の場合は翌営業日。ホットペッパーグルメ）　※Instagramの紹介投稿は「定休日 月曜日」とだけ記載しており食い違う</td></tr>
+<tr><th>住所</th><td>山口県下関市中之町8-20</td></tr>
+<tr><th>予約</th><td>電話で受付（ホットペッパーグルメのネット予約は現在停止中）。プライベートルームはランチコースかフルコースの利用者のみ。40名以上は貸切の相談可 — <a href="tel:0832311016">☎ 083-231-1016</a> ／ <a href="https://teb-alberi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸市場のすぐ裏という場所で、下関の魚介をイタリア料理で出す一軒。営業の根拠＝①第三者のInstagram投稿 2026年10月6日が店の料理を紹介し、営業時間11:00〜14:30／17:30〜22:00・定休日 月曜を併記している ②ホットペッパーグルメの店舗ページが2025年4月25日更新で、2024年2月の改装・62席・コース価格を掲載 ③公式サイト teb-alberi.jp が現行（いずれも 2026-10-25 取得）。【営業時間に食い違いあり】ホットペッパーグルメは夜を18:00〜22:00、定休を「月・第3火」と書き、上記Instagramは夜を17:30〜22:00、定休を月曜とする。両方を hours・closed に併記した。【ネット予約について】ホットペッパーグルメの空席カレンダーは「現在ネット予約を受け付けていません」と表示されるので、予約は電話で。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Trattoria%20ALBERI%EF%BC%88%E3%83%88%E3%83%A9%E3%83%83%E3%83%88%E3%83%AA%E3%82%A2%20%E3%82%A2%E3%83%AB%E3%83%99%E3%83%AA%EF%BC%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E4%B8%AD%E4%B9%8B%E7%94%BA8-20">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000553456/">ホットペッパーグルメ Trattoria ALBERI（住所・営業時間・定休日・コース価格・62席・改装年・駐車場・写真）2026-10-25 取得</a> / <a href="https://teb-alberi.jp/">Trattoria ALBERI 公式サイト（店の方針・メニュー・ワイン）2026-10-25 取得</a> / <a href="https://jbc-web.info/%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%AB%98%E6%B4%A5-3/">Japan Brand Collection「レストラン高津」2026年8月22日更新（高津シェフが下関「アルベリ」で修業した経歴）2026-10-25 取得</a> / <a href="https://www.instagram.com/p/DeJa82kDzAo/">Instagram 投稿（2026年10月6日・Trattoria ALBERI の料理紹介。営業時間 11:00-14:30／17:30-22:00・定休日 月曜日と併記）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-yoshoku-osteria-wakka">
+<img class="hero" src="img/shimonoseki/shimonoseki-yoshoku-osteria-wakka.jpg" alt="Osteria WAKKA。（オステリア ワッカ。） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>Osteria WAKKA。（オステリア ワッカ。）<span class="yomi">おすてりあ わっか</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">カウンター6席だけの小さなイタリア料理店で、料理はおまかせコースのみ。その日の仕入れに合わせ、お通し・前菜・スープ・手打ちパスタ・メイン・デザートの全7〜9品を組み立てる。提供の順番や品数、食材は当日の内容で変わり、構成できる範囲で苦手な食材やアレルギーにも対応する。1名から予約でき、シェフの手元と香りまで見えるカウンターで食べる。ワインを揃え、ノンアルコールもサンペレグリノ、自家製ジンジャエール、周防大島のみかんジュース、エスプレッソなどを用意する。全席禁煙、子ども連れは不可。外観写真なし（ホットペッパーグルメの「店内・外観」の写真がいずれも店内で、ビル2階のため建物の正面を写したものが無い）。</div>
+<div class="sig"><b>一皿:</b>おまかせコース 9,680円（全7〜9品。お通しから前菜・スープ・手打ちパスタ・メイン・デザートまで、その日の仕入れで組み立てる）／ペアリングのワイン（カウンターでコースに合わせて供される）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 18:00〜22:00（料理L.O.20:00／ドリンクL.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・不定休</td></tr>
+<tr><th>住所</th><td>山口県下関市細江町1-4-18 ハーアインビル201</td></tr>
+<tr><th>予約</th><td>要予約（1名から可）。ホットペッパーグルメのネット予約は即予約が来店日当日15時まで、リクエスト予約が前日17時まで受付。電話はホットペッパーグルメ掲載の 050-8888-2132。子ども連れ不可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関駅と豊前田の近くで、コースだけを6席で出す現代的なイタリア料理店。章の中で、唐戸の気軽な店や郊外の石窯の店と性格が分かれる。営業の根拠＝①ホットペッパーグルメの店舗ページが2026年9月21日更新（2026-10-25 取得）②同ページのネット予約カレンダーが2026年11月はほぼ全日「即予約可（◎）」、12月も「要問い合わせ（TEL）」で埋まっており、先の日付まで予約を受け付けている（2026年10月25日に確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Osteria%20WAKKA%E3%80%82%EF%BC%88%E3%82%AA%E3%82%B9%E3%83%86%E3%83%AA%E3%82%A2%20%E3%83%AF%E3%83%83%E3%82%AB%E3%80%82%EF%BC%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA1-4-18%20%E3%83%8F%E3%83%BC%E3%82%A2%E3%82%A4%E3%83%B3%E3%83%93%E3%83%AB201">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004576132/">ホットペッパーグルメ Osteria WAKKA。オステリア ワッカ。（住所・営業時間・定休日・6席・コース9,680円・2026年9月21日更新・空席カレンダー）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-yoshoku-sankotteki">
+<img class="hero" src="img/shimonoseki/shimonoseki-yoshoku-sankotteki.jpg" alt="韓国屋台 サンコッテギ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>韓国屋台 サンコッテギ<span class="yomi">かんこくやたい さんこってぎ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">下関の繁華街・豊前田にある韓国料理店で、本場・釜山の郷土料理を屋台の形で出す。看板は国産豚肉のサムギョプサルで、鉄板を皆で囲み、サンチュに肉とキムチと薬味を巻いて食べる（2人前から）。老舗の精肉店から直に卸してもらうホルモンを使ったサンコッテギ鍋、特製のヤンニョムで新鮮なイイダコを煮るチュクミも2人前からの注文。スンドゥブチゲ、テンジャンチゲ、ケランチム、チヂミ、キンパ、韓国冷奴などの一品も揃う。総席数40席で全席禁煙、子ども連れも可。チャミスルやマッコリなど韓国の酒も置く。カード・交通系電子マネー・PayPayが使える。外観写真なし（ホットペッパーグルメの外観写真が配信を終えており、現在取得できない）。</div>
+<div class="sig"><b>一皿:</b>サムギョプサル（国産豚肉を鉄板で焼き、サンチュに巻いて食べる看板。2人前から。サンチュ・キムチ・ポックンパのセットを追加できる）／サンコッテギ鍋（老舗精肉店から直卸しのホルモンを使った鍋。1人前1,780円・2人前から）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜木 17:00〜22:30（料理・ドリンクL.O.22:00）／金〜日 11:30〜14:30（L.O.14:00）および 17:00〜22:30（L.O.22:00）　※営業時間・定休日は変更されることがあるため、来店前に店へ確認のこと</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>山口県下関市豊前田町3丁目2番7 下関第一ビル</td></tr>
+<tr><th>予約</th><td>ホットペッパーグルメのネット予約可（即予約は来店日当日21時まで、リクエスト予約は前日17時まで）。電話はホットペッパーグルメ掲載の 050-8892-8336。貸切は不可</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>下関は韓国・釜山と姉妹都市で関釜フェリーの発着港があり、韓国料理は章に欠かせない。繁華街の豊前田で釜山の郷土料理を出す一軒として入れた。営業の根拠＝①ホットペッパーグルメの店舗ページが2026年7月2日更新（メニュー欄は2025年10月27日更新）②同ページの口コミに2026年10月11日投稿・2026年10月10日来店のものがある ③同ページのネット予約カレンダーが2026年10月下旬から12月末まで、定休の月曜を除いてほぼ全日「即予約可（◎）」④公式Instagramが2026年10月9日に「10月の店休日のお知らせ」を投稿し、月1回土曜の夜の営業開始にも触れている（いずれも 2026-10-25 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E5%B1%8B%E5%8F%B0%20%E3%82%B5%E3%83%B3%E3%82%B3%E3%83%83%E3%83%86%E3%82%AE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA3%E4%B8%81%E7%9B%AE2%E7%95%AA7%20%E4%B8%8B%E9%96%A2%E7%AC%AC%E4%B8%80%E3%83%93%E3%83%AB">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004469544/">ホットペッパーグルメ 韓国屋台 サンコッテギ（住所・営業時間・定休日・40席・価格・2026年7月2日更新・空席カレンダー・口コミの日付）2026-10-25 取得</a> / <a href="https://www.instagram.com/p/DeRnEnePKRI/">Instagram 投稿（2026年10月9日・韓国屋台 サンコッテギ「10月の休業日」告知）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-yoshoku-ikuno-hanten">
+<img class="hero" src="img/shimonoseki/shimonoseki-yoshoku-ikuno-hanten.jpg" alt="生野飯店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>生野飯店<span class="yomi">いくのはんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">韓国系の店や多国籍の店が並ぶグリーンモール商店街にある中華料理店。総席数41席で、カウンターと座敷があり、一人でも宴会でも使える。賄いから生まれたというピリ辛ラーメンが人気を集め、ホタテのオイスターソース炒め、蒸しパンを添えた豚の角煮、焼きそばなど、昔から変わらない町中華の品が並ぶ。宴会は飲み放題付きのコースで25名まで。新下関店もあったが閉店し、現在はこの竹崎町の店のみ。外観写真なし（ホットペッパーグルメの「店内・外観」の写真がいずれも店内で、建物の正面を写したものが無い）。</div>
+<div class="sig"><b>一皿:</b>豚の角煮（蒸しパン添え）／ホタテのオイスターソース炒め（どちらもホットペッパーグルメのおすすめ料理。ほかに賄いから生まれたというピリ辛ラーメンが看板）</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜14:30（L.O.14:00）／18:00〜22:30（L.O.21:30）＝公式Instagramの記載　※ホットペッパーグルメ（2020年1月7日更新）は「11:30〜14:30／17:00〜22:00」と記載しており食い違う</td></tr>
+<tr><th>定休日</th><td class="off">月曜（祝日の場合も休み）。ほか臨時休業あり</td></tr>
+<tr><th>住所</th><td>山口県下関市竹崎町2-11-12</td></tr>
+<tr><th>予約</th><td>電話 083-235-5556 で受付（宴会は飲み放題付きコースで25名まで）。ネット予約は無し — <a href="tel:0832355556">☎ 083-235-5556</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>韓国料理の店が並ぶグリーンモール商店街（リトル釜山）の中にあり、この商店街が韓国一色ではなく多国籍であることが分かる一軒。営業の根拠＝①第三者のInstagram投稿 2026年10月14日が、竹崎町2丁目11-12の生野飯店の焼きそばを紹介している ②公式Instagram @ikunohanten が営業時間12:00〜14:30（L.O.14:00）／18:00〜22:30（L.O.21:30）・定休日 月曜（祝日でも休み）・電話083-235-5556 を掲載（いずれも 2026-10-25 取得）。【営業時間に食い違いあり】公式Instagramは12:00〜14:30／18:00〜22:30、ホットペッパーグルメ（2020年1月7日更新）は11:30〜14:30／17:00〜22:00。公式Instagramの記載を採り、両方を hours に併記した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%94%9F%E9%87%8E%E9%A3%AF%E5%BA%97%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%AB%B9%E5%B4%8E%E7%94%BA2-11-12">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000531693/">ホットペッパーグルメ 生野飯店（住所・41席・予算・写真・おすすめ料理）2026-10-25 取得</a> / <a href="https://www.hotpepper.jp/strJ000531693/food/">ホットペッパーグルメ 生野飯店 料理ページ（ピリ辛ラーメンの由来・おすすめ料理）2026-10-25 取得</a> / <a href="https://www.instagram.com/ikunohanten/">生野飯店 公式Instagram（住所・営業時間・定休日・電話番号）2026-10-25 取得</a> / <a href="https://www.instagram.com/p/DeeRFv6D6bS/">Instagram 投稿（2026年10月14日・竹崎町の生野飯店の焼きそばを紹介）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-yoshoku-ristorante-yu">
+<img class="hero" src="img/shimonoseki/shimonoseki-yoshoku-ristorante-yu.jpg" alt="石窯Ristorante 結-yu-（石窯リストランテ 結） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>石窯Ristorante 結-yu-（石窯リストランテ 結）<span class="yomi">いしがまりすとらんて ゆう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">城下町の長府にある石窯のイタリア料理店で、2016年10月30日の開店。石窯で焼くピッツァと肉料理、旬の食材を使った季節の料理が柱で、マルゲリータやクワトロフォルマッジのほか、牛ハラミの石窯グリル、ローストビーフ、手の込んだ前菜の盛り合わせ、誕生日のデザートプレートも作る。総席数38席で、5〜8名用の完全個室があり、10名から貸切、最大30名まで宴会に対応する。法要後の会食やカジュアルウェディング、1.5次会にも使われる。昼も夜も予約優先で、金曜・土曜はランチを休みディナーのみの営業。クレジットカードとPayPayが使える。デザートを中心としたオンラインショップとテイクアウトもある。外観写真なし（公式サイトのギャラリーが料理と店内の写真だけで、建物の正面を写したものが無い。テナントビルの1階にある）。</div>
+<div class="sig"><b>一皿:</b>石窯で焼くピッツァ（マルゲリータ、クワトロフォルマッジなど。公式サイトのギャラリーに石窯で焼く様子が載る）／石窯の肉料理（牛ハラミの石窯グリル、ローストビーフなど）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【昼】11:30〜14:30　【夜】18:00〜22:00　※金曜・土曜はランチ休みでディナーのみ。昼夜とも予約優先</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>山口県下関市長府安養寺1-2-23 チェリーブロッサム1F</td></tr>
+<tr><th>予約</th><td>電話 080-9280-3309 で受付（公式Instagramのダイレクトメッセージは3日前まで）。昼夜とも予約優先。10名から貸切可、最大30名まで宴会可。当日と前日14時半以降のキャンセルはキャンセル料が発生する — <a href="tel:08092803309">☎ 080-9280-3309</a> ／ <a href="https://ristorante-yu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>郊外の長府から1軒。城下町の中で石窯を据えた本格的なイタリア料理店で、章の中で唯一の長府。営業の根拠＝①公式サイト ristorante-yu.com のギャラリーの写真が 2026年9月アップロード（画像のパスが /wp-content/uploads/2026/09/）で、サイトが現在も更新されている（2026-10-25 取得）②公式Instagram @ishigamaristorante_yu の新着が2026年10月15日「初秋限定コースご予約受付中」（情報誌「もってけ！クーポン」のインスタグラム連携ページの日付で確認、2026-10-25 取得）③公式Instagramの2025年9月27日の投稿に「10月30日で9周年」とあり、2016年10月30日の開店から続いている。④城下町長府商店街の公式サイトに加盟店として現行掲載されている（2026-10-25 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%9F%B3%E7%AA%AFRistorante%20%E7%B5%90-yu-%EF%BC%88%E7%9F%B3%E7%AA%AF%E3%83%AA%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%86%20%E7%B5%90%EF%BC%89%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E5%AE%89%E9%A4%8A%E5%AF%BA1-2-23%20%E3%83%81%E3%82%A7%E3%83%AA%E3%83%BC%E3%83%96%E3%83%AD%E3%83%83%E3%82%B5%E3%83%A01F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（ristorante-yu.com）より引用 / 外観: 写真なし / 参照元: <a href="https://ristorante-yu.com/">石窯Ristorante 結-yu- 公式サイト（住所・電話・営業時間・定休日・収容人数38席・完全個室・貸切・キャンセル規定・料理と店内の写真）2026-10-25 取得</a> / <a href="https://www.instagram.com/ishigamaristorante_yu/">石窯Ristorante 結-yu- 公式Instagram（営業時間・定休日・予約方法・9周年の投稿）2026-10-25 取得</a> / <a href="https://chofushoutengai.com/restaurant/117/">城下町 長府商店街 公式サイト 店舗紹介「石窯Ristorante 結-yu-」（住所・電話・営業時間・定休日。加盟店として現行掲載。サイトの著作権表示は2026年）2026-10-25 取得</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・甘味</h2>
+<div class="card" id="c-shimonoseki-cafe-coffee-house-bridge">
+<img class="hero" src="img/shimonoseki/shimonoseki-cafe-coffee-house-bridge.jpg" alt="コーヒーハウス ブリッヂ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-cafe-coffee-house-bridge_exterior.jpg" alt="コーヒーハウス ブリッヂ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>コーヒーハウス ブリッヂ<span class="yomi">こーひーはうす ぶりっぢ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip blog">ブログ推薦</span></div>
+<div class="desc">1974年3月1日の創業で、2025年に51年目を迎えた老舗喫茶。店名の「ブリッヂ」は窓の外に広がる関門海峡に由来する。開店当初は窓の手前に木製のついたてがあったが、「海や景色が見えない」という客の声を受けて撤去し、海峡と関門橋、行き交う船を一望できる今のかたちになった。席数は40〜45席。予約は受け付けず来店順で、土・日曜のモーニングは1時間ほど待つこともある。レシートは創業時から手書きのままで、支払いは現金のみ。駐車場あり。30年以上店を守る店長が仕込みのため朝5時半に出ることもあるという。</div>
+<div class="sig"><b>一皿:</b>スペシャルモーニング(お冷のコップと同じ高さの極厚トーストに、サラダ・エッグ・フルーツ・ヨーグルトを添えたワンプレート。950円)／鉄板イタリアン(熱した鉄板で供する昭和の喫茶の定番。玉子＋100円、大盛り＋200円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 8:30〜17:00（オーダーストップ16:00）／土日 8:00〜17:00（オーダーストップ16:00）</td></tr>
+<tr><th>定休日</th><td class="off">年中無休（臨時休業あり）</td></tr>
+<tr><th>住所</th><td>山口県下関市長府黒門町4-7</td></tr>
+<tr><th>予約</th><td>不可（予約は受け付けず来店順。土日のモーニングは1時間ほど待つことがある） — <a href="tel:0832450585">☎ 083-245-0585</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>関門海峡が見える席のある喫茶として最もよく知られた一軒で、窓の正面に海峡と関門橋、通る船が見える。営業の根拠＝地元ウェブマガジン「山口さん」が2025年11月25日に店長への取材記事を公開（席数・価格・現金のみなどを本人談として掲載）。あわせて2026年7月30日付の旅行サイトTrip.comの訪問投稿（名物の極厚トーストモーニング）と、2026年9月1日付の個人店ブログの来店記録を確認した（いずれも2026-10-20 に確認）。「コーヒーハウス ブリッヂ 下関 食中毒」で検索し、当店に関する食中毒・営業停止の報道は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%E3%83%8F%E3%82%A6%E3%82%B9%20%E3%83%96%E3%83%AA%E3%83%83%E3%83%82%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E9%BB%92%E9%96%80%E7%94%BA4-7">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi-san.com/post-38354/">地元ウェブマガジン「山口さん」取材記事（創業年・席数・価格・営業時間・定休日・電話・支払い方法）2025-11-25公開／2026-10-20 取得</a> / <a href="https://jp.trip.com/moments/detail/shimonoseki-56957-149517083/">Trip.com 訪問投稿（2026年7月30日。極厚トーストモーニングの実食記録＝営業の根拠）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-cafe-kissa-wasurezino">
+<img class="hero" src="img/shimonoseki/shimonoseki-cafe-kissa-wasurezino.jpg" alt="喫茶わすれじの… 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-cafe-kissa-wasurezino_exterior.jpg" alt="喫茶わすれじの… 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>喫茶わすれじの…<span class="yomi">きっさわすれじの</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip instagram">instagram</span></div>
+<div class="desc">赤間神宮のすぐそば、海峡沿いの道に面した昔ながらの喫茶店。店名は店主・宮崎さんが愛するサザンオールスターズの楽曲「わすれじのレイド・バック」から取られ、最後の「…」には好きなことを思い浮かべてほしいという遊び心が込められている。店内はテーブル席のほか、近ごろ珍しくなったカウンター席があり、常連が店主と話し込む姿が見られる。正面に関門海峡を望む窓側の席が特等席で、オードリー・ヘップバーンの壁画を横目に、行き交う船を眺めながら食事ができる。食事と喫茶の両方のメニューが充実し、弁当やオードブルの注文にも応じる。駐車場は店舗前に4台。</div>
+<div class="sig"><b>一皿:</b>ナポリタン(熱々の鉄板にのせて供する定番。ピーマン・玉ねぎ・ベーコンにケチャップを絡めた王道の味。900円)／日替わり定食(平日限定。開業当初から続く人気メニュー。2名以上・要予約の「日替わりプラス」1,800円もある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜19:00（18:00 L.O.）※公式インスタグラムのプロフィールは「11時〜18時（3月まで冬時間）」と記載しており、取材記事の表記と差がある。訪問前に確認を</td></tr>
+<tr><th>定休日</th><td class="off">水曜・第2火曜（月により変わるため公式インスタグラムの月初の告知を確認）</td></tr>
+<tr><th>住所</th><td>山口県下関市阿彌陀寺町1-6 1階</td></tr>
+<tr><th>予約</th><td>席の予約は不可。日替わりプラス（2名以上）と弁当・オードブルは要予約（弁当は1週間前が望ましく、3日前まで受付） — <a href="tel:0832379254">☎ 083-237-9254</a> ／ <a href="https://www.instagram.com/kissawasurezino/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>関門海峡が見える席のある喫茶として選んだ2軒目で、唐戸・赤間町の区域にあたる（赤間神宮と唐戸市場から徒歩3分）。営業の根拠＝公式インスタグラム @kissawasurezino が2026年9月29日に「2026.10の定休日のお知らせ」を投稿しており（投稿総数423件・フォロワー1,100人超）、プロフィールにも現行の営業時間と定休日が記載されている。あわせて地元ウェブマガジン「山口さん」が2026年7月27日に店主への取材記事を公開（いずれも2026-10-20 に確認）。「喫茶わすれじの 下関 食中毒」で検索し、当店に関する食中毒・営業停止の報道は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%8F%E3%81%99%E3%82%8C%E3%81%98%E3%81%AE%E2%80%A6%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%98%BF%E5%BD%8C%E9%99%80%E5%AF%BA%E7%94%BA1-6%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi-san.com/post-44138/">地元ウェブマガジン「山口さん」取材記事（住所・営業時間・定休日・電話・駐車場・価格・店名の由来）2026-07-27公開／2026-10-20 取得</a> / <a href="https://www.instagram.com/kissawasurezino/">公式インスタグラム @kissawasurezino（2026年9月29日「2026.10の定休日のお知らせ」投稿・プロフィールの住所と営業時間）2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-cafe-porto-haus">
+<img class="hero" src="img/shimonoseki/shimonoseki-cafe-porto-haus.jpg" alt="PORTO HAUS 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-cafe-porto-haus_exterior.jpg" alt="PORTO HAUS 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>PORTO HAUS<span class="yomi">ぽると はうす</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip instagram">instagram</span></div>
+<div class="desc">唐戸市場や市立しものせき水族館「海響館」に近い南部町の路面にあるカフェ。下関の人気コーヒー店「ALLEY」のセカンドブランドとして2025年末に開いた店で、掲げるコンセプトは「port of rest and time（やすらぎと時間のための港）」。船が港へ戻るように客が戻ってくる場所でありたい、という意味が込められている。看板はクレープとフレンチトーストで、注文を受けてから一枚ずつ焼く。生地は片面だけ焼いてもちもちに仕上げる「シュガーバター」と、両面を5分ほど焼いてカリッとさせる「プレスシュガーバター」の2通りから選べ、後者は持ち帰りもできる。テーブル席のほかテラス席があり、2か月に1度ほど季節の限定メニューが替わる。</div>
+<div class="sig"><b>一皿:</b>シュガーバタークレープ(注文後に一枚ずつ焼くもちもちの生地に粉糖とバター。イートイン限定650円)／カフェラテ(直輸入・有機栽培の「HAGAN ORGANIC COFFEE」の豆を使用。エスプレッソをシングルとダブルから選べる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜18:00（L.O. 17:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式インスタグラムで告知）</td></tr>
+<tr><th>住所</th><td>山口県下関市南部町26-15 1F</td></tr>
+<tr><th>予約</th><td>未確認（席の予約についての記載は見当たらない） — <a href="https://www.instagram.com/porto_haus/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸・赤間町の枠から、旧英国領事館と南部町郵便局が建つ旧市街の一角にある新しい顔として選んだ。全国チェーンではなく、下関の自家焙煎店「ALLEY」が出した2号店にあたる。営業の根拠＝地元ウェブマガジン「山口さん」が2026年9月12日に取材記事を公開し、現行の営業時間・定休日・価格を掲載している。あわせて地元情報誌トライアングルのウェブ版が2026年3月11日に取材記事を出し、公式インスタグラム @porto_haus も季節限定ドリンクの告知を続けている。開業は2025年末のため「店名＋閉店」も確認し、閉店の報は無い（いずれも2026-10-20 に確認）。「PORTO HAUS 下関 食中毒」で検索し、当店に関する食中毒・営業停止の報道は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=PORTO%20HAUS%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%8D%97%E9%83%A8%E7%94%BA26-15%201F">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi-san.com/post-45775/">地元ウェブマガジン「山口さん」取材記事（住所・営業時間・定休日・価格・コンセプト・使用豆）2026-09-12公開／2026-10-20 取得</a> / <a href="https://tryangle.yamaguchi.jp/tryangle/shimonoseki-portohaus">地元情報誌トライアングル ウェブ版 取材記事（唐戸の港町のカフェとしての紹介）2026-03-11公開／2026-10-20 取得</a> / <a href="https://prtimes.jp/main/html/rd/p/000000033.000089745.html">PR TIMES プレスリリース（下関の人気店ALLEYのセカンドブランドとして開業）2025-11-28公開／2026-10-20 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-cafe-sabo-fuwari">
+<img class="hero" src="img/shimonoseki/shimonoseki-cafe-sabo-fuwari.jpg" alt="茶房 風舞 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-cafe-sabo-fuwari_exterior.jpg" alt="茶房 風舞 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>茶房 風舞<span class="yomi">さぼうふわり</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip official">official</span></div>
+<div class="desc">慶応2年（1866年）の創業から160年続く和菓子店「松琴堂（しょうきんどう）」が、南部町の本店の横に開いた茶房。銘菓「阿わ雪（あわゆき）」をイメージして白を基調にまとめた店内で、店主が目の前で生菓子を作って出す。1日5組限定の貸切で、飛び込みの来店も受けるが場合により相席になる。茶碗は代々伝わるものや、萩焼の作家である坂倉新兵衛・田原陶兵衛・新庄助右衛門らの作品から好きなものを選べる。和菓子のレパートリーは毎月10種ほど増えるという。練り切りを自分で作る和菓子作り体験と、抹茶を自分で点てる茶道体験もあり、どちらも前営業日までの予約が必要で1席6名まで。専用駐車場はなく、下関市役所本庁舎の駐車場（1時間無料）を使う。</div>
+<div class="sig"><b>一皿:</b>乙女のゆきごろも(松琴堂の人気商品「ゆきごろも」を茶房だけの仕様にしたもの。焼きたての生地が温かくサクサクのうちに出すため、店は「賞味期限は三十秒」と言う)／主菓子と一服のコース(店主がその場で作る生菓子に、濃茶・薄茶・煎茶から選んだ一服を合わせる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜17:00（公式サイト記載）</td></tr>
+<tr><th>定休日</th><td class="off">火曜・水曜</td></tr>
+<tr><th>住所</th><td>山口県下関市南部町2-5（松琴堂内）</td></tr>
+<tr><th>予約</th><td>予約優先（1日5組限定・電話070-3796-2834）。和菓子作り体験と茶道体験は前営業日までの要予約で1席6名まで。飛び込みも可だが相席になる場合あり — <a href="tel:07037962834">☎ 070-3796-2834</a> ／ <a href="https://shokindo.co.jp/fuwari/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>唐戸・赤間町の枠から「和菓子屋の茶席」として選んだ。母体の松琴堂は1866年創業で、代表銘菓「阿わ雪」は一子相伝で受け継がれている。営業の根拠＝下関観光コンベンション協会の公式サイトが2026年7月30日付で当店の和菓子作り体験（所要60分・5,000円・前営業日午前までの申込・定員1〜6名・連絡先070-3796-2834）を4か国語で案内している。あわせて松琴堂が2026年3月26日にPR TIMESで創業160年の記念商品を発表し、公式インスタグラム @shokindo.fuwari も稼働している（いずれも2026-10-25 に確認）。「茶房 風舞 下関 食中毒」で検索し、当店に関する食中毒・営業停止の報道は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E6%88%BF%20%E9%A2%A8%E8%88%9E%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%8D%97%E9%83%A8%E7%94%BA2-5%EF%BC%88%E6%9D%BE%E7%90%B4%E5%A0%82%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（shokindo.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://shokindo.co.jp/fuwari/">公式サイト「茶房 風舞」（住所・電話・営業時間・定休日・駐車場・コース料金・体験料金・創業年）2026-10-25 取得</a> / <a href="https://www.stca-kanko.or.jp/news-sightseeing/202607306278/">下関観光コンベンション協会 公式サイト（2026年7月30日付の和菓子作り体験の案内＝営業の根拠。所要時間・料金・申込期限・定員・連絡先）2026-10-25 取得</a> / <a href="https://prtimes.jp/main/html/rd/p/000000011.000170891.html">PR TIMES プレスリリース（松琴堂 創業160年の記念商品）2026-03-26公開／2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-cafe-mugimamesha">
+<img class="hero" src="img/shimonoseki/shimonoseki-cafe-mugimamesha.jpg" alt="喫茶むぎまめ舎 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-cafe-mugimamesha_exterior.jpg" alt="喫茶むぎまめ舎 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>喫茶むぎまめ舎<span class="yomi">きっさむぎまめしゃ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip instagram">instagram</span></div>
+<div class="desc">パン屋で修行した店主・坪内さんが営む喫茶店。入っているのは、もとは雲丹（うに）の瓶詰工場だったという古いビルで、館内には当時のエレベーターの跡がそのまま残る。店内は天井が高く大きな窓があって開放的で、アンティーク調の古家具でまとめられている。手作りのドーナツと、常時5〜6種類ある焼き菓子が看板。平日は昼の食事も出し、ドーナツは取り置きの予約と持ち帰りができる。自家製のパンとコーヒー豆も売る。席の予約は受け付けていない。定休日は水・日曜を基本に月ごとに変わるため、来店前に公式インスタグラムのカレンダーを見るとよい。</div>
+<div class="sig"><b>一皿:</b>手作りドーナツ(パン屋で修行した店主が焼く素朴な生地。プレーンとシナモンがあり、取り置き・持ち帰り可)／日替わりの焼き菓子(常時5〜6種類。コーヒーと合わせて供される)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:00〜18:00／土曜 14:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜・日曜＋不定休（月ごとに変わるため公式インスタグラムのカレンダーを確認）</td></tr>
+<tr><th>住所</th><td>山口県下関市細江町2丁目2-10 和田ビル1階</td></tr>
+<tr><th>予約</th><td>席の予約は不可。ドーナツとコーヒー豆の取り置きは可 — <a href="tel:05053297699">☎ 050-5329-7699</a> ／ <a href="https://www.instagram.com/mugimamesha/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊前田・細江・下関駅前の枠から、下関の古い建物を使った店として選んだ（元・雲丹の瓶詰工場のビルの1階）。営業の根拠＝公式インスタグラム @mugimamesha のプロフィールに現行の営業時間（平日11時〜18時／土曜14時〜18時）と店休日（水・日＋α、カレンダーで告知）が掲げられ、公式フェイスブックでも開店時刻の変更や臨時休業が随時告知されている。あわせて地元ウェブマガジン「山口さん」の取材記事（2024年5月2日）で建物の由来と店主の経歴を確認した（いずれも2026-10-25 に確認）。「喫茶むぎまめ舎 下関 食中毒」で検索し、当店に関する食中毒・営業停止の報道は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%80%E3%81%8E%E3%81%BE%E3%82%81%E8%88%8E%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E7%B4%B0%E6%B1%9F%E7%94%BA2%E4%B8%81%E7%9B%AE2-10%20%E5%92%8C%E7%94%B0%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi-san.com/post-16151/">地元ウェブマガジン「山口さん」取材記事（住所・営業時間・定休日・電話・建物の由来・店主の経歴）2024-05-02公開／2026-10-25 取得</a> / <a href="https://www.instagram.com/mugimamesha/">公式インスタグラム @mugimamesha（現行の営業時間・店休日・席の予約不可）2026-10-25 取得</a> / <a href="https://www.facebook.com/mugimamesha/">公式フェイスブック（開店時刻の変更・臨時休業の随時告知＝営業の根拠）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-cafe-muchitoame">
+<img class="hero" src="img/shimonoseki/shimonoseki-cafe-muchitoame.jpg" alt="スパイスと喫茶 ムチトアメ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-cafe-muchitoame_exterior.jpg" alt="スパイスと喫茶 ムチトアメ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>スパイスと喫茶 ムチトアメ<span class="yomi">すぱいすときっさ むちとあめ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip instagram">instagram</span></div>
+<div class="desc">店名は、ぴりっと辛いスパイスカレーの「ムチ」と、甘いスイーツの「アメ」の対比から来ている。天井いっぱいに吊るされたドライフラワーが目を引く店で、テーブル席・ソファ席のほかカウンター席があり、ひとりでも入りやすい。カレーは14種類以上のスパイスを使い、スパイスと野菜を4時間かけて煮込む黒カレーが看板で、内容はその日によって変わる。辛さが苦手な人には海老ココナッツカレーやグリーンカレーもある。甘い側はプリンが人気で、プレーン・ブリュレ・バニラアイスのせの3種類。ほかに生チョコテリーヌや季節の果物のチーズケーキ、ティラミスが並ぶ。予約は受け付けておらず、混む時間帯は待つことがある。閉店時刻は曜日により変わり、その日の営業は公式インスタグラムのストーリーで知らせている。</div>
+<div class="sig"><b>一皿:</b>プリン(プレーン・ブリュレ・バニラアイスのせの3種類。固めのカスタードで、ドリンクとのデザートセットにできる)／黒カレー(14種類以上のスパイスとたっぷりの野菜を4時間煮込む看板のカレー。内容は日替わり)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00ごろ（曜日により変動。その日の閉店時刻は公式インスタグラムのストーリーで告知）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式インスタグラムで月ごとに告知。2026年10月は30日）</td></tr>
+<tr><th>住所</th><td>山口県下関市豊前田町3-2-7 1階</td></tr>
+<tr><th>予約</th><td>不可（混雑時は待つことがある） — <a href="https://www.instagram.com/muchitoame/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>豊前田・細江・下関駅前の枠から、下関駅に最も近い喫茶として選んだ。辛い料理と甘い菓子を1軒で出す構えが珍しく、章の中で甘味の側を担う。営業の根拠＝公式インスタグラム @muchitoame のプロフィールに「10月の店休日：30日」と2026年10月の告知が出ており（2026-10-25 時点）、日々の閉店時刻もストーリーで案内されている。あわせて地元情報サイト「しものせきFUN」が2026年9月2日に取材記事を公開し、Googleマップの評価が★3.7・口コミ74件（2026年9月時点）であることを記している。「ムチトアメ 下関 食中毒」で検索し、当店に関する食中毒・営業停止の報道は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%91%E3%82%A4%E3%82%B9%E3%81%A8%E5%96%AB%E8%8C%B6%20%E3%83%A0%E3%83%81%E3%83%88%E3%82%A2%E3%83%A1%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E8%B1%8A%E5%89%8D%E7%94%B0%E7%94%BA3-2-7%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yamaguchi-san.com/post-23749/">地元ウェブマガジン「山口さん」取材記事（住所・営業時間・定休日・スパイスの構成）2024-08-27公開／2026-10-25 取得</a> / <a href="https://shimonoseki.fun/2026/09/02/muchitoame/">地元情報サイト「しものせきFUN」取材記事（住所・営業時間・予約不可・駐車場・予算目安・Googleマップ評価）2026-09-02公開／2026-10-25 取得</a> / <a href="https://www.instagram.com/muchitoame/">公式インスタグラム @muchitoame（2026年10月の店休日の告知・営業時間）2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-cafe-souzaemon-takada-coffee">
+<img class="hero" src="img/shimonoseki/shimonoseki-cafe-souzaemon-takada-coffee.jpg" alt="SOU/ZAEMON by TAKADA COFFEE 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-cafe-souzaemon-takada-coffee_exterior.jpg" alt="SOU/ZAEMON by TAKADA COFFEE 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>SOU/ZAEMON by TAKADA COFFEE<span class="yomi">そうざえもん ばい たかだこーひー</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip local">地元密着</span></div>
+<div class="desc">1987年に下関で最初の自家焙煎珈琲専門店として創業したTAKADA COFFEEが、長府侍町に江戸時代から残る武家屋敷を継承して2023年に開いた本店。この屋敷は毛利家の補佐役だった福原家のもので、130年以上その場に建ち続けてきた。壁・梁・欄間は当時のまま残され、30人以上の職人の手で手を入れて再生された。波打つ古いガラス窓越しに、大木と季節の花が植わる庭を眺められる。下関出身の書道家・万美さんがコーヒーで墨をすり襖に描いた「珈琲」の文字がある。カフェに併設してスイーツ＆ギフトショップがあり、自家製の珈琲屋のチーズケーキやプリン、コーヒー豆とギフトを売る。席の予約は受け付けていない。駐車場は台数が限られるため、歴史博物館・長府中浜・タイムズ長府など徒歩5〜10分の駐車場を使うよう案内されている。</div>
+<div class="sig"><b>一皿:</b>自家焙煎のスペシャルティコーヒー(世界の生産地から買い付けた豆を自社で焙煎。競技会の審査員を務める焙煎士が選ぶ)／珈琲屋のチーズケーキ(屋敷内の製造所で作る自家製。珈琲屋のプリン、夏は珈琲屋のかき氷も出る)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>山口県下関市長府侍町1-2-39</td></tr>
+<tr><th>予約</th><td>カフェの席の予約は不可。ギフトと珈琲豆の予約は電話で受付 — <a href="tel:0832420950">☎ 083-242-0950</a> ／ <a href="https://www.takadacoffee.com/shop-2/chofu/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長府の枠から、下関の古い建物を使った店として選んだ。城下町長府の武家屋敷をそのまま使った喫茶で、土塀の小路に面している。1987年創業で2026年8月に39周年を迎え、下関で最も歴史のある自家焙煎店でもある。営業の根拠＝公式サイトの店舗ページが現行の住所・電話・営業時間・定休日を掲げ、お知らせ欄に2026年10月14〜20日の日本橋三越本店、10月21〜29日の新潟伊勢丹への出店告知が並ぶ。公式インスタグラムとフェイスブックは2026年9月10日に「武家屋敷本店の暖簾が新しくなりました」と投稿し、地元情報サイト「しものせきFUN」も2026年9月8日に取材記事を出している（いずれも2026-10-25 に確認）。「TAKADA COFFEE 下関 食中毒」で検索し、当店に関する食中毒・営業停止の報道は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SOU/ZAEMON%20by%20TAKADA%20COFFEE%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E9%95%B7%E5%BA%9C%E4%BE%8D%E7%94%BA1-2-39">Googleマップで開く</a>
+<div class="src">写真: てみて（JR西日本のおでかけメディア）（www.westjr-temite.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.takadacoffee.com/shop-2/chofu/">公式サイト 店舗ページ「下関 長府侍町 SOU/ZAEMON by TAKADA COFFEE」（住所・電話・営業時間・定休日・予約の可否・駐車場）2026-10-25 取得</a> / <a href="https://www.takadacoffee.com/about/">公式サイト ABOUT（1987年創業・2026年8月で39周年・武家屋敷の継承の経緯）2026-10-25 取得</a> / <a href="https://www.takadacoffee.com/about-souzaemon/">公式サイト コラム「すべてが当時のまま、武家屋敷カフェSOUZAEMONについて」（130年以上の屋敷・30名以上の職人・書道家 万美さんの襖）2023-08-26公開／2026-10-25 取得</a> / <a href="https://www.westjr-temite.jp/feature_article/post1745/">JR西日本の地域ポータル「てみて」特集記事（店内・庭・ギフトショップの写真）2025-12-10公開／2026-10-25 取得</a> / <a href="https://shimonoseki.fun/2026/09/08/souzaemon-takada-coffee/">地元情報サイト「しものせきFUN」取材記事 2026-09-08公開／2026-10-25 取得</a></div>
+</div></div>
+<div class="card" id="c-shimonoseki-cafe-polano">
+<img class="hero" src="img/shimonoseki/shimonoseki-cafe-polano.jpg" alt="POLANO 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/shimonoseki/shimonoseki-cafe-polano_exterior.jpg" alt="POLANO 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>POLANO<span class="yomi">ぽらーの</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip instagram">instagram</span></div>
+<div class="desc">下関市立大学の目の前にあるベーカリーカフェ。入口を入ると右側にパンが並び、左側に広いイートインの席が取ってある。席は最大15名ほど。店内は見渡すかぎり観葉植物が置かれ、森の中の喫茶店のような雰囲気で、どれも手入れが行き届いている。食パンは5枚切・6枚切から選べ、バゲットや惣菜パン、焼き菓子が並ぶ。人気のパンは午前中に売り切れることが多いので、目当てがあるなら早い時間がよい。逆に夕方は客が落ち着くので、ゆっくり過ごしたい人には向く。イートインではホットドッグなどの軽食と、ハーブを添えたアイスドリンクを出す。</div>
+<div class="sig"><b>一皿:</b>焼きたてのパン(バゲット・食パン・惣菜パン。食パンは5枚切と6枚切から選べる)／ホットドッグとアイスドリンクのイートインセット(店のパンをその場で食べられる。ミントを添えたドリンクと合わせる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜（祝日は営業）</td></tr>
+<tr><th>住所</th><td>山口県下関市大学町1丁目4-7</td></tr>
+<tr><th>予約</th><td>未確認（席の予約についての記載は見当たらない） — <a href="tel:0832536005">☎ 083-253-6005</a> ／ <a href="https://polano-bakery.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新下関・綾羅木の枠から、パン屋の喫茶として選んだ。市街地から離れた大学町にあり、地元の客が通う店。営業の根拠＝公式インスタグラム @polano46 が2026年10月15日に営業の案内を投稿しており（ほかに2026年10月8日・9月3日の投稿を確認）、公式サイトにも現行の営業時間・定休日・住所・電話が出ている。あわせて地元ウェブマガジン「山口さん」が2025年9月5日に取材記事を公開した（いずれも2026-10-25 に確認）。「POLANO 下関 食中毒」で検索し、当店に関する食中毒・営業停止の報道は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=POLANO%20%E5%B1%B1%E5%8F%A3%E7%9C%8C%E4%B8%8B%E9%96%A2%E5%B8%82%E5%A4%A7%E5%AD%A6%E7%94%BA1%E4%B8%81%E7%9B%AE4-7">Googleマップで開く</a>
+<div class="src">写真: 山口さん（山口県のタウン情報サイト）（yamaguchi-san.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://polano-bakery.jp/">公式サイト「POLANO/ポラーノ｜パン＆カフェ」（住所・電話・営業時間・定休日・駐車場・食パンの切り方）2026-10-25 取得</a> / <a href="https://yamaguchi-san.com/post-36697/">地元ウェブマガジン「山口さん」取材記事（場所・店内の様子・席数・パンの売れ方）2025-09-05公開／2026-10-25 取得</a> / <a href="https://www.instagram.com/polano46/">公式インスタグラム @polano46（2026年10月15日の営業案内の投稿＝営業の根拠）2026-10-25 取得</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年10月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>
