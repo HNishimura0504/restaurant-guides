@@ -1,6 +1,49 @@
+### Het Waterhuis aan de Bierkant（ヘット・ワーテルハイス・アーン・デ・ビールカント）
+
+@@IMG:europe/belgium/img/ghent/waterhuis.jpg@@
+
+@@IMG:europe/belgium/img/ghent/waterhuis_exterior.jpg@@
+
+`口コミ突出` `ブログ推薦`
+
+レイエ川沿いの絵はがきのような場所に建つ名物ビアカフェ。約160種のビールを揃え、ハウスビール「Gandavum」「Klokke Roeland」「Mammelokker」を運河を望むテラスで楽しめる。
+
+- **一皿**: ハウスビール「Klokke Roeland」(店のために醸造される琥珀色の強めのエール。運河沿いのテラスで飲むのが醍醐味)
+- **営業時間**: 月〜水曜 11:00〜0:30、木〜土曜 11:00〜1:00、日曜 11:00〜24:00
+- **定休日**: 無休
+- **住所**: Groentenmarkt 9, 9000 Gent
+- **予約**: 可(推奨) — ☎ 電話で予約 +32 9 225 06 80
+- **選定理由**: ビール旅行ブログ各種が「運河ビューと樽生の充実で象徴的なパブ」と評価。ヘントのビアカフェ紹介記事の常連。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Het%20Waterhuis%20aan%20de%20Bierkant%20Groentenmarkt%209%2C%209000%20Gent)
+- **参照元**: 外観写真: visit.gent／arrivalguides / 参照元: [opcafegaan.be](https://www.opcafegaan.be/gent/het-waterhuis-aan-de-bierkant) / [wandersmiles.com](https://www.wandersmiles.com/beer-in-ghent-breweries-and-bars-to-visit/)
+
+### Stadsbrouwerij Gruut（スタッツブラウエレイ・グルート）
+
+@@IMG:europe/belgium/img/ghent/gruut.jpg@@
+
+@@IMG:europe/belgium/img/ghent/gruut_exterior.jpg@@
+
+`ブログ推薦` `口コミ突出`
+
+ホップの代わりに中世由来のハーブ調合「グルート」でビールを仕込む、2009年創業のヘントの都市醸造所。旧皮なめし工場を改装したインダストリアルな空間で、醸造設備を眺めながら試飲できる。
+
+- **一皿**: グルートビールの飲み比べ(ホップ不使用・ハーブ仕込みのブロンド〜ダークまで5種前後を醸造所併設バーでテイスティング)
+- **営業時間**: 月〜木 2:00〜18:00 / 金・土 2:00〜23:00 / 日 2:00〜18:00
+- **定休日**: なし
+- **住所**: Rembert Dodoensdreef 1, 9000 Gent
+- **予約**: 可(推奨) — ☎ 電話で予約 +32 9 269 02 69 ／ [公式サイト](http://www.gruut.be/)
+- **公式**: [公式サイト](http://www.gruut.be/)
+- **選定理由**: Visit Gent掲載。ビール系ブログで「ホップを使わない唯一無二の醸造所」として紹介され、見学・試飲ツアーも人気。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Stadsbrouwerij%20Gruut%20Rembert%20Dodoensdreef%201%2C%209000%20Gent)
+- **参照元**: 外観写真: 公式サイト gruut.be / 参照元: [gruut.be](https://www.gruut.be/en/contact-en/) / [visit.gent.be](https://visit.gent.be/en/eat-drink/gruut)
+
+## 非ベルギー欧州料理
+
 ### Osteria Delicati（オステリア・デリカーティ）
 
 @@IMG:europe/belgium/img/ghent/osteria-delicati.jpg@@
+
+@@IMG:europe/belgium/img/ghent/osteria-delicati_exterior.jpg@@
 
 `口コミ突出`
 
@@ -14,7 +57,7 @@
 - **公式**: [公式サイト](https://www.osteriadelicati.be/)
 - **選定理由**: 公式サイトで営業情報を確認。Restaurant Guruで「ヘント最優秀イタリアン・最優秀サービス・最優秀ティラミス」を受賞したと公式に掲げる実力店で、検索でも本格イタリアンの筆頭として挙がる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Osteria%20Delicati%20Drabstraat%2017%2C%209000%20Gent)
-- **参照元**: [osteriadelicati.be](https://www.osteriadelicati.be/eng/)
+- **参照元**: 外観写真: 公式サイト osteriadelicati.be / 参照元: [osteriadelicati.be](https://www.osteriadelicati.be/eng/)
 
 ### Firenze（フィレンツェ）
 
@@ -38,6 +81,8 @@
 
 @@IMG:europe/belgium/img/ghent/athene.jpg@@
 
+@@IMG:europe/belgium/img/ghent/athene_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 ギリシャ料理。Vlaanderenstraatで35年以上続くヘントのギリシャ料理の老舗。ラムや炭火のミックスグリルを名物とし、Google口コミ約886件で4.3、Facebookでは4.8と地元の支持が厚い。
@@ -50,7 +95,7 @@
 - **公式**: [公式サイト](http://www.restaurantathene.be/)
 - **選定理由**: 検索で「35年以上営業・96%が推薦」と紹介され、Restaurant Guruで住所・営業時間・高評価(Google 4.3/886件)を確認した老舗。市中心の有名ギリシャ店De Griekは閉店確認のため本店を選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Restaurant%20Athene%20Vlaanderenstraat%2083%2C%209000%20Gent)
-- **参照元**: [restaurantguru.com](https://restaurantguru.com/Athene-Ghent) / [foursquare.com](https://foursquare.com/v/restaurant-athene/4c055ce991d776b0064ff7f9)
+- **参照元**: 外観写真: 公式サイト restaurantathene.be / 参照元: [restaurantguru.com](https://restaurantguru.com/Athene-Ghent) / [foursquare.com](https://foursquare.com/v/restaurant-athene/4c055ce991d776b0064ff7f9)
 
 ### Casa de las Tapas（カサ・デ・ラス・タパス）
 
@@ -224,6 +269,8 @@
 
 @@IMG:europe/belgium/img/ghent/astro-boy.jpg@@
 
+@@IMG:europe/belgium/img/ghent/astro-boy_exterior.jpg@@
+
 `ブログ推薦`
 
 日本料理(居酒屋)。Kongostraatにある居酒屋スタイルの店で、小皿をシェアして楽しむ形式。お好み焼きや唐揚げなど、寿司にとどまらない日本の居酒屋料理を出す点でヘントでは希少な存在。
@@ -236,7 +283,7 @@
 - **公式**: [公式サイト](http://www.astroboy.be/)
 - **選定理由**: Wanderlogのヘント日本食特集で「シェアプレート形式の居酒屋、お好み焼きと唐揚げが名物」として掲載を確認。日本の居酒屋文化を伝える店として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Astro%20Boy%20Kongostraat%202%2C%209000%20Gent)
-- **参照元**: [wanderlog.com](https://wanderlog.com/list/geoCategory/54694/best-japanese-food-and-restaurants-in-ghent)
+- **参照元**: 外観写真: 公式サイト astroboy.be / 参照元: [wanderlog.com](https://wanderlog.com/list/geoCategory/54694/best-japanese-food-and-restaurants-in-ghent)
 
 ### Kim's Kitchen（キムズ・キッチン）
 
