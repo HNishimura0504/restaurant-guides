@@ -1,6 +1,6 @@
 BELGIUM / GHENT 🇧🇪
 
-フランデレン料理・レストラン・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選37スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)です。
+フランデレン料理・レストラン・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選37スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)と、見つかった店の外観写真(公式サイト・観光局・ブログ等。出典は各カード)です。
 
 > 2026年7月調査 / 営業時間・定休日は変動あり・訪問前にマップで最終確認を
 
@@ -35,6 +35,8 @@ BELGIUM / GHENT 🇧🇪
 
 @@IMG:europe/belgium/img/ghent/de-rechters.jpg@@
 
+@@IMG:europe/belgium/img/ghent/de-rechters_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 聖バーフ大聖堂の真正面に構えるブラッセリーで、店名は「ヘントの祭壇画」の盗まれたパネル「正しき審判者たち」に由来。ヘント風ワーテルゾーイやストーフフレース、ヴォル・オ・ヴァンなどフランデレン定番料理を気軽な雰囲気で味わえる。
@@ -47,11 +49,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.derechters.be/)
 - **選定理由**: 公式観光サイトVisit Gentが「ストーフフレースや豚頬肉煮込みで人気の店」として掲載。旅行ブログ(littlewanderbookなど)でも「旧市街で郷土料理を食べるなら最有力」と推薦される定番店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Rechters%20Sint-Baafsplein%2023%2C%209000%20Gent)
-- **参照元**: [visit.gent.be](https://visit.gent.be/en/eat-drink/de-rechters) / [derechters.be](https://derechters.be/en/)
+- **参照元**: 外観写真: 公式サイト derechters.be / 参照元: [visit.gent.be](https://visit.gent.be/en/eat-drink/de-rechters) / [derechters.be](https://derechters.be/en/)
 
 ### 't Klokhuys（ト・クロックハイス）
 
 @@IMG:europe/belgium/img/ghent/t-klokhuys.jpg@@
+
+@@IMG:europe/belgium/img/ghent/t-klokhuys_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -65,11 +69,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.klokhuys.com/)
 - **選定理由**: パテルスホル地区の郷土料理店として現地ガイド・ブログで定番的に紹介される。公式サイトで毎日昼夜の通し営業を確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%27t%20Klokhuys%20Corduwaniersstraat%2065%2C%209000%20Gent)
-- **参照元**: [klokhuys.com](https://www.klokhuys.com/over-ons.html)
+- **参照元**: 外観写真: 公式サイト klokhuys.com / 参照元: [klokhuys.com](https://www.klokhuys.com/over-ons.html)
 
 ### Du Progrès（デュ・プログレ）
 
 @@IMG:europe/belgium/img/ghent/du-progres.jpg@@
+
+@@IMG:europe/belgium/img/ghent/du-progres_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -83,11 +89,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.duprogres.be/)
 - **選定理由**: Visit Gentが「同じ一族が代々営むヘント最古級のブラッセリー」として掲載。ステーキ格付けサイトや現地メディアでも評価が高い。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Du%20Progr%C3%A8s%20Korenmarkt%2010%2C%209000%20Gent)
-- **参照元**: [duprogres.be](https://www.duprogres.be/en) / [visit.gent.be](https://visit.gent.be/en/eat-drink/du-progres)
+- **参照元**: 外観写真: visit.gent（Visit Gent 公式観光サイト） / 参照元: [duprogres.be](https://www.duprogres.be/en) / [visit.gent.be](https://visit.gent.be/en/eat-drink/du-progres)
 
 ### Mémé Gusta（メメ・グスタ）
 
 @@IMG:europe/belgium/img/ghent/meme-gusta.jpg@@
+
+@@IMG:europe/belgium/img/ghent/meme-gusta_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -101,11 +109,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.meme-gusta.be/)
 - **選定理由**: Visit Gent掲載店。オランダ語圏の旅行メディアやブログで「フランデレンの祖母の味を出す雰囲気抜群の店」として繰り返し推薦されている。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=M%C3%A9m%C3%A9%20Gusta%20Burgstraat%2019%2C%209000%20Gent)
-- **参照元**: [visit.gent.be](https://visit.gent.be/en/eat-drink/meme-gusta) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188666-d11576275-Reviews-Meme_Gusta-Ghent_East_Flanders_Province.html)
+- **参照元**: 外観写真: visit.gent（Visit Gent 公式観光サイト） / 参照元: [visit.gent.be](https://visit.gent.be/en/eat-drink/meme-gusta) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188666-d11576275-Reviews-Meme_Gusta-Ghent_East_Flanders_Province.html)
 
 ### Balls & Glory Gent（ボールズ・アンド・グローリー）
 
 @@IMG:europe/belgium/img/ghent/balls-glory.jpg@@
+
+@@IMG:europe/belgium/img/ghent/balls-glory_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -119,11 +129,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.ballsnglory.be/gent)
 - **選定理由**: Visit Gent掲載。海外フードブログ(arboursabroadなど)で「ヘントで必食」と紹介され、TripAdvisorでも口コミ多数の人気店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Balls%20%26%20Glory%20Gent%20Jakobijnenstraat%206%2C%209000%20Gent)
-- **参照元**: [ballsnglory.be](https://ballsnglory.be/gent/) / [visit.gent.be](https://visit.gent.be/en/eat-drink/balls-glory)
+- **参照元**: 外観写真: visit.gent（Visit Gent 公式観光サイト） / 参照元: [ballsnglory.be](https://ballsnglory.be/gent/) / [visit.gent.be](https://visit.gent.be/en/eat-drink/balls-glory)
 
 ### Le Botaniste（ル・ボタニスト）
 
 @@IMG:europe/belgium/img/ghent/le-botaniste.jpg@@
+
+@@IMG:europe/belgium/img/ghent/le-botaniste_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -137,13 +149,15 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://lebotaniste.eu/)
 - **選定理由**: Visit Gent掲載。ベジタリアン先進都市ヘントの文脈でCulture Tripやベジ情報サイトVegatopiaが推薦する代表的プラントベース店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Botaniste%20Hoornstraat%2013%2C%209000%20Gent)
-- **参照元**: [visit.gent.be](https://visit.gent.be/en/eat-drink/le-botaniste) / [lebotaniste.eu](https://lebotaniste.eu/en/locations/)
+- **参照元**: 外観写真: visit.gent（Visit Gent 公式観光サイト） / 参照元: [visit.gent.be](https://visit.gent.be/en/eat-drink/le-botaniste) / [lebotaniste.eu](https://lebotaniste.eu/en/locations/)
 
 ## 食べ歩き — フリッツ・キューベルドン
 
 ### Frituur Tartaar（フリチュール・タルタール）
 
 @@IMG:europe/belgium/img/ghent/frituur-tartaar.jpg@@
+
+@@IMG:europe/belgium/img/ghent/frituur-tartaar_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -157,11 +171,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](https://www.frituurtartaar.be/)
 - **選定理由**: ヘント観光公式(Visit Gent)が「フリッツ屋以上の店」として掲載し、住所・イートイン可・ストーフフレース等の品揃えを確認。公式サイトと営業時間サイトで2026年7月時点の営業継続を確認。※旧掲載のFrituur Jozef(フライダグマルクトの屋台)は市の撤去命令により閉業(frituurwereld.nl報道)のため差し替え。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Frituur%20Tartaar%20Heilige-Geeststraat%203%2C%209000%20Gent)
-- **参照元**: [visit.gent.be](https://visit.gent.be/en/eat-drink/frituur-tartaar) / [frituurtartaar.be](https://www.frituurtartaar.be/) / [frituurwereld.nl(Jozef閉業の根拠)](https://www.frituurwereld.nl/iconische-frietkramen-verwijderd-in-gent/)
+- **参照元**: 外観写真: 公式サイト frituurtartaar.be / 参照元: [visit.gent.be](https://visit.gent.be/en/eat-drink/frituur-tartaar) / [frituurtartaar.be](https://www.frituurtartaar.be/) / [frituurwereld.nl(Jozef閉業の根拠)](https://www.frituurwereld.nl/iconische-frietkramen-verwijderd-in-gent/)
 
 ### De Frietketel（デ・フリートケテル）
 
 @@IMG:europe/belgium/img/ghent/de-frietketel.jpg@@
+
+@@IMG:europe/belgium/img/ghent/de-frietketel_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -175,11 +191,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](https://www.facebook.com/De-Frietketel-34597147572)
 - **選定理由**: Visit Gent掲載。TripAdvisorのヘントのフリチュールで常に上位、現地・海外ブログでも「ヘント最高のフリッツ」として頻出。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Frietketel%20Papegaaistraat%2089%2C%209000%20Gent)
-- **参照元**: [visit.gent.be](https://visit.gent.be/en/eat-drink/de-frietketel) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188666-d1072036-Reviews-De_Frietketel-Ghent_East_Flanders_Province.html)
+- **参照元**: 外観写真: visit.gent（Visit Gent 公式観光サイト） / 参照元: [visit.gent.be](https://visit.gent.be/en/eat-drink/de-frietketel) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188666-d1072036-Reviews-De_Frietketel-Ghent_East_Flanders_Province.html)
 
 ### Établissement Max（エタブリスマン・マックス）
 
 @@IMG:europe/belgium/img/ghent/etablissement-max.jpg@@
+
+@@IMG:europe/belgium/img/ghent/etablissement-max_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -192,11 +210,13 @@ BELGIUM / GHENT 🇧🇪
 - **予約**: 不要(店頭)
 - **選定理由**: Roads & Kingdomsのワッフル特集で「ベルギーで完璧なワッフルを食べる場所」として取り上げられた1839年創業の家族経営店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=%C3%89tablissement%20Max%20Goudenleeuwplein%203%2C%209000%20Gent)
-- **参照元**: [roadsandkingdoms.com](https://roadsandkingdoms.com/2018/waffles-in-ghent/) / [yelp.com](https://www.yelp.com/biz/etablissement-max-gent)
+- **参照元**: 外観写真: 個人ブログ A Canadian Foodie（2016） / 参照元: [roadsandkingdoms.com](https://roadsandkingdoms.com/2018/waffles-in-ghent/) / [yelp.com](https://www.yelp.com/biz/etablissement-max-gent)
 
 ### Confiserie Temmerman（コンフィズリー・テンメルマン）
 
 @@IMG:europe/belgium/img/ghent/confiserie-temmerman.jpg@@
+
+@@IMG:europe/belgium/img/ghent/confiserie-temmerman_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -210,13 +230,15 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](https://www.temmermanconfiserie.com/)
 - **選定理由**: Visit Gentが「市内最古の現役菓子店」として掲載。Spotted by Localsなど在住者メディアもキューベルドンの名店として推薦。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Confiserie%20Temmerman%20Kraanlei%2079%2C%209000%20Gent)
-- **参照元**: [visit.gent.be](https://visit.gent.be/en/see-do/confiserie-temmerman) / [temmermanconfiserie.com](https://www.temmermanconfiserie.com/en/our-shops/)
+- **参照元**: 外観写真: visit.gent（Visit Gent 公式観光サイト） / 参照元: [visit.gent.be](https://visit.gent.be/en/see-do/confiserie-temmerman) / [temmermanconfiserie.com](https://www.temmermanconfiserie.com/en/our-shops/)
 
 ## チーズ・加工肉・惣菜・市場
 
 ### Tierenteyn-Verlent（ティーレンテイン・フェルレント）
 
 @@IMG:europe/belgium/img/ghent/tierenteyn-verlent.jpg@@
+
+@@IMG:europe/belgium/img/ghent/tierenteyn-verlent_exterior.jpg@@
 
 `老舗・歴史`
 
@@ -230,7 +252,7 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](https://www.tierenteyn-verlent.be/)
 - **選定理由**: Visit Gent掲載の名物店で、Le FoodingやTripAdvisorでも「1790年から変わらぬ製法のマスタード専門店」として高評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Tierenteyn-Verlent%20Groentenmarkt%203%2C%209000%20Gent)
-- **参照元**: [tierenteyn-verlent.be](https://www.tierenteyn-verlent.be/en_GB) / [visit.gent.be](https://visit.gent.be/en/see-do/tierenteyn)
+- **参照元**: 外観写真: 公式サイト tierenteyn-verlent.be／visit.gent / 参照元: [tierenteyn-verlent.be](https://www.tierenteyn-verlent.be/en_GB) / [visit.gent.be](https://visit.gent.be/en/see-do/tierenteyn)
 
 ### Het Hinkelspel（ヘット・ヒンケルスペル）
 
@@ -254,6 +276,8 @@ BELGIUM / GHENT 🇧🇪
 
 @@IMG:europe/belgium/img/ghent/mekka-van-de-kaas.jpg@@
 
+@@IMG:europe/belgium/img/ghent/mekka-van-de-kaas_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 中世風の赤レンガの建物の1階に店を構える「チーズのメッカ」の名を持つ専門店。定番から珍しいものまで450種以上のチーズを厳選し、ワインやジャム、自家製チーズクロケットも扱う。
@@ -266,11 +290,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.hetmekkavandekaas.be/)
 - **選定理由**: 仏グルメガイドLe Foodingが「450種以上を揃えるヘントの注目チーズ店」として掲載。地元口コミサイトでも評価が高い。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Het%20Mekka%20van%20de%20Kaas%20Koestraat%209%2C%209000%20Gent)
-- **参照元**: [hetmekkavandekaas.be](https://hetmekkavandekaas.be/) / [lefooding.com](https://lefooding.com/en/shops/mekka-van-de-kaas)
+- **参照元**: 外観写真: 個人ブログ mmm-yoso（2015） / 参照元: [hetmekkavandekaas.be](https://hetmekkavandekaas.be/) / [lefooding.com](https://lefooding.com/en/shops/mekka-van-de-kaas)
 
 ### Vrijdagmarkt(金曜市)（フライダグマルクト）
 
 @@IMG:europe/belgium/img/ghent/vrijdagmarkt.jpg@@
+
+@@IMG:europe/belgium/img/ghent/vrijdagmarkt_exterior.jpg@@
 
 `老舗・歴史` `食の専門街・市場`
 
@@ -283,13 +309,15 @@ BELGIUM / GHENT 🇧🇪
 - **予約**: 不要(店頭)
 - **選定理由**: Wikipediaほか観光ガイドが「1199年に遡る週市の伝統」を記載。現地フードガイドでもチーズや惣菜の買い出し場所として推薦される。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Vrijdagmarkt%28%E9%87%91%E6%9B%9C%E5%B8%82%29%20Vrijdagmarkt%2C%209000%20Gent)
-- **参照元**: [en.wikipedia.org](https://en.wikipedia.org/wiki/Vrijdagmarkt,_Ghent)
+- **参照元**: 外観写真: Wikimedia Commons「Vrijdagmarkt (Gent) 20180628.jpg」（広場の全景・市の立たない日） / 参照元: [en.wikipedia.org](https://en.wikipedia.org/wiki/Vrijdagmarkt,_Ghent)
 
 ## パン・スイーツ
 
 ### Bakkerij Himschoot（バッケレイ・ヒムスホート）
 
 @@IMG:europe/belgium/img/ghent/himschoot.jpg@@
+
+@@IMG:europe/belgium/img/ghent/himschoot_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -303,11 +331,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.bakkerijhimschoot.be/)
 - **選定理由**: Spotted by Locals(在住者メディア)やTripAdvisorで「ヘント最古の現役ベーカリー」「マステルを買うならここ」として定番的に推薦。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bakkerij%20Himschoot%20Groentenmarkt%201%2C%209000%20Gent)
-- **参照元**: [spottedbylocals.com](https://www.spottedbylocals.com/ghent/bakery-oud-huis-himschoot/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188666-d8726989-Reviews-Himschoot-Ghent_East_Flanders_Province.html)
+- **参照元**: 外観写真: 公式サイト bakkerijhimschoot.be / 参照元: [spottedbylocals.com](https://www.spottedbylocals.com/ghent/bakery-oud-huis-himschoot/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188666-d8726989-Reviews-Himschoot-Ghent_East_Flanders_Province.html)
 
 ### Chocolaterie Van Hoorebeke（ショコラトリー・ファン・ホーレベーケ）
 
 @@IMG:europe/belgium/img/ghent/van-hoorebeke.jpg@@
+
+@@IMG:europe/belgium/img/ghent/van-hoorebeke_exterior.jpg@@
 
 `老舗・歴史` `ブログ推薦`
 
@@ -321,11 +351,13 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.chocolatesvanhoorebeke.be/)
 - **選定理由**: Visit Gent掲載。ベルギーチョコ専門ブログBelgian Smaakが工房直営の品質を評価し、在住者メディアSpotted by Localsも推薦。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Chocolaterie%20Van%20Hoorebeke%20Sint-Baafsplein%2015%2C%209000%20Gent)
-- **参照元**: [chocolatesvanhoorebeke.be](https://www.chocolatesvanhoorebeke.be/en) / [visit.gent.be](https://visit.gent.be/en/see-do/chocolaterie-van-hoorebeke)
+- **参照元**: 外観写真: visit.gent／公式サイト（看板） / 参照元: [chocolatesvanhoorebeke.be](https://www.chocolatesvanhoorebeke.be/en) / [visit.gent.be](https://visit.gent.be/en/see-do/chocolaterie-van-hoorebeke)
 
 ### Yuzu Chocolates（ユズ・ショコラーツ）
 
 @@IMG:europe/belgium/img/ghent/yuzu.jpg@@
+
+@@IMG:europe/belgium/img/ghent/yuzu_exterior.jpg@@
 
 `ブログ推薦`
 
@@ -339,13 +371,15 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.yuzubynicolasvanaiseandc.com/)
 - **選定理由**: チョコレート巡りブログ(Sidewalk Safariほか)が「ヘントで最も独創的なショコラティエ」として紹介。地元でも評価の高い実力店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Yuzu%20Chocolates%20Walpoortstraat%2011A%2C%209000%20Gent)
-- **参照元**: [travel.sidewalksafari.com](https://travel.sidewalksafari.com/best-ghent-chocolate-tour/) / [yelp.com](https://www.yelp.com/biz/yuzu-chocolates-gent)
+- **参照元**: 外観写真: 個人ブログ mmm-yoso（2015） / 参照元: [travel.sidewalksafari.com](https://travel.sidewalksafari.com/best-ghent-chocolate-tour/) / [yelp.com](https://www.yelp.com/biz/yuzu-chocolates-gent)
 
 ## ビールカフェ・醸造所
 
 ### De Dulle Griet（デ・ダレ・フリート）
 
 @@IMG:europe/belgium/img/ghent/dulle-griet.jpg@@
+
+@@IMG:europe/belgium/img/ghent/dulle-griet_exterior.jpg@@
 
 `口コミ突出` `老舗・歴史`
 
@@ -359,41 +393,4 @@ BELGIUM / GHENT 🇧🇪
 - **公式**: [公式サイト](http://www.dullegriet.be/)
 - **選定理由**: ビール系ブログ(Wandersmiles、European Bar Guideなど)が「ヘントで外せないビアカフェ」として必ず挙げる名物店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=De%20Dulle%20Griet%20Vrijdagmarkt%2050%2C%209000%20Gent)
-- **参照元**: [theeuropeanbarguide.com](https://theeuropeanbarguide.com/dulle-griet-ghent/) / [yelp.com](https://www.yelp.com/biz/de-dulle-griet-gent)
-
-### Het Waterhuis aan de Bierkant（ヘット・ワーテルハイス・アーン・デ・ビールカント）
-
-@@IMG:europe/belgium/img/ghent/waterhuis.jpg@@
-
-`口コミ突出` `ブログ推薦`
-
-レイエ川沿いの絵はがきのような場所に建つ名物ビアカフェ。約160種のビールを揃え、ハウスビール「Gandavum」「Klokke Roeland」「Mammelokker」を運河を望むテラスで楽しめる。
-
-- **一皿**: ハウスビール「Klokke Roeland」(店のために醸造される琥珀色の強めのエール。運河沿いのテラスで飲むのが醍醐味)
-- **営業時間**: 月〜水曜 11:00〜0:30、木〜土曜 11:00〜1:00、日曜 11:00〜24:00
-- **定休日**: 無休
-- **住所**: Groentenmarkt 9, 9000 Gent
-- **予約**: 可(推奨) — ☎ 電話で予約 +32 9 225 06 80
-- **選定理由**: ビール旅行ブログ各種が「運河ビューと樽生の充実で象徴的なパブ」と評価。ヘントのビアカフェ紹介記事の常連。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Het%20Waterhuis%20aan%20de%20Bierkant%20Groentenmarkt%209%2C%209000%20Gent)
-- **参照元**: [opcafegaan.be](https://www.opcafegaan.be/gent/het-waterhuis-aan-de-bierkant) / [wandersmiles.com](https://www.wandersmiles.com/beer-in-ghent-breweries-and-bars-to-visit/)
-
-### Stadsbrouwerij Gruut（スタッツブラウエレイ・グルート）
-
-@@IMG:europe/belgium/img/ghent/gruut.jpg@@
-
-`ブログ推薦` `口コミ突出`
-
-ホップの代わりに中世由来のハーブ調合「グルート」でビールを仕込む、2009年創業のヘントの都市醸造所。旧皮なめし工場を改装したインダストリアルな空間で、醸造設備を眺めながら試飲できる。
-
-- **一皿**: グルートビールの飲み比べ(ホップ不使用・ハーブ仕込みのブロンド〜ダークまで5種前後を醸造所併設バーでテイスティング)
-- **営業時間**: 月〜木 2:00〜18:00 / 金・土 2:00〜23:00 / 日 2:00〜18:00
-- **定休日**: なし
-- **住所**: Rembert Dodoensdreef 1, 9000 Gent
-- **予約**: 可(推奨) — ☎ 電話で予約 +32 9 269 02 69 ／ [公式サイト](http://www.gruut.be/)
-- **公式**: [公式サイト](http://www.gruut.be/)
-- **選定理由**: Visit Gent掲載。ビール系ブログで「ホップを使わない唯一無二の醸造所」として紹介され、見学・試飲ツアーも人気。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Stadsbrouwerij%20Gruut%20Rembert%20Dodoensdreef%201%2C%209000%20Gent)
-- **参照元**: [gruut.be](https://www.gruut.be/en/contact-en/) / [visit.gent.be](https://visit.gent.be/en/eat-drink/gruut)
-
-## 非ベルギー欧州料理
+- **参照元**: 外観写真: visit.gent（Visit Gent 公式観光サイト） / 参照元: [theeuropeanbarguide.com](https://theeuropeanbarguide.com/dulle-griet-ghent/) / [yelp.com](https://www.yelp.com/biz/de-dulle-griet-gent)
