@@ -1,6 +1,6 @@
 BELGIUM / LIEGE 🇧🇪
 
-ワロン郷土料理・レストラン・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選37スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)です。
+ワロン郷土料理・レストラン・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選37スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)と、見つかった店の外観写真(公式サイト・観光局・ブログ等。出典は各カード)です。
 
 > 2026年7月調査 / 営業時間・定休日は変動あり・訪問前にマップで最終確認を
 
@@ -89,6 +89,8 @@ BELGIUM / LIEGE 🇧🇪
 
 @@IMG:europe/belgium/img/liege/taverne-tchantches-nanesse.jpg@@
 
+@@IMG:europe/belgium/img/liege/taverne-tchantches-nanesse_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦`
 
 ウトルムーズ地区、16世紀の建物にリエージュの操り人形チャンチェスが飾られた郷土料理タヴェルヌ。父子のシェフが地元・季節の食材でワロン伝統料理を守る「Table du terroir」認定店。
@@ -101,11 +103,13 @@ BELGIUM / LIEGE 🇧🇪
 - **公式**: [公式サイト](http://www.taverne-tchantches.be/)
 - **選定理由**: 地元誌Moustiqueが「テロワールの食卓」プレートを掲げる郷土色随一の店として紹介。公式サイトでも地域食材主義を明示。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Taverne%20Tchantch%C3%A8s%20et%20Nanesse%20Rue%20Grande-B%C3%AAche%2035%2C%204020%20Li%C3%A8ge)
-- **参照元**: [taverne-tchantches.be](https://taverne-tchantches.be/) / [moustique.be](https://www.moustique.be/tendances/food/2022/10/01/liege-12-restaurants-pour-deguster-des-boulets-et-autres-specialites-de-la-region-247833)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [taverne-tchantches.be](https://taverne-tchantches.be/) / [moustique.be](https://www.moustique.be/tendances/food/2022/10/01/liege-12-restaurants-pour-deguster-des-boulets-et-autres-specialites-de-la-region-247833)
 
 ### As Ouhès（アス・ウエス）
 
 @@IMG:europe/belgium/img/liege/as-ouhes.jpg@@
+
+@@IMG:europe/belgium/img/liege/as-ouhes_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -119,11 +123,13 @@ BELGIUM / LIEGE 🇧🇪
 - **公式**: [公式サイト](https://www.as-ouhes.be/)
 - **選定理由**: 公式観光サイトvisitezliege.beが郷土料理の代表店として掲載。TripAdvisorで1,000件超のレビューを持つ定番店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=As%20Ouh%C3%A8s%20Place%20du%20March%C3%A9%2021%2C%204000%20Li%C3%A8ge)
-- **参照元**: [visitezliege.be](https://www.visitezliege.be/en/offre/as-ouhes) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188655-d741359-Reviews-As_Ouhes-Liege_Liege_Province_The_Ardennes_Wallonia.html)
+- **参照元**: 外観写真: cirkwi.com（Maison du Tourisme du Pays de Liège 提供） / 参照元: [visitezliege.be](https://www.visitezliege.be/en/offre/as-ouhes) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188655-d741359-Reviews-As_Ouhes-Liege_Liege_Province_The_Ardennes_Wallonia.html)
 
 ### La Mairie (de Saint-Pholien)（ラ・メリー(ド・サン・フォリアン)）
 
 @@IMG:europe/belgium/img/liege/la-mairie.jpg@@
+
+@@IMG:europe/belgium/img/liege/la-mairie_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -137,7 +143,7 @@ BELGIUM / LIEGE 🇧🇪
 - **公式**: [公式サイト](https://m.facebook.com/frednenette/)
 - **選定理由**: ベルギーの著名美食家エリック・ボシュマンが自身のサイトで推薦。地元誌Moustiqueも「最も正統にリエージュ的」と評価、TripAdvisor 4.4/5。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Mairie%20%28de%20Saint-Pholien%29%20Rue%20des%20%C3%89coliers%2016%2C%204020%20Li%C3%A8ge)
-- **参照元**: [eric-boschman.be](https://eric-boschman.be/la-mairie-de-saint-pholien/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188655-d10771225-Reviews-La_Mairie-Liege_Liege_Province_The_Ardennes_Wallonia.html)
+- **参照元**: 外観写真: trouvetonresto.be（レストラン紹介サイト） / 参照元: [eric-boschman.be](https://eric-boschman.be/la-mairie-de-saint-pholien/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188655-d10771225-Reviews-La_Mairie-Liege_Liege_Province_The_Ardennes_Wallonia.html)
 
 ## 食べ歩き — リエージュワッフル・フリッツ
 
@@ -181,6 +187,8 @@ BELGIUM / LIEGE 🇧🇪
 
 @@IMG:europe/belgium/img/liege/friterie-du-perron.jpg@@
 
+@@IMG:europe/belgium/img/liege/friterie-du-perron_exterior.jpg@@
+
 `口コミ突出` `食の専門街・市場`
 
 マルシェ広場のペロン像の目の前に立つフリットコット(フリッツ屋台)。太めでカリッと揚がったフリッツと自家製ブレットで、地元メディアのフリッツ店ランキング上位常連。支払いは現金のみ。
@@ -193,11 +201,13 @@ BELGIUM / LIEGE 🇧🇪
 - **公式**: [公式サイト](https://www.instagram.com/friterieduperron/)
 - **選定理由**: 地元メディアBoulettes Magazineの「リエージュっ子が選ぶ最高のフリッツ店」でトップ格として紹介。TripAdvisorでも高評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Friterie%20du%20Perron%20Rue%20de%20Bex%201%2C%204000%20Li%C3%A8ge)
-- **参照元**: [boulettesmagazine.be](https://boulettesmagazine.be/guide-meilleures-friteries-liege/) / [les-friteries.com](https://www.les-friteries.com/site/friterie-du-perron-liege)
+- **参照元**: 外観写真: les-friteries.com（フリッツ店ディレクトリ） / 参照元: [boulettesmagazine.be](https://boulettesmagazine.be/guide-meilleures-friteries-liege/) / [les-friteries.com](https://www.les-friteries.com/site/friterie-du-perron-liege)
 
 ### Le Concordia（ル・コンコルディア）
 
 @@IMG:europe/belgium/img/liege/le-concordia.jpg@@
+
+@@IMG:europe/belgium/img/liege/le-concordia_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -211,13 +221,15 @@ BELGIUM / LIEGE 🇧🇪
 - **公式**: [公式サイト](https://au-concordia.be/)
 - **選定理由**: Boulettes Magazineのフリッツ店ガイドで「持ち帰りフリッツが絶品」と紹介。Moustique誌の郷土料理12店にも選出。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Concordia%20Rue%20des%20Guillemins%20114%2C%204000%20Li%C3%A8ge)
-- **参照元**: [boulettesmagazine.be](https://boulettesmagazine.be/guide-meilleures-friteries-liege/) / [moustique.be](https://www.moustique.be/tendances/food/2022/10/01/liege-12-restaurants-pour-deguster-des-boulets-et-autres-specialites-de-la-region-247833)
+- **参照元**: 外観写真: 公式サイト au-concordia.be / 参照元: [boulettesmagazine.be](https://boulettesmagazine.be/guide-meilleures-friteries-liege/) / [moustique.be](https://www.moustique.be/tendances/food/2022/10/01/liege-12-restaurants-pour-deguster-des-boulets-et-autres-specialites-de-la-region-247833)
 
 ## チーズ・加工肉・惣菜・市場
 
 ### Marché de la Batte（マルシェ・ド・ラ・バット）
 
 @@IMG:europe/belgium/img/liege/marche-de-la-batte.jpg@@
+
+@@IMG:europe/belgium/img/liege/marche-de-la-batte_exterior.jpg@@
 
 `老舗・歴史` `食の専門街・市場`
 
@@ -231,7 +243,7 @@ BELGIUM / LIEGE 🇧🇪
 - **公式**: [公式サイト](https://www.liege.be/fr/vie-communale/services-communaux/commerce/foires-et-marches/marches/marche-de-la-batte)
 - **選定理由**: リエージュ市公式・公式観光サイトがともに「ベルギー最古(1561年〜)の市場」として掲載する食の名所。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=March%C3%A9%20de%20la%20Batte%20Quai%20de%20la%20Batte%20%E4%B8%80%E5%B8%AF%28Quai%20Van%20Hoegaerden%E3%80%9CQuai%20Saint-L%C3%A9onard%29%2C%204000%20Li%C3%A8ge)
-- **参照元**: [liege.be](https://www.liege.be/fr/vie-communale/services-communaux/commerce/foires-et-marches/marches/marche-de-la-batte) / [visitezliege.be](https://www.visitezliege.be/fr/offre/la-batte)
+- **参照元**: 外観写真: visitezliege.be（リエージュ観光局） / 参照元: [liege.be](https://www.liege.be/fr/vie-communale/services-communaux/commerce/foires-et-marches/marches/marche-de-la-batte) / [visitezliege.be](https://www.visitezliege.be/fr/offre/la-batte)
 
 ### La Fromagerie des Vennes（ラ・フロマジュリー・デ・ヴェンヌ）
 
@@ -273,6 +285,8 @@ BELGIUM / LIEGE 🇧🇪
 
 @@IMG:europe/belgium/img/liege/les-petits-producteurs.jpg@@
 
+@@IMG:europe/belgium/img/liege/les-petits-producteurs_exterior.jpg@@
+
 `食の専門街・市場` `口コミ突出`
 
 リエージュ発の地産地消協同組合が運営する食料品店。歴史ある商店街アン・ヌヴィスの店舗では、近郊の小規模生産者の野菜・チーズ・シロップ・ド・リエージュなどを適正価格で直販している。
@@ -285,7 +299,7 @@ BELGIUM / LIEGE 🇧🇪
 - **公式**: [公式サイト](http://www.lespetitsproducteurs.be/)
 - **選定理由**: リエージュ市の地元食品名鑑(alimentation-locale.liege.be)掲載。市内3店舗を展開する市民協同組合として地元で支持が厚い。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Les%20Petits%20Producteurs%20%28Neuvice%29%20En%20Neuvice%2034%2C%204000%20Li%C3%A8ge)
-- **参照元**: [alimentation-locale.liege.be](https://alimentation-locale.liege.be/annuaire-alimentation-locale/les-petits-producteurs-neuvice) / [lespetitsproducteurs.be](https://lespetitsproducteurs.be/)
+- **参照元**: 外観写真: 公式サイト lespetitsproducteurs.be / 参照元: [alimentation-locale.liege.be](https://alimentation-locale.liege.be/annuaire-alimentation-locale/les-petits-producteurs-neuvice) / [lespetitsproducteurs.be](https://lespetitsproducteurs.be/)
 
 ## パン・スイーツ
 
@@ -344,21 +358,3 @@ BELGIUM / LIEGE 🇧🇪
 - **参照元**: [maison-massin.be](https://maison-massin.be/fr) / [visitezliege.be](https://www.visitezliege.be/fr/page/authentique-gaufre-de-liege)
 
 ## ビール・ペケ(ジュニエーヴル)
-
-### La Maison du Peket（ラ・メゾン・デュ・ペケ）
-
-@@IMG:europe/belgium/img/liege/maison-du-peket.jpg@@
-
-`老舗・歴史` `口コミ突出`
-
-マルシェ広場裏、18世紀の館が連なる一角にあるペケ(リエージュ名物のジュニエーヴル)専門バー。約30種のフレーバーペケやフランベ仕立てが揃い、迷路のような館内には郷土料理レストラン「アモン・ナネス」を併設する。
-
-- **一皿**: ペケ(ジュニエーヴル)(ワロン伝統のジュニパー風味蒸留酒。ストレートのほか果実風味やフランベで供されるリエージュの地酒。)
-- **営業時間**: 月〜木 10:00〜1:00 / 金・土 10:00〜2:00 / 日 10:00〜1:00
-- **定休日**: 無休
-- **住所**: Rue de l'Épée 2, 4000 Liège(レストラン入口はRue du Stalon 1-3)
-- **予約**: 可(推奨) — ☎ 電話で予約 +32 4 250 67 83 ／ [公式サイト](http://www.maisondupeket.be/)
-- **公式**: [公式サイト](http://www.maisondupeket.be/)
-- **選定理由**: 1993年開業のペケ文化の発信地として、プティ・フュテや地元メディアが「リエージュの神話的スポット」と紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Maison%20du%20Peket%20Rue%20de%20l%27%C3%89p%C3%A9e%202%2C%204000%20Li%C3%A8ge%28%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E5%85%A5%E5%8F%A3%E3%81%AFRue%20du%20Stalon%201-3%29)
-- **参照元**: [maisondupeket.be](https://www.maisondupeket.be/peket/) / [petitfute.co.uk](https://www.petitfute.co.uk/v68444-liege-4000/c1169-s-amuser-sortir/c182-bar-cafe/c185-bar-a-cocktail/1397626-la-maison-du-peket.html)

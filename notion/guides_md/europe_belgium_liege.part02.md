@@ -1,6 +1,28 @@
+### La Maison du Peket（ラ・メゾン・デュ・ペケ）
+
+@@IMG:europe/belgium/img/liege/maison-du-peket.jpg@@
+
+@@IMG:europe/belgium/img/liege/maison-du-peket_exterior.jpg@@
+
+`老舗・歴史` `口コミ突出`
+
+マルシェ広場裏、18世紀の館が連なる一角にあるペケ(リエージュ名物のジュニエーヴル)専門バー。約30種のフレーバーペケやフランベ仕立てが揃い、迷路のような館内には郷土料理レストラン「アモン・ナネス」を併設する。
+
+- **一皿**: ペケ(ジュニエーヴル)(ワロン伝統のジュニパー風味蒸留酒。ストレートのほか果実風味やフランベで供されるリエージュの地酒。)
+- **営業時間**: 月〜木 10:00〜1:00 / 金・土 10:00〜2:00 / 日 10:00〜1:00
+- **定休日**: 無休
+- **住所**: Rue de l'Épée 2, 4000 Liège(レストラン入口はRue du Stalon 1-3)
+- **予約**: 可(推奨) — ☎ 電話で予約 +32 4 250 67 83 ／ [公式サイト](http://www.maisondupeket.be/)
+- **公式**: [公式サイト](http://www.maisondupeket.be/)
+- **選定理由**: 1993年開業のペケ文化の発信地として、プティ・フュテや地元メディアが「リエージュの神話的スポット」と紹介。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Maison%20du%20Peket%20Rue%20de%20l%27%C3%89p%C3%A9e%202%2C%204000%20Li%C3%A8ge%28%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E5%85%A5%E5%8F%A3%E3%81%AFRue%20du%20Stalon%201-3%29)
+- **参照元**: 外観写真: 公式サイト maisondupeket.be / 参照元: [maisondupeket.be](https://www.maisondupeket.be/peket/) / [petitfute.co.uk](https://www.petitfute.co.uk/v68444-liege-4000/c1169-s-amuser-sortir/c182-bar-cafe/c185-bar-a-cocktail/1397626-la-maison-du-peket.html)
+
 ### Brasserie C (Curtius)（ブラッスリー・セー(クルティウス)）
 
 @@IMG:europe/belgium/img/liege/brasserie-c.jpg@@
+
+@@IMG:europe/belgium/img/liege/brasserie-c_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -14,7 +36,7 @@
 - **公式**: [公式サイト](http://www.brasseriec.com/)
 - **選定理由**: 公式観光サイトvisitezliege.beが市内醸造所として掲載、地元ブログOyé-Oyéも「リエージュ醸造界の宝石」と評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Brasserie%20C%20%28Curtius%29%20Impasse%20des%20Ursulines%2014%2C%204000%20Li%C3%A8ge)
-- **参照元**: [brasseriec.com](https://www.brasseriec.com/infos-pratiques-1) / [visitezliege.be](https://www.visitezliege.be/fr/offre/brasserie-c-curtius)
+- **参照元**: 外観写真: ブログ oye-oye.be / 参照元: [brasseriec.com](https://www.brasseriec.com/infos-pratiques-1) / [visitezliege.be](https://www.visitezliege.be/fr/offre/brasserie-c-curtius)
 
 ### Le Vaudrée 2（ル・ヴォードレ・ドゥ）
 
@@ -58,6 +80,8 @@
 
 @@IMG:europe/belgium/img/liege/la-cantinetta.jpg@@
 
+@@IMG:europe/belgium/img/liege/la-cantinetta_exterior.jpg@@
+
 `老舗・歴史` `ブログ推薦`
 
 イタリア料理。1998年に食材店兼ターブルドットとして開業し、現在は創業者の息子たちが継ぐグリヴニェ地区の家族経営トラットリア。飾らない家庭的な雰囲気ながらGault&MillauやLe Foodingが掲載する実力店。
@@ -70,7 +94,7 @@
 - **公式**: [公式サイト](https://cantinetta.be/)
 - **選定理由**: 地元メディアGaelが「リエージュ屈指のイタリアン」と紹介し、Gault&MillauとLe Foodingの両ガイドに掲載される老舗のため。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Cantinetta%20Rue%20Haute-Wez%20191%2C%204030%20Li%C3%A8ge%20%28Grivegn%C3%A9e%29)
-- **参照元**: [gaultmillau.be](https://www.gaultmillau.be/en/restaurants/la-cantinetta-liege-grivegnee) / [lefooding.com](https://lefooding.com/en/restaurants/la-cantinetta)
+- **参照元**: 外観写真: gaultmillau.be（Gault&Millau） / 参照元: [gaultmillau.be](https://www.gaultmillau.be/en/restaurants/la-cantinetta-liege-grivegnee) / [lefooding.com](https://lefooding.com/en/restaurants/la-cantinetta)
 
 ### Chez Maria（シェ・マリア）
 
@@ -132,6 +156,8 @@
 
 @@IMG:europe/belgium/img/liege/chez-yara.jpg@@
 
+@@IMG:europe/belgium/img/liege/chez-yara_exterior.jpg@@
+
 `口コミ突出`
 
 シリア料理。サン・ミシェル広場に本店を構え、市内に複数店舗を展開する家庭的なシリア料理店。旬の食材を使った伝統料理で平均4.8/5という高評価を得ている。
@@ -144,11 +170,13 @@
 - **公式**: [公式サイト](https://chezyara.eatbu.com/?lang=fr)
 - **選定理由**: 公式予約サイトで営業情報を確認。口コミ平均4.8/5と評価が突出し、リエージュで貴重な本格シリア料理の代表格のため。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Chez%20Yara%20Place%20Saint-Michel%2074%2C%204000%20Li%C3%A8ge)
-- **参照元**: [chezyara.eatbu.com](https://chezyara.eatbu.com/?lang=en)
+- **参照元**: 外観写真: 公式サイト chezyara.eatbu.com / 参照元: [chezyara.eatbu.com](https://chezyara.eatbu.com/?lang=en)
 
 ### Chez Yaya（シェ・ヤヤ）
 
 @@IMG:europe/belgium/img/liege/chez-yaya-roture.jpg@@
+
+@@IMG:europe/belgium/img/liege/chez-yaya-roture_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -161,7 +189,7 @@
 - **予約**: 可(推奨) — ☎ 電話で予約 +32 4 343 17 07
 - **選定理由**: resto.beが「間違いなくリエージュ最良級のクスクス」と現役掲載し、公式ブランドサイト(couscousyaya.com)で1970年創業の歴史も確認。閉業したLe Couscousに代わる同セクションのモロッコ料理代表として差し替え。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Chez%20Yaya%20Rue%20Roture%2027%2C%204020%20Li%C3%A8ge)
-- **参照元**: [resto.be](https://en.resto.be/restaurant/liege/4020-liege/3719-yaya-restaurant-liege-chez-ya-ya/) / [couscousyaya.com](https://www.couscousyaya.com/faq)
+- **参照元**: 外観写真: resto.be（予約サイト掲載写真） / 参照元: [resto.be](https://en.resto.be/restaurant/liege/4020-liege/3719-yaya-restaurant-liege-chez-ya-ya/) / [couscousyaya.com](https://www.couscousyaya.com/faq)
 
 ## アフリカ料理
 
@@ -347,9 +375,3 @@
 - **選定理由**: TripAdvisorで4.5/5・リエージュ全630軒中24位と口コミ評価が突出しており、「100%自家製」の姿勢が支持されているため。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Mex%20y%20Fresh%20Rue%20Saint-Paul%206C%2C%204000%20Li%C3%A8ge)
 - **参照元**: [mexyfresh.be](https://mexyfresh.be/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g188655-d11702465-Reviews-Mex_y_Fresh-Liege_Liege_Province_The_Ardennes_Wallonia.html)
-
-## 半日モデルルート
-
----
-
-> 選考基準: ①個人・公式ブログ/現地メディアでの名店言及 ②複数レビューサイトでの口コミ・行列の突出 ③創業年・代替わりのある老舗 ④食の専門街・市場立地 ⑤受賞歴・ガイド掲載。写真は各店の料理・店内の実写(Google Maps投稿写真、© Google)。予約は各カードの「予約」欄のリンク(電話/予約サイト)から。営業時間・定休日は2026年7月時点の各種サイト情報で、変更があり得ます。
