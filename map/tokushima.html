@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徳島 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>徳島 の食べ歩き地図<span class="n">53店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="徳島 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">徳島 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/tokushima/tokushima.html"><span class="sn-e">📄</span>徳島のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（103都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "支那そば 巽屋", "c": ["麺類"], "v": "レストラン", "lat": 34.078156, "lng": 134.576385, "d": "支那そば 肉玉入り（甘辛く煮た豚バラと生卵を落とす徳島流の一杯。並750円）／支那そば（具を絞った定番。並550円）／支那そば チャーシュー入り（肉の量がいちばん多い。並800円）", "a": "徳島県徳島市住吉5-68-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%94%AF%E9%82%A3%E3%81%9D%E3%81%B0%20%E5%B7%BD%E5%B1%8B%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%BD%8F%E5%90%895-68-1", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-tatsumiya", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-tatsumiya.jpg", "ext": ""}, {"i": 1, "n": "麺や 無双", "c": ["麺類"], "v": "レストラン", "lat": 34.061699, "lng": 134.547791, "d": "無双スタミナラーメン（無添加スープに秘伝のにんにくだれ、野菜と豚バラを重ねた看板。770円）／絶品豚骨しょうゆラーメン（数種の醤油をブレンドしただれを合わせた定番。660円）／無双スタミナスペシャル（野菜・肉・チャーシュー・ホルモンの全部のせ。1,310円）", "a": "徳島県徳島市鷹匠町4-19 後藤田ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%82%84%20%E7%84%A1%E5%8F%8C%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E9%B7%B9%E5%8C%A0%E7%94%BA4-19%20%E5%BE%8C%E8%97%A4%E7%94%B0%E3%83%93%E3%83%AB1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-menya-musou", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-menya-musou.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-ramen-menya-musou_exterior.jpg"}, {"i": 2, "n": "透明醤油ラーメン専門店 86noodle", "c": ["麺類"], "v": "レストラン", "lat": 34.06588, "lng": 134.54953, "d": "86ラーメン（低温調理のローストポークとワンタンを載せた看板の一杯。880円）／わんぱくラーメン（ローストポークを丼の周りに並べワンタン5個を入れる大盛り。1,280円）／ローストポーク温玉丼（低温調理の豚肉に温玉とタルタル、オニオンソースを合わせた丼）", "a": "徳島県徳島市秋田町1丁目22 味園ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%80%8F%E6%98%8E%E9%86%A4%E6%B2%B9%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%B0%82%E9%96%80%E5%BA%97%2086noodle%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%A7%8B%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE22%20%E5%91%B3%E5%9C%92%E3%83%93%E3%83%AB1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-86noodle", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-86noodle.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-ramen-86noodle_exterior.jpg"}, {"i": 3, "n": "堂の浦 はなれ 栄町店", "c": ["麺類"], "v": "レストラン", "lat": 34.065468, "lng": 134.54895, "d": "鯛の塩らーめん（鯛のあらから取ったスープを鳴門の塩で仕立てた名物。600円・税抜）／雲丹らーめん（雲丹を生卵でカルボナーラ風にからめる。800円・税抜）／替飯（らーめんの残りスープに入れる〆の飯。200円・税抜。卵・チーズは各+100円）", "a": "徳島県徳島市栄町1-30 J'sビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A0%82%E3%81%AE%E6%B5%A6%20%E3%81%AF%E3%81%AA%E3%82%8C%20%E6%A0%84%E7%94%BA%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%A0%84%E7%94%BA1-30%20J%27s%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-dounoura-hanare-sakaemachi", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-dounoura-hanare-sakaemachi.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-ramen-dounoura-hanare-sakaemachi_exterior.jpg"}, {"i": 4, "n": "中華そば いのたに 本店", "c": ["麺類"], "v": "レストラン", "lat": 34.073883, "lng": 134.543488, "d": "中華そば肉入り玉子入り（豚骨と野菜の濃口醤油スープに甘辛い豚バラ肉と生卵。麺と肉を卵にからめて食べるすき焼き風が徳島流）／白ごはん（徳島ではラーメンはごはんのおかず。スープをしみこませて食べる）", "a": "徳島県徳島市西大工町4-25", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E3%81%84%E3%81%AE%E3%81%9F%E3%81%AB%20%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%A4%A7%E5%B7%A5%E7%94%BA4-25", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-inotani", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-inotani.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-ramen-inotani_exterior.jpg"}, {"i": 5, "n": "支那そば よあけ 徳島駅前店", "c": ["麺類"], "v": "レストラン", "lat": 34.072974, "lng": 134.551302, "d": "支那そば（豚骨・鶏ガラ・香味野菜の無化調スープにストレート麺。肉はチャーシューか豚バラスライスを選ぶ）／徳島丼（徳島ラーメンの具をごはんに載せた丼。生卵をからめて食べる）", "a": "徳島県徳島市一番町3丁目10", "m": "https://www.google.com/maps/search/?api=1&query=%E6%94%AF%E9%82%A3%E3%81%9D%E3%81%B0%20%E3%82%88%E3%81%82%E3%81%91%20%E5%BE%B3%E5%B3%B6%E9%A7%85%E5%89%8D%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA3%E4%B8%81%E7%9B%AE10", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-yoake", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-yoake.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-ramen-yoake_exterior.jpg"}, {"i": 6, "n": "ラーメン東大 大道本店", "c": ["麺類"], "v": "レストラン", "lat": 34.06525, "lng": 134.547546, "d": "東大ラーメン（濃厚な豚骨醤油スープに甘辛い豚バラ肉。無料の生卵を割り入れてすき焼き風に食べる）／東大ラーメン 大道（大道本店だけの一杯。背脂とにんにくの効いた濃厚スープにもちもちの太麺を合わせる）", "a": "徳島県徳島市大道1-36", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E6%9D%B1%E5%A4%A7%20%E5%A4%A7%E9%81%93%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%A4%A7%E9%81%931-36", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-todai-omichi", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-todai-omichi.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-ramen-todai-omichi_exterior.jpg"}, {"i": 7, "n": "中華そばショップ 来来", "c": ["麺類"], "v": "レストラン", "lat": 34.071716, "lng": 134.553268, "d": "中華そば（創業1967年から変えない豚骨醤油のあっさりスープに細麺。チャーシュー・ねぎ・もやし・かまぼこのシンプルな具）／月見そば（中華そばに生卵を落とした徳島流の一杯。卵がスープに溶けてまろやかになる）", "a": "徳島県徳島市八百屋町1-8", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E6%9D%A5%E6%9D%A5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%85%AB%E7%99%BE%E5%B1%8B%E7%94%BA1-8", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-rairai", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-rairai.jpg", "ext": ""}, {"i": 8, "n": "中華そば 木具屋 本店", "c": ["麺類"], "v": "レストラン", "lat": 34.097549, "lng": 134.565674, "d": "中華そば「白」（弱火で13〜14時間炊いた薄口の白系スープ。自家製中細ストレート麺。バラ肉入りが定番）／中華そば「茶」（2025年10月に加わった茶系。県内産醤油を数種ブレンドしたかえしを合わせる）／キグロン（牛すじ串。阿南の「エメロン」を木具屋流にしたもので、持ち帰りで30本買う常連もいる）", "a": "徳島県徳島市川内町上別宮東90-2", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E6%9C%A8%E5%85%B7%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%B7%9D%E5%86%85%E7%94%BA%E4%B8%8A%E5%88%A5%E5%AE%AE%E6%9D%B190-2", "u": "../japan/tokushima/tokushima.html#c-tokushima-ramen-kiguya", "food": "../japan/tokushima/img/tokushima/tokushima-ramen-kiguya.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-ramen-kiguya_exterior.jpg"}, {"i": 9, "n": "総本家橋本 そば蔵", "c": ["麺類", "郷土料理"], "v": "レストラン", "lat": 34.070175, "lng": 134.557236, "d": "そば米汁（そばの実を米のように炊く阿波の郷土食。770円）／徳島の郷土料理 生そば（うるめいわしのだしと歯ごたえのあるそば。748円）／阿波尾鶏親子丼（県の地鶏を使った丼。1,188円、おそば付1,518円）／和風パリパリ餃子（605円）", "a": "徳島県徳島市新蔵町1-77", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B7%8F%E6%9C%AC%E5%AE%B6%E6%A9%8B%E6%9C%AC%20%E3%81%9D%E3%81%B0%E8%94%B5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%96%B0%E8%94%B5%E7%94%BA1-77", "u": "../japan/tokushima/tokushima.html#c-tokushima-kyodo-hashimoto-sobakura", "food": "../japan/tokushima/img/tokushima/tokushima-kyodo-hashimoto-sobakura.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-kyodo-hashimoto-sobakura_exterior.jpg"}, {"i": 10, "n": "うどん居酒屋ころく", "c": ["麺類"], "v": "レストラン", "lat": 34.074863, "lng": 134.549835, "d": "たらいうどん（徳島名物。釜揚げ・冷やしを選べる。980円／天盛り1,980円）／半田生そうめん（つるぎ町半田の太い手延べ麺。釜揚げゆず・冷やしすだち。1,280円）／鳴門わかめうどん（950円）／鳴門鯛の茶漬け（鯛の身に熱いだしを注ぐ〆）", "a": "徳島県徳島市寺島本町西1-61 徳島駅クレメントプラザ地下1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E5%B1%85%E9%85%92%E5%B1%8B%E3%81%93%E3%82%8D%E3%81%8F%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%BA%E5%B3%B6%E6%9C%AC%E7%94%BA%E8%A5%BF1-61%20%E5%BE%B3%E5%B3%B6%E9%A7%85%E3%82%AF%E3%83%AC%E3%83%A1%E3%83%B3%E3%83%88%E3%83%97%E3%83%A9%E3%82%B6%E5%9C%B0%E4%B8%8B1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-kyodo-udon-koroku", "food": "../japan/tokushima/img/tokushima/tokushima-kyodo-udon-koroku.jpg", "ext": ""}, {"i": 11, "n": "酒朋すぎはら", "c": ["麺類"], "v": "レストラン", "lat": 34.069622, "lng": 134.551294, "d": "フィッシュカツ（魚のすり身にカレー粉を混ぜて揚げた徳島の県民食。429円）／半田素麺（つるぎ町半田の太い手延べ麺。539円）／鳴門鯛の釜飯（1,100円）／阿波尾鶏の朴葉焼（880円）", "a": "徳島県徳島市両国本町2丁目23 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E6%9C%8B%E3%81%99%E3%81%8E%E3%81%AF%E3%82%89%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%A1%E5%9B%BD%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE23%201F", "u": "../japan/tokushima/tokushima.html#c-tokushima-kyodo-shuhou-sugihara", "food": "../japan/tokushima/img/tokushima/tokushima-kyodo-shuhou-sugihara.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-kyodo-shuhou-sugihara_exterior.jpg"}, {"i": 12, "n": "阿波の彩り びざん", "c": ["麺類"], "v": "レストラン", "lat": 34.073051, "lng": 134.550369, "d": "阿波路御膳（鳴門鯛・すだち鰤の造り、阿波尾鶏の紙鍋と唐揚げ、ぼうぜの酢味噌掛けまで8品。3,400円）／そば米汁（600円）／【徳島名物】フィッシュカツ（630円）／阿波尾鶏のせいろ蒸し（1,550円）", "a": "徳島県徳島市元町1-5-1 ホテルサンルート徳島2F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E3%81%AE%E5%BD%A9%E3%82%8A%20%E3%81%B3%E3%81%96%E3%82%93%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%85%83%E7%94%BA1-5-1%20%E3%83%9B%E3%83%86%E3%83%AB%E3%82%B5%E3%83%B3%E3%83%AB%E3%83%BC%E3%83%88%E5%BE%B3%E5%B3%B62F", "u": "../japan/tokushima/tokushima.html#c-tokushima-kyodo-awanoirodori-bizan", "food": "../japan/tokushima/img/tokushima/tokushima-kyodo-awanoirodori-bizan.jpg", "ext": ""}, {"i": 13, "n": "阿波海鮮 魚家", "c": ["麺類"], "v": "レストラン", "lat": 34.072784, "lng": 134.551331, "d": "鳴門わかめとしらすの酢物（鳴門海峡のわかめをしらすと合わせた一皿。539円）／小松島竹ちくわ（竹に巻いて焼く徳島の練り物。209円）／小松島フィッシュカツ（319円）／鳴門鯛のあら炊き（979円）／名物お刺身七種盛り（2,189円）", "a": "徳島県徳島市一番町3-6", "m": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E6%B5%B7%E9%AE%AE%20%E9%AD%9A%E5%AE%B6%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA3-6", "u": "../japan/tokushima/tokushima.html#c-tokushima-kyodo-awakaisen-uoya", "food": "../japan/tokushima/img/tokushima/tokushima-kyodo-awakaisen-uoya.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-kyodo-awakaisen-uoya_exterior.jpg"}, {"i": 14, "n": "阿波尾鶏指定料理店 紺屋町よしこの", "c": ["麺類"], "v": "レストラン", "lat": 34.066837, "lng": 134.549576, "d": "阿波尾鶏の骨付きもも焼き（骨付きのもも肉を丸ごと焼き上げる看板料理。1,880円）／阿波尾鶏の串焼き（もも・ねぎま・鶏とろ・ずり・ぼんじり・皮など部位ごとに焼き分ける）／よしこの串 塩ガーリック焼き（店名を冠した名物串）", "a": "徳島県徳島市紺屋町5-6 アクティ21 8F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E5%B0%BE%E9%B6%8F%E6%8C%87%E5%AE%9A%E6%96%99%E7%90%86%E5%BA%97%20%E7%B4%BA%E5%B1%8B%E7%94%BA%E3%82%88%E3%81%97%E3%81%93%E3%81%AE%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA5-6%20%E3%82%A2%E3%82%AF%E3%83%86%E3%82%A321%208F", "u": "../japan/tokushima/tokushima.html#c-tokushima-kyodo-konyamachi-yoshikono", "food": "../japan/tokushima/img/tokushima/tokushima-kyodo-konyamachi-yoshikono.jpg", "ext": ""}, {"i": 15, "n": "骨付き阿波尾鶏 一鴻 徳島駅前店", "c": ["麺類"], "v": "レストラン", "lat": 34.073528, "lng": 134.552063, "d": "骨付き阿波尾鶏（秘伝のスパイスで味付けし専用の釜で焼く骨付きもも肉。1,680円）／阿波尾鶏の鶏釜めし（せせりと阿波野菜を炊き込む1合2人前の釜飯。847円）／阿波尾鶏の鶏ハムと濃密卵のシーザーサラダ", "a": "徳島県徳島市寺島本町東3-12-8 K1ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AA%A8%E4%BB%98%E3%81%8D%E9%98%BF%E6%B3%A2%E5%B0%BE%E9%B6%8F%20%E4%B8%80%E9%B4%BB%20%E5%BE%B3%E5%B3%B6%E9%A7%85%E5%89%8D%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%BA%E5%B3%B6%E6%9C%AC%E7%94%BA%E6%9D%B13-12-8%20K1%E3%83%93%E3%83%AB1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-kyodo-ikko-tokushimaekimae", "food": "../japan/tokushima/img/tokushima/tokushima-kyodo-ikko-tokushimaekimae.jpg", "ext": ""}, {"i": 16, "n": "阿波水炊き しあわせどり 本店", "c": ["麺類"], "v": "レストラン", "lat": 34.072784, "lng": 134.551331, "d": "阿波水炊き（阿波尾鶏の旨みを引き出した澄んだ水炊き。2人前 2,380円）／鳴門鯛と鳴門ワカメの柚子和風鍋（鳴門海峡の鯛とわかめを柚子で仕立てる。2,280円）／海鮮味噌鍋（自家製味噌で仕立てる海の幸の鍋。2,480円）", "a": "徳島県徳島市一番町3丁目7-7 エクセレント一番町ビル4階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E6%B0%B4%E7%82%8A%E3%81%8D%20%E3%81%97%E3%81%82%E3%82%8F%E3%81%9B%E3%81%A9%E3%82%8A%20%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA3%E4%B8%81%E7%9B%AE7-7%20%E3%82%A8%E3%82%AF%E3%82%BB%E3%83%AC%E3%83%B3%E3%83%88%E4%B8%80%E7%95%AA%E7%94%BA%E3%83%93%E3%83%AB4%E9%9A%8E", "u": "../japan/tokushima/tokushima.html#c-tokushima-kyodo-awamizutaki-shiawasedori", "food": "../japan/tokushima/img/tokushima/tokushima-kyodo-awamizutaki-shiawasedori.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-kyodo-awamizutaki-shiawasedori_exterior.jpg"}, {"i": 17, "n": "柳鮨", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.066669, "lng": 134.547577, "d": "はも料理(徳島県の「徳島産はも指定料理店」。湯引き・はも寿司・はもすき。はもすきは要予約)／江戸前鮨(初代が銀座で覚えた仕事を鳴門など地物の魚に当てた握り。一貫330円〜／にぎり上3,300円税込)／柳鮨特製干物(ぼうぜ・かます・太刀魚・いわしを店で干したもの。330円税込〜。地方発送可)", "a": "徳島県徳島市大道1-17-1 やなぎビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9F%B3%E9%AE%A8%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%A4%A7%E9%81%931-17-1%20%E3%82%84%E3%81%AA%E3%81%8E%E3%83%93%E3%83%AB1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-yanagizushi", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-yanagizushi.jpg", "ext": ""}, {"i": 18, "n": "名代 福寿し", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.067947, "lng": 134.5495, "d": "にぎり(鳴門の海を中心に徳島近海で獲れた魚を毎朝仕入れて握る。九十余年続く店の本線)／寿し会席〈八品〉(突き出し・旬の御造り・酢の物・焼き物・油物・寿し・赤だし・果物。5,000円より。電話予約制)", "a": "徳島県徳島市富田町1丁目19-2（〒770-0915）", "m": "https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E4%BB%A3%20%E7%A6%8F%E5%AF%BF%E3%81%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE19-2%EF%BC%88%E3%80%92770-0915%EF%BC%89", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-nadai-fukuzushi", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-nadai-fukuzushi.jpg", "ext": ""}, {"i": 19, "n": "徳島魚問屋 とゝ喝", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.066998, "lng": 134.548431, "d": "とゝ喝の鯛めし(鳴門鯛を丸ごと一匹土鍋で炊き上げ、席で見せてからほぐして供する看板料理。そば米汁と香の物つき。単品注文は要事前予約)／刺身盛り合わせ(徳島近海の地物を盛る)／とゝ喝コース(徳島の旬を集めた宴会向けのコース)", "a": "徳島県徳島市紺屋町13-1 とゝ喝ビル1F・2F（〒770-0918）", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BE%B3%E5%B3%B6%E9%AD%9A%E5%95%8F%E5%B1%8B%20%E3%81%A8%E3%82%9D%E5%96%9D%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA13-1%20%E3%81%A8%E3%82%9D%E5%96%9D%E3%83%93%E3%83%AB1F%E3%83%BB2F%EF%BC%88%E3%80%92770-0918%EF%BC%89", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-totokatsu", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-totokatsu.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-washoku-totokatsu_exterior.jpg"}, {"i": 20, "n": "料理 志美津", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.067829, "lng": 134.548615, "d": "はも料理(徳島県の「徳島産はも指定料理店」。湯引きを自家製梅肉ソースと酢味噌で、ほかにはもしゃぶ鍋・はも天ぷら・はもラーメン。要予約)／天然クエ料理(店の名物。天然本クエ会席コース全6品8,800円税込、クエ鍋コース8,800円〜)／特大太刀魚塩焼き(2,750円税込)", "a": "徳島県徳島市富田町2丁目32番地", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%99%E7%90%86%20%E5%BF%97%E7%BE%8E%E6%B4%A5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE32%E7%95%AA%E5%9C%B0", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-shimizu", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-shimizu.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-washoku-shimizu_exterior.jpg"}, {"i": 21, "n": "日本料理 さわらぎ", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.072784, "lng": 134.551331, "d": "本日の造り盛り合わせ(その日に入った徳島産の魚を一人前から)／〔鳴門〕レンコンの豆腐(鳴門のレンコンを使った小鉢)／本日の煮魚・〔徳島〕鰆の西京焼き(季節で替わる焼き物と煮物)", "a": "徳島県徳島市一番町3-5", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%95%E3%82%8F%E3%82%89%E3%81%8E%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA3-5", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-sawaragi", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-sawaragi.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-washoku-sawaragi_exterior.jpg"}, {"i": 22, "n": "天ぷら 麻布 三代目泉家", "c": ["和食"], "v": "レストラン", "lat": 34.065365, "lng": 134.549698, "d": "おまかせコース(店主が目利きした季節の食材だけで組む。単品注文は無く、コースは5種類)／車海老の天ぷら(揚げたてをカウンター越しに一品ずつ)／日本酒飲み放題(2,200円税込。全国の地酒から)", "a": "徳島県徳島市秋田町1丁目28-1 極光ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E9%BA%BB%E5%B8%83%20%E4%B8%89%E4%BB%A3%E7%9B%AE%E6%B3%89%E5%AE%B6%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%A7%8B%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE28-1%20%E6%A5%B5%E5%85%89%E3%83%93%E3%83%AB1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-tempura-azabu-izumiya", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-tempura-azabu-izumiya.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-washoku-tempura-azabu-izumiya_exterior.jpg"}, {"i": 23, "n": "日本料理 ます膳", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.055389, "lng": 134.554214, "d": "季節の会席 梅コース(約10品。徳島の旬の魚を軸に組む夜のコース)／4種の御膳(昼。各1,980円で刺身・焼物・揚物などが付く)／棒寿司・柚を利かせた阿波の味(季節で替わる一品)", "a": "徳島県徳島市沖浜東1丁目5 第2コーポHAMADA 1F（〒770-8053）", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%BE%E3%81%99%E8%86%B3%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%B2%96%E6%B5%9C%E6%9D%B11%E4%B8%81%E7%9B%AE5%20%E7%AC%AC2%E3%82%B3%E3%83%BC%E3%83%9DHAMADA%201F%EF%BC%88%E3%80%92770-8053%EF%BC%89", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-masuzen", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-masuzen.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-washoku-masuzen_exterior.jpg"}, {"i": 24, "n": "百年海", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.063305, "lng": 134.565918, "d": "ハモの釜めし(徳島の夏の魚を釜で炊き上げる)／ぶりかまの塩焼き(規格外の魚も活かすサステナブルな品書きの一品)／徳島県産 鮮魚の蒸籠蒸し(1,700円税込)", "a": "徳島県徳島市万代町5-7-1（〒770-0941）", "m": "https://www.google.com/maps/search/?api=1&query=%E7%99%BE%E5%B9%B4%E6%B5%B7%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%87%E4%BB%A3%E7%94%BA5-7-1%EF%BC%88%E3%80%92770-0941%EF%BC%89", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-hyakunenumi", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-hyakunenumi.jpg", "ext": ""}, {"i": 25, "n": "日本料理 味扇", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.069344, "lng": 134.551819, "d": "板前こだわり 松花堂御膳(お造り・天ぷら・茶碗蒸し・酢の物・強肴3種・焼き物・汁物・香の物・釜炊きご飯・デザート。3,300円税込。料理長こだわりの方は昼限定10食)／鯛釜飯(900円税込。鶏釜飯は992円税込)／旬の刺し身盛(2〜3人前3,000円税込、3〜4人前4,500円税込)", "a": "徳島県徳島市南内町1丁目27番地1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E5%91%B3%E6%89%87%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%8D%97%E5%86%85%E7%94%BA1%E4%B8%81%E7%9B%AE27%E7%95%AA%E5%9C%B01", "u": "../japan/tokushima/tokushima.html#c-tokushima-washoku-ajiougi", "food": "../japan/tokushima/img/tokushima/tokushima-washoku-ajiougi.jpg", "ext": ""}, {"i": 26, "n": "徳島の地酒と肴が旨い店 阿波食堂おにかい", "c": ["ビール・バー"], "v": "レストラン", "lat": 34.069389, "lng": 134.551285, "d": "本日の地酒 枡120ml（旭若松 純米 火入れ・おでんでん 生原酒など徳島の蔵を日替わりで／836〜913円）／おにかい4点盛り（その日の小料理の盛り合わせ／1,650円）／阿波尾鶏手羽先の唐揚げ 自家製檸檬胡椒（県の地鶏の手羽先／550円）／小松島カツ ウスターマヨ（徳島の県民食フィッシュカツ／429円）", "a": "徳島県徳島市両国本町2丁目16 2階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BE%B3%E5%B3%B6%E3%81%AE%E5%9C%B0%E9%85%92%E3%81%A8%E8%82%B4%E3%81%8C%E6%97%A8%E3%81%84%E5%BA%97%20%E9%98%BF%E6%B3%A2%E9%A3%9F%E5%A0%82%E3%81%8A%E3%81%AB%E3%81%8B%E3%81%84%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%A1%E5%9B%BD%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE16%202%E9%9A%8E", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-awashokudo-onikai", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-awashokudo-onikai.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-izakaya-awashokudo-onikai_exterior.jpg"}, {"i": 27, "n": "阿波居酒屋 頂 徳島本店", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 34.067894, "lng": 134.547897, "d": "阿波尾鶏の炭火かご焼（県の地鶏を炭火でかご焼きに）／阿波尾鶏 月見つくね（つくねに卵黄）／小松島産揚げたてフィッシュカツ（徳島の県民食を揚げたてで）／徳島の地酒（今小町 大歩危小歩危・芳水・三芳菊）", "a": "徳島県徳島市籠屋町2-16-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E5%B1%85%E9%85%92%E5%B1%8B%20%E9%A0%82%20%E5%BE%B3%E5%B3%B6%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%B1%A0%E5%B1%8B%E7%94%BA2-16-1", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-itadaki", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-itadaki.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-izakaya-itadaki_exterior.jpg"}, {"i": 28, "n": "焼鳥とおでん ぴーかん", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 34.072163, "lng": 134.553391, "d": "名物おでん（秘伝の出汁でじっくり煮込む／通年）／肝・むね・もも食べ比べ（阿波尾鶏と薩摩知覧鶏を2種並べて／850〜990円）／ぴーかん名物 肉の刺盛（鶏の刺身の盛り合わせ／990円）／上勝ビール（徳島県上勝町のクラフトビール／1,100円）", "a": "徳島県徳島市一番町1丁目14-2", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E3%81%A8%E3%81%8A%E3%81%A7%E3%82%93%20%E3%81%B4%E3%83%BC%E3%81%8B%E3%82%93%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA1%E4%B8%81%E7%9B%AE14-2", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-pikan", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-pikan.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-izakaya-pikan_exterior.jpg"}, {"i": 29, "n": "魚吟酒場", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 34.068134, "lng": 134.550018, "d": "阿波の地酒 全11蔵14銘柄（徳島県下の蔵を中心に純米から大吟醸まで）／イカの姿造り 3〜4人前（活きたまま瞬間冷凍したイカ。要予約／3,520円）／かにみそ甲羅焼／日替わり鮮魚の煮つけ（960円〜）", "a": "徳島県徳島市両国橋35番地", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E5%90%9F%E9%85%92%E5%A0%B4%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%A1%E5%9B%BD%E6%A9%8B35%E7%95%AA%E5%9C%B0", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-uogin-sakaba", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-uogin-sakaba.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-izakaya-uogin-sakaba_exterior.jpg"}, {"i": 30, "n": "紺屋町 のだ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.067379, "lng": 134.547806, "d": "阿波尾鶏焼ポン酢（県の地鶏を焼いてポン酢で）／今日のええとこ盛り合わせ（その日の阿波の魚介の刺身）／タコ天ぷら（揚げたての名物天ぷら）／冷酒 高柿木〈徳島〉・かん酒 御殿桜〈徳島〉", "a": "徳島県徳島市紺屋町26", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B4%BA%E5%B1%8B%E7%94%BA%20%E3%81%AE%E3%81%A0%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA26", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-konyamachi-noda", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-konyamachi-noda.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-izakaya-konyamachi-noda_exterior.jpg"}, {"i": 31, "n": "炭火焼鳥 とり燈", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.067829, "lng": 134.548615, "d": "名物豚串（徳島では珍しい豚の串。備長炭焼き）／名物野菜巻き5種盛り（豚肉で巻いたレタス・ししとう・えのき・トマトほか）／極みもも（炭火の鶏もも串）／日本酒 鳴門鯛〈徳島・本家松浦酒造〉・大歩危小歩危〈徳島・三好菊酒造〉（各800円）", "a": "徳島県徳島市富田町2丁目34", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E9%B3%A5%20%E3%81%A8%E3%82%8A%E7%87%88%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE34", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-toriakari", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-toriakari.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-izakaya-toriakari_exterior.jpg"}, {"i": 32, "n": "阿波酔処 しずく", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.066387, "lng": 134.549835, "d": "肉汁餃子（焼き餃子と小籠包を合わせた店の一番人気）／赤鶏のたたき／阿波尾鶏の塩焼き／徳島の地酒（高柿木・鳴門鯛・すだち酒）", "a": "徳島県徳島市秋田町1丁目6-2 ひばりビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E9%85%94%E5%87%A6%20%E3%81%97%E3%81%9A%E3%81%8F%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%A7%8B%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE6-2%20%E3%81%B2%E3%81%B0%E3%82%8A%E3%83%93%E3%83%AB1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-awayoidokoro-shizuku", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-awayoidokoro-shizuku.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-izakaya-awayoidokoro-shizuku_exterior.jpg"}, {"i": 33, "n": "阿波恋しぐれ", "c": ["ビール・バー"], "v": "レストラン", "lat": 34.05426, "lng": 134.553833, "d": "阿波名物 活きあおりいか刺身（牟岐産。下足は天ぷら・塩焼きにも）／徳島づくしコース 全8品（阿波牛・鳴門鯛・そば米汁など県の名物／5,000円〜）／海賊焼コース 全9品（徳島近海の魚介を目の前で豪快に焼く／5,000円）／羽根付きチーズの海の幸ピザ", "a": "徳島県徳島市沖浜東1丁目6番地", "m": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E6%81%8B%E3%81%97%E3%81%90%E3%82%8C%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%B2%96%E6%B5%9C%E6%9D%B11%E4%B8%81%E7%9B%AE6%E7%95%AA%E5%9C%B0", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-awa-koishigure", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-awa-koishigure.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-izakaya-awa-koishigure_exterior.jpg"}, {"i": 34, "n": "たこ焼き 立ち呑み 蛸天上", "c": ["ビール・バー"], "v": "食材の店", "lat": 34.072418, "lng": 134.551865, "d": "明石焼き風（自慢のおでん出汁に浸して食べるたこ焼き）／たこ焼き 4個350円（ソース／塩／しょうゆ／ポン酢。ジェノベーゼ・すだち塩・ネギ塩レモンも）／おでん（大根・牛すじ・ロールキャベツなどを自家製出汁で）／すだちサワー", "a": "徳島県徳島市一番町2丁目11番地2 大阪屋ビル 1階東側", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%93%E7%84%BC%E3%81%8D%20%E7%AB%8B%E3%81%A1%E5%91%91%E3%81%BF%20%E8%9B%B8%E5%A4%A9%E4%B8%8A%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA2%E4%B8%81%E7%9B%AE11%E7%95%AA%E5%9C%B02%20%E5%A4%A7%E9%98%AA%E5%B1%8B%E3%83%93%E3%83%AB%201%E9%9A%8E%E6%9D%B1%E5%81%B4", "u": "../japan/tokushima/tokushima.html#c-tokushima-izakaya-takotenjo", "food": "../japan/tokushima/img/tokushima/tokushima-izakaya-takotenjo.jpg", "ext": ""}, {"i": 35, "n": "阿波大衆ビストロ　Akaneiro", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.073166, "lng": 134.552872, "d": "steak 赤身／イチボ／牛タン(部位を選んで焼き分けるステーキ)／ロブスターの黄金焼き(殻ごと香ばしく焼き上げる看板料理)／Akaneiro とろろ昆布の牛かつ(とろろ昆布をまとわせた揚げたての牛かつ)", "a": "徳島県徳島市寺島本町東２丁目25", "m": "https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E5%A4%A7%E8%A1%86%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%E3%80%80Akaneiro%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%BA%E5%B3%B6%E6%9C%AC%E7%94%BA%E6%9D%B1%EF%BC%92%E4%B8%81%E7%9B%AE25", "u": "../japan/tokushima/tokushima.html#c-tokushima-yoshoku-akaneiro", "food": "../japan/tokushima/img/tokushima/tokushima-yoshoku-akaneiro.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-yoshoku-akaneiro_exterior.jpg"}, {"i": 36, "n": "中国東北料理　龍鳳飯店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.071228, "lng": 134.546036, "d": "薬膳火鍋(東北地方仕込みの薬膳スープの火鍋。コースで提供)／四川風ピリ辛マーボー豆腐(昼のセットでも頼める看板の一品)／スープたっぷり上海小籠包(4個。クリームかぼちゃまんと組み合わせたセットもある)", "a": "徳島県徳島市西大工町１丁目24-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%9D%B1%E5%8C%97%E6%96%99%E7%90%86%E3%80%80%E9%BE%8D%E9%B3%B3%E9%A3%AF%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%A4%A7%E5%B7%A5%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE24-1", "u": "../japan/tokushima/tokushima.html#c-tokushima-yoshoku-ryuhouhanten", "food": "../japan/tokushima/img/tokushima/tokushima-yoshoku-ryuhouhanten.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-yoshoku-ryuhouhanten_exterior.jpg"}, {"i": 37, "n": "イタリア料理　poesia", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.06588, "lng": 134.54953, "d": "種類を選べる自家製パスタ(数種類から好みの一皿を選ぶ)／シェフおまかせの前菜盛合せ(その日の仕入れで内容が変わる)／記念日のデザートプレート(メッセージを入れてもらえる。予約時に相談)", "a": "徳島県徳島市秋田町１-54　ロイヤルクレイン秋田町1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E6%96%99%E7%90%86%E3%80%80poesia%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%A7%8B%E7%94%B0%E7%94%BA%EF%BC%91-54%E3%80%80%E3%83%AD%E3%82%A4%E3%83%A4%E3%83%AB%E3%82%AF%E3%83%AC%E3%82%A4%E3%83%B3%E7%A7%8B%E7%94%B0%E7%94%BA1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-yoshoku-poesia", "food": "../japan/tokushima/img/tokushima/tokushima-yoshoku-poesia.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-yoshoku-poesia_exterior.jpg"}, {"i": 38, "n": "レストラン・バー　Almost Blue", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.065868, "lng": 134.548767, "d": "阿波尾鶏のアンチョビクリームソース(県の地鶏をアンチョビのクリームで。阿波尾鶏コース3,800円のメイン)／A5 阿波一貫牛のトリュフソース(県産黒毛和牛をトリュフのソースで)／松茸とエビのそば米ドリア(祖谷の郷土食そば米をドリアに仕立てた秋の一皿)", "a": "徳島県徳島市栄町１-55-1　わじきやビル2階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%BB%E3%83%90%E3%83%BC%E3%80%80Almost%20Blue%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%91-55-1%E3%80%80%E3%82%8F%E3%81%98%E3%81%8D%E3%82%84%E3%83%93%E3%83%AB2%E9%9A%8E", "u": "../japan/tokushima/tokushima.html#c-tokushima-yoshoku-almostblue", "food": "../japan/tokushima/img/tokushima/tokushima-yoshoku-almostblue.jpg", "ext": ""}, {"i": 39, "n": "月六　徳島", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.067829, "lng": 134.548615, "d": "フィレコース 全7品(和牛フィレ肉を鉄板で焼き上げるコース。6,600円税込)／サーロインコース 全7品(サーロインを主役にしたコース。7,700円税込)／Aステーキコース(5,500円。平日の定番)", "a": "徳島県徳島市富田町２-36　徳島グルメビル6F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%88%E5%85%AD%E3%80%80%E5%BE%B3%E5%B3%B6%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E7%94%BA%EF%BC%92-36%E3%80%80%E5%BE%B3%E5%B3%B6%E3%82%B0%E3%83%AB%E3%83%A1%E3%83%93%E3%83%AB6F", "u": "../japan/tokushima/tokushima.html#c-tokushima-yoshoku-tsukiroku", "food": "../japan/tokushima/img/tokushima/tokushima-yoshoku-tsukiroku.jpg", "ext": ""}, {"i": 40, "n": "中国家庭料理　福林", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.067719, "lng": 134.550507, "d": "全44種の食べ放題(飲み放題付き90分4,500円。最大24名まで)／ふかひれの姿煮(6,000円。本場仕込みの一品)／昼の定食(11:00〜14:30。1,000円台で頼める)", "a": "徳島県徳島市富田浜１-52-2　草庵ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E5%AE%B6%E5%BA%AD%E6%96%99%E7%90%86%E3%80%80%E7%A6%8F%E6%9E%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E6%B5%9C%EF%BC%91-52-2%E3%80%80%E8%8D%89%E5%BA%B5%E3%83%93%E3%83%AB1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-yoshoku-fukurin", "food": "../japan/tokushima/img/tokushima/tokushima-yoshoku-fukurin.jpg", "ext": ""}, {"i": 41, "n": "洋食沖浜（キッチンオキハマ）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.052383, "lng": 134.554535, "d": "本日のOKIHAMAセット(日替わりの看板。昼に売り切れると夜は出ない)／カキフライset(期間限定。大ぶりの牡蠣。エビフライやミニグラタンを追加できる)／選べるカレー(好みの具を選ぶ。昼夜同一価格)", "a": "徳島県徳島市沖浜東２丁目49　SARA林3B101", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E6%B2%96%E6%B5%9C%EF%BC%88%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%E3%82%AA%E3%82%AD%E3%83%8F%E3%83%9E%EF%BC%89%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%B2%96%E6%B5%9C%E6%9D%B1%EF%BC%92%E4%B8%81%E7%9B%AE49%E3%80%80SARA%E6%9E%973B101", "u": "../japan/tokushima/tokushima.html#c-tokushima-yoshoku-okihama", "food": "../japan/tokushima/img/tokushima/tokushima-yoshoku-okihama.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-yoshoku-okihama_exterior.jpg"}, {"i": 42, "n": "イルクイント（il Quinto）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.088551, "lng": 134.511292, "d": "自家製の本格パスタ(店の看板。コースのメインに組み込まれる)／イタリアンドルチェ(コースの締めに出る自家製の菓子)／古民家の吹き抜け席(天井を抜いた客席。カウンターもあり一人でも入れる)", "a": "徳島県徳島市北島田町3丁目31", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%83%AB%E3%82%AF%E3%82%A4%E3%83%B3%E3%83%88%EF%BC%88il%20Quinto%EF%BC%89%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%8C%97%E5%B3%B6%E7%94%B0%E7%94%BA3%E4%B8%81%E7%9B%AE31", "u": "../japan/tokushima/tokushima.html#c-tokushima-yoshoku-ilquinto", "food": "../japan/tokushima/img/tokushima/tokushima-yoshoku-ilquinto.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-yoshoku-ilquinto_exterior.jpg"}, {"i": 43, "n": "可否庵", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.070503, "lng": 134.553787, "d": "可否庵ブレンド(店の名を冠した自家焙煎のブレンド)／ストロングブレンド(深めに焼いた強い一杯)／浅煎りのスペシャルティコーヒー(グアテマラ エル インヘルト農園など。ブラッドオレンジのような果実感と甘みが出る、と店が書いている)／モーニングセット(朝7時から11時まで。トースト・ベーグル・ナンから選ぶセットがある)", "a": "徳島県徳島市幸町2丁目30", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8F%AF%E5%90%A6%E5%BA%B5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%B9%B8%E7%94%BA2%E4%B8%81%E7%9B%AE30", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-kahian", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-kahian.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-kahian_exterior.jpg"}, {"i": 44, "n": "森珈琲店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.074863, "lng": 134.549835, "d": "森のトースト 700円(はちみつバタートーストにアイスクリームをのせた、この店の一番の名物)／モーニングサービス +300円(平日はトーストかホットサンド「たまご・ハム」にオレンジとサラダ付き。土日祝はトースト・オレンジ・サラダ付き。9:00〜11:00)／徳島駅前オカンブレンド 650円(2023年5月に始めた店独自のブレンド。苦みの中に優しさがある、と店が書いている)／月替わりの珈琲 750円(2026年11月はニカラグアのラ・ポラ農園)", "a": "徳島県徳島市寺島本町西1丁目57 徳島駅前ターミナルビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E7%8F%88%E7%90%B2%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%BA%E5%B3%B6%E6%9C%AC%E7%94%BA%E8%A5%BF1%E4%B8%81%E7%9B%AE57%20%E5%BE%B3%E5%B3%B6%E9%A7%85%E5%89%8D%E3%82%BF%E3%83%BC%E3%83%9F%E3%83%8A%E3%83%AB%E3%83%93%E3%83%AB1F", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-mori-coffee", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-mori-coffee.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-mori-coffee_exterior.jpg"}, {"i": 45, "n": "カフェ・ドゥ・カンパーニュ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.049023, "lng": 134.544067, "d": "照焼チキンのホットサンド 720円(カリッと焼いたトーストに照り焼きのタレをからめたチキンを挟む。ブレッドメニューで一番人気)／はちみつトースト(県内の養蜂場から取り寄せた100%徳島県産の百花蜜を使う厚切りトースト)／珈琲ぜんざい・珈琲ゼリー(喫茶の甘味)／徳島スムージー(グリーンスムージーなど、野菜の味が濃い一杯)", "a": "徳島県徳島市八万町内浜173-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%83%89%E3%82%A5%E3%83%BB%E3%82%AB%E3%83%B3%E3%83%91%E3%83%BC%E3%83%8B%E3%83%A5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%85%AB%E4%B8%87%E7%94%BA%E5%86%85%E6%B5%9C173-3", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-de-campagne", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-de-campagne.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-de-campagne_exterior.jpg"}, {"i": 46, "n": "たろうとはなこ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.077778, "lng": 134.518494, "d": "ネルドリップのコーヒー(開店当時からのファンが多い、この店の芯)／モーニングセット 550円(対象ドリンクにカットトーストとゆで卵が付く)／日替わりランチ(ごはんは家庭の茶碗一杯ぶんと控えめ。ちょい盛りは無料)／チキンドリア(取材した書き手が「とくにソースが絶品」と書いた一皿。サラダとドリンクのセットがある)", "a": "徳島県徳島市蔵本町2丁目21-7", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%82%8D%E3%81%86%E3%81%A8%E3%81%AF%E3%81%AA%E3%81%93%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E8%94%B5%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE21-7", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-tarou-to-hanako", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-tarou-to-hanako.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-tarou-to-hanako_exterior.jpg"}, {"i": 47, "n": "いかりや珈琲店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.070732, "lng": 134.55336, "d": "コーヒーゼリー(昭和62年からの名物。お盆の4日間だけで2,000個売れるという)／よしこのブレンド(阿波おどりのリズムと初代・芳子さんの名にちなんだ自家焙煎ブレンド。ほかに いかりやAブレンド＝まろやか、Bブレンド＝深みとコク など6種)／自家製シフォンケーキ・厚焼きたまごサンド(公式インスタグラムが日々告知する軽食)", "a": "徳島県徳島市通町1-12", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%8B%E3%82%8A%E3%82%84%E7%8F%88%E7%90%B2%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E9%80%9A%E7%94%BA1-12", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-ikariya-coffee", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-ikariya-coffee.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-ikariya-coffee_exterior.jpg"}, {"i": 48, "n": "滝の焼餅 和田の屋 本店", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 34.072178, "lng": 134.542496, "d": "滝の焼餅(白・抹茶・胡麻の3種。錦竜水で炊いた餡を石臼挽きの皮で包み、菊紋の型で焼く)／滝の焼餅と抹茶のセット(名水で点てた抹茶と合わせる本店の定番)／すだちジュース・やまももジュース(徳島産の果汁を使った本店の飲み物)", "a": "徳島県徳島市眉山町大滝山5-5", "m": "https://www.google.com/maps/search/?api=1&query=%E6%BB%9D%E3%81%AE%E7%84%BC%E9%A4%85%20%E5%92%8C%E7%94%B0%E3%81%AE%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%9C%89%E5%B1%B1%E7%94%BA%E5%A4%A7%E6%BB%9D%E5%B1%B15-5", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-wadanoya", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-wadanoya.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-wadanoya_exterior.jpg"}, {"i": 49, "n": "菓游 茜庵", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.075787, "lng": 134.557678, "d": "季節のコース(喫茶限定。職人が仕立てる月替わりの菓子のコース)／茜庵のかき氷(抹茶・白玉・小豆の特製。にっぽん氷の図鑑で「ベスト抹茶氷」に選出)／秋あんみつ(旬を寄せた秋限定。阿波晩茶で仕立てた特製の蜜を添える)／お善哉(丹波大納言小豆に香ばしい餅)", "a": "徳島県徳島市徳島町3丁目44", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8F%93%E6%B8%B8%20%E8%8C%9C%E5%BA%B5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%BE%B3%E5%B3%B6%E7%94%BA3%E4%B8%81%E7%9B%AE44", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-akanean", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-akanean.jpg", "ext": ""}, {"i": 50, "n": "タローパン", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.077332, "lng": 134.54863, "d": "チョコ丸くん(30年以上続くロングセラー。丸いパンにチョコを巻き込んで焼いたもの。151円)／カレーパン(油で揚げず焼き上げる。119円)／ドーナツ(1個60円。おやつにちょうどいい大きさ)／国産小麦の無添加食パン(国産小麦とよつ葉バターを使う)", "a": "徳島県徳島市徳島町城内6-34", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%BF%E3%83%AD%E3%83%BC%E3%83%91%E3%83%B3%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%BE%B3%E5%B3%B6%E7%94%BA%E5%9F%8E%E5%86%856-34", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-taro-pan", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-taro-pan.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-taro-pan_exterior.jpg"}, {"i": 51, "n": "レトロ喫茶 チョアカフェ", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.073555, "lng": 134.524994, "d": "デザートクロッフルサンドセット(週末限定。季節のフルーツなど2種のサンドにミニアイスとドリンクが付く。1,400円)／こだわり卵のクロッフルサンド(徳島県認定ブランド「アイ杉原」の卵を使う。350円)／あんバターモンブラン・なると金時モンブラン(徳島の老舗あんこ屋の北海道小豆あん、鳴門金時あんを使う。各800円)／すだち・ゆこう・梅のソーダ(徳島産の柑橘と梅を使った自家製の飲み物)", "a": "徳島県徳島市南佐古七番町7-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%83%88%E3%83%AD%E5%96%AB%E8%8C%B6%20%E3%83%81%E3%83%A7%E3%82%A2%E3%82%AB%E3%83%95%E3%82%A7%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%8D%97%E4%BD%90%E5%8F%A4%E4%B8%83%E7%95%AA%E7%94%BA7-1", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-choa-cafe", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-choa-cafe.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-choa-cafe_exterior.jpg"}, {"i": 52, "n": "バースブック珈琲 国府店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.086575, "lng": 134.488586, "d": "パンケーキ(店が一番人気に挙げる一皿)／ローストビーフのプレート(同じく看板のひとつ)／ロコモコプレート(スキレットで出すハンバーグと目玉焼き、スープとサラダ付き)／タコライスボウル(半熟卵とトルティーヤチップスをのせた木椀仕立て)", "a": "徳島県徳島市国府町井戸字高池窪12-1（附家書店 国府店 内）", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%BC%E3%82%B9%E3%83%96%E3%83%83%E3%82%AF%E7%8F%88%E7%90%B2%20%E5%9B%BD%E5%BA%9C%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%9B%BD%E5%BA%9C%E7%94%BA%E4%BA%95%E6%88%B8%E5%AD%97%E9%AB%98%E6%B1%A0%E7%AA%AA12-1%EF%BC%88%E9%99%84%E5%AE%B6%E6%9B%B8%E5%BA%97%20%E5%9B%BD%E5%BA%9C%E5%BA%97%20%E5%86%85%EF%BC%89", "u": "../japan/tokushima/tokushima.html#c-tokushima-cafe-birth-book-coffee", "food": "../japan/tokushima/img/tokushima/tokushima-cafe-birth-book-coffee.jpg", "ext": "../japan/tokushima/img/tokushima/tokushima-cafe-birth-book-coffee_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([34.069975,134.548353],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('tokushima', "徳島");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
