@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>丸亀 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>丸亀 の食べ歩き地図<span class="n">57店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="丸亀 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">丸亀 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/kagawa/marugame.html"><span class="sn-e">📄</span>丸亀のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（105都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "りぶや 丸亀本店", "c": ["和食"], "v": "食べ歩き", "lat": 34.289959, "lng": 133.796387, "d": "骨付鳥 辛ドリ（塩コショウで仕上げる定番。オヤ＝歯ごたえのある親鶏／ワカ＝やわらかい若鶏から選ぶ）／骨付鳥 甘ドリ（秘伝の甘ダレを塗って焼く、この店だけの甘い骨付鳥）／スペアリブ 甘リブ・辛リブ（オーブンでじっくり焼き上げるもう一つの看板）", "a": "香川県丸亀市通町52番地11 りぶや丸亀ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%8A%E3%81%B6%E3%82%84%20%E4%B8%B8%E4%BA%80%E6%9C%AC%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%80%9A%E7%94%BA52%E7%95%AA%E5%9C%B011%20%E3%82%8A%E3%81%B6%E3%82%84%E4%B8%B8%E4%BA%80%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/kagawa/marugame.html#c-marugame-honetsukidori-ribuya", "food": "../japan/kagawa/img/marugame/marugame-honetsukidori-ribuya.jpg", "ext": "../japan/kagawa/img/marugame/marugame-honetsukidori-ribuya_exterior.jpg"}, {"i": 1, "n": "居酒屋 うさぎ", "c": ["和食"], "v": "バー・居酒屋・パブ", "lat": 34.289753, "lng": 133.795837, "d": "骨付鳥 若（ハーブとオリーブオイルに漬け込んでから焼く若鶏のもも肉。やわらかく香りが立つ。要予約）／骨付鳥 親（同じ漬け込みで焼く親鶏。噛むほど味が出る。要予約）／炭火焼きの鳥皮（骨付鳥の脂とは別の、香ばしい皮の一品）", "a": "香川県丸亀市富屋町73-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%86%E3%81%95%E3%81%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%AF%8C%E5%B1%8B%E7%94%BA73-1", "u": "../japan/kagawa/marugame.html#c-marugame-honetsukidori-usagi", "food": "../japan/kagawa/img/marugame/marugame-honetsukidori-usagi.jpg", "ext": "../japan/kagawa/img/marugame/marugame-honetsukidori-usagi_exterior.jpg"}, {"i": 2, "n": "味感 真寿美", "c": ["和食"], "v": "レストラン", "lat": 34.279266, "lng": 133.783005, "d": "骨付鳥 若・親（香川県産鶏。ノーマル・黒胡椒・柚子胡椒の3種から味付けを選べ、辛さの調節も頼める。各920円）／骨付鳥丸ごとのっけ丼（骨付鳥を1本まるごとご飯にのせた看板。テレビの県民番組でも紹介された）／黒毛和牛100%の自家製ハンバーグ（骨付鳥以外の柱になっている洋の一品）", "a": "香川県丸亀市今津町566-5", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E6%84%9F%20%E7%9C%9F%E5%AF%BF%E7%BE%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E4%BB%8A%E6%B4%A5%E7%94%BA566-5", "u": "../japan/kagawa/marugame.html#c-marugame-honetsukidori-mikan-masumi", "food": "../japan/kagawa/img/marugame/marugame-honetsukidori-mikan-masumi.jpg", "ext": "../japan/kagawa/img/marugame/marugame-honetsukidori-mikan-masumi_exterior.jpg"}, {"i": 3, "n": "やき鳥 三太郎", "c": ["和食"], "v": "レストラン", "lat": 34.293709, "lng": 133.795242, "d": "骨付鳥 若の足（やわらかくジューシーな若鶏のもも肉1本）／骨付鳥 親の足（かたく締まった親鶏。噛むほど味が出るが売り切れる日がある）／骨付鳥 讃岐コーチン（香川のブランド地鶏で焼く一本。ほかに阿波の赤鳥もあり3種を食べ比べられる）", "a": "香川県丸亀市西平山町107-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%8D%E9%B3%A5%20%E4%B8%89%E5%A4%AA%E9%83%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E8%A5%BF%E5%B9%B3%E5%B1%B1%E7%94%BA107-2", "u": "../japan/kagawa/marugame.html#c-marugame-honetsukidori-santaro", "food": "../japan/kagawa/img/marugame/marugame-honetsukidori-santaro.jpg", "ext": "../japan/kagawa/img/marugame/marugame-honetsukidori-santaro_exterior.jpg"}, {"i": 4, "n": "居酒屋 うをかめ", "c": ["和食"], "v": "バー・居酒屋・パブ", "lat": 34.288834, "lng": 133.795319, "d": "骨付鳥（京都などで修業した店主が焼く一本。にんにくと胡椒は効かせつつ、専門店より当たりのやわらかい上品な味）／瀬戸内の魚の刺身（明治30年創業の魚屋が母体。季節の地魚を出す）／さぬき夢豚丼（香川のブランド豚を使う丼）", "a": "香川県丸亀市大手町3-13-16 第2森ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%86%E3%82%92%E3%81%8B%E3%82%81%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA3-13-16%20%E7%AC%AC2%E6%A3%AE%E3%83%93%E3%83%AB1F", "u": "../japan/kagawa/marugame.html#c-marugame-honetsukidori-uokame", "food": "../japan/kagawa/img/marugame/marugame-honetsukidori-uokame.jpg", "ext": "../japan/kagawa/img/marugame/marugame-honetsukidori-uokame_exterior.jpg"}, {"i": 5, "n": "どんちゃん 丸亀", "c": ["和食"], "v": "レストラン", "lat": 34.2747, "lng": 133.858414, "d": "骨付鳥 親鳥／若鳥（その日の朝びきの鶏だけを使う。親も若も800円）／どんちゃんめし（骨付鳥の皿に残ったタレにご飯を入れ、刻み沢庵を混ぜて食べる締めの一品。250円）／手羽唐揚げ（20年ものの秘伝のたれ、または広島「海人の藻塩」のどちらかで）", "a": "香川県丸亀市飯山町東坂元253-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A9%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%20%E4%B8%B8%E4%BA%80%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E6%9D%B1%E5%9D%82%E5%85%83253-1", "u": "../japan/kagawa/marugame.html#c-marugame-honetsukidori-donchan", "food": "../japan/kagawa/img/marugame/marugame-honetsukidori-donchan.jpg", "ext": "../japan/kagawa/img/marugame/marugame-honetsukidori-donchan_exterior.jpg"}, {"i": 6, "n": "丸亀骨付鳥一丁", "c": ["和食"], "v": "レストラン", "lat": 34.311066, "lng": 133.80957, "d": "骨付鳥【親】（弾力のある歯ごたえの親どり。噛むほど肉の旨味が広がる通好み）／骨付鳥【若】（ふっくらやわらかい若どり。パリパリに焼いた皮から肉汁が出る定番）／讃岐コーチンの鶏めし（香川のブランド地鶏を一緒に炊き込んだご飯。1,980円）", "a": "香川県綾歌郡宇多津町浜一番丁7-9", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B8%E4%BA%80%E9%AA%A8%E4%BB%98%E9%B3%A5%E4%B8%80%E4%B8%81%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E5%AE%87%E5%A4%9A%E6%B4%A5%E7%94%BA%E6%B5%9C%E4%B8%80%E7%95%AA%E4%B8%817-9", "u": "../japan/kagawa/marugame.html#c-marugame-honetsukidori-itcho", "food": "../japan/kagawa/img/marugame/marugame-honetsukidori-itcho.jpg", "ext": "../japan/kagawa/img/marugame/marugame-honetsukidori-itcho_exterior.jpg"}, {"i": 7, "n": "麺処 綿谷 丸亀店", "c": ["麺類"], "v": "レストラン", "lat": 34.29628, "lng": 133.796295, "d": "牛肉ぶっかけ(甘辛く炊いた牛肉を大盛りの麺にのせ、濃いめのぶっかけだしをかける)／豚肉ぶっかけ(牛と並ぶ看板。脂の甘みが強い)", "a": "香川県丸亀市北平山町2-6-18", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%87%A6%20%E7%B6%BF%E8%B0%B7%20%E4%B8%B8%E4%BA%80%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%8C%97%E5%B9%B3%E5%B1%B1%E7%94%BA2-6-18", "u": "../japan/kagawa/marugame.html#c-marugame-udon-wataya", "food": "../japan/kagawa/img/marugame/marugame-udon-wataya.jpg", "ext": ""}, {"i": 8, "n": "こがね製麺所 丸亀本店", "c": ["麺類"], "v": "レストラン", "lat": 34.258488, "lng": 133.816498, "d": "釜玉(釜から上げた熱い麺に生卵を落とし、出汁醤油をかける)／おろしぶっかけ(大根おろしと濃いだしの冷たい一杯)", "a": "香川県丸亀市郡家町1865-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%81%8C%E3%81%AD%E8%A3%BD%E9%BA%BA%E6%89%80%20%E4%B8%B8%E4%BA%80%E6%9C%AC%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%83%A1%E5%AE%B6%E7%94%BA1865-1", "u": "../japan/kagawa/marugame.html#c-marugame-udon-kogane-seimenjo", "food": "../japan/kagawa/img/marugame/marugame-udon-kogane-seimenjo.jpg", "ext": ""}, {"i": 9, "n": "まごころ", "c": ["麺類"], "v": "レストラン", "lat": 34.297016, "lng": 133.780716, "d": "しょうゆうどん(湯がきたての麺に生じょうゆを回しかけるだけの食べ方)／温卵肉ぶっかけ(甘辛い牛肉と温泉卵をのせた冷たいぶっかけ)", "a": "香川県丸亀市蓬莱町55-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%81%94%E3%81%93%E3%82%8D%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E8%93%AC%E8%8E%B1%E7%94%BA55-3", "u": "../japan/kagawa/marugame.html#c-marugame-udon-magokoro", "food": "../japan/kagawa/img/marugame/marugame-udon-magokoro.jpg", "ext": ""}, {"i": 10, "n": "讃岐うどん 海侍 其の壱", "c": ["麺類"], "v": "レストラン", "lat": 34.268574, "lng": 133.872391, "d": "かけ(伊吹いりこのだしを張った一杯)／肉わさびうどん(牛肉と生わさびを合わせた冷たい一杯)／きゅうりわさび漬けぶっかけ", "a": "香川県丸亀市飯山町東坂元2710-5", "m": "https://www.google.com/maps/search/?api=1&query=%E8%AE%83%E5%B2%90%E3%81%86%E3%81%A9%E3%82%93%20%E6%B5%B7%E4%BE%8D%20%E5%85%B6%E3%81%AE%E5%A3%B1%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E6%9D%B1%E5%9D%82%E5%85%832710-5", "u": "../japan/kagawa/marugame.html#c-marugame-udon-kaiji", "food": "../japan/kagawa/img/marugame/marugame-udon-kaiji.jpg", "ext": "../japan/kagawa/img/marugame/marugame-udon-kaiji_exterior.jpg"}, {"i": 11, "n": "日の出製麺所", "c": ["麺類"], "v": "レストラン", "lat": 34.310398, "lng": 133.850281, "d": "かま玉(釜から上げた麺に生卵と専用のだし醤油をからめる。小1玉・中1.5玉・大2玉)", "a": "香川県坂出市富士見町1丁目8-5", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E3%81%AE%E5%87%BA%E8%A3%BD%E9%BA%BA%E6%89%80%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%9D%82%E5%87%BA%E5%B8%82%E5%AF%8C%E5%A3%AB%E8%A6%8B%E7%94%BA1%E4%B8%81%E7%9B%AE8-5", "u": "../japan/kagawa/marugame.html#c-marugame-udon-hinode-seimenjo", "food": "../japan/kagawa/img/marugame/marugame-udon-hinode-seimenjo.jpg", "ext": "../japan/kagawa/img/marugame/marugame-udon-hinode-seimenjo_exterior.jpg"}, {"i": 12, "n": "セルフまるやうどん", "c": ["麺類"], "v": "レストラン", "lat": 34.247082, "lng": 133.769958, "d": "肉ぶっかけ(甘辛い牛肉をのせた冷たいぶっかけ)／鍋焼きうどん(冬季の看板。土鍋で供する)／自家製カレーうどん", "a": "香川県善通寺市下吉田町889-4", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%BB%E3%83%AB%E3%83%95%E3%81%BE%E3%82%8B%E3%82%84%E3%81%86%E3%81%A9%E3%82%93%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%96%84%E9%80%9A%E5%AF%BA%E5%B8%82%E4%B8%8B%E5%90%89%E7%94%B0%E7%94%BA889-4", "u": "../japan/kagawa/marugame.html#c-marugame-udon-maruya", "food": "../japan/kagawa/img/marugame/marugame-udon-maruya.jpg", "ext": "../japan/kagawa/img/marugame/marugame-udon-maruya_exterior.jpg"}, {"i": 13, "n": "なかむら", "c": ["麺類"], "v": "レストラン", "lat": 34.260376, "lng": 133.835571, "d": "釜玉うどん(釜から上げた熱い麺に生卵を落として特製の醤油をかける。冬の一番人気)／かけうどん(いりこだしを張った一杯。夏の一番人気)／ちくわ天", "a": "香川県丸亀市飯山町西坂元1373-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%81%8B%E3%82%80%E3%82%89%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E8%A5%BF%E5%9D%82%E5%85%831373-3", "u": "../japan/kagawa/marugame.html#c-marugame-udon-nakamura-iiyama", "food": "../japan/kagawa/img/marugame/marugame-udon-nakamura-iiyama.jpg", "ext": "../japan/kagawa/img/marugame/marugame-udon-nakamura-iiyama_exterior.jpg"}, {"i": 14, "n": "純手打うどん よしや", "c": ["麺類"], "v": "レストラン", "lat": 34.265823, "lng": 133.83844, "d": "讃岐もち豚の肉うどん(甘辛く炊いたもち豚をのせた一杯)／すだちひやひや(すだちを敷き詰めた冷たいかけ。初夏〜夏の限定)／温玉ぶっかけ", "a": "香川県丸亀市飯野町東二343-1", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%20%E3%82%88%E3%81%97%E3%82%84%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E9%87%8E%E7%94%BA%E6%9D%B1%E4%BA%8C343-1", "u": "../japan/kagawa/marugame.html#c-marugame-udon-yoshiya", "food": "../japan/kagawa/img/marugame/marugame-udon-yoshiya.jpg", "ext": "../japan/kagawa/img/marugame/marugame-udon-yoshiya_exterior.jpg"}, {"i": 15, "n": "長楽製麺所", "c": ["麺類"], "v": "レストラン", "lat": 34.310349, "lng": 133.825516, "d": "うどん(小)(細めでコシのある麺。温・冷を選ぶ)／たこ天(この店で人気の天ぷら)／かきあげ", "a": "香川県綾歌郡宇多津町坂下2900-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E6%A5%BD%E8%A3%BD%E9%BA%BA%E6%89%80%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E5%AE%87%E5%A4%9A%E6%B4%A5%E7%94%BA%E5%9D%82%E4%B8%8B2900-1", "u": "../japan/kagawa/marugame.html#c-marugame-udon-choraku-seimenjo", "food": "../japan/kagawa/img/marugame/marugame-udon-choraku-seimenjo.jpg", "ext": "../japan/kagawa/img/marugame/marugame-udon-choraku-seimenjo_exterior.jpg"}, {"i": 16, "n": "本格手打うどん おか泉", "c": ["麺類"], "v": "レストラン", "lat": 34.309452, "lng": 133.82132, "d": "ひや天おろし(大きなえび天2本をのせた冷たいおろしうどん。1,280円)／生じょうゆ(打ちたての麺に生じょうゆを回しかける)／ざる", "a": "香川県綾歌郡宇多津町浜八番丁129-10", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E6%A0%BC%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%20%E3%81%8A%E3%81%8B%E6%B3%89%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E5%AE%87%E5%A4%9A%E6%B4%A5%E7%94%BA%E6%B5%9C%E5%85%AB%E7%95%AA%E4%B8%81129-10", "u": "../japan/kagawa/marugame.html#c-marugame-udon-okasen", "food": "../japan/kagawa/img/marugame/marugame-udon-okasen.jpg", "ext": "../japan/kagawa/img/marugame/marugame-udon-okasen_exterior.jpg"}, {"i": 17, "n": "純手打うどん やまうちうどん", "c": ["麺類"], "v": "レストラン", "lat": 34.143509, "lng": 133.830185, "d": "かけうどん(薪で茹でた麺に特製のいりこだしを張った一杯)／大（2玉）・特大（3玉）の玉数で頼む食べ方／天ぷら・おでん(自分で取る)", "a": "香川県仲多度郡まんのう町大口1010", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%20%E3%82%84%E3%81%BE%E3%81%86%E3%81%A1%E3%81%86%E3%81%A9%E3%82%93%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%BB%B2%E5%A4%9A%E5%BA%A6%E9%83%A1%E3%81%BE%E3%82%93%E3%81%AE%E3%81%86%E7%94%BA%E5%A4%A7%E5%8F%A31010", "u": "../japan/kagawa/marugame.html#c-marugame-udon-yamauchi", "food": "../japan/kagawa/img/marugame/marugame-udon-yamauchi.jpg", "ext": "../japan/kagawa/img/marugame/marugame-udon-yamauchi_exterior.jpg"}, {"i": 18, "n": "本格手打うどんセルフ はゆか", "c": ["麺類"], "v": "レストラン", "lat": 34.23233, "lng": 133.90509, "d": "釜玉ぶっかけうどん(釜から上げた麺に生卵とぶっかけだし。だしは薄口と濃い口から選ぶ)／ぶっかけうどん／うどんのかき揚げ", "a": "香川県綾歌郡綾川町羽床下2222-5", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E6%A0%BC%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%E3%82%BB%E3%83%AB%E3%83%95%20%E3%81%AF%E3%82%86%E3%81%8B%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E7%B6%BE%E5%B7%9D%E7%94%BA%E7%BE%BD%E5%BA%8A%E4%B8%8B2222-5", "u": "../japan/kagawa/marugame.html#c-marugame-udon-hayuka", "food": "../japan/kagawa/img/marugame/marugame-udon-hayuka.jpg", "ext": ""}, {"i": 19, "n": "姿すし 三四郎", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.294296, "lng": 133.803711, "d": "三四郎巻(7種の具を巻いた名物の巻き寿司)／にぎり(その日に市場で仕入れた鮮魚を日替わりで)／キス野菜天(旬の野菜と白身のキスの天ぷら)", "a": "香川県丸亀市土居町3-13-13", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A7%BF%E3%81%99%E3%81%97%20%E4%B8%89%E5%9B%9B%E9%83%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%B1%85%E7%94%BA3-13-13", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-sugatasushi-sanshiro", "food": "../japan/kagawa/img/marugame/marugame-washoku-sugatasushi-sanshiro.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-sugatasushi-sanshiro_exterior.jpg"}, {"i": 20, "n": "海鮮・すし・地酒 ほくろ屋", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.300503, "lng": 133.807343, "d": "季節のコース(旬の瀬戸内の魚を使った会席。5,000円〜)／アコウの姿造り(初夏〜夏の高級白身魚)／新仔うなぎの白焼き・蒲焼き(徳島県産の1年物)", "a": "香川県丸亀市土器町東9-284 CLOVER SHOEIビル A棟1F E号", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E3%83%BB%E3%81%99%E3%81%97%E3%83%BB%E5%9C%B0%E9%85%92%20%E3%81%BB%E3%81%8F%E3%82%8D%E5%B1%8B%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E6%9D%B19-284%20CLOVER%20SHOEI%E3%83%93%E3%83%AB%20A%E6%A3%9F1F%20E%E5%8F%B7", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-hokuroya", "food": "../japan/kagawa/img/marugame/marugame-washoku-hokuroya.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-hokuroya_exterior.jpg"}, {"i": 21, "n": "魚料理 かぼちゃ", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.308098, "lng": 133.792633, "d": "アコウの活き造り(生簀から引き上げた高級白身魚を姿造りに)／地たこ尽くし(蛸1匹を刺身・焼き・天ぷらの3種に)／四季膳(土日限定の昼の御膳。その日に捕れた魚を使う)", "a": "香川県丸亀市富士見町5-12-5", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E6%96%99%E7%90%86%20%E3%81%8B%E3%81%BC%E3%81%A1%E3%82%83%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%AF%8C%E5%A3%AB%E8%A6%8B%E7%94%BA5-12-5", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-kabocha", "food": "../japan/kagawa/img/marugame/marugame-washoku-kabocha.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-kabocha_exterior.jpg"}, {"i": 22, "n": "中津万象園 味処 懐風亭", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.286369, "lng": 133.7686, "d": "瀬戸内のおもてなし御膳(平日限定2,750円。お造り・牛ロース陶板焼き・ミニうどん・天婦羅・香川特産の醤油豆まで付く)／にぎり鮨と天婦羅膳(2,200円。にぎり5貫と海鮮巻に天婦羅)／お造り膳(1,870円。お造り五種盛り)", "a": "香川県丸亀市中津町25-1（中津万象園内）", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E6%B4%A5%E4%B8%87%E8%B1%A1%E5%9C%92%20%E5%91%B3%E5%87%A6%20%E6%87%90%E9%A2%A8%E4%BA%AD%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E4%B8%AD%E6%B4%A5%E7%94%BA25-1%EF%BC%88%E4%B8%AD%E6%B4%A5%E4%B8%87%E8%B1%A1%E5%9C%92%E5%86%85%EF%BC%89", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-kaifutei", "food": "../japan/kagawa/img/marugame/marugame-washoku-kaifutei.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-kaifutei_exterior.jpg"}, {"i": 23, "n": "鰻城", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.276611, "lng": 133.804062, "d": "うな重(一尾4,500円。秘伝のたれと香川県産こしひかり)／白焼き(脂の乗った活鰻を素焼きで)／うなぎ丼(半身2,500円。昼に頼みやすい一杯)", "a": "香川県丸亀市山北町572-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B0%BB%E5%9F%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%B1%B1%E5%8C%97%E7%94%BA572-1", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-unajo", "food": "../japan/kagawa/img/marugame/marugame-washoku-unajo.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-unajo_exterior.jpg"}, {"i": 24, "n": "間 -HAZAMA-", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.277859, "lng": 133.804489, "d": "おまかせ握り12貫(2,618円。旬の鮮魚12種を握りで)／お刺身9種盛合せ(3,058円。時期で内容が変わる)／コース料理(5,280円〜。要望に応じてカニ・フグも)", "a": "香川県丸亀市山北町652-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%96%93%20-HAZAMA-%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%B1%B1%E5%8C%97%E7%94%BA652-1", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-hazama", "food": "../japan/kagawa/img/marugame/marugame-washoku-hazama.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-hazama_exterior.jpg"}, {"i": 25, "n": "浜焼き酒場 漁火", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.293205, "lng": 133.79361, "d": "浜焼き(蒸気で火を通して旨みを閉じ込める調理。魚介各種)／本日の漁火海鮮丼(味噌汁付き1,155円。昼の看板)／漁火名物 豪快ゲソ天盛り(イカ下足の天ぷらを山盛りで)", "a": "香川県丸亀市福島町54-8", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E7%84%BC%E3%81%8D%E9%85%92%E5%A0%B4%20%E6%BC%81%E7%81%AB%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%A6%8F%E5%B3%B6%E7%94%BA54-8", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-isaribi", "food": "../japan/kagawa/img/marugame/marugame-washoku-isaribi.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-isaribi_exterior.jpg"}, {"i": 26, "n": "創作和食・仕出し・宴会 ひらた", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 34.255306, "lng": 133.860748, "d": "月替わり限定ランチ(2026年秋は露時雨御膳1,850円)／楓(1,950円。本日の煮魚か天麩羅盛り合わせを選べる御膳)／海鮮重(1,250円。刺身をのせたお重)", "a": "香川県丸亀市飯山町下法軍寺159-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%92%8C%E9%A3%9F%E3%83%BB%E4%BB%95%E5%87%BA%E3%81%97%E3%83%BB%E5%AE%B4%E4%BC%9A%20%E3%81%B2%E3%82%89%E3%81%9F%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E4%B8%8B%E6%B3%95%E8%BB%8D%E5%AF%BA159-1", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-hirata", "food": "../japan/kagawa/img/marugame/marugame-washoku-hirata.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-hirata_exterior.jpg"}, {"i": 27, "n": "塩飽の漁師飯 壱", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 34.2883, "lng": 133.794739, "d": "塩飽丼(塩飽の魚をのせた名物の丼)／海鮮の天ぷら(真鯛など、その日の魚を一つずつ揚げる)／各種お刺身盛り合わせ(店主が水揚げした魚のみ)", "a": "香川県丸亀市大手町3丁目6番地9 丸二ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A1%A9%E9%A3%BD%E3%81%AE%E6%BC%81%E5%B8%AB%E9%A3%AF%20%E5%A3%B1%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA3%E4%B8%81%E7%9B%AE6%E7%95%AA%E5%9C%B09%20%E4%B8%B8%E4%BA%8C%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-ichi-shiwaku", "food": "../japan/kagawa/img/marugame/marugame-washoku-ichi-shiwaku.jpg", "ext": ""}, {"i": 28, "n": "活魚 炎舞 瀬戸パーク", "c": ["寿司・海鮮"], "v": "食材の店", "lat": 34.312069, "lng": 133.812714, "d": "原始焼き(炭をタワー状に積み、あじや金目鯛をまわりで炙る)／瀬戸パーク御膳(昼の一押しの御膳。銀シャリか釜飯が付く)／伊勢海老の活造り(生簀から引き上げて造り、あとで味噌汁にする)", "a": "香川県綾歌郡宇多津町浜三番丁24-14", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%BB%E9%AD%9A%20%E7%82%8E%E8%88%9E%20%E7%80%AC%E6%88%B8%E3%83%91%E3%83%BC%E3%82%AF%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E5%AE%87%E5%A4%9A%E6%B4%A5%E7%94%BA%E6%B5%9C%E4%B8%89%E7%95%AA%E4%B8%8124-14", "u": "../japan/kagawa/marugame.html#c-marugame-washoku-enbu-setopark", "food": "../japan/kagawa/img/marugame/marugame-washoku-enbu-setopark.jpg", "ext": "../japan/kagawa/img/marugame/marugame-washoku-enbu-setopark_exterior.jpg"}, {"i": 29, "n": "酒肴や ぼん", "c": ["ビール・バー"], "v": "レストラン", "lat": 34.295296, "lng": 133.813797, "d": "本日のおすすめお刺身(店内の水槽の活魚から引く)／やわらか牛タンステーキ／各種地酒(店長が選んだ日本酒)", "a": "香川県丸亀市土器町東5丁目19番地", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%82%B4%E3%82%84%20%E3%81%BC%E3%82%93%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E6%9D%B15%E4%B8%81%E7%9B%AE19%E7%95%AA%E5%9C%B0", "u": "../japan/kagawa/marugame.html#c-marugame-izakaya-bon", "food": "../japan/kagawa/img/marugame/marugame-izakaya-bon.jpg", "ext": "../japan/kagawa/img/marugame/marugame-izakaya-bon_exterior.jpg"}, {"i": 30, "n": "串揚げ くし彦", "c": ["居酒屋・焼肉"], "v": "ベーカリー・パティスリー", "lat": 34.295296, "lng": 133.813797, "d": "串揚げおまかせセット／くし彦セット(お造り4種盛り・串揚げ7本・茶漬け・アイスのセット)／烏骨鶏究極の親子丼", "a": "香川県丸亀市土器町東5-19", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E6%8F%9A%E3%81%92%20%E3%81%8F%E3%81%97%E5%BD%A6%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E6%9D%B15-19", "u": "../japan/kagawa/marugame.html#c-marugame-izakaya-kushihiko", "food": "../japan/kagawa/img/marugame/marugame-izakaya-kushihiko.jpg", "ext": ""}, {"i": 31, "n": "かに奉", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.283905, "lng": 133.807861, "d": "スペシャルお好み焼き(広島風・関西風が選べる)／鉄板焼き／たこ酢", "a": "香川県丸亀市土器町西7-78", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%81%AB%E5%A5%89%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E8%A5%BF7-78", "u": "../japan/kagawa/marugame.html#c-marugame-izakaya-kanihou", "food": "../japan/kagawa/img/marugame/marugame-izakaya-kanihou.jpg", "ext": "../japan/kagawa/img/marugame/marugame-izakaya-kanihou_exterior.jpg"}, {"i": 32, "n": "味に魅かれて凛", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.298569, "lng": 133.800552, "d": "銘酒・名品の日本酒(店主が揃える)／新鮮な魚介で好みの一品／抹茶のブラマンジュ", "a": "香川県丸亀市富士見町2-1-22", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E3%81%AB%E9%AD%85%E3%81%8B%E3%82%8C%E3%81%A6%E5%87%9B%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%AF%8C%E5%A3%AB%E8%A6%8B%E7%94%BA2-1-22", "u": "../japan/kagawa/marugame.html#c-marugame-izakaya-rin", "food": "../japan/kagawa/img/marugame/marugame-izakaya-rin.jpg", "ext": "../japan/kagawa/img/marugame/marugame-izakaya-rin_exterior.jpg"}, {"i": 33, "n": "炭焼工房　心", "c": ["居酒屋・焼肉"], "v": "食べ歩き", "lat": 34.232742, "lng": 133.912933, "d": "炭火串焼き(備長炭で一本ずつ焼く看板料理)／だし巻き卵／誕生日・記念日の特製デザートプレート(有料・要予約)", "a": "香川県綾歌郡綾川町羽床下36-1", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E5%B7%A5%E6%88%BF%E3%80%80%E5%BF%83%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E7%B6%BE%E5%B7%9D%E7%94%BA%E7%BE%BD%E5%BA%8A%E4%B8%8B36-1", "u": "../japan/kagawa/marugame.html#c-marugame-izakaya-sumiyaki-shin", "food": "../japan/kagawa/img/marugame/marugame-izakaya-sumiyaki-shin.jpg", "ext": "../japan/kagawa/img/marugame/marugame-izakaya-sumiyaki-shin_exterior.jpg"}, {"i": 34, "n": "酒肴屋 にこいち", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 34.231487, "lng": 133.780701, "d": "厳選した地酒(瀬戸内の刺身に合わせる)／瀬戸内の鮮魚のお造り／特製まぜそば", "a": "香川県善通寺市上吉田町8-5-8", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%82%B4%E5%B1%8B%20%E3%81%AB%E3%81%93%E3%81%84%E3%81%A1%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%96%84%E9%80%9A%E5%AF%BA%E5%B8%82%E4%B8%8A%E5%90%89%E7%94%B0%E7%94%BA8-5-8", "u": "../japan/kagawa/marugame.html#c-marugame-izakaya-nikoichi", "food": "../japan/kagawa/img/marugame/marugame-izakaya-nikoichi.jpg", "ext": ""}, {"i": 35, "n": "ビストロ アンジェ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.290806, "lng": 133.79274, "d": "フレンチのコース(昼4,000円〜・夜7,000円〜。肉料理は客席の前で炭火で仕上げる)／小菓子のワゴンサービス(焼き菓子・ショコラなど50種類以上をコースの最後に好きなだけ)", "a": "香川県丸亀市本町26-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%82%A2%E3%83%B3%E3%82%B8%E3%82%A7%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E6%9C%AC%E7%94%BA26-1", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-bistro-angers", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-bistro-angers.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-bistro-angers_exterior.jpg"}, {"i": 36, "n": "PIZZERIA CON CUORE", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.272724, "lng": 133.831345, "d": "マルゲリータ(輸入モッツァレラと4種のイタリア産トマトのブレンドソース)／D.O.C.・クアトロフォルマッジ・ビアンカプロシュートなど窯焼きピッツァ／生海苔のゼッポリーネ(イタリアの揚げパン)", "a": "香川県丸亀市飯野町東二342-1", "m": "https://www.google.com/maps/search/?api=1&query=PIZZERIA%20CON%20CUORE%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E9%87%8E%E7%94%BA%E6%9D%B1%E4%BA%8C342-1", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-pizzeria-con-cuore", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-pizzeria-con-cuore.jpg", "ext": ""}, {"i": 37, "n": "Pizza&Pasta ながぐつ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.300865, "lng": 133.811768, "d": "ジェノベーゼ(バジルのソースがもちもちのパスタによく絡む看板パスタ)／ピザ マルゲリータ(手作り生地とトマトソースの店長おすすめ)／レバーペースト(カリッと焼いたパンに塗ってワインと)", "a": "香川県丸亀市土器町東9-138", "m": "https://www.google.com/maps/search/?api=1&query=Pizza%26Pasta%20%E3%81%AA%E3%81%8C%E3%81%90%E3%81%A4%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E6%9D%B19-138", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-nagagutsu", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-nagagutsu.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-nagagutsu_exterior.jpg"}, {"i": 38, "n": "キッチン オリオン", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.254505, "lng": 133.805786, "d": "デミオムエビ(トロトロの玉子のオムライスに有頭エビをのせた一番人気)／月見ナポリタン 950円(太麺の懐かしいナポリタンに卵)／ハンバーグオムライス(巻き) 1,300円(国産牛豚ハンバーグを自家製デミで)", "a": "香川県丸亀市三条町889-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%20%E3%82%AA%E3%83%AA%E3%82%AA%E3%83%B3%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E4%B8%89%E6%9D%A1%E7%94%BA889-1", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-kitchen-orion", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-kitchen-orion.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-kitchen-orion_exterior.jpg"}, {"i": 39, "n": "Coffee&Rest リーベ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.24416, "lng": 133.87352, "d": "リーベランチ(牛ロースステーキ) 1,400円(固形燃料で目の前で焼く陶板ステーキ。ミニデザートとドリンク付き)／エビフライランチ(2尾1,500円・3尾1,550円)／おいりアイス(バニラアイスに丸亀の嫁入り菓子「おいり」をのせたセットのデザート)", "a": "香川県丸亀市綾歌町富熊750-1", "m": "https://www.google.com/maps/search/?api=1&query=Coffee%26Rest%20%E3%83%AA%E3%83%BC%E3%83%99%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%B6%BE%E6%AD%8C%E7%94%BA%E5%AF%8C%E7%86%8A750-1", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-liebe", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-liebe.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-liebe_exterior.jpg"}, {"i": 40, "n": "Ilex bistro fille et fils", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.231907, "lng": 133.878387, "d": "たまご屋さんのオムライスランチセット 1,400円(実家の養鶏場の海藻卵。前菜・サラダ・スープ付き)／本日のパスタランチセット(旬の食材の日替わり)／厳選ワイン(夜はアラカルトとワインのビストロに)", "a": "香川県丸亀市綾歌町栗熊西1680 アイレックス内", "m": "https://www.google.com/maps/search/?api=1&query=Ilex%20bistro%20fille%20et%20fils%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%B6%BE%E6%AD%8C%E7%94%BA%E6%A0%97%E7%86%8A%E8%A5%BF1680%20%E3%82%A2%E3%82%A4%E3%83%AC%E3%83%83%E3%82%AF%E3%82%B9%E5%86%85", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-fille-et-fils", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-fille-et-fils.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-fille-et-fils_exterior.jpg"}, {"i": 41, "n": "中華料理 阿佐", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.264828, "lng": 133.835724, "d": "麻婆豆腐(ぷりっとした豆腐としびれる辛さ。この店の看板)／本格広東風チャーシュー(店の一押し)／海老のチリソース／五目チャーハン(スープ付)", "a": "香川県丸亀市飯野町東二484", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E9%98%BF%E4%BD%90%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E9%87%8E%E7%94%BA%E6%9D%B1%E4%BA%8C484", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-asa", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-asa.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-asa_exterior.jpg"}, {"i": 42, "n": "中華料理 あおば×政麟", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.258865, "lng": 133.78862, "d": "オムライス 800円(ふわとろ卵の下に中華店らしいぱらっとしたご飯。トマトソースとスパイスがけ)／ビッグ野菜餃子 400円(レンゲより大きい7〜8cm級)／オムそば(2023年から登場)", "a": "香川県丸亀市原田町1926-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E3%81%82%E3%81%8A%E3%81%B0%C3%97%E6%94%BF%E9%BA%9F%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%8E%9F%E7%94%B0%E7%94%BA1926-1", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-aoba-seirin", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-aoba-seirin.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-aoba-seirin_exterior.jpg"}, {"i": 43, "n": "せい華 丸亀店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.270962, "lng": 133.792816, "d": "台湾ラーメン(中細ちぢれ麺にあっさりスープ、唐辛子のエキスが効いた看板メニュー。肉そぼろを混ぜて辛さを足す)／茉莉(じゃすみん)セット(焼き餃子・海老チリ・小籠包など7〜8名分の大皿セット)／ピータン", "a": "香川県丸亀市田村町1245", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9B%E3%81%84%E8%8F%AF%20%E4%B8%B8%E4%BA%80%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%94%B0%E6%9D%91%E7%94%BA1245", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-seika", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-seika.jpg", "ext": ""}, {"i": 44, "n": "韓国ダイニング テジクム", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.263374, "lng": 133.79657, "d": "チュサム(2〜3人前。甘辛いイイダコ炒め「チュクミ」と豚バラ焼き「サムギョプサル」を一皿で)／サムギョプサル選択2種盛り(厚切り豚バラを鉄板で焼く)", "a": "香川県丸亀市田村町118-2", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E3%83%86%E3%82%B8%E3%82%AF%E3%83%A0%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%94%B0%E6%9D%91%E7%94%BA118-2", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-tejikumu", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-tejikumu.jpg", "ext": ""}, {"i": 45, "n": "せんもん餃子 寺岡商店 丸亀本店", "c": ["洋食・各国料理"], "v": "食材の店", "lat": 34.288723, "lng": 133.795837, "d": "すだち餃子(ニンニク不使用の鶏ぎょうざ。すだちの搾り果汁とこしょうであっさり)／ニンニク餃子(青森産にんにくたっぷり。大根おろしと酢醤油で)／牛アキレス(だし醤油とわさびで。ビールのつまみに)", "a": "香川県丸亀市大手町3-8-11", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9B%E3%82%93%E3%82%82%E3%82%93%E9%A4%83%E5%AD%90%20%E5%AF%BA%E5%B2%A1%E5%95%86%E5%BA%97%20%E4%B8%B8%E4%BA%80%E6%9C%AC%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA3-8-11", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-teraoka-shoten", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-teraoka-shoten.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-teraoka-shoten_exterior.jpg"}, {"i": 46, "n": "モロッコ食堂 Café Aminé", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.291679, "lng": 133.782791, "d": "鶏肉と野菜のタジン(ウコン・生姜・塩こしょうが土台の一人用タジン。ドリンクとハリラスープかモロッカンサラダ付き)／シーフードのタジン(2026年6月26日から。イワシや海老)／ホブス(シェフが毎朝焼くセモリナ粉入りのパン)／チャイ(鍋で手作り)", "a": "香川県丸亀市新浜町2-11-1 秋篠テナント1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A2%E3%83%AD%E3%83%83%E3%82%B3%E9%A3%9F%E5%A0%82%20Caf%C3%A9%20Amin%C3%A9%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E6%96%B0%E6%B5%9C%E7%94%BA2-11-1%20%E7%A7%8B%E7%AF%A0%E3%83%86%E3%83%8A%E3%83%B3%E3%83%881F", "u": "../japan/kagawa/marugame.html#c-marugame-yoshoku-cafe-amine", "food": "../japan/kagawa/img/marugame/marugame-yoshoku-cafe-amine.jpg", "ext": "../japan/kagawa/img/marugame/marugame-yoshoku-cafe-amine_exterior.jpg"}, {"i": 47, "n": "御菓子司 寳月堂", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 34.291752, "lng": 133.797089, "d": "さぬき和三盆のかき氷(香川特産の和三盆糖で作る特製シロップ。白玉やおいりをのせる)／丸亀おいり(もち米を炒って作る西讃の嫁入り菓子。賞味期限120日)", "a": "香川県丸亀市米屋町16", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E5%AF%B3%E6%9C%88%E5%A0%82%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%B1%B3%E5%B1%8B%E7%94%BA16", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-hougetsudo", "food": "../japan/kagawa/img/marugame/marugame-cafe-hougetsudo.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-hougetsudo_exterior.jpg"}, {"i": 48, "n": "富屋珈琲店", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.289917, "lng": 133.795029, "d": "雫珈琲(時間をかけて落とす水出し珈琲。ミルクを合わせたオーレスタイルもある)／モーニングのグラタン(サラダとコーヒーが付く)", "a": "香川県丸亀市富屋町7-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AF%8C%E5%B1%8B%E7%8F%88%E7%90%B2%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%AF%8C%E5%B1%8B%E7%94%BA7-1", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-tomiyacoffee", "food": "../japan/kagawa/img/marugame/marugame-cafe-tomiyacoffee.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-tomiyacoffee_exterior.jpg"}, {"i": 49, "n": "CRISPY CREPE", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.261372, "lng": 133.790436, "d": "ハードクリスピー生地のチョコアーモンド(一押しのクレープ)／ガレット(徳島・祖谷産そば粉100%。タコス・キーマカレー・スモークサーモンなどから具を選ぶ)", "a": "香川県丸亀市原田町2278-1 サンジョウビル101", "m": "https://www.google.com/maps/search/?api=1&query=CRISPY%20CREPE%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%8E%9F%E7%94%B0%E7%94%BA2278-1%20%E3%82%B5%E3%83%B3%E3%82%B8%E3%83%A7%E3%82%A6%E3%83%93%E3%83%AB101", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-crispycrepe", "food": "../japan/kagawa/img/marugame/marugame-cafe-crispycrepe.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-crispycrepe_exterior.jpg"}, {"i": 50, "n": "pancafe junju", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 34.290001, "lng": 133.798172, "d": "もっちり食卓ロール(4個入300円。本店で5袋まとめ買いする客もいる看板商品)／タルティーヌ(バゲットに具をのせて焼くフランス式のオープンサンド)", "a": "香川県丸亀市大手町2丁目4-21（丸亀市役所内）", "m": "https://www.google.com/maps/search/?api=1&query=pancafe%20junju%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA2%E4%B8%81%E7%9B%AE4-21%EF%BC%88%E4%B8%B8%E4%BA%80%E5%B8%82%E5%BD%B9%E6%89%80%E5%86%85%EF%BC%89", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-pancafe-junju", "food": "../japan/kagawa/img/marugame/marugame-cafe-pancafe-junju.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-pancafe-junju_exterior.jpg"}, {"i": 51, "n": "macocco's life cafe&space", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.284866, "lng": 133.812408, "d": "日替わりランチ(豚と玉ねぎの焼き肉など。冷やし茶碗蒸しが付く)／店主が焙煎するコーヒーと自家製ケーキ(チョコレートケーキほか数種)", "a": "香川県丸亀市土器町西5-191", "m": "https://www.google.com/maps/search/?api=1&query=macocco%27s%20life%20cafe%26space%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E8%A5%BF5-191", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-macoccos-life", "food": "../japan/kagawa/img/marugame/marugame-cafe-macoccos-life.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-macoccos-life_exterior.jpg"}, {"i": 52, "n": "自家焙煎 喫茶 ホクセイ", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.32526, "lng": 133.888336, "d": "自家焙煎の珈琲(店名の通りコーヒー専門店を掲げる)／中華そば(9〜10時間煮込むスープと5種の醤油を混ぜたかえし)", "a": "香川県坂出市林田町758-1", "m": "https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%20%E5%96%AB%E8%8C%B6%20%E3%83%9B%E3%82%AF%E3%82%BB%E3%82%A4%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%9D%82%E5%87%BA%E5%B8%82%E6%9E%97%E7%94%B0%E7%94%BA758-1", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-hokusei", "food": "../japan/kagawa/img/marugame/marugame-cafe-hokusei.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-hokusei_exterior.jpg"}, {"i": 53, "n": "The TeaRoom KOTOHIRA", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 34.191418, "lng": 133.823334, "d": "ベーグルサンド(食事系の「野菜こんぴらこんがりチーズ」は季節のきんぴらと地元精肉店の焼豚、スイーツ系の「いちご白あんクリームチーズ」は四国産のお茶の餡と季節の果物)／高瀬和紅茶の特製ミルクティー(香川県産の和紅茶を現代風にアレンジ)", "a": "香川県仲多度郡琴平町279-4（KOTOVEGAS内）", "m": "https://www.google.com/maps/search/?api=1&query=The%20TeaRoom%20KOTOHIRA%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%BB%B2%E5%A4%9A%E5%BA%A6%E9%83%A1%E7%90%B4%E5%B9%B3%E7%94%BA279-4%EF%BC%88KOTOVEGAS%E5%86%85%EF%BC%89", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-tearoom-kotohira", "food": "../japan/kagawa/img/marugame/marugame-cafe-tearoom-kotohira.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-tearoom-kotohira_exterior.jpg"}, {"i": 54, "n": "SOCAL TERRACE", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.264641, "lng": 133.855667, "d": "ピーチパンケーキ(パンケーキの間に特製クリームを挟む看板メニュー。夏は農家直送の生の桃、それ以外の時期はコンポート)／おかずパンケーキ(ベーコンエッグをのせた食事系のパンケーキ)", "a": "香川県丸亀市飯山町川原820-2", "m": "https://www.google.com/maps/search/?api=1&query=SOCAL%20TERRACE%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E5%B7%9D%E5%8E%9F820-2", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-socal-terrace", "food": "../japan/kagawa/img/marugame/marugame-cafe-socal-terrace.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-socal-terrace_exterior.jpg"}, {"i": 55, "n": "本町一丁目カフェ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.314873, "lng": 133.853714, "d": "ふわっととろける玉子かけご飯(純国産鶏「もみじ」の卵。卵黄のだし醤油漬けとメレンゲを合わせる)／水ゼリー(北海道の超軟水「大雪な水」を固めたデザート。地元農家のいちごソースをかける)", "a": "香川県坂出市本町1丁目6-35", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E7%94%BA%E4%B8%80%E4%B8%81%E7%9B%AE%E3%82%AB%E3%83%95%E3%82%A7%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%9D%82%E5%87%BA%E5%B8%82%E6%9C%AC%E7%94%BA1%E4%B8%81%E7%9B%AE6-35", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-honmachi1chome", "food": "../japan/kagawa/img/marugame/marugame-cafe-honmachi1chome.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-honmachi1chome_exterior.jpg"}, {"i": 56, "n": "ことひらテラス", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.191418, "lng": 133.823334, "d": "しあわせのおいりソフト(ソフトクリームに香川西部の嫁入り菓子おいりをのせる。和三盆・ミルク・しょうゆの3味から選ぶ)／こんぴらどらやき(生チョコや季節の果物を挟む)", "a": "香川県仲多度郡琴平町716-5", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%81%A8%E3%81%B2%E3%82%89%E3%83%86%E3%83%A9%E3%82%B9%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%BB%B2%E5%A4%9A%E5%BA%A6%E9%83%A1%E7%90%B4%E5%B9%B3%E7%94%BA716-5", "u": "../japan/kagawa/marugame.html#c-marugame-cafe-kotohira-terrace", "food": "../japan/kagawa/img/marugame/marugame-cafe-kotohira-terrace.jpg", "ext": "../japan/kagawa/img/marugame/marugame-cafe-kotohira-terrace_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([34.275365,133.817048],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('marugame', "丸亀");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
