@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>丸亀美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  /* 外観写真（2026-10-19・外観写真の欠落3度目）: 料理・店内の hero の下に、店構えを1枚添える。
+     地図のポップアップと Notion 記事は <sid>_exterior.jpg を別に拾うので、ここは PDF・ガイド本文で見せるための行。 */
+  .extfig{position:relative; margin:0;}
+  .extfig img{display:block; width:100%; height:40mm; object-fit:cover; border-top:2px solid #fff;}
+  .extfig figcaption{position:absolute; left:2mm; bottom:1.5mm; background:rgba(0,0,0,.55); color:#fff; font-size:7pt; padding:.3mm 1.6mm; border-radius:1mm;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">丸亀美食ガイド<span class="sn-n">57店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/marugame.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="丸亀ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">丸亀ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/marugame.html"><span class="sn-e">🗺️</span>丸亀の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-honetsukidori"><span class="sn-e">・</span>骨付鳥（発祥の地）</a><a href="#s-udon"><span class="sn-e">・</span>讃岐うどん（製麺所型・セルフ）</a><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・海鮮（瀬戸内の魚）</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・地酒</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>カフェ・喫茶・甘味</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全105都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全105都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / KAGAWA・香川県丸亀市 🇯🇵</div>
+  <h1>丸亀美食ガイド</h1>
+  <div class="sub">石垣の高さが日本一の丸亀城を抱く城下町で、うちわの生産は全国の9割を占める。ここは**骨付鳥の発祥の地**——にんにくと胡椒を利かせて焼いた鶏のもも肉を、親鳥とひな鳥から選ぶ。讃岐うどんの製麺所型の店は綾歌町・飯山町にも散り、丸亀港と本島（ほんじま）は瀬戸内の魚の揚がる場所。駅前の通町商店街から城の南、土器町の国道沿い、塩飽（しわく）諸島まで厳選57スポット。隣の坂出市・善通寺市・宇多津町などからも補っている（「隣接市町」の印つき）。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年11月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/marugame/_map.jpg" alt="全域マップ">
+<a href="#c-marugame-honetsukidori-ribuya" style="left:23.91%;top:23.32%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-honetsukidori-usagi" style="left:25.1%;top:24.69%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-honetsukidori-mikan-masumi" style="left:16.52%;top:29.17%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-honetsukidori-santaro" style="left:23.62%;top:22.45%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-honetsukidori-uokame" style="left:23.65%;top:23.91%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-honetsukidori-donchan" style="left:60.23%;top:31.29%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-honetsukidori-itcho" style="left:31.92%;top:14.38%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-wataya" style="left:24.23%;top:21.26%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-kogane-seimenjo" style="left:35.93%;top:38.83%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-magokoro" style="left:15.2%;top:20.92%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-kaiji" style="left:68.33%;top:34.14%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-hinode-seimenjo" style="left:55.51%;top:14.69%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-maruya" style="left:8.96%;top:44.13%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-nakamura-iiyama" style="left:46.99%;top:37.95%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-yoshiya" style="left:48.65%;top:35.42%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-choraku-seimenjo" style="left:41.16%;top:14.72%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-okasen" style="left:38.73%;top:15.13%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-yamauchi" style="left:43.87%;top:92.24%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-udon-hayuka" style="left:87.28%;top:50.99%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-sugatasushi-sanshiro" style="left:28.52%;top:22.18%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-hokuroya" style="left:30.63%;top:19.3%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-kabocha" style="left:22.1%;top:15.76%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-kaifutei" style="left:8.17%;top:25.87%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-unajo" style="left:28.73%;top:30.4%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-hazama" style="left:28.97%;top:29.82%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-isaribi" style="left:22.67%;top:22.69%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-hirata" style="left:61.58%;top:40.31%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-ichi-shiwaku" style="left:24.84%;top:25.28%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-washoku-enbu-setopark" style="left:33.74%;top:13.92%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-izakaya-bon" style="left:34.37%;top:20.96%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-izakaya-kushihiko" style="left:34.37%;top:22.47%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-izakaya-kanihou" style="left:30.93%;top:27.01%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-izakaya-rin" style="left:26.69%;top:20.19%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-izakaya-sumiyaki-shin" style="left:91.83%;top:50.8%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-izakaya-nikoichi" style="left:15.19%;top:51.38%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-bistro-angers" style="left:22.16%;top:23.8%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-pizzeria-con-cuore" style="left:44.54%;top:32.21%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-nagagutsu" style="left:33.19%;top:19.13%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-kitchen-orion" style="left:29.73%;top:40.68%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-liebe" style="left:68.98%;top:45.49%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-fille-et-fils" style="left:71.8%;top:51.18%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-asa" style="left:47.08%;top:35.88%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-aoba-seirin" style="left:19.78%;top:38.65%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-seika" style="left:22.21%;top:33.03%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-tejikumu" style="left:24.38%;top:36.56%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-teraoka-shoten" style="left:22.45%;top:25.28%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-yoshoku-cafe-amine" style="left:16.4%;top:23.4%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-hougetsudo" style="left:24.69%;top:23.36%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-tomiyacoffee" style="left:22.72%;top:24.69%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-crispycrepe" style="left:20.83%;top:37.49%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-pancafe-junju" style="left:25.31%;top:24.18%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-macoccos-life" style="left:33.56%;top:26.57%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-hokusei" style="left:77.57%;top:7.78%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-tearoom-kotohira" style="left:39.9%;top:69.24%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-socal-terrace" style="left:58.64%;top:35.97%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-honmachi1chome" style="left:57.5%;top:12.61%;width:3.34%;height:2.22%;"></a>
+<a href="#c-marugame-cafe-kotohira-terrace" style="left:39.9%;top:70.75%;width:3.34%;height:2.22%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（57店・番号はピンと同じ）</div>
+<div class="sec red">骨付鳥（発祥の地）</div>
+<div class="links">
+<a href="#c-marugame-honetsukidori-ribuya"><span class="tn" style="background:#e34948;">1</span>辛ドリと甘ドリ、2種のタレで選ぶ骨付鳥</a>
+<a href="#c-marugame-honetsukidori-usagi"><span class="tn" style="background:#e34948;">2</span>ハーブとオリーブ油に漬ける要予約の一本</a>
+<a href="#c-marugame-honetsukidori-mikan-masumi"><span class="tn" style="background:#e34948;">3</span>味付けを3種から選べる昼夜の骨付鳥</a>
+<a href="#c-marugame-honetsukidori-santaro"><span class="tn" style="background:#e34948;">4</span>地鶏3種を食べ比べる駅裏の人気店</a>
+<a href="#c-marugame-honetsukidori-uokame"><span class="tn" style="background:#e34948;">5</span>明治30年創業、魚屋から続く大手町の居酒屋</a>
+<a href="#c-marugame-honetsukidori-donchan"><span class="tn" style="background:#e34948;">6</span>朝びきの鶏だけを焼く飯山町の隠れ家</a>
+<a href="#c-marugame-honetsukidori-itcho"><span class="tn" style="background:#e34948;">7</span>（宇多津町）水族館の近くで昼から骨付鳥</a>
+</div>
+<div class="sec brown">讃岐うどん（製麺所型・セルフ）</div>
+<div class="links">
+<a href="#c-marugame-udon-wataya"><span class="tn" style="background:#8a5a2b;">8</span>肉ぶっかけの代名詞、朝8時半から</a>
+<a href="#c-marugame-udon-kogane-seimenjo"><span class="tn" style="background:#8a5a2b;">9</span>朝7時から夕方まで通しの釜玉</a>
+<a href="#c-marugame-udon-magokoro"><span class="tn" style="background:#8a5a2b;">10</span>朝6時開店、自分で湯がくセルフ</a>
+<a href="#c-marugame-udon-kaiji"><span class="tn" style="background:#8a5a2b;">11</span>伊吹いりこのかけと、わさび肉</a>
+<a href="#c-marugame-udon-hinode-seimenjo"><span class="tn" style="background:#8a5a2b;">12</span>（坂出市）食べられるのは昼の1時間だけ</a>
+<a href="#c-marugame-udon-maruya"><span class="tn" style="background:#8a5a2b;">13</span>（善通寺市）朝6時から夜も開くセルフ</a>
+<a href="#c-marugame-udon-nakamura-iiyama"><span class="tn" style="background:#8a5a2b;">14</span>釜玉の名店、麺が切れたら終い</a>
+<a href="#c-marugame-udon-yoshiya"><span class="tn" style="background:#8a5a2b;">15</span>朝7時開店、包丁で切る純手打ち</a>
+<a href="#c-marugame-udon-choraku-seimenjo"><span class="tn" style="background:#8a5a2b;">16</span>（宇多津町）4時間だけ開く製麺所</a>
+<a href="#c-marugame-udon-okasen"><span class="tn" style="background:#8a5a2b;">17</span>（宇多津町）ひや天おろしの元祖</a>
+<a href="#c-marugame-udon-yamauchi"><span class="tn" style="background:#8a5a2b;">18</span>（まんのう町）薪で炊く山あいの一軒</a>
+<a href="#c-marugame-udon-hayuka"><span class="tn" style="background:#8a5a2b;">19</span>（綾川町）ぶっかけのだしを濃淡で選ぶ</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮（瀬戸内の魚）</div>
+<div class="links">
+<a href="#c-marugame-washoku-sugatasushi-sanshiro"><span class="tn" style="background:#2a78d6;">20</span>45年続く丸亀の寿司の名店</a>
+<a href="#c-marugame-washoku-hokuroya"><span class="tn" style="background:#2a78d6;">21</span>瀬戸内の魚と地酒を個室で</a>
+<a href="#c-marugame-washoku-kabocha"><span class="tn" style="background:#2a78d6;">22</span>生簀の活き造りと香川の地酒</a>
+<a href="#c-marugame-washoku-kaifutei"><span class="tn" style="background:#2a78d6;">23</span>大名庭園を眺めて食べる昼の御膳</a>
+<a href="#c-marugame-washoku-unajo"><span class="tn" style="background:#2a78d6;">24</span>高知の活鰻を焼くうなぎ専門店</a>
+<a href="#c-marugame-washoku-hazama"><span class="tn" style="background:#2a78d6;">25</span>毎朝の直送魚を握るカウンター</a>
+<a href="#c-marugame-washoku-isaribi"><span class="tn" style="background:#2a78d6;">26</span>丸亀駅前、蒸し焼きの浜焼きと海鮮丼</a>
+<a href="#c-marugame-washoku-hirata"><span class="tn" style="background:#2a78d6;">27</span>讃岐富士の裾野で食べる昼の御膳</a>
+<a href="#c-marugame-washoku-ichi-shiwaku"><span class="tn" style="background:#2a78d6;">28</span>漁師である店主が直送する塩飽の魚</a>
+<a href="#c-marugame-washoku-enbu-setopark"><span class="tn" style="background:#2a78d6;">29</span>（宇多津町）炭を積み上げる原始焼き</a>
+</div>
+<div class="sec beer">居酒屋・地酒</div>
+<div class="links">
+<a href="#c-marugame-izakaya-bon"><span class="tn" style="background:#0d366b;">30</span>地酒を並べる土器町の小料理屋</a>
+<a href="#c-marugame-izakaya-kushihiko"><span class="tn" style="background:#0d366b;">31</span>湯葉の衣で揚げる串揚げの専門店</a>
+<a href="#c-marugame-izakaya-kanihou"><span class="tn" style="background:#0d366b;">32</span>広島風と関西風を選べる鉄板の店</a>
+<a href="#c-marugame-izakaya-rin"><span class="tn" style="background:#0d366b;">33</span>値段表を置かない、酒が主役の一軒</a>
+<a href="#c-marugame-izakaya-sumiyaki-shin"><span class="tn" style="background:#0d366b;">34</span>（綾川町）備長炭で一本ずつ焼く串</a>
+<a href="#c-marugame-izakaya-nikoichi"><span class="tn" style="background:#0d366b;">35</span>（善通寺市）瀬戸内の魚と厳選の地酒</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-marugame-yoshoku-bistro-angers"><span class="tn" style="background:#4a3aa7;">36</span>丸亀駅すぐ、1日3組だけのフレンチ</a>
+<a href="#c-marugame-yoshoku-pizzeria-con-cuore"><span class="tn" style="background:#4a3aa7;">37</span>薪窯のナポリピッツァ、国内大会優勝の店</a>
+<a href="#c-marugame-yoshoku-nagagutsu"><span class="tn" style="background:#4a3aa7;">38</span>民家を改装した14席の隠れ家イタリアン</a>
+<a href="#c-marugame-yoshoku-kitchen-orion"><span class="tn" style="background:#4a3aa7;">39</span>メニュー30種以上、王道の町の洋食屋</a>
+<a href="#c-marugame-yoshoku-liebe"><span class="tn" style="background:#4a3aa7;">40</span>古民家の納屋で食べる陶板ステーキ</a>
+<a href="#c-marugame-yoshoku-fille-et-fils"><span class="tn" style="background:#4a3aa7;">41</span>養鶏農家の兄弟が焼く海藻卵のオムライス</a>
+<a href="#c-marugame-yoshoku-asa"><span class="tn" style="background:#4a3aa7;">42</span>700〜800円台が中心の本格広東</a>
+<a href="#c-marugame-yoshoku-aoba-seirin"><span class="tn" style="background:#4a3aa7;">43</span>創業50年、中華店が作る巨大オムライス</a>
+<a href="#c-marugame-yoshoku-seika"><span class="tn" style="background:#4a3aa7;">44</span>80席の大箱で深夜まで、名物は台湾ラーメン</a>
+<a href="#c-marugame-yoshoku-tejikumu"><span class="tn" style="background:#4a3aa7;">45</span>サムギョプサルとチュクミの韓国夜ごはん</a>
+<a href="#c-marugame-yoshoku-teraoka-shoten"><span class="tn" style="background:#4a3aa7;">46</span>すだちで食べる鶏ぎょうざの本店</a>
+<a href="#c-marugame-yoshoku-cafe-amine"><span class="tn" style="background:#4a3aa7;">47</span>モロッコ出身シェフの一人用タジン</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-marugame-cafe-hougetsudo"><span class="tn" style="background:#eda100;">48</span>大正6年創業、和三盆のかき氷とおいり</a>
+<a href="#c-marugame-cafe-tomiyacoffee"><span class="tn" style="background:#eda100;">49</span>町家でジャズ、朝7時からのモーニング</a>
+<a href="#c-marugame-cafe-crispycrepe"><span class="tn" style="background:#eda100;">50</span>さぬきの夢のクレープと祖谷そば粉のガレット</a>
+<a href="#c-marugame-cafe-pancafe-junju"><span class="tn" style="background:#eda100;">51</span>丸亀城の北、市役所の中のパン屋</a>
+<a href="#c-marugame-cafe-macoccos-life"><span class="tn" style="background:#eda100;">52</span>店主が焙煎する珈琲とバリアフリーの席</a>
+<a href="#c-marugame-cafe-hokusei"><span class="tn" style="background:#eda100;">53</span>（坂出市）朝6時45分から開く自家焙煎の純喫茶</a>
+<a href="#c-marugame-cafe-tearoom-kotohira"><span class="tn" style="background:#eda100;">54</span>（琴平町）参道の日本茶スタンドとベーグル</a>
+<a href="#c-marugame-cafe-socal-terrace"><span class="tn" style="background:#eda100;">55</span>讃岐富士を望む西海岸風のパンケーキ店</a>
+<a href="#c-marugame-cafe-honmachi1chome"><span class="tn" style="background:#eda100;">56</span>（坂出市）鎌田醤油が開いた直営カフェ</a>
+<a href="#c-marugame-cafe-kotohira-terrace"><span class="tn" style="background:#eda100;">57</span>（琴平町）おいりをのせたソフトクリーム</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 丸亀駅前・通町・富屋町・大手町・西平山（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/marugame/_map2.jpg" alt="中心部拡大1 丸亀駅前・通町・富屋町・大手町・西平山">
+<a href="#c-marugame-honetsukidori-ribuya" style="left:84.83%;top:60.73%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-honetsukidori-usagi" style="left:83.34%;top:61.36%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-honetsukidori-mikan-masumi" style="left:48.66%;top:93.13%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-honetsukidori-santaro" style="left:81.74%;top:49.37%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-honetsukidori-uokame" style="left:81.94%;top:64.14%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-udon-wataya" style="left:84.58%;top:41.58%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-udon-magokoro" style="left:42.48%;top:39.35%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-washoku-kabocha" style="left:74.68%;top:5.76%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-washoku-kaifutei" style="left:9.73%;top:71.61%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-washoku-isaribi" style="left:77.32%;top:50.9%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-washoku-ichi-shiwaku" style="left:80.38%;top:65.76%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-izakaya-rin" style="left:96.09%;top:34.64%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-yoshoku-bistro-angers" style="left:74.97%;top:58.17%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-yoshoku-teraoka-shoten" style="left:83.34%;top:64.48%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-yoshoku-cafe-amine" style="left:48.08%;top:55.52%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-cafe-hougetsudo" style="left:86.73%;top:55.3%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-cafe-tomiyacoffee" style="left:81.16%;top:60.86%;width:1.94%;height:1.8%;"></a>
+<a href="#c-marugame-cafe-pancafe-junju" style="left:89.65%;top:60.61%;width:1.94%;height:1.8%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（18店・番号はピンと同じ）</div>
+<div class="sec red">骨付鳥（発祥の地）</div>
+<div class="links">
+<a href="#c-marugame-honetsukidori-ribuya"><span class="tn" style="background:#e34948;">1</span>辛ドリと甘ドリ、2種のタレで選ぶ骨付鳥</a>
+<a href="#c-marugame-honetsukidori-usagi"><span class="tn" style="background:#e34948;">2</span>ハーブとオリーブ油に漬ける要予約の一本</a>
+<a href="#c-marugame-honetsukidori-mikan-masumi"><span class="tn" style="background:#e34948;">3</span>味付けを3種から選べる昼夜の骨付鳥</a>
+<a href="#c-marugame-honetsukidori-santaro"><span class="tn" style="background:#e34948;">4</span>地鶏3種を食べ比べる駅裏の人気店</a>
+<a href="#c-marugame-honetsukidori-uokame"><span class="tn" style="background:#e34948;">5</span>明治30年創業、魚屋から続く大手町の居酒屋</a>
+</div>
+<div class="sec brown">讃岐うどん（製麺所型・セルフ）</div>
+<div class="links">
+<a href="#c-marugame-udon-wataya"><span class="tn" style="background:#8a5a2b;">8</span>肉ぶっかけの代名詞、朝8時半から</a>
+<a href="#c-marugame-udon-magokoro"><span class="tn" style="background:#8a5a2b;">10</span>朝6時開店、自分で湯がくセルフ</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮（瀬戸内の魚）</div>
+<div class="links">
+<a href="#c-marugame-washoku-kabocha"><span class="tn" style="background:#2a78d6;">22</span>生簀の活き造りと香川の地酒</a>
+<a href="#c-marugame-washoku-kaifutei"><span class="tn" style="background:#2a78d6;">23</span>大名庭園を眺めて食べる昼の御膳</a>
+<a href="#c-marugame-washoku-isaribi"><span class="tn" style="background:#2a78d6;">26</span>丸亀駅前、蒸し焼きの浜焼きと海鮮丼</a>
+<a href="#c-marugame-washoku-ichi-shiwaku"><span class="tn" style="background:#2a78d6;">28</span>漁師である店主が直送する塩飽の魚</a>
+</div>
+<div class="sec beer">居酒屋・地酒</div>
+<div class="links">
+<a href="#c-marugame-izakaya-rin"><span class="tn" style="background:#0d366b;">33</span>値段表を置かない、酒が主役の一軒</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-marugame-yoshoku-bistro-angers"><span class="tn" style="background:#4a3aa7;">36</span>丸亀駅すぐ、1日3組だけのフレンチ</a>
+<a href="#c-marugame-yoshoku-teraoka-shoten"><span class="tn" style="background:#4a3aa7;">46</span>すだちで食べる鶏ぎょうざの本店</a>
+<a href="#c-marugame-yoshoku-cafe-amine"><span class="tn" style="background:#4a3aa7;">47</span>モロッコ出身シェフの一人用タジン</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-marugame-cafe-hougetsudo"><span class="tn" style="background:#eda100;">48</span>大正6年創業、和三盆のかき氷とおいり</a>
+<a href="#c-marugame-cafe-tomiyacoffee"><span class="tn" style="background:#eda100;">49</span>町家でジャズ、朝7時からのモーニング</a>
+<a href="#c-marugame-cafe-pancafe-junju"><span class="tn" style="background:#eda100;">51</span>丸亀城の北、市役所の中のパン屋</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 土器町・川西・田村町・原田町（国道11号沿い）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/marugame/_map3.jpg" alt="中心部拡大2 土器町・川西・田村町・原田町（国道11号沿い）">
+<a href="#c-marugame-honetsukidori-ribuya" style="left:20.7%;top:20.09%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-honetsukidori-usagi" style="left:19.7%;top:20.5%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-honetsukidori-santaro" style="left:18.62%;top:12.59%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-honetsukidori-uokame" style="left:18.76%;top:22.34%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-udon-wataya" style="left:20.54%;top:7.44%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-udon-kogane-seimenjo" style="left:57.27%;top:83.03%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-udon-nakamura-iiyama" style="left:91.95%;top:79.25%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-udon-yoshiya" style="left:97.16%;top:68.36%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-washoku-sugatasushi-sanshiro" style="left:34.02%;top:11.41%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-washoku-unajo" style="left:34.66%;top:46.79%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-washoku-hazama" style="left:35.43%;top:44.29%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-washoku-isaribi" style="left:15.65%;top:13.59%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-washoku-ichi-shiwaku" style="left:17.71%;top:23.41%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-izakaya-bon" style="left:52.36%;top:8.6%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-izakaya-kushihiko" style="left:52.36%;top:10.22%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-izakaya-kanihou" style="left:41.57%;top:32.2%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-izakaya-rin" style="left:28.28%;top:2.86%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-yoshoku-bistro-angers" style="left:14.07%;top:18.39%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-yoshoku-pizzeria-con-cuore" style="left:84.26%;top:54.56%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-yoshoku-kitchen-orion" style="left:37.79%;top:90.99%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-yoshoku-asa" style="left:92.23%;top:70.35%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-yoshoku-aoba-seirin" style="left:6.58%;top:82.27%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-yoshoku-seika" style="left:14.21%;top:58.08%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-yoshoku-tejikumu" style="left:21.04%;top:73.26%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-yoshoku-teraoka-shoten" style="left:19.7%;top:22.56%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-cafe-hougetsudo" style="left:21.98%;top:16.5%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-cafe-tomiyacoffee" style="left:18.23%;top:20.17%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-cafe-crispycrepe" style="left:9.88%;top:77.26%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-cafe-pancafe-junju" style="left:23.95%;top:20.0%;width:2.62%;height:2.38%;"></a>
+<a href="#c-marugame-cafe-macoccos-life" style="left:49.83%;top:30.27%;width:2.62%;height:2.38%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（30店・番号はピンと同じ）</div>
+<div class="sec red">骨付鳥（発祥の地）</div>
+<div class="links">
+<a href="#c-marugame-honetsukidori-ribuya"><span class="tn" style="background:#e34948;">1</span>辛ドリと甘ドリ、2種のタレで選ぶ骨付鳥</a>
+<a href="#c-marugame-honetsukidori-usagi"><span class="tn" style="background:#e34948;">2</span>ハーブとオリーブ油に漬ける要予約の一本</a>
+<a href="#c-marugame-honetsukidori-santaro"><span class="tn" style="background:#e34948;">4</span>地鶏3種を食べ比べる駅裏の人気店</a>
+<a href="#c-marugame-honetsukidori-uokame"><span class="tn" style="background:#e34948;">5</span>明治30年創業、魚屋から続く大手町の居酒屋</a>
+</div>
+<div class="sec brown">讃岐うどん（製麺所型・セルフ）</div>
+<div class="links">
+<a href="#c-marugame-udon-wataya"><span class="tn" style="background:#8a5a2b;">8</span>肉ぶっかけの代名詞、朝8時半から</a>
+<a href="#c-marugame-udon-kogane-seimenjo"><span class="tn" style="background:#8a5a2b;">9</span>朝7時から夕方まで通しの釜玉</a>
+<a href="#c-marugame-udon-nakamura-iiyama"><span class="tn" style="background:#8a5a2b;">14</span>釜玉の名店、麺が切れたら終い</a>
+<a href="#c-marugame-udon-yoshiya"><span class="tn" style="background:#8a5a2b;">15</span>朝7時開店、包丁で切る純手打ち</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮（瀬戸内の魚）</div>
+<div class="links">
+<a href="#c-marugame-washoku-sugatasushi-sanshiro"><span class="tn" style="background:#2a78d6;">20</span>45年続く丸亀の寿司の名店</a>
+<a href="#c-marugame-washoku-unajo"><span class="tn" style="background:#2a78d6;">24</span>高知の活鰻を焼くうなぎ専門店</a>
+<a href="#c-marugame-washoku-hazama"><span class="tn" style="background:#2a78d6;">25</span>毎朝の直送魚を握るカウンター</a>
+<a href="#c-marugame-washoku-isaribi"><span class="tn" style="background:#2a78d6;">26</span>丸亀駅前、蒸し焼きの浜焼きと海鮮丼</a>
+<a href="#c-marugame-washoku-ichi-shiwaku"><span class="tn" style="background:#2a78d6;">28</span>漁師である店主が直送する塩飽の魚</a>
+</div>
+<div class="sec beer">居酒屋・地酒</div>
+<div class="links">
+<a href="#c-marugame-izakaya-bon"><span class="tn" style="background:#0d366b;">30</span>地酒を並べる土器町の小料理屋</a>
+<a href="#c-marugame-izakaya-kushihiko"><span class="tn" style="background:#0d366b;">31</span>湯葉の衣で揚げる串揚げの専門店</a>
+<a href="#c-marugame-izakaya-kanihou"><span class="tn" style="background:#0d366b;">32</span>広島風と関西風を選べる鉄板の店</a>
+<a href="#c-marugame-izakaya-rin"><span class="tn" style="background:#0d366b;">33</span>値段表を置かない、酒が主役の一軒</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-marugame-yoshoku-bistro-angers"><span class="tn" style="background:#4a3aa7;">36</span>丸亀駅すぐ、1日3組だけのフレンチ</a>
+<a href="#c-marugame-yoshoku-pizzeria-con-cuore"><span class="tn" style="background:#4a3aa7;">37</span>薪窯のナポリピッツァ、国内大会優勝の店</a>
+<a href="#c-marugame-yoshoku-kitchen-orion"><span class="tn" style="background:#4a3aa7;">39</span>メニュー30種以上、王道の町の洋食屋</a>
+<a href="#c-marugame-yoshoku-asa"><span class="tn" style="background:#4a3aa7;">42</span>700〜800円台が中心の本格広東</a>
+<a href="#c-marugame-yoshoku-aoba-seirin"><span class="tn" style="background:#4a3aa7;">43</span>創業50年、中華店が作る巨大オムライス</a>
+<a href="#c-marugame-yoshoku-seika"><span class="tn" style="background:#4a3aa7;">44</span>80席の大箱で深夜まで、名物は台湾ラーメン</a>
+<a href="#c-marugame-yoshoku-tejikumu"><span class="tn" style="background:#4a3aa7;">45</span>サムギョプサルとチュクミの韓国夜ごはん</a>
+<a href="#c-marugame-yoshoku-teraoka-shoten"><span class="tn" style="background:#4a3aa7;">46</span>すだちで食べる鶏ぎょうざの本店</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-marugame-cafe-hougetsudo"><span class="tn" style="background:#eda100;">48</span>大正6年創業、和三盆のかき氷とおいり</a>
+<a href="#c-marugame-cafe-tomiyacoffee"><span class="tn" style="background:#eda100;">49</span>町家でジャズ、朝7時からのモーニング</a>
+<a href="#c-marugame-cafe-crispycrepe"><span class="tn" style="background:#eda100;">50</span>さぬきの夢のクレープと祖谷そば粉のガレット</a>
+<a href="#c-marugame-cafe-pancafe-junju"><span class="tn" style="background:#eda100;">51</span>丸亀城の北、市役所の中のパン屋</a>
+<a href="#c-marugame-cafe-macoccos-life"><span class="tn" style="background:#eda100;">52</span>店主が焙煎する珈琲とバリアフリーの席</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 綾歌町・飯山町・飯野町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/marugame/_map4.jpg" alt="中心部拡大3 綾歌町・飯山町・飯野町">
+<a href="#c-marugame-honetsukidori-donchan" style="left:35.17%;top:9.64%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-udon-kaiji" style="left:49.89%;top:20.78%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-udon-nakamura-iiyama" style="left:11.13%;top:35.69%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-udon-yoshiya" style="left:14.15%;top:25.78%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-udon-hayuka" style="left:84.31%;top:86.68%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-washoku-hirata" style="left:37.63%;top:44.91%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-izakaya-sumiyaki-shin" style="left:92.56%;top:85.93%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-yoshoku-pizzeria-con-cuore" style="left:6.68%;top:13.23%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-yoshoku-liebe" style="left:51.07%;top:65.17%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-yoshoku-fille-et-fils" style="left:56.2%;top:87.45%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-yoshoku-asa" style="left:11.29%;top:27.59%;width:3.04%;height:4.32%;"></a>
+<a href="#c-marugame-cafe-socal-terrace" style="left:32.28%;top:27.93%;width:3.04%;height:4.32%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（12店・番号はピンと同じ）</div>
+<div class="sec red">骨付鳥（発祥の地）</div>
+<div class="links">
+<a href="#c-marugame-honetsukidori-donchan"><span class="tn" style="background:#e34948;">6</span>朝びきの鶏だけを焼く飯山町の隠れ家</a>
+</div>
+<div class="sec brown">讃岐うどん（製麺所型・セルフ）</div>
+<div class="links">
+<a href="#c-marugame-udon-kaiji"><span class="tn" style="background:#8a5a2b;">11</span>伊吹いりこのかけと、わさび肉</a>
+<a href="#c-marugame-udon-nakamura-iiyama"><span class="tn" style="background:#8a5a2b;">14</span>釜玉の名店、麺が切れたら終い</a>
+<a href="#c-marugame-udon-yoshiya"><span class="tn" style="background:#8a5a2b;">15</span>朝7時開店、包丁で切る純手打ち</a>
+<a href="#c-marugame-udon-hayuka"><span class="tn" style="background:#8a5a2b;">19</span>（綾川町）ぶっかけのだしを濃淡で選ぶ</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮（瀬戸内の魚）</div>
+<div class="links">
+<a href="#c-marugame-washoku-hirata"><span class="tn" style="background:#2a78d6;">27</span>讃岐富士の裾野で食べる昼の御膳</a>
+</div>
+<div class="sec beer">居酒屋・地酒</div>
+<div class="links">
+<a href="#c-marugame-izakaya-sumiyaki-shin"><span class="tn" style="background:#0d366b;">34</span>（綾川町）備長炭で一本ずつ焼く串</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-marugame-yoshoku-pizzeria-con-cuore"><span class="tn" style="background:#4a3aa7;">37</span>薪窯のナポリピッツァ、国内大会優勝の店</a>
+<a href="#c-marugame-yoshoku-liebe"><span class="tn" style="background:#4a3aa7;">40</span>古民家の納屋で食べる陶板ステーキ</a>
+<a href="#c-marugame-yoshoku-fille-et-fils"><span class="tn" style="background:#4a3aa7;">41</span>養鶏農家の兄弟が焼く海藻卵のオムライス</a>
+<a href="#c-marugame-yoshoku-asa"><span class="tn" style="background:#4a3aa7;">42</span>700〜800円台が中心の本格広東</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-marugame-cafe-socal-terrace"><span class="tn" style="background:#eda100;">55</span>讃岐富士を望む西海岸風のパンケーキ店</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 宇多津町・坂出市（東の隣接）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/marugame/_map5.jpg" alt="中心部拡大4 宇多津町・坂出市（東の隣接）">
+<a href="#c-marugame-honetsukidori-itcho" style="left:5.08%;top:42.08%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-udon-hinode-seimenjo" style="left:50.31%;top:43.57%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-udon-choraku-seimenjo" style="left:22.8%;top:43.68%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-udon-okasen" style="left:18.13%;top:45.67%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-washoku-hokuroya" style="left:2.6%;top:65.55%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-washoku-enbu-setopark" style="left:8.57%;top:39.85%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-izakaya-bon" style="left:9.77%;top:75.33%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-izakaya-kushihiko" style="left:9.77%;top:78.92%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-yoshoku-nagagutsu" style="left:7.52%;top:64.75%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-cafe-hokusei" style="left:92.6%;top:10.54%;width:3.2%;height:5.3%;"></a>
+<a href="#c-marugame-cafe-honmachi1chome" style="left:54.13%;top:33.62%;width:3.2%;height:5.3%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（11店・番号はピンと同じ）</div>
+<div class="sec red">骨付鳥（発祥の地）</div>
+<div class="links">
+<a href="#c-marugame-honetsukidori-itcho"><span class="tn" style="background:#e34948;">7</span>（宇多津町）水族館の近くで昼から骨付鳥</a>
+</div>
+<div class="sec brown">讃岐うどん（製麺所型・セルフ）</div>
+<div class="links">
+<a href="#c-marugame-udon-hinode-seimenjo"><span class="tn" style="background:#8a5a2b;">12</span>（坂出市）食べられるのは昼の1時間だけ</a>
+<a href="#c-marugame-udon-choraku-seimenjo"><span class="tn" style="background:#8a5a2b;">16</span>（宇多津町）4時間だけ開く製麺所</a>
+<a href="#c-marugame-udon-okasen"><span class="tn" style="background:#8a5a2b;">17</span>（宇多津町）ひや天おろしの元祖</a>
+</div>
+<div class="sec blue">寿司・和食・海鮮（瀬戸内の魚）</div>
+<div class="links">
+<a href="#c-marugame-washoku-hokuroya"><span class="tn" style="background:#2a78d6;">21</span>瀬戸内の魚と地酒を個室で</a>
+<a href="#c-marugame-washoku-enbu-setopark"><span class="tn" style="background:#2a78d6;">29</span>（宇多津町）炭を積み上げる原始焼き</a>
+</div>
+<div class="sec beer">居酒屋・地酒</div>
+<div class="links">
+<a href="#c-marugame-izakaya-bon"><span class="tn" style="background:#0d366b;">30</span>地酒を並べる土器町の小料理屋</a>
+<a href="#c-marugame-izakaya-kushihiko"><span class="tn" style="background:#0d366b;">31</span>湯葉の衣で揚げる串揚げの専門店</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-marugame-yoshoku-nagagutsu"><span class="tn" style="background:#4a3aa7;">38</span>民家を改装した14席の隠れ家イタリアン</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-marugame-cafe-hokusei"><span class="tn" style="background:#eda100;">53</span>（坂出市）朝6時45分から開く自家焙煎の純喫茶</a>
+<a href="#c-marugame-cafe-honmachi1chome"><span class="tn" style="background:#eda100;">56</span>（坂出市）鎌田醤油が開いた直営カフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大5 善通寺市・琴平町・まんのう町（南の隣接）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/marugame/_map6.jpg" alt="中心部拡大5 善通寺市・琴平町・まんのう町（南の隣接）">
+<a href="#c-marugame-udon-maruya" style="left:12.45%;top:2.65%;width:3.6%;height:2.16%;"></a>
+<a href="#c-marugame-udon-yamauchi" style="left:87.73%;top:96.81%;width:3.6%;height:2.16%;"></a>
+<a href="#c-marugame-izakaya-nikoichi" style="left:25.88%;top:16.84%;width:3.6%;height:2.16%;"></a>
+<a href="#c-marugame-cafe-tearoom-kotohira" style="left:79.17%;top:52.54%;width:3.6%;height:2.16%;"></a>
+<a href="#c-marugame-cafe-kotohira-terrace" style="left:79.17%;top:54.01%;width:3.6%;height:2.16%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（5店・番号はピンと同じ）</div>
+<div class="sec brown">讃岐うどん（製麺所型・セルフ）</div>
+<div class="links">
+<a href="#c-marugame-udon-maruya"><span class="tn" style="background:#8a5a2b;">13</span>（善通寺市）朝6時から夜も開くセルフ</a>
+<a href="#c-marugame-udon-yamauchi"><span class="tn" style="background:#8a5a2b;">18</span>（まんのう町）薪で炊く山あいの一軒</a>
+</div>
+<div class="sec beer">居酒屋・地酒</div>
+<div class="links">
+<a href="#c-marugame-izakaya-nikoichi"><span class="tn" style="background:#0d366b;">35</span>（善通寺市）瀬戸内の魚と厳選の地酒</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-marugame-cafe-tearoom-kotohira"><span class="tn" style="background:#eda100;">54</span>（琴平町）参道の日本茶スタンドとベーグル</a>
+<a href="#c-marugame-cafe-kotohira-terrace"><span class="tn" style="background:#eda100;">57</span>（琴平町）おいりをのせたソフトクリーム</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>丸亀市の店は5つのかたまりに分かれる。①**丸亀駅前・通町商店街** ②**丸亀城の南（大手町・一番丁）** ③**土器町（どきちょう）・川西**＝国道11号沿いの郊外。駐車場のある店 ④**綾歌町・飯山町**＝南の旧町。製麺所型のうどん店 ⑤**本島（ほんじま）・広島**＝塩飽（しわく）諸島。フェリーで渡る。**丸亀市の名物**＝**骨付鳥（ほねつきどり）**（**この市が発祥**。鶏のもも肉1本をにんにくと胡椒で焼く。**親鳥**はかたくて噛むほど味が出る大人向け、**ひな鳥**はやわらかく子どもでも食べやすい。皿に残った脂にキャベツやおむすびを浸して食べるのが地元の作法）、**讃岐うどん**（伊吹島のいりこ出汁。**製麺所が店を兼ねている形**が綾歌町・飯山町に多く、**昼だけ・麺が終わり次第閉店**の店が少なくない）、**瀬戸内の魚**（丸亀港と本島。ハマチ・サワラ・タコ）、**おいり**（ひなあられに似た丸い嫁入り菓子。ソフトクリームに載せて出す店がある）、**うちわ**（食べ物ではないが、市内に工房と体験施設がある）。**人口10.6万の市なので、夜に開いている店は駅前と城の南に集まる。** 郊外の店は駐車場があるぶん車が要る。**本書は隣接市町（坂出市・善通寺市・宇多津町・多度津町・琴平町・綾川町・まんのう町）の店も「隣接市町」の印をつけて載せている。**</div>
+
+<h2 id="s-honetsukidori" class="c-red">骨付鳥（発祥の地）</h2>
+<div class="card" id="c-marugame-honetsukidori-ribuya">
+<img class="hero" src="img/marugame/marugame-honetsukidori-ribuya.jpg" alt="りぶや 丸亀本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-honetsukidori-ribuya_exterior.jpg" alt="りぶや 丸亀本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>りぶや 丸亀本店<span class="yomi">りぶや まるがめほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip honten">honten</span></div>
+<div class="desc">骨付鳥とスペアリブの2枚看板を掲げる通町の店。骨付鳥は塩コショウで仕上げる『辛ドリ』と秘伝の甘ダレを塗る『甘ドリ』の2種類があり、甘ダレは丸亀では変化球にあたる味付け。鶏は歯ごたえのある『オヤ』とやわらかい『ワカ』から選べる。もう一本の看板はオーブンでじっくり焼くスペアリブ（甘リブ・辛リブ）で、酒は常時450種をそろえる。33席でテーブル・カウンターのほか10名用の掘りごたつ席がある。駐車場6台。全席喫煙可のため18歳未満は入店できない。骨付鳥とスペアリブは持ち帰りもできる。</div>
+<div class="sig"><b>一皿:</b>骨付鳥 辛ドリ（塩コショウで仕上げる定番。オヤ＝歯ごたえのある親鶏／ワカ＝やわらかい若鶏から選ぶ）／骨付鳥 甘ドリ（秘伝の甘ダレを塗って焼く、この店だけの甘い骨付鳥）／スペアリブ 甘リブ・辛リブ（オーブンでじっくり焼き上げるもう一つの看板）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 17:30〜23:30（料理L.O. 23:00／ドリンクL.O. 23:15）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（連休時は連休最終日のみ休み。年末年始やGW等の大型連休は予約不可・メニュー変更・80分制になる）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市通町52番地11 りぶや丸亀ビル1階</td></tr>
+<tr><th>予約</th><td>可（ネット予約・電話とも可。ただし予約は1か月以内のみ） — <a href="tel:0877210292">☎ 0877-21-0292</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀の骨付鳥はにんにくと胡椒の辛い味付けが基本だが、この店は甘ダレの『甘ドリ』を並べて出すので、章の中で味の振れ幅を作れる。通町商店街という立地も駅前の一鶴と対になる。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月・12月・2027年1月まで「即予約可」で開いており、料理メニューの最終更新日は2026年3月30日（2026-11-01 取得）。丸亀市観光協会の公式サイトにも現行の営業時間・定休日で掲載されている（2026-11-01 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%8A%E3%81%B6%E3%82%84%20%E4%B8%B8%E4%BA%80%E6%9C%AC%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%80%9A%E7%94%BA52%E7%95%AA%E5%9C%B011%20%E3%82%8A%E3%81%B6%E3%82%84%E4%B8%B8%E4%BA%80%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001016034/">ホットペッパーグルメ りぶや 丸亀本店 店舗ページ（住所・アクセス・営業時間・定休日・総席数33席・駐車場6台・平均予算・ネット予約カレンダー）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ001016034/photo/">ホットペッパーグルメ 同店 フォトギャラリー（料理・店内・外観写真）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/887">丸亀市観光協会 公式サイト りぶや 丸亀本店（辛ドリ・甘ドリ、スペアリブ、常時450種の酒、電話番号・営業時間・定休日・支払い方法）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-honetsukidori-usagi">
+<img class="hero" src="img/marugame/marugame-honetsukidori-usagi.jpg" alt="居酒屋 うさぎ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-honetsukidori-usagi_exterior.jpg" alt="居酒屋 うさぎ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>居酒屋 うさぎ<span class="yomi">いざかや うさぎ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">富屋町のアーケード沿いにある32席の居酒屋。骨付鳥は親・若の2種類あり、どちらもハーブとオリーブオイルに漬け込んでから焼く仕立てで、丸亀の標準的なにんにく・胡椒の味付けとは別の筋をいく。この漬け込みの骨付鳥は要予約。炭火で焼く鳥皮や瀬戸内の魚の焼きものも得意で、刺身も日替わりで出す。カウンター12席のほかに4名×1・5名×2のお座敷があり、席をつなげると最大20名まで宴会ができる（座敷は22時まで）。全席喫煙可のため20歳未満は入店できない。駐車場は無く近隣のコインパーキングを使う。</div>
+<div class="sig"><b>一皿:</b>骨付鳥 若（ハーブとオリーブオイルに漬け込んでから焼く若鶏のもも肉。やわらかく香りが立つ。要予約）／骨付鳥 親（同じ漬け込みで焼く親鶏。噛むほど味が出る。要予約）／炭火焼きの鳥皮（骨付鳥の脂とは別の、香ばしい皮の一品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝前日 18:00〜23:00（料理・ドリンクL.O. 22:30）／日・祝日 18:00〜22:00（料理・ドリンクL.O. 21:30）。2階席のL.O.は21:30</td></tr>
+<tr><th>定休日</th><td class="off">なし（ホットペッパーグルメ掲出。丸亀市観光協会の掲載も「なし」）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市富屋町73-1</td></tr>
+<tr><th>予約</th><td>可（ネット予約・電話とも可。ハーブとオリーブオイル漬けの骨付鳥は要予約） — <a href="tel:0877251315">☎ 0877-25-1315</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀の骨付鳥はにんにくと胡椒が定番だが、この店はハーブとオリーブオイルに漬けるという独自の下ごしらえで、しかも要予約という作りの手間が章の厚みになる。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月・12月・2027年1月まで「即予約可」で開いており、店舗情報の最終更新日は2026年10月19日（2026-11-01 取得）。丸亀市観光協会の公式サイトにも現行の営業時間・電話番号で掲載されている（2026-11-01 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%86%E3%81%95%E3%81%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%AF%8C%E5%B1%8B%E7%94%BA73-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000539307/">ホットペッパーグルメ 居酒屋うさぎ（香川県 丸亀市）店舗ページ（住所・アクセス・営業時間・定休日・総席数32席・座敷の構成・平均予算・ネット予約カレンダー）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000539307/photo/">ホットペッパーグルメ 同店 フォトギャラリー（骨付鳥・店内・外観写真）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/863">丸亀市観光協会 公式サイト うさぎ（ハーブとオリーブオイル漬けの骨付鳥は要予約、炭火の焼きもの、住所・電話番号・営業時間）2026-11-01 取得</a> / <a href="https://www.zenryokudori.com/eat/center/index.html">全力鶏（丸亀市産業観光課・丸亀とっとの会）骨付鳥が食べられるお店 丸亀市中心部（うさぎが加盟店として掲載）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-honetsukidori-mikan-masumi">
+<img class="hero" src="img/marugame/marugame-honetsukidori-mikan-masumi.jpg" alt="味感 真寿美 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-honetsukidori-mikan-masumi_exterior.jpg" alt="味感 真寿美 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>味感 真寿美<span class="yomi">みかん ますみ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">香川県産の鶏肉を使う骨付鳥を、ノーマル・黒胡椒・柚子胡椒の3種類の味付けから選べるのがこの店の作り。辛さの加減も頼めるので、辛いものが苦手でも親・若のどちらも食べられる。骨付鳥を1本まるごとご飯にのせた『骨付鳥丸ごとのっけ丼』はテレビ番組でも紹介された看板で、ほかに会席料理、瀬戸内の魚、黒毛和牛100%の自家製ハンバーグ、カツ丼と和洋の幅が広い。60席で1階に6人用の個室が4部屋、2階に8人用と10人用の座敷個室があり、昼は定食目当ての客で混む。全席禁煙。持ち帰りもできる。</div>
+<div class="sig"><b>一皿:</b>骨付鳥 若・親（香川県産鶏。ノーマル・黒胡椒・柚子胡椒の3種から味付けを選べ、辛さの調節も頼める。各920円）／骨付鳥丸ごとのっけ丼（骨付鳥を1本まるごとご飯にのせた看板。テレビの県民番組でも紹介された）／黒毛和牛100%の自家製ハンバーグ（骨付鳥以外の柱になっている洋の一品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日 11:00〜14:00（L.O. 14:00）／17:00〜22:00（料理・ドリンクL.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>香川県丸亀市今津町566-5</td></tr>
+<tr><th>予約</th><td>可（ネット予約・電話とも可） — <a href="tel:0877255102">☎ 0877-25-5102</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>骨付鳥は専門店だと親か若かの二択だが、この店は味付けまで3種から選べ、昼の定食でも食べられる。発祥の地の日常の食べ方を見せる枠として入れた。丸亀市街から西へ外れた今津町という立地も章の散らしに効く。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月・12月・2027年1月まで「即予約可」で開いており、店舗情報の最終更新日は2026年8月21日（2026-11-01 取得）。丸亀市観光協会の公式サイトにも現行の営業時間・価格で掲載されている（2026-11-01 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E6%84%9F%20%E7%9C%9F%E5%AF%BF%E7%BE%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E4%BB%8A%E6%B4%A5%E7%94%BA566-5">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000539334/">ホットペッパーグルメ 味感 真寿美 店舗ページ（住所・アクセス・営業時間・定休日・総席数60席・個室の構成・駐車場20台・平均予算・ネット予約カレンダー）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000539334/photo/">ホットペッパーグルメ 同店 フォトギャラリー（骨付鳥・のっけ丼・店内・外観写真）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/875">丸亀市観光協会 公式サイト 味感 真寿美（ノーマル・黒胡椒・柚子胡椒の3種の味付け、骨付鳥 若・親 各920円、電話番号・営業時間・定休日・駐車場25台）2026-11-01 取得</a> / <a href="https://www.zenryokudori.com/eat/suburbs/index.html">全力鶏（丸亀市産業観光課・丸亀とっとの会）骨付鳥が食べられるお店 丸亀市郊外（味感 真寿美が加盟店として掲載）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-honetsukidori-santaro">
+<img class="hero" src="img/marugame/marugame-honetsukidori-santaro.jpg" alt="やき鳥 三太郎 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-honetsukidori-santaro_exterior.jpg" alt="やき鳥 三太郎 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>やき鳥 三太郎<span class="yomi">やきとり さんたろう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip yahoomap">yahoomap</span></div>
+<div class="desc">骨付鳥・やきとり・お寿司と看板に掲げる50席の居酒屋で、骨付鳥は地鶏・讃岐コーチン・阿波の赤鳥と3種類の鶏を食べ比べられるのがこの店だけの作り。親の足（かたくて噛むほど味が出る）と若の足（やわらかい）の両方を出すが、親は入荷が無い日や早い時間に売り切れる日がある。瀬戸内の魚の刺身や寿司も品ぞろえが広く、21時までは定食も出すので食事だけでも使える。平日でも満席になることが多いので予約したほうがよい。駐車場5台。全席喫煙可。骨付鳥と焼き鳥は持ち帰りもできる。</div>
+<div class="sig"><b>一皿:</b>骨付鳥 若の足（やわらかくジューシーな若鶏のもも肉1本）／骨付鳥 親の足（かたく締まった親鶏。噛むほど味が出るが売り切れる日がある）／骨付鳥 讃岐コーチン（香川のブランド地鶏で焼く一本。ほかに阿波の赤鳥もあり3種を食べ比べられる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜23:00（料理L.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（日曜が祝日の場合は営業し、翌月曜日が休み）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市西平山町107-2</td></tr>
+<tr><th>予約</th><td>可（電話のみ。ネット予約は受け付けていない。平日でも満席になるので予約を勧める） — <a href="tel:0877232466">☎ 0877-23-2466</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>骨付鳥を鶏の品種で食べ比べさせる店は発祥の地でもここくらいで、親・若の二択より一段深い入口になる。一鶴の裏手という位置も、本店と合わせて回れる。営業の根拠＝Yahoo!マップの口コミが2026年10月18日・10月17日・10月12日・9月22日と直近まで連続で入っており、10月18日の投稿には実際に注文した料理と価格が書かれている（2026-11-01 取得）。公式インスタグラムも営業時間を掲げた状態で稼働している。「やき鳥三太郎 丸亀 閉店」で検索しても閉店の報は無い（2026-11-01 実施）。なおホットペッパーグルメ側はネット予約を受け付けておらず店舗情報の更新が2020年1月で止まっているため、営業時間は丸亀市観光協会の掲載と一致する内容を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%8D%E9%B3%A5%20%E4%B8%89%E5%A4%AA%E9%83%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E8%A5%BF%E5%B9%B3%E5%B1%B1%E7%94%BA107-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000539143/">ホットペッパーグルメ やき鳥 三太郎 店舗ページ（住所・アクセス・営業時間・定休日・総席数50席・駐車場9台・平均予算）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000539143/photo/">ホットペッパーグルメ 同店 フォトギャラリー（骨付鳥 若の足・店内・外観写真）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/877">丸亀市観光協会 公式サイト 居酒屋 三太郎（地鶏・讃岐コーチン・阿波の赤鳥の3種の骨付鳥、21時までの定食、電話番号・営業時間・定休日・駐車場5台）2026-11-01 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/67OfverAwb6/review">Yahoo!マップ やき鳥三太郎 クチコミ（2026年10月18日・10月17日・10月12日・9月22日の投稿で営業を確認。親鶏が品切れになる旨の記述も）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-honetsukidori-uokame">
+<img class="hero" src="img/marugame/marugame-honetsukidori-uokame.jpg" alt="居酒屋 うをかめ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-honetsukidori-uokame_exterior.jpg" alt="居酒屋 うをかめ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>居酒屋 うをかめ<span class="yomi">いざかや うをかめ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip yahoomap">yahoomap</span></div>
+<div class="desc">明治30年（1897年）に魚屋として始まり、のれんに創業年を染め抜いている大手町の居酒屋。京都などで修業した店主が焼く骨付鳥は、にんにくと胡椒を効かせながらもどこか上品さの残る味で、豪快さで押す専門店とは別の性格をもつ。魚屋の出自どおり瀬戸内の魚と刺身が強く、四国の地酒をそろえ、さぬき夢豚を使った丼も出す。27席と小さいが10名の完全個室と4名×2の座敷があり、カウンターは9席。駐車場は無く近隣のコインパーキングを使う。全席喫煙可。</div>
+<div class="sig"><b>一皿:</b>骨付鳥（京都などで修業した店主が焼く一本。にんにくと胡椒は効かせつつ、専門店より当たりのやわらかい上品な味）／瀬戸内の魚の刺身（明治30年創業の魚屋が母体。季節の地魚を出す）／さぬき夢豚丼（香川のブランド豚を使う丼）</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜23:00（丸亀市観光協会の掲載。ホットペッパーグルメには月〜土・祝前日 18:00〜翌2:00 とあり食い違うため、更新の新しい観光協会側を採った）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（ゴールデンウィークは除く）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市大手町3-13-16 第2森ビル1F</td></tr>
+<tr><th>予約</th><td>可（電話のみ。ホットペッパーグルメのネット予約は受け付けていない） — <a href="tel:0877224652">☎ 0877-22-4652</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>骨付鳥の専門店ではなく、魚屋から続く明治創業の居酒屋が自分の流儀で焼く一本という位置づけで、章の中で味の幅と街の歴史の両方を担える。大手町という丸亀城の南の飲み屋街を章に入れる役でもある。営業の根拠＝Yahoo!マップの口コミが2026年4月19日・3月26日・2月9日と2026年に入ってから複数入っており（2026-11-01 取得）、2026年1月の来店記録を載せた個人のレビュー記事も2026年2月8日付で公開されている。「居酒屋うをかめ 丸亀 閉店」で検索しても閉店の報は無い（2026-11-01 実施）。ホットペッパーグルメ側は情報の更新が2017〜2020年で止まっているため、営業時間と定休日は丸亀市観光協会の掲載（18:00〜23:00・日祝休）を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%86%E3%82%92%E3%81%8B%E3%82%81%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA3-13-16%20%E7%AC%AC2%E6%A3%AE%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001027270/">ホットペッパーグルメ 居酒屋うをかめ 店舗ページ（住所・アクセス・総席数27席・個室と座敷の構成・平均予算）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ001027270/photo/">ホットペッパーグルメ 同店 フォトギャラリー（店内・のれんの外観写真）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/889">丸亀市観光協会 公式サイト 居酒屋 うをかめ（京都などで修業した店主の骨付鳥、四国の地酒、さぬき夢豚丼、営業時間18:00〜23:00・日祝休）2026-11-01 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/Pmhz5umizBs">Yahoo!マップ 居酒屋 うをかめ（2026年4月19日・3月26日・2月9日の口コミで営業を確認）2026-11-01 取得</a> / <a href="https://www.zenryokudori.com/eat/center/index.html">全力鶏（丸亀市産業観光課・丸亀とっとの会）骨付鳥が食べられるお店 丸亀市中心部（うをかめが加盟店として掲載。16席と記載）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-honetsukidori-donchan">
+<img class="hero" src="img/marugame/marugame-honetsukidori-donchan.jpg" alt="どんちゃん 丸亀 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-honetsukidori-donchan_exterior.jpg" alt="どんちゃん 丸亀 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>どんちゃん 丸亀<span class="yomi">どんちゃん まるがめ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip yahoomap">yahoomap</span></div>
+<div class="desc">飯山町の田園地帯に建つコンクリート打ち放しの建物の、25席の鶏料理店。骨付鳥は親鳥・若鳥ともに800円と安く、その日の朝びきの鶏だけを必ず使うのが店の決めごと。締めは「どんちゃんめし」で、骨付鳥を食べたあとの皿に残ったタレにご飯を入れて食べる250円の一品（刻み沢庵を混ぜてくれる）。手羽先の唐揚げは20年もののたれと広島「海人の藻塩」の2種類から選ぶ。木〜日の4日間しか開けず、席数も少ないので予約して行くほうがよい。市中心部から車で15分ほどかかる分、観光客より地元客の店になっている。</div>
+<div class="sig"><b>一皿:</b>骨付鳥 親鳥／若鳥（その日の朝びきの鶏だけを使う。親も若も800円）／どんちゃんめし（骨付鳥の皿に残ったタレにご飯を入れ、刻み沢庵を混ぜて食べる締めの一品。250円）／手羽唐揚げ（20年ものの秘伝のたれ、または広島「海人の藻塩」のどちらかで）</div>
+<table class="info">
+<tr><th>営業時間</th><td>木〜日・祝日・祝前日 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜・水曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市飯山町東坂元253-1</td></tr>
+<tr><th>予約</th><td>可（電話のみ。25席と小さいので予約を勧める） — <a href="tel:0877982022">☎ 0877-98-2022</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀市の南の旧町（飯山町）から1軒入れるための店で、骨付鳥が800円という価格と「朝びきの鶏だけ」という仕入れの決めごとが、駅前の専門店とは別の軸を章に足す。皿のタレにご飯を入れる地元の作法が、はっきり一品の名前になっているのもこの店。営業の根拠＝Yahoo!マップの店舗ページが2026年11月1日時点で「定休日／営業開始 17:00（木）」と稼働中の営業ステータスを返しており、閉店・移転の表示は無い（2026-11-01 取得）。「どんちゃん 丸亀 飯山 閉店」で検索しても閉店の報は無い（2026-11-01 実施）。ホットペッパーグルメ側は店舗情報の更新が2020年で止まりネット予約も受け付けていないため、営業の根拠としては採っていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A9%E3%82%93%E3%81%A1%E3%82%83%E3%82%93%20%E4%B8%B8%E4%BA%80%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E6%9D%B1%E5%9D%82%E5%85%83253-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000776881/">ホットペッパーグルメ どんちゃん 丸亀 店舗ページ（住所・アクセス・営業時間・定休日・総席数25席・予算帯・骨付鳥800円とどんちゃんめし250円のメニュー）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000776881/photo/">ホットペッパーグルメ 同店 フォトギャラリー（骨付鳥 親鳥／若鳥、どんちゃんめし、店内・外観写真）2026-11-01 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/LZrEdJ2FRBU">Yahoo!マップ どんちゃん（2026-11-01 時点で「定休日／営業開始 17:00（木）」の稼働中ステータス。住所・電話番号・バス停からの所要・テイクアウト・駐車場）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-honetsukidori-itcho">
+<img class="hero" src="img/marugame/marugame-honetsukidori-itcho.jpg" alt="丸亀骨付鳥一丁 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-honetsukidori-itcho_exterior.jpg" alt="丸亀骨付鳥一丁 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>丸亀骨付鳥一丁<span class="yomi">まるがめほねつきどりいっちょう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（宇多津町）丸亀市の東隣、四国水族館のそばにある40席の骨付鳥の店。11時から通しで22時まで開けているので、観光の途中でも骨付鳥が食べられるのがこの章では貴重。骨付鳥は弾力のある『親どり』とふっくらジューシーな『若どり』の2本立てで、どちらもスパイスを効かせて焼き上げる。香川のブランド地鶏・讃岐コーチンを一緒に炊き込んだ鶏めしも看板にしており、ほかに鳥の唐揚げ、鶏天、鶏皮せんべい、タコの唐揚げ、本マグロの盛り合わせなど酒の肴が広い。テーブル席は間隔を広く取り、大人数の宴会にも対応する。水曜定休。</div>
+<div class="sig"><b>一皿:</b>骨付鳥【親】（弾力のある歯ごたえの親どり。噛むほど肉の旨味が広がる通好み）／骨付鳥【若】（ふっくらやわらかい若どり。パリパリに焼いた皮から肉汁が出る定番）／讃岐コーチンの鶏めし（香川のブランド地鶏を一緒に炊き込んだご飯。1,980円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日・祝日・祝前日 11:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>香川県綾歌郡宇多津町浜一番丁7-9</td></tr>
+<tr><th>予約</th><td>可（ネット予約・電話とも可。営業時間外でもネット予約できる） — <a href="tel:0877432777">☎ 0877-43-2777</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀市内の骨付鳥は夜からの店が大半で、昼に食べられる専門店が足りない。この店は11時から22時まで通しで開き、四国水族館からも歩けるので昼の受け皿になる。隣の宇多津町だが店名のとおり丸亀の骨付鳥を名乗る店で、親・若の違いを品書きで丁寧に説明している。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年10月から2027年1月31日まで日付ごとに「即予約可」で開いており（定休日の水曜だけ休と表示）、料理メニューの更新日は2025年12月13日、店舗情報の更新日は2026年10月4日（2026-11-01 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%B8%E4%BA%80%E9%AA%A8%E4%BB%98%E9%B3%A5%E4%B8%80%E4%B8%81%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E5%AE%87%E5%A4%9A%E6%B4%A5%E7%94%BA%E6%B5%9C%E4%B8%80%E7%95%AA%E4%B8%817-9">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004403603/">ホットペッパーグルメ 丸亀骨付鳥一丁 店舗ページ（住所・アクセス・営業時間・定休日・総席数40席・平均予算・親どりと若どりの説明と価格・讃岐コーチンの鶏めし・ネット予約カレンダー）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ004403603/photo/">ホットペッパーグルメ 同店 フォトギャラリー（骨付鳥 親・若、讃岐コーチン、店内・外観写真）2026-11-01 取得</a></div>
+</div></div>
+<h2 id="s-udon" class="c-brown">讃岐うどん（製麺所型・セルフ）</h2>
+<div class="card" id="c-marugame-udon-wataya">
+<img class="hero" src="img/marugame/marugame-udon-wataya.jpg" alt="麺処 綿谷 丸亀店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">8</span>麺処 綿谷 丸亀店<span class="yomi">めんどころ わたや まるがめてん</span></div>
+<div class="desc">130席の大箱セルフ店。1玉が大きく、その上に甘辛く炊いた牛肉か豚肉をのせた「牛肉ぶっかけ」「豚肉ぶっかけ」が看板で、昼前には行列ができる。汁の温度は「ひや（麺も汁も冷たい）」「あつ（麺は冷たく汁は温かい）」「あつあつ（どちらも温かい）」の3通りから選ぶ。支払いは現金のみでキャッシュレス不可。8:30開店だが、麺が売り切れ次第その日の営業を終える。駐車場50台、大型バスも可。</div>
+<div class="sig"><b>一皿:</b>牛肉ぶっかけ(甘辛く炊いた牛肉を大盛りの麺にのせ、濃いめのぶっかけだしをかける)／豚肉ぶっかけ(牛と並ぶ看板。脂の甘みが強い)</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:30〜14:00（麺が売り切れ次第 終了）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>香川県丸亀市北平山町2-6-18</td></tr>
+<tr><th>予約</th><td>不可（予約の受付なし。現金のみ） — <a href="tel:0877211955">☎ 0877-21-1955</a> ／ <a href="https://www.maruwa-wataya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトのお知らせが 2026-10-26 付で「11月2日(月) 臨時休業」を告知しており、2026年10月時点で通常営業していることが確認できる（同サイトのお知らせは 2026.06.08／07.22／08.20／09.01／10.22／10.24／10.26 と継続更新）。丸亀市観光協会の店舗ページ（2026-11-01 取得）も営業時間8:30〜14:00・日曜祝日定休で一致。看板の形＝ぶっかけ、店の型＝セルフ店、場所＝丸亀駅前エリア。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%87%A6%20%E7%B6%BF%E8%B0%B7%20%E4%B8%B8%E4%BA%80%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%8C%97%E5%B9%B3%E5%B1%B1%E7%94%BA2-6-18">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.maruwa-wataya.com）より引用 / 外観: 写真なし / 参照元: <a href="https://www.maruwa-wataya.com/shop.html">麺処 綿谷 公式サイト 店舗案内（住所・電話・営業時間・定休日・席数・駐車場）2026-11-01 取得</a> / <a href="https://www.maruwa-wataya.com/">麺処 綿谷 公式サイト お知らせ（2026-10-26 臨時休業告知＝営業の根拠）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/822">丸亀市観光協会 公式サイト 麺処 綿谷（住所・営業時間・定休日・駐車場・支払い）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-kogane-seimenjo">
+<img class="hero" src="img/marugame/marugame-udon-kogane-seimenjo.jpg" alt="こがね製麺所 丸亀本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">9</span>こがね製麺所 丸亀本店<span class="yomi">こがねせいめんじょ まるがめほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">80席のセルフ店。朝7時から16時まで途切れず営業するので、朝うどんにも遅い昼にも使える。熱い麺に生卵をからめる「釜玉」が人気一番で、ほかに釜あげ、湯だめ、肉ぶっかけ、おろしぶっかけ、明太釜玉など温冷あわせて十数種。座敷席とカウンター席があり、ひとり客と家族連れが半々。PayPay が使える。無休。</div>
+<div class="sig"><b>一皿:</b>釜玉(釜から上げた熱い麺に生卵を落とし、出汁醤油をかける)／おろしぶっかけ(大根おろしと濃いだしの冷たい一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:00〜16:00（料理L.O. 15:55）</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>香川県丸亀市郡家町1865-1</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約。即予約は来店日当日17時まで） — <a href="tel:0877855533">☎ 0877-85-5533</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの口コミが 2026/10/25・2026/10/18・2026/10/17 来店分と直近1か月以内に複数入っており（口コミ339件・評点4.4）、2026年10月末時点で営業中であることが確認できる。同ページはネット予約も「即予約 来店日の当日17時まで受付」で稼働中。看板の形＝釜玉、店の型＝セルフ店、場所＝丸亀城の南（郡家町）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%81%8C%E3%81%AD%E8%A3%BD%E9%BA%BA%E6%89%80%20%E4%B8%B8%E4%BA%80%E6%9C%AC%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%83%A1%E5%AE%B6%E7%94%BA1865-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001107601/">ホットペッパーグルメ こがね製麺所 丸亀本店（住所・営業時間・定休日・席数・駐車場・予算・口コミ日付）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ001107601/tel/">ホットペッパーグルメ こがね製麺所 丸亀本店 電話番号ページ 2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-magokoro">
+<img class="hero" src="img/marugame/marugame-udon-magokoro.jpg" alt="まごころ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">10</span>まごころ<span class="yomi">まごころ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">朝6時から15時半まで営業する140席の大型セルフ店。麺を自分の手で湯がくところから始めるのが特徴で、好きなトッピングと天ぷらを取って会計する。しょうゆうどん、ざるうどん、温卵肉ぶっかけが定番。テーブル席のほか広い座敷があり、ゴルフや釣りの帰り客、家族連れの利用が多い。定休は元旦のみ。</div>
+<div class="sig"><b>一皿:</b>しょうゆうどん(湯がきたての麺に生じょうゆを回しかけるだけの食べ方)／温卵肉ぶっかけ(甘辛い牛肉と温泉卵をのせた冷たいぶっかけ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>6:00〜15:30（料理L.O. 15:30）</td></tr>
+<tr><th>定休日</th><td class="off">元旦のみ</td></tr>
+<tr><th>住所</th><td>香川県丸亀市蓬莱町55-3</td></tr>
+<tr><th>予約</th><td>不可（ネット予約の受付なし） — <a href="tel:0877243330">☎ 0877-24-3330</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの口コミに 2025/07/26 の投稿があり、同ページの営業時間・定休日（元旦のみ）が 2026-11-01 時点で掲載継続。あわせて「まごころ 丸亀 閉店」で検索し閉店の報が無いことを確認した（2026-11-01）。看板の形＝しょうゆうどん、店の型＝セルフ店、場所＝丸亀駅前（北側・蓬莱町）。口コミの最新が2025年7月なので、訪問前の電話確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%81%94%E3%81%93%E3%82%8D%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E8%93%AC%E8%8E%B1%E7%94%BA55-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000112149/">ホットペッパーグルメ まごころ（住所・営業時間・定休日・席数・駐車場・予算・口コミ日付）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000112149/tel/">ホットペッパーグルメ まごころ 電話番号ページ 2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-kaiji">
+<img class="hero" src="img/marugame/marugame-udon-kaiji.jpg" alt="讃岐うどん 海侍 其の壱 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-udon-kaiji_exterior.jpg" alt="讃岐うどん 海侍 其の壱 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">11</span>讃岐うどん 海侍 其の壱<span class="yomi">さぬきうどん かいじ そのいち</span></div>
+<div class="desc">飯野山の南、田園のなかに建つ木造の手打ちセルフ店。伊吹島の網元から直接仕入れるいりこでひいただしが身上で、看板は「かけ」。わさびの辛みと牛肉を合わせた「肉わさびうどん」、まかない由来の「卵かけ鶏もも黒コショウうどん」、「すじこんうどん」が人気上位3品。きゅうりのわさび漬けをのせたぶっかけも名物。50席で座敷もあり、コーヒーも置く。坂出市加茂町に「其の弐」がある。</div>
+<div class="sig"><b>一皿:</b>かけ(伊吹いりこのだしを張った一杯)／肉わさびうどん(牛肉と生わさびを合わせた冷たい一杯)／きゅうりわさび漬けぶっかけ</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜（祝日の場合は翌火曜。臨時休業は公式サイトの新着情報で告知）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市飯山町東坂元2710-5</td></tr>
+<tr><th>予約</th><td>不可（セルフ式。予約の記載なし） — <a href="tel:0877980753">☎ 0877-98-0753</a> ／ <a href="https://www.udon-kaiji.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの「新着情報（営業案内と大将の日記）」が 2026-09-30 に「令和8年10月営業案内」を掲載しており（以前は 2026-08-30／08-10／06-14／05-12）、2026年秋時点で営業中。うどん県旅ネット（香川県観光協会）の店舗ページ（2026-11-01 取得）も営業時間9:00〜15:00・月曜定休で一致。看板の形＝かけ、店の型＝セルフ店、場所＝綾歌町・飯山町。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%AE%83%E5%B2%90%E3%81%86%E3%81%A9%E3%82%93%20%E6%B5%B7%E4%BE%8D%20%E5%85%B6%E3%81%AE%E5%A3%B1%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E6%9D%B1%E5%9D%82%E5%85%832710-5">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.udon-kaiji.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.udon-kaiji.com/">讃岐うどん 海侍 公式サイト（住所・電話・営業時間・定休日・駐車場・新着情報の日付）2026-11-01 取得</a> / <a href="https://www.my-kagawa.jp/udon/2506">うどん県旅ネット（香川県観光協会）讃岐うどん 海侍 其の壱（住所・営業時間・定休日・座席・駐車場・店の型）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-hinode-seimenjo">
+<img class="hero" src="img/marugame/marugame-udon-hinode-seimenjo.jpg" alt="日の出製麺所 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-udon-hinode-seimenjo_exterior.jpg" alt="日の出製麺所 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">12</span>日の出製麺所<span class="yomi">ひのでせいめんじょ</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（坂出市）昭和5年創業の製麺所。麺の卸と小売が本業で、店で食べられるのは11:30〜12:30の1時間だけという、県内でもっとも営業時間の短いうどん店として知られる。できたての麺をいちばんよい状態で出すための時間割で、名物は「かま玉」。麺の販売は9:00〜16:00（土日祝は15:00まで）で、食事の時間を外しても持ち帰りの麺とだしは買える。30席。</div>
+<div class="sig"><b>一皿:</b>かま玉(釜から上げた麺に生卵と専用のだし醤油をからめる。小1玉・中1.5玉・大2玉)</div>
+<table class="info">
+<tr><th>営業時間</th><td>食事 11:30〜12:30／麺の販売 9:00〜16:00（土日祝は9:00〜15:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>香川県坂出市富士見町1丁目8-5</td></tr>
+<tr><th>予約</th><td>不可（食事は先着順） — <a href="tel:0877463882">☎ 0877-46-3882</a> ／ <a href="https://www.hinode.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの NEWS が 2026-11-01 付（11月イベントのお知らせ）・2026-10-12・2026-10-04 と更新されており、2026年11月時点で営業中。同サイトのフッターに「販売営業時間 9:00〜16:00（土日祝のみ9〜15時）／お食事販売時間 11:30〜12:30」と明記。うどん県旅ネット（2026-11-01 取得）の11:30〜12:30・30席・駐車30台と一致。看板の形＝かま玉（釜揚げ系）、店の型＝製麺所、場所＝隣接市町（坂出市）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E3%81%AE%E5%87%BA%E8%A3%BD%E9%BA%BA%E6%89%80%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%9D%82%E5%87%BA%E5%B8%82%E5%AF%8C%E5%A3%AB%E8%A6%8B%E7%94%BA1%E4%B8%81%E7%9B%AE8-5">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（gigaplus.makeshop.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hinode.net/">日の出製麺所 公式サイト（住所・電話・販売営業時間・お食事販売時間・NEWS の日付）2026-11-01 取得</a> / <a href="https://www.my-kagawa.jp/udon/525">うどん県旅ネット（香川県観光協会）日の出製麺所（住所・営業時間・定休日・座席・駐車場・店の型）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-maruya">
+<img class="hero" src="img/marugame/marugame-udon-maruya.jpg" alt="セルフまるやうどん 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-udon-maruya_exterior.jpg" alt="セルフまるやうどん 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">13</span>セルフまるやうどん<span class="yomi">せるふまるやうどん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（善通寺市）朝6時に開き、平日は夜8時まで（中休みは15〜17時）営業する自家製麺のセルフ店。国産小麦粉を使う。肉ぶっかけ、温玉ぶっかけ、自家製カレー、うめぼし、なめたけなど品数が多く、冬は鍋焼きうどんが看板になる。カウンター・テーブル・座敷あわせて76席。駐車場30台。うどん1杯につき50円引きのクーポンがホットペッパーグルメに出ている。</div>
+<div class="sig"><b>一皿:</b>肉ぶっかけ(甘辛い牛肉をのせた冷たいぶっかけ)／鍋焼きうどん(冬季の看板。土鍋で供する)／自家製カレーうどん</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・祝前日 6:00〜15:00／17:00〜20:00、土日祝 6:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>香川県善通寺市下吉田町889-4</td></tr>
+<tr><th>予約</th><td>不可（ネット予約の受付なし） — <a href="tel:0877858822">☎ 0877-85-8822</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ホットペッパーグルメの口コミに 2026/02/01 の投稿があり、同ページの営業時間・クーポンが 2026-11-01 時点で掲載継続（口コミ14件）。あわせて「セルフまるやうどん 閉店」で検索し閉店の報が無いことを確認した（2026-11-01）。看板の形＝ぶっかけ、店の型＝セルフ店、場所＝隣接市町（善通寺市）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%BB%E3%83%AB%E3%83%95%E3%81%BE%E3%82%8B%E3%82%84%E3%81%86%E3%81%A9%E3%82%93%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%96%84%E9%80%9A%E5%AF%BA%E5%B8%82%E4%B8%8B%E5%90%89%E7%94%B0%E7%94%BA889-4">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000674421/">ホットペッパーグルメ セルフまるやうどん（住所・営業時間・定休日・席数・駐車場・予算・口コミ日付）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000674421/tel/">ホットペッパーグルメ セルフまるやうどん 電話番号ページ 2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-nakamura-iiyama">
+<img class="hero" src="img/marugame/marugame-udon-nakamura-iiyama.jpg" alt="なかむら 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-udon-nakamura-iiyama_exterior.jpg" alt="なかむら 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">14</span>なかむら<span class="yomi">なかむら</span></div>
+<div class="desc">60席のセルフ店。注文のたびに畑へネギを抜きに行った逸話で知られ（現在は切ったネギを用意している）、村上春樹の紀行『辺境・近境』にも登場する。グミのようと評される、やわらかい口当たりと伸びるコシを併せ持つ麺が身上で、冬の一番人気が釜玉、夏はかけ。玉数は小（1玉）・大（2玉）・特大（3玉）から選ぶ。9時開店だが麺がなくなり次第その日は終わる。土器町の「中村うどん」は弟の店。</div>
+<div class="sig"><b>一皿:</b>釜玉うどん(釜から上げた熱い麺に生卵を落として特製の醤油をかける。冬の一番人気)／かけうどん(いりこだしを張った一杯。夏の一番人気)／ちくわ天</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜14:00（麺がなくなり次第 終了）</td></tr>
+<tr><th>定休日</th><td class="off">火曜・第2第4水曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市飯山町西坂元1373-3</td></tr>
+<tr><th>予約</th><td>不可（セルフ式。予約の受付なし） — <a href="tel:0877984818">☎ 0877-98-4818</a> ／ <a href="https://www.nakamura-udon.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Yahoo!マップの店舗ページ（クチコミ220件）に 2026年10月18日・2026年10月16日・2026年10月7日 の投稿があり、2026年10月時点で営業中であることが確認できる。うどん県旅ネット（香川県観光協会）と丸亀市観光協会の店舗ページ（いずれも 2026-11-03 取得）も9:00〜14:00・麺がなくなり次第終了・火曜と第2第4水曜定休で一致する（駐車場の台数だけが28台と35台で食い違う）。看板の形＝釜玉、店の型＝セルフ店、場所＝綾歌町・飯山町。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%81%8B%E3%82%80%E3%82%89%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E8%A5%BF%E5%9D%82%E5%85%831373-3">Googleマップで開く</a>
+<div class="src">写真: うどん県旅ネット（香川県観光協会）（www.my-kagawa.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.my-kagawa.jp/udon/530">うどん県旅ネット（香川県観光協会）なかむら（住所・電話・営業時間・定休日・座席・駐車場・店の型）2026-11-03 取得</a> / <a href="https://www.love-marugame.jp/food/847">丸亀市観光協会 公式サイト なかむら（住所・営業時間・定休日・駐車場・支払い・おすすめメニュー）2026-11-03 取得</a> / <a href="https://www.nakamura-udon.com/">なかむらうどん 公式サイト（営業時間・定休日・住所・電話・かけ290円/釜たま350円）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/Ukjgxgg_OKw">Yahoo!マップ なかむら 店舗ページ（クチコミ220件・最新投稿 2026年10月18日＝営業の根拠）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-yoshiya">
+<img class="hero" src="img/marugame/marugame-udon-yoshiya.jpg" alt="純手打うどん よしや 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-udon-yoshiya_exterior.jpg" alt="純手打うどん よしや 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">15</span>純手打うどん よしや<span class="yomi">じゅんてうちうどん よしや</span></div>
+<div class="desc">34席のセルフ店。純手打ちにこだわり、麺を包丁で1本1本切るため適度にねじれてだしがよく絡む。朝7時に開き、麺がなくなり次第その日は終わる。看板は讃岐もち豚の肉うどん、かけ、温玉ぶっかけで、初夏から夏はすだちを一面に浮かべた「すだちひやひや」が名物。大きなテーブル席のほか、麺を打つ手元が見えるカウンターと座敷がある。混む時間は駐車場に誘導係が立つ。</div>
+<div class="sig"><b>一皿:</b>讃岐もち豚の肉うどん(甘辛く炊いたもち豚をのせた一杯)／すだちひやひや(すだちを敷き詰めた冷たいかけ。初夏〜夏の限定)／温玉ぶっかけ</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:00〜14:00（麺がなくなり次第 終了）</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市飯野町東二343-1</td></tr>
+<tr><th>予約</th><td>不可（セルフ式。予約の受付なし） — <a href="tel:0877217523">☎ 0877-21-7523</a> ／ <a href="https://www.udon448.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>四国新聞社のニュースサイト COOL KAGAWA の 2026-08-01 付記事で、近くの佐藤紙器が「よしや」と組んだカプセルトイを8月1〜16日に店頭へ置き、行列を待つ客に遊んでもらうと報じられており、2026年8月時点で営業中かつ行列が続いていることが確認できる。Yahoo!マップの店舗ページ（クチコミ163件）も最新の投稿が 2026年10月26日・2026年10月18日。営業の終わりはうどん県旅ネットが14:00（麺終了次第）、まるつーの 2024-07-13 の記事が14:50で食い違うため、早いほうを採った。看板の形＝冷やかけ・ぶっかけ、店の型＝セルフ店、場所＝飯野町（丸亀市の南、飯山町の隣）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%20%E3%82%88%E3%81%97%E3%82%84%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E9%87%8E%E7%94%BA%E6%9D%B1%E4%BA%8C343-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（basefile.akamaized.net）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.my-kagawa.jp/udon/533">うどん県旅ネット（香川県観光協会）純手打うどん よしや（住所・電話・営業時間・定休日・座席・駐車場・店の型）2026-11-03 取得</a> / <a href="https://www.udon448.com/">純手打うどん よしや 公式オンラインショップ（店の写真・通販）2026-11-03 取得</a> / <a href="https://www.marugame2.jp/gourmets/80239">まるつー（中讃の地域情報サイト）『すだちひやひや』2024-07-13（住所・電話・営業時間・定休日・価格・店内の写真）2026-11-03 取得</a> / <a href="https://www.coolkagawa.jp/news/entry-5781.html">COOL KAGAWA（四国新聞社）2026-08-01「うどんカプセルトイ開発 佐藤紙器（丸亀）、「よしや」とコラボ」（＝営業の根拠）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/ui26oZA31TY">Yahoo!マップ 純手打うどん よしや 店舗ページ（クチコミ163件・最新投稿 2026年10月26日）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-choraku-seimenjo">
+<img class="hero" src="img/marugame/marugame-udon-choraku-seimenjo.jpg" alt="長楽製麺所 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-udon-choraku-seimenjo_exterior.jpg" alt="長楽製麺所 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">16</span>長楽製麺所<span class="yomi">ちょうらくせいめんじょ</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（宇多津町）よしずを壁に立てかけた古い木造の建物で営む製麺所型の店。紙の品書きは無く、うどんかそばか、小か大か、温かいか冷たいかを口で伝え、天ぷらは自分で取る。麺は讃岐うどんとしては細めだが芯の通ったコシがあり、かきあげと、この店で人気のたこ天を載せるのが常連の食べ方。店名の「長楽」は建物がもとは寺だったことと店主の姓に由来する。営業は9時から13時までの4時間だけ。</div>
+<div class="sig"><b>一皿:</b>うどん(小)(細めでコシのある麺。温・冷を選ぶ)／たこ天(この店で人気の天ぷら)／かきあげ</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜13:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜・月曜</td></tr>
+<tr><th>住所</th><td>香川県綾歌郡宇多津町坂下2900-1</td></tr>
+<tr><th>予約</th><td>不可（製麺所の店先。予約の受付なし） — <a href="tel:0877490556">☎ 0877-49-0556</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>まるつー（中讃の地域情報サイト）の実食記事が 2026-01-27 付で出ており、価格は「2025年10月時点」と明記されている。Yahoo!マップの店舗ページ（クチコミ24件）も最新の投稿が 2026年6月29日・2026年6月22日で、2026年時点で営業中であることが確認できる。住所は記事が「坂下2900-1」、Yahoo!マップが「坂下東2900-1」、営業時間は記事が 9:00〜13:00、Yahoo!マップが 9:00〜14:00 と食い違う（定休は双方とも日曜・月曜）ので、新しい記事のほうを採った。店の型＝製麺所、場所＝隣接市町（宇多津町）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E6%A5%BD%E8%A3%BD%E9%BA%BA%E6%89%80%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E5%AE%87%E5%A4%9A%E6%B4%A5%E7%94%BA%E5%9D%82%E4%B8%8B2900-1">Googleマップで開く</a>
+<div class="src">写真: まるごと・中讃つーしん（www.marugame2.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/gourmets/113404">まるつー（中讃の地域情報サイト）宇多津町「長楽製麺所」2026-01-27（住所・電話・営業時間・定休日・駐車場・価格・写真）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/j-ifuK4rIzU">Yahoo!マップ 長楽 店舗ページ（曜日別の営業時間・定休日・クチコミ24件・最新投稿 2026年6月29日＝営業の根拠）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-okasen">
+<img class="hero" src="img/marugame/marugame-udon-okasen.jpg" alt="本格手打うどん おか泉 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-udon-okasen_exterior.jpg" alt="本格手打うどん おか泉 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">17</span>本格手打うどん おか泉<span class="yomi">ほんかくてうちうどん おかせん</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（宇多津町）椅子32席・座敷18席の一般店で、席に着いて注文する形。大きなえび天2本を冷たいおろしうどんに立てた「ひや天おろし」はこの店が元祖で、県外からの客も絶えない。ぶっかけ、生じょうゆ、ざる、釜上（釜揚げ）、湯だめと品数が広く、しょうゆ豆やいなり寿司も置く。11時開店（土日祝は10:45）。土産の半生麺だけなら9時から買え、そのときは行列に並ばず店内へ入れる。</div>
+<div class="sig"><b>一皿:</b>ひや天おろし(大きなえび天2本をのせた冷たいおろしうどん。1,280円)／生じょうゆ(打ちたての麺に生じょうゆを回しかける)／ざる</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜19:00（ラストオーダー。土曜・日曜・祝日は10:45開店／土産のうどんは9:00から）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜（祝日の場合は営業。年2回の臨時休業あり）</td></tr>
+<tr><th>住所</th><td>香川県綾歌郡宇多津町浜八番丁129-10</td></tr>
+<tr><th>予約</th><td>不可（予約の受付なし。並んだ順に入る） — <a href="tel:0877494422">☎ 0877-49-4422</a> ／ <a href="http://www.okasen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>公式サイトの「お店情報」に11月・12月の営業案内カレンダーが出ており（2026-11-03 閲覧）、月曜・火曜に休業日が入った当月ぶんが掲載されている。同サイトのフッターの著作権表示は 2005-2026、新着情報の最新は 2026年02月06日。Yahoo!マップの店舗ページ（クチコミ373件）にも 2026年10月18日・2026年10月17日・2026年10月6日 の投稿がある。看板の形＝冷たいおろし・生じょうゆ・ざる、店の型＝一般店、場所＝隣接市町（宇多津町）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E6%A0%BC%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%20%E3%81%8A%E3%81%8B%E6%B3%89%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E5%AE%87%E5%A4%9A%E6%B4%A5%E7%94%BA%E6%B5%9C%E5%85%AB%E7%95%AA%E4%B8%81129-10">Googleマップで開く</a>
+<div class="src">写真: うどん県旅ネット（香川県観光協会）（www.my-kagawa.jp）より引用 / 外観: 出典ページ / 参照元: <a href="http://www.okasen.com/honten/info/">おか泉 公式サイト お店情報（住所・電話・営業時間・定休日・席数・駐車場・営業案内カレンダー＝営業の根拠）2026-11-03 取得</a> / <a href="http://www.okasen.com/honten/menu/">おか泉 公式サイト お品書き（ひや天おろし 1,280円・品目一覧）2026-11-03 取得</a> / <a href="https://www.my-kagawa.jp/udon/535">うどん県旅ネット（香川県観光協会）本格手打うどん おか泉（住所・営業時間・定休日・座席・駐車場・店の型・写真）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/RrJiCZCCoDY">Yahoo!マップ 本格手打うどん おか泉 店舗ページ（クチコミ373件・最新投稿 2026年10月18日）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-yamauchi">
+<img class="hero" src="img/marugame/marugame-udon-yamauchi.jpg" alt="純手打うどん やまうちうどん 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-udon-yamauchi_exterior.jpg" alt="純手打うどん やまうちうどん 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">18</span>純手打うどん やまうちうどん<span class="yomi">じゅんてうちうどん やまうちうどん</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（まんのう町）「山に入っていく」と言いたくなる坂道の先にある30席の手打ちセルフ店。薪を焚いて麺を茹で、きれいな水で締める昔ながらのやり方を守り、特製のいりこだしと合わせる。注文は小（1玉）・大（2玉）・特大（3玉）の玉数で伝え、天ぷらとおでんは自分で取って会計する。9時開店で、麺がなくなり次第その日は終わる。香川県観光協会は、讃岐うどんの系譜のひとつ「宮武ファミリー」の一軒として紹介している。</div>
+<div class="sig"><b>一皿:</b>かけうどん(薪で茹でた麺に特製のいりこだしを張った一杯)／大（2玉）・特大（3玉）の玉数で頼む食べ方／天ぷら・おでん(自分で取る)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜麺がなくなり次第 終了（Yahoo!マップの表示は9:00〜14:00）</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>香川県仲多度郡まんのう町大口1010</td></tr>
+<tr><th>予約</th><td>不可（セルフ式。予約の受付なし） — <a href="tel:0877772916">☎ 0877-77-2916</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Yahoo!マップの店舗ページ（クチコミ204件）に 2026年10月14日・2026年10月13日・2026年10月12日 の投稿があり、2026年10月時点で営業中であることが確認できる。うどん県旅ネット（2026-11-03 取得）の9:00〜麺終了次第・木曜定休・30席・駐車30台とも一致する（Yahoo!マップは終業を14:00と表示しており、閉店時刻の扱いだけが異なる）。看板の形＝かけ、店の型＝セルフ店、場所＝隣接市町（まんのう町）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%94%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%20%E3%82%84%E3%81%BE%E3%81%86%E3%81%A1%E3%81%86%E3%81%A9%E3%82%93%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%BB%B2%E5%A4%9A%E5%BA%A6%E9%83%A1%E3%81%BE%E3%82%93%E3%81%AE%E3%81%86%E7%94%BA%E5%A4%A7%E5%8F%A31010">Googleマップで開く</a>
+<div class="src">写真: うどん県旅ネット（香川県観光協会）（www.my-kagawa.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.my-kagawa.jp/udon/549">うどん県旅ネット（香川県観光協会）純手打うどん やまうちうどん（住所・電話・営業時間・定休日・座席・駐車場・店の型・写真）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/pqghD7kgBMA">Yahoo!マップ 山内うどん店 店舗ページ（曜日別の営業時間・クチコミ204件・最新投稿 2026年10月14日＝営業の根拠）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-udon-hayuka">
+<img class="hero" src="img/marugame/marugame-udon-hayuka.jpg" alt="本格手打うどんセルフ はゆか 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">19</span>本格手打うどんセルフ はゆか<span class="yomi">ほんかくてうちうどんせるふ はゆか</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（綾川町）72席のセルフ店。ぶっかけのだしを薄口と濃い口から選べるのが特徴で、看板は釜玉ぶっかけ。天ぷらの種類が多く、うどんの生地を使った「うどんのかき揚げ」のような変わり種も並ぶ。丸亀の市街から車で20分ほどの田園地帯にあり、席数が多いので家族連れでも入りやすい。外観写真なし（長辺900px以上の条件を満たす外観の写真が見つからなかったため）。</div>
+<div class="sig"><b>一皿:</b>釜玉ぶっかけうどん(釜から上げた麺に生卵とぶっかけだし。だしは薄口と濃い口から選ぶ)／ぶっかけうどん／うどんのかき揚げ</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜15:30（うどん県旅ネット。Yahoo!マップの表示は10:00〜15:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（うどん県旅ネットの記載。Yahoo!マップは月曜と表示。要確認）</td></tr>
+<tr><th>住所</th><td>香川県綾歌郡綾川町羽床下2222-5</td></tr>
+<tr><th>予約</th><td>不可（セルフ式。予約の受付なし） — <a href="tel:0878765377">☎ 087-876-5377</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>Yahoo!マップの店舗ページ（クチコミ152件）に 2026年10月17日・2026年10月14日・2026年10月13日 の投稿があり、2026年10月時点で営業中であることが確認できる。ただし定休日はうどん県旅ネット（2026-11-03 取得）が日曜、Yahoo!マップが月曜と食い違い、営業時間も 10:00〜15:30 と 10:00〜15:00 で異なるため、訪問前に電話で確かめたほうがよい。看板の形＝釜玉・ぶっかけ、店の型＝セルフ店、場所＝隣接市町（綾川町）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E6%A0%BC%E6%89%8B%E6%89%93%E3%81%86%E3%81%A9%E3%82%93%E3%82%BB%E3%83%AB%E3%83%95%20%E3%81%AF%E3%82%86%E3%81%8B%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E7%B6%BE%E5%B7%9D%E7%94%BA%E7%BE%BD%E5%BA%8A%E4%B8%8B2222-5">Googleマップで開く</a>
+<div class="src">写真: うどん県旅ネット（香川県観光協会）（www.my-kagawa.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.my-kagawa.jp/udon/2510">うどん県旅ネット（香川県観光協会）本格手打うどんセルフ はゆか（住所・電話・営業時間・定休日・座席・駐車場・店の型・写真）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/FEU_zs16mZA">Yahoo!マップ はゆか 店舗ページ（曜日別の営業時間・定休日・クチコミ152件・最新投稿 2026年10月17日＝営業の根拠）2026-11-03 取得</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・海鮮（瀬戸内の魚）</h2>
+<div class="card" id="c-marugame-washoku-sugatasushi-sanshiro">
+<img class="hero" src="img/marugame/marugame-washoku-sugatasushi-sanshiro.jpg" alt="姿すし 三四郎 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-sugatasushi-sanshiro_exterior.jpg" alt="姿すし 三四郎 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>姿すし 三四郎<span class="yomi">すがたすし さんしろう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip marutsu">marutsu</span><span class="chip nicetown">nicetown</span></div>
+<div class="desc">丸亀市中府町でおよそ45年続いた寿司店が、2023年10月12日に土居町へ移転した。仁尾漁港から仕入れる瀬戸内の鮮魚を握る。新店舗はコンクリート打ち放しのエントランスの奥に小さな庭があり、ネタケースが見渡せるカウンターと、小窓から植栽が見える座敷の個室がある。30席・駐車場53台で、座敷はベンチシート。週末は予約が埋まりやすく電話での確認がよい。なお、ホットペッパーグルメの住所欄は移転前の中府町のままなので注意。</div>
+<div class="sig"><b>一皿:</b>三四郎巻(7種の具を巻いた名物の巻き寿司)／にぎり(その日に市場で仕入れた鮮魚を日替わりで)／キス野菜天(旬の野菜と白身のキスの天ぷら)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜22:00（L.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜・第2/第4水曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市土居町3-13-13</td></tr>
+<tr><th>予約</th><td>可（電話のみ。週末は早めに） — <a href="tel:0877244594">☎ 0877-24-4594</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>瀬戸内の鮮魚を握るカウンターとして章の軸に置いた。営業の根拠＝ホットペッパーグルメの店舗ページに2026年8月23日付の口コミが投稿されている（2026-11-01 取得）。移転の事実は地元媒体「まるごと・中讃つーしん。」2023年10月22日の記事と、タウン情報誌ナイスタウンの2023年11月27日の記事の双方で住所・電話が一致。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A7%BF%E3%81%99%E3%81%97%20%E4%B8%89%E5%9B%9B%E9%83%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%B1%85%E7%94%BA3-13-13">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/stores/67716">まるごと・中讃つーしん。 移転オープン記事（新住所・営業時間・定休日・席数・駐車場）2026-11-01 取得</a> / <a href="https://nicetown.co.jp/gourmet/10803/">ナイスタウン グルメ記事（三四郎コース5,000円・仁尾漁港・席数）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000539254/">ホットペッパーグルメ 店舗ページ（電話番号・口コミ2026-08-23）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-hokuroya">
+<img class="hero" src="img/marugame/marugame-washoku-hokuroya.jpg" alt="海鮮・すし・地酒 ほくろ屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-hokuroya_exterior.jpg" alt="海鮮・すし・地酒 ほくろ屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>海鮮・すし・地酒 ほくろ屋<span class="yomi">かいせん・すし・じざけ ほくろや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">2010年3月開業で2026年3月に16周年を迎えた海鮮と寿司の店。瀬戸内のアコウ(キジハタ)の姿造り、岩牡蠣、秋は秋刀魚・戻り鰹・島鱧と季節で品書きが変わる。徳島県産の「新仔うなぎ」を料理長の秘伝のたれで焼く蒲焼き・白焼き・うな重もあり、テイクアウトもできる。自家製の「ほくろ屋の味噌漬け」は丸亀市のブランド認定品「丸亀セレクション」で、ふるさと納税の返礼にもなっている。60席、個室あり、駐車場あり。</div>
+<div class="sig"><b>一皿:</b>季節のコース(旬の瀬戸内の魚を使った会席。5,000円〜)／アコウの姿造り(初夏〜夏の高級白身魚)／新仔うなぎの白焼き・蒲焼き(徳島県産の1年物)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜翌0:00（L.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市土器町東9-284 CLOVER SHOEIビル A棟1F E号</td></tr>
+<tr><th>予約</th><td>可（電話。コースは公式サイトからも受付） — <a href="tel:0877213715">☎ 0877-21-3715</a> ／ <a href="https://hokuroya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>瀬戸内の魚を会席で出す店として、また丸亀東部(土器町)の代表として選んだ。営業の根拠＝公式サイトの新着情報が2026年10月1日付「秋のうまいもん、続々入荷中です！」で更新されている（2026-11-01 取得）。同欄には2026年9月4日・9月2日・8月5日・7月1日の記事も並ぶ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E3%83%BB%E3%81%99%E3%81%97%E3%83%BB%E5%9C%B0%E9%85%92%20%E3%81%BB%E3%81%8F%E3%82%8D%E5%B1%8B%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E6%9D%B19-284%20CLOVER%20SHOEI%E3%83%93%E3%83%AB%20A%E6%A3%9F1F%20E%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（hokuroya.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://hokuroya.com/">ほくろ屋 公式サイト（新着情報2026-10-01・コース内容・16周年）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000847343/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・電話番号）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-kabocha">
+<img class="hero" src="img/marugame/marugame-washoku-kabocha.jpg" alt="魚料理 かぼちゃ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-kabocha_exterior.jpg" alt="魚料理 かぼちゃ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>魚料理 かぼちゃ<span class="yomi">さかなりょうり かぼちゃ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">店内の生簀で泳ぐ魚をその場でさばいて出す魚料理店。アコウ、カワハギとにし貝、鯖、車エビの活き造りが看板で、金目鯛やカワハギの煮つけ、鯛釜飯も出す。50席で掘りごたつと最大12名の個室があり、駐車場30台。土日だけ昼も開き、四季膳1,300円・にぎり膳1,800円・天ぷら膳1,550円・とんかつ膳1,550円（いずれも食後のコーヒー付き／2021年6月更新の価格なので要確認）。焼酎・日本酒・ワインの品ぞろえが厚い。</div>
+<div class="sig"><b>一皿:</b>アコウの活き造り(生簀から引き上げた高級白身魚を姿造りに)／地たこ尽くし(蛸1匹を刺身・焼き・天ぷらの3種に)／四季膳(土日限定の昼の御膳。その日に捕れた魚を使う)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜水・金 17:00〜22:00（L.O. 21:30）／土日 11:30〜14:00（L.O. 13:30）・17:00〜22:00（L.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市富士見町5-12-5</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0877243324">☎ 0877-24-3324</a> ／ <a href="https://s613000.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀港にいちばん近い位置で、瀬戸内の活魚を前面に出している店なので入れた。営業の根拠＝公式ページ（ぐるなびが提供する店舗オフィシャルページ）に載る写真の更新時刻が2026年7月24日になっている（2026-11-01 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E6%96%99%E7%90%86%20%E3%81%8B%E3%81%BC%E3%81%A1%E3%82%83%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%AF%8C%E5%A3%AB%E8%A6%8B%E7%94%BA5-12-5">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000539240/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・駐車場・電話番号）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000539240/food/">ホットペッパーグルメ 料理メニュー（四季膳・にぎり膳・コース価格／最終更新2021-06-03）2026-11-01 取得</a> / <a href="https://s613000.gorp.jp/">魚料理 かぼちゃ 公式ページ（写真の更新日時2026-07-24）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-kaifutei">
+<img class="hero" src="img/marugame/marugame-washoku-kaifutei.jpg" alt="中津万象園 味処 懐風亭 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-kaifutei_exterior.jpg" alt="中津万象園 味処 懐風亭 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>中津万象園 味処 懐風亭<span class="yomi">なかづばんしょうえん あじどころ かいふうてい</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">丸亀藩主だった京極家の大名庭園「中津万象園」の中にある日本料理店。庭を眺めながら会席や御膳が食べられ、懐風亭に入るだけなら入園料は要らない。昼の御膳は平日限定の瀬戸内のおもてなし御膳2,750円、にぎり鮨と天婦羅膳2,200円、お造り膳1,870円、籠ランチ1,820円、天婦羅膳1,760円、骨付き鶏膳1,540円、鯵と烏賊フライ膳1,430円。土日祝の昼は1週間前の問い合わせが要り、会席膳は前日までの予約制。駐車場100台（バス30台可）。慶事・法要向けの席もある。</div>
+<div class="sig"><b>一皿:</b>瀬戸内のおもてなし御膳(平日限定2,750円。お造り・牛ロース陶板焼き・ミニうどん・天婦羅・香川特産の醤油豆まで付く)／にぎり鮨と天婦羅膳(2,200円。にぎり5貫と海鮮巻に天婦羅)／お造り膳(1,870円。お造り五種盛り)</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜14:30（L.O. 14:00）／夜 17:00〜21:30（最終入店19:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市中津町25-1（中津万象園内）</td></tr>
+<tr><th>予約</th><td>可（電話。土日祝の昼は1週間前に問い合わせ、会席膳は前日まで） — <a href="tel:0877232266">☎ 0877-23-2266</a> ／ <a href="http://kaifuutei.bansyouen.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>庭園のなかで食べる昼の御膳という、この章にほかにない形なので入れた。営業の根拠＝公式サイトの昼食メニューに「10/1より 籠ランチ」が載り、その写真ファイルが2026年9月にアップロードされている。同じページの「お子様膳 洋／和」の写真は2026年8月、「にぎり鮨と天婦羅膳」は2026年7月のアップロード（2026-11-01 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E6%B4%A5%E4%B8%87%E8%B1%A1%E5%9C%92%20%E5%91%B3%E5%87%A6%20%E6%87%90%E9%A2%A8%E4%BA%AD%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E4%B8%AD%E6%B4%A5%E7%94%BA25-1%EF%BC%88%E4%B8%AD%E6%B4%A5%E4%B8%87%E8%B1%A1%E5%9C%92%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kaifuutei.bansyouen.com）より引用 / 外観: 出典ページ / 参照元: <a href="http://kaifuutei.bansyouen.com/menu/lunch/">懐風亭 公式サイト 昼食メニュー（御膳の品名と価格・2026年9月更新の籠ランチ）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/858">丸亀市観光協会 グルメスポット（住所・電話・営業時間・定休日・駐車場・支払方法）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000539141/">ホットペッパーグルメ 店舗ページ（昼の予算帯2,000〜2,999円）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-unajo">
+<img class="hero" src="img/marugame/marugame-washoku-unajo.jpg" alt="鰻城 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-unajo_exterior.jpg" alt="鰻城 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>鰻城<span class="yomi">うなじょう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">うなぎだけを出す専門店。四万十川や仁淀川の流れる高知県で無加温・無投薬で時間をかけて育てた活鰻を仕入れ、開きたてを職人が一枚ずつ焼く。米は香川県産こしひかりを炊き立てで出す。うな重のほか茶碗蒸しや吸い物が付き、ミャンマーのワイン「Aythaya」など珍しい酒も置く。36席、駐車場10台。店は瓦屋根の和風建築で、看板の「鰻城」の文字が目印。うなぎの価格は仕入れで変わることがあるので電話で確認を。</div>
+<div class="sig"><b>一皿:</b>うな重(一尾4,500円。秘伝のたれと香川県産こしひかり)／白焼き(脂の乗った活鰻を素焼きで)／うなぎ丼(半身2,500円。昼に頼みやすい一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00／17:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜（不定休あり）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市山北町572-1</td></tr>
+<tr><th>予約</th><td>可（電話。公式サイトに予約の案内あり） — <a href="tel:0877437046">☎ 0877-43-7046</a> ／ <a href="https://unajo.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章のなかでうなぎを受け持つ店として選んだ。丸亀市内でうなぎ一本の専門店はここが代表格。営業の根拠＝公式サイトのお知らせに2026年10月17日付の臨時休業の案内（画像ファイル名も20261017）が出ており、サイトが2026年10月時点で更新されている（2026-11-01 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%B0%BB%E5%9F%8E%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%B1%B1%E5%8C%97%E7%94%BA572-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（unajo.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://unajo.jp/eel/restaurant.html">鰻城 公式サイト 店舗情報（住所・電話・営業時間・定休日・席数・駐車場）2026-11-01 取得</a> / <a href="https://unajo.jp/eel/menu.html">鰻城 公式サイト お品書き（うな重・うなぎ丼・蒲焼き・白焼きの価格）2026-11-01 取得</a> / <a href="https://unajo.jp/index.html">鰻城 公式サイト トップ（2026-10-17付の臨時休業のお知らせ）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-hazama">
+<img class="hero" src="img/marugame/marugame-washoku-hazama.jpg" alt="間 -HAZAMA- 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-hazama_exterior.jpg" alt="間 -HAZAMA- 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>間 -HAZAMA-<span class="yomi">はざま</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">毎朝漁港から直送される魚介だけを使う寿司と和食の店。職人の手元が見える8席のカウンターのほか、4名・6名・10〜12名の座敷個室が3室、4名テーブル5卓と2名テーブル1卓があり、テーブルはつなげて最大18名まで。全52席。刺身は魚種と部位で平造り・そぎ造りを使い分ける。宴会にはカニやフグを組み込んだコースも相談できる。駐車場あり。</div>
+<div class="sig"><b>一皿:</b>おまかせ握り12貫(2,618円。旬の鮮魚12種を握りで)／お刺身9種盛合せ(3,058円。時期で内容が変わる)／コース料理(5,280円〜。要望に応じてカニ・フグも)</div>
+<table class="info">
+<tr><th>営業時間</th><td>16:00〜23:00（L.O. 22:00、ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市山北町652-1</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約） — <a href="tel:0877219010">☎ 0877-21-9010</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>カウンターで握りを食べられる店として、丸亀城の西側（山北町）から選んだ。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月1日から2027年1月31日まで、定休日を除くほぼ全日で「即予約可（◎）」になっている（2026-11-01 確認）。料理メニューの最終更新日は2025年10月29日。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%96%93%20-HAZAMA-%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%B1%B1%E5%8C%97%E7%94%BA652-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003489010/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・個室・ネット予約カレンダー・電話番号）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ003489010/food/">ホットペッパーグルメ 料理メニュー（おまかせ握り・刺身盛合せ・コースの価格／最終更新2025-10-29）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-isaribi">
+<img class="hero" src="img/marugame/marugame-washoku-isaribi.jpg" alt="浜焼き酒場 漁火 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-isaribi_exterior.jpg" alt="浜焼き酒場 漁火 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>浜焼き酒場 漁火<span class="yomi">はまやきさかば いさりび</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip marutsu">marutsu</span></div>
+<div class="desc">2026年7月27日に開店した海鮮の店。蒸気でじっくり火を通す「浜焼き」でふっくら仕上げるのが売りで、ハマチ・活アワビ・活サザエ・赤エビなどのお造りも置く。昼も開いていて、本日の漁火海鮮丼（味噌汁付き）1,155円、サーモン丼1,628円、サーモンといくらの親子丼1,958円が食べられる。29席で、1人で座れるカウンター9席と、2〜4名と4〜6名の掘りごたつの半個室・個室がある。専用駐車場はないので、向かいの福島駐車場など周辺の駐車場を使う。</div>
+<div class="sig"><b>一皿:</b>浜焼き(蒸気で火を通して旨みを閉じ込める調理。魚介各種)／本日の漁火海鮮丼(味噌汁付き1,155円。昼の看板)／漁火名物 豪快ゲソ天盛り(イカ下足の天ぷらを山盛りで)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30（L.O. 14:00）／17:00〜23:00（L.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市福島町54-8</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約） — <a href="tel:0877853777">☎ 0877-85-3777</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀駅のすぐそばで昼に海鮮が食べられる店として入れた。営業の根拠は2つ。①ホットペッパーグルメのネット予約カレンダーが2026年11月1日〜30日のうち定休日の水曜を除く全日で「即予約可（◎）」、料理メニューの最終更新日は2026年10月8日（2026-11-01 確認）。②地元媒体「まるごと・中讃つーしん。」が2026年7月28日に開店を報じている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%9C%E7%84%BC%E3%81%8D%E9%85%92%E5%A0%B4%20%E6%BC%81%E7%81%AB%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%A6%8F%E5%B3%B6%E7%94%BA54-8">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004660796/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・個室・ネット予約カレンダー・電話番号）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ004660796/food/">ホットペッパーグルメ 料理メニュー（海鮮丼・サーモン丼の税込価格／最終更新2026-10-08）2026-11-01 取得</a> / <a href="https://www.marugame2.jp/stores/127742">まるごと・中讃つーしん。 開店記事（2026-07-27オープン・場所・駐車場）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-hirata">
+<img class="hero" src="img/marugame/marugame-washoku-hirata.jpg" alt="創作和食・仕出し・宴会 ひらた 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-hirata_exterior.jpg" alt="創作和食・仕出し・宴会 ひらた 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">27</span>創作和食・仕出し・宴会 ひらた<span class="yomi">そうさくわしょく・しだし・えんかい ひらた</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">飯野山のふもとにある創作和食の店で、仕出しと宴会も受ける。瀬戸内の魚介と季節の食材を使った昼の御膳がそろい、桃1,450円、悠1,650円、トンカツ御膳1,850円、楓1,950円（本日の煮魚か天麩羅盛り合わせを選ぶ）、海鮮フライ御膳1,950円、花美月2,450円、それに月替わりの限定ランチ（2026年秋は露時雨御膳1,850円）。軽く済ませたいときは海鮮重1,250円や大海老天重1,250円もある。畳敷きの大広間があり法要や宴会にも使える。予約はネット・メールでは受けておらず電話か来店のみで、予約優先。土日祝は早く席が埋まる。</div>
+<div class="sig"><b>一皿:</b>月替わり限定ランチ(2026年秋は露時雨御膳1,850円)／楓(1,950円。本日の煮魚か天麩羅盛り合わせを選べる御膳)／海鮮重(1,250円。刺身をのせたお重)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30（L.O. 14:00）／18:00〜23:00（L.O. 22:00。店舗紹介ページでは22:30と記載）</td></tr>
+<tr><th>定休日</th><td class="off">火曜（臨時休業あり）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市飯山町下法軍寺159-1</td></tr>
+<tr><th>予約</th><td>可（電話か来店のみ。ネット・メールでの予約は不可。予約優先） — <a href="tel:0877982155">☎ 0877-98-2155</a> ／ <a href="https://hirata.jimdofree.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀南部の旧飯山町から、昼の御膳が複数そろう店として選んだ。営業の根拠＝公式サイト（Jimdo）のランチメニューに載る写真のうち最も新しいものが2026年9月30日にアップロードされており、2026年9月4日付の画像も複数ある（2026-11-01 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%92%8C%E9%A3%9F%E3%83%BB%E4%BB%95%E5%87%BA%E3%81%97%E3%83%BB%E5%AE%B4%E4%BC%9A%20%E3%81%B2%E3%82%89%E3%81%9F%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E4%B8%8B%E6%B3%95%E8%BB%8D%E5%AF%BA159-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（image.jimcdn.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://hirata.jimdofree.com/%E3%83%A9%E3%83%B3%E3%83%81%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC/">ひらた 公式サイト ランチメニュー（御膳・お重の品名と価格・2026年9月更新の写真）2026-11-01 取得</a> / <a href="https://hirata.jimdofree.com/%E5%BA%97%E8%88%97%E7%B4%B9%E4%BB%8B/">ひらた 公式サイト 店舗紹介（住所・電話・営業時間・定休日）2026-11-01 取得</a> / <a href="https://hirata.jimdofree.com/%E5%86%99%E7%9C%9F%E9%A4%A8/">ひらた 公式サイト 写真館（料理・宴会場・外観の写真）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-ichi-shiwaku">
+<img class="hero" src="img/marugame/marugame-washoku-ichi-shiwaku.jpg" alt="塩飽の漁師飯 壱 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">28</span>塩飽の漁師飯 壱<span class="yomi">しわくのりょうしめし いち</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip nicetown">nicetown</span></div>
+<div class="desc">西本町の「塩飽の漁師飯 まや」の2号店として大手町に出した店。塩飽（しわく）水域の漁師でもある店主が自分で水揚げした魚介を店に直送し、足りない分は漁師のネットワークで県内外から仕入れる。地ダコのタコ刺し、メバルの煮付け、真鯛の天ぷら、釜飯、塩飽丼などを出す。22席でカウンターあり、深夜まで営業する。専用駐車場はない。外観写真なし（ホットペッパーグルメにも地元媒体にも長辺900px以上の外観写真が見当たらなかったため）。</div>
+<div class="sig"><b>一皿:</b>塩飽丼(塩飽の魚をのせた名物の丼)／海鮮の天ぷら(真鯛など、その日の魚を一つずつ揚げる)／各種お刺身盛り合わせ(店主が水揚げした魚のみ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜翌3:00（L.O. 翌2:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市大手町3丁目6番地9 丸二ビル1階</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約。予約推奨） — <a href="tel:0877855817">☎ 0877-85-5817</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で唯一、丸亀城の南側（大手町）に当たる店で、塩飽諸島の魚という丸亀らしい切り口なので入れた。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月1日〜30日のうち定休日の日曜を除く全日で「即予約可（◎）」になっている（2026-11-01 確認）。開店の経緯はタウン情報誌ナイスタウンの2024年2月22日記事による。※電話番号はホットペッパーグルメの0877-85-5817を採った（ナイスタウンの記事は090-7572-7867と記載しており食い違う。掲載の新しいホットペッパー側を優先）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A1%A9%E9%A3%BD%E3%81%AE%E6%BC%81%E5%B8%AB%E9%A3%AF%20%E5%A3%B1%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA3%E4%B8%81%E7%9B%AE6%E7%95%AA%E5%9C%B09%20%E4%B8%B8%E4%BA%8C%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ003788004/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・ネット予約カレンダー・電話番号）2026-11-01 取得</a> / <a href="https://nicetown.co.jp/gourmet/78943/">ナイスタウン グルメ記事（2024-02-22。塩飽水域の漁師である店主・地ダコ・席数22）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-washoku-enbu-setopark">
+<img class="hero" src="img/marugame/marugame-washoku-enbu-setopark.jpg" alt="活魚 炎舞 瀬戸パーク 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-washoku-enbu-setopark_exterior.jpg" alt="活魚 炎舞 瀬戸パーク 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">29</span>活魚 炎舞 瀬戸パーク<span class="yomi">かつぎょ えんぶ せとぱーく</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span><span class="chip hotpepper">hotpepper</span><span class="chip marutsu">marutsu</span></div>
+<div class="desc">（宇多津町）2026年4月15日に「遊食房屋」の跡地へ開いた大型の活魚店。客席が段々になった劇場型のつくりで、どの席からも職人の手元が見える。名物は炭をタワー状に積み上げてまわりで魚を焼く「原始焼き」。店内の大きな生簀には鯛、伊勢海老、アワビ、ハマチ、アジなどが泳ぐ。151席で、4名・6名・8名の掘りごたつ個室、カウンター15席、160名までの貸切に対応。駐車場は100台以上。昼は旬彩の昼御膳1,408円（税込）からで、一押しは瀬戸パーク御膳。香川の「金陵」など日本酒約15種と四国のご当地果実ジュース、土産コーナーもある。</div>
+<div class="sig"><b>一皿:</b>原始焼き(炭をタワー状に積み、あじや金目鯛をまわりで炙る)／瀬戸パーク御膳(昼の一押しの御膳。銀シャリか釜飯が付く)／伊勢海老の活造り(生簀から引き上げて造り、あとで味噌汁にする)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:00〜15:00（L.O. 14:00）／17:00〜22:30（L.O. 22:00）、土日祝 11:00〜15:00／16:30〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">年中無休（不定休あり）</td></tr>
+<tr><th>住所</th><td>香川県綾歌郡宇多津町浜三番丁24-14</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約） — <a href="tel:0877433366">☎ 0877-43-3366</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀市内で手薄な「昼にちゃんとした御膳が食べられる海鮮の大型店」を隣接の宇多津町から補った。営業の根拠は2つ。①ホットペッパーグルメのネット予約カレンダーが2026年11月2日〜30日の全日で「即予約可（◎）」、料理メニューの最終更新日は2026年9月23日（2026-11-01 確認）。②地元媒体「まるごと・中讃つーしん。」が2026年4月13日に開店前の取材記事を出している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%BB%E9%AD%9A%20%E7%82%8E%E8%88%9E%20%E7%80%AC%E6%88%B8%E3%83%91%E3%83%BC%E3%82%AF%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E5%AE%87%E5%A4%9A%E6%B4%A5%E7%94%BA%E6%B5%9C%E4%B8%89%E7%95%AA%E4%B8%8124-14">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004577302/">ホットペッパーグルメ 店舗ページ（住所・営業時間・席数・個室・ネット予約カレンダー・電話番号）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ004577302/food/">ホットペッパーグルメ 料理メニュー（旬彩の昼御膳1,408円〜／最終更新2026-09-23）2026-11-01 取得</a> / <a href="https://www.marugame2.jp/stores/121502">まるごと・中讃つーしん。 開店記事（2026-04-15オープン・劇場型の席・原始焼き・ランチ・駐車場）2026-11-01 取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・地酒</h2>
+<div class="card" id="c-marugame-izakaya-bon">
+<img class="hero" src="img/marugame/marugame-izakaya-bon.jpg" alt="酒肴や ぼん 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-izakaya-bon_exterior.jpg" alt="酒肴や ぼん 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>酒肴や ぼん<span class="yomi">しゅこうやぼん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">22席。カウンターと4名掛けの掘りごたつ3卓、25名まで貸し切れる席がある。店内に活魚の水槽を置き、その日の魚を造りにする。各種地酒を取り揃え、日本酒のほか焼酎・ワイン・カクテルもホットペッパーの区分で「充実」。店長が自ら選んだ酒が棚に並ぶ。お通しは税込500円、共同駐車場10台、Wi-Fiあり。火曜から日曜の夜だけの営業で、月曜が定休。丸亀土器東郵便局の手前という場所柄、車で寄る客が多い。</div>
+<div class="sig"><b>一皿:</b>本日のおすすめお刺身(店内の水槽の活魚から引く)／やわらか牛タンステーキ／各種地酒(店長が選んだ日本酒)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝・祝前日 18:00〜22:30（料理L.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市土器町東5丁目19番地</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーのネット予約・電話とも） — <a href="tel:0877210321">☎ 0877-21-0321</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章に求められた「香川の地酒を揃える店」の1軒目。ホットペッパーの紹介文に「各種地酒を取り揃えており、日本酒の種類がとっても豊富！店長自ら厳選した自慢のお酒が沢山並んでいます」と明記がある。営業の根拠＝ネット予約カレンダーが2026年11月3日〜2027年1月31日まで、月曜の定休日と年末年始を除いて「即予約可（◎）」（2026-11-01 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%82%B4%E3%82%84%20%E3%81%BC%E3%82%93%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E6%9D%B15%E4%B8%81%E7%9B%AE19%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000538965/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・地酒の記述・ネット予約カレンダー）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000538965/tel/">ホットペッパーグルメ 電話番号ページ 2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000538965/photo/">ホットペッパーグルメ 写真ギャラリー 2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-izakaya-kushihiko">
+<img class="hero" src="img/marugame/marugame-izakaya-kushihiko.jpg" alt="串揚げ くし彦 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>串揚げ くし彦<span class="yomi">くしあげくしひこ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">24席（カウンター10席、4人掛けの座敷3卓）。魚介の串揚げを湯葉の衣で揚げるのが身上で、カウンターでは揚げたてを1本ずつ出す。あんドーナツのようになる「あんロール」や味付けこんにゃくといった変わり種、烏骨鶏を使った親子丼、25種のアイスまである。12月31日以外は無休で、平日は翌0:30まで。駐車場は他店舗と共同。外観写真なし（ホットペッパーの掲載写真に外観のカットがないため）。</div>
+<div class="sig"><b>一皿:</b>串揚げおまかせセット／くし彦セット(お造り4種盛り・串揚げ7本・茶漬け・アイスのセット)／烏骨鶏究極の親子丼</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝・祝前日 17:00〜翌0:30（料理L.O. 翌0:00）／日 17:00〜22:30（料理L.O. 22:00）</td></tr>
+<tr><th>定休日</th><td class="off">無休（12月31日のみ休み）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市土器町東5-19</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0877216967">☎ 0877-21-6967</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>居酒屋の業態を散らすために串揚げの専門店として入れた。営業の根拠＝Yahoo!マップの口コミ・口コミ写真が2026年8月30日、2026年5月18日、2026年3月6日と2026年に入って続いている（2026-11-01 確認）。店名で検索しても閉店・移転の報は出ず、Instagram（@kushihiko2018）が同じ住所と電話番号を掲げている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E6%8F%9A%E3%81%92%20%E3%81%8F%E3%81%97%E5%BD%A6%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E6%9D%B15-19">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000539003/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000539003/tel/">ホットペッパーグルメ 電話番号ページ 2026-11-01 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/vnqGR48HzPo">Yahoo!マップ 店舗ページ（口コミの日付＝営業の根拠）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-izakaya-kanihou">
+<img class="hero" src="img/marugame/marugame-izakaya-kanihou.jpg" alt="かに奉 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-izakaya-kanihou_exterior.jpg" alt="かに奉 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>かに奉<span class="yomi">かにほう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">25席。目の前の鉄板で焼き上げるお好み焼きは広島風（ヘルシー）と関西風（ボリューム）の両方があり、大きな鉄板で時間をかけて焼く。鉄板焼きやたこ酢などの一品、持ち帰りもある。小上がりの鉄板個室とカウンターがあり、カラオケを置いているので宴会にも使われる。毎日18:00から翌0:00までの通し営業で定休日なし、駐車場あり。</div>
+<div class="sig"><b>一皿:</b>スペシャルお好み焼き(広島風・関西風が選べる)／鉄板焼き／たこ酢</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝・祝前日 18:00〜翌0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>香川県丸亀市土器町西7-78</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0877234561">☎ 0877-23-4561</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>居酒屋の業態を散らすため、お好み焼き・鉄板焼きの枠として入れた。丸亀で夜0時まで開く鉄板の店。営業の根拠＝Yahoo!マップの口コミ写真が2026年9月13日、2026年3月16日と投稿されている（2026-11-01 確認）。あわせてInstagramに2026年9月14日付で「町で約35年愛され続ける」紹介投稿がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%81%AB%E5%A5%89%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E8%A5%BF7-78">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000539156/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000539156/tel/">ホットペッパーグルメ 電話番号ページ 2026-11-01 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/YLu-N9_pSAI">Yahoo!マップ 店舗ページ（口コミ写真の日付＝営業の根拠）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-izakaya-rin">
+<img class="hero" src="img/marugame/marugame-izakaya-rin.jpg" alt="味に魅かれて凛 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-izakaya-rin_exterior.jpg" alt="味に魅かれて凛 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>味に魅かれて凛<span class="yomi">あじにみかれてりん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">45席。料理の値段表を置かず、問うと「料理は時価です」と返ってくる店。店主は酒にこだわり、銘酒・名品を棚一面に揃える。赤い暖簾に白く「凛」の一文字。奥に個室があり、結納やあらたまった会合にも使われる。日曜・祝日が定休で、月曜から土曜と祝前日の18:00〜22:30だけの営業。お通しは300〜500円、駐車場11台。丸亀駅から北東へ歩いて10分、丸亀港の手前にある。</div>
+<div class="sig"><b>一皿:</b>銘酒・名品の日本酒(店主が揃える)／新鮮な魚介で好みの一品／抹茶のブラマンジュ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝前日 18:00〜22:30</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>香川県丸亀市富士見町2-1-22</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0877250373">☎ 0877-25-0373</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で酒を主役に据えている店の1軒。ホットペッパーの紹介文に「美味をしつらえる店主は、しかし酒にこだわる。酒の味覚を楽しめるように、銘酒名品を取り揃えている」とある。営業の根拠＝Yahoo!マップの口コミが2026年7月4日、2026年3月6日と2026年に入って投稿されている（2026-11-01 確認）。「味に魅かれて凛 丸亀 閉店」で検索しても閉店の報はなく、楽天ぐるなび・HAMONIに載る電話番号もホットペッパーと一致する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E3%81%AB%E9%AD%85%E3%81%8B%E3%82%8C%E3%81%A6%E5%87%9B%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%AF%8C%E5%A3%AB%E8%A6%8B%E7%94%BA2-1-22">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000986698/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・酒の記述）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ000986698/tel/">ホットペッパーグルメ 電話番号ページ 2026-11-01 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/oybtEPvRW4I">Yahoo!マップ 店舗ページ（口コミの日付＝営業の根拠）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-izakaya-sumiyaki-shin">
+<img class="hero" src="img/marugame/marugame-izakaya-sumiyaki-shin.jpg" alt="炭焼工房　心 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-izakaya-sumiyaki-shin_exterior.jpg" alt="炭焼工房　心 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>炭焼工房　心<span class="yomi">すみやきこうぼうしん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（綾川町）72席。職人が備長炭で串を一本ずつ焼き、遠赤外線で旨みを閉じ込める炭火串焼きの店。カウンター4席のほか、4名・6名の掘りごたつ個室を10卓以上そろえ、団体の宴会にも対応する。昼は11時から、夜は翌0時まで。水曜定休、駐車場35台、全席禁煙。綾菊酒造のある綾川町にあり、日本酒の品ぞろえはホットペッパーの区分で「充実」。</div>
+<div class="sig"><b>一皿:</b>炭火串焼き(備長炭で一本ずつ焼く看板料理)／だし巻き卵／誕生日・記念日の特製デザートプレート(有料・要予約)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・日・祝・祝前日 11:00〜14:30（料理L.O. 14:00）／17:00〜翌0:00（料理L.O. 23:30）／土 17:00〜翌0:00（料理L.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>香川県綾歌郡綾川町羽床下36-1</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーのネット予約は来店当日21時まで。リクエスト予約は前日17時まで。電話も可） — <a href="tel:0878997778">☎ 087-899-7778</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀市の南に接する綾川町（綾菊酒造の地元）から補った炭火串焼きの店。駐車場35台で車の客を受けられる。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月2日〜2027年1月31日まで、水曜の定休日を除いて「即予約可（◎）」（2026-11-01 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E5%B7%A5%E6%88%BF%E3%80%80%E5%BF%83%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E7%B6%BE%E6%AD%8C%E9%83%A1%E7%B6%BE%E5%B7%9D%E7%94%BA%E7%BE%BD%E5%BA%8A%E4%B8%8B36-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001276838/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・ネット予約カレンダー）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ001276838/tel/">ホットペッパーグルメ 電話番号ページ 2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ001276838/photo/">ホットペッパーグルメ 写真ギャラリー 2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-izakaya-nikoichi">
+<img class="hero" src="img/marugame/marugame-izakaya-nikoichi.jpg" alt="酒肴屋 にこいち 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>酒肴屋 にこいち<span class="yomi">しゅこうやにこいち</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">（善通寺市）40席。キャッチコピーは「新鮮な海の幸と日本酒が自慢！海鮮居酒屋」。瀬戸内の刺身に厳選した地酒を合わせるのが売りで、締めに特製まぜそばがある。カウンター席あり、駐車場8台。水曜定休で17時から翌0時までの通し営業。外観写真なし（ホットペッパーの掲載写真36枚のうち長辺900px以上のものに建物外観のカットがないため）。</div>
+<div class="sig"><b>一皿:</b>厳選した地酒(瀬戸内の刺身に合わせる)／瀬戸内の鮮魚のお造り／特製まぜそば</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日・祝・祝前日 17:00〜翌0:00（料理L.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>香川県善通寺市上吉田町8-5-8</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーのネット予約・電話とも） — <a href="tel:0877859702">☎ 0877-85-9702</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章に求められた「香川の地酒を揃える店」の3軒目で、丸亀市内では手薄な地酒＋海鮮の組み合わせを隣接の善通寺市から補った。ホットペッパーの紹介文に「香川名物の骨付鳥や瀬戸内産の新鮮なお刺身が自慢◎厳選した地酒の日本酒と一緒にゆったり楽しめます」とある（骨付鳥は品書きの一つで、店の看板は海鮮と日本酒）。営業の根拠＝ネット予約カレンダーが2026年11月2日〜2027年1月31日まで、水曜の定休日を除いて「即予約可（◎）」（2026-11-01 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%82%B4%E5%B1%8B%20%E3%81%AB%E3%81%93%E3%81%84%E3%81%A1%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%96%84%E9%80%9A%E5%AF%BA%E5%B8%82%E4%B8%8A%E5%90%89%E7%94%B0%E7%94%BA8-5-8">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ003532507/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・地酒の記述・ネット予約カレンダー）2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ003532507/tel/">ホットペッパーグルメ 電話番号ページ 2026-11-01 取得</a> / <a href="https://www.hotpepper.jp/strJ003532507/photo/">ホットペッパーグルメ 写真ギャラリー 2026-11-01 取得</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-marugame-yoshoku-bistro-angers">
+<img class="hero" src="img/marugame/marugame-yoshoku-bistro-angers.jpg" alt="ビストロ アンジェ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-bistro-angers_exterior.jpg" alt="ビストロ アンジェ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>ビストロ アンジェ<span class="yomi">びすとろ あんじぇ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">丸亀駅の南口を出て美術館との間の道を南へ入ってすぐ、赤い看板が目印の20席（4名×2卓、2名×4卓、カウンター2席）のフレンチ。2011年5月の開店で、本町の中で一度移転したあとも同じ本町で続いている。ランチ・ディナーとも完全コース制で、1日最大3組だけの予約制。メインの肉料理は真空調理したものを客席の前で炭火で仕上げる。食後の小菓子は元パティシエのシェフが毎日50種類以上を用意し、ワゴンから好きなだけ取れる。フランスワインは250〜300種で、月1回ワイン会を開く。駐車場あり、別館に宴会場。</div>
+<div class="sig"><b>一皿:</b>フレンチのコース(昼4,000円〜・夜7,000円〜。肉料理は客席の前で炭火で仕上げる)／小菓子のワゴンサービス(焼き菓子・ショコラなど50種類以上をコースの最後に好きなだけ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00（料理L.O. 13:00）／18:00〜22:00（料理L.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>香川県丸亀市本町26-1</td></tr>
+<tr><th>予約</th><td>要予約（電話。ランチ・ディナーとも1日最大3組） — <a href="tel:0877225537">☎ 0877-22-5537</a> ／ <a href="http://www.marugame-bistro-angers.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀で最も古くから続く本格フレンチで、駅前という場所も含めてこの章の起点になる。営業している根拠＝公式サイトに2026年7月アップロードの写真があり、11月28日(土)・12月29日(火)のワイン会と12月24日・25日のクリスマスディナー（2026年）を告知している（2026-11-03 確認）。ホットペッパーグルメの口コミも2026年8月24日付。営業時間は公式サイトとホットペッパーで一致。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%82%A2%E3%83%B3%E3%82%B8%E3%82%A7%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E6%9C%AC%E7%94%BA26-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001016041/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・席数・コース価格・口コミ日付）2026-11-03 取得</a> / <a href="http://www.marugame-bistro-angers.com/">ビストロ アンジェ 公式サイト（住所・電話・営業時間・2026年のワイン会とクリスマスの告知）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-pizzeria-con-cuore">
+<img class="hero" src="img/marugame/marugame-yoshoku-pizzeria-con-cuore.jpg" alt="PIZZERIA CON CUORE 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>PIZZERIA CON CUORE<span class="yomi">ぴっつぇりあ こんくおーれ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">讃岐富士のふもと、丸亀自動車学校の近くにある40席（カウンター4・テーブル26・個室8〜10）のピッツェリア。店内に薪窯を据え、イタリアから輸入したモッツァレラと4種のイタリア産トマトを独自にブレンドしたソースでナポリピッツァを焼く。ナポリピッツァの国内大会で優勝した職人がいる。テレビとおもちゃを備えたお座敷個室（12名）があり、20〜40名の貸切も可。全席禁煙、駐車場18台。外観写真なし（ホットペッパーグルメの写真ページに建物正面の写真が無く、長辺900px以上で使える外観の写真を他の媒体でも見つけられなかったため）。</div>
+<div class="sig"><b>一皿:</b>マルゲリータ(輸入モッツァレラと4種のイタリア産トマトのブレンドソース)／D.O.C.・クアトロフォルマッジ・ビアンカプロシュートなど窯焼きピッツァ／生海苔のゼッポリーネ(イタリアの揚げパン)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金 11:30〜14:30（L.O. 14:00）／17:30〜21:00（L.O. 20:30）、水 11:30〜14:30／17:30〜21:00、土日祝 11:00〜14:30（L.O. 14:00）／17:30〜21:00（L.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜・その他不定休（GW・お盆・年末年始は営業日と時間が変わる）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市飯野町東二342-1</td></tr>
+<tr><th>予約</th><td>可（ネット予約可。個室は電話のみ） — <a href="tel:0877888288">☎ 0877-88-8288</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章でいちばん本格的な窯焼きピッツァの店で、市街地から離れた飯野町という立地も章の散らしに効く。営業している根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月・12月・2027年1月まで「◎（即予約可）」で埋まっている（2026-11-03 確認）。口コミも2026年10月23日付。クーポン情報の更新日は2025年10月30日。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=PIZZERIA%20CON%20CUORE%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E9%87%8E%E7%94%BA%E6%9D%B1%E4%BA%8C342-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001215302/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・駐車場・ネット予約カレンダー・口コミ日付）2026-11-03 取得</a> / <a href="https://www.hotpepper.jp/strJ001215302/photo/">ホットペッパーグルメ 店内・外観写真ページ（写真の出どころ）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-nagagutsu">
+<img class="hero" src="img/marugame/marugame-yoshoku-nagagutsu.jpg" alt="Pizza&amp;Pasta ながぐつ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-nagagutsu_exterior.jpg" alt="Pizza&amp;Pasta ながぐつ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>Pizza&amp;Pasta ながぐつ<span class="yomi">ぴざあんどぱすた ながぐつ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">土器町東の路地に建つ民家を改装した14席のイタリア料理店。庭の見える窓際席とカウンターがあり、暖色の照明の落ち着いた店内で手打ちに近いもちもちのパスタと手作り生地のピッツァを出す。店内には大きな生ハムの原木が吊るされ、ワインは黒板のおすすめから選べる。3,500円〜のコースもあり、少人数の記念日利用が多い。全席禁煙、駐車場あり。木曜定休。</div>
+<div class="sig"><b>一皿:</b>ジェノベーゼ(バジルのソースがもちもちのパスタによく絡む看板パスタ)／ピザ マルゲリータ(手作り生地とトマトソースの店長おすすめ)／レバーペースト(カリッと焼いたパンに塗ってワインと)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00（料理L.O. 13:30）／17:30〜23:00（料理L.O. 22:15）※Yahoo!マップは夜18:00〜の表記</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市土器町東9-138</td></tr>
+<tr><th>予約</th><td>可（電話） — <a href="tel:0877856362">☎ 0877-85-6362</a> ／ <a href="https://www.instagram.com/nagagutsu0319">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>土器町という郊外側の場所と、14席の小さな一軒家という性格で章に幅が出る。営業している根拠＝Yahoo!マップの口コミが2026年9月15日付（直近3件が2026年6月20日・7月19日・9月15日）で、公式Instagram（nagagutsu0319）も掲載されている（2026-11-03 確認）。なお夜の開店時刻はホットペッパーが17:30、Yahoo!マップが18:00と食い違うため、幅のある側（17:30〜）をホットペッパーの表記のまま載せている。定休日はどちらも木曜で一致。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Pizza%26Pasta%20%E3%81%AA%E3%81%8C%E3%81%90%E3%81%A4%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E6%9D%B19-138">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000858707/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・席数・予算）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/Msvk5cJ4MK6">Yahoo!マップ 店舗ページ（電話・曜日別営業時間・定休日・口コミ投稿日 2026-09-15・公式Instagram）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-kitchen-orion">
+<img class="hero" src="img/marugame/marugame-yoshoku-kitchen-orion.jpg" alt="キッチン オリオン 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-kitchen-orion_exterior.jpg" alt="キッチン オリオン 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>キッチン オリオン<span class="yomi">きっちん おりおん</span></div>
+<div class="desc">2017年開店、24席の洋食店。オムライス、ハンバーグ、ナポリタン、エビフライなどメニューは30種類以上で、デミグラスソースまで手作り。一番人気は有頭エビがのった「デミオムエビ」で、エビフライは店内で仕込みサクサクの衣に自家製タルタルをかける。オムライスの卵は「ふわふわ」と「巻き」から選べる。ランチの太麺ナポリタンは＋150円でサラダとスープが付く。全席禁煙、駐車場は共有30台。20人以下なら貸切可。予約は3日前までに。</div>
+<div class="sig"><b>一皿:</b>デミオムエビ(トロトロの玉子のオムライスに有頭エビをのせた一番人気)／月見ナポリタン 950円(太麺の懐かしいナポリタンに卵)／ハンバーグオムライス(巻き) 1,300円(国産牛豚ハンバーグを自家製デミで)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（L.O. 14:30）／17:00〜21:00（L.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜（不定休あり）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市三条町889-1</td></tr>
+<tr><th>予約</th><td>可（電話。予約は3日前まで。20人以下で貸切可） — <a href="tel:0877586356">☎ 0877-58-6356</a> ／ <a href="https://kitchen-orion.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>オムライス・ハンバーグ・エビフライ・ナポリタンという昔ながらの洋食が一通りそろう、丸亀の「町の洋食屋」の代表格。営業している根拠＝Yahoo!マップの口コミが2026年8月29日付（直近に2026年8月15日・21日・26日・29日の投稿が並ぶ、計45件）。地域情報サイト「マルータ.net」の店舗ページも2026年7月24日付で更新されている（2026-11-03 確認）。公式サイト・マルータ・Yahoo!マップの3者で営業時間（11:00〜15:00／17:00〜21:00）と木曜定休が一致。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%20%E3%82%AA%E3%83%AA%E3%82%AA%E3%83%B3%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E4%B8%89%E6%9D%A1%E7%94%BA889-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kitchen-orion.net）より引用 / 外観: 出典ページ / 参照元: <a href="https://kitchen-orion.net/">キッチン オリオン 公式サイト（住所・電話・営業時間・定休日・席数・予算・写真）2026-11-03 取得</a> / <a href="https://maroota.net/kicchinorion/">マルータ.net 店舗ページ（丸亀市三条町・看板メニューと価格・2026年7月24日更新）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/r2Poi5DcEDc">Yahoo!マップ 店舗ページ（曜日別営業時間・定休日・口コミ投稿日 2026-08-29）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-liebe">
+<img class="hero" src="img/marugame/marugame-yoshoku-liebe.jpg" alt="Coffee&amp;Rest リーベ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-liebe_exterior.jpg" alt="Coffee&amp;Rest リーベ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>Coffee&amp;Rest リーベ<span class="yomi">こーひーあんどれすと りーべ</span></div>
+<div class="desc">焼肉店「焼肉山下」に併設された喫茶・レストラン。古民家の納屋をリノベーションした建物で、畳の部屋に重厚なソファ席と大きな古時計が置かれ、窓の外に手入れの行き届いた庭園が見える。入口では木彫りの恵比寿様がメニューを持って迎える。看板のリーベランチは固形燃料で目の前で焼く陶板ステーキで、蓋からはみ出すほどの厚切り牛ロース4枚と野菜が入り、最後まで熱々で食べられる。朝7時からのモーニングも人気。エビフライ弁当のテイクアウトあり。専用駐車場は広い。</div>
+<div class="sig"><b>一皿:</b>リーベランチ(牛ロースステーキ) 1,400円(固形燃料で目の前で焼く陶板ステーキ。ミニデザートとドリンク付き)／エビフライランチ(2尾1,500円・3尾1,550円)／おいりアイス(バニラアイスに丸亀の嫁入り菓子「おいり」をのせたセットのデザート)</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:00〜17:00（モーニングは7:00〜10:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市綾歌町富熊750-1</td></tr>
+<tr><th>予約</th><td>未確認（記載なし。電話で確認を） — <a href="tel:0877856850">☎ 0877-85-6850</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>綾歌町という南の旧町で、昔ながらの洋食（ステーキ・エビフライ）と喫茶を兼ねる貴重な一軒。営業している根拠＝地域メディア「まるごと・中讃つーしん」が2026年1月14日に実際に食べに行った記事を出しており、Yahoo!マップの口コミも2026年9月16日付（2026-11-03 確認）。営業時間7:00〜17:00・木曜定休は両者で一致。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Coffee%26Rest%20%E3%83%AA%E3%83%BC%E3%83%99%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%B6%BE%E6%AD%8C%E7%94%BA%E5%AF%8C%E7%86%8A750-1">Googleマップで開く</a>
+<div class="src">写真: まるごと・中讃つーしん（www.marugame2.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/gourmets/115930">まるごと・中讃つーしん 実食記事（住所・電話・営業時間・定休日・駐車場・メニュー価格）2026-01-14 公開／2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/ve-aYobEZKA">Yahoo!マップ 店舗ページ（曜日別営業時間・木曜定休・電話・口コミ投稿日 2026-09-16）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-fille-et-fils">
+<img class="hero" src="img/marugame/marugame-yoshoku-fille-et-fils.jpg" alt="Ilex bistro fille et fils 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-fille-et-fils_exterior.jpg" alt="Ilex bistro fille et fils 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>Ilex bistro fille et fils<span class="yomi">あいれっくす びすとろ ふぃーゆ えふぃす</span></div>
+<div class="desc">にわとり農家に生まれた兄弟が営むビストロで、綾歌町栗熊西の複合施設アイレックスの中にある。看板は実家の養鶏場から届く新鮮な海藻卵で作るオムライスで、サラダ・彩りの前菜・スープが付くランチセットになる。昼は旬の食材を使った日替わりのパスタランチもあり、夜は木曜から日曜・祝日だけアラカルトとワインの店になる。カウンターの上の黒板にその日の料理とワインが並び、ガラス張りの明るい店内と庭の見える席、ソファ席がある。昼は売り切れ次第終了。ディナーは20名以上で貸切可。全席禁煙、駐車場あり。</div>
+<div class="sig"><b>一皿:</b>たまご屋さんのオムライスランチセット 1,400円(実家の養鶏場の海藻卵。前菜・サラダ・スープ付き)／本日のパスタランチセット(旬の食材の日替わり)／厳選ワイン(夜はアラカルトとワインのビストロに)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:00（なくなり次第終了）／木・金・土・日・祝のみ 18:00〜21:00 ※Yahoo!マップとまるつーは夜22:00までの表記</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市綾歌町栗熊西1680 アイレックス内</td></tr>
+<tr><th>予約</th><td>可（電話。ディナーは20名以上で貸切可） — <a href="tel:0877861314">☎ 0877-86-1314</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>綾歌町の山あいで、生産者（養鶏農家）と作り手が同じという珍しい成り立ちのフレンチ。オムライスという洋食の王道を一番の看板にしている点でもこの章に合う。営業している根拠＝Yahoo!マップの口コミが2026年10月8日付（2025年11月19日・2026年3月31日の投稿もあり）。地域情報サイト「マルータ.net」の店舗ページも2026年5月15日付（2026-11-03 確認）。なお公式サイト（bistro-fille-et-fils.com）は当方の実測では接続できなかったので website は空にしている。夜の閉店時刻はマルータ.net が21:00、まるごと・中讃つーしんとYahoo!マップが22:00で食い違うため、更新の新しいマルータ.net の21:00を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Ilex%20bistro%20fille%20et%20fils%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%B6%BE%E6%AD%8C%E7%94%BA%E6%A0%97%E7%86%8A%E8%A5%BF1680%20%E3%82%A2%E3%82%A4%E3%83%AC%E3%83%83%E3%82%AF%E3%82%B9%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: マルータ.net（丸亀・宇多津の店舗情報サイト）（maroota.net）より引用 / 外観: 出典ページ / 参照元: <a href="https://maroota.net/ilexbistrofilleetfils/">マルータ.net 店舗ページ（住所・電話・営業時間・定休日・駐車場・看板メニューと価格／2026年5月15日付）2026-11-03 取得</a> / <a href="https://www.marugame2.jp/gourmets/30387">まるごと・中讃つーしん 実食記事（住所・電話・営業時間・定休日・店内と外観の写真）2020-09-28 公開／2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/M0NLT2BEoEo">Yahoo!マップ 店舗ページ（曜日別営業時間・水曜定休・電話・口コミ投稿日 2026-10-08）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-asa">
+<img class="hero" src="img/marugame/marugame-yoshoku-asa.jpg" alt="中華料理 阿佐 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-asa_exterior.jpg" alt="中華料理 阿佐 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>中華料理 阿佐<span class="yomi">ちゅうかりょうり あさ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">県道18号沿いのテナントの一番手前にある31席の中華料理店。リフォームされた明るい店内にテーブル席と円卓があり、ガラス越しに厨房でシェフが料理する姿が見える。大衆的な定食から本格的な広東料理まで幅広く、ぷりっとした豆腐としびれる辛さの麻婆豆腐が看板。物価が上がってからもランチはほとんどが700〜800円台で、量も多い。20名以上なら貸切も相談可。駐車場あり。2024年2月から3月にかけて店主のけがで休業したが、同年3月30日に営業を再開している。</div>
+<div class="sig"><b>一皿:</b>麻婆豆腐(ぷりっとした豆腐としびれる辛さ。この店の看板)／本格広東風チャーシュー(店の一押し)／海老のチリソース／五目チャーハン(スープ付)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:00／17:00〜21:30</td></tr>
+<tr><th>定休日</th><td class="off">水曜（第1木曜も休み）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市飯野町東二484</td></tr>
+<tr><th>予約</th><td>可（電話。20名以上の貸切は要相談） — <a href="tel:0877228699">☎ 0877-22-8699</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>飯野山のふもと側で、価格と量で地元に支持されている町の本格中華。営業している根拠＝ホットペッパーグルメの口コミが2026年5月1日付（2026-11-03 確認）。2024年2〜3月の休業については、まるごと・中讃つーしんが「3月30日(土)から営業再開してます」と追記している（2024-04-09 更新）。なおホットペッパーのアクセス欄は「国道18号線沿い」だが、丸亀市飯野町を通るのは県道18号なので area には県道と書いた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E9%98%BF%E4%BD%90%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E9%87%8E%E7%94%BA%E6%9D%B1%E4%BA%8C484">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001028091/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・席数・駐車場・口コミ日付）2026-11-03 取得</a> / <a href="https://www.marugame2.jp/shops/74163">まるごと・中讃つーしん 休業と営業再開の記事（場所・価格帯・2024年3月30日 営業再開の追記）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-aoba-seirin">
+<img class="hero" src="img/marugame/marugame-yoshoku-aoba-seirin.jpg" alt="中華料理 あおば×政麟 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-aoba-seirin_exterior.jpg" alt="中華料理 あおば×政麟 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">43</span>中華料理 あおば×政麟<span class="yomi">ちゅうかりょうり あおば せいりん</span></div>
+<div class="desc">創業50年の老舗中華店で、2022年7月まで田村町にあった「中華料理あおば」が同年9月に原田町へ移り「あおば×政麟」になった。和・洋・中の要素を取り入れた品ぞろえで、姉妹店「薔薇飯店」でしか食べられなかったオムライスを2023年から出している。卵3個ぶんはありそうな厚みのふわとろ卵の下に、中華店ならではのぱらっとしたご飯が詰まり、上にトマトソースとスパイスがかかる。量が多いので複数人で分けるのもよい。テーブル席・カウンター席と大人数用の部屋があり、敷地内に駐車スペースあり。</div>
+<div class="sig"><b>一皿:</b>オムライス 800円(ふわとろ卵の下に中華店らしいぱらっとしたご飯。トマトソースとスパイスがけ)／ビッグ野菜餃子 400円(レンゲより大きい7〜8cm級)／オムそば(2023年から登場)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理L.O. 14:30）／17:00〜22:00（料理L.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜（まるごと・中讃つーしん 2024年の記事では月曜のみ）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市原田町1926-1</td></tr>
+<tr><th>予約</th><td>未確認（記載なし。電話で確認を） — <a href="tel:0877242788">☎ 0877-24-2788</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>中華料理店が作る洋食という、この章にしか置けない一軒。創業50年という古さも効く。営業している根拠＝Yahoo!マップの口コミが2026年8月11日付（2026年4月25日・5月26日・6月8日の投稿もあり）、地域情報サイト「マルータ.net」の店舗ページも2026年4月29日付（2026-11-03 確認）。電話番号はまるごと・中讃つーしん（2024年）が携帯 080-6287-9307、Yahoo!マップが固定 0877-24-2788 で食い違うため、掲載の新しいYahoo!マップの固定番号を採った。定休日もまるつーの「月曜」に対しYahoo!マップは「月曜・火曜」で、新しい側（月・火）を採っている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E3%81%82%E3%81%8A%E3%81%B0%C3%97%E6%94%BF%E9%BA%9F%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%8E%9F%E7%94%B0%E7%94%BA1926-1">Googleマップで開く</a>
+<div class="src">写真: まるごと・中讃つーしん（www.marugame2.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/gourmets/73210">まるごと・中讃つーしん 実食記事（住所・営業時間・駐車場・メニュー価格・創業50年・2022年9月の移転）2024-02-28 公開／2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/6dR-D3AMDq2">Yahoo!マップ 店舗ページ（曜日別営業時間・月火定休・電話・口コミ投稿日 2026-08-11）2026-11-03 取得</a> / <a href="https://maroota.net/aobaseirin/">マルータ.net 店舗ページ（丸亀市原田町・2026年4月29日付）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-seika">
+<img class="hero" src="img/marugame/marugame-yoshoku-seika.jpg" alt="せい華 丸亀店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">44</span>せい華 丸亀店<span class="yomi">せいか まるがめてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">県道33号沿いにある80席（カウンター・テーブル・座敷）の大きな中華料理店。駐車場は35台、通路が広く車いすやベビーカーでも入れる。カウンターがずらりと並び一人でも入りやすく、雑誌やコミックが置かれていて中華のファミリーレストランのような気軽さがある。看板は台湾ラーメン。メニューの数が多く、7〜8名分の大皿セットもある。50名以上で貸切可。外観写真なし（ホットペッパーグルメの写真ページは店内のみで、長辺900px以上で使える外観の写真を他の媒体でも見つけられなかったため）。</div>
+<div class="sig"><b>一皿:</b>台湾ラーメン(中細ちぢれ麺にあっさりスープ、唐辛子のエキスが効いた看板メニュー。肉そぼろを混ぜて辛さを足す)／茉莉(じゃすみん)セット(焼き餃子・海老チリ・小籠包など7〜8名分の大皿セット)／ピータン</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30（L.O. 14:00）／17:30〜翌0:00（L.O. 23:30）※ホットペッパーは11:00〜14:30／17:00〜23:30の表記</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>香川県丸亀市田村町1245</td></tr>
+<tr><th>予約</th><td>可（電話。50名以上で貸切可） — <a href="tel:0877217198">☎ 0877-21-7198</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀で深夜まで開いている数少ない中華の大箱で、家族連れから一人客まで受ける。営業している根拠＝Yahoo!マップの口コミが2026年8月5日付（2025年11月10日・2026年5月8日の投稿もあり）（2026-11-03 確認）。営業時間はホットペッパーが11:00〜14:30／17:00〜23:30、Yahoo!マップが11:30〜14:30／17:30〜翌0:00で食い違うため、口コミの更新が新しいYahoo!マップの側を採った。定休日は両者とも不定休で一致。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9B%E3%81%84%E8%8F%AF%20%E4%B8%B8%E4%BA%80%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%94%B0%E6%9D%91%E7%94%BA1245">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001027068/">ホットペッパーグルメ 店舗ページ（住所・アクセス・席数・駐車場・予算・宴会コース）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/cf3p7Ds_qh6">Yahoo!マップ 店舗ページ（曜日別営業時間・電話・口コミ投稿日 2026-08-05）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-tejikumu">
+<img class="hero" src="img/marugame/marugame-yoshoku-tejikumu.jpg" alt="韓国ダイニング テジクム 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">45</span>韓国ダイニング テジクム<span class="yomi">かんこくだいにんぐ てじくむ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">田村東交差点の南にある40席の韓国料理店。ネオンサインと壁の飾りで韓国の街角のような内装にしてあり、宴会や女子会の利用が多い。厚切りの豚バラを鉄板で焼くサムギョプサルは部位を2種類選べる盛り合わせがある。全席禁煙、駐車場あり。夜だけの営業で月曜定休。外観写真なし（ホットペッパーグルメの写真ページに建物正面の写真が無く、長辺900px以上で使える外観の写真を他の媒体でも見つけられなかったため）。</div>
+<div class="sig"><b>一皿:</b>チュサム(2〜3人前。甘辛いイイダコ炒め「チュクミ」と豚バラ焼き「サムギョプサル」を一皿で)／サムギョプサル選択2種盛り(厚切り豚バラを鉄板で焼く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市田村町118-2</td></tr>
+<tr><th>予約</th><td>可（ネット予約可） — <a href="tel:0877211616">☎ 0877-21-1616</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀で韓国料理を夜しっかり食べられる専門店。この章で唯一のアジア系で、田村町という場所も章の散らしに効く。営業している根拠＝ホットペッパーグルメのネット予約カレンダーが2026年11月・12月・2027年1月まで「◎（即予約可）」で埋まっており、口コミも2026年9月20日付（直近に9月4日・9月19日・9月20日）（2026-11-03 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%20%E3%83%86%E3%82%B8%E3%82%AF%E3%83%A0%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%94%B0%E6%9D%91%E7%94%BA118-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ003498772/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・席数・駐車場・ネット予約カレンダー・口コミ日付）2026-11-03 取得</a> / <a href="https://www.hotpepper.jp/strJ003498772/photo/">ホットペッパーグルメ 店内・外観写真ページ（料理名と写真の出どころ）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-teraoka-shoten">
+<img class="hero" src="img/marugame/marugame-yoshoku-teraoka-shoten.jpg" alt="せんもん餃子 寺岡商店 丸亀本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-teraoka-shoten_exterior.jpg" alt="せんもん餃子 寺岡商店 丸亀本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">46</span>せんもん餃子 寺岡商店 丸亀本店<span class="yomi">せんもんぎょうざ てらおかしょうてん まるがめほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">丸亀城の北東、大手町の四つ角にある35席の餃子専門店。鶏ミンチを使った「鶏ぎょうざ」が看板で、すだちの搾り果汁とこしょうであっさり食べるタイプと、青森産にんにくをたっぷり使い大根おろしと酢醤油で食べるタイプがある。カウンターと木のテーブルが並ぶ気さくな店で、平日も予約が入っていることが多い。すだち付きの冷凍生餃子のテイクアウトもあり、電話で予約しておくと早い。高松に2店とバンコクに1店ある香川の会社で、ここが本店。売り切れ次第終了。駐車場はないので近隣のコインパーキングへ。</div>
+<div class="sig"><b>一皿:</b>すだち餃子(ニンニク不使用の鶏ぎょうざ。すだちの搾り果汁とこしょうであっさり)／ニンニク餃子(青森産にんにくたっぷり。大根おろしと酢醤油で)／牛アキレス(だし醤油とわさびで。ビールのつまみに)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 17:00〜21:00（L.O. 20:30）／金 17:00〜21:45（L.O. 21:15）／土 16:00〜21:45（L.O. 21:15）／日 15:00〜18:00（L.O. 17:30）※売り切れ次第終了</td></tr>
+<tr><th>定休日</th><td class="off">不定休（祝日は営業時間が変わることがあるので電話で確認を）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市大手町3-8-11</td></tr>
+<tr><th>予約</th><td>可（電話。冷凍生餃子の持ち帰りも電話予約が早い） — <a href="tel:0877254304">☎ 0877-25-4304</a> ／ <a href="http://www.teraokagyo-za.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀城の南側（大手町）で夜に歩いて行ける、丸亀発祥の餃子店の本店。営業している根拠＝Yahoo!マップの口コミが2026年10月17日付（2026年6月28日・9月4日・10月3日の投稿もあり）（2026-11-03 確認）。営業時間は公式サイトの記載（丸亀本店の曜日別）を採った。ホットペッパーの「16:00〜翌0:00」は公式より古いとみられるため採らなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9B%E3%82%93%E3%82%82%E3%82%93%E9%A4%83%E5%AD%90%20%E5%AF%BA%E5%B2%A1%E5%95%86%E5%BA%97%20%E4%B8%B8%E4%BA%80%E6%9C%AC%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA3-8-11">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="http://www.teraokagyo-za.com/">せんもん餃子 寺岡商店 公式サイト（丸亀本店の住所・電話・曜日別営業時間・ラストオーダー）2026-11-03 取得</a> / <a href="https://www.hotpepper.jp/strJ001026888/">ホットペッパーグルメ 店舗ページ（住所・アクセス・席数・予算・料理写真）2026-11-03 取得</a> / <a href="https://map.yahoo.co.jp/v3/place/ogtQAD-90Ek">Yahoo!マップ 店舗ページ（電話・口コミ投稿日 2026-10-17・公式サイトのURL）2026-11-03 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-yoshoku-cafe-amine">
+<img class="hero" src="img/marugame/marugame-yoshoku-cafe-amine.jpg" alt="モロッコ食堂 Café Aminé 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-yoshoku-cafe-amine_exterior.jpg" alt="モロッコ食堂 Café Aminé 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">47</span>モロッコ食堂 Café Aminé<span class="yomi">もろっこしょくどう かふぇ あみん</span></div>
+<div class="desc">2026年4月3日に新浜町の「ボヌール」跡地で開いたモロッコ料理の食堂。モロッコ出身のシェフ・アミンさんが作る。レストランというより喫茶店のような空間で、棚にはモロッコから持ち帰った色鮮やかな食器やスパイス、世界を知る本が並ぶ。定番の「鶏肉と野菜のタジン」は唐辛子の強い辛さを使わず素材の旨味を引き出し、本場の大鍋ではなく一人用のタジン鍋で出る。2026年6月26日からシーフードのタジンも始まった。駐車場は建物北側に4台と道を挟んだ南側。電話番号は公開情報を確認できず未確認（予約は公式LINEから）。</div>
+<div class="sig"><b>一皿:</b>鶏肉と野菜のタジン(ウコン・生姜・塩こしょうが土台の一人用タジン。ドリンクとハリラスープかモロッカンサラダ付き)／シーフードのタジン(2026年6月26日から。イワシや海老)／ホブス(シェフが毎朝焼くセモリナ粉入りのパン)／チャイ(鍋で手作り)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:30〜（モーニング 9:30〜／ランチ 11:00〜）。ラストオーダーは月・火・日 16:30、金・土・祝前日 19:00 ※マルータ.netは9:30〜17:00（L.O.16:00）と記載</td></tr>
+<tr><th>定休日</th><td class="off">水曜・木曜</td></tr>
+<tr><th>住所</th><td>香川県丸亀市新浜町2-11-1 秋篠テナント1F</td></tr>
+<tr><th>予約</th><td>可（公式LINEから。電話番号は未確認）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>香川でモロッコ料理を出す店はほとんどなく、この章の「その他の各国料理」の軸になる。営業している根拠＝地域メディア「まるごと・中讃つーしん」が2026年6月25日に「6月26日(金)からシーフードメニューも登場する」と報じており、地域情報サイト「マルータ.net」の店舗ページも2026年5月3日付（2026-11-03 確認）。開店告知だけの店にあたるため「モロッコ食堂 カフェアミン 丸亀 閉店」でも検索したが、閉店・休業の報は見つからなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A2%E3%83%AD%E3%83%83%E3%82%B3%E9%A3%9F%E5%A0%82%20Caf%C3%A9%20Amin%C3%A9%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E6%96%B0%E6%B5%9C%E7%94%BA2-11-1%20%E7%A7%8B%E7%AF%A0%E3%83%86%E3%83%8A%E3%83%B3%E3%83%881F">Googleマップで開く</a>
+<div class="src">写真: まるごと・中讃つーしん（www.marugame2.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/stores/125381">まるごと・中讃つーしん 開店・メニュー記事（住所・営業時間・ラストオーダー・定休日・駐車場・料理の内容）2026-06-25 公開／2026-11-03 取得</a> / <a href="https://maroota.net/moroccocafeamine/">マルータ.net 店舗ページ（住所・営業時間・定休日・駐車場・禁煙／2026年5月3日付）2026-11-03 取得</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・喫茶・甘味</h2>
+<div class="card" id="c-marugame-cafe-hougetsudo">
+<img class="hero" src="img/marugame/marugame-cafe-hougetsudo.jpg" alt="御菓子司 寳月堂 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-hougetsudo_exterior.jpg" alt="御菓子司 寳月堂 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>御菓子司 寳月堂<span class="yomi">おかしつかさ ほうげつどう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip kanko">kanko</span></div>
+<div class="desc">大正6（1917）年創業で2017年に100年を迎えた和菓子店。社屋は明治31年・大正7年・昭和6年に建てられた3棟からなり、中央の木造3階建て（スパニッシュ瓦とスクラッチタイルが目を引く洋風と町屋風の折衷）は2017年に国の登録有形文化財に登録された。店内にかき氷機を据え、例年ゴールデンウィーク前から秋口まで12時〜16時に和菓子屋のかき氷を出す（2026年は4月24日〜10月12日）。西讃にだけ伝わる嫁入り菓子「丸亀おいり」の製造元でもあり、かき氷のトッピングにも使う。</div>
+<div class="sig"><b>一皿:</b>さぬき和三盆のかき氷(香川特産の和三盆糖で作る特製シロップ。白玉やおいりをのせる)／丸亀おいり(もち米を炒って作る西讃の嫁入り菓子。賞味期限120日)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜17:30／かき氷は営業期間中のみ 12:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜日（祝日・繁忙期は営業）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市米屋町16</td></tr>
+<tr><th>予約</th><td>未確認（公式サイトに予約の記載なし。電話受付は10:00〜17:00） — <a href="tel:0877230300">☎ 0877-23-0300</a> ／ <a href="https://hougetudou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甘味の軸として選定。香川の銘菓である和三盆とおいりを、持ち帰りではなく店内で食べられる数少ない店。営業の根拠＝公式サイトのお知らせが2026年6月6日付（催事出店情報・和菓子教室）まで更新されており、2026年4月12日付の記事でかき氷の営業期間を「2026年4月24日（金）〜10月12日（月・祝）」と告知している（2026-11-01 確認）。丸亀市観光協会のグルメスポット一覧にも掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E8%8F%93%E5%AD%90%E5%8F%B8%20%E5%AF%B3%E6%9C%88%E5%A0%82%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E7%B1%B3%E5%B1%8B%E7%94%BA16">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（hougetudou.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://hougetudou.com/about/">寳月堂 公式サイト「寳月堂について」（創業年・店舗情報・住所・電話・営業時間・定休日・建物の由来）2026-11-01 取得</a> / <a href="https://hougetudou.com/2026/04/12/%e3%81%8b%e3%81%8d%e6%b0%b7%e3%81%ae%e5%96%b6%e6%a5%ad%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6%ef%bd%9c%e4%b8%b8%e4%ba%80-%e5%af%b3%e6%9c%88%e5%a0%82/">寳月堂 公式サイト お知らせ「かき氷の営業について｜丸亀 寳月堂」2026-04-12 付（かき氷の営業期間・時間・価格・和三盆シロップ・おいりのトッピング）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/5959">丸亀市観光協会 グルメスポット「御菓子司 寳月堂」2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-tomiyacoffee">
+<img class="hero" src="img/marugame/marugame-cafe-tomiyacoffee.jpg" alt="富屋珈琲店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-tomiyacoffee_exterior.jpg" alt="富屋珈琲店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>富屋珈琲店<span class="yomi">とみやこーひーてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip maroota">maroota</span></div>
+<div class="desc">古い町家の梁と板壁をそのまま生かした喫茶店。1階は一枚板の長いカウンターとテーブル席で、昭和レトロな照明の下にジャズが流れる。平日は朝7時から14時までがモーニングの時間帯で、トースト・ホットサンド・グラタン・カレー・焼魚から選べ、夕方からは夜カフェとして開く。2階は展示会や企画展のために1週間5,000円で貸し出すギャラリーで、グランドピアノとドラムを備えたスペースでは定期的にジャズのライブがある。</div>
+<div class="sig"><b>一皿:</b>雫珈琲(時間をかけて落とす水出し珈琲。ミルクを合わせたオーレスタイルもある)／モーニングのグラタン(サラダとコーヒーが付く)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 7:00〜14:00（モーニングのみ）／17:30〜21:00、土日祝 8:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜日（月曜が祝日の場合は翌火曜日）</td></tr>
+<tr><th>住所</th><td>香川県丸亀市富屋町7-1</td></tr>
+<tr><th>予約</th><td>未確認（2階ギャラリーと演奏スペースは要相談・有料） — <a href="tel:0877248651">☎ 0877-24-8651</a> ／ <a href="https://korepano.jp/web/tomiyacoffee/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昭和の面影を残す純喫茶とモーニングの枠で選定。丸亀城下の町家を使い、朝7時開店という点で章の時間帯も散らせる。営業の根拠＝丸亀・宇多津の地域情報サイト「マルータ.net」の店舗情報が2026年5月3日付で掲載され、電話番号・営業時間・定休日が載っている（2026-11-01 確認）。公式サイトにも2025年8月の企画展の案内がある。「富屋珈琲店 閉店」で検索すると静岡県沼津市の同名店の閉店記事しか出ず、丸亀の当店の閉店情報は無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%8C%E5%B1%8B%E7%8F%88%E7%90%B2%E5%BA%97%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%AF%8C%E5%B1%8B%E7%94%BA7-1">Googleマップで開く</a>
+<div class="src">写真: マルータ.net（丸亀・宇多津の店舗情報サイト）（maroota.net）より引用 / 外観: 出典ページ / 参照元: <a href="https://korepano.jp/web/tomiyacoffee/">富屋珈琲店 公式サイト（営業時間・定休日・電話・2階ギャラリーと演奏スペースの料金）2026-11-01 取得</a> / <a href="https://maroota.net/tomiyako-hi-ten/">マルータ.net 店舗情報「富屋珈琲店 | 丸亀市富屋町」2026-05-03 付（住所・電話・営業時間・定休日・駐車場）2026-11-01 取得</a> / <a href="https://www.love-marugame.jp/food/7061">丸亀市観光協会 グルメスポット「富屋珈琲店」（住所・電話・営業時間・定休日・駐車場・おすすめメニューの価格）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-crispycrepe">
+<img class="hero" src="img/marugame/marugame-cafe-crispycrepe.jpg" alt="CRISPY CREPE 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-crispycrepe_exterior.jpg" alt="CRISPY CREPE 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>CRISPY CREPE<span class="yomi">くりすぴーくれーぷ</span></div>
+<div class="chips"><span class="chip maroota">maroota</span><span class="chip kanko">kanko</span></div>
+<div class="desc">2022年11月に原田町で開いたクレープとガレットの専門店。クレープ生地には香川県産小麦「さぬきの夢」、ガレットのそば粉には徳島・祖谷産を100%使い、パリパリのハードクリスピー生地ともちもち生地から選べる。クレープは80種類以上。奥のカフェスペースはアンティークのソファを置いた落ち着いた造りで、カレー粉を使わずスパイスだけで調合する薬膳スパイスカレーやガレットのランチも出す。テイクアウトはのぼりの立つ入口、カフェは「サンジョウビル」と書かれた扉から入る。夏は韓国のかき氷「ピンス」も登場する。</div>
+<div class="sig"><b>一皿:</b>ハードクリスピー生地のチョコアーモンド(一押しのクレープ)／ガレット(徳島・祖谷産そば粉100%。タコス・キーマカレー・スモークサーモンなどから具を選ぶ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00（生地が売り切れ次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日・祝日</td></tr>
+<tr><th>住所</th><td>香川県丸亀市原田町2278-1 サンジョウビル101</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0877853880">☎ 0877-85-3880</a> ／ <a href="https://www.instagram.com/crispycrepe_cafe/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>若い世代向けの甘味と、丸亀市郊外（国道11号・バイパス沿い）という場所の散らしのために選定。香川県産小麦と徳島県産そば粉を使い分ける点が地元の店らしい。営業の根拠＝丸亀・宇多津の地域情報サイト「マルータ.net」の店舗情報が2026年4月29日付で掲載され、電話番号・営業時間・定休日が載っている（2026-11-01 確認）。丸亀市観光協会のグルメスポットにも掲載。「CRISPY CREPE 丸亀 閉店」で検索しても閉店の報は見つからなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=CRISPY%20CREPE%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%8E%9F%E7%94%B0%E7%94%BA2278-1%20%E3%82%B5%E3%83%B3%E3%82%B8%E3%83%A7%E3%82%A6%E3%83%93%E3%83%AB101">Googleマップで開く</a>
+<div class="src">写真: 号外NET 高松市（takamatsu.goguynet.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.love-marugame.jp/food/7400">丸亀市観光協会 グルメスポット「CRISPY CREPE」（住所・電話・営業時間・定休日・駐車場・生地と素材の説明）2026-11-01 取得</a> / <a href="https://maroota.net/crispy-crepe/">マルータ.net 店舗情報「CRISPY CREPE（クリスピークレープ） | 丸亀市原田町」2026-04-29 付 2026-11-01 取得</a> / <a href="https://takamatsu.goguynet.jp/2024/08/07/crispycrepe-kagawa/">号外NET 香川県「とってもおしゃれなあま〜いクレープと美味しいガレットランチの専門店『CRISPY CREPE』」2024-08-07 付（店内の様子・メニュー・入口の案内）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-pancafe-junju">
+<img class="hero" src="img/marugame/marugame-cafe-pancafe-junju.jpg" alt="pancafe junju 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-pancafe-junju_exterior.jpg" alt="pancafe junju 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">51</span>pancafe junju<span class="yomi">ぱんかふぇ じゅんじゅ</span></div>
+<div class="chips"><span class="chip marugame2">marugame2</span></div>
+<div class="desc">まんのう町のパン屋「pancafe junju」が2026年4月13日に出した2号店。丸亀市役所のコンビニ跡に入り、白い壁と木の什器で現代アートのギャラリーのように整えた店内に、メロンパンなどの定番からコロッケパン、サンドイッチ、タルティーヌまで並ぶ。朝6時半から店内でパンを焼き始め、まんのう町の本店からも焼きたてを運ぶ。店主は以前、通町商店街で2年間店を開いていて、丸亀市内への再出店を果たした形。「災害時にパンは強い」という考えから防災と地域支援も掲げる。駐車場は丸亀市役所の駐車場を使う。店内のイートイン席の有無は未確認で、取材記事は買ったパンを隣のマルタスで食べる過ごし方を勧めている。</div>
+<div class="sig"><b>一皿:</b>もっちり食卓ロール(4個入300円。本店で5袋まとめ買いする客もいる看板商品)／タルティーヌ(バゲットに具をのせて焼くフランス式のオープンサンド)</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:30〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">土曜日・日曜日</td></tr>
+<tr><th>住所</th><td>香川県丸亀市大手町2丁目4-21（丸亀市役所内）</td></tr>
+<tr><th>予約</th><td>未確認（電話番号も記事に記載なし）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>パンと焼きたての枠、および丸亀城の北側（大手町）という場所の散らしのために選定。営業の根拠＝地元情報サイト「まるごと・中讃つーしん」の2026年6月1日付の取材記事で、2026年4月13日（月）の開店と営業時間・定休日が確認でき、同記事の読者コメントは2026年7月22日付まで付いている（2026-11-01 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=pancafe%20junju%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA2%E4%B8%81%E7%9B%AE4-21%EF%BC%88%E4%B8%B8%E4%BA%80%E5%B8%82%E5%BD%B9%E6%89%80%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: まるごと・中讃つーしん（www.marugame2.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/stores/123604">まるごと・中讃つーしん「丸亀市役所にパン屋さん『pancafe junju』が2026年4月13日(月)にオープンしてる！」2026-06-01 付（住所・営業時間・定休日・駐車場・おすすめパン・開店の経緯）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-macoccos-life">
+<img class="hero" src="img/marugame/marugame-cafe-macoccos-life.jpg" alt="macocco's life cafe&amp;space 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-macoccos-life_exterior.jpg" alt="macocco's life cafe&amp;space 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">52</span>macocco's life cafe&amp;space<span class="yomi">まこっこずらいふ かふぇあんどすぺーす</span></div>
+<div class="chips"><span class="chip marugame2">marugame2</span></div>
+<div class="desc">2025年6月20日に土器町西で開いたカフェ。店主が焙煎からこだわるコーヒーに、日替わりのランチと数種類のケーキを合わせる。客席はカウンターと2つのボックス席で、車椅子で来ても入りやすいようカウンター席を多めに取り、店内はいたるところがバリアフリーになっている。上の階は個展やハンドメイドの展示に貸すレンタルスペースにする構想があり、モーニングの代わりに遅いブランチ向けのパンのメニューを増やしていく予定。予約は受け付けていない。</div>
+<div class="sig"><b>一皿:</b>日替わりランチ(豚と玉ねぎの焼き肉など。冷やし茶碗蒸しが付く)／店主が焙煎するコーヒーと自家製ケーキ(チョコレートケーキほか数種)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜16:00（L.O. 15:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日・水曜日</td></tr>
+<tr><th>住所</th><td>香川県丸亀市土器町西5-191</td></tr>
+<tr><th>予約</th><td>不可（取材記事に「予約：不可」と明記）</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀市の国道11号側（土器町・川西）の枠。全席禁煙でバリアフリー、予約不可という使い方のはっきりした店。営業の根拠＝地元情報サイト「まるごと・中讃つーしん」が2025年7月9日付で取材記事を掲載し、2025年6月30日時点の店内の様子と営業時間・定休日を載せている（2026-11-01 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=macocco%27s%20life%20cafe%26space%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E5%9C%9F%E5%99%A8%E7%94%BA%E8%A5%BF5-191">Googleマップで開く</a>
+<div class="src">写真: まるごと・中讃つーしん（www.marugame2.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/stores/102890">まるごと・中讃つーしん「丸亀市土器町西に『macocco's life cafe&amp;space』が2025年6月20日(金)にオープン！」2025-07-09 付（所在地・営業時間・定休日・駐車場・予約可否・席と設備・メニュー）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-hokusei">
+<img class="hero" src="img/marugame/marugame-cafe-hokusei.jpg" alt="自家焙煎 喫茶 ホクセイ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-hokusei_exterior.jpg" alt="自家焙煎 喫茶 ホクセイ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">53</span>自家焙煎 喫茶 ホクセイ<span class="yomi">じかばいせん きっさ ほくせい</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span><span class="chip marugame2">marugame2</span></div>
+<div class="desc">（坂出市）綾川沿いののどかな景色を眺めながら過ごせる昔ながらの純喫茶。看板は自家焙煎のコーヒーで、店内には墨アーティスト・樋笠幸三氏が書いた「自家焙煎 珈琲専門店 ホクセイ」の額が掛かる。朝6時45分から開き、モーニングとタイムランチがある。現店主の息子が独学で始めた中華そばが評判を呼び、今ではラーメン目当ての客も多い（ラーメンの提供は11:00〜13:30）。スープは9〜10時間煮込み、かえしの醤油は5種類ほどを混ぜる。不定期で夜営業もある。テーブル席とカウンター席。</div>
+<div class="sig"><b>一皿:</b>自家焙煎の珈琲(店名の通りコーヒー専門店を掲げる)／中華そば(9〜10時間煮込むスープと5種の醤油を混ぜたかえし)</div>
+<table class="info">
+<tr><th>営業時間</th><td>6:45〜17:30頃（タイムランチ・ラーメンは11:00〜13:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日・祝日（臨時休業あり）</td></tr>
+<tr><th>住所</th><td>香川県坂出市林田町758-1</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="tel:0877472081">☎ 0877-47-2081</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>自家焙煎のコーヒー専門店の枠。丸亀市内では自家焙煎を明示する喫茶が見つからず、隣接の坂出市から補った（tags に rinsetsu）。営業の根拠＝坂出市地域おこし協力隊が2025年4月18日〜6月30日に開いた「坂出純喫茶スタンプラリー」の対象8店（坂出市内で35年以上続くレトロ喫茶）に「自家焙煎 喫茶ホクセイ」が入っている（2026-11-01 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%20%E5%96%AB%E8%8C%B6%20%E3%83%9B%E3%82%AF%E3%82%BB%E3%82%A4%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%9D%82%E5%87%BA%E5%B8%82%E6%9E%97%E7%94%B0%E7%94%BA758-1">Googleマップで開く</a>
+<div class="src">写真: まるごと・中讃つーしん（www.marugame2.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/shops/54131">まるごと・中讃つーしん「坂出市林田町『自家焙煎 喫茶 ホクセイ』」2023-02-19 付（住所・電話・営業時間・定休日・メニューと価格・店内の様子）2026-11-01 取得</a> / <a href="https://www.marugame2.jp/events/100499">まるごと・中讃つーしん「坂出市内の純喫茶を対象とした『坂出純喫茶スタンプラリー』を2025年4月18日(金)〜6月30日(月)まで開催してる！」2025-06-08 付（対象8店に『自家焙煎 喫茶ホクセイ』が掲載＝2025年時点の営業の裏付け）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-tearoom-kotohira">
+<img class="hero" src="img/marugame/marugame-cafe-tearoom-kotohira.jpg" alt="The TeaRoom KOTOHIRA 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-tearoom-kotohira_exterior.jpg" alt="The TeaRoom KOTOHIRA 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">54</span>The TeaRoom KOTOHIRA<span class="yomi">ざ てぃーるーむ ことひら</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span><span class="chip marugame2">marugame2</span><span class="chip goguynet">goguynet</span></div>
+<div class="desc">（琴平町）金刀比羅宮の門前、新町商店街の複合施設「KOTOVEGAS（コトベガス）」に入る日本茶スタンド。2024年10月31日の開業を経て、2026年4月2日にメニューを一新してリニューアルした。モザイクタイルのカウンターの奥に細長いイートインスペースがあり、湯呑みや家で淹れるお茶パックも売る。フードは隣接する「Bagel House KOTOHIRA」の焼きたてベーグルに琴平の素材を挟んだベーグルサンドで、食事系からスイーツ系、ベジタリアン向けまで10種類以上。黒いモダンな建物の入口横には大きな天狗のモニュメントが立つ。</div>
+<div class="sig"><b>一皿:</b>ベーグルサンド(食事系の「野菜こんぴらこんがりチーズ」は季節のきんぴらと地元精肉店の焼豚、スイーツ系の「いちご白あんクリームチーズ」は四国産のお茶の餡と季節の果物)／高瀬和紅茶の特製ミルクティー(香川県産の和紅茶を現代風にアレンジ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜日・水曜日</td></tr>
+<tr><th>住所</th><td>香川県仲多度郡琴平町279-4（KOTOVEGAS内）</td></tr>
+<tr><th>予約</th><td>未確認 — <a href="https://kotovegas.com/tea/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>金刀比羅宮の門前町の甘味・茶処の枠として、隣接の琴平町から補った（tags に rinsetsu）。香川県産の和紅茶と四国産の茶葉を軸にしている点が地元らしい。営業の根拠＝2026年4月2日（木）のリニューアルオープンを、号外NET香川県版（2026年4月8日付）と「まるごと・中讃つーしん」（2026年4月12日付・2026年4月9日の現地取材）の2本が報じている（2026-11-01 確認）。運営元 KOTOVEGAS の公式サイトにも現役の店舗として掲載。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=The%20TeaRoom%20KOTOHIRA%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%BB%B2%E5%A4%9A%E5%BA%A6%E9%83%A1%E7%90%B4%E5%B9%B3%E7%94%BA279-4%EF%BC%88KOTOVEGAS%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 号外NET 高松市（takamatsu.goguynet.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.marugame2.jp/stores/121570">まるごと・中讃つーしん「琴平町の日本茶カフェ『The TeaRoom KOTOHIRA』が10種以上のベーグルサンド＆お茶スイーツで2026年4月2日(木)にリニューアルオープン！」2026-04-12 付（住所・営業時間・定休日・店内とメニュー）2026-11-01 取得</a> / <a href="https://takamatsu.goguynet.jp/2026/04/08/the-tearoom-kotohira-kagawa/">号外NET 香川県「こんぴら歌舞伎鑑賞後にも！『The TeaRoom KOTOHIRA』がリニューアルオープン！」2026-04-08 付（住所・ベーグルサンドの価格と種類・ドリンク）2026-11-01 取得</a> / <a href="https://kotovegas.com/tea/">KOTOVEGAS 公式サイト「The TeaRoom KOTOHIRA」（住所・アクセス・店の説明）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-socal-terrace">
+<img class="hero" src="img/marugame/marugame-cafe-socal-terrace.jpg" alt="SOCAL TERRACE 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-socal-terrace_exterior.jpg" alt="SOCAL TERRACE 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">55</span>SOCAL TERRACE<span class="yomi">そーかるてらす</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip marugame2">marugame2</span></div>
+<div class="desc">2022年に飯山町で開いたカフェが、2025年6月21日に「飲むスフレパンケーキ」の専門店として生まれ変わった。白い木の柱とブルーの壁でカリフォルニアのボートハウスを模した造りで、ソファ席とテラス席を合わせて40席。テラス席はペット同伴ができ、晴れた日は飯野山を背にした屋外の席が人気になる。パンケーキは注文を受けてから焼くため15分ほどかかる。甘いものが苦手な人向けの「おかずパンケーキ」やポテト・ナゲットなどのサイドメニュー、色の鮮やかなソーダもある。全席禁煙（テラス席のみ喫煙可）、Wi-Fiあり、貸切可。</div>
+<div class="sig"><b>一皿:</b>ピーチパンケーキ(パンケーキの間に特製クリームを挟む看板メニュー。夏は農家直送の生の桃、それ以外の時期はコンポート)／おかずパンケーキ(ベーコンエッグをのせた食事系のパンケーキ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00（料理L.O. 16:00／ドリンクL.O. 16:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日・不定休</td></tr>
+<tr><th>住所</th><td>香川県丸亀市飯山町川原820-2</td></tr>
+<tr><th>予約</th><td>可（電話。ホットペッパーグルメのネット予約は現在受付停止。4名席が3席あり10名以上の団体予約や貸切も可） — <a href="tel:0877432066">☎ 0877-43-2066</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>丸亀市南部の旧町（飯山町）の枠。パンケーキという甘味の軸で章の中の料理が重ならない。営業の根拠＝①ホットペッパーグルメの店舗ページが「スフレパンケーキ専門店」として現行の営業時間・定休日・席数・看板メニューの価格を載せている（2026-11-01 取得） ②地元情報サイト「まるごと・中讃つーしん」が2025年6月21日付でリニューアルオープンを取材している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SOCAL%20TERRACE%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%B8%B8%E4%BA%80%E5%B8%82%E9%A3%AF%E5%B1%B1%E7%94%BA%E5%B7%9D%E5%8E%9F820-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003497111/">ホットペッパーグルメ 店舗ページ「SOCAL TERRACE ソーカルテラス」（住所・営業時間・定休日・席数40席・テラス席とペット同伴・駐車場・看板メニューの価格・支払い方法）2026-11-01 取得</a> / <a href="https://www.marugame2.jp/stores/101718">まるごと・中讃つーしん「丸亀市飯山町の『SOCAL TERRACE』が飲むパンケーキ専門店として2025年6月21日(土)にリニューアルオープン！」2025-06-21 付（電話番号・リニューアルの内容・桃のメニュー・場所と駐車場）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-honmachi1chome">
+<img class="hero" src="img/marugame/marugame-cafe-honmachi1chome.jpg" alt="本町一丁目カフェ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-honmachi1chome_exterior.jpg" alt="本町一丁目カフェ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">56</span>本町一丁目カフェ<span class="yomi">ほんまちいっちょうめかふぇ</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span><span class="chip official">official</span><span class="chip marugame2">marugame2</span></div>
+<div class="desc">（坂出市）寛政元年創業の醤油屋・鎌田醤油が2025年4月22日に開いた初の直営カフェ。だし醤油をはじめ自社の商品を使った食事とデザートを、醤油の歴史とつながりのある波佐見焼の器で出す「食べるショールーム」をうたう。中央に木のタワーシェルフが立つギャラリーのような店内は全55席と広く、30〜50名の貸切にも使われる。北海道・大雪山系の深層地下水「大雪な水」をお冷やに出し、その水をそのまま固めた「水ゼリー」が名物。保護猫活動を支える「ねこパーク」をガラス越しに併設する。支払いは完全キャッシュレスで現金は使えない。</div>
+<div class="sig"><b>一皿:</b>ふわっととろける玉子かけご飯(純国産鶏「もみじ」の卵。卵黄のだし醤油漬けとメレンゲを合わせる)／水ゼリー(北海道の超軟水「大雪な水」を固めたデザート。地元農家のいちごソースをかける)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00（L.O. 15:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日・月曜日・祝日</td></tr>
+<tr><th>住所</th><td>香川県坂出市本町1丁目6-35</td></tr>
+<tr><th>予約</th><td>未確認（30〜50名の貸切利用やお見合い・婚活パーティーの会場としての利用実績あり） — <a href="tel:0877669501">☎ 0877-66-9501</a> ／ <a href="https://kamada-honmachi1cafe.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>隣接の坂出市から補った（tags に rinsetsu）。香川を代表する醤油メーカーの直営という、この地域でしか成り立たないカフェ。営業の根拠＝①公式サイトのアクセス欄に現行の営業時間・営業日・電話番号・駐車場台数が載っている（2026-11-01 取得） ②地元情報サイト「まるごと・中讃つーしん」が2026年6月10日に取材した記事を2026年6月24日付で掲載 ③号外NET香川県版が2026年4月15日付でグランドオープン1周年の記事を出している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E7%94%BA%E4%B8%80%E4%B8%81%E7%9B%AE%E3%82%AB%E3%83%95%E3%82%A7%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E5%9D%82%E5%87%BA%E5%B8%82%E6%9C%AC%E7%94%BA1%E4%B8%81%E7%9B%AE6-35">Googleマップで開く</a>
+<div class="src">写真: まるごと・中讃つーしん（www.marugame2.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://kamada-honmachi1cafe.jp/">本町一丁目カフェ 公式サイト（住所・電話・駐車場24台・営業時間11:00〜16:00・営業日 火〜土曜／祝日を除く・メニューの説明）2026-11-01 取得</a> / <a href="https://www.marugame2.jp/shops/124919">まるごと・中讃つーしん「坂出市本町にある『本町一丁目カフェ』は鎌田醤油が仕掛ける提案型カフェ！」2026-06-24 付（2026年6月10日の現地取材。席数55席・完全キャッシュレス・ルーローハンと水ゼリー・ねこパーク・営業時間と定休日）2026-11-01 取得</a> / <a href="https://takamatsu.goguynet.jp/2025/04/29/honmachi-kagawa/">号外NET 香川県「香川県の老舗醤油メーカーが本格カフェをオープンしました！『本町一丁目カフェ』」2025-04-29 付（2025年4月22日グランドオープン・主なメニューと価格）2026-11-01 取得</a></div>
+</div></div>
+<div class="card" id="c-marugame-cafe-kotohira-terrace">
+<img class="hero" src="img/marugame/marugame-cafe-kotohira-terrace.jpg" alt="ことひらテラス 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/marugame/marugame-cafe-kotohira-terrace_exterior.jpg" alt="ことひらテラス 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">57</span>ことひらテラス<span class="yomi">ことひらてらす</span></div>
+<div class="chips"><span class="chip rinsetsu">rinsetsu</span><span class="chip official">official</span><span class="chip nicetown">nicetown</span></div>
+<div class="desc">（琴平町）金刀比羅宮の参道で「お休み処 四国の旬」として営んでいた店が、2022年12月に「ことひらテラス」へ改めて明るく開放的な造りに変わった。外観には地元の讃岐漆器を円形に並べたオブジェが掛かり、店名の暖簾は地元・匠吉野屋の「讃岐のり染め」で一文字ずつ染めたもの。22席。名物は、ソフトクリームに西讃の嫁入り菓子おいりをのせた「しあわせのおいりソフト」で、味は和三盆・ミルク・しょうゆから選べる。ほかに生チョコや季節の果物を使ったこんぴらどらやき、クラフトチョコレートの3種食べ比べ、SUNNYSIDE FIELDS のオリジナルブレンドのコーヒーがある。</div>
+<div class="sig"><b>一皿:</b>しあわせのおいりソフト(ソフトクリームに香川西部の嫁入り菓子おいりをのせる。和三盆・ミルク・しょうゆの3味から選ぶ)／こんぴらどらやき(生チョコや季節の果物を挟む)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜16:30（運営元の公式サイトでは10:00〜16:00と表記。新しい出典のナイスタウン 2025-07-10 を採用）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>香川県仲多度郡琴平町716-5</td></tr>
+<tr><th>予約</th><td>未確認（休憩処のため予約の案内なし） — <a href="tel:0877750001">☎ 0877-75-0001</a> ／ <a href="https://www.nakanoya.net/?service_category=kotohiraterrace">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>担当指示にある「おいりをソフトクリームに載せて出す店」と「和三盆を使う菓子」の両方を満たすため、隣接の琴平町から補った（tags に rinsetsu）。営業の根拠＝①香川のタウン情報誌「ナイスタウン」が2025年7月10日付で取材記事を掲載し、価格・席数・営業時間を載せている ②香川県観光協会の公式サイト「うどん県旅ネット」の特集『ソフトクリーム王国かがわ』が「嫁入りおいりソフト」の提供店として当店の公式サイトへリンクしている（2026-11-01 確認）。営業時間は公式サイトが10:00〜16:00、ナイスタウンが10:30〜16:30と食い違うので、新しいナイスタウンの側を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%81%A8%E3%81%B2%E3%82%89%E3%83%86%E3%83%A9%E3%82%B9%20%E9%A6%99%E5%B7%9D%E7%9C%8C%E4%BB%B2%E5%A4%9A%E5%BA%A6%E9%83%A1%E7%90%B4%E5%B9%B3%E7%94%BA716-5">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.nakanoya.net）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.nakanoya.net/?service_category=kotohiraterrace">中野うどん学校（運営元）公式サイト「ことひらテラス」（店の成り立ち・メニュー・電話・営業時間）2026-11-01 取得</a> / <a href="https://www.nakanoya.net/access/">中野うどん学校 公式サイト アクセス（ことひらテラスの所在地「香川県琴平町716-5」・電話）2026-11-01 取得</a> / <a href="https://nicetown.co.jp/tourism/95210/">ナイスタウン（香川のタウン情報誌）「『ことひらテラス』金刀比羅宮のご参拝ついでに立ち寄りたいカフェ」2025-07-10 付（住所・電話・営業時間10:30〜16:30・定休日・席数22席・駐車場なし・おいりソフト400円・こんぴらもなか350円）2026-11-01 取得</a> / <a href="https://www.my-kagawa.jp/gourmet/feature/gourmet/soft">うどん県旅ネット（公益社団法人香川県観光協会）特集『ソフトクリーム王国かがわ』の「嫁入りおいりソフト」の項（和三盆味・しょうゆ味から選べる説明と、ことひらテラス公式サイトへのリンク）2026-11-01 取得</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年11月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>

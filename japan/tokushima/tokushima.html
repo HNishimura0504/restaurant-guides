@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徳島美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  /* 外観写真（2026-10-19・外観写真の欠落3度目）: 料理・店内の hero の下に、店構えを1枚添える。
+     地図のポップアップと Notion 記事は <sid>_exterior.jpg を別に拾うので、ここは PDF・ガイド本文で見せるための行。 */
+  .extfig{position:relative; margin:0;}
+  .extfig img{display:block; width:100%; height:40mm; object-fit:cover; border-top:2px solid #fff;}
+  .extfig figcaption{position:absolute; left:2mm; bottom:1.5mm; background:rgba(0,0,0,.55); color:#fff; font-size:7pt; padding:.3mm 1.6mm; border-radius:1mm;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">徳島美食ガイド<span class="sn-n">53店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/tokushima.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="徳島ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">徳島ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/tokushima.html"><span class="sn-e">🗺️</span>徳島の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-ramen"><span class="sn-e">・</span>徳島ラーメン（茶系・黄系・白系）</a><a href="#s-kyodo"><span class="sn-e">・</span>阿波尾鶏・郷土の味（フィッシュカツ・たらいうどん）</a><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・割烹（鳴門鯛・ハモ）</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・地酒（秋田町）</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>カフェ・喫茶・甘味</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全103都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全103都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / TOKUSHIMA・徳島県徳島市 🇯🇵</div>
+  <h1>徳島美食ガイド</h1>
+  <div class="sub">吉野川の河口に開けた阿波25万石の城下町。市内を網の目の川が流れ「水の都」と呼ばれる。名物は豚骨醤油に生卵を落とす徳島ラーメン、全国一の出荷量を誇る地鶏の阿波尾鶏（あわおどり）、鳴門海峡の潮に揉まれた鯛とわかめ、そして夏のハモとすだち。四国最大級の歓楽街・秋田町（あきたまち）から徳島駅前、眉山（びざん）のふもと、郊外の沖浜・川内まで厳選53スポット。各店に営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年10月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tokushima/_map.jpg" alt="全域マップ">
+<a href="#c-tokushima-ramen-tatsumiya" style="left:90.61%;top:42.32%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-ramen-menya-musou" style="left:64.16%;top:68.31%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-ramen-86noodle" style="left:65.88%;top:59.8%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-ramen-dounoura-hanare-sakaemachi" style="left:65.15%;top:60.76%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-ramen-inotani" style="left:60.18%;top:49.07%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-ramen-yoake" style="left:67.43%;top:48.82%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-ramen-todai-omichi" style="left:63.93%;top:62.7%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-ramen-rairai" style="left:69.28%;top:50.86%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-ramen-kiguya" style="left:80.7%;top:11.69%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-kyodo-hashimoto-sobakura" style="left:72.9%;top:54.92%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-kyodo-udon-koroku" style="left:66.05%;top:46.24%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-kyodo-shuhou-sugihara" style="left:67.56%;top:54.51%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-kyodo-awanoirodori-bizan" style="left:66.54%;top:50.38%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-kyodo-awakaisen-uoya" style="left:68.78%;top:50.73%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-kyodo-konyamachi-yoshikono" style="left:65.81%;top:60.19%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-kyodo-ikko-tokushimaekimae" style="left:68.11%;top:49.63%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-kyodo-awamizutaki-shiawasedori" style="left:67.43%;top:52.63%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-yanagizushi" style="left:63.96%;top:60.46%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-nadai-fukuzushi" style="left:65.98%;top:57.01%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-totokatsu" style="left:64.75%;top:59.94%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-shimizu" style="left:64.92%;top:57.07%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-sawaragi" style="left:66.08%;top:50.73%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-tempura-azabu-izumiya" style="left:67.23%;top:61.71%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-masuzen" style="left:70.1%;top:78.27%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-hyakunenumi" style="left:80.93%;top:65.77%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-washoku-ajiougi" style="left:68.51%;top:56.84%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-awashokudo-onikai" style="left:66.61%;top:56.84%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-itadaki" style="left:64.22%;top:57.65%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-pikan" style="left:69.28%;top:53.42%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-uogin-sakaba" style="left:65.98%;top:59.57%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-konyamachi-noda" style="left:64.22%;top:60.21%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-toriakari" style="left:65.88%;top:59.4%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-awayoidokoro-shizuku" style="left:65.88%;top:63.61%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-awa-koishigure" style="left:69.75%;top:80.05%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-izakaya-takotenjo" style="left:67.93%;top:51.38%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-yoshoku-akaneiro" style="left:68.86%;top:50.2%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-yoshoku-ryuhouhanten" style="left:62.54%;top:53.26%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-yoshoku-poesia" style="left:64.53%;top:61.71%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-yoshoku-almostblue" style="left:65.15%;top:63.32%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-yoshoku-tsukiroku" style="left:63.97%;top:59.4%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-yoshoku-fukurin" style="left:66.67%;top:58.8%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-yoshoku-okihama" style="left:70.4%;top:83.02%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-yoshoku-ilquinto" style="left:30.39%;top:25.9%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-kahian" style="left:69.51%;top:52.94%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-mori-coffee" style="left:66.05%;top:48.8%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-de-campagne" style="left:60.71%;top:88.32%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-tarou-to-hanako" style="left:37.06%;top:42.91%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-ikariya-coffee" style="left:69.51%;top:55.5%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-wadanoya" style="left:59.26%;top:51.76%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-akanean" style="left:73.31%;top:46.06%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-taro-pan" style="left:64.94%;top:43.62%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-choa-cafe" style="left:43.07%;top:49.58%;width:2.66%;height:3.78%;"></a>
+<a href="#c-tokushima-cafe-birth-book-coffee" style="left:9.39%;top:29.02%;width:2.66%;height:3.78%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（53店・番号はピンと同じ）</div>
+<div class="sec red">徳島ラーメン（茶系・黄系・白系）</div>
+<div class="links">
+<a href="#c-tokushima-ramen-tatsumiya"><span class="tn" style="background:#e34948;">1</span>国道11号沿い、住吉の支那そば</a>
+<a href="#c-tokushima-ramen-menya-musou"><span class="tn" style="background:#e34948;">2</span>大道の角で15席、にんにくのスタミナラーメン</a>
+<a href="#c-tokushima-ramen-86noodle"><span class="tn" style="background:#e34948;">3</span>秋田町の、色のつかない醤油ラーメン</a>
+<a href="#c-tokushima-ramen-dounoura-hanare-sakaemachi"><span class="tn" style="background:#e34948;">4</span>深夜だけ開く、鯛だしの塩らーめん</a>
+<a href="#c-tokushima-ramen-inotani"><span class="tn" style="background:#e34948;">5</span>徳島ラーメンを全国へ広めた茶系の総本山</a>
+<a href="#c-tokushima-ramen-yoake"><span class="tn" style="background:#e34948;">6</span>昭和27年創業、黄系の金色スープ</a>
+<a href="#c-tokushima-ramen-todai-omichi"><span class="tn" style="background:#e34948;">7</span>生卵無料、明け方4時まで開く茶系の本店</a>
+<a href="#c-tokushima-ramen-rairai"><span class="tn" style="background:#e34948;">8</span>1967年創業、三代続く駅前の中華そば</a>
+<a href="#c-tokushima-ramen-kiguya"><span class="tn" style="background:#e34948;">9</span>白と茶を食べ比べられる川内の一軒</a>
+</div>
+<div class="sec brown">阿波尾鶏・郷土の味（フィッシュカツ・たらいうどん）</div>
+<div class="links">
+<a href="#c-tokushima-kyodo-hashimoto-sobakura"><span class="tn" style="background:#8a5a2b;">10</span>そば米汁と生そば、蔵造りの老舗そば屋</a>
+<a href="#c-tokushima-kyodo-udon-koroku"><span class="tn" style="background:#8a5a2b;">11</span>たらいうどんと半田そうめんを駅の地下で</a>
+<a href="#c-tokushima-kyodo-shuhou-sugihara"><span class="tn" style="background:#8a5a2b;">12</span>フィッシュカツと半田素麺を置く20席の酒場</a>
+<a href="#c-tokushima-kyodo-awanoirodori-bizan"><span class="tn" style="background:#8a5a2b;">13</span>駅前のホテル2階、阿波路御膳で郷土の味を一度に</a>
+<a href="#c-tokushima-kyodo-awakaisen-uoya"><span class="tn" style="background:#8a5a2b;">14</span>鳴門わかめと竹ちくわが品書きに並ぶ魚の店</a>
+<a href="#c-tokushima-kyodo-konyamachi-yoshikono"><span class="tn" style="background:#8a5a2b;">15</span>阿波尾鶏を部位ごとに食べ分ける老舗</a>
+<a href="#c-tokushima-kyodo-ikko-tokushimaekimae"><span class="tn" style="background:#8a5a2b;">16</span>専用の釜で焼く骨付き阿波尾鶏の名物店</a>
+<a href="#c-tokushima-kyodo-awamizutaki-shiawasedori"><span class="tn" style="background:#8a5a2b;">17</span>阿波尾鶏の水炊き一本で勝負する専門店</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（鳴門鯛・ハモ）</div>
+<div class="links">
+<a href="#c-tokushima-washoku-yanagizushi"><span class="tn" style="background:#2a78d6;">18</span>銀座仕込みの江戸前鮨とハモの指定店</a>
+<a href="#c-tokushima-washoku-nadai-fukuzushi"><span class="tn" style="background:#2a78d6;">19</span>昭和6年創業、夫婦で握る富田町の老舗</a>
+<a href="#c-tokushima-washoku-totokatsu"><span class="tn" style="background:#2a78d6;">20</span>鳴門鯛を丸ごと炊く、紺屋町の阿波割烹</a>
+<a href="#c-tokushima-washoku-shimizu"><span class="tn" style="background:#2a78d6;">21</span>創業90年、天然クエとハモの四階建て</a>
+<a href="#c-tokushima-washoku-sawaragi"><span class="tn" style="background:#2a78d6;">22</span>徳島駅2分、手軽に食べる本格懐石</a>
+<a href="#c-tokushima-washoku-tempura-azabu-izumiya"><span class="tn" style="background:#2a78d6;">23</span>秋田町の15席、おまかせだけの天ぷら</a>
+<a href="#c-tokushima-washoku-masuzen"><span class="tn" style="background:#2a78d6;">24</span>郊外の16席、昼は1,980円の御膳</a>
+<a href="#c-tokushima-washoku-hyakunenumi"><span class="tn" style="background:#2a78d6;">25</span>チームラボの海に囲まれて食べる和食</a>
+<a href="#c-tokushima-washoku-ajiougi"><span class="tn" style="background:#2a78d6;">26</span>高知産一枚板のカウンターと松花堂</a>
+</div>
+<div class="sec beer">居酒屋・地酒（秋田町）</div>
+<div class="links">
+<a href="#c-tokushima-izakaya-awashokudo-onikai"><span class="tn" style="background:#0d366b;">27</span>徳島の地酒を枡で、肴は阿波の魚と鶏</a>
+<a href="#c-tokushima-izakaya-itadaki"><span class="tn" style="background:#0d366b;">28</span>阿波尾鶏の串と徳島の酒の大衆店</a>
+<a href="#c-tokushima-izakaya-pikan"><span class="tn" style="background:#0d366b;">29</span>駅前3分、炭火の阿波尾鶏と秘伝のおでん</a>
+<a href="#c-tokushima-izakaya-uogin-sakaba"><span class="tn" style="background:#0d366b;">30</span>阿波の地酒11蔵と港直送の魚</a>
+<a href="#c-tokushima-izakaya-konyamachi-noda"><span class="tn" style="background:#0d366b;">31</span>古民家風の隠れ家で阿波尾鶏と天ぷら</a>
+<a href="#c-tokushima-izakaya-toriakari"><span class="tn" style="background:#0d366b;">32</span>富田町の22席、串と鳴門鯛の酒</a>
+<a href="#c-tokushima-izakaya-awayoidokoro-shizuku"><span class="tn" style="background:#0d366b;">33</span>秋田町ど真ん中の隠れ家大衆酒場</a>
+<a href="#c-tokushima-izakaya-awa-koishigure"><span class="tn" style="background:#0d366b;">34</span>沖浜の全室個室、徳島づくしの宴</a>
+<a href="#c-tokushima-izakaya-takotenjo"><span class="tn" style="background:#0d366b;">35</span>たこ焼きとおでんで立ち呑み</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-tokushima-yoshoku-akaneiro"><span class="tn" style="background:#4a3aa7;">36</span>駅前3分、阿波の食材をビストロ仕立てで</a>
+<a href="#c-tokushima-yoshoku-ryuhouhanten"><span class="tn" style="background:#4a3aa7;">37</span>阿波おどり会館のそばの本場中国東北料理</a>
+<a href="#c-tokushima-yoshoku-poesia"><span class="tn" style="background:#4a3aa7;">38</span>昼は1日4組だけの秋田町のイタリアン</a>
+<a href="#c-tokushima-yoshoku-almostblue"><span class="tn" style="background:#4a3aa7;">39</span>カウンター7席。阿波尾鶏を洋皿で</a>
+<a href="#c-tokushima-yoshoku-tsukiroku"><span class="tn" style="background:#4a3aa7;">40</span>富田町のビルの6階、目の前で焼く鉄板ステーキ</a>
+<a href="#c-tokushima-yoshoku-fukurin"><span class="tn" style="background:#4a3aa7;">41</span>両国橋のたもと、44種の食べ放題がある中華</a>
+<a href="#c-tokushima-yoshoku-okihama"><span class="tn" style="background:#4a3aa7;">42</span>ご飯と味噌汁で食べる沖浜の洋食屋</a>
+<a href="#c-tokushima-yoshoku-ilquinto"><span class="tn" style="background:#4a3aa7;">43</span>北島田町の古民家を直したイタリアン</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-tokushima-cafe-kahian"><span class="tn" style="background:#eda100;">44</span>1980年から同じ場所で焼く自家焙煎</a>
+<a href="#c-tokushima-cafe-mori-coffee"><span class="tn" style="background:#eda100;">45</span>徳島駅前38年、炭火焙煎の一杯</a>
+<a href="#c-tokushima-cafe-de-campagne"><span class="tn" style="background:#eda100;">46</span>線路沿いの64席、朝9時から21時まで</a>
+<a href="#c-tokushima-cafe-tarou-to-hanako"><span class="tn" style="background:#eda100;">47</span>1971年開店、朝からのネルドリップ</a>
+<a href="#c-tokushima-cafe-ikariya-coffee"><span class="tn" style="background:#eda100;">48</span>昭和30年創業、徳島の自家焙煎の草分け</a>
+<a href="#c-tokushima-cafe-wadanoya"><span class="tn" style="background:#eda100;">49</span>眉山のふもと、四百年の焼餅と抹茶</a>
+<a href="#c-tokushima-cafe-akanean"><span class="tn" style="background:#eda100;">50</span>徳島城跡のそば、和菓子と呈茶の庵</a>
+<a href="#c-tokushima-cafe-taro-pan"><span class="tn" style="background:#eda100;">51</span>徳島城跡そば、30年続くチョコ丸くん</a>
+<a href="#c-tokushima-cafe-choa-cafe"><span class="tn" style="background:#eda100;">52</span>築50年の古民家で和三盆のクロッフル</a>
+<a href="#c-tokushima-cafe-birth-book-coffee"><span class="tn" style="background:#eda100;">53</span>書店の中、54席のブックカフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 徳島駅前・一番町・寺島本町・通町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tokushima/_map2.jpg" alt="中心部拡大1 徳島駅前・一番町・寺島本町・通町">
+<a href="#c-tokushima-ramen-yoake" style="left:33.09%;top:60.26%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-ramen-rairai" style="left:48.22%;top:72.84%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-kyodo-hashimoto-sobakura" style="left:78.74%;top:88.25%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-kyodo-udon-koroku" style="left:21.81%;top:40.36%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-kyodo-shuhou-sugihara" style="left:33.03%;top:93.78%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-kyodo-awanoirodori-bizan" style="left:25.92%;top:59.49%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-kyodo-awakaisen-uoya" style="left:33.32%;top:60.93%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-kyodo-ikko-tokushimaekimae" style="left:38.95%;top:54.72%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-kyodo-awamizutaki-shiawasedori" style="left:34.31%;top:62.78%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-washoku-sawaragi" style="left:32.33%;top:62.78%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-washoku-ajiougi" style="left:37.07%;top:96.56%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-izakaya-awashokudo-onikai" style="left:32.96%;top:96.11%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-izakaya-pikan" style="left:49.16%;top:68.37%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-izakaya-takotenjo" style="left:37.42%;top:65.82%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-yoshoku-akaneiro" style="left:45.17%;top:58.34%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-cafe-kahian" style="left:52.21%;top:84.97%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-cafe-mori-coffee" style="left:21.81%;top:42.38%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-cafe-ikariya-coffee" style="left:48.92%;top:82.68%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-cafe-akanean" style="left:82.14%;top:32.13%;width:2.78%;height:2.98%;"></a>
+<a href="#c-tokushima-cafe-taro-pan" style="left:12.54%;top:16.68%;width:2.78%;height:2.98%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（20店・番号はピンと同じ）</div>
+<div class="sec red">徳島ラーメン（茶系・黄系・白系）</div>
+<div class="links">
+<a href="#c-tokushima-ramen-yoake"><span class="tn" style="background:#e34948;">6</span>昭和27年創業、黄系の金色スープ</a>
+<a href="#c-tokushima-ramen-rairai"><span class="tn" style="background:#e34948;">8</span>1967年創業、三代続く駅前の中華そば</a>
+</div>
+<div class="sec brown">阿波尾鶏・郷土の味（フィッシュカツ・たらいうどん）</div>
+<div class="links">
+<a href="#c-tokushima-kyodo-hashimoto-sobakura"><span class="tn" style="background:#8a5a2b;">10</span>そば米汁と生そば、蔵造りの老舗そば屋</a>
+<a href="#c-tokushima-kyodo-udon-koroku"><span class="tn" style="background:#8a5a2b;">11</span>たらいうどんと半田そうめんを駅の地下で</a>
+<a href="#c-tokushima-kyodo-shuhou-sugihara"><span class="tn" style="background:#8a5a2b;">12</span>フィッシュカツと半田素麺を置く20席の酒場</a>
+<a href="#c-tokushima-kyodo-awanoirodori-bizan"><span class="tn" style="background:#8a5a2b;">13</span>駅前のホテル2階、阿波路御膳で郷土の味を一度に</a>
+<a href="#c-tokushima-kyodo-awakaisen-uoya"><span class="tn" style="background:#8a5a2b;">14</span>鳴門わかめと竹ちくわが品書きに並ぶ魚の店</a>
+<a href="#c-tokushima-kyodo-ikko-tokushimaekimae"><span class="tn" style="background:#8a5a2b;">16</span>専用の釜で焼く骨付き阿波尾鶏の名物店</a>
+<a href="#c-tokushima-kyodo-awamizutaki-shiawasedori"><span class="tn" style="background:#8a5a2b;">17</span>阿波尾鶏の水炊き一本で勝負する専門店</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（鳴門鯛・ハモ）</div>
+<div class="links">
+<a href="#c-tokushima-washoku-sawaragi"><span class="tn" style="background:#2a78d6;">22</span>徳島駅2分、手軽に食べる本格懐石</a>
+<a href="#c-tokushima-washoku-ajiougi"><span class="tn" style="background:#2a78d6;">26</span>高知産一枚板のカウンターと松花堂</a>
+</div>
+<div class="sec beer">居酒屋・地酒（秋田町）</div>
+<div class="links">
+<a href="#c-tokushima-izakaya-awashokudo-onikai"><span class="tn" style="background:#0d366b;">27</span>徳島の地酒を枡で、肴は阿波の魚と鶏</a>
+<a href="#c-tokushima-izakaya-pikan"><span class="tn" style="background:#0d366b;">29</span>駅前3分、炭火の阿波尾鶏と秘伝のおでん</a>
+<a href="#c-tokushima-izakaya-takotenjo"><span class="tn" style="background:#0d366b;">35</span>たこ焼きとおでんで立ち呑み</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-tokushima-yoshoku-akaneiro"><span class="tn" style="background:#4a3aa7;">36</span>駅前3分、阿波の食材をビストロ仕立てで</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-tokushima-cafe-kahian"><span class="tn" style="background:#eda100;">44</span>1980年から同じ場所で焼く自家焙煎</a>
+<a href="#c-tokushima-cafe-mori-coffee"><span class="tn" style="background:#eda100;">45</span>徳島駅前38年、炭火焙煎の一杯</a>
+<a href="#c-tokushima-cafe-ikariya-coffee"><span class="tn" style="background:#eda100;">48</span>昭和30年創業、徳島の自家焙煎の草分け</a>
+<a href="#c-tokushima-cafe-akanean"><span class="tn" style="background:#eda100;">50</span>徳島城跡のそば、和菓子と呈茶の庵</a>
+<a href="#c-tokushima-cafe-taro-pan"><span class="tn" style="background:#eda100;">51</span>徳島城跡そば、30年続くチョコ丸くん</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 秋田町・栄町・両国橋・富田町・紺屋町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tokushima/_map3.jpg" alt="中心部拡大2 秋田町・栄町・両国橋・富田町・紺屋町">
+<a href="#c-tokushima-ramen-86noodle" style="left:23.54%;top:67.82%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-ramen-dounoura-hanare-sakaemachi" style="left:14.62%;top:75.53%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-kyodo-shuhou-sugihara" style="left:50.68%;top:6.3%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-kyodo-konyamachi-yoshikono" style="left:24.25%;top:52.72%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-washoku-nadai-fukuzushi" style="left:23.08%;top:34.22%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-washoku-totokatsu" style="left:6.63%;top:50.03%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-washoku-shimizu" style="left:9.46%;top:35.16%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-washoku-tempura-azabu-izumiya" style="left:26.12%;top:77.25%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-washoku-ajiougi" style="left:58.75%;top:10.93%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-izakaya-awashokudo-onikai" style="left:50.54%;top:10.18%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-izakaya-uogin-sakaba" style="left:31.05%;top:31.1%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-izakaya-toriakari" style="left:10.45%;top:36.7%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-izakaya-awayoidokoro-shizuku" style="left:28.23%;top:60.22%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-yoshoku-poesia" style="left:23.54%;top:69.51%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-yoshoku-almostblue" style="left:11.8%;top:68.87%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-yoshoku-tsukiroku" style="left:8.47%;top:36.7%;width:2.78%;height:2.48%;"></a>
+<a href="#c-tokushima-yoshoku-fukurin" style="left:38.57%;top:38.02%;width:2.78%;height:2.48%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（17店・番号はピンと同じ）</div>
+<div class="sec red">徳島ラーメン（茶系・黄系・白系）</div>
+<div class="links">
+<a href="#c-tokushima-ramen-86noodle"><span class="tn" style="background:#e34948;">3</span>秋田町の、色のつかない醤油ラーメン</a>
+<a href="#c-tokushima-ramen-dounoura-hanare-sakaemachi"><span class="tn" style="background:#e34948;">4</span>深夜だけ開く、鯛だしの塩らーめん</a>
+</div>
+<div class="sec brown">阿波尾鶏・郷土の味（フィッシュカツ・たらいうどん）</div>
+<div class="links">
+<a href="#c-tokushima-kyodo-shuhou-sugihara"><span class="tn" style="background:#8a5a2b;">12</span>フィッシュカツと半田素麺を置く20席の酒場</a>
+<a href="#c-tokushima-kyodo-konyamachi-yoshikono"><span class="tn" style="background:#8a5a2b;">15</span>阿波尾鶏を部位ごとに食べ分ける老舗</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（鳴門鯛・ハモ）</div>
+<div class="links">
+<a href="#c-tokushima-washoku-nadai-fukuzushi"><span class="tn" style="background:#2a78d6;">19</span>昭和6年創業、夫婦で握る富田町の老舗</a>
+<a href="#c-tokushima-washoku-totokatsu"><span class="tn" style="background:#2a78d6;">20</span>鳴門鯛を丸ごと炊く、紺屋町の阿波割烹</a>
+<a href="#c-tokushima-washoku-shimizu"><span class="tn" style="background:#2a78d6;">21</span>創業90年、天然クエとハモの四階建て</a>
+<a href="#c-tokushima-washoku-tempura-azabu-izumiya"><span class="tn" style="background:#2a78d6;">23</span>秋田町の15席、おまかせだけの天ぷら</a>
+<a href="#c-tokushima-washoku-ajiougi"><span class="tn" style="background:#2a78d6;">26</span>高知産一枚板のカウンターと松花堂</a>
+</div>
+<div class="sec beer">居酒屋・地酒（秋田町）</div>
+<div class="links">
+<a href="#c-tokushima-izakaya-awashokudo-onikai"><span class="tn" style="background:#0d366b;">27</span>徳島の地酒を枡で、肴は阿波の魚と鶏</a>
+<a href="#c-tokushima-izakaya-uogin-sakaba"><span class="tn" style="background:#0d366b;">30</span>阿波の地酒11蔵と港直送の魚</a>
+<a href="#c-tokushima-izakaya-toriakari"><span class="tn" style="background:#0d366b;">32</span>富田町の22席、串と鳴門鯛の酒</a>
+<a href="#c-tokushima-izakaya-awayoidokoro-shizuku"><span class="tn" style="background:#0d366b;">33</span>秋田町ど真ん中の隠れ家大衆酒場</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-tokushima-yoshoku-poesia"><span class="tn" style="background:#4a3aa7;">38</span>昼は1日4組だけの秋田町のイタリアン</a>
+<a href="#c-tokushima-yoshoku-almostblue"><span class="tn" style="background:#4a3aa7;">39</span>カウンター7席。阿波尾鶏を洋皿で</a>
+<a href="#c-tokushima-yoshoku-tsukiroku"><span class="tn" style="background:#4a3aa7;">40</span>富田町のビルの6階、目の前で焼く鉄板ステーキ</a>
+<a href="#c-tokushima-yoshoku-fukurin"><span class="tn" style="background:#4a3aa7;">41</span>両国橋のたもと、44種の食べ放題がある中華</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 眉山・西大工町・籠屋町・大道・鷹匠町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap" style="width:97.1mm;">
+<img src="img/tokushima/_map4.jpg" alt="中心部拡大3 眉山・西大工町・籠屋町・大道・鷹匠町">
+<a href="#c-tokushima-ramen-menya-musou" style="left:97.39%;top:95.01%;width:4.5%;height:2.14%;"></a>
+<a href="#c-tokushima-ramen-inotani" style="left:43.6%;top:7.98%;width:4.5%;height:2.14%;"></a>
+<a href="#c-tokushima-ramen-todai-omichi" style="left:94.33%;top:69.64%;width:4.5%;height:2.14%;"></a>
+<a href="#c-tokushima-washoku-yanagizushi" style="left:94.71%;top:59.51%;width:4.5%;height:2.14%;"></a>
+<a href="#c-tokushima-izakaya-itadaki" style="left:97.63%;top:50.76%;width:4.5%;height:2.14%;"></a>
+<a href="#c-tokushima-izakaya-konyamachi-noda" style="left:97.58%;top:54.44%;width:4.5%;height:2.14%;"></a>
+<a href="#c-tokushima-yoshoku-ryuhouhanten" style="left:75.45%;top:26.94%;width:4.5%;height:2.14%;"></a>
+<a href="#c-tokushima-cafe-wadanoya" style="left:31.2%;top:20.16%;width:4.5%;height:2.14%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（8店・番号はピンと同じ）</div>
+<div class="sec red">徳島ラーメン（茶系・黄系・白系）</div>
+<div class="links">
+<a href="#c-tokushima-ramen-menya-musou"><span class="tn" style="background:#e34948;">2</span>大道の角で15席、にんにくのスタミナラーメン</a>
+<a href="#c-tokushima-ramen-inotani"><span class="tn" style="background:#e34948;">5</span>徳島ラーメンを全国へ広めた茶系の総本山</a>
+<a href="#c-tokushima-ramen-todai-omichi"><span class="tn" style="background:#e34948;">7</span>生卵無料、明け方4時まで開く茶系の本店</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（鳴門鯛・ハモ）</div>
+<div class="links">
+<a href="#c-tokushima-washoku-yanagizushi"><span class="tn" style="background:#2a78d6;">18</span>銀座仕込みの江戸前鮨とハモの指定店</a>
+</div>
+<div class="sec beer">居酒屋・地酒（秋田町）</div>
+<div class="links">
+<a href="#c-tokushima-izakaya-itadaki"><span class="tn" style="background:#0d366b;">28</span>阿波尾鶏の串と徳島の酒の大衆店</a>
+<a href="#c-tokushima-izakaya-konyamachi-noda"><span class="tn" style="background:#0d366b;">31</span>古民家風の隠れ家で阿波尾鶏と天ぷら</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-tokushima-yoshoku-ryuhouhanten"><span class="tn" style="background:#4a3aa7;">37</span>阿波おどり会館のそばの本場中国東北料理</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-tokushima-cafe-wadanoya"><span class="tn" style="background:#eda100;">49</span>眉山のふもと、四百年の焼餅と抹茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 新蔵町・万代町・沖浜東（南部）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/tokushima/_map5.jpg" alt="中心部拡大4 新蔵町・万代町・沖浜東（南部）">
+<a href="#c-tokushima-kyodo-hashimoto-sobakura" style="left:34.91%;top:4.13%;width:4.8%;height:2.98%;"></a>
+<a href="#c-tokushima-washoku-masuzen" style="left:14.76%;top:78.06%;width:4.8%;height:2.98%;"></a>
+<a href="#c-tokushima-washoku-hyakunenumi" style="left:92.79%;top:38.48%;width:4.8%;height:2.98%;"></a>
+<a href="#c-tokushima-izakaya-awa-koishigure" style="left:12.22%;top:83.7%;width:4.8%;height:2.98%;"></a>
+<a href="#c-tokushima-yoshoku-okihama" style="left:16.9%;top:93.09%;width:4.8%;height:2.98%;"></a>
+<a href="#c-tokushima-cafe-kahian" style="left:11.91%;top:2.49%;width:4.8%;height:2.98%;"></a>
+<a href="#c-tokushima-cafe-ikariya-coffee" style="left:9.07%;top:1.49%;width:4.8%;height:2.98%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（7店・番号はピンと同じ）</div>
+<div class="sec brown">阿波尾鶏・郷土の味（フィッシュカツ・たらいうどん）</div>
+<div class="links">
+<a href="#c-tokushima-kyodo-hashimoto-sobakura"><span class="tn" style="background:#8a5a2b;">10</span>そば米汁と生そば、蔵造りの老舗そば屋</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（鳴門鯛・ハモ）</div>
+<div class="links">
+<a href="#c-tokushima-washoku-masuzen"><span class="tn" style="background:#2a78d6;">24</span>郊外の16席、昼は1,980円の御膳</a>
+<a href="#c-tokushima-washoku-hyakunenumi"><span class="tn" style="background:#2a78d6;">25</span>チームラボの海に囲まれて食べる和食</a>
+</div>
+<div class="sec beer">居酒屋・地酒（秋田町）</div>
+<div class="links">
+<a href="#c-tokushima-izakaya-awa-koishigure"><span class="tn" style="background:#0d366b;">34</span>沖浜の全室個室、徳島づくしの宴</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-tokushima-yoshoku-okihama"><span class="tn" style="background:#4a3aa7;">42</span>ご飯と味噌汁で食べる沖浜の洋食屋</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味</div>
+<div class="links">
+<a href="#c-tokushima-cafe-kahian"><span class="tn" style="background:#eda100;">44</span>1980年から同じ場所で焼く自家焙煎</a>
+<a href="#c-tokushima-cafe-ikariya-coffee"><span class="tn" style="background:#eda100;">48</span>昭和30年創業、徳島の自家焙煎の草分け</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>徳島市の店は5つのかたまりに分かれる。①**徳島駅前・新町（しんまち）**＝駅から南へ伸びるアーケードと新町川の北側。昼の店が多い ②**秋田町（あきたまち）**＝新町川の南にある**四国最大級の歓楽街**。徳島駅から歩いて10分。夜の店はここに集中する ③**眉山（びざん）のふもと・両国橋**＝阿波おどり会館とロープウェイがある。郷土料理と喫茶の老舗 ④**沖浜（おきのはま）・田宮・論田**＝車で行く郊外。徳島ラーメンの名店が多い ⑤**川内（かわうち）・応神・津田**＝吉野川の対岸と港のあたり。**徳島市の名物**＝**徳島ラーメン**（豚骨と醤油の「**茶系**」が主流。甘辛く煮た豚バラ肉と**生卵**を落とすのが徳島流で、ご飯と一緒に食べる人が多い。ほかに鶏ガラの澄んだ「**黄系**」、豚骨の「**白系**」がある）、**阿波尾鶏（あわおどり）**（県が開発した地鶏で、**全国の地鶏で出荷量1位**。焼き鳥・水炊き・たたきで出す）、**鳴門鯛・鳴門わかめ**（鳴門海峡の速い潮で身が締まる）、**ハモ**（徳島の夏の魚。湯引きと落としで出る）、**すだち**（全国の生産のほぼ全部が徳島産。焼き魚にも麺にも搾る）、**フィッシュカツ**（魚のすり身にカレー粉を混ぜて揚げた県民食。惣菜店とスーパーの定番で、居酒屋の品書きにも載る）、**たらいうどん**（市の北西の土成・御所が本場。大きなたらいに入れて供する）、**半田そうめん**（つるぎ町半田。ふつうのそうめんより麺が太い）。**阿波おどりは8月だが、阿波おどり会館では年中、演舞が見られる。** 秋田町の店は日曜が休みのところが多いので、日曜の夜は徳島駅前で探すほうが確実。</div>
+
+<h2 id="s-ramen" class="c-red">徳島ラーメン（茶系・黄系・白系）</h2>
+<div class="card" id="c-tokushima-ramen-tatsumiya">
+<img class="hero" src="img/tokushima/tokushima-ramen-tatsumiya.jpg" alt="支那そば 巽屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>支那そば 巽屋<span class="yomi">しなそば たつみや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">8時間以上かけて炊く豚骨スープに醤油だれを合わせた茶系の支那そばを、具の構成（素・肉入・玉子入・肉玉入・チャーシュー入）だけで食べ分けさせる店。品数を絞り、麺はスープに絡む細麺を使う。40席でカウンターとテーブルを備え、朝10時30分から通しで開ける（土・日・祝は夜20時まで）。スープがなくなった時点で閉めることがある。駐車場はなく、国道側のコインパーキングか周辺の店舗駐車場を使うことになる。外観写真なし（掲載されている写真が料理と店内だけで、建物の正面を写したものが1枚も無いため）。</div>
+<div class="sig"><b>一皿:</b>支那そば 肉玉入り（甘辛く煮た豚バラと生卵を落とす徳島流の一杯。並750円）／支那そば（具を絞った定番。並550円）／支那そば チャーシュー入り（肉の量がいちばん多い。並800円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 10:30〜15:00（料理L.O. 14:30／ドリンクL.O. 14:30）／土・日・祝日・祝前日 10:30〜20:00（料理L.O. 19:30／ドリンクL.O. 19:30）。スープがなくなった場合は営業終了となることがある</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市住吉5-68-1</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない（ホットペッパーグルメ 2026-10-31 時点）。電話予約の可否は未確認 — <a href="tel:0886533839">☎ 088-653-3839</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>既に採った茶系の代表格（いのたに・よあけ・東大・来来）がいずれも市街地にあるのに対し、この店は国道11号から入った住吉の郊外にあり、車で通う地元客の徳島ラーメンを代表させられるので採った。営業の根拠＝ホットペッパーグルメの店舗ページが2026-10-31 時点で曜日別の営業時間・定休日・席数を掲出しており、号外NET徳島市（tokushima.goguynet.jp）のサイト内検索で「巽屋」「巽屋 閉店」を引いても閉店・移転の記事は出てこない（2026-10-31 実施。同サイトは2026-08-26 に支那そば「たかはし」の閉店を報じており、徳島市内の個人店の閉店を拾う媒体である）。ただし口コミの最新は2020-03-05、料理ページの最終更新は2018-07-19 で、2025〜2026年の更新は見つけられなかった＝営業の裏取りは上記2点どまりで、掲載前に電話（088-653-3839）での再確認を推奨する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%94%AF%E9%82%A3%E3%81%9D%E3%81%B0%20%E5%B7%BD%E5%B1%8B%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%BD%8F%E5%90%895-68-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000111976/">ホットペッパーグルメ 支那そば 巽屋 店舗ページ（住所・アクセス・曜日別の営業時間・定休日・総席数40席・駐車場・平均予算）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000111976/food/">ホットペッパーグルメ 同店 料理メニュー（支那そば各種の価格。最終更新 2018-07-19）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000111976/photo/">ホットペッパーグルメ 同店 写真ページ（料理・店内写真の原寸URLと料理名）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-ramen-menya-musou">
+<img class="hero" src="img/tokushima/tokushima-ramen-menya-musou.jpg" alt="麺や 無双 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-ramen-menya-musou_exterior.jpg" alt="麺や 無双 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>麺や 無双<span class="yomi">めんや むそう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">カウンターとテーブル2卓だけの15席で、豚骨醤油とスタミナラーメンの2本柱に絞って出す店。スタミナラーメンは無添加のスープに店独自のにんにくだれを合わせ、野菜と豚バラを積み上げる奈良の天理ラーメン系の一杯で、ホルモンを追加できる。食材の産地を品書きに明記しているのが特徴で、ねぎは徳島市沖洲の農家から直送される渭東ねぎ、卵は徳島県産の有精卵、にんにくは兵庫県養父市産のホワイト六片、ホルモンは市内の精肉店から毎日仕入れる。たまご・のり・ねぎなどのトッピングは60円から。</div>
+<div class="sig"><b>一皿:</b>無双スタミナラーメン（無添加スープに秘伝のにんにくだれ、野菜と豚バラを重ねた看板。770円）／絶品豚骨しょうゆラーメン（数種の醤油をブレンドしただれを合わせた定番。660円）／無双スタミナスペシャル（野菜・肉・チャーシュー・ホルモンの全部のせ。1,310円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・金・土 11:00〜15:00（料理L.O. 15:00）／木・日・祝日・祝前日 11:00〜15:00、17:00〜20:00（料理L.O. 19:30）。店の注記では木曜・日曜の夜は「17時〜ラスト（売り切れ次第終了）」</td></tr>
+<tr><th>定休日</th><td class="off">火曜（当面の間）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市鷹匠町4-19 後藤田ビル1F</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない（ホットペッパーグルメ 2026-10-31 時点）。電話予約の可否は未確認 — <a href="tel:0886785778">☎ 088-678-5778</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島ラーメンの三系統とは別の系譜をあえて1軒入れたかった。地元食材を名指しで使う小さな専門店で、章に「徳島ラーメン以外の地元のラーメン屋」という幅が出るので採った。営業の根拠＝ホットペッパーグルメの店舗ページが2026-10-31 時点で曜日別の営業時間と「定休日：火曜日（当面の間）」という注記を掲出しており、号外NET徳島市のサイト内検索で「無双」を引いても閉店・移転の記事は出てこない（2026-10-31 実施）。ただし口コミの最新は2023-03-27、料理ページの最終更新は2021-04-23 で、2025〜2026年の更新は見つけられなかった＝掲載前に電話（088-678-5778）での再確認を推奨する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%82%84%20%E7%84%A1%E5%8F%8C%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E9%B7%B9%E5%8C%A0%E7%94%BA4-19%20%E5%BE%8C%E8%97%A4%E7%94%B0%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001256517/">ホットペッパーグルメ 麺や 無双 店舗ページ（住所・アクセス・曜日別の営業時間・定休日・総席数15席・駐車場・平均予算・素材のこだわりの記述）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ001256517/food/">ホットペッパーグルメ 同店 料理メニュー（ラーメン・トッピングの価格。最終更新 2021-04-23）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ001256517/photo/">ホットペッパーグルメ 同店 写真ページ（料理・店内・外観写真の原寸URL）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-ramen-86noodle">
+<img class="hero" src="img/tokushima/tokushima-ramen-86noodle.jpg" alt="透明醤油ラーメン専門店 86noodle 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-ramen-86noodle_exterior.jpg" alt="透明醤油ラーメン専門店 86noodle 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>透明醤油ラーメン専門店 86noodle<span class="yomi">とうめいしょうゆらーめんせんもんてん はちろくぬーどる</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip goguynet">goguynet</span></div>
+<div class="desc">2026年3月に開いた、徳島で初めてという透明醤油ラーメンの専門店。醤油を使いながら色のつかない澄んだスープで、茶系の濃い徳島ラーメンとは正反対の一杯を出す。看板の86ラーメンには4時間以上かけて低温調理したローストポークと、徳島では珍しいというワンタンを載せる。わんぱくラーメンはそのローストポークを丼の縁にぐるりと並べ、ワンタンも5個入れる大盛り版。丼ものはローストポーク温玉丼が人気で、昼のみの営業ながら台湾カステラやパンケーキなどの甘味も置く。27席。</div>
+<div class="sig"><b>一皿:</b>86ラーメン（低温調理のローストポークとワンタンを載せた看板の一杯。880円）／わんぱくラーメン（ローストポークを丼の周りに並べワンタン5個を入れる大盛り。1,280円）／ローストポーク温玉丼（低温調理の豚肉に温玉とタルタル、オニオンソースを合わせた丼）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 11:30〜15:00（料理L.O. 14:30／ドリンクL.O. 14:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし（無休）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市秋田町1丁目22 味園ビル1F</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない（ホットペッパーグルメ 2026-10-31 時点）。電話予約の可否は未確認 — <a href="tel:0886248103">☎ 088-624-8103</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>既に採った5軒がすべて茶系の徳島ラーメンなので、三系統のうちの淡い側を代表させる新しい専門店として入れた。秋田町という場所も、郊外の巽屋・大道の無双と散らせる。営業の根拠＝号外NET徳島市が2026-03-15 と2026-03-18 に開店と食レポの記事を出しており（記事見出しで確認・2026-10-31 取得）、そのうえでホットペッパーグルメの料理ページが2026-04-10 付で更新され、同じ日付の口コミも投稿されている。2026-10-31 時点で店舗ページは営業時間「月〜日 11:30〜15:00」「定休日：なし」を掲出し、号外NET徳島市のサイト内検索でも閉店・移転の記事は出てこない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%80%8F%E6%98%8E%E9%86%A4%E6%B2%B9%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%B0%82%E9%96%80%E5%BA%97%2086noodle%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%A7%8B%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE22%20%E5%91%B3%E5%9C%92%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003473935/">ホットペッパーグルメ 透明醤油ラーメン専門店 86noodle 店舗ページ（住所・アクセス・営業時間・定休日・総席数27席・駐車場・平均予算）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ003473935/food/">ホットペッパーグルメ 同店 料理メニュー（ラーメン・丼・甘味の価格。最終更新 2026-04-10）2026-10-31 取得</a> / <a href="https://tokushima.goguynet.jp/2026/03/15/toumeisyouyura-mensenmonten-86noodle-o-pun/">号外NET徳島市「徳島初の透明醤油ラーメン専門店『86noodle（ハチロクヌードル）』がオープンしていたとの情報をお寄せいただきました」2026-03-15 掲載（2026-10-31 取得）</a> / <a href="https://tokushima.goguynet.jp/2026/03/18/toumeisyouyura-mensenmonten-86noodle-o-pun-2/">号外NET徳島市「オープンしたばかりの透明醤油ラーメン専門店『86noodle（ハチロクヌードル）』について食レポなどをお寄せいただきました」2026-03-18 掲載（2026-10-31 取得）</a></div>
+</div></div>
+<div class="card" id="c-tokushima-ramen-dounoura-hanare-sakaemachi">
+<img class="hero" src="img/tokushima/tokushima-ramen-dounoura-hanare-sakaemachi.jpg" alt="堂の浦 はなれ 栄町店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-ramen-dounoura-hanare-sakaemachi_exterior.jpg" alt="堂の浦 はなれ 栄町店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>堂の浦 はなれ 栄町店<span class="yomi">どうのうら はなれ さかえまちてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip east-tokushima">east-tokushima</span></div>
+<div class="desc">鳴門の漁師町・堂浦の名を冠した徳島の魚料理店が出した「はなれ」で、夜22時に開けて明け方6時まで、飲んだあとの一杯を出す。名物は鯛のあらを鳴門の塩で炊いた塩らーめんで、鯛の身も皮も使い切る本店の仕立てをそのまま持ってきている。スープを残して注文する替飯まで含めて一巡りの構成。ほかに雲丹を生卵でカルボナーラ風に仕上げた雲丹らーめん、あさりと鯛の二枚看板のスープを合わせたあさり塩バターらーめんがある。阿波牛のたたきや阿波尾鶏の唐揚げ、鯛しお釜飯といった酒の肴も置く。20席で掘りごたつ席あり。</div>
+<div class="sig"><b>一皿:</b>鯛の塩らーめん（鯛のあらから取ったスープを鳴門の塩で仕立てた名物。600円・税抜）／雲丹らーめん（雲丹を生卵でカルボナーラ風にからめる。800円・税抜）／替飯（らーめんの残りスープに入れる〆の飯。200円・税抜。卵・チーズは各+100円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 22:00〜翌6:00（料理L.O. 翌5:00／ドリンクL.O. 翌5:00）。らーめんは完売次第終了</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市栄町1-30 J'sビル1階</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない（ホットペッパーグルメ 2026-10-31 時点）。電話予約の可否は未確認 — <a href="tel:0886525112">☎ 088-652-5112</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>茶系・淡色系に続けて、徳島らしい素材（鳴門の鯛）でラーメンを組み立てた店を1軒入れたかった。歓楽街の深夜という時間帯も章の中で重ならない。営業の根拠＝ホットペッパーグルメの店舗ページに2026-07-08 付の口コミが投稿されており（2026-10-31 取得）、同ページは2026-10-31 時点で営業時間「22:00〜翌6:00」を掲出している。なお同系列の本店にあたる「堂の浦 はなれ 駅前店」（徳島市寺島本町西1-45-1）は、ホットペッパーグルメの店舗名に【改装のため休業中】と付いている（2026-10-31 確認）ので、本店を目当てに動かないこと。料理ページの最終更新が2017-07-31 と古く、価格はすべて当時の税抜表示なので、現在の価格は電話（088-652-5112）で確認を推奨する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A0%82%E3%81%AE%E6%B5%A6%20%E3%81%AF%E3%81%AA%E3%82%8C%20%E6%A0%84%E7%94%BA%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%A0%84%E7%94%BA1-30%20J%27s%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000973124/">ホットペッパーグルメ 堂の浦 はなれ 栄町店 店舗ページ（住所・アクセス・営業時間・定休日・総席数20席・平均予算・2026-07-08 付の口コミ）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000973124/food/">ホットペッパーグルメ 同店 料理メニュー（鯛の塩らーめん等の価格。最終更新 2017-07-31）2026-10-31 取得</a> / <a href="https://www.east-tokushima.jp/gourmet/detail.php?id=43">イーストとくしま観光推進機構 グルメ「堂の浦 駅前店」（本店の鯛の塩らーめんの作り、鯛のあらでとるだしと替飯の説明）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000955074/">ホットペッパーグルメ 堂の浦 はなれ 駅前店 店舗ページ（店舗名に【改装のため休業中】の表示）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-ramen-inotani">
+<img class="hero" src="img/tokushima/tokushima-ramen-inotani.jpg" alt="中華そば いのたに 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-ramen-inotani_exterior.jpg" alt="中華そば いのたに 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>中華そば いのたに 本店<span class="yomi">ちゅうかそば いのたに ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip awanavi">awanavi</span></div>
+<div class="desc">徳島ラーメンという呼び名そのものを全国に広めた店。1999年9月から翌2000年5月まで新横浜ラーメン博物館に「徳島ラーメン」として出店し、それが全国的なご当地ラーメンブームの火付け役になった。豚骨と野菜を一緒に煮込んだ濃口醤油の茶系スープに、歯切れのよい自家製ストレート麺、甘辛く煮た豚バラ肉と生卵を合わせるのが看板の［中華そば肉入り玉子入り］。味は創業以来変えていないという。40席・駐車場35台で、昼どきは行列ができる。席の予約は受け付けていないが、持ち帰りと県外発送は電話で予約できる（発送専用FAX 088-652-9247）。麺がなくなり次第その日は終了する。</div>
+<div class="sig"><b>一皿:</b>中華そば肉入り玉子入り（豚骨と野菜の濃口醤油スープに甘辛い豚バラ肉と生卵。麺と肉を卵にからめて食べるすき焼き風が徳島流）／白ごはん（徳島ではラーメンはごはんのおかず。スープをしみこませて食べる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜17:00（売り切れ次第終了）※公式サイトおよび阿波ナビの記載。実際は看板の10時30分より早く開くことがあるとの口コミもある</td></tr>
+<tr><th>定休日</th><td class="off">月曜（阿波ナビは「祝日の場合は営業、翌日休み」と補記）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市西大工町4-25</td></tr>
+<tr><th>予約</th><td>席の予約は不可（公式サイト明記）。持ち帰り・県外発送のみ電話で予約可 — <a href="tel:0886531482">☎ 088-653-1482</a> ／ <a href="http://www.inotani.jp/instanthp/page01.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島ラーメン茶系の起点であり、この章の最初に置くべき1軒。徳島県観光協会の公式サイト「阿波ナビ」の徳島ラーメン茶系特集でも01番に挙げられている。営業している根拠＝①ホットペッパーグルメの当店ページの口コミに 2026-08-02 投稿の書き込みがある（2026-10-29 取得） ②タウン誌『あわわ』のWEB版が 2024-07-27 に当店を現行価格つきで掲載 ③Instagram に 2026-10-04 付の当店（本店）訪問投稿がある（Yahoo!検索の要約で投稿日を確認。2026-10-29 取得）。あわせて「いのたに 閉店」で検索したが、本店の閉店・移転の報は無かった（2026-10-29）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E3%81%84%E3%81%AE%E3%81%9F%E3%81%AB%20%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%A4%A7%E5%B7%A5%E7%94%BA4-25">Googleマップで開く</a>
+<div class="src">写真: イーストとくしま観光推進機構（www.east-tokushima.jp）より引用 / 外観: 出典ページ / 参照元: <a href="http://www.inotani.jp/instanthp/page01.html">(公式)中華そば いのたに本店 ホームページ（住所・営業時間・電話・定休日・駐車場35台・席の予約不可・持ち帰り/県外発送の電話予約。最終更新 平成30年06月21日）2026-10-29 取得</a> / <a href="https://www.awanavi.jp/archives/topics/65670">阿波ナビ（徳島県観光情報サイト）徳島ラーメン・中華そば 茶系 店舗情報 01（住所・電話・営業時間・定休日・席数40席・駐車場35台）2026-10-29 取得</a> / <a href="https://www.east-tokushima.jp/gourmet/detail.php?id=21">イーストとくしま観光推進機構 グルメ「中華そば いのたに」（席40席・P35台・禁煙・紹介文）2026-10-29 取得</a> / <a href="https://awawa.app/pages/article_detail.php?report_no=6770&amp;app_no=51&amp;tab_no=0">あわわ（タウン誌あわわのWEB版）【2024阿波おどり】徳島ラーメン＆中華そば（価格・営業時間・席数・徒歩15分）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000111977/report/">ホットペッパーグルメ 中華そばいのたに 本店 口コミ一覧（最新の投稿日 2026-08-02＝営業の根拠）2026-10-29 取得</a> / <a href="http://www.uma-e.net/ramen/about/">Uma-e.net 徳島県 中華そばの歴史（新横浜ラーメン博物館への出店が1999年9月〜翌年5月であること）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-ramen-yoake">
+<img class="hero" src="img/tokushima/tokushima-ramen-yoake.jpg" alt="支那そば よあけ 徳島駅前店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-ramen-yoake_exterior.jpg" alt="支那そば よあけ 徳島駅前店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>支那そば よあけ 徳島駅前店<span class="yomi">しなそば よあけ とくしまえきまえてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip awanavi">awanavi</span></div>
+<div class="desc">昭和27年（1952年）創業。茶系（すき焼き系）でも白系（小松島系）でもない「黄系」を名乗り、豚骨・鶏ガラ・香味野菜だけで炊いた化学調味料不使用の金色のスープが看板。肉はチャーシューか豚バラ肉スライスかを選べる。徳島ラーメンの具をごはんに載せた［徳島丼］、ワンタン麺、ギョーザなどサイドが多く、支那そばとミニ徳島丼のセットも人気。席はカウンター4席＋テーブル6卓18席の全22席。支払いは現金のみ（公式サイト記載）。朝8時から開ける日もある駅前の店で、ホットペッパーグルメからネット予約ができる。</div>
+<div class="sig"><b>一皿:</b>支那そば（豚骨・鶏ガラ・香味野菜の無化調スープにストレート麺。肉はチャーシューか豚バラスライスを選ぶ）／徳島丼（徳島ラーメンの具をごはんに載せた丼。生卵をからめて食べる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜14:00／17:00〜23:00（公式サイト店舗案内）※ホットペッパーの販促文には「朝8時から」の記載もあり、日により早く開く</td></tr>
+<tr><th>定休日</th><td class="off">日曜（公式サイト店舗案内。ホットペッパーの予約カレンダーでも 2026年11月の日曜はすべて「休」）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市一番町3丁目10</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメからネット予約。電話 088-653-3369 でも可。持ち帰りあり） — <a href="tel:0886533369">☎ 088-653-3369</a> ／ <a href="https://www.ramen-yoake.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島ラーメン三系統のうち黄系を代表する老舗で、茶系に偏りがちなこの章の味の幅を作る。しかも徳島駅から徒歩数分と、旅行者がいちばん寄りやすい位置にある。営業している根拠＝①ホットペッパーグルメのネット予約カレンダーを 2026-11-01〜11-30 の全日について取得したところ、日曜（11/1・8・15・22・29）が「休」、それ以外の25日すべてが「◎＝即予約可」だった（2026-10-29 取得） ②同サイトの口コミに 2026-09-08 投稿の書き込みがある ③Instagram に 2026-10-26 ごろの当店訪問投稿がある（Yahoo!検索の要約で「3日前」と表示。2026-10-29 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%94%AF%E9%82%A3%E3%81%9D%E3%81%B0%20%E3%82%88%E3%81%82%E3%81%91%20%E5%BE%B3%E5%B3%B6%E9%A7%85%E5%89%8D%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA3%E4%B8%81%E7%9B%AE10">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（cdn.r-corona.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.ramen-yoake.com/shop">支那そば よあけ 公式サイト 店舗案内（住所・電話・営業時間・定休日・席22席・現金のみ・徳島駅より徒歩3分・代表者名）2026-10-29 取得</a> / <a href="https://akr0637713954.owst.jp/">支那そば よあけ 徳島駅前店【公式】（レストランボード版。支那そば800円・徳島丼700円・スペシャル1,300円の税込価格、店舗写真）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001007205/">ホットペッパーグルメ 支那そば よあけ 徳島駅前店（昭和27年創業・黄系・徳島駅から徒歩約1分の記載、店舗写真）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001007205/yoyaku/hpds/?ROUTE_KBN=20">ホットペッパーグルメ 同店 ネット予約・空席確認（2026年11月の予約カレンダー＝日曜以外の25日が即予約可）2026-10-29 取得</a> / <a href="https://www.awanavi.jp/archives/topics/65671">阿波ナビ（徳島県観光情報サイト）徳島ラーメン・中華そば 白系・黄色系・オリジナル 店舗情報 04（住所・電話・営業時間・定休日）2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2021/02/24/sinasobayoakegenteiko-su/">号外NET徳島「支那そば『よあけ』ホットペッパー限定コース」2021-02-24（店舗外観写真の出典）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-ramen-todai-omichi">
+<img class="hero" src="img/tokushima/tokushima-ramen-todai-omichi.jpg" alt="ラーメン東大 大道本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-ramen-todai-omichi_exterior.jpg" alt="ラーメン東大 大道本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>ラーメン東大 大道本店<span class="yomi">らーめんとうだい おおみちほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip awanavi">awanavi</span></div>
+<div class="desc">「すき焼き風」と言われる徳島ラーメンの姿を県外へ広めた東大グループの本店。骨から炊いた濃厚な豚骨醤油の茶系スープに、甘辛く煮た豚バラ肉と生卵がからむ。開業当時から続く生卵無料のサービスと、本店限定の「無限ライス」が名物。18席はすべてカウンターで、店の前の券売機で食券を買う方式（注文手順の掲示があるので初めてでも迷いにくい）。11時から翌朝4時（L.O.3時45分）まで通しで営業する年中無休の店で、飲んだあとの〆にも使える。本店でしか出さない太麺の［東大ラーメン 大道］もある。クレジットカード・交通系電子マネー・QRコード決済が使える。</div>
+<div class="sig"><b>一皿:</b>東大ラーメン（濃厚な豚骨醤油スープに甘辛い豚バラ肉。無料の生卵を割り入れてすき焼き風に食べる）／東大ラーメン 大道（大道本店だけの一杯。背脂とにんにくの効いた濃厚スープにもちもちの太麺を合わせる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜翌4:00（L.O. 翌3:45）※売り切れ次第終了</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市大道1-36</td></tr>
+<tr><th>予約</th><td>不可（券売機で食券を買う方式。予約の受け付けなし） — <a href="tel:0886553775">☎ 088-655-3775</a> ／ <a href="https://ramen-todai.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島ラーメン茶系を全国区にした店で、しかも明け方4時まで開いているため旅程のどこにでも差し込める。章の中では市の南側を受け持つ。営業している根拠＝①ホットペッパーグルメの当店ページの口コミに 2026-07-16 投稿の書き込みがある（2026-10-29 取得） ②公式サイト ramen-todai.com の店舗情報ページが大道本店の駐車場を「23台（店舗横9台・第二駐車場14台）」と、号外NET が2023年に報じた駐車場拡大を反映した内容に更新されている（2026-10-29 取得） ③タウン誌『あわわ』のWEB版が 2024-07-27 に当店を現行メニューつきで掲載。【営業時間・駐車場の食い違い】阿波ナビとホットペッパーは駐車場9台、公式サイトは23台。新しい公式サイトの数字を desc に採り、両方を sources に残した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E6%9D%B1%E5%A4%A7%20%E5%A4%A7%E9%81%93%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%A4%A7%E9%81%931-36">Googleマップで開く</a>
+<div class="src">写真: あわわ（徳島のタウン情報媒体）（sumahononakani.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://ramen-todai.com/topics/category/shop/">ラーメン東大 公式サイト 店舗情報（大道本店の住所・営業時間・電話・定休日・18席・駐車場23台、外観写真）2026-10-29 取得</a> / <a href="https://www.awanavi.jp/archives/topics/65670">阿波ナビ（徳島県観光情報サイト）徳島ラーメン・中華そば 茶系 店舗情報 03（住所・電話・営業時間・定休日・18席・駐車場9台）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000112031/">ホットペッパーグルメ ラーメン東大・大道本店（住所・営業時間・年中無休・18席カウンターのみ・駐車場9台・決済手段、口コミ最新 2026-07-16）2026-10-29 取得</a> / <a href="https://awawa.app/pages/article_detail.php?report_no=6770&amp;app_no=51&amp;tab_no=0">あわわ（タウン誌あわわのWEB版）【2024阿波おどり】徳島ラーメン＆中華そば（東大ラーメン豚スラ肉増し950円・こってり850円・餃子380円、料理写真）2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2023/09/05/tokushimara-menakegata-ra-mentoudai/">号外NET徳島「徳島ラーメンが明け方まで楽しめる『ラーメン東大 大道本店』あらためて紹介」2023-09-05（券売機方式・駐車場拡大・本店限定メニュー、料理写真の出典）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-ramen-rairai">
+<img class="hero" src="img/tokushima/tokushima-ramen-rairai.jpg" alt="中華そばショップ 来来 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>中華そばショップ 来来<span class="yomi">ちゅうかそばしょっぷ らいらい</span></div>
+<div class="chips"><span class="chip awawa">awawa</span><span class="chip awanavi">awanavi</span></div>
+<div class="desc">昭和42年（1967年）創業、三代続く駅前の中華そば屋。現在の店主は三代目の髙木誠人さんで、鮮やかな赤い髪がトレードマーク。濃すぎずあっさりしすぎない豚骨醤油のスープに細麺を合わせ、チャーシュー・ねぎ・もやし・かまぼこというシンプルな具で創業当時の味を守る。赤と白を基調にしたレトロな店内は18〜22席ほどで、昼は近隣の会社員、夜は部活帰りの学生や飲みの〆に来る客でにぎわう。生卵を落とした［月見そば］は徳島ラーメンらしい一杯で観光客に人気。店主考案の裏メニュー［チャーシュー焼飯］もある。トッピングのねぎ盛り・もやし盛りは麺が見えないほどの量で出てくる。</div>
+<div class="sig"><b>一皿:</b>中華そば（創業1967年から変えない豚骨醤油のあっさりスープに細麺。チャーシュー・ねぎ・もやし・かまぼこのシンプルな具）／月見そば（中華そばに生卵を落とした徳島流の一杯。卵がスープに溶けてまろやかになる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30（L.O. 14:15）／18:00〜21:30（L.O. 21:15）※いずれも売り切れ次第終了。公式Instagramとタウン誌『あわわ』の記載。ホットペッパーグルメは「11:00〜15:00／18:00〜翌2:30」と深夜までの表記を残しており食い違う</td></tr>
+<tr><th>定休日</th><td class="off">日曜（公式Instagram・あわわ・阿波ナビとも一致）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市八百屋町1-8</td></tr>
+<tr><th>予約</th><td>未確認（店の駐車場が無く、公式Instagramにも予約についての記載が見当たらない。カウンター中心の小さな店のため、来店前に電話で確認するのが確実） — <a href="tel:0886524975">☎ 088-652-4975</a> ／ <a href="https://www.instagram.com/rairai1967/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島駅から歩いて行ける範囲でいちばん古い現役の中華そば屋で、1967年から三代続く。駅前エリアを受け持つ1軒として入れた。営業している根拠＝①タウン誌『あわわ』が 2025-09-11 に四国大学生のインターン取材記事として当店を5本立てで掲載し、三代目店主への取材内容と現行価格を載せている ②公式Instagram（@rairai1967）のプロフィールに現行の営業時間「11:00〜14:15LO／18:00〜21:15LO、定休日 日曜日」が掲出されている（Yahoo!検索の要約で確認。2026-10-29 取得） ③Instagram に 2026-10-04 付の当店訪問投稿がある（同上）。【営業時間の食い違い】公式Instagramと『あわわ』は夜が21:15L.O.、ホットペッパーグルメと徳島コンベンションサポートは「18:00〜翌2:30」「翌2:00」と大きく違う。新しい側（公式Instagram・あわわ 2025年）を hours に採り、古い記載との差を併記した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E6%9D%A5%E6%9D%A5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%85%AB%E7%99%BE%E5%B1%8B%E7%94%BA1-8">Googleマップで開く</a>
+<div class="src">写真: あわわ（徳島のタウン情報媒体）（sumahononakani.com）より引用 / 外観: 写真なし / 参照元: <a href="https://awawa.app/pages/article_detail.php?report_no=9573&amp;app_no=51&amp;tab_no=0">あわわ（タウン誌あわわのWEB版）四国大学インターンシップ ラーメン店『来来』取材チャレンジ 2025-09-11（住所・電話・営業時間・定休日・駐車場なし）2026-10-29 取得</a> / <a href="https://awawa.app/pages/article_detail.php?report_no=9565&amp;app_no=51&amp;tab_no=0">あわわ 同インターン記事／岩ちゃん編 2025-07-01（1967年創業・店主・看板メニュー・月見ラーメン、料理と外観の写真）2026-10-29 取得</a> / <a href="https://awawa.app/pages/article_detail.php?report_no=9566&amp;app_no=51&amp;tab_no=0">あわわ 同インターン記事／Kirara編 2025-07-01（中華そば600円・月見そば660円・焼飯690円・餃子450円・チャーシューメン800円、店内写真）2026-10-29 取得</a> / <a href="https://awawa.app/pages/article_detail.php?report_no=9567&amp;app_no=51&amp;tab_no=0">あわわ 同インターン記事／三日月編 2025-07-01（創業昭和42年・三代目店主 髙木誠人さん・裏メニュー、料理と店内の写真）2026-10-29 取得</a> / <a href="https://awawa.app/pages/shop_detail.php?shop_no=10314&amp;app_no=51&amp;tab_no=0">あわわ 店舗詳細ページ 中華そばショップ 来来（住所・電話・営業時間・定休日・18席、店内写真）2026-10-29 取得</a> / <a href="https://www.awanavi.jp/archives/topics/65670">阿波ナビ（徳島県観光情報サイト）徳島ラーメン・中華そば 茶系 店舗情報 06（1967年創業・住所・電話・18席・ミニッツパーク割引券）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000537266/">ホットペッパーグルメ 中華そばショップ来来（住所・22席・ミニッツパークの駐車サービス券の条件）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-ramen-kiguya">
+<img class="hero" src="img/tokushima/tokushima-ramen-kiguya.jpg" alt="中華そば 木具屋 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-ramen-kiguya_exterior.jpg" alt="中華そば 木具屋 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>中華そば 木具屋 本店<span class="yomi">ちゅうかそば きぐや ほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip awawa">awawa</span></div>
+<div class="desc">徳島ラーメンの三系統のうち、白系と茶系の両方を1軒で食べ比べられる珍しい店。ベースのスープは強火ではなく弱火で13〜14時間かけて炊き、豚骨の旨みを立てながら角の取れた味に仕上げる。長く看板だったのが薄口の［中華そば「白」］で、2025年10月のリニューアルを機に、県内産の醤油を数種類ブレンドしたかえしを加える［中華そば「茶」］が加わった。麺は自家製の中細ストレート。店長の平尾さんはこの道50年。餃子・焼飯・チャーシュー丼・からあげ・たまご焼とサイドが多く、阿南のソウルフード「エメロン」の木具屋版という牛すじ串［キグロン］、出汁のしみたおでんもある。28席（カウンター・テーブル・座敷）で、食券での事前会計。分煙（加熱式たばこのみ）。</div>
+<div class="sig"><b>一皿:</b>中華そば「白」（弱火で13〜14時間炊いた薄口の白系スープ。自家製中細ストレート麺。バラ肉入りが定番）／中華そば「茶」（2025年10月に加わった茶系。県内産醤油を数種ブレンドしたかえしを合わせる）／キグロン（牛すじ串。阿南の「エメロン」を木具屋流にしたもので、持ち帰りで30本買う常連もいる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜15:00（L.O. 14:30）／17:00〜22:00（L.O. 21:30）※ホットペッパーグルメ 2026-10-29 時点。タウン誌『あわわ』2025-11-14 の記載は「10:00〜15:00、18:30〜翌1:00」で夜の時間が食い違う</td></tr>
+<tr><th>定休日</th><td class="off">木曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市川内町上別宮東90-2</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメからネット予約。ただし混雑時は直接来店の客と同じく順番に案内、会計は食券での事前精算と店が明記） — <a href="tel:0886762154">☎ 088-676-2154</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>白系と茶系を同じ店で比べられるので、系統を散らすこの章の軸になる1軒。市の東側（川内町）も受け持つ。営業している根拠＝①ホットペッパーグルメの当店ページの口コミに 2026-05-31 投稿の書き込みがある（2026-10-29 取得） ②同ページがネット予約受付中の契約店として、2026年10月時点の営業時間「10:00〜15:00／17:00〜22:00、木曜定休」と座席・食券制・分煙の情報を掲出している ③タウン誌『あわわ』が 2025-11-14 に2025年10月のリニューアル開店を現地取材つきで掲載。あわせて「木具屋 閉店」で検索したが、閉店・移転の報は無かった（2026-10-29）。【食い違い】夜の営業時間は『あわわ』が「18:30〜翌1:00」、ホットペッパーが「17:00〜22:00」。駐車場は『あわわ』が「10台※第2駐車場あり」、ホットペッパーは「なし」。新しいホットペッパーの時間を hours に採り、駐車場は現地で台数が確認できている『あわわ』の記載を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E6%9C%A8%E5%85%B7%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%B7%9D%E5%86%85%E7%94%BA%E4%B8%8A%E5%88%A5%E5%AE%AE%E6%9D%B190-2">Googleマップで開く</a>
+<div class="src">写真: あわわ（徳島のタウン情報媒体）（sumahononakani.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004026244/">ホットペッパーグルメ 中華そば 木具屋 本店（住所・アクセス・営業時間・定休日・28席・席種・食券制・分煙・予算、店舗写真、口コミ最新 2026-05-31）2026-10-29 取得</a> / <a href="https://awawa.app/pages/article_detail.php?report_no=10027&amp;app_no=51&amp;tab_no=7">あわわ（タウン誌あわわのWEB版）《中華そば 木具屋 本店》中華そば「茶」を引っさげて待望のリニューアルオープン！ 2025-11-14（2025年10月リニューアル・スープの炊き方13〜14時間・白と茶・自家製麺・店長の平尾さん・キグロン・価格・住所・電話・駐車場10台、料理写真）2026-10-29 取得</a></div>
+</div></div>
+<h2 id="s-kyodo" class="c-brown">阿波尾鶏・郷土の味（フィッシュカツ・たらいうどん）</h2>
+<div class="card" id="c-tokushima-kyodo-hashimoto-sobakura">
+<img class="hero" src="img/tokushima/tokushima-kyodo-hashimoto-sobakura.jpg" alt="総本家橋本 そば蔵 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-kyodo-hashimoto-sobakura_exterior.jpg" alt="総本家橋本 そば蔵 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">10</span>総本家橋本 そば蔵<span class="yomi">そうほんけはしもと そばくら</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip east-tokushima">east-tokushima</span></div>
+<div class="desc">うるめいわしでだしを取る生そばを看板にする老舗で、そば米汁をはじめ徳島の郷土料理を昼から夜まで通しで出す。そば米汁はそばの実を乾かして米のように炊く阿波の郷土食で、単品770円のほか阿波御膳にも組み込まれる。阿波尾鶏の親子丼、鳴門鯛のかま焼き、わかめそばと、徳島の素材を使った品が並ぶ。和食店では珍しい和風のパリパリ餃子も名物。120席（ホットペッパーグルメ掲載。イーストとくしま観光推進機構の掲載は80席で2階は予約のみ）で、完全個室5室と最大36名の大座敷がある。フリーズドライのそば米は土産に買える。</div>
+<div class="sig"><b>一皿:</b>そば米汁（そばの実を米のように炊く阿波の郷土食。770円）／徳島の郷土料理 生そば（うるめいわしのだしと歯ごたえのあるそば。748円）／阿波尾鶏親子丼（県の地鶏を使った丼。1,188円、おそば付1,518円）／和風パリパリ餃子（605円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 11:00〜22:00（料理L.O. 21:30／ドリンクL.O. 21:30）。問い合わせは11:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市新蔵町1-77</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約と電話。コース予約は来店前日22時以降のキャンセルでコース料金の80%が発生） — <a href="tel:0886551001">☎ 088-655-1001</a> ／ <a href="https://souhonke-hashimoto-sobakura.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>既に採っている阿波尾鶏の3軒と滝の焼餅だけでは、そば米汁という徳島の郷土食が章から抜け落ちるので最初に押さえた。そば米汁と阿波尾鶏の親子丼を一度に出せる店は市内でも限られる。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026-11-03 から11月下旬まで「即予約可（◎）」で埋まっていること（2026-10-31 確認）、料理ページが2026-08-18 付で更新されていること、公式のネット予約ページ（レストランボード）が2026-10-31 時点で営業時間・座席・駐車場16台を掲出していることの3点。なお系列の「総本家橋本 富田町店」はホットペッパーグルメ上で店舗名に【休業中】と付いているので混同しないこと。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B7%8F%E6%9C%AC%E5%AE%B6%E6%A9%8B%E6%9C%AC%20%E3%81%9D%E3%81%B0%E8%94%B5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%96%B0%E8%94%B5%E7%94%BA1-77">Googleマップで開く</a>
+<div class="src">写真: イーストとくしま観光推進機構（www.east-tokushima.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000030620/">ホットペッパーグルメ 総本家橋本 そば蔵 店舗ページ（住所・アクセス・営業時間・定休日・総席数120席・駐車場・ネット予約カレンダー）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000030620/food/">ホットペッパーグルメ 同店 料理メニュー（そば米汁770円・阿波尾鶏親子丼1,188円・生そば・御膳の価格。最終更新 2026-08-18）2026-10-31 取得</a> / <a href="https://souhonke-hashimoto-sobakura.owst.jp/">総本家橋本 そば蔵 公式ネット予約ページ（レストランボード。住所・電話・営業時間・平均予算・個室5室・駐車場16台・支払い方法）2026-10-31 取得</a> / <a href="https://www.east-tokushima.jp/gourmet/detail.php?id=63">イーストとくしま観光推進機構 グルメ「総本家橋本 そば蔵」（うるめいわしのだし、そば米汁、席数80席・駐車場17台、和風パリパリ餃子）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-kyodo-udon-koroku">
+<img class="hero" src="img/tokushima/tokushima-kyodo-udon-koroku.jpg" alt="うどん居酒屋ころく 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">11</span>うどん居酒屋ころく<span class="yomi">うどんいざかや ころく</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">徳島の粉ものをひと通り置くうどん酒場で、たらいうどん・阿波半田手延生そうめん・鳴門わかめうどんが同じ品書きに並ぶのがこの店の強み。たらいうどんは徳島市の北西、土成・御所が本場の食べ方で、釜揚げと冷やしを選べる。半田そうめんは太い麺を釜揚げ（ゆず）か冷やし（すだち）で出す。ほかに鳴門鯛の刺身と出汁茶漬け、すだち鰤、無水調理の阿波尾鶏とんちゃん鍋と、徳島の食材をひと皿ずつ用意する。45席、昼は11時から通しで開き、土日は夜22時まで。外観写真なし（駅の地下街にあり、建物の正面にあたる写真が掲載されていないため）。</div>
+<div class="sig"><b>一皿:</b>たらいうどん（徳島名物。釜揚げ・冷やしを選べる。980円／天盛り1,980円）／半田生そうめん（つるぎ町半田の太い手延べ麺。釜揚げゆず・冷やしすだち。1,280円）／鳴門わかめうどん（950円）／鳴門鯛の茶漬け（鯛の身に熱いだしを注ぐ〆）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・祝日・祝前日 11:00〜15:00（料理L.O. 14:30）、17:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:30）／土・日 11:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:30）。昼の時間に夜のメニュー、夜の時間に昼のメニューは注文できない</td></tr>
+<tr><th>定休日</th><td class="off">クレメントプラザの休館日に準じる</td></tr>
+<tr><th>住所</th><td>徳島県徳島市寺島本町西1-61 徳島駅クレメントプラザ地下1F</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約と電話。45名まで貸切可） — <a href="tel:0886553230">☎ 088-655-3230</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>たらいうどん・半田そうめん・鳴門わかめという、章から丸ごと抜けていた3つを1軒で押さえられるうえ、徳島駅の地下で昼から入れるので旅程に組み込みやすい。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026-11-01 から11月下旬まで「即予約可（◎）」で埋まっていること（2026-10-31 確認）、2026-10-07 付の口コミが投稿されていること、料理ページが2026-04-02 付で更新されていることの3点。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E5%B1%85%E9%85%92%E5%B1%8B%E3%81%93%E3%82%8D%E3%81%8F%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%BA%E5%B3%B6%E6%9C%AC%E7%94%BA%E8%A5%BF1-61%20%E5%BE%B3%E5%B3%B6%E9%A7%85%E3%82%AF%E3%83%AC%E3%83%A1%E3%83%B3%E3%83%88%E3%83%97%E3%83%A9%E3%82%B6%E5%9C%B0%E4%B8%8B1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000034083/">ホットペッパーグルメ うどん居酒屋ころく 店舗ページ（住所・アクセス・曜日別の営業時間・定休日・総席数45席・ネット予約カレンダー・2026-10-07 付の口コミ）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000034083/food/">ホットペッパーグルメ 同店 料理メニュー（たらいうどん980円・半田生そうめん1,280円・鳴門わかめうどん950円・鳴門鯛の刺身980円・とんちゃん鍋1,880円。最終更新 2026-04-02）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-kyodo-shuhou-sugihara">
+<img class="hero" src="img/tokushima/tokushima-kyodo-shuhou-sugihara.jpg" alt="酒朋すぎはら 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-kyodo-shuhou-sugihara_exterior.jpg" alt="酒朋すぎはら 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">12</span>酒朋すぎはら<span class="yomi">しゅほう すぎはら</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip east-tokushima">east-tokushima</span><span class="chip awaodori">awaodori</span></div>
+<div class="desc">カウンター6席とテーブルを合わせて20席ほどの小さな店で、品書きを「徳島の旨い物」という名で区切り、フィッシュカツと半田素麺をそこに置いている。フィッシュカツは魚のすり身にカレー粉を混ぜて揚げる県民食で、そのまま出すほかチーズ焼にもする。半田素麺はつるぎ町半田の太い手延べ麺。店の軒には県の「阿波尾鶏指定店」の札が掛かり、阿波尾鶏は朴葉焼・たたき・釜飯で出す。魚は店主が市場で選ぶほか、常連の県南の漁師からも入る。鳴門鯛の釜飯、鱧の湯引き、半田のこんにゃく田楽と、県内の産地名がそのまま品名になっている料理が多い。</div>
+<div class="sig"><b>一皿:</b>フィッシュカツ（魚のすり身にカレー粉を混ぜて揚げた徳島の県民食。429円）／半田素麺（つるぎ町半田の太い手延べ麺。539円）／鳴門鯛の釜飯（1,100円）／阿波尾鶏の朴葉焼（880円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 18:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）。イーストとくしま観光推進機構の掲載は18時〜23時頃</td></tr>
+<tr><th>定休日</th><td class="off">不定休（イーストとくしま観光推進機構の掲載は火曜。予約があれば営業）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市両国本町2丁目23 1F</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約と電話。20歳未満は同伴でも入店不可） — <a href="tel:0886521508">☎ 088-652-1508</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>フィッシュカツと半田素麺という、章から抜けていた2つを品書きに常置している数少ない店で、しかも鳴門鯛と阿波尾鶏まで1軒で回収できる。徳島県東部の観光推進機構が編集記事として取り上げている点も裏取りになる。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026-11-01 から11月下旬まで「即予約可（◎）」で埋まっていること（2026-10-31 確認）、2026-09-03 付の口コミが投稿されていること、料理ページが2026-06-10 付で更新されていることの3点。なお20歳未満は同伴でも入店できない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E6%9C%8B%E3%81%99%E3%81%8E%E3%81%AF%E3%82%89%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%A1%E5%9B%BD%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE23%201F">Googleマップで開く</a>
+<div class="src">写真: イーストとくしま観光推進機構（www.east-tokushima.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003985008/">ホットペッパーグルメ 酒朋すぎはら 店舗ページ（住所・アクセス・営業時間・定休日・総席数20席・ネット予約カレンダー・2026-09-03 付の口コミ・20歳未満入店不可の告知）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ003985008/food/">ホットペッパーグルメ 同店 料理メニュー（フィッシュカツ429円・半田素麺539円・鳴門鯛の釜飯1,100円・阿波尾鶏の朴葉焼880円。最終更新 2026-06-10）2026-10-31 取得</a> / <a href="https://www.east-tokushima.jp/spot/detail.php?id=155">イーストとくしま観光推進機構 観光スポット「すぎはら」（阿波尾鶏・阿波牛・フィッシュカツ・半田素麺といったローカルフードを必ず用意、県南の漁師からの仕入れ、電話・住所・営業時間・予算・席数）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-kyodo-awanoirodori-bizan">
+<img class="hero" src="img/tokushima/tokushima-kyodo-awanoirodori-bizan.jpg" alt="阿波の彩り びざん 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">13</span>阿波の彩り びざん<span class="yomi">あわのいろどり びざん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip gltjp">gltjp</span></div>
+<div class="desc">徳島駅前のホテル2階にある和食店で、昼も夜も開くため旅程に差し込みやすい。阿波路御膳は先付から菓子までの8品立てで、造りに鳴門鯛とすだち鰤、紙鍋に阿波尾鶏と鯛と海老、酢物にぼうぜ（イボダイ）の酢味噌掛け、ご飯にちりめん山椒と、県内の素材だけで組み上げる。単品でもそば米汁600円とフィッシュカツ630円を通年で置き、阿波尾鶏はせいろ蒸し・唐揚げ・天ぷら・パリパリ焼きと焼き方を選べる。鳴門金時と鳴門蓮根の天ぷら、神山産の椎茸天ぷらもある。50席で、窓際の掘りごたつ席からは徳島駅が見下ろせる。外観写真なし（ホテルの2階にあり、店単独の建物正面の写真が掲載されていないため）。</div>
+<div class="sig"><b>一皿:</b>阿波路御膳（鳴門鯛・すだち鰤の造り、阿波尾鶏の紙鍋と唐揚げ、ぼうぜの酢味噌掛けまで8品。3,400円）／そば米汁（600円）／【徳島名物】フィッシュカツ（630円）／阿波尾鶏のせいろ蒸し（1,550円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 11:00〜14:30（料理L.O. 14:00／ドリンクL.O. 14:00）、17:00〜22:00（料理L.O. 21:15／ドリンクL.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市元町1-5-1 ホテルサンルート徳島2F</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約と電話。10名以上は無料送迎バスあり） — <a href="tel:0886788833">☎ 088-678-8833</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>そば米汁とフィッシュカツを単品で、郷土の素材をまとめて食べるなら御膳で、と両方の入り方ができる店。昼（11:00〜14:30）に郷土料理を出す店は市内で少なく、滞在時間の短い読み手の受け皿になる。営業の根拠＝ホットペッパーグルメの料理ページが2026-10-30 付で更新されていること（前日）、ネット予約カレンダーが2026-11-02 以降「即予約可（◎）」「リクエスト予約可（□）」で埋まっていること（2026-10-31 確認）、GOOD LUCK TRIP の掲載情報が2026-06-07 更新で「掲載施設による公式確認を経た情報」と明記していることの3点。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E3%81%AE%E5%BD%A9%E3%82%8A%20%E3%81%B3%E3%81%96%E3%82%93%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%85%83%E7%94%BA1-5-1%20%E3%83%9B%E3%83%86%E3%83%AB%E3%82%B5%E3%83%B3%E3%83%AB%E3%83%BC%E3%83%88%E5%BE%B3%E5%B3%B62F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001008730/">ホットペッパーグルメ 阿波の彩り びざん 店舗ページ（住所・アクセス・営業時間・定休日・総席数50席・駐車場・ネット予約カレンダー）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ001008730/food/">ホットペッパーグルメ 同店 料理メニュー（阿波路御膳3,400円・そば米汁600円・フィッシュカツ630円・阿波尾鶏料理・天ぷらの価格。最終更新 2026-10-30）2026-10-31 取得</a> / <a href="https://www.gltjp.com/ja/directory/item/19042/">GOOD LUCK TRIP 阿波の彩り びざん（掲載施設による公式確認を経た情報。2026-06-07 更新）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-kyodo-awakaisen-uoya">
+<img class="hero" src="img/tokushima/tokushima-kyodo-awakaisen-uoya.jpg" alt="阿波海鮮 魚家 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-kyodo-awakaisen-uoya_exterior.jpg" alt="阿波海鮮 魚家 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">14</span>阿波海鮮 魚家<span class="yomi">あわかいせん うおや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">徳島近海の地魚を安く出す駅前の魚の店で、品書きに産地名をそのまま冠した徳島の品が並ぶ。鳴門わかめはしらすと合わせた酢物、練り物は小松島の竹ちくわとフィッシュカツを炉端と揚げ物の欄に置く。鳴門鯛は刺身とあら炊き、名物の鯛丼で出し、すだち鰤・鱧・地だこ・鳴門れんこん・鳴門金時も使う。刺身は三種・五種・七種の盛り合わせで頼めて、七種で2,189円。阿波尾鶏の手羽先ももステーキ、阿波牛のすじ煮込みもある。1階は大漁旗を張った賑やかなカウンターと座敷、2階は宴会席で50席。20歳未満は同伴でも入店できない。</div>
+<div class="sig"><b>一皿:</b>鳴門わかめとしらすの酢物（鳴門海峡のわかめをしらすと合わせた一皿。539円）／小松島竹ちくわ（竹に巻いて焼く徳島の練り物。209円）／小松島フィッシュカツ（319円）／鳴門鯛のあら炊き（979円）／名物お刺身七種盛り（2,189円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜翌0:00（料理L.O. 23:30／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市一番町3-6</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約と電話。2階は最大30名まで貸切可。20歳未満は同伴でも入店不可） — <a href="tel:0886251977">☎ 088-625-1977</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳴門わかめを単品の料理として品書きに置いている店が章にまだ1軒も無く、同じ店で竹ちくわとフィッシュカツという練り物の2品、さらに鳴門鯛まで揃うので採った。価格が安く、1品ずつ徳島の名産を試す使い方ができる。営業の根拠＝ホットペッパーグルメのネット予約カレンダーが2026-11-02 から11月下旬まで「即予約可（◎）」で埋まっていること（2026-10-31 確認）と、同ページが2026-10-31 時点で営業時間・定休日・席数を掲出していること。ただし料理ページの最終更新が2023-12-12 で価格が古い可能性があるため、掲載前に電話（088-625-1977）での確認を推奨する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E6%B5%B7%E9%AE%AE%20%E9%AD%9A%E5%AE%B6%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA3-6">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000861541/">ホットペッパーグルメ 阿波海鮮 魚家 店舗ページ（住所・アクセス・営業時間・定休日・総席数50席・ネット予約カレンダー・20歳未満入店不可の告知）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000861541/food/">ホットペッパーグルメ 同店 料理メニュー（鳴門わかめとしらすの酢物539円・小松島竹ちくわ209円・小松島フィッシュカツ319円・鳴門鯛の刺身979円ほか。最終更新 2023-12-12）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-kyodo-konyamachi-yoshikono">
+<img class="hero" src="img/tokushima/tokushima-kyodo-konyamachi-yoshikono.jpg" alt="阿波尾鶏指定料理店 紺屋町よしこの 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">15</span>阿波尾鶏指定料理店 紺屋町よしこの<span class="yomi">あわおどりしていりょうりてん こんやまちよしこの</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip instagram">instagram</span><span class="chip awaodori">awaodori</span></div>
+<div class="desc">徳島県が「阿波尾鶏指定料理店」として認証した第一号店の系譜を継ぐ店で、店自身も「徳島で一番古い阿波尾鶏料理店」と名乗る。もも・ねぎま・ささみ・鶏とろ（肩肉）・ずり・レバー・ハツ・ぼんじり・やげん軟骨・皮と、一羽の部位を串で食べ分けられるのが身上で、骨付きもも焼きや阿波牛のカットステーキも出す。60席で左右を仕切った半個室があり、掘りごたつの座敷からは徳島市街の夜景が見える。ビルの真下が紺屋町演舞場なので、阿波おどりの期間は席から踊りを見下ろせる。徳島の地酒を20種以上そろえる。</div>
+<div class="sig"><b>一皿:</b>阿波尾鶏の骨付きもも焼き（骨付きのもも肉を丸ごと焼き上げる看板料理。1,880円）／阿波尾鶏の串焼き（もも・ねぎま・鶏とろ・ずり・ぼんじり・皮など部位ごとに焼き分ける）／よしこの串 塩ガーリック焼き（店名を冠した名物串）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・日・祝日 17:30〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）、金・土・祝前日 17:30〜翌0:00（料理L.O. 23:30／ドリンクL.O. 23:30）。売り切れ次第終了する場合あり</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市紺屋町5-6 アクティ21 8F</td></tr>
+<tr><th>予約</th><td>可（即時予約は当日22:00まで、リクエスト予約は前日17:00まで。当日のキャンセル・人数減は不可でキャンセル料あり） — <a href="tel:0886541694">☎ 088-654-1694</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>阿波尾鶏を「どこかの一品」ではなく一羽の部位として食べ分けられる店は市内でも限られ、県の指定料理店の認証第一号の系譜という来歴もこの章の入口にふさわしいので最初に置いた。営業の根拠＝店の公式インスタグラムが2026年10月18日に投稿を出しており（検索結果の投稿日で確認・2026-10-29）、同年6月4日には営業時間を告知する投稿もある。あわせて「紺屋町よしこの 閉店」で検索しても閉店・移転の報は出てこない（2026-10-29 実施）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E5%B0%BE%E9%B6%8F%E6%8C%87%E5%AE%9A%E6%96%99%E7%90%86%E5%BA%97%20%E7%B4%BA%E5%B1%8B%E7%94%BA%E3%82%88%E3%81%97%E3%81%93%E3%81%AE%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA5-6%20%E3%82%A2%E3%82%AF%E3%83%86%E3%82%A321%208F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001170440/">ホットペッパーグルメ 紺屋町 よしこの 店舗ページ（店名・住所・電話番号・営業時間・定休日・総席数60席・テーブルチャージ・平均予算・店のPR文）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001170440/food/">ホットペッパーグルメ 同店 料理メニュー（阿波尾鶏の骨付きもも焼き1,880円、部位別の串の品ぞろえ）2026-10-29 取得</a> / <a href="https://r.gnavi.co.jp/ef73a9670000/">楽天ぐるなび 紺屋町 よしこの 店舗ページ（住所・電話番号・曜日別の営業時間）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-kyodo-ikko-tokushimaekimae">
+<img class="hero" src="img/tokushima/tokushima-kyodo-ikko-tokushimaekimae.jpg" alt="骨付き阿波尾鶏 一鴻 徳島駅前店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">16</span>骨付き阿波尾鶏 一鴻 徳島駅前店<span class="yomi">ほねつきあわおどり いっこう とくしまえきまえてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span><span class="chip instagram">instagram</span></div>
+<div class="desc">店の名を冠した「骨付き阿波尾鶏」を看板にする阿波尾鶏の専門店。秘伝のスパイスで下味を付けた骨付きもも肉を、一鴻特製の釜でこんがりと焼き上げる。阿波尾鶏は徳島県畜産研究所が10年かけて改良した地鶏で、シャモを父系に持ち、県西部・南部の自然環境で75日以上飼育され、地鶏のJAS規格を最初に取得した鶏。店では炭火焼き・鶏ハムのシーザーサラダ・鶏釜めしなど部位や調理を変えて出し、阿波美豚や阿波野菜も扱う。60席で、2名用から9〜14名用まで各種の個室がある。骨付き鶏は熱いまま持ち帰ることもできる。</div>
+<div class="sig"><b>一皿:</b>骨付き阿波尾鶏（秘伝のスパイスで味付けし専用の釜で焼く骨付きもも肉。1,680円）／阿波尾鶏の鶏釜めし（せせりと阿波野菜を炊き込む1合2人前の釜飯。847円）／阿波尾鶏の鶏ハムと濃密卵のシーザーサラダ</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>徳島県徳島市寺島本町東3-12-8 K1ビル1F</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約あり。ワンドリンク制） — <a href="tel:0886785995">☎ 088-678-5995</a> ／ <a href="http://i-kko.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>骨付き阿波尾鶏という一品で徳島の地鶏を全国に知らせた店で、駅から2分という位置も旅程に組み込みやすいので入れた。同じ阿波尾鶏でも紺屋町よしこのは串で部位を食べ分ける店、こちらは骨付き一本を焼く店で、役割が重ならない。秋田町本店とは場所を散らすため駅前店を採った。営業の根拠＝ホットペッパーグルメの店舗ページが2026年10月2日更新と表示され口コミは607件（2026-10-29 取得）、さらに来店者による2026年10月11日・10月10日・10月6日付の口コミ、店に関するインスタグラム投稿が2026年10月18日・10月16日に出ている（検索結果の投稿日で確認・2026-10-29）。「一鴻 徳島 閉店」で検索して出るのは2024年3月1日の秋田町本店の移転オープンの記事だけで、閉店の報は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AA%A8%E4%BB%98%E3%81%8D%E9%98%BF%E6%B3%A2%E5%B0%BE%E9%B6%8F%20%E4%B8%80%E9%B4%BB%20%E5%BE%B3%E5%B3%B6%E9%A7%85%E5%89%8D%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%BA%E5%B3%B6%E6%9C%AC%E7%94%BA%E6%9D%B13-12-8%20K1%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001203593/">ホットペッパーグルメ 骨付き阿波尾鶏 一鴻 徳島駅前店 店舗ページ（住所・営業時間・定休日・総席数60席・個室・平均会計・2026/10/02 更新・口コミ607件）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001203593/food/">ホットペッパーグルメ 同店 料理メニュー（骨付き阿波尾鶏1,680円、鶏釜めし847円、コース価格）2026-10-29 取得</a> / <a href="http://i-kko.com/">一鴻 公式サイト（各店の住所・電話番号、阿波尾鶏の由来と飼育日数・JAS規格の説明）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-kyodo-awamizutaki-shiawasedori">
+<img class="hero" src="img/tokushima/tokushima-kyodo-awamizutaki-shiawasedori.jpg" alt="阿波水炊き しあわせどり 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-kyodo-awamizutaki-shiawasedori_exterior.jpg" alt="阿波水炊き しあわせどり 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">17</span>阿波水炊き しあわせどり 本店<span class="yomi">あわみずたき しあわせどり ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span><span class="chip instagram">instagram</span></div>
+<div class="desc">阿波尾鶏の水炊きを軸に据えた鍋の専門店で、2026年6月17日に徳島市一番町で開いた。澄んだ水炊きのほか、鳴門鯛と鳴門わかめを柚子の香りで仕立てた和風鍋、自家製味噌の海鮮味噌鍋と、徳島と鳴門の素材だけで鍋を3種に分ける。鍋はいずれも2人前からの注文。66席で個室とカウンターを備え、仕切りを外すと最大66名の宴会にも使える。阿波おどりの期間（8月12日〜15日）は16時から24時まで通しで営業する。ビルの4階にあるため通りからは店構えが見えず、公式サイトの看板の写真が目印になる。</div>
+<div class="sig"><b>一皿:</b>阿波水炊き（阿波尾鶏の旨みを引き出した澄んだ水炊き。2人前 2,380円）／鳴門鯛と鳴門ワカメの柚子和風鍋（鳴門海峡の鯛とわかめを柚子で仕立てる。2,280円）／海鮮味噌鍋（自家製味噌で仕立てる海の幸の鍋。2,480円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）。阿波おどり期間の8月12日〜15日は16:00〜24:00。※営業する曜日は公式サイトが「火曜日〜土曜日」、ホットペッパーグルメが「火〜日」と掲出しており食い違う（2026-10-29 時点・未確認）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市一番町3丁目7-7 エクセレント一番町ビル4階</td></tr>
+<tr><th>予約</th><td>可（公式サイトからホットペッパーグルメ・食べログのネット予約へ。各鍋は2人前からの注文） — <a href="tel:0886129690">☎ 088-612-9690</a> ／ <a href="https://awamizutaki-shiawasedori.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>阿波尾鶏は焼き物で出す店が多く、水炊き一本で看板を張る店は市内でここだけなので、章の中で調理法が偏らないように入れた。新しい店なので開店の告知だけを根拠にしないよう、開店後の継続を別に確かめている。営業の根拠＝公式サイトのお知らせが2026年8月17日付で「団体様の宴会ご予約を承っております」「ホームページを公開いたしました」の2本を掲出（2026-10-29 取得）、店の公式インスタグラムが2026年9月9日に9月の営業カレンダーを投稿、さらに来店者の口コミが2026年9月21日・9月18日付で出ている（検索結果の投稿日で確認・2026-10-29）。「しあわせどり 徳島 閉店」で検索しても閉店の報は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E6%B0%B4%E7%82%8A%E3%81%8D%20%E3%81%97%E3%81%82%E3%82%8F%E3%81%9B%E3%81%A9%E3%82%8A%20%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA3%E4%B8%81%E7%9B%AE7-7%20%E3%82%A8%E3%82%AF%E3%82%BB%E3%83%AC%E3%83%B3%E3%83%88%E4%B8%80%E7%95%AA%E7%94%BA%E3%83%93%E3%83%AB4%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（awamizutaki-shiawasedori.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://awamizutaki-shiawasedori.jp">阿波水炊き しあわせどり 本店 公式サイト（住所・営業時間・定休日・鍋3種の価格・2026.08.17 付のお知らせ2本）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004633633/">ホットペッパーグルメ 阿波水炊き しあわせどり 店舗ページ（住所・電話番号・曜日と営業時間・定休日・総席数66席・個室・平均会計・阿波おどり期間の営業）2026-10-29 取得</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・割烹（鳴門鯛・ハモ）</h2>
+<div class="card" id="c-tokushima-washoku-yanagizushi">
+<img class="hero" src="img/tokushima/tokushima-washoku-yanagizushi.jpg" alt="柳鮨 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>柳鮨<span class="yomi">やなぎずし</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">歓楽街・秋田町の東どなり、大道の通りにある夜だけの鮨屋。初代が東京・銀座で修行を積み、その江戸前の仕事を代々受け継いでいる。徳島の寿司は甘めのシャリが多いなかで、ここは甘さを控えるのが流儀。接待や宴会で「幹事さんの顔が立つように」という配慮から、店内に値段を書いた品書きを貼っていない。徳島県から「徳島産はも指定料理店」に指定されており、はもの湯引き・はも寿司・はもすきを出す（はもすきは要予約）。総席数45席で、職人の手元が見えるカウンターのほか、扉で仕切れる完全個室が4室（最大18名の座敷個室を含む）。ぼうぜ・かます・太刀魚・いわしを自家製で干した「柳鮨特製干物」と、剥き身にして供するわたり蟹も看板。持ち帰りの寿司詰めとちらし寿司があり、干物は地方発送も受ける。全席禁煙。駐車場は無く、店の隣の有料駐車場を使う。日曜・祝日は21時で閉まるので注意。外観写真なし（ホットペッパーグルメの掲載写真が料理・店内のみで、徳島市公式観光サイトの写真は長辺860pxどまり、阿波ナビの当店ページには店の写真が無かったため）。</div>
+<div class="sig"><b>一皿:</b>はも料理(徳島県の「徳島産はも指定料理店」。湯引き・はも寿司・はもすき。はもすきは要予約)／江戸前鮨(初代が銀座で覚えた仕事を鳴門など地物の魚に当てた握り。一貫330円〜／にぎり上3,300円税込)／柳鮨特製干物(ぼうぜ・かます・太刀魚・いわしを店で干したもの。330円税込〜。地方発送可)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝前日 17:30〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）／日・祝日 17:30〜21:00（料理L.O. 20:30／ドリンクL.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休（徳島市公式観光サイトは年末年始を休みと記載）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市大道1-17-1 やなぎビル1F</td></tr>
+<tr><th>予約</th><td>可（電話、またはホットペッパーグルメのネット予約。即予約は来店当日21時まで受付。はもすきは要予約） — <a href="tel:0886555505">☎ 088-655-5505</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島県が指定する「はも指定料理店」で、章の軸であるハモを湯引き・寿司・はもすきの三通りで出す。そのうえで初代が銀座で覚えた江戸前の仕事と鳴門の地物が一軒で出会うので、徳島らしさと鮨屋としての筋の両方が立つ。営業している根拠＝①ホットペッパーグルメ店舗ページのクーポン欄が2026/09/11更新、メニュー欄が2026/09/17更新であること ②同ページのネット予約カレンダーで2026年11月1日〜12月31日のほぼ全日が「◎＝即予約可」になっていること ③同ページの口コミの来店日が2026/10/11であること（いずれも2026-10-29 確認）。「柳鮨 徳島 閉店」で検索したが、閉店の報として出るのは東京・東銀座の同名店と東京の別店「柳寿司」で、徳島の当店の閉店・移転の報は無かった（2026-10-29）。電話番号はホットペッパーグルメと阿波ナビがともに088-655-5505で一致した（徳島市公式観光サイトは TEL・FAX として088-653-5082を併記している）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9F%B3%E9%AE%A8%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%A4%A7%E9%81%931-17-1%20%E3%82%84%E3%81%AA%E3%81%8E%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000032654/">ホットペッパーグルメ 柳鮨 店舗ページ（住所・営業時間・定休日・席数・予算・クーポン2026/09/11更新・メニュー2026/09/17更新・口コミ来店日2026/10/11・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000032654/tel/">ホットペッパーグルメ 柳鮨 電話番号ページ（電話番号）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000032654/photo/">ホットペッパーグルメ 柳鮨 写真ページ（料理・店内写真と説明文）2026-10-29 取得</a> / <a href="https://www.awanavi.jp/archives/spot/2307">阿波ナビ（徳島県観光情報サイト）柳鮨（徳島産はも指定料理店としての指定とはも料理の品目・電話・営業時間・休業日）2026-10-29 取得</a> / <a href="https://funfun-tokushima.jp/introduce/%E6%9F%B3%E9%AE%A8/">Fun!Fun!とくしま（徳島市公式観光サイト）柳鮨（初代の銀座修行・甘さ控えめのシャリ・店内に品書きを貼らない方針・住所・営業時間・定休日）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-washoku-nadai-fukuzushi">
+<img class="hero" src="img/tokushima/tokushima-washoku-nadai-fukuzushi.jpg" alt="名代 福寿し 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>名代 福寿し<span class="yomi">なだいふくずし</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">昭和6年（1931年）創業、歓楽街と繁華街のちょうど境にある富田町の寿司屋。公式サイトは店のある一帯を「富田街フーガイ」と呼び、昭和初期から高級飲食店が並んだ通りだと説明している。現在は三代目の店主・福本智義さん（大阪の料亭「備徳」で修行、徳島市富田町商店街振興会会長）と女将のゆかりさんの夫婦二人だけで営む小さな店で、カウンター6席・テーブル4席・掘り炬燵の奥座敷6名までという構え。鳴門の海をはじめ徳島近海の魚を毎朝仕入れて握る。奥座敷は6名で埋まるため予約が重複すると席を移ってもらうことがあり、公式サイトは来店前の予約を頼んでいる。寿し会席は八品5,000円から、予算に応じた相談も受ける。持ち帰りも相談可。全席喫煙可。外観写真なし（公式サイトに載る店構えの写真は創業当時の白黒写真だけで、現在の建物の正面を写した900px以上の写真が公式・掲載媒体のどちらにも無いため）。</div>
+<div class="sig"><b>一皿:</b>にぎり(鳴門の海を中心に徳島近海で獲れた魚を毎朝仕入れて握る。九十余年続く店の本線)／寿し会席〈八品〉(突き出し・旬の御造り・酢の物・焼き物・油物・寿し・赤だし・果物。5,000円より。電話予約制)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜22:00（ラストオーダー21:30）※公式サイトの表記</td></tr>
+<tr><th>定休日</th><td class="off">月曜日（公式サイトの表記。2026年11月は2日・9日・16日・23日・30日が休み）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市富田町1丁目19-2（〒770-0915）</td></tr>
+<tr><th>予約</th><td>可（電話のみ。小さな店のため来店前の予約を公式サイトが依頼している） — <a href="tel:0886223820">☎ 088-622-3820</a> ／ <a href="https://nadai-fukuzushi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昭和6年創業という徳島市でも指折りの古さと、夫婦二人だけで17席を回す規模の小ささが、この章に「老舗の個人店」の面を与える。鳴門の魚を毎朝仕入れるという軸も章の主題に合う。営業している根拠＝①公式サイトのお知らせが「11月休業日のご案内」として2026年11月の定休日（2日・9日・16日・23日・30日）を具体的に告知していること ②同サイトのトップが「令和8年11月のおすすめ」を掲げ、2026年10月付けの画像が新しく上がっていること ③サイトのコピーライト表記が「© 2026 名代 福寿し」であること（いずれも2026-10-29 確認）。「福寿し 閉店」「名代福寿し 閉店」で検索したが閉店の報は無かった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E4%BB%A3%20%E7%A6%8F%E5%AF%BF%E3%81%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE19-2%EF%BC%88%E3%80%92770-0915%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://nadai-fukuzushi.jp/">名代 福寿し 公式サイト トップ（創業年・営業時間・定休日・2026年11月の休業日告知・電話番号）2026-10-29 取得</a> / <a href="https://nadai-fukuzushi.jp/shop/">名代 福寿し 公式サイト 店舗・アクセス（席数の内訳・店主と女将の経歴・寿し会席の内容・FAX番号・アクセス）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000032794/">ホットペッパーグルメ 名代 福寿し 店舗ページ（住所・予算・席数・個室・喫煙可・アクセス）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000032794/tel/">ホットペッパーグルメ 名代 福寿し 電話番号ページ（電話番号）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-washoku-totokatsu">
+<img class="hero" src="img/tokushima/tokushima-washoku-totokatsu.jpg" alt="徳島魚問屋 とゝ喝 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-washoku-totokatsu_exterior.jpg" alt="徳島魚問屋 とゝ喝 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>徳島魚問屋 とゝ喝<span class="yomi">とくしまうおどんや ととかつ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">紺屋町通りの角に建つ自社ビルの1階と2階を使う阿波割烹。店の看板は「とゝ喝の鯛めし」で、鳴門海峡の速い潮にもまれて身が締まり体が桜色になった鳴門鯛を、一匹まるごと土鍋で炊き上げる。炊き上がりをそのまま席へ運んで見せ、身をほぐして土鍋のまま供し、徳島の郷土料理であるそば米汁（または赤だし）と香の物を添える。食べきれなければおむすびにして持ち帰れる。土鍋に時間がかかるため単品での注文は事前予約が要る。鯛めしコースは月替わり・日替わり。カウンター10席と座敷50席の計60席で、個室は10室、最大25名まで。店のすぐ横が阿波おどりの紺屋町有料演舞場だった場所で、祭りの時期は店を一歩出ると熱気の中に立つ。全席喫煙可。電話予約の受付は9:00〜19:00。</div>
+<div class="sig"><b>一皿:</b>とゝ喝の鯛めし(鳴門鯛を丸ごと一匹土鍋で炊き上げ、席で見せてからほぐして供する看板料理。そば米汁と香の物つき。単品注文は要事前予約)／刺身盛り合わせ(徳島近海の地物を盛る)／とゝ喝コース(徳島の旬を集めた宴会向けのコース)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜22:00（ラストオーダー21:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜 ※日曜が祝日、または月曜が祝日の場合は定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市紺屋町13-1 とゝ喝ビル1F・2F（〒770-0918）</td></tr>
+<tr><th>予約</th><td>可（電話またはFAX 088-625-1121。電話予約の受付は9:00〜19:00、当日予約も可。当日キャンセルは5,000円のキャンセル料） — <a href="tel:0886250110">☎ 088-625-0110</a> ／ <a href="https://www.totokatsu.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章の主題である鳴門鯛を、切り身ではなく一匹まるごと土鍋で炊くという形で正面から出している唯一の店で、徳島の郷土料理そば米汁まで一膳に収まる。阿波おどりの演舞場のすぐ横という土地の文脈も強い。営業している根拠＝①公式サイトが現在も稼働し、コピーライト表記が「© 2026 徳島魚問屋「とゝ喝」」であること ②GOOD LUCK TRIP の店舗ページが「掲載施設による公式確認を経た情報」として2026年05月07日更新で営業時間・定休日・電話番号を出していること ③ホットペッパーグルメ店舗ページの口コミの投稿日が2026/10/15であること（いずれも2026-10-29 確認）。「とと喝 閉店」「とゝ喝 閉店」で検索したが閉店・移転の報は無かった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%B3%E5%B3%B6%E9%AD%9A%E5%95%8F%E5%B1%8B%20%E3%81%A8%E3%82%9D%E5%96%9D%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA13-1%20%E3%81%A8%E3%82%9D%E5%96%9D%E3%83%93%E3%83%AB1F%E3%83%BB2F%EF%BC%88%E3%80%92770-0918%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.totokatsu.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.totokatsu.com/">徳島魚問屋「とゝ喝」公式サイト トップ（鯛めしの説明・電話番号・FAX・予約の受付時間・キャンセル規定・© 2026 表記）2026-10-29 取得</a> / <a href="https://www.gltjp.com/ja/directory/item/17846/">GOOD LUCK TRIP 徳島魚問屋 とゝ喝（掲載施設による公式確認を経た情報・2026年05月07日更新。住所・電話・営業時間・定休日・予算・席数）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000111987/">ホットペッパーグルメ 徳島魚問屋 とと喝 店舗ページ（席数の内訳・個室数・お通し代・アクセス・口コミ投稿日2026/10/15）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-washoku-shimizu">
+<img class="hero" src="img/tokushima/tokushima-washoku-shimizu.jpg" alt="料理 志美津 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-washoku-shimizu_exterior.jpg" alt="料理 志美津 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>料理 志美津<span class="yomi">りょうりしみず</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">創業90年、富田町のビル一棟を使う割烹。1階から4階まですべてが個室という造りで、2名用から50名の大広間まで部屋の大きさが揃い、総席数は90席。1階にはカウンターもあり、一人でも入れる。大将が自ら市場と漁師を回って仕入れるのが流儀で、名物は天然クエ料理とフグ料理。53キロの徳島県産クエを丸ごと仕入れたことを店の写真で報せている。徳島県から「徳島産はも指定料理店」に指定されており、はも湯引き（自家製梅肉ソース・酢味噌）、はもしゃぶ鍋、はも天ぷら、はもラーメンを要予約で出す。品書きには徳島県産うなぎ、鯛の姿焼き、半田そうめんを使った半田煮麺も並ぶ。お食い初めや法事、結納にも使われる。部屋ごとの完全分煙。駐車場は無く近隣のコインパーキングを使う。</div>
+<div class="sig"><b>一皿:</b>はも料理(徳島県の「徳島産はも指定料理店」。湯引きを自家製梅肉ソースと酢味噌で、ほかにはもしゃぶ鍋・はも天ぷら・はもラーメン。要予約)／天然クエ料理(店の名物。天然本クエ会席コース全6品8,800円税込、クエ鍋コース8,800円〜)／特大太刀魚塩焼き(2,750円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:30〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）※昼は11:30〜、2名以上の予約のみ</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市富田町2丁目32番地</td></tr>
+<tr><th>予約</th><td>可（電話、公式サイトおよびホットペッパーグルメのネット予約。はも料理・クエ・昼のコースは要予約。コース予約は前日21時以降のキャンセルで100%） — <a href="tel:0886263344">☎ 088-626-3344</a> ／ <a href="https://tokushima-shimizu.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島県が指定する「はも指定料理店」で、章の軸であるハモを湯引き・しゃぶ・天ぷら・ラーメンと四通りで出す数少ない店。加えて天然クエという冬の看板を持ち、半田そうめんの煮麺まで品書きにあるので徳島の食材の幅がこの一軒で見渡せる。営業している根拠＝①公式サイトが2026年秋の季節メニュー（戻りかつお塩たたき・松茸コース22,000円・秋のおすすめコース各種）を掲げていること ②ホットペッパーグルメ店舗ページが2026/09/04・09/05・09/07に更新され、ネット予約カレンダーが2026年11月〜12月まで「◎＝即予約可」で開いていること ③同ページの口コミの来店日が2026/10/02・10/06・10/07であること（いずれも2026-10-29 確認）。「料理 志美津 徳島 閉店」で検索し、じゃらんnetの当該店ページ本文まで開いて確かめたが、閉店・移転の告知は無かった（2026-10-29）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%99%E7%90%86%20%E5%BF%97%E7%BE%8E%E6%B4%A5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE32%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://tokushima-shimizu.owst.jp/">料理 志美津 公式サイト（創業90年・住所・電話・営業時間・定休日・席数と個室の内訳・平均予算・お通し代・2026年秋の季節メニュー・ランチコース）2026-10-29 取得</a> / <a href="https://www.awanavi.jp/archives/spot/2303">阿波ナビ（徳島県観光情報サイト）料理 志美津（徳島産はも指定料理店としての指定とはも料理の品目・電話・営業時間・休業日）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000536931/">ホットペッパーグルメ 料理 志美津 しみず 徳島 店舗ページ（2026/09/04・09/05・09/07更新・口コミ来店日2026/10/02〜10/07・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.jalan.net/gourmet/grm_foomoojH000185977/">じゃらんnet 料理 志美津 しみず 徳島（閉店告知の有無の確認。2026-09-06時点のホットペッパー連携情報）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-washoku-sawaragi">
+<img class="hero" src="img/tokushima/tokushima-washoku-sawaragi.jpg" alt="日本料理 さわらぎ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-washoku-sawaragi_exterior.jpg" alt="日本料理 さわらぎ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>日本料理 さわらぎ<span class="yomi">にほんりょうり さわらぎ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">徳島駅のすぐ東、一番町の通りにある「お手軽懐石」を名乗る日本料理店。徳島県産の旬の魚介と野菜を使った懐石を、夜の予算3,000円ほどから出すのが看板で、品書きには本日の造り盛り合わせ、本日の煮魚、鰆の西京焼き、鳴門産レンコンの豆腐、季節のシャーベットなどが並ぶ。1階は一人でも入りやすいカウンター6席とテーブル4名分、2階は5〜30名で使える座敷の個室空間で、総席数は35席。2階の座敷は21時に閉まる。旭若松・鳴門鯛・今小町・眉山といった徳島の地酒を揃える。昼の利用は要予約。全席禁煙、提携パーキングは「ホットペッパー見た」で1時間無料。</div>
+<div class="sig"><b>一皿:</b>本日の造り盛り合わせ(その日に入った徳島産の魚を一人前から)／〔鳴門〕レンコンの豆腐(鳴門のレンコンを使った小鉢)／本日の煮魚・〔徳島〕鰆の西京焼き(季節で替わる焼き物と煮物)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:00）※2階の座敷席は21:00まで。昼は要予約</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市一番町3-5</td></tr>
+<tr><th>予約</th><td>可（電話、またはホットペッパーグルメのネット予約。昼の利用と貸切は要予約） — <a href="tel:0886252431">☎ 088-625-2431</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅から徒歩2分という立地で、懐石を3,000円台から出す店は徳島市でも珍しく、章の中で「敷居の低い和食」の位置を担える。徳島の地酒を鳴門鯛・眉山・旭若松と県内銘柄で揃えている点も土地の章に合う。営業している根拠＝①ホットペッパーグルメ店舗ページの店舗情報が2026/03/27更新であること ②同ページのネット予約カレンダーが2026年11月〜12月まで「◎＝即予約可」で開いていること ③同ページの口コミの投稿日が2026/10/22であること（いずれも2026-10-29 確認）。「日本料理 さわらぎ 徳島 一番町 閉店」で検索したが閉店・移転の報は無かった（2026-10-29）。店はInstagram（@sawaragi_tokushima）も持つ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%95%E3%82%8F%E3%82%89%E3%81%8E%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA3-5">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000536850/">ホットペッパーグルメ さわらぎ 店舗ページ（住所・営業時間・定休日・席数・予算・アクセス・2026/03/27更新・口コミ投稿日2026/10/22・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000536850/tel/">ホットペッパーグルメ さわらぎ 電話番号ページ（電話番号）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000536850/photo/">ホットペッパーグルメ さわらぎ 写真ページ（料理・店内・外観写真と説明文、地酒の品揃え）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-washoku-tempura-azabu-izumiya">
+<img class="hero" src="img/tokushima/tokushima-washoku-tempura-azabu-izumiya.jpg" alt="天ぷら 麻布 三代目泉家 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-washoku-tempura-azabu-izumiya_exterior.jpg" alt="天ぷら 麻布 三代目泉家 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>天ぷら 麻布 三代目泉家<span class="yomi">てんぷら あざぶ さんだいめいずみや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">四国最大級の歓楽街・秋田町の一角にある天ぷら専門店で、2024年7月に開いた。席はカウンターとテーブルを合わせて15席だけ。料理は店主のおまかせコースのみで、単品の注文は受けない。店主が自ら目利きした季節の食材を全国から取り寄せ、衣と油、火力をこまめに調整しながら揚げる。車海老、鮎、キス、とうもろこしやアスパラガスといった野菜、さらに造りも組み込まれ、カウンターでは揚げる手元がそのまま見える。日本酒と焼酎の品揃えが厚く、日本酒飲み放題2,200円税込のクーポンもある。10名以上で貸切にできる。全席禁煙（喫煙専用室あり）。深夜0時まで開いているので、秋田町で飲んだあとの締めにも使える。運営は徳島市内で「甲斐の虎 沖浜店」「焼肉 信玄」も営む地元の会社。</div>
+<div class="sig"><b>一皿:</b>おまかせコース(店主が目利きした季節の食材だけで組む。単品注文は無く、コースは5種類)／車海老の天ぷら(揚げたてをカウンター越しに一品ずつ)／日本酒飲み放題(2,200円税込。全国の地酒から)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 18:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市秋田町1丁目28-1 極光ビル1F</td></tr>
+<tr><th>予約</th><td>可（電話、公式サイトおよびホットペッパーグルメのネット予約。おまかせコースのみのため予約が確実） — <a href="tel:0886791087">☎ 088-679-1087</a> ／ <a href="https://akr0233921536.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鮨・割烹に偏りがちなこの章に、天ぷら一本の専門店という別の軸を立てられる。15席・おまかせのみという構えは徳島市では他に見当たらず、歓楽街の深夜0時まで開く和食という点でも章の中で役割が重ならない。営業している根拠＝①公式サイトが現在も稼働し、ネット予約の空席確認が動いていること ②ホットペッパーグルメ店舗ページのクーポン欄が2026/09/07更新、店舗情報が2026/09/04更新で、ネット予約カレンダーが2026年11月〜12月まで「◎＝即予約可」で開いていること ③同ページの口コミの来店日が2026/08/27であること（いずれも2026-10-29 確認）。開店の告知（号外NET徳島市が2024年7月11日開店予定と報じた）だけを根拠にしないため「天ぷら 麻布 三代目泉家 徳島 秋田町 閉店」で検索したが、閉店・移転の報は無かった（2026-10-29）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E9%BA%BB%E5%B8%83%20%E4%B8%89%E4%BB%A3%E7%9B%AE%E6%B3%89%E5%AE%B6%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%A7%8B%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE28-1%20%E6%A5%B5%E5%85%89%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://akr0233921536.owst.jp/">天ぷら 麻布 三代目泉家 公式サイト（住所・電話・営業時間・定休日・席数・平均予算・おまかせコースの方針・関連店舗）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ003829499/">ホットペッパーグルメ 天ぷら 麻布 三代目泉家 店舗ページ（席数・喫煙・貸切条件・クーポン2026/09/07更新・口コミ来店日2026/08/27・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2024/07/07/akitamati-tenpura-azabu-o-punyotei/">号外NET 徳島市「【徳島市】「天ぷら 麻布」が2024年7月11日（木）オープン予定」（開店時期）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-washoku-masuzen">
+<img class="hero" src="img/tokushima/tokushima-washoku-masuzen.jpg" alt="日本料理 ます膳 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-washoku-masuzen_exterior.jpg" alt="日本料理 ます膳 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>日本料理 ます膳<span class="yomi">にほんりょうり ますぜん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2022年11月に阿南市那賀川町から徳島市沖浜東へ移ってきた日本料理店。播磨灘・紀伊水道・太平洋という三つの海流に囲まれた徳島の地の利を看板に掲げ、毎日仕入れる旬の魚を会席に仕立てる。席はオープンキッチンに面したカウンターを中心に16席だけで、職人が仕上げる工程がそのまま見える。昼は4種の御膳が各1,980円、夜は予約制のコースのみ。徳島をはじめ全国の地酒と焼酎を置く。公式サイトは「移転の際に提供メニューも一新したので、食べログやGoogleに残る旧店舗のメニューではなく本サイトを見てほしい」と断っている。子ども連れは不可、全席禁煙（店の外に灰皿あり）、貸切はホットペッパー上では不可だが公式サイトは可としているので要確認。</div>
+<div class="sig"><b>一皿:</b>季節の会席 梅コース(約10品。徳島の旬の魚を軸に組む夜のコース)／4種の御膳(昼。各1,980円で刺身・焼物・揚物などが付く)／棒寿司・柚を利かせた阿波の味(季節で替わる一品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理L.O. 14:00）／18:00〜22:00（料理L.O. 20:00）※火曜の夜は22:30まで。夜は予約制のコースのみ</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>徳島県徳島市沖浜東1丁目5 第2コーポHAMADA 1F（〒770-8053）</td></tr>
+<tr><th>予約</th><td>可（電話、公式サイトのWEB予約、またはホットペッパーグルメのネット予約。夜はコースのみの予約制） — <a href="tel:0886788883">☎ 088-678-8883</a> ／ <a href="https://masuzen-tokushima.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の中で唯一の「郊外・国道沿い・駐車場あり」の店で、車で動く読者の受け皿になる。昼1,980円の御膳と夜7,500円のコースという二段構えも、駅前の店とは役割が重ならない。営業している根拠＝①公式サイトが現在も稼働し、移転後のメニューを案内していること ②ホットペッパーグルメ店舗ページのネット予約カレンダーが2026年11月〜12月まで「◎＝即予約可」で開いていること ③同ページの口コミの来店日が2026/09/26・09/27・09/29であること（いずれも2026-10-29 確認）。「日本料理 ます膳 徳島 沖浜 閉店 移転」で検索したが、2022年11月の那賀川町からの移転の記事が出るだけで閉店の報は無かった（2026-10-29）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E3%81%BE%E3%81%99%E8%86%B3%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%B2%96%E6%B5%9C%E6%9D%B11%E4%B8%81%E7%9B%AE5%20%E7%AC%AC2%E3%82%B3%E3%83%BC%E3%83%9DHAMADA%201F%EF%BC%88%E3%80%92770-8053%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://masuzen-tokushima.com/">日本料理 ます膳 公式サイト（住所・電話・営業時間・定休日・駐車場・三つの海流という店の立て方・那賀川町からの移転とメニュー刷新の告知）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ003624849/">ホットペッパーグルメ 日本料理 ます膳 店舗ページ（席数16席・昼の御膳1,980円・夜7,500円・曜日別の営業時間・アクセス・口コミ来店日2026/09/26〜09/29・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ003624849/tel/">ホットペッパーグルメ 日本料理 ます膳 電話番号ページ（電話番号）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-washoku-hyakunenumi">
+<img class="hero" src="img/tokushima/tokushima-washoku-hyakunenumi.jpg" alt="百年海 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>百年海<span class="yomi">ひゃくねんうみ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2022年にひらいた全席カウンター16席の日本料理店。壁一面がチームラボの映像作品で、百年のあいだに満ちてゆく海が刻々と変わりながら客席を包む。店の設計はteamLab Architectsが手がけ、GOOD LUCK TRIP の店舗ページはチームラボ監修で出ている。料理はサステナブルを主題に置き、大きさや傷を理由に本来は捨てられる規格外の天然魚や野菜を使ってフードロスを減らす。鳴門鯛やハモなど徳島の魚を、ぶりかまの塩焼き、鮮魚の蒸籠蒸し、ハモの釜めしといった形で出す。オープンキッチンなので、料理人が目の前で仕上げる音と香りがそのまま届く。昼も夜も通しで開いており、最終入店は20:00。全席禁煙、子ども連れも可。個室は無い。外観写真なし（公式の発信がInstagram中心で、掲載媒体・観光媒体のいずれにも建物の正面を写した900px以上の写真が見つからなかったため）。</div>
+<div class="sig"><b>一皿:</b>ハモの釜めし(徳島の夏の魚を釜で炊き上げる)／ぶりかまの塩焼き(規格外の魚も活かすサステナブルな品書きの一品)／徳島県産 鮮魚の蒸籠蒸し(1,700円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜水・金〜日・祝日・祝前日 11:00〜21:30（料理L.O. 21:00／ドリンクL.O. 21:00。最終入店20:00）</td></tr>
+<tr><th>定休日</th><td class="off">木曜（年末年始 12/31・1/1・1/2 は休業）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市万代町5-7-1（〒770-0941）</td></tr>
+<tr><th>予約</th><td>可（電話、またはホットペッパーグルメのネット予約。貸切は要相談） — <a href="tel:0886782337">☎ 088-678-2337</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鳴門鯛とハモという章の軸を、映像作品に囲まれた席で食べるという一点で他の8軒と完全に役割が分かれる。徳島出身の猪子寿之が率いるチームラボの作品空間という土地の文脈もあり、昼1,300円台から入れるので章の中の価格の幅も広がる。営業している根拠＝①ホットペッパーグルメ店舗ページの店舗情報が2026/10/14更新であること ②同ページのネット予約カレンダーが2026年11月〜12月まで「◎＝即予約可」で開いていること ③同ページの口コミの来店日が2026/10/20であること（いずれも2026-10-29 確認）。2022年7月開店の告知だけを根拠にしないため「百年海 徳島市 オープン」で検索したが閉店の報は無く、GOOD LUCK TRIP のチームラボ監修ページも2025年11月23日更新で生きていた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%BE%E5%B9%B4%E6%B5%B7%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%87%E4%BB%A3%E7%94%BA5-7-1%EF%BC%88%E3%80%92770-0941%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004633055/">ホットペッパーグルメ 百年海 店舗ページ（住所・営業時間・定休日・席数16席・ランチ予算・駐車場・チームラボの映像作品の説明・2026/10/14更新・口コミ来店日2026/10/20・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.gltjp.com/ja/directory/item/18113/">GOOD LUCK TRIP 百年海（チームラボ監修・2025年11月23日更新。2022年開店・サステナブルの主題・規格外の魚と野菜・住所・電話・定休日・営業時間・最終入店20:00）2026-10-29 取得</a> / <a href="https://www.east-tokushima.jp/feature/detail.php?id=192">イーストとくしま観光推進機構 特集「非日常を味わう。日本料理店「百年海」」（店内の映像作品と料理）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004633055/tel/">ホットペッパーグルメ 百年海 電話番号ページ（電話番号）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-washoku-ajiougi">
+<img class="hero" src="img/tokushima/tokushima-washoku-ajiougi.jpg" alt="日本料理 味扇 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>日本料理 味扇<span class="yomi">にほんりょうり あじおうぎ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">新町川にほど近い南内町にある日本料理店。1階には料理長が自ら選んだ高知産の分厚い一枚板で造った寿司カウンターがあり、2階は仕切りを外せば30名まで入る掘りごたつの完全個室になる。総席数70席で、個室は5名以上から。地産地消を掲げ、野菜も旬の魚介も市場や鳴門の漁師から直に仕入れる。米は徳島県産コシヒカリを精米したてで使う。昼は刺身・天ぷら・茶碗蒸し・酢の物・強肴三種・焼き物・汁物・香の物・釜炊きご飯・デザートが付く「松花堂御膳」3,300円税込が看板で、料理長こだわりの方は限定10食。鯛釜飯900円税込、旬の刺し身盛2〜3人前3,000円税込など単品も揃う。徳島の地酒を軸に日本酒・焼酎・ワインを置く。全席禁煙。水曜と日曜は祝日でも休む。外観写真なし（掲載媒体の写真が店内と料理のみで、建物の正面を写したものが無いため）。</div>
+<div class="sig"><b>一皿:</b>板前こだわり 松花堂御膳(お造り・天ぷら・茶碗蒸し・酢の物・強肴3種・焼き物・汁物・香の物・釜炊きご飯・デザート。3,300円税込。料理長こだわりの方は昼限定10食)／鯛釜飯(900円税込。鶏釜飯は992円税込)／旬の刺し身盛(2〜3人前3,000円税込、3〜4人前4,500円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜土 11:00〜14:00（料理L.O. 13:30）／18:00〜21:00（料理L.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜・日曜 ※祝日の場合も休み</td></tr>
+<tr><th>住所</th><td>徳島県徳島市南内町1丁目27番地1</td></tr>
+<tr><th>予約</th><td>要確認（電話のみ。ホットペッパーグルメのネット予約は現在受け付けていない。10名以上の予約は電話で相談） — <a href="tel:0886240005">☎ 088-624-0005</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昼に3,300円で松花堂御膳が食べられる構えは、夜だけの鮨屋・割烹が多いこの章に昼の受け皿を与える。高知産の一枚板カウンターという設えと、鳴門の漁師から直に仕入れるという仕入れの筋も土地の章に合う。営業している根拠＝①ホットペッパーグルメ店舗ページのメニュー欄が2025/03/31更新、クーポン欄が2024/12/26更新であること ②同ページの口コミの来店日が2026/08/07であること（直近では2025/11/28、2025/06/12にも投稿がある） ③掲載情報が現在も有効で、電話番号ページから電話番号が引けること（いずれも2026-10-29 確認）。ネット予約は現在受け付けていないため、予約の可否は電話で確かめる必要がある。「日本料理 味扇 徳島 南内町 閉店」で検索したが閉店・移転の報は無かった（2026-10-29）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E5%91%B3%E6%89%87%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%8D%97%E5%86%85%E7%94%BA1%E4%B8%81%E7%9B%AE27%E7%95%AA%E5%9C%B01">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000034380/">ホットペッパーグルメ 日本料理 味扇 店舗ページ（住所・営業時間・定休日・席数70席・個室・駐車場11台・予算・松花堂御膳と鯛釜飯の価格・地産地消と徳島県産コシヒカリの説明・メニュー2025/03/31更新・口コミ来店日2026/08/07）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000034380/tel/">ホットペッパーグルメ 日本料理 味扇 電話番号ページ（電話番号）2026-10-29 取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・地酒（秋田町）</h2>
+<div class="card" id="c-tokushima-izakaya-awashokudo-onikai">
+<img class="hero" src="img/tokushima/tokushima-izakaya-awashokudo-onikai.jpg" alt="徳島の地酒と肴が旨い店 阿波食堂おにかい 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-izakaya-awashokudo-onikai_exterior.jpg" alt="徳島の地酒と肴が旨い店 阿波食堂おにかい 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>徳島の地酒と肴が旨い店 阿波食堂おにかい<span class="yomi">とくしまのじざけとさかながうまいみせ あわしょくどうおにかい</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">30席。カウンターとテーブル、ソファの半個室があり、店名のとおり「本日の地酒」を枡に注いで120mlで出す。黒板に並ぶのは旭若松 純米 火入れ・おでんでん 生原酒といった徳島の蔵の酒で、県外の銘酒と15種ほどを日替わりで入れ替える。肴は徳島県産の青利イカ・太刀魚・地蛸の造り、阿波尾鶏手羽先の唐揚げ、徳島県産椎茸の備長炭焼き、小松島カツ（フィッシュカツ）、竹ちくわなど阿波の素材が軸。ビルの2階で看板も小さく、初めてだと通り過ぎやすい。</div>
+<div class="sig"><b>一皿:</b>本日の地酒 枡120ml（旭若松 純米 火入れ・おでんでん 生原酒など徳島の蔵を日替わりで／836〜913円）／おにかい4点盛り（その日の小料理の盛り合わせ／1,650円）／阿波尾鶏手羽先の唐揚げ 自家製檸檬胡椒（県の地鶏の手羽先／550円）／小松島カツ ウスターマヨ（徳島の県民食フィッシュカツ／429円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:45）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市両国本町2丁目16 2階</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で来店当日21時まで即予約可。電話も可） — <a href="tel:0886782419">☎ 088-678-2419</a> ／ <a href="https://awasyokudoonikai.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「徳島の地酒」を店名に掲げ、枡で日替わりに出す数少ない一軒。両国橋のたもとで秋田町の入口にあたり、章の起点に置ける。営業の根拠＝①公式サイト（レストランボード）が住所・電話・営業時間を現行の内容で掲示（2026-10-29 閲覧） ②ホットペッパーグルメのネット予約カレンダーが 2026年10月30日〜12月13日まで日曜の「休」を除き全日「即予約可（◎）」（2026-10-29 確認） ③同サイトの口コミに 2026年10月20日・2026年10月19日・2026年10月15日 の投稿があり、店舗情報の更新日は 2026/09/29。あわせて「阿波食堂おにかい 閉店」で検索したが、閉店・移転の報は無い（2026-10-29 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BE%B3%E5%B3%B6%E3%81%AE%E5%9C%B0%E9%85%92%E3%81%A8%E8%82%B4%E3%81%8C%E6%97%A8%E3%81%84%E5%BA%97%20%E9%98%BF%E6%B3%A2%E9%A3%9F%E5%A0%82%E3%81%8A%E3%81%AB%E3%81%8B%E3%81%84%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%A1%E5%9B%BD%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE16%202%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003737007/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・更新日 2026/09/29）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ003737007/drink/">ホットペッパーグルメ ドリンクメニュー（本日の地酒＝旭若松・おでんでん ほか）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ003737007/food/">ホットペッパーグルメ 料理メニュー（阿波尾鶏手羽先・小松島カツ・竹ちくわ・価格）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ003737007/report/">ホットペッパーグルメ 口コミ（2026年10月20日・10月19日・10月15日の投稿）2026-10-29 確認</a> / <a href="https://awasyokudoonikai.owst.jp">阿波食堂おにかい 公式サイト（レストランボード。住所・電話・営業時間）2026-10-29 閲覧</a> / <a href="https://www.hotpepper.jp/strJ003737007/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-izakaya-itadaki">
+<img class="hero" src="img/tokushima/tokushima-izakaya-itadaki.jpg" alt="阿波居酒屋 頂 徳島本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-izakaya-itadaki_exterior.jpg" alt="阿波居酒屋 頂 徳島本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>阿波居酒屋 頂 徳島本店<span class="yomi">あわいざかや いただき とくしまほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">39席。カウンター7席・テーブル12席・掘りごたつ20席で、掘りごたつはロールカーテンで仕切れる。串は県の地鶏・阿波尾鶏を使い、もも・ねぎま・ハツ・ずり・つくね・月見つくね・ささみ梅しそと一本ずつ品書きが分かれる。炭火のかご焼、鶏白レバー刺のほか、小松島産の揚げたてフィッシュカツ、徳島名産の竹ちくわ、鳴門産もずく酢といった阿波の品も置く。日本酒は今小町 大歩危小歩危 特別純米・芳水 特別本醸造・三芳菊 特別純米と徳島の蔵が中心。混雑時は2時間で席を譲る場合がある。</div>
+<div class="sig"><b>一皿:</b>阿波尾鶏の炭火かご焼（県の地鶏を炭火でかご焼きに）／阿波尾鶏 月見つくね（つくねに卵黄）／小松島産揚げたてフィッシュカツ（徳島の県民食を揚げたてで）／徳島の地酒（今小町 大歩危小歩危・芳水・三芳菊）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝日・祝前日 17:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市籠屋町2-16-1</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可） — <a href="tel:0886528907">☎ 088-652-8907</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>阿波尾鶏の串を部位ごとに出し、徳島の蔵の酒を3種そろえる大衆的な一軒。秋田町の西端で、同じ章の両国橋側・駅前側と場所が重ならない。営業の根拠＝①ホットペッパーグルメのネット予約カレンダーが 2026年10月30日〜12月23日まで月曜の「休」を除き全日「即予約可（◎）」（2026-10-29 確認） ②同サイトの口コミに 2026年10月18日・2026年10月10日・2026年10月6日 の投稿があり、店舗情報の更新日は 2026/03/06 ③「阿波居酒屋 頂 徳島 閉店」で検索すると食べログに【閉店】の表示が出るが、それは同系列の「頂 両国店」であり、本件の徳島本店（籠屋町・088-652-8907）ではない。本店の閉店・移転の報は無い（2026-10-29 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E5%B1%85%E9%85%92%E5%B1%8B%20%E9%A0%82%20%E5%BE%B3%E5%B3%B6%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%B1%A0%E5%B1%8B%E7%94%BA2-16-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001029042/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001029042/drink/">ホットペッパーグルメ ドリンクメニュー（今小町 大歩危小歩危・芳水・三芳菊）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001029042/photo/">ホットペッパーグルメ 写真ページ（阿波尾鶏の部位別の串・フィッシュカツ・竹ちくわ）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001029042/report/">ホットペッパーグルメ 口コミ（2026年10月18日・10月10日・10月6日の投稿）2026-10-29 確認</a> / <a href="https://www.hotpepper.jp/strJ001029042/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-izakaya-pikan">
+<img class="hero" src="img/tokushima/tokushima-izakaya-pikan.jpg" alt="焼鳥とおでん ぴーかん 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-izakaya-pikan_exterior.jpg" alt="焼鳥とおでん ぴーかん 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>焼鳥とおでん ぴーかん<span class="yomi">やきとりとおでん ぴーかん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">40席。カウンター10席・テーブル・12名の個室・2名のテラス席があり、25〜40名で貸切もできる。徳島県産の阿波尾鶏と鹿児島県産の薩摩知覧鶏を炭火で焼き分け、肝・むね・ももは2種の食べ比べで出す。もう一つの看板は秘伝の出汁で煮込む名物おでんで、大根・玉子・練り物の芯まで出汁が入る。鶏の刺身（卵黄ユッケもも・刺もも）や肉の刺盛といった生の品も多い。ビールは徳島県上勝町の上勝ビールを置く。同じ運営の「焼鳥とワイン いのきん」が徳島駅前にあり、公式サイトは両店を載せている。</div>
+<div class="sig"><b>一皿:</b>名物おでん（秘伝の出汁でじっくり煮込む／通年）／肝・むね・もも食べ比べ（阿波尾鶏と薩摩知覧鶏を2種並べて／850〜990円）／ぴーかん名物 肉の刺盛（鶏の刺身の盛り合わせ／990円）／上勝ビール（徳島県上勝町のクラフトビール／1,100円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日・祝日・祝前日 17:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜（公式サイトのフッターには月曜との記載もあり、来店前に電話で確認を）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市一番町1丁目14-2</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可） — <a href="tel:0886601897">☎ 088-660-1897</a> ／ <a href="https://izakayainokin.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前で阿波尾鶏とおでんを両輪にし、章におでんの一軒を入れられる店。秋田町へ下りる前の一杯目に置ける位置。営業の根拠＝①公式サイト izakayainokin.com が「焼き鳥とおでん ぴーかん」の住所・電話・営業時間を掲示（2026-10-29 閲覧） ②ホットペッパーグルメのネット予約カレンダーが 2026年10月30日〜12月22日まで火曜の「休」を除き全日「即予約可（◎）」（2026-10-29 確認） ③同サイトの口コミに 2026年10月11日・2026年9月25日・2026年9月22日 の投稿があり、公式Instagram（@tokushimaekipikan）に 2026年10月15日 の営業投稿がある。「焼鳥とおでん ぴーかん 徳島 閉店」で検索したが閉店・移転の報は無い（2026-10-29 確認）。なお公式サイトのフッターは定休日を月曜と書いており、アクセス欄・ホットペッパーの火曜と食い違う。本稿は店舗情報として更新の新しい火曜を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E3%81%A8%E3%81%8A%E3%81%A7%E3%82%93%20%E3%81%B4%E3%83%BC%E3%81%8B%E3%82%93%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA1%E4%B8%81%E7%9B%AE14-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004536920/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004536920/food/">ホットペッパーグルメ 料理メニュー（名物おでん・食べ比べ・肉の刺盛・価格）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004536920/drink/">ホットペッパーグルメ ドリンクメニュー（上勝ビール）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004536920/report/">ホットペッパーグルメ 口コミ（2026年10月11日・9月25日・9月22日の投稿）2026-10-29 確認</a> / <a href="https://izakayainokin.com/">いのきん／ぴーかん 公式サイト（住所・電話・営業時間）2026-10-29 閲覧</a> / <a href="https://www.hotpepper.jp/strJ004536920/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-izakaya-uogin-sakaba">
+<img class="hero" src="img/tokushima/tokushima-izakaya-uogin-sakaba.jpg" alt="魚吟酒場 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-izakaya-uogin-sakaba_exterior.jpg" alt="魚吟酒場 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>魚吟酒場<span class="yomi">うおぎんさかば</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">78席。テーブル・カウンター・座敷・個室があり、最大70名で貸切もできる。日本酒は「阿波の地酒」を掲げ、徳島県下の酒蔵を中心に全11蔵・14銘柄を純米から大吟醸まで置く。肴は紀伊水道で獲れた魚を中心に各地の漁港と直結した鮮魚で、名物は活きたまま瞬間冷凍したイカの姿造り（要予約・3,520円）。日替わりの焼魚と煮つけ、かにみそ甲羅焼、魚介の昆布焼き、阿波牛いちぼステーキまで幅は広い。平日17〜19時はジムビームハイボールが何杯でも100円。</div>
+<div class="sig"><b>一皿:</b>阿波の地酒 全11蔵14銘柄（徳島県下の蔵を中心に純米から大吟醸まで）／イカの姿造り 3〜4人前（活きたまま瞬間冷凍したイカ。要予約／3,520円）／かにみそ甲羅焼／日替わり鮮魚の煮つけ（960円〜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜翌0:00（料理L.O. 23:30／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（月曜が祝日の場合は日曜営業・月曜休み）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市両国橋35番地</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可） — <a href="tel:0886786888">☎ 088-678-6888</a> ／ <a href="https://sc-uoginsakaba.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島県下11蔵の地酒を名指しでそろえ、かつ漁港直送の魚で食べさせる、章のなかで地酒と海鮮を兼ねる一軒。両国橋のたもとで、秋田町へ渡る前後どちらにも寄れる。営業の根拠＝①公式サイト（レストランボード）が稼働し、住所・電話・営業時間を掲示（2026-10-29 閲覧） ②ホットペッパーグルメのネット予約カレンダーが 2026年10月30日〜12月23日まで日曜などの「休」を除き「即予約可（◎）」（2026-10-29 確認） ③同サイトの口コミ217件のうち 2026年10月8日・2026年9月24日・2026年9月22日 の投稿があり、店舗情報の更新日は 2026/10/07。「魚吟酒場 徳島 閉店」で検索したが閉店・移転の報は無い（2026-10-29 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E5%90%9F%E9%85%92%E5%A0%B4%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%A1%E5%9B%BD%E6%A9%8B35%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001169273/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・更新日 2026/10/07）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001169273/drink/">ホットペッパーグルメ ドリンクメニュー（阿波の地酒 全11蔵14銘柄）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001169273/food/">ホットペッパーグルメ 料理メニュー（イカの姿造り・漁港直送の鮮魚・価格）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001169273/report/">ホットペッパーグルメ 口コミ（2026年10月8日・9月24日・9月22日の投稿）2026-10-29 確認</a> / <a href="https://sc-uoginsakaba.owst.jp">魚吟酒場 公式サイト（レストランボード）2026-10-29 閲覧</a> / <a href="https://www.hotpepper.jp/strJ001169273/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-izakaya-konyamachi-noda">
+<img class="hero" src="img/tokushima/tokushima-izakaya-konyamachi-noda.jpg" alt="紺屋町 のだ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-izakaya-konyamachi-noda_exterior.jpg" alt="紺屋町 のだ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>紺屋町 のだ<span class="yomi">こんやまち のだ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">45席。カウンター14席と掘りごたつ、2〜24名の掘りごたつ個室があり、古民家風のつくりで路地の奥に隠れている。看板は阿波尾鶏の塩焼と焼ポン酢、それに揚げたてを出す天ぷらで、タコ天ぷら・コーン天ぷら・鶏の天ぷら（からし醤油）と種類が多い。刺身は「今日のええとこ盛り合わせ」として旬の阿波の魚介をまとめて出す。冷酒は徳島の高柿木をはじめ徳島・四国・全国の蔵から選び、かん酒には徳島の御殿桜を置く。カウンターの背後にキープボトルが並ぶ常連の多い店。第1火曜は定休。</div>
+<div class="sig"><b>一皿:</b>阿波尾鶏焼ポン酢（県の地鶏を焼いてポン酢で）／今日のええとこ盛り合わせ（その日の阿波の魚介の刺身）／タコ天ぷら（揚げたての名物天ぷら）／冷酒 高柿木〈徳島〉・かん酒 御殿桜〈徳島〉</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝日・祝前日 18:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・第1火曜（祝日・祝前日は臨時営業や翌日の臨時休業あり）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市紺屋町26</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可） — <a href="tel:0886555338">☎ 088-655-5338</a> ／ <a href="https://konyamachi-noda.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>路地裏の古民家風という、秋田町の大箱とは別の表情を章に入れられる一軒。阿波尾鶏と天ぷら、徳島の冷酒とかん酒がそろう。営業の根拠＝①公式サイト（レストランボード）が稼働し、住所・電話・営業時間・定休日を掲示（2026-10-29 閲覧） ②ホットペッパーグルメのネット予約カレンダーが 2026年11月1日〜12月22日まで月曜・第1火曜の「休」を除き「即予約可（◎）」（2026-10-29 確認） ③同サイトの口コミ174件のうち 2026年10月13日・2026年10月10日・2026年10月9日 の投稿がある。「紺屋町 のだ 徳島 閉店」で検索したが閉店・移転の報は無い（2026-10-29 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%BA%E5%B1%8B%E7%94%BA%20%E3%81%AE%E3%81%A0%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%B4%BA%E5%B1%8B%E7%94%BA26">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000032826/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000032826/drink/">ホットペッパーグルメ ドリンクメニュー（冷酒 高柿木〈徳島〉・かん酒 御殿桜）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000032826/photo/">ホットペッパーグルメ 写真ページ（阿波尾鶏塩焼・タコ天ぷら・今日のええとこ盛り合わせ）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000032826/report/">ホットペッパーグルメ 口コミ（2026年10月13日・10月10日・10月9日の投稿）2026-10-29 確認</a> / <a href="https://konyamachi-noda.owst.jp">紺屋町 のだ 公式サイト（レストランボード。コンセプト・住所・営業時間・定休日）2026-10-29 閲覧</a> / <a href="https://www.hotpepper.jp/strJ000032826/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-izakaya-toriakari">
+<img class="hero" src="img/tokushima/tokushima-izakaya-toriakari.jpg" alt="炭火焼鳥 とり燈 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-izakaya-toriakari_exterior.jpg" alt="炭火焼鳥 とり燈 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>炭火焼鳥 とり燈<span class="yomi">すみびやきとり とりあかり</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">22席のカウンター主体の小さな店。2026年3月17日に開いた。備長炭で焼く串が軸で、極みももやせせり、ずりのほか、徳島では珍しいという名物の豚串を置く。もう一つの看板は豚肉で季節野菜を巻いた野菜巻きで、レタス・ししとう・えのき・トマトなど5種盛りで出す。阿波すだち鶏の唐揚げ、阿波牛のサガリとイチボもある。日本酒は1杯800円で統一し、徳島の鳴門鯛（本家松浦酒造）と大歩危小歩危（三好菊酒造）を筆頭に、〆張鶴・黒龍・伯楽星・飛露喜まで銘柄ごとに説明書きを添える。15〜20名で貸切も可。</div>
+<div class="sig"><b>一皿:</b>名物豚串（徳島では珍しい豚の串。備長炭焼き）／名物野菜巻き5種盛り（豚肉で巻いたレタス・ししとう・えのき・トマトほか）／極みもも（炭火の鶏もも串）／日本酒 鳴門鯛〈徳島・本家松浦酒造〉・大歩危小歩危〈徳島・三好菊酒造〉（各800円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜23:00（料理L.O. 22:15／ドリンクL.O. 22:15）</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市富田町2丁目34</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可） — <a href="tel:05088854980">☎ 050-8885-4980</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>22席の小体な焼き鳥屋で、鳴門鯛をはじめ徳島の蔵の酒を蔵元つきで説明して出す。章のなかで富田町を受け持つ一軒。営業の根拠＝①地域ニュースサイト号外NET徳島市が 2026年3月18日 に「炭火焼鳥『とり燈』が昨日3月17日オープン」と報じた ②ただし開店記事は開店の証拠にすぎないため、ホットペッパーグルメのネット予約カレンダーを確認したところ 2026年10月30日〜12月23日まで全日「即予約可（◎）」（2026-10-29 確認）で、店舗情報の更新日は 2026/06/05 ③同サイトの口コミに 2026年9月22日・2026年9月20日・2026年9月14日 の投稿がある。「炭火焼鳥 とり燈 徳島 閉店」で検索したが閉店・移転の報は無い（2026-10-29 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E9%B3%A5%20%E3%81%A8%E3%82%8A%E7%87%88%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E7%94%BA2%E4%B8%81%E7%9B%AE34">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004559338/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・更新日 2026/06/05）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004559338/drink/">ホットペッパーグルメ ドリンクメニュー（鳴門鯛・大歩危小歩危ほか日本酒の銘柄と蔵元）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004559338/photo/">ホットペッパーグルメ 写真ページ（名物豚串・野菜巻き5種盛り・阿波すだち鶏の唐揚げ）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004559338/report/">ホットペッパーグルメ 口コミ（2026年9月22日・9月20日・9月14日の投稿）2026-10-29 確認</a> / <a href="https://tokushima.goguynet.jp/2026/03/18/sumibiyakitori-toriakari-o-pun/">号外NET 徳島市「【徳島市】緊急朗報♪炭火焼鳥『とり燈』が昨日3月17日オープンしていたとの情報をお寄せいただきました！」2026年3月18日 付</a> / <a href="https://www.hotpepper.jp/strJ004559338/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-izakaya-awayoidokoro-shizuku">
+<img class="hero" src="img/tokushima/tokushima-izakaya-awayoidokoro-shizuku.jpg" alt="阿波酔処 しずく 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-izakaya-awayoidokoro-shizuku_exterior.jpg" alt="阿波酔処 しずく 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>阿波酔処 しずく<span class="yomi">あわよいどころ しずく</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">30席（カウンター6席・テーブル24席）。秋田町のど真ん中にありながら路地の奥で、店は自ら「隠れ家風の大衆居酒屋」と名乗る。品書きは100種を超え、看板は焼き餃子と小籠包を合わせた肉汁餃子（餃籠包）、赤鶏のたたき、阿波尾鶏の塩焼き、産地直送の刺身盛り合わせ。A5阿波牛の炙り牛刺しや炙りユッケも置く。日本酒は徳島の高柿木・鳴門鯛とすだち酒。15〜30名で貸切ができ、22時以降の来店予約は10%引き。2軒目・3軒目に使う客が多い。定休日は日曜と第1・第3・第5木曜で、祝前日にあたる場合は営業する。</div>
+<div class="sig"><b>一皿:</b>肉汁餃子（焼き餃子と小籠包を合わせた店の一番人気）／赤鶏のたたき／阿波尾鶏の塩焼き／徳島の地酒（高柿木・鳴門鯛・すだち酒）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 18:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:45）※公式サイトには18:00〜翌3:00との記載もあり、22時以降の利用は電話で確認を</td></tr>
+<tr><th>定休日</th><td class="off">日曜・第1/第3/第5木曜（定休日が祝前日にあたる場合は営業）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市秋田町1丁目6-2 ひばりビル1F</td></tr>
+<tr><th>予約</th><td>可（電話。ホットペッパーグルメのネット予約は現在受付停止中。15〜30名の貸切は電話またはリクエスト予約で相談） — <a href="tel:0886356161">☎ 088-635-6161</a> ／ <a href="https://awayoidokoro-shizuku.com">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>四国最大級の歓楽街・秋田町そのものを受け持つ一軒。大箱の宴会店ではなく、徳島の地酒を置く路地裏の大衆酒場という性格が章に要る。営業の根拠＝①公式サイト awayoidokoro-shizuku.com が稼働し、住所（秋田町1丁目6-2 ひばりビル1F）・電話・営業時間・定休日・席数を掲示（2026-10-29 閲覧） ②ホットペッパーグルメの店舗情報の更新日が 2026/09/04、クーポンの更新日が 2026/07/29 ③同サイトの口コミに 2026年8月8日・2026年7月10日・2026年6月27日 の投稿がある。「阿波酔処 しずく 閉店」で検索したが閉店・移転の報は無く、公式Instagram（@awayoidokoro.shizuku）も店名のまま（2026-10-29 確認）。なお公式サイトは営業時間を18:00〜翌3:00、ホットペッパーは18:00〜23:00と書いており食い違う。22時以降は電話で直接確認するよう店が案内しているため、本稿はホットペッパー側を本記載とし、遅い時間は電話確認を勧める。ネット予約は現在受け付けていないため、予約は電話。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E9%85%94%E5%87%A6%20%E3%81%97%E3%81%9A%E3%81%8F%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%A7%8B%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE6-2%20%E3%81%B2%E3%81%B0%E3%82%8A%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004026454/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・更新日 2026/09/04）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004026454/photo/">ホットペッパーグルメ 写真ページ（肉汁餃子・赤鶏のたたき・阿波尾鶏の塩焼き）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004026454/report/">ホットペッパーグルメ 口コミ（2026年8月8日・7月10日・6月27日の投稿）2026-10-29 確認</a> / <a href="https://awayoidokoro-shizuku.com">阿波酔処 しずく 公式サイト（コンセプト・名物・地酒 高柿木/鳴門鯛/すだち酒・住所・席数・外観写真）2026-10-29 閲覧</a> / <a href="https://www.hotpepper.jp/strJ004026454/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-izakaya-awa-koishigure">
+<img class="hero" src="img/tokushima/tokushima-izakaya-awa-koishigure.jpg" alt="阿波恋しぐれ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-izakaya-awa-koishigure_exterior.jpg" alt="阿波恋しぐれ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>阿波恋しぐれ<span class="yomi">あわこいしぐれ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">122席。テーブル・座敷・掘りごたつの全室個室が22卓あり、バーカウンターも持つ。大広間は50名まで。中央に大きなオープンキッチンがあり、徳島近海の魚介を目の前で焼く「海賊焼」コースを出す。名物は牟岐産の活きあおりいか刺身で、下足はあとから天ぷらや塩焼きにしてもらえる。「徳島づくしコース」は阿波牛・徳島三ツ星ビーフ ゴールドスター・鳴門鯛・そば米汁と県の名物を並べたもの。阿波尾鶏の焼き鳥、徳島産ポークもある。車で来る客を前提にした郊外の店で、昼は水〜金に定食も出す。</div>
+<div class="sig"><b>一皿:</b>阿波名物 活きあおりいか刺身（牟岐産。下足は天ぷら・塩焼きにも）／徳島づくしコース 全8品（阿波牛・鳴門鯛・そば米汁など県の名物／5,000円〜）／海賊焼コース 全9品（徳島近海の魚介を目の前で豪快に焼く／5,000円）／羽根付きチーズの海の幸ピザ</div>
+<table class="info">
+<tr><th>営業時間</th><td>火 17:00〜翌0:00／水〜日 11:00〜15:00（料理L.O. 14:30）・17:00〜翌0:00（料理L.O. 22:00／ドリンクL.O. 23:00）※当面、火曜は夜のみ</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市沖浜東1丁目6番地</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可。大広間は50名まで、要相談） — <a href="tel:0886555149">☎ 088-655-5149</a> ／ <a href="https://awa-koishigure.owst.jp">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の中で唯一の郊外店。駐車場30台・全室個室で、中心部の歩いて行く店とは使い方がまるで違う。徳島の食材を並べた「徳島づくしコース」を置く点でも章の締めに合う。営業の根拠＝①公式サイト（レストランボード）が稼働し、住所・電話・営業時間を掲示（2026-10-29 閲覧） ②ホットペッパーグルメのネット予約カレンダーが 2026年10月30日〜12月23日まで月曜の「休」を除き「即予約可（◎）」（2026-10-29 確認） ③同サイトの口コミ516件のうち 2026年10月17日・2026年10月16日・2026年10月14日 の投稿があり、店舗情報の更新日は 2026/02/13。あわせて公式Instagramに 2026年7月14日 の営業案内の投稿がある。「阿波恋しぐれ 徳島 沖浜 閉店」で検索したが閉店・移転の報は無い（2026-10-29 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E6%81%8B%E3%81%97%E3%81%90%E3%82%8C%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%B2%96%E6%B5%9C%E6%9D%B11%E4%B8%81%E7%9B%AE6%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000697319/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・駐車場・予算）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000697319/food/">ホットペッパーグルメ 料理メニュー（徳島づくしコース・海賊焼コース・活きあおりいか・価格）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000697319/report/">ホットペッパーグルメ 口コミ（2026年10月17日・10月16日・10月14日の投稿）2026-10-29 確認</a> / <a href="https://awa-koishigure.owst.jp">阿波恋しぐれ 公式サイト（レストランボード）2026-10-29 閲覧</a> / <a href="https://www.hotpepper.jp/strJ000697319/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-izakaya-takotenjo">
+<img class="hero" src="img/tokushima/tokushima-izakaya-takotenjo.jpg" alt="たこ焼き 立ち呑み 蛸天上 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>たこ焼き 立ち呑み 蛸天上<span class="yomi">たこやき たちのみ たこてんじょう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">20席の小さな立ち呑み。カウンターは細かい丸タイル張りで、席料もお通しも取らない。たこ焼きは4個350円・8個からと少量で頼め、ソース・塩・しょうゆ・ポン酢の定番に加えてジェノベーゼ、すだち塩、自家製からしマヨ、ネギ塩レモンといった変わり種を並べる。看板はおでんの出汁に浸して食べる「明石焼き風」。おでんは大根・たまご・厚揚げ・ちくわ・こんにゃく・牛すじ・ロールキャベツなどを自家製の出汁で炊き、自家製ポテトサラダや漬物の小鉢も置く。酒は生ビール（サッポロ黒ラベル）、すだちサワー、キンミヤなど。仕事帰りの一杯に寄る客が多い。外観写真なし（公開されている写真が店内と料理のみで、建物の正面を長辺900px以上で写したものが無かったため）。</div>
+<div class="sig"><b>一皿:</b>明石焼き風（自慢のおでん出汁に浸して食べるたこ焼き）／たこ焼き 4個350円（ソース／塩／しょうゆ／ポン酢。ジェノベーゼ・すだち塩・ネギ塩レモンも）／おでん（大根・牛すじ・ロールキャベツなどを自家製出汁で）／すだちサワー</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝日・祝前日 17:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市一番町2丁目11番地2 大阪屋ビル 1階東側</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約で即予約可。電話も可）。席料・お通しなし — <a href="tel:0886796304">☎ 088-679-6304</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章に1軒は要る立ち呑みで、徳島らしくすだち塩・すだちサワーを合わせてくる。たこ焼きとおでんだけで一杯やる店は他の章に重ならない。営業の根拠＝①徳島新聞デジタルの連載「startt」が 2026年7月25日 付で「たこ焼き立ち呑み 蛸天上(徳島市) 立ち呑みしながらふわとろ食感のたこ焼きを頬張る」を掲載 ②ホットペッパーグルメの料理メニューの更新日が 2026/10/28、ドリンクメニューが 2026/10/15 と直近で更新されている ③同サイトのネット予約カレンダーが 2026年11月2日〜12月24日まで月曜の「休」を除き「即予約可（◎）」（2026-10-29 確認）。口コミはまだ0件のため、開店後まもない店として「蛸天上 徳島 一番町 立ち呑み」でも検索し、閉店・移転の報が無いことを確かめた（2026-10-29 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%93%E7%84%BC%E3%81%8D%20%E7%AB%8B%E3%81%A1%E5%91%91%E3%81%BF%20%E8%9B%B8%E5%A4%A9%E4%B8%8A%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA2%E4%B8%81%E7%9B%AE11%E7%95%AA%E5%9C%B02%20%E5%A4%A7%E9%98%AA%E5%B1%8B%E3%83%93%E3%83%AB%201%E9%9A%8E%E6%9D%B1%E5%81%B4">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004723281/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・予算・更新日 2026/10/28）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004723281/food/">ホットペッパーグルメ 料理メニュー（明石焼き風・たこ焼きの味の種類・おでんの種・価格）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004723281/drink/">ホットペッパーグルメ ドリンクメニュー（席料・お通しなし。2026/10/15 更新）2026-10-29 取得</a> / <a href="https://www.topics.or.jp/articles/-/1467449">徳島新聞デジタル startt「たこ焼き立ち呑み 蛸天上(徳島市) 立ち呑みしながらふわとろ食感のたこ焼きを頬張る」2026年7月25日 付</a> / <a href="https://www.hotpepper.jp/strJ004723281/tel/">ホットペッパーグルメ 電話番号ページ 2026-10-29 取得</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-tokushima-yoshoku-akaneiro">
+<img class="hero" src="img/tokushima/tokushima-yoshoku-akaneiro.jpg" alt="阿波大衆ビストロ　Akaneiro 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-yoshoku-akaneiro_exterior.jpg" alt="阿波大衆ビストロ　Akaneiro 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>阿波大衆ビストロ　Akaneiro<span class="yomi">あわたいしゅうびすとろ あかねいろ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">JR徳島駅の南東、寺島本町東の路地に2024年に開いた夜だけのビストロ。店名の「阿波大衆」のとおり、阿波牛や阿波尾鶏といった県内の食材を、コース仕立てではなく一皿ずつ頼める大衆価格で出すのが身上。カウンター23席を含む全35席で、20〜30名の貸切にも対応する。看板は赤身・イチボ・牛タンを焼き分けるステーキと、ロブスターの黄金焼き、とろろ昆布をまとわせた牛かつ。ワインの品ぞろえに力を入れており、肉料理に合わせて選んでもらえる。全席禁煙。18時開店で日曜が休み。</div>
+<div class="sig"><b>一皿:</b>steak 赤身／イチボ／牛タン(部位を選んで焼き分けるステーキ)／ロブスターの黄金焼き(殻ごと香ばしく焼き上げる看板料理)／Akaneiro とろろ昆布の牛かつ(とろろ昆布をまとわせた揚げたての牛かつ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>18:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市寺島本町東２丁目25</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約。20〜30名の貸切可） — <a href="tel:09077867914">☎ 090-7786-7914</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅前（徳島駅から徒歩3分）の枠に、県内食材を洋のやり方で出す店として採った。章の中では唯一のビストロで、阿波牛・阿波尾鶏を一皿ずつ頼める大衆価格という性格が他の7店と重ならない。営業の根拠＝2026-10-29にホットペッパーグルメのネット予約カレンダーを確認したところ、2026年10月30日から12月31日まで、定休日の日曜（11日分）を除くすべての日が「◎（即予約可）」で埋まっていた。あわせて同ページの料理写真の更新日が2026年8月25日であること、口コミが15件ついていることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%98%BF%E6%B3%A2%E5%A4%A7%E8%A1%86%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%E3%80%80Akaneiro%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%BA%E5%B3%B6%E6%9C%AC%E7%94%BA%E6%9D%B1%EF%BC%92%E4%B8%81%E7%9B%AE25">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004558495/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・設備・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004558495/food/">ホットペッパーグルメ 店舗ページ 料理（看板料理と価格）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004558495/appearance/">ホットペッパーグルメ 店舗ページ 店内・外観（外観と客席の写真）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-yoshoku-ryuhouhanten">
+<img class="hero" src="img/tokushima/tokushima-yoshoku-ryuhouhanten.jpg" alt="中国東北料理　龍鳳飯店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-yoshoku-ryuhouhanten_exterior.jpg" alt="中国東北料理　龍鳳飯店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>中国東北料理　龍鳳飯店<span class="yomi">ちゅうごくとうほくりょうり りゅうほうはんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">眉山のふもと、阿波おどり会館から徒歩1分の西大工町にある中国料理店。中国人の女将が営み、中国東北地方（旧満洲）の家庭料理を日本人の口に合わせて出す。全120席と章の中で最も大きく、4名のテーブル席、8名まで座れる円卓3卓、2階には10名の掘りごたつの個室があり、最大60名の宴会や貸切に対応する。薬膳の火鍋が看板で、ほかに四川風の麻婆豆腐、海老のマヨネーズかけ、上海小籠包など品数が多い。昼は麻婆豆腐と肉シューマイのセットなど1,000円台の定食があり、600円からの弁当も持ち帰れる。</div>
+<div class="sig"><b>一皿:</b>薬膳火鍋(東北地方仕込みの薬膳スープの火鍋。コースで提供)／四川風ピリ辛マーボー豆腐(昼のセットでも頼める看板の一品)／スープたっぷり上海小籠包(4個。クリームかぼちゃまんと組み合わせたセットもある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理L.O. 15:00）／17:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市西大工町１丁目24-1</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約。個室・宴会は要予約） — <a href="tel:0886243088">☎ 088-624-3088</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新町・阿波おどり会館まわりの枠に、中国料理の代表として採った。四川でも広東でもない東北地方の家庭料理という品ぞろえが、同じ章の中華（富田浜の福林）と重ならない。営業の根拠＝2026-10-29にホットペッパーグルメを確認したところ、①ネット予約カレンダーが2026年10月30日から12月31日まで「◎（即予約可）」で埋まっている ②口コミの最新の投稿日が2026年9月29日と9月30日 ③店舗ページの写真の更新日が2026年10月22日、の3点がそろっていた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%9D%B1%E5%8C%97%E6%96%99%E7%90%86%E3%80%80%E9%BE%8D%E9%B3%B3%E9%A3%AF%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E8%A5%BF%E5%A4%A7%E5%B7%A5%E7%94%BA%EF%BC%91%E4%B8%81%E7%9B%AE24-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000536809/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000536809/report/">ホットペッパーグルメ 店舗ページ 口コミ（最新の投稿日 2026年9月29日・30日）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000536809/appearance/">ホットペッパーグルメ 店舗ページ 店内・外観（外観と客席の写真）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-yoshoku-poesia">
+<img class="hero" src="img/tokushima/tokushima-yoshoku-poesia.jpg" alt="イタリア料理　poesia 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-yoshoku-poesia_exterior.jpg" alt="イタリア料理　poesia 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>イタリア料理　poesia<span class="yomi">いたりありょうり ぽえじあ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">歓楽街・秋田町の一角、ロイヤルクレイン秋田町の1階にある現代イタリア料理の店。テーブルとカウンターで26席。昼は完全予約制で1日4組だけを受け、日曜・祝日は夜のみの営業になる。独創的な一皿と、料理に合わせて選ぶワインが身上で、イタリア料理の祭典「ITALIAN WEEK 100 2025」にノミネートされている。パスタは種類が多く、好みのものを選べる。記念日にはメッセージ入りのデザートプレートを用意してもらえるため、接待や誕生日の利用が多い。昼に行くなら必ず前もって電話かネットで予約を入れること。</div>
+<div class="sig"><b>一皿:</b>種類を選べる自家製パスタ(数種類から好みの一皿を選ぶ)／シェフおまかせの前菜盛合せ(その日の仕入れで内容が変わる)／記念日のデザートプレート(メッセージを入れてもらえる。予約時に相談)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 11:30〜14:00（料理L.O. 13:00／昼は完全予約制・1日4組限定）／18:00〜22:00（料理L.O. 21:00）　日・祝は18:00〜22:00のみ</td></tr>
+<tr><th>定休日</th><td class="off">不定休（昼の営業は日曜・祝日は休み）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市秋田町１-54　ロイヤルクレイン秋田町1F</td></tr>
+<tr><th>予約</th><td>可（昼は完全予約制で1日4組まで。電話・ホットペッパーグルメのネット予約） — <a href="tel:09071432675">☎ 090-7143-2675</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>秋田町の枠に、歓楽街のただ中にある本格イタリアンとして採った。昼を1日4組に絞る営業の形が、同じ章の古民家イタリアン（北島田町のイルクイント）と性格を分けている。営業の根拠＝2026-10-29にホットペッパーグルメのネット予約カレンダーを確認したところ、2026年10月30日から12月31日まで、休みの2日を除くすべての日が「◎（即予約可）」になっていた。あわせて店舗ページに「ITALIAN WEEK 100 2025」ノミネートの表示が出ていることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E6%96%99%E7%90%86%E3%80%80poesia%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%A7%8B%E7%94%B0%E7%94%BA%EF%BC%91-54%E3%80%80%E3%83%AD%E3%82%A4%E3%83%A4%E3%83%AB%E3%82%AF%E3%83%AC%E3%82%A4%E3%83%B3%E7%A7%8B%E7%94%B0%E7%94%BA1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001217312/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・ネット予約カレンダー・ITALIAN WEEK 100 2025 ノミネート表示）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ001217312/appearance/">ホットペッパーグルメ 店舗ページ 店内・外観（外観と客席の写真）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-yoshoku-almostblue">
+<img class="hero" src="img/tokushima/tokushima-yoshoku-almostblue.jpg" alt="レストラン・バー　Almost Blue 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>レストラン・バー　Almost Blue<span class="yomi">れすとらん ばー おーるもすと ぶるー</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">栄町のわじきやビル2階にある、カウンターだけ7席の小さな店。「国籍に囚われず、お酒に合う料理を」という構えで、徳島の食材と海外の食材を一皿の中で組み合わせる。阿波尾鶏をアンチョビのクリームソースで、A5の阿波一貫牛をトリュフのソースで、そして祖谷の郷土食である「そば米」を松茸と海老のドリアに仕立てるなど、郷土の素材を洋の技法で出すのがこの店の持ち味。季節のきのこを使った一皿が秋の看板になる。17時から翌0時までの通し営業。席数が少ないので予約を入れてから行くこと。定休日は不定で、店の交流サイトで知らせている。外観写真なし（ビルの2階にあり、通りから見えるのは建物の入口だけで、店構えの写真が公開されていないため）。</div>
+<div class="sig"><b>一皿:</b>阿波尾鶏のアンチョビクリームソース(県の地鶏をアンチョビのクリームで。阿波尾鶏コース3,800円のメイン)／A5 阿波一貫牛のトリュフソース(県産黒毛和牛をトリュフのソースで)／松茸とエビのそば米ドリア(祖谷の郷土食そば米をドリアに仕立てた秋の一皿)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜翌0:00（料理L.O. 23:30／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市栄町１-55-1　わじきやビル2階</td></tr>
+<tr><th>予約</th><td>可（カウンター7席のみのため予約を推奨。電話・ホットペッパーグルメのネット予約） — <a href="tel:08063958406">☎ 080-6395-8406</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>秋田町の枠に、担当指示の「阿波尾鶏や鳴門鯛・すだちを洋のやり方で出す店を優先」に正面から当たる店として採った。阿波尾鶏・阿波一貫牛・そば米という徳島の素材を洋の技法で出しており、章の中で唯一の各国料理・創作料理でもある。営業の根拠＝2026-10-29にホットペッパーグルメのネット予約カレンダーを確認したところ、2026年10月30日から12月31日まで、休みの9日と要問い合わせの5日を除くすべての日が「◎（即予約可）」になっていた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%BB%E3%83%90%E3%83%BC%E3%80%80Almost%20Blue%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%A0%84%E7%94%BA%EF%BC%91-55-1%E3%80%80%E3%82%8F%E3%81%98%E3%81%8D%E3%82%84%E3%83%93%E3%83%AB2%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004531004/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004531004/food/">ホットペッパーグルメ 店舗ページ 料理（阿波尾鶏・阿波一貫牛・そば米を使う料理と価格）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ004531004/appearance/">ホットペッパーグルメ 店舗ページ 店内・外観（客席の写真）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-yoshoku-tsukiroku">
+<img class="hero" src="img/tokushima/tokushima-yoshoku-tsukiroku.jpg" alt="月六　徳島 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>月六　徳島<span class="yomi">つきろく とくしま</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">富田町の徳島グルメビル6階にある鉄板焼きの店。カウンター20席と掘りごたつ20席の計40席で、カウンターではシェフが目の前で和牛と海鮮を焼き上げる。和牛のフィレ肉を主役にしたコースが中心で、Aステーキコース5,500円、フィレのコース全7品6,600円、サーロインのコース全7品7,700円が柱。営業は17時30分から22時までの夜のみで、日曜と祝日が休み（土曜が祝日のときは休み）。コース以外の時間帯でも宴会の予約を受け付けており、歓送迎会や謝恩会に使われる。ビルの6階にあり、通りからは店構えが見えないので、入口の案内板で階を確かめてから上がること。外観写真なし（ビルの6階にあるため店構えが通りから見えず、店構えの写真が公開されていないため）。</div>
+<div class="sig"><b>一皿:</b>フィレコース 全7品(和牛フィレ肉を鉄板で焼き上げるコース。6,600円税込)／サーロインコース 全7品(サーロインを主役にしたコース。7,700円税込)／Aステーキコース(5,500円。平日の定番)</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:30〜22:00（料理L.O. 21:30／ドリンクL.O. 21:30）※営業時間外の宴会予約も相談可</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日（土曜が祝日の場合はその日が休み）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市富田町２-36　徳島グルメビル6F</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約。コースは要予約） — <a href="tel:0886540248">☎ 088-654-0248</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富田町の枠に、章で唯一の鉄板焼き・ステーキとして採った。カウンターで焼き上がりを見ながら食べる形が、同じ章の洋食屋やビストロと重ならない。営業の根拠＝2026-10-29にホットペッパーグルメのネット予約カレンダーを確認したところ、2026年10月30日から12月31日まで、定休日（11日分）と要問い合わせの3日を除くすべての日が「◎（即予約可）」になっていた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%88%E5%85%AD%E3%80%80%E5%BE%B3%E5%B3%B6%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E7%94%BA%EF%BC%92-36%E3%80%80%E5%BE%B3%E5%B3%B6%E3%82%B0%E3%83%AB%E3%83%A1%E3%83%93%E3%83%AB6F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000537410/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000537410/course/">ホットペッパーグルメ 店舗ページ コース（ステーキコースの品数と価格）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000537410/appearance/">ホットペッパーグルメ 店舗ページ 店内・外観（客席の写真）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-yoshoku-fukurin">
+<img class="hero" src="img/tokushima/tokushima-yoshoku-fukurin.jpg" alt="中国家庭料理　福林 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>中国家庭料理　福林<span class="yomi">ちゅうごくかていりょうり ふくりん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">新町川の両国橋と富田浜公園のすぐそば、草庵ビル1階にある中国料理店。本場で腕を磨いた料理人が、構えた高級中華ではなく日々食べる家庭料理を出す。テーブルと掘りごたつで50席あり、座敷の個室も用意されている。全44種の食べ放題に飲み放題を付けて90分4,500円という使い方ができるのが特徴で、宴会は最大24名まで。ふかひれの姿煮6,000円のような一品料理も頼める。昼は11時から14時30分まで通しで開いており、夜は23時まで。定休日は決めておらず、不定休。外観写真なし（ビルの1階の区画にあり、店構えの写真が公開されていないため）。</div>
+<div class="sig"><b>一皿:</b>全44種の食べ放題(飲み放題付き90分4,500円。最大24名まで)／ふかひれの姿煮(6,000円。本場仕込みの一品)／昼の定食(11:00〜14:30。1,000円台で頼める)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30（料理L.O. 14:00）／17:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市富田浜１-52-2　草庵ビル1F</td></tr>
+<tr><th>予約</th><td>可（電話・ホットペッパーグルメのネット予約。食べ放題と宴会は要予約） — <a href="tel:0886547018">☎ 088-654-7018</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>富田町の枠に、気軽に入れる値段帯の中国料理として採った。1,000円台で昼が食べられる家庭料理の店で、同じ章の東北料理（西大工町の龍鳳飯店）とは品ぞろえも価格帯も重ならない。営業の根拠＝2026-10-29にホットペッパーグルメのネット予約カレンダーを確認したところ、2026年10月30日から12月31日までのすべての日が休みなく「◎（即予約可）」で埋まっていた（定休日を設けていないため休業日の表示が1日もない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E5%AE%B6%E5%BA%AD%E6%96%99%E7%90%86%E3%80%80%E7%A6%8F%E6%9E%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%8C%E7%94%B0%E6%B5%9C%EF%BC%91-52-2%E3%80%80%E8%8D%89%E5%BA%B5%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000754963/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・ネット予約カレンダー）2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ000754963/appearance/">ホットペッパーグルメ 店舗ページ 店内・外観（客席の写真）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-yoshoku-okihama">
+<img class="hero" src="img/tokushima/tokushima-yoshoku-okihama.jpg" alt="洋食沖浜（キッチンオキハマ） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-yoshoku-okihama_exterior.jpg" alt="洋食沖浜（キッチンオキハマ） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>洋食沖浜（キッチンオキハマ）<span class="yomi">ようしょくおきはま きっちんおきはま</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip gogai">gogai</span></div>
+<div class="desc">2024年12月13日に沖浜東の「SARA林」1階で開いた洋食屋。イタリア料理とフランス料理で修業したシェフが、ご飯と味噌汁を添える日本の洋食として出すのが身上で、店名も「洋食沖浜」と書いて「キッチンオキハマ」と読ませる。30席。昼と夜で値段が変わらないのが特徴だが、日替わりの「本日のOKIHAMAセット」は昼に売り切れると夜は頼めない。カキフライやからあげのセットにエビフライやミニグラタンを足していく組み立てで、具を選べるカレーも人気がある。自家製のドレッシングを2種類用意している。店舗の裏に駐車場あり。月曜と日曜が休み。</div>
+<div class="sig"><b>一皿:</b>本日のOKIHAMAセット(日替わりの看板。昼に売り切れると夜は出ない)／カキフライset(期間限定。大ぶりの牡蠣。エビフライやミニグラタンを追加できる)／選べるカレー(好みの具を選ぶ。昼夜同一価格)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理L.O. 14:30）／18:00〜21:00（料理L.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・日曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市沖浜東２丁目49　SARA林3B101</td></tr>
+<tr><th>予約</th><td>可（電話。ホットペッパーグルメのネット予約は受け付けていない） — <a href="tel:0886798108">☎ 088-679-8108</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>郊外（沖浜）の枠に、章で唯一の「町の洋食屋」として採った。イタリア料理とフランス料理で修業したシェフがご飯と味噌汁を添えて出すという成り立ちが、同じ章のビストロやイタリアンと重ならず、カレーも看板に含む。営業の根拠＝①地域ニュースサイト「号外NET 徳島市」が2025年1月31日付で実際に訪れた記事を出しており、店構え・メニュー・料理の写真を載せている ②ホットペッパーグルメの口コミに2026年6月24日付の投稿がある ③同店舗ページの情報更新日が2025年2月17日。開店の告知だけに頼らないよう、2026-10-29に「洋食沖浜」で号外NET徳島市のサイト内検索を行い、閉店・移転の記事が出ていないことを確かめた（出てくるのは2024年12月3日の開店予告と2025年1月31日の訪問記事の2本のみ）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E6%B2%96%E6%B5%9C%EF%BC%88%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%E3%82%AA%E3%82%AD%E3%83%8F%E3%83%9E%EF%BC%89%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E6%B2%96%E6%B5%9C%E6%9D%B1%EF%BC%92%E4%B8%81%E7%9B%AE49%E3%80%80SARA%E6%9E%973B101">Googleマップで開く</a>
+<div class="src">写真: 号外NET 徳島（tokushima.goguynet.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003959068/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・口コミの投稿日2026年6月24日）2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2025/01/31/kitchenokihama-o-pun/">号外NET 徳島市「昨年2024年12月オープンの『洋食沖浜（キッチンオキハマ）』へ行ったら…」2025年1月31日付（店構え・メニュー・料理の写真、ご飯と味噌汁の方針、駐車場）2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2024/12/03/yousyokuokihama-kittinokihama-o-punyotei/">号外NET 徳島市「『洋食沖浜（キッチンオキハマ）』が2024年12月13日（金）にオープン予定」2024年12月3日付（開店日）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-yoshoku-ilquinto">
+<img class="hero" src="img/tokushima/tokushima-yoshoku-ilquinto.jpg" alt="イルクイント（il Quinto） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-yoshoku-ilquinto_exterior.jpg" alt="イルクイント（il Quinto） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">43</span>イルクイント（il Quinto）<span class="yomi">いるくいんと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip gogai">gogai</span></div>
+<div class="desc">北島田町の古い民家を改装したイタリア料理店で、2024年5月7日にリニューアル開店した。天井を抜いた吹き抜けと、窓から自然光の入る客席があり、和の造りを残した落ち着いた空間になっている。カウンター席もあるので一人でも入れる。27席。手打ちを含む本格的なパスタが看板で、ドルチェまで通して頼める。2026年3月14日から土曜日は席だけの予約も受けるようになったが、それ以外の曜日はコースのみの予約となるので、行く前に確認したほうがよい。昼は11時から14時まで（日曜・祝日は11時30分から14時30分）、夜は18時から21時まで。火曜が定休日。</div>
+<div class="sig"><b>一皿:</b>自家製の本格パスタ(店の看板。コースのメインに組み込まれる)／イタリアンドルチェ(コースの締めに出る自家製の菓子)／古民家の吹き抜け席(天井を抜いた客席。カウンターもあり一人でも入れる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜土 11:00〜14:00（料理L.O. 13:30）／18:00〜21:00（料理L.O. 20:30）　日・祝 11:30〜14:30（料理L.O. 14:00）／18:00〜21:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜</td></tr>
+<tr><th>住所</th><td>徳島県徳島市北島田町3丁目31</td></tr>
+<tr><th>予約</th><td>可（土曜は席だけの予約も可。他の曜日はコースのみの予約。電話・ホットペッパーグルメのネット予約） — <a href="tel:0886711545">☎ 088-671-1545</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>郊外（西側の北島田町）の枠に、古民家を使ったイタリアンとして採った。秋田町のpoesiaが歓楽街の夜の店であるのに対し、こちらは昼も開ける郊外の一軒家で、同じイタリア料理でも使われ方が重ならない。営業の根拠＝①2026-10-29にホットペッパーグルメのネット予約カレンダーを確認したところ、2026年10月30日から12月31日まで、定休日の火曜（10日分）を除くすべての日が「◎（即予約可）」になっていた ②店舗ページの営業時間欄に「2026年3月14日〜土曜日はお席のみのご予約もお受けいたします」という店側の書き込みがある ③地域ニュースサイト「号外NET 徳島市」が2024年4月29日付でリニューアル開店を報じている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%83%AB%E3%82%AF%E3%82%A4%E3%83%B3%E3%83%88%EF%BC%88il%20Quinto%EF%BC%89%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%8C%97%E5%B3%B6%E7%94%B0%E7%94%BA3%E4%B8%81%E7%9B%AE31">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003828528/">ホットペッパーグルメ 店舗ページ（住所・電話・営業時間・定休日・席数・ネット予約カレンダー・2026年3月14日からの予約方法の変更）2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2024/04/29/kakuregaresutoran-il-quinto-rinyu-aruo-pun/">号外NET 徳島市「古民家を改装した隠れ家イタリアン『il Quinto（イルクイント）』が5月7日（火）にリニューアルオープン予定」2024年4月29日付 2026-10-29 取得</a> / <a href="https://www.hotpepper.jp/strJ003828528/appearance/">ホットペッパーグルメ 店舗ページ 店内・外観（古民家を改装した客席の写真）2026-10-29 取得</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・喫茶・甘味</h2>
+<div class="card" id="c-tokushima-cafe-kahian">
+<img class="hero" src="img/tokushima/tokushima-cafe-kahian.jpg" alt="可否庵 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-kahian_exterior.jpg" alt="可否庵 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>可否庵<span class="yomi">かひあん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip official">official</span></div>
+<div class="desc">1980（昭和55）年の創業から、一度も場所を変えずに同じ味を作り続けている自家焙煎の珈琲専門店。生豆からゆっくり時間をかけて焼き上げ、豆の水分をしっかり抜くことで、雑味やえぐみの無いすっきりした味に仕上げる。店に並ぶ豆は常時10種類以上で、可否庵ブレンド・ストロングブレンド・モカ・ニカラグア・タンザニア・ブラジル・コロンビア・グアテマラ・ベトナム・シンザン・セレベス・マンデリンなど。徳島では珍しく浅煎りの豆も多くそろえる。2017年からは初代の店主と、娘夫婦の3人で店を回している。朝7時に開き、11時までモーニングセットを出す。</div>
+<div class="sig"><b>一皿:</b>可否庵ブレンド(店の名を冠した自家焙煎のブレンド)／ストロングブレンド(深めに焼いた強い一杯)／浅煎りのスペシャルティコーヒー(グアテマラ エル インヘルト農園など。ブラッドオレンジのような果実感と甘みが出る、と店が書いている)／モーニングセット(朝7時から11時まで。トースト・ベーグル・ナンから選ぶセットがある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:00〜19:00（モーニングセットは7:00〜11:00）</td></tr>
+<tr><th>定休日</th><td class="off">隔週日曜（公式サイト）。徳島市公式観光サイトの表記は「不定休」</td></tr>
+<tr><th>住所</th><td>徳島県徳島市幸町2丁目30</td></tr>
+<tr><th>予約</th><td>未確認（公式サイトに予約の記載なし） — <a href="tel:0886231481">☎ 088-623-1481</a> ／ <a href="http://www.coffeean1980.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島市の中心部で、創業から46年ずっと同じ場所で焙煎を続けている自家焙煎の専門店という点を採った。この章にはまだ焙煎そのものを看板にする店が無かった。営業している根拠＝①店が自分で運営するウェブ販売ページのお知らせ欄に「【2026年お盆期間の発送について】2026/08/05 17:44」の投稿があり、2026年の営業が続いていることが分かる（2026-10-31 確認） ②同じページで豆が現在も販売中（グアテマラ エル インヘルト、ブラジル ショコラ ピーベリーほか）③徳島市公式観光サイト Fun!Fun!とくしま に店舗情報が掲載されている。あわせて「可否庵 閉店」「可否庵閉店」を空白のあり・なし両方で検索し、閉店の報が無いこと、地元ニュースサイトの号外NET徳島市にも閉店記事が無いことを 2026-10-31 に確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8F%AF%E5%90%A6%E5%BA%B5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%B9%B8%E7%94%BA2%E4%B8%81%E7%9B%AE30">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.coffeean1980.com）より引用 / 外観: 出典ページ / 参照元: <a href="http://www.coffeean1980.com/access/">可否庵 公式サイト ACCESS（郵便番号・住所・電話・メール・営業時間・定休日・駐車場）2026-10-31 取得</a> / <a href="http://www.coffeean1980.com/about/">可否庵 公式サイト ABOUT（1980年創業・同じ場所で同じ味・2017年から3人体制）2026-10-31 取得</a> / <a href="http://www.coffeean1980.com/beans/">可否庵 公式サイト BEANS（常時10種類以上・焙煎の考え方・取扱い12銘柄）2026-10-31 取得</a> / <a href="http://www.coffeean1980.com/menu_/">可否庵 公式サイト MENU（モーニングセット AM7:00-AM11:00・トースト／ベーグル／ナン／ケーキの各セット）2026-10-31 取得</a> / <a href="https://coffeean.thebase.in/blog">可否庵 公式ウェブ販売ページ お知らせ（2026/08/05 の投稿＝営業の根拠、豆の値段）2026-10-31 取得</a> / <a href="https://funfun-tokushima.jp/introduce/%E5%8F%AF%E5%90%A6%E5%BA%B5/">徳島市公式観光サイト Fun!Fun!とくしま 可否庵（JR徳島駅から徒歩10分・浅煎りの豆も多い・公式SNS）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-mori-coffee">
+<img class="hero" src="img/tokushima/tokushima-cafe-mori-coffee.jpg" alt="森珈琲店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-mori-coffee_exterior.jpg" alt="森珈琲店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>森珈琲店<span class="yomi">もりこーひーてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip official">official</span></div>
+<div class="desc">徳島駅の駅前ターミナルビル1階にある珈琲専門店で、2026年に38周年を迎えた。神戸・萩原の炭火焙煎の豆と出会ってからその豆を使い続けている。「目くばり・気くばり・心くばり」を掲げ、開店したときから毎日、伝票の裏に手書きのメッセージを書いて渡している。毎月1日に「今月の展覧会」と「月替わりのお勧めメニュー」を入れ替え、毎週土曜には「今週のお花」を飾る。トーストやホットサンドの種類が多く、朝9時から11時までのモーニングサービスは、どの飲み物にも300円を足せば付けられる。徳島市のイメージアップキャラクター「トクシィ」を描いたオリジナルのドリップコーヒーも土産用に売っている。支払いは現金のみ。</div>
+<div class="sig"><b>一皿:</b>森のトースト 700円(はちみつバタートーストにアイスクリームをのせた、この店の一番の名物)／モーニングサービス +300円(平日はトーストかホットサンド「たまご・ハム」にオレンジとサラダ付き。土日祝はトースト・オレンジ・サラダ付き。9:00〜11:00)／徳島駅前オカンブレンド 650円(2023年5月に始めた店独自のブレンド。苦みの中に優しさがある、と店が書いている)／月替わりの珈琲 750円(2026年11月はニカラグアのラ・ポラ農園)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日・日曜・祝日 9:00〜17:00（モーニングサービスは9:00〜11:00）</td></tr>
+<tr><th>定休日</th><td class="off">毎週水曜日と、月1回の連休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市寺島本町西1丁目57 徳島駅前ターミナルビル1F</td></tr>
+<tr><th>予約</th><td>未確認（公式サイトに予約の記載なし） — <a href="tel:0886236198">☎ 088-623-6198</a> ／ <a href="https://www.moriko-hi-tenn.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島駅を出てすぐという立地と、38年続く駅前の喫茶という点を採った。この章は駅から離れた店が多かったので、乗り換えや待ち合わせの合間に寄れる店を1軒入れた。営業している根拠＝①公式サイトの「月替わりのお勧めメニュー」のページが2026年11月のおすすめ（ニカラグア ラ・ポラ農園）まで更新されている（2026-10-31 確認） ②公式サイトのブログが2026年10月27日に「11月の予定表」を掲載している ③トップページの新着情報に「2026年9月から モーニングの価格を改定しました」「2026年9月から チョコレートケーキの価格を改定しました」とある。あわせて「森珈琲店 徳島 閉店」で検索し閉店の報が無いこと、号外NET徳島市にも閉店記事が無いことを 2026-10-31 に確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A3%AE%E7%8F%88%E7%90%B2%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%AF%BA%E5%B3%B6%E6%9C%AC%E7%94%BA%E8%A5%BF1%E4%B8%81%E7%9B%AE57%20%E5%BE%B3%E5%B3%B6%E9%A7%85%E5%89%8D%E3%82%BF%E3%83%BC%E3%83%9F%E3%83%8A%E3%83%AB%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（image.jimcdn.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.moriko-hi-tenn.jp/%E5%BA%97%E8%88%97%E6%83%85%E5%A0%B1/">森珈琲店 公式サイト 店舗情報（郵便番号・住所・電話・営業時間・定休日・公式インスタグラム）2026-10-31 取得</a> / <a href="https://www.moriko-hi-tenn.jp/%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC/%E3%83%95%E3%83%BC%E3%83%89/">森珈琲店 公式サイト メニュー／フード（トースト類とサンドの全品目と値段・森のトースト・モーニングサービスの内容と時間帯）2026-10-31 取得</a> / <a href="https://www.moriko-hi-tenn.jp/%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC/">森珈琲店 公式サイト メニュー／珈琲（神戸・萩原の炭火焙煎豆・各種コーヒーの値段・コーヒーチケット）2026-10-31 取得</a> / <a href="https://www.moriko-hi-tenn.jp/%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC/%E3%82%B9%E3%82%A4%E3%83%BC%E3%83%84/">森珈琲店 公式サイト メニュー／スイーツ（ケーキ3種とアイスクリームの値段）2026-10-31 取得</a> / <a href="https://www.moriko-hi-tenn.jp/">森珈琲店 公式サイト トップ（38周年・こだわり・新着情報に2026年9月の価格改定＝営業の根拠）2026-10-31 取得</a> / <a href="https://www.moriko-hi-tenn.jp/%E6%9C%88%E6%9B%BF%E3%82%8F%E3%82%8A%E3%81%AE%E3%81%8A%E5%8B%A7%E3%82%81%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC/">森珈琲店 公式サイト 月替わりのお勧めメニュー（2026年11月＝ニカラグア ラ・ポラ農園。営業の根拠）2026-10-31 取得</a> / <a href="https://www.moriko-hi-tenn.jp/%E3%83%96%E3%83%AD%E3%82%B0/">森珈琲店 公式サイト ブログ（2026年10月27日「11月の予定表」＝営業の根拠）2026-10-31 取得</a> / <a href="https://funfun-tokushima.jp/introduce/%E6%A3%AE%E7%8F%88%E7%90%B2%E5%BA%97/">徳島市公式観光サイト Fun!Fun!とくしま 森珈琲店（JR徳島駅から徒歩3分・手書きメッセージ・森のトースト・トクシィのドリップコーヒー・駐車場なし・現金のみ）2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-de-campagne">
+<img class="hero" src="img/tokushima/tokushima-cafe-de-campagne.jpg" alt="カフェ・ドゥ・カンパーニュ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-de-campagne_exterior.jpg" alt="カフェ・ドゥ・カンパーニュ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>カフェ・ドゥ・カンパーニュ<span class="yomi">かふぇ・どぅ・かんぱーにゅ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip local">地元密着</span></div>
+<div class="desc">2001年ごろの創業で、地元の情報サイトが2025年2月に「創業24年の老舗カフェ」と紹介した郊外のカフェ。汽車の走る線路沿いに建ち、店内はジャズの流れるレトロモダンな造り。総席数64席で、カウンター席・ソファー席・テラス席があり、全席禁煙（テラスのみ喫煙可）。朝9時から夜21時まで通しで開いていて、開店から14時まではモーニングセットを出す。コーヒーは青い絵付けのカップで供され、ホットサンド・パニーニ・ホットケーキ・パフェ・徳島スムージーなど軽食と甘味の品数が多い。支払いは現金とQRコード決済（PayPay・楽天ペイ・d払い・au PAY・メルペイ）で、クレジットカードは使えない。</div>
+<div class="sig"><b>一皿:</b>照焼チキンのホットサンド 720円(カリッと焼いたトーストに照り焼きのタレをからめたチキンを挟む。ブレッドメニューで一番人気)／はちみつトースト(県内の養蜂場から取り寄せた100%徳島県産の百花蜜を使う厚切りトースト)／珈琲ぜんざい・珈琲ゼリー(喫茶の甘味)／徳島スムージー(グリーンスムージーなど、野菜の味が濃い一杯)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜21:00（料理 L.O. 20:30／ドリンク L.O. 20:30）。モーニングは開店から14:00まで</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市八万町内浜173-3</td></tr>
+<tr><th>予約</th><td>可（ホットペッパーグルメのネット予約。即予約は来店日当日20時まで、リクエスト予約は前日17時まで受付） — <a href="tel:0886685308">☎ 088-668-5308</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章は徳島駅の周りに寄っていたので、南の郊外（八万町）から1軒採った。64席と広く、朝9時から夜21時まで通しで開いているので、使える時間帯が他の店と重ならないのも理由。営業している根拠＝①ホットペッパーグルメの店舗ページが2026年5月25日更新で、ネット予約が「即予約 来店日の当日20時まで受付」として受け付けられる状態にある（2026-10-31 確認） ②同じページの口コミに来店日 2026年10月4日・10月18日・10月19日のものがある ③号外NET徳島市が2025年2月18日に取材記事を掲載している。あわせて「カフェ・ドゥ・カンパーニュ 閉店」で検索し閉店の報が無いこと、号外NET徳島市にも閉店記事が無いことを 2026-10-31 に確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%83%89%E3%82%A5%E3%83%BB%E3%82%AB%E3%83%B3%E3%83%91%E3%83%BC%E3%83%8B%E3%83%A5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%85%AB%E4%B8%87%E7%94%BA%E5%86%85%E6%B5%9C173-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000715186/">ホットペッパーグルメ 店舗ページ（住所・アクセス・営業時間・定休日・総席数64席・席の内訳・禁煙・駐車場・支払い方法・予算・2026/05/25 更新・2026年10月の口コミ）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000715186/photo/">ホットペッパーグルメ 店舗の写真ページ（料理・ドリンク・内観・外観の写真と品名）2026-10-31 取得</a> / <a href="https://www.hotpepper.jp/strJ000715186/tel/">ホットペッパーグルメ 電話番号のページ（電話番号）2026-10-31 取得</a> / <a href="https://tokushima.goguynet.jp/2025/02/18/sinisecafe-cafe-de-campagne/">号外NET徳島市 取材記事（創業24年・線路沿い・ジャズの流れるレトロモダンな店内・メニューの値段・モーニングは14時まで）2025-02-18公開／2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-tarou-to-hanako">
+<img class="hero" src="img/tokushima/tokushima-cafe-tarou-to-hanako.jpg" alt="たろうとはなこ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-tarou-to-hanako_exterior.jpg" alt="たろうとはなこ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>たろうとはなこ<span class="yomi">たろうとはなこ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip sns">sns</span></div>
+<div class="desc">1971（昭和46）年、当時26歳だった神野美通（かんのよしみち）さんが蔵本駅前に開いた喫茶店で、通称は「たろはな」。看板に描かれた太郎と花子のイラストも、その文字も店主の手によるもの。レンガ造りの建物をツタが覆い、店内は飴色のテーブルと腰板、燭台形の壁掛け照明が並ぶ落ち着いた造りで、テーブルどうしの間隔にもゆとりがある。タクシーの運転手や早朝に出かける人のために朝5時ごろから店を開けていた時期があり、昔からのファンが多いネルドリップのコーヒーを目当てに、今も朝の客が絶えない。1976（昭和51）年の改装までは、赤白青のストライプのテントを丸く湾曲させた目を引く外観だった。テイクアウトもできる。支払いは現金。2025〜2026年のインスタグラムの投稿には「15:00閉店」とあり、閉店時刻は下の表記から変わっている可能性があるので、来店前に電話で確かめてほしい。</div>
+<div class="sig"><b>一皿:</b>ネルドリップのコーヒー(開店当時からのファンが多い、この店の芯)／モーニングセット 550円(対象ドリンクにカットトーストとゆで卵が付く)／日替わりランチ(ごはんは家庭の茶碗一杯ぶんと控えめ。ちょい盛りは無料)／チキンドリア(取材した書き手が「とくにソースが絶品」と書いた一皿。サラダとドリンクのセットがある)</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:00〜17:30（あわカフェの取材時点）。※2025〜2026年のインスタグラムの投稿は「15:00閉店」と告知しており、閉店時刻は要確認。朝の時間帯にモーニングセットあり</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>徳島県徳島市蔵本町2丁目21-7</td></tr>
+<tr><th>予約</th><td>未確認（取材記事・ポータルサイトのいずれにも予約の記載なし） — <a href="tel:0886312701">☎ 088-631-2701</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「昭和から続く純喫茶でモーニングの文化がある店」という枠にそのまま当たる1軒として採った。1971年開店で創業の年と創業者が分かり、ネルドリップという淹れ方の芯があり、朝の営業が看板になっている店は、この章の他の5軒には無かった。場所も徳島市の西（蔵本）で、駅前・幸町・八万町と散る。営業している根拠＝①号外NET徳島市が2026年8月20日に取材記事を出し、2026年7月時点の店内の写真を承諾のうえ掲載している ②同サイトが2026年7月19日の「くらもとぎおんさん夏祭2026」の記事でもこの店を挙げている ③2026年9月18日付のインスタグラムの投稿に来店の報告がある（Yahoo!検索の結果で確認）。あわせて「たろうとはなこ 徳島 閉店」で検索し、閉店の報が無いことを 2026-10-31 に確認した（近隣の店の閉店に触れた口コミはあるが、この店は営業中と書かれている）。号外NET徳島市の記事一覧にも閉店記事は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%82%8D%E3%81%86%E3%81%A8%E3%81%AF%E3%81%AA%E3%81%93%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E8%94%B5%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE21-7">Googleマップで開く</a>
+<div class="src">写真: 号外NET 徳島（tokushima.goguynet.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://awacafe.com/restaurants/%E3%81%9F%E3%82%8D%E3%81%86%E3%81%A8%E3%81%AF%E3%81%AA%E3%81%93/">徳島珈琲物語 あわカフェ 店舗ページ（1971年開店・創業者 神野美通・通称たろはな・看板の由来・ネルドリップ・朝5時開店・1976年の改装・住所・電話・営業時間・定休日・駐車場・支払い）2026-10-31 取得</a> / <a href="https://tokushima.goguynet.jp/2026/08/20/kuramoto-ranti-taroutohanako/">号外NET徳島市 取材記事（レンガとツタの外観・飴色のテーブルの店内・日替わりランチ・チキンドリア・モーニングセット550円の内容・テイクアウト可・裏の砂利の駐車場。2026年7月時点の情報＝営業の根拠）2026-08-20公開／2026-10-31 取得</a> / <a href="https://tokushima.goguynet.jp/2026/07/19/kuramoto-taroutohanako-amabile-amoru/">号外NET徳島市「くらもとぎおんさん夏祭2026」（蔵本駅周辺の店として店名が挙がる＝営業の根拠）2026-07-19公開／2026-10-31 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-ikariya-coffee">
+<img class="hero" src="img/tokushima/tokushima-cafe-ikariya-coffee.jpg" alt="いかりや珈琲店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-ikariya-coffee_exterior.jpg" alt="いかりや珈琲店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>いかりや珈琲店<span class="yomi">いかりやこーひーてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip sns">sns</span></div>
+<div class="desc">1955（昭和30）年5月18日、初代・馬場芳子さんが自身の生家であった家具店「馬場源一商店」の場所に開いた喫茶店。店名は家族が出した300ほどの候補から選ばれ、「港にイカリを下ろして商売をする」という意味が込められている。開店当初から焙煎機を置いており、当時の徳島では珍しかった自家焙煎の草分けとされる。1976（昭和51）年に木造から現在の鉄筋コンクリート建てへ改築。1993年に二代目・馬場智恵子さん、2012年5月に三代目・馬場淳さんへと引き継がれた。店内には無料で貸し出すギャラリースペースがある。支払いは現金のみ。</div>
+<div class="sig"><b>一皿:</b>コーヒーゼリー(昭和62年からの名物。お盆の4日間だけで2,000個売れるという)／よしこのブレンド(阿波おどりのリズムと初代・芳子さんの名にちなんだ自家焙煎ブレンド。ほかに いかりやAブレンド＝まろやか、Bブレンド＝深みとコク など6種)／自家製シフォンケーキ・厚焼きたまごサンド(公式インスタグラムが日々告知する軽食)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 8:00〜18:30／土 9:00〜17:00（モーニングサービスは11:00まで。阿波おどり期間中は22時まで営業）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>徳島県徳島市通町1-12</td></tr>
+<tr><th>予約</th><td>未確認（公式サイト・公式観光サイトのいずれにも予約の記載なし） — <a href="tel:0886230808">☎ 088-623-0808</a> ／ <a href="https://www.ikariya.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島市でいちばん古い部類の自家焙煎喫茶で、親子三代・70年続いている点を採った。営業の根拠＝①公式インスタグラム @ikariyacoffee（投稿1,802件）が2026年10月21日・10月4日に「当店、本日も、自家製シフォンケーキや、パウンド…TEL.088-623-0808」と当日の営業を告知している ②2026年10月26日ごろの「暮らしの祝祭VOL.12」出店者紹介にいかりや珈琲店として掲載 ③号外NET徳島市の2026年4月3日の記事が、4月5日開催の童学寺「いろは手作り市」の出店者として店名を挙げている。あわせて「いかりや珈琲店 閉店」と「いかりや珈琲店閉店」の空白あり・なし両方で検索し閉店の報が無いこと、移転・リニューアルの報も無いこと、公式SNSのアカウント名が「いかりや珈琲店」のままであることを2026-10-29 に確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%8B%E3%82%8A%E3%82%84%E7%8F%88%E7%90%B2%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E9%80%9A%E7%94%BA1-12">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.ikariya.net）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.ikariya.net/menu-2/">いかりや珈琲店 公式サイト メニュー・店舗情報ページ（住所・電話・営業時間・定休日）2026-10-29 取得</a> / <a href="https://awacafe.com/restaurants/%E3%81%84%E3%81%8B%E3%82%8A%E3%82%84%E7%8F%88%E7%90%B2%E5%BA%97/">徳島珈琲物語 あわカフェ 店舗ページ（創業の経緯・歴代店主・コーヒーゼリー・店舗のあゆみ・支払い方法）2026-10-29 取得</a> / <a href="https://funfun-tokushima.jp/introduce/%E8%87%AA%E5%AE%B6%E7%84%99%E7%85%8E%E3%80%80%E3%81%84%E3%81%8B%E3%82%8A%E3%82%84%E7%8F%88%E7%90%B2%E5%BA%97/">徳島市公式観光サイト Fun!Fun!とくしま 店舗紹介（ブレンドの種類・徒歩8分・現金のみ・駐車場）2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2026/04/03/gakudouji-ibento-iroha-tedukuriiti-kaisaiyoteisyuusei/">号外NET徳島市（2026年4月5日の童学寺「いろは手作り市」出店者として店名掲載＝営業の根拠）2026-04-03公開／2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-wadanoya">
+<img class="hero" src="img/tokushima/tokushima-cafe-wadanoya.jpg" alt="滝の焼餅 和田の屋 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-wadanoya_exterior.jpg" alt="滝の焼餅 和田の屋 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>滝の焼餅 和田の屋 本店<span class="yomi">たきのやきもち わだのや ほんてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip official">official</span></div>
+<div class="desc">阿波名物「滝の焼餅」を四百年伝える店。天正十三年に蜂須賀家政公が徳島城を築いた折に献上されたとされ、藩主愛飲の名水「錦竜水」の使用を許されて藩の御用菓子となった。和田の屋は今も錦竜水で北海道十勝産の小豆を炊き、皮は粳米と糯米を石臼で挽いて天日に干したものを使い、菊紋の押し型で一枚ずつ焼いている。「とくしま市民遺産」に選ばれている。本店では眉山の四季を眺めながら焼きたてを食べられ、夏はかき氷（和三盆・小倉抹茶・すだち・やまもも・しょうが）、冬はぜんざいが出る。駐車場あり。席数は未確認。</div>
+<div class="sig"><b>一皿:</b>滝の焼餅(白・抹茶・胡麻の3種。錦竜水で炊いた餡を石臼挽きの皮で包み、菊紋の型で焼く)／滝の焼餅と抹茶のセット(名水で点てた抹茶と合わせる本店の定番)／すだちジュース・やまももジュース(徳島産の果汁を使った本店の飲み物)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜（正月・花見期間・阿波おどり期間・祝祭日は営業）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市眉山町大滝山5-5</td></tr>
+<tr><th>予約</th><td>未確認（公式サイトに予約の記載なし） — <a href="tel:0886528414">☎ 088-652-8414</a> ／ <a href="https://wadanoya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>眉山のふもとという場所と、四百年続く徳島固有の菓子（滝の焼餅）を食べられる甘味処として外せない一軒。営業の根拠＝①公式サイトの画像置き場に2026年6月18日付で店頭・客席・抹茶・焼餅の新しい写真一式が、2026年8月7日付で追加の写真が登録されている（2026-10-29 に公式のメディア一覧で確認） ②徳島駅クレメントプラザの和田の屋のショップニュースが2026年10月21日・10月8日に更新されている ③公式サイトのお知らせに2026年1月6日の本店臨時休業の告知がある。あわせて「滝の焼餅 和田の屋 閉店」「和田の屋閉店」の空白あり・なし両方で検索し、閉店・移転の報が無いことを2026-10-29 に確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%BB%9D%E3%81%AE%E7%84%BC%E9%A4%85%20%E5%92%8C%E7%94%B0%E3%81%AE%E5%B1%8B%20%E6%9C%AC%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E7%9C%89%E5%B1%B1%E7%94%BA%E5%A4%A7%E6%BB%9D%E5%B1%B15-5">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（wadanoya.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://wadanoya.com/">滝の焼餅 和田の屋 公式サイト トップ（本店の住所・電話・営業時間・定休日・駐車場・お知らせ）2026-10-29 取得</a> / <a href="https://wadanoya.com/cafe/">同 本店カフェメニューのページ（焼餅と飲み物のセット、季節のぜんざい・かき氷の内容）2026-10-29 取得</a> / <a href="https://wadanoya.com/yakimochi/">同 滝の焼餅についてのページ（四百年の由来・錦竜水・十勝産小豆・石臼挽きの皮・とくしま市民遺産）2026-10-29 取得</a> / <a href="https://clementplaza.com/shop/detail/120">徳島駅クレメントプラザ 店舗ページ（ショップニュースの更新日 2026.10.21／2026.10.08＝営業の根拠、クレメント店の座席数4席）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-akanean">
+<img class="hero" src="img/tokushima/tokushima-cafe-akanean.jpg" alt="菓游 茜庵 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>菓游 茜庵<span class="yomi">かゆう あかねあん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip official">official</span></div>
+<div class="desc">徳島市徳島町にある和菓子店で、庵の名は裏千家今日庵副理事長・納屋嘉治氏から贈られたもの。売り場のほかに「お呈茶席」があり、椅子とテーブルの略式の席で作法にとらわれず菓子と茶を楽しめる。呈茶の利用は11時から16時まで。4名以上で「季節のコース」を頼むときは予約が要る（かき氷の予約は受けていない）。繁忙期は喫茶を休むことがある。かき氷は「にっぽん氷の図鑑」でベスト抹茶氷に選ばれた。元日と1月2日以外は休まない。席数は未確認。外観写真なし（公式サイトにある外観・庭の画像はいずれもお知らせの文字が焼き込まれた横長のバナーで、長辺900px以上かつ文字の無いものが1枚も無かったため）。</div>
+<div class="sig"><b>一皿:</b>季節のコース(喫茶限定。職人が仕立てる月替わりの菓子のコース)／茜庵のかき氷(抹茶・白玉・小豆の特製。にっぽん氷の図鑑で「ベスト抹茶氷」に選出)／秋あんみつ(旬を寄せた秋限定。阿波晩茶で仕立てた特製の蜜を添える)／お善哉(丹波大納言小豆に香ばしい餅)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜18:00（お呈茶席の利用は11:00〜16:00）</td></tr>
+<tr><th>定休日</th><td class="off">1月1日・1月2日</td></tr>
+<tr><th>住所</th><td>徳島県徳島市徳島町3丁目44</td></tr>
+<tr><th>予約</th><td>4名以上で「季節のコース」を希望するときは予約が要る（かき氷の予約は不可） — <a href="tel:0886258866">☎ 088-625-8866</a> ／ <a href="https://www.akanean.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>駅の東側・徳島城跡そばという位置と、阿波晩茶や和三盆といった徳島の素材を使う和菓子を、その場で茶とともに食べられる点で採った。営業の根拠＝①公式サイトの画像置き場に2026年10月16日・10月17日付で新しい菓子とお知らせの画像が登録されている（2026-10-29 に公式のメディア一覧で確認） ②同サイトのお知らせに2026年10月6日〜7日の敷地内設備工事による臨時休業、11月11日の店休の告知がある ③2026年10月1日〜6日の新宿高島屋11階での出店告知が載っている。あわせて「菓游 茜庵 閉店」「茜庵閉店」の空白あり・なし両方で検索し閉店・移転の報が無いこと、公式SNS（Facebook / Instagram / X）のアカウント名が「茜庵」のままであることを2026-10-29 に確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8F%93%E6%B8%B8%20%E8%8C%9C%E5%BA%B5%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%BE%B3%E5%B3%B6%E7%94%BA3%E4%B8%81%E7%9B%AE44">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.akanean.com）より引用 / 外観: 写真なし / 参照元: <a href="https://www.akanean.com/shop/">菓游 茜庵 公式サイト 店舗案内（本店の住所・電話・営業時間・呈茶の時間・定休日・駐車場・喫茶メニュー・予約の扱い）2026-10-29 取得</a> / <a href="https://www.akanean.com/">菓游 茜庵 公式サイト トップ（2026年3月〜10月のお知らせ画像が並ぶ＝営業の根拠）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-taro-pan">
+<img class="hero" src="img/tokushima/tokushima-cafe-taro-pan.jpg" alt="タローパン 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-taro-pan_exterior.jpg" alt="タローパン 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">51</span>タローパン<span class="yomi">たろーぱん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip awawa">awawa</span></div>
+<div class="desc">徳島市の中心部、徳島城跡の西側にあるパン屋。子どもが安心して食べられるよう添加物を抑えたパンづくりを続けてきた店で、看板の「チョコ丸くん」は30年以上親しまれているロングセラー。カレーパンは油で揚げずに焼き上げるタイプ。国産小麦とよつ葉バターを使った無添加の食パンも置く。ドーナツは1個60円（税込）など、値段が抑えられているのも特徴。営業は朝7時半からで、パンが売り切れ次第その日は終わる。店内に客席は無く、持ち帰りのみ。駐車場は無いので徒歩か近隣の有料駐車場を使う。</div>
+<div class="sig"><b>一皿:</b>チョコ丸くん(30年以上続くロングセラー。丸いパンにチョコを巻き込んで焼いたもの。151円)／カレーパン(油で揚げず焼き上げる。119円)／ドーナツ(1個60円。おやつにちょうどいい大きさ)／国産小麦の無添加食パン(国産小麦とよつ葉バターを使う)</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:30〜18:30（売り切れ次第終了）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>徳島県徳島市徳島町城内6-34</td></tr>
+<tr><th>予約</th><td>未確認（取材記事に予約の記載なし） — <a href="tel:0886524461">☎ 088-652-4461</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島市の中心部に残る、添加物を抑えたパンを安く売り続けている老舗のパン屋として採った。営業の根拠＝①徳島のタウン情報誌を出す株式会社あわわの媒体が、2026年6月9日に「徳島パン部／クチコミベーカリー」の取材記事（署名＝しばやん）を公開し、住所・電話・営業時間・定休日と当時の価格を載せている ②2026年3月7日付のインスタグラムの投稿に、同じ営業時間・定休日・住所が載っている。あわせて「タローパン 徳島 閉店」と「タローパン閉店」の空白あり・なし両方で検索し、当店の閉店・移転の報が無いことを2026-10-29 に確認した（同名の別のパン屋が大阪府池田市・浜松市・神戸市にあるため、徳島市の店かどうかを1件ずつ確かめた）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%BF%E3%83%AD%E3%83%BC%E3%83%91%E3%83%B3%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%BE%B3%E5%B3%B6%E7%94%BA%E5%9F%8E%E5%86%856-34">Googleマップで開く</a>
+<div class="src">写真: あわわ（徳島のタウン情報媒体）（sumahononakani.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://awawa.app/pages/article_detail.php?report_no=11552&amp;app_no=51&amp;tab_no=0">あわわ（株式会社あわわ）「徳島パン部／クチコミベーカリー」タローパン（住所・電話・営業時間・定休日・駐車場・価格・チョコ丸くんの由来）2026-06-09公開／2026-10-29 取得</a> / <a href="https://awacafe.com/">徳島珈琲物語 あわカフェ 併載の同市内の喫茶一覧（徳島市中心部の位置関係の確認）2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-choa-cafe">
+<img class="hero" src="img/tokushima/tokushima-cafe-choa-cafe.jpg" alt="レトロ喫茶 チョアカフェ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-choa-cafe_exterior.jpg" alt="レトロ喫茶 チョアカフェ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">52</span>レトロ喫茶 チョアカフェ<span class="yomi">れとろきっさ ちょあかふぇ</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip awawa">awawa</span><span class="chip sns">sns</span></div>
+<div class="desc">築50年以上の古民家をセルフリノベーションして2026年6月24日に開いた喫茶店。夫婦で営み、2024年秋に始めたキッチンカー「choa cafe」から実店舗へ移った（キッチンカーの営業も続けている）。出すのはクロワッサン生地をワッフルメーカーで焼く韓国発祥のクロッフルを使ったサンド。調理は病院のヘルシーレストランや高齢者施設で働いてきた栄養士の奥さん・沙織さんが担当し、徳島の阿波和三盆糖とヨーロッパ産の発酵バターで生地を店内で手焼きする。珈琲は徳島の焙煎店「アッタロード」が焼いたルワンダ産を使う。店内にはペコちゃん人形や花柄のアデリアグラスなど昭和の品が並ぶ。予約は受けていない。店名の「チョア」は韓国語で「good」「好き」の意。</div>
+<div class="sig"><b>一皿:</b>デザートクロッフルサンドセット(週末限定。季節のフルーツなど2種のサンドにミニアイスとドリンクが付く。1,400円)／こだわり卵のクロッフルサンド(徳島県認定ブランド「アイ杉原」の卵を使う。350円)／あんバターモンブラン・なると金時モンブラン(徳島の老舗あんこ屋の北海道小豆あん、鳴門金時あんを使う。各800円)／すだち・ゆこう・梅のソーダ(徳島産の柑橘と梅を使った自家製の飲み物)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜・木曜（不定休あり）</td></tr>
+<tr><th>住所</th><td>徳島県徳島市南佐古七番町7-1</td></tr>
+<tr><th>予約</th><td>不可（公式インスタグラムが「予約不可」と告知） — <a href="tel:05088848266">☎ 050-8884-8266</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>眉山の北のふもとという位置と、阿波和三盆糖・すだち・ゆこう・鳴門金時といった徳島の素材を新しい菓子に使っている点で採った。営業の根拠＝①徳島のタウン情報誌を出す株式会社あわわの媒体が2026年9月11日に取材記事を公開し、住所・電話・営業時間・定休日・駐車場・価格を載せている ②徳島新聞社のニュースサイトが2026年9月22日に同店を紹介し、同社の公式Xが2026年10月16日にその記事を再掲している ③公式インスタグラム @choa_cafe が2026年7月24日に営業時間・定休日・駐車場・予約不可・PayPay可を告知している。開店が2026年6月と新しいため、「チョアカフェ 徳島 閉店」と「チョアカフェ閉店」の空白あり・なし両方で検索し、当店の閉店の報が無いことを2026-10-29 に確認した（京都府亀岡市の同名店「Chotto Choa」が2026年6月に閉店しているが別の店）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%83%88%E3%83%AD%E5%96%AB%E8%8C%B6%20%E3%83%81%E3%83%A7%E3%82%A2%E3%82%AB%E3%83%95%E3%82%A7%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%8D%97%E4%BD%90%E5%8F%A4%E4%B8%83%E7%95%AA%E7%94%BA7-1">Googleマップで開く</a>
+<div class="src">写真: あわわ（徳島のタウン情報媒体）（sumahononakani.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://awawa.app/pages/article_detail.php?report_no=12193&amp;app_no=51&amp;tab_no=0">あわわ（株式会社あわわ）《レトロ喫茶 チョアカフェ》（住所・電話・営業時間・定休日・駐車場・価格・開業の経緯・素材）2026-09-11公開／2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2026/06/27/retorokissa-choa-cafe-o-pun-syokurepo/">号外NET徳島市（2026年6月24日オープンの告知と食レポ。店舗外観・駐車場の案内）2026-06-27公開／2026-10-29 取得</a></div>
+</div></div>
+<div class="card" id="c-tokushima-cafe-birth-book-coffee">
+<img class="hero" src="img/tokushima/tokushima-cafe-birth-book-coffee.jpg" alt="バースブック珈琲 国府店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/tokushima/tokushima-cafe-birth-book-coffee_exterior.jpg" alt="バースブック珈琲 国府店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">53</span>バースブック珈琲 国府店<span class="yomi">ばーすぶっくこーひー こくふてん</span></div>
+<div class="chips"><span class="chip local">地元密着</span><span class="chip official">official</span></div>
+<div class="desc">附家（つきや）書店 国府店の敷地内にある、「プチリゾート」をテーマにしたブックカフェ。2015年に生まれた店で、運営は1967年に徳島市住吉でガソリンスタンドとして始まり1986年に書店へ変わった港興業株式会社。天井の高い広い店内に、附家書店が選んだ本が並び、本を読みながら食事ができる。席数は約54席で、テーブル席・ソファ席のほかテラス席があり、テラスのみ犬を連れて入れる。全席禁煙。支払いは現金とクレジットカードに対応。味噌作り体験教室やおはなし会といった催しも開く。</div>
+<div class="sig"><b>一皿:</b>パンケーキ(店が一番人気に挙げる一皿)／ローストビーフのプレート(同じく看板のひとつ)／ロコモコプレート(スキレットで出すハンバーグと目玉焼き、スープとサラダ付き)／タコライスボウル(半熟卵とトルティーヤチップスをのせた木椀仕立て)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:00〜17:30（フード L.O. 16:30／ドリンク L.O. 17:00）／土・日・祝 10:00〜18:00（フード L.O. 17:00／ドリンク L.O. 17:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>徳島県徳島市国府町井戸字高池窪12-1（附家書店 国府店 内）</td></tr>
+<tr><th>予約</th><td>未確認（公式サイトに予約の記載なし） — <a href="tel:0886783470">☎ 088-678-3470</a> ／ <a href="https://tsukiyashoten.com/pages/cafe">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>徳島市の郊外で、書店の中にある54席のブックカフェという成り立ちが他の章の店と重ならないので採った。営業の根拠＝①運営会社の公式サイト（附家書店）のカフェのページが「きょうの営業：11:00〜17:30」と当日の営業を表示し、フッタの著作権表示が2026年になっている（2026-10-29 確認） ②店の公式インスタグラム @birthbookcoffee が2026年6月25日に国府店の投稿をしている ③号外NET徳島市が、系列の「だんごとバースブック珈琲 新浜店」の閉店を伝えた2023年7月13日の記事の中で「国府店は今後も営業予定」と明記している。あわせて「バースブック珈琲 国府店 閉店」で検索し、国府店の閉店の報が無いことを2026-10-29 に確認した（閉店したのは新浜店と住吉店で、国府店ではない点を1件ずつ確かめた）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%BC%E3%82%B9%E3%83%96%E3%83%83%E3%82%AF%E7%8F%88%E7%90%B2%20%E5%9B%BD%E5%BA%9C%E5%BA%97%20%E5%BE%B3%E5%B3%B6%E7%9C%8C%E5%BE%B3%E5%B3%B6%E5%B8%82%E5%9B%BD%E5%BA%9C%E7%94%BA%E4%BA%95%E6%88%B8%E5%AD%97%E9%AB%98%E6%B1%A0%E7%AA%AA12-1%EF%BC%88%E9%99%84%E5%AE%B6%E6%9B%B8%E5%BA%97%20%E5%9B%BD%E5%BA%9C%E5%BA%97%20%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 号外NET 徳島（tokushima.goguynet.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://tsukiyashoten.com/pages/cafe">附家書店（港興業株式会社）公式サイト バースブック珈琲 国府店のページ（住所・電話・営業時間・定休日・席数約54席・駐車場・支払い・禁煙・開業年）2026-10-29 取得</a> / <a href="https://tokushima.goguynet.jp/2025/03/23/birthbookcoffee-lunch-tsukiyashoten/">号外NET徳島市「徳島ステキ店」シリーズ（2025年1月取材。ロコモコプレート・タコライスボウル・珈琲券・附家書店との位置関係）2025-03-23公開／2026-10-29 取得</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年10月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>

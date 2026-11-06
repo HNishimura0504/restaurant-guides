@@ -100,8 +100,12 @@
 | 広島県 | 福山市 | 50 | [japan/hiroshima/](japan/hiroshima/) |
 | 山口県 | 山口市 | 44 | [japan/yamaguchi/](japan/yamaguchi/) |
 | 山口県 | 下関市 | 50 | [japan/yamaguchi/](japan/yamaguchi/) |
+| 徳島県 | 徳島市 | 53 | [japan/tokushima/](japan/tokushima/) |
+| 徳島県 | 阿南市 | 52 | [japan/tokushima/](japan/tokushima/) |
+| 香川県 | 高松市 | 72 | [japan/kagawa/](japan/kagawa/) |
+| 香川県 | 丸亀市 | 57 | [japan/kagawa/](japan/kagawa/) |
 
-小計 72冊 / 3996店
+小計 76冊 / 4230店
 
 ## 欧州
 
@@ -153,7 +157,7 @@
 
 小計 6冊 / 272店
 
-**合計 96冊 / 5035店**（2026-10-27 時点。欧州・北米の店数は各冊の店カードを数え直した値。日本の小計は未検証のまま据え置き）
+**合計 100冊 / 5269店**（2026-11-03 時点。欧州・北米の店数は各冊の店カードを数え直した値。日本の小計は未検証のまま据え置き）
 
 ## 進行中の発注
 
