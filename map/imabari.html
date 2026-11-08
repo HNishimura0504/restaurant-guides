@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>今治 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>今治 の食べ歩き地図<span class="n">51店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="今治 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">今治 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/ehime/imabari.html"><span class="sn-e">📄</span>今治のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（107都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "五味鳥", "c": ["和食"], "v": "レストラン", "lat": 34.064636, "lng": 132.997192, "d": "かわ(皮焼き)(鉄板で押し焼きした鶏皮。せせり・もも・胸の身がたっぷり混ざる五味鳥独自の配合)／れんこん肉詰め(今治産のブランド野菜「鳥生（とりう）れんこん」に肉を詰めて鉄板で焼く)／ポテサラ(常連の多くが頼む箸休め)", "a": "愛媛県今治市南大門町1-1-13", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BA%94%E5%91%B3%E9%B3%A5%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%8D%97%E5%A4%A7%E9%96%80%E7%94%BA1-1-13", "u": "../japan/ehime/imabari.html#c-imabari-yakitori-gomidori", "food": "../japan/ehime/img/imabari/imabari-yakitori-gomidori.jpg", "ext": "../japan/ehime/img/imabari/imabari-yakitori-gomidori_exterior.jpg"}, {"i": 1, "n": "鳥林", "c": ["和食"], "v": "レストラン", "lat": 34.06559, "lng": 132.996109, "d": "皮(鉄板で押し焼きした鶏皮。外はカリッと、噛むと弾力が残る)／せせり(首まわりの肉。皮と並ぶ看板)／せんざんき(普通の唐揚げより大ぶりで骨付き、肉に下味が付いている今治名物)／蓮根の肉挟み(鉄板焼き)", "a": "愛媛県今治市南大門町1-6-17", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E6%9E%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%8D%97%E5%A4%A7%E9%96%80%E7%94%BA1-6-17", "u": "../japan/ehime/imabari.html#c-imabari-yakitori-toribayashi", "food": "../japan/ehime/img/imabari/imabari-yakitori-toribayashi.jpg", "ext": "../japan/ehime/img/imabari/imabari-yakitori-toribayashi_exterior.jpg"}, {"i": 2, "n": "やきとり 山鳥 今治本店", "c": ["和食"], "v": "レストラン", "lat": 34.06591, "lng": 133.001526, "d": "皮(473円。鉄板に押しつけて焼くのでパリッと仕上がり、脂が落ちてさっぱりする)／せんざんき(3ケ483円。今治発祥とされる鶏の唐揚げ)／レンコン肉詰め(440円)／有精卵のだし巻き玉子(858円)", "a": "愛媛県今治市末広町1-4-7", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%8D%E3%81%A8%E3%82%8A%20%E5%B1%B1%E9%B3%A5%20%E4%BB%8A%E6%B2%BB%E6%9C%AC%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9C%AB%E5%BA%83%E7%94%BA1-4-7", "u": "../japan/ehime/imabari.html#c-imabari-yakitori-sancho", "food": "../japan/ehime/img/imabari/imabari-yakitori-sancho.jpg", "ext": "../japan/ehime/img/imabari/imabari-yakitori-sancho_exterior.jpg"}, {"i": 3, "n": "焼き鳥の店 世渡", "c": ["和食"], "v": "レストラン", "lat": 34.066326, "lng": 133.002167, "d": "皮焼(鉄板で押し焼きした鶏皮。甘辛いタレをからめ、残ったタレに生キャベツをつけて食べる)／せんざんき(今治発祥とされる鶏の唐揚げ。やや甘めの下味)／ピーマン焼き(平たく潰したピーマンに鶏肉を詰めて鉄板で焼く)／とり酢(こりこりした鶏肉をもみじおろしとポン酢で)", "a": "愛媛県今治市黄金町1-5-20", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E3%81%8D%E9%B3%A5%E3%81%AE%E5%BA%97%20%E4%B8%96%E6%B8%A1%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E9%BB%84%E9%87%91%E7%94%BA1-5-20", "u": "../japan/ehime/imabari.html#c-imabari-yakitori-seto", "food": "../japan/ehime/img/imabari/imabari-yakitori-seto.jpg", "ext": "../japan/ehime/img/imabari/imabari-yakitori-seto_exterior.jpg"}, {"i": 4, "n": "鉄板やきとり 新味鳥 常磐店", "c": ["和食"], "v": "レストラン", "lat": 34.053391, "lng": 132.985931, "d": "かわ(鉄板で焼いた鶏皮。今治焼き鳥の看板)／せんざんき(今治名物の鶏の唐揚げ)／チューリップ(手羽元の揚げ物)／かわ・とりねぎ・砂ずり・きも・ハツ・もつの盛り合わせ", "a": "愛媛県今治市常盤町8-2-14", "m": "https://www.google.com/maps/search/?api=1&query=%E9%89%84%E6%9D%BF%E3%82%84%E3%81%8D%E3%81%A8%E3%82%8A%20%E6%96%B0%E5%91%B3%E9%B3%A5%20%E5%B8%B8%E7%A3%90%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%B8%B8%E7%9B%A4%E7%94%BA8-2-14", "u": "../japan/ehime/imabari.html#c-imabari-yakitori-shinmidori", "food": "../japan/ehime/img/imabari/imabari-yakitori-shinmidori.jpg", "ext": "../japan/ehime/img/imabari/imabari-yakitori-shinmidori_exterior.jpg"}, {"i": 5, "n": "今治焼鳥 まる屋", "c": ["和食"], "v": "レストラン", "lat": 34.058891, "lng": 133.003952, "d": "皮焼(鉄板と鉄の重しで押さえ、油を抜きながらパリパリに焼いた鶏皮。秘伝の甘辛いたれとキャベツで食べる)／もも(鉄板で表面を焼いてから炭火で火を通すハイブリッド焼き)", "a": "愛媛県今治市旭町4-3-32", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BB%8A%E6%B2%BB%E7%84%BC%E9%B3%A5%20%E3%81%BE%E3%82%8B%E5%B1%8B%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%97%AD%E7%94%BA4-3-32", "u": "../japan/ehime/imabari.html#c-imabari-yakitori-maruya", "food": "../japan/ehime/img/imabari/imabari-yakitori-maruya.jpg", "ext": ""}, {"i": 6, "n": "鳥料理 はち八", "c": ["和食"], "v": "レストラン", "lat": 34.04723, "lng": 132.996353, "d": "とり皮(ネギ入り)(刻んだ鶏皮とネギを鉄板で焼いた看板の一品)／若鶏もも焼(レモンを添えた鶏もものステーキ風)／鳥たたき(たっぷりの白髪ねぎとポン酢)", "a": "愛媛県今治市郷本町2-3-8", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E6%96%99%E7%90%86%20%E3%81%AF%E3%81%A1%E5%85%AB%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E9%83%B7%E6%9C%AC%E7%94%BA2-3-8", "u": "../japan/ehime/imabari.html#c-imabari-yakitori-hachihachi", "food": "../japan/ehime/img/imabari/imabari-yakitori-hachihachi.jpg", "ext": "../japan/ehime/img/imabari/imabari-yakitori-hachihachi_exterior.jpg"}, {"i": 7, "n": "居酒屋 頼登", "c": ["和食"], "v": "レストラン", "lat": 34.064247, "lng": 133.002335, "d": "親皮(親鶏の皮を細かく切って鉄板で焼いた看板の一品。噛むほどに味が出る)／せんざんき(今治名物の鶏の唐揚げ)／刺身の盛り合わせ(瀬戸内の魚)", "a": "愛媛県今治市末広町2-2-3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E9%A0%BC%E7%99%BB%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9C%AB%E5%BA%83%E7%94%BA2-2-3", "u": "../japan/ehime/imabari.html#c-imabari-yakitori-yorito", "food": "../japan/ehime/img/imabari/imabari-yakitori-yorito.jpg", "ext": "../japan/ehime/img/imabari/imabari-yakitori-yorito_exterior.jpg"}, {"i": 8, "n": "白楽天 今治本店", "c": ["郷土料理"], "v": "レストラン", "lat": 34.064758, "lng": 132.998947, "d": "元祖焼豚玉子飯(ご飯に焼豚を敷き半熟の目玉焼き2個をのせ、継ぎ足しの甘辛いタレをかける)／焼豚玉子飯「辛玉」(秘伝のタレに辛味と特製ラー油を加えた55周年記念の一品。砥部焼・梅山窯の専用の器で出す)／白楽天定食(八宝菜と日替わり料理にご飯・スープ・サラダ)", "a": "愛媛県今治市常盤町4-1-19", "m": "https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E6%A5%BD%E5%A4%A9%20%E4%BB%8A%E6%B2%BB%E6%9C%AC%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%B8%B8%E7%9B%A4%E7%94%BA4-1-19", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-hakurakuten", "food": "../japan/ehime/img/imabari/imabari-kyodo-hakurakuten.jpg", "ext": "../japan/ehime/img/imabari/imabari-kyodo-hakurakuten_exterior.jpg"}, {"i": 9, "n": "大黒屋飯店", "c": ["郷土料理"], "v": "レストラン", "lat": 34.045612, "lng": 133.022446, "d": "焼豚玉子飯(秘伝のタレで煮込んだ焼豚と目玉焼きをのせた丼。混ぜて食べる)／ラーメン(屋台時代から60年変えていないあっさり醤油)／とり唐セット(ライス大盛り無料。200円増でミニ焼飯、300円増でミニ焼豚玉子飯に変更可)", "a": "愛媛県今治市喜田村6-1-23", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%BB%92%E5%B1%8B%E9%A3%AF%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%96%9C%E7%94%B0%E6%9D%916-1-23", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-daikokuya-hanten", "food": "../japan/ehime/img/imabari/imabari-kyodo-daikokuya-hanten.jpg", "ext": ""}, {"i": 10, "n": "海峡料理 伊豫水軍", "c": ["郷土料理"], "v": "レストラン", "lat": 34.09288, "lng": 132.989822, "d": "宝楽焼き(ほうらくやき＝熱した石を敷いた器に鯛や貝を並べて蒸し焼きにする漁師料理。2人前から)／来島定食(刺身・天ぷらに鯛の釜めしが付く)／海峡造り(来島海峡で獲れた魚と貝の刺身の盛り合わせ。3人前から)", "a": "愛媛県今治市湊町2-6-37", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E5%B3%A1%E6%96%99%E7%90%86%20%E4%BC%8A%E8%B1%AB%E6%B0%B4%E8%BB%8D%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%B9%8A%E7%94%BA2-6-37", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-iyosuigun", "food": "../japan/ehime/img/imabari/imabari-kyodo-iyosuigun.jpg", "ext": "../japan/ehime/img/imabari/imabari-kyodo-iyosuigun_exterior.jpg"}, {"i": 11, "n": "錦海楼", "c": ["郷土料理"], "v": "レストラン", "lat": 34.062824, "lng": 133.009262, "d": "焼き豚玉子飯(甘辛いタレと半熟玉子とチャーシューが混ざる今治名物。当店のタレは薄めでまろやか)／レバニラ炒め(甘めの味つけ)／エビチリソース(辛さを好みに調整してくれる)", "a": "愛媛県今治市美須賀町2-2-4", "m": "https://www.google.com/maps/search/?api=1&query=%E9%8C%A6%E6%B5%B7%E6%A5%BC%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E7%BE%8E%E9%A0%88%E8%B3%80%E7%94%BA2-2-4", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-kinkairou", "food": "../japan/ehime/img/imabari/imabari-kyodo-kinkairou.jpg", "ext": "../japan/ehime/img/imabari/imabari-kyodo-kinkairou_exterior.jpg"}, {"i": 12, "n": "ぎょうざの店 白雅", "c": ["郷土料理"], "v": "レストラン", "lat": 34.068378, "lng": 133.000229, "d": "焼ぎょうざ(表面はパリパリ、中はもちもち。少し厚めの皮は手作りの証)／水ぎょうざ(あっさりして餡の旨みが直に伝わる)／中華そば(醤油ベースのあっさりしたスープにコシのある麺)", "a": "愛媛県今治市共栄町2-3-9", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8E%E3%82%87%E3%81%86%E3%81%96%E3%81%AE%E5%BA%97%20%E7%99%BD%E9%9B%85%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%85%B1%E6%A0%84%E7%94%BA2-3-9", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-hakuga", "food": "../japan/ehime/img/imabari/imabari-kyodo-hakuga.jpg", "ext": "../japan/ehime/img/imabari/imabari-kyodo-hakuga_exterior.jpg"}, {"i": 13, "n": "道の駅よしうみいきいき館（いきいき館レストラン・海鮮七輪バーベキュー）", "c": ["郷土料理"], "v": "レストラン", "lat": 34.127714, "lng": 133.021721, "d": "海鮮七輪バーベキュー(貝3〜4種・イカ串・エビを自分で炭火焼きにする。鯛めしは事前予約で追加できる)／せんざんき定食(今治のソウルフードの鶏の唐揚げ)／鯛丼 宇和島風(刺身をタレと卵にからめてご飯にのせる)／来島御膳(刺身・天ぷら・小鉢の定食)", "a": "愛媛県今治市吉海町名4520-2", "m": "https://www.google.com/maps/search/?api=1&query=%E9%81%93%E3%81%AE%E9%A7%85%E3%82%88%E3%81%97%E3%81%86%E3%81%BF%E3%81%84%E3%81%8D%E3%81%84%E3%81%8D%E9%A4%A8%EF%BC%88%E3%81%84%E3%81%8D%E3%81%84%E3%81%8D%E9%A4%A8%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%BB%E6%B5%B7%E9%AE%AE%E4%B8%83%E8%BC%AA%E3%83%90%E3%83%BC%E3%83%99%E3%82%AD%E3%83%A5%E3%83%BC%EF%BC%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%90%89%E6%B5%B7%E7%94%BA%E5%90%8D4520-2", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-ikiikikan", "food": "../japan/ehime/img/imabari/imabari-kyodo-ikiikikan.jpg", "ext": "../japan/ehime/img/imabari/imabari-kyodo-ikiikikan_exterior.jpg"}, {"i": 14, "n": "蓬莱閣 今治", "c": ["郷土料理"], "v": "レストラン", "lat": 34.041374, "lng": 133.02739, "d": "ちゃんぽん麺(野菜たっぷりで当店いちばんの人気)／鶏唐揚げ(一つが大きく量も多い。今治の鶏の揚げ物を気軽に試せる)／中華定食(酢豚と八宝菜が一度に付く定食)", "a": "愛媛県今治市拝志5-12", "m": "https://www.google.com/maps/search/?api=1&query=%E8%93%AC%E8%8E%B1%E9%96%A3%20%E4%BB%8A%E6%B2%BB%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%8B%9D%E5%BF%975-12", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-horaikaku", "food": "../japan/ehime/img/imabari/imabari-kyodo-horaikaku.jpg", "ext": ""}, {"i": 15, "n": "笹 今治", "c": ["郷土料理"], "v": "レストラン", "lat": 34.068497, "lng": 133.000427, "d": "せんざんき(今治発祥とされる鶏の唐揚げ。しっかり下味が付いている)／くるしま旬膳(刺身・天ぷら付きの御膳。ご飯を3種類から選べる)／うどんすき(季節の魚・肉・野菜を入れた鍋。二人前から)", "a": "愛媛県今治市栄町2-1-3", "m": "https://www.google.com/maps/search/?api=1&query=%E7%AC%B9%20%E4%BB%8A%E6%B2%BB%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%A0%84%E7%94%BA2-1-3", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-sasa", "food": "../japan/ehime/img/imabari/imabari-kyodo-sasa.jpg", "ext": ""}, {"i": 16, "n": "お好み焼き ユウタ", "c": ["郷土料理"], "v": "レストラン", "lat": 34.070461, "lng": 133.003723, "d": "焼豚玉子飯(品書きに無い隠れメニュー。鉄板で焼いた豚肉と目玉焼きに甘いタレ)／海鮮焼き(生地がスフレのようにふわふわのお好み焼き。甘めのソースを2種類塗る)／おでん(夏の「おんまく」でも店頭で売る名物)", "a": "愛媛県今治市片原町2-1-25", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E3%83%A6%E3%82%A6%E3%82%BF%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E7%89%87%E5%8E%9F%E7%94%BA2-1-25", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-yuta", "food": "../japan/ehime/img/imabari/imabari-kyodo-yuta.jpg", "ext": ""}, {"i": 17, "n": "うどん酒房 ちから", "c": ["郷土料理"], "v": "レストラン", "lat": 34.104351, "lng": 132.964096, "d": "波止浜うどん(玉ねぎ油をからめた店主考案のご当地うどん)／焼豚玉子飯(今治名物をうどん店で。ご飯に焼豚と半熟目玉焼き、甘辛いタレ)／キングカレー(うどんの下にチーズとご飯が隠れているカレーうどん)／おでん(1本80円から)", "a": "愛媛県今治市地堀2-2-28 3番町マンション103号", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E9%85%92%E6%88%BF%20%E3%81%A1%E3%81%8B%E3%82%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%9C%B0%E5%A0%802-2-28%203%E7%95%AA%E7%94%BA%E3%83%9E%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3103%E5%8F%B7", "u": "../japan/ehime/imabari.html#c-imabari-kyodo-chikara", "food": "../japan/ehime/img/imabari/imabari-kyodo-chikara.jpg", "ext": ""}, {"i": 18, "n": "今治カクテル＆フード Bar ANCHOR", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.067959, "lng": 133.004623, "d": "ANCHOR名物 真鯛のフィッシュ&チップス(来島海峡の真鯛をエールビールの衣で包み米油で揚げる)／元漁師の目利きした真鯛のお刺身(急流で締まった身とコリコリした歯応え)／真鯛と穴子のアラ出汁塩ラーメン(アラを店内で8時間煮込んだスープ・〆の一杯)", "a": "愛媛県今治市恵美須町1-1-17", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BB%8A%E6%B2%BB%E3%82%AB%E3%82%AF%E3%83%86%E3%83%AB%EF%BC%86%E3%83%95%E3%83%BC%E3%83%89%20Bar%20ANCHOR%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%81%B5%E7%BE%8E%E9%A0%88%E7%94%BA1-1-17", "u": "../japan/ehime/imabari.html#c-imabari-kaisen-anchor", "food": "../japan/ehime/img/imabari/imabari-kaisen-anchor.jpg", "ext": ""}, {"i": 19, "n": "和食の店 みよし", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.071278, "lng": 133.000351, "d": "とり貝ぬた(瀬戸内のとり貝を酢みそで)／黒バイガイ(貝の煮付け)／小イワシの煮炊き(瀬戸内の小魚の定番)／その日その日の美味しさをのせた大皿(日替わりの惣菜を大皿で並べる)", "a": "愛媛県今治市本町4-1-24", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E9%A3%9F%E3%81%AE%E5%BA%97%20%E3%81%BF%E3%82%88%E3%81%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9C%AC%E7%94%BA4-1-24", "u": "../japan/ehime/imabari.html#c-imabari-kaisen-miyoshi", "food": "../japan/ehime/img/imabari/imabari-kaisen-miyoshi.jpg", "ext": "../japan/ehime/img/imabari/imabari-kaisen-miyoshi_exterior.jpg"}, {"i": 20, "n": "健寿司", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.048176, "lng": 133.017212, "d": "上寿司(瀬戸内産の旬の魚。シャリは程よくまとまって魚になじむ。1,800円)／巻き寿司(アナゴと玉子の定番。850円)／つきだし(貝・イカ・季節の野菜を酢みそで)／くえ鍋(冬の名物)", "a": "愛媛県今治市衣干町3丁目2-10", "m": "https://www.google.com/maps/search/?api=1&query=%E5%81%A5%E5%AF%BF%E5%8F%B8%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E8%A1%A3%E5%B9%B2%E7%94%BA3%E4%B8%81%E7%9B%AE2-10", "u": "../japan/ehime/imabari.html#c-imabari-kaisen-kensushi", "food": "../japan/ehime/img/imabari/imabari-kaisen-kensushi.jpg", "ext": ""}, {"i": 21, "n": "たわら", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.04047, "lng": 132.976044, "d": "海鮮丼(その時期いちばん旬の素材で作るので内容が変わる。1,050円)／上にぎり(厳選した地ものの魚。1,575円)／とり皮焼(今治産の鶏をじっくり焼き上げる。367円)", "a": "愛媛県今治市別名112", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%82%8F%E3%82%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%88%A5%E5%90%8D112", "u": "../japan/ehime/imabari.html#c-imabari-kaisen-tawara", "food": "../japan/ehime/img/imabari/imabari-kaisen-tawara.jpg", "ext": ""}, {"i": 22, "n": "海鮮 うおきん食堂 今治新都市店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.044254, "lng": 132.962463, "d": "うおきん定食(刺身が舟盛りで出る看板の定食)／カツオの藁焼き定食(本場さながらの藁焼き。5切れ・7切れ1,880円・9切れ2,200円)／うおきんの海鮮丼／寿司盛り合わせ8貫・10貫(味噌汁付き)", "a": "愛媛県今治市にぎわい広場1-1 イオンモール今治新都市 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%20%E3%81%86%E3%81%8A%E3%81%8D%E3%82%93%E9%A3%9F%E5%A0%82%20%E4%BB%8A%E6%B2%BB%E6%96%B0%E9%83%BD%E5%B8%82%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E3%81%AB%E3%81%8E%E3%82%8F%E3%81%84%E5%BA%83%E5%A0%B41-1%20%E3%82%A4%E3%82%AA%E3%83%B3%E3%83%A2%E3%83%BC%E3%83%AB%E4%BB%8A%E6%B2%BB%E6%96%B0%E9%83%BD%E5%B8%82%201%E9%9A%8E", "u": "../japan/ehime/imabari.html#c-imabari-kaisen-uokinshokudo", "food": "../japan/ehime/img/imabari/imabari-kaisen-uokinshokudo.jpg", "ext": ""}, {"i": 23, "n": "寿し・しゃぶしゃぶ 喜多寿し", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 34.172737, "lng": 133.074661, "d": "しまなみ御膳(せんざんき・鯛釜飯・茶碗蒸しなど今治名物を集めた昼の御膳。2,838円)／喜多御膳(お造り・ホタテグラタン・握り5貫ほか全10品。4,818円)／鯛のお吸い物(鯛をじっくり煮出し、しまなみのレモンと鯛のカマを添える。御膳と握りに付く)／大きなネタの握り寿司", "a": "愛媛県今治市宮窪町宮窪2214", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%E3%83%BB%E3%81%97%E3%82%83%E3%81%B6%E3%81%97%E3%82%83%E3%81%B6%20%E5%96%9C%E5%A4%9A%E5%AF%BF%E3%81%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%AE%AE%E7%AA%AA%E7%94%BA%E5%AE%AE%E7%AA%AA2214", "u": "../japan/ehime/imabari.html#c-imabari-kaisen-kitazushi", "food": "../japan/ehime/img/imabari/imabari-kaisen-kitazushi.jpg", "ext": ""}, {"i": 24, "n": "炉ばた焼き酒仙", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "食材の店", "lat": 34.064137, "lng": 133.002014, "d": "地酒 山丹正宗（今治・八木酒造部の銘酒。蒼社川の伏流水で醸す。1合440円）／お刺身盛合せ（瀬戸内の鮮魚）／名物だし巻き玉子／せんざんき（今治発祥とされる鶏の唐揚げ）／城川郷（愛媛・西予市の日本酒 770円）", "a": "愛媛県今治市松本町2-1-11", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%89%E3%81%B0%E3%81%9F%E7%84%BC%E3%81%8D%E9%85%92%E4%BB%99%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9D%BE%E6%9C%AC%E7%94%BA2-1-11", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-robatayaki-shusen", "food": "../japan/ehime/img/imabari/imabari-izakaya-robatayaki-shusen.jpg", "ext": ""}, {"i": 25, "n": "Motsunabe＆Dining つぼ吉", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.065315, "lng": 133.000473, "d": "もつ鍋（1人前から3人前まで。1人盛りあり）／全国の梅酒 約200種（賀儀屋の無濾過完熟梅酒＝西条・成龍酒造 700円／梅助＝今治・八木酒造部の今治初の地産地消梅酒 750円）／大三島サーモンのユッケ／12種類の付きだし", "a": "愛媛県今治市松本町1-4-10", "m": "https://www.google.com/maps/search/?api=1&query=Motsunabe%EF%BC%86Dining%20%E3%81%A4%E3%81%BC%E5%90%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9D%BE%E6%9C%AC%E7%94%BA1-4-10", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-tsubokichi", "food": "../japan/ehime/img/imabari/imabari-izakaya-tsubokichi.jpg", "ext": ""}, {"i": 26, "n": "千倉", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 34.065964, "lng": 133.000534, "d": "刺身盛合せ（瀬戸内の鮮魚）／小イワシ梅しそはさみ揚（小イワシに梅しそをはさんで揚げる）／山芋トーフお好み焼き", "a": "愛媛県今治市松本町1-1-11", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%83%E5%80%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9D%BE%E6%9C%AC%E7%94%BA1-1-11", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-chikura", "food": "../japan/ehime/img/imabari/imabari-izakaya-chikura.jpg", "ext": ""}, {"i": 27, "n": "がらじ", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 34.068317, "lng": 133.002319, "d": "国産もつ鍋（1人前880円〜）／とり皮焼き・鳥皮（塩焼・タレ焼・ポン酢）／せんざんき／日本酒 山丹正宗（今治の地酒 550円）", "a": "愛媛県今治市米屋町1-2-14", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8C%E3%82%89%E3%81%98%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E7%B1%B3%E5%B1%8B%E7%94%BA1-2-14", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-garaji", "food": "../japan/ehime/img/imabari/imabari-izakaya-garaji.jpg", "ext": ""}, {"i": 28, "n": "是食（ぜくう） 今治", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.06461, "lng": 133.001053, "d": "スペイン風えびのピルピル（殻付きのえびをにんにくと鷹の爪でオリーブオイル煮に）／つくつくチーズ（自家製トマトソースにつくねを沈め、チーズをのせて焼く）／日本酒 石鎚（愛媛・西条 550円）", "a": "愛媛県今治市松本町1-7-2 片岡ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%98%AF%E9%A3%9F%EF%BC%88%E3%81%9C%E3%81%8F%E3%81%86%EF%BC%89%20%E4%BB%8A%E6%B2%BB%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9D%BE%E6%9C%AC%E7%94%BA1-7-2%20%E7%89%87%E5%B2%A1%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-zekuu", "food": "../japan/ehime/img/imabari/imabari-izakaya-zekuu.jpg", "ext": ""}, {"i": 29, "n": "居酒屋 心ろく", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 34.054195, "lng": 132.991455, "d": "肉じゃが心ろく（店名を冠した看板の煮物）／お造り盛合せ（瀬戸内の鮮魚）／鯛茶漬け（締めの一品）", "a": "愛媛県今治市泉川町2-4-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%BF%83%E3%82%8D%E3%81%8F%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%B3%89%E5%B7%9D%E7%94%BA2-4-1", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-shinroku", "food": "../japan/ehime/img/imabari/imabari-izakaya-shinroku.jpg", "ext": ""}, {"i": 30, "n": "天馬", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.059711, "lng": 133.001923, "d": "骨付き 親（かたい親鶏のもも肉を骨付きのまま焼く）／ハギ刺身（活魚）／穴子刺身", "a": "愛媛県今治市南宝来町2-8-4", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E9%A6%AC%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%8D%97%E5%AE%9D%E6%9D%A5%E7%94%BA2-8-4", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-tenma", "food": "../japan/ehime/img/imabari/imabari-izakaya-tenma.jpg", "ext": ""}, {"i": 31, "n": "とんがらし", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "レストラン", "lat": 34.065678, "lng": 133.000061, "d": "ゴロッゴロッサラダ（大ぶりに切った具を盛る名物サラダ）／名古屋フグのさしみ／タイ風カレー風味キッシュ", "a": "愛媛県今治市松本町1-2-8", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%93%E3%81%8C%E3%82%89%E3%81%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9D%BE%E6%9C%AC%E7%94%BA1-2-8", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-tongarashi", "food": "../japan/ehime/img/imabari/imabari-izakaya-tongarashi.jpg", "ext": ""}, {"i": 32, "n": "瀬戸の坊ったん", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 34.063721, "lng": 132.957504, "d": "串焼き 7種盛／若鶏唐揚／マチュドニアロッソ（店の洋風の一品）", "a": "愛媛県今治市延喜甲249-27", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E3%81%AE%E5%9D%8A%E3%81%A3%E3%81%9F%E3%82%93%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%BB%B6%E5%96%9C%E7%94%B2249-27", "u": "../japan/ehime/imabari.html#c-imabari-izakaya-seto-no-bottan", "food": "../japan/ehime/img/imabari/imabari-izakaya-seto-no-bottan.jpg", "ext": "../japan/ehime/img/imabari/imabari-izakaya-seto-no-bottan_exterior.jpg"}, {"i": 33, "n": "カフェ・ド・クイーンベル", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.070213, "lng": 133.00351, "d": "ビジネスランチ(ハンバーグ・エビフライ・スパゲティが一皿に載る盛り合わせ)／若鶏のカニクリームはさみ揚げ(鶏肉でカニクリームを挟んで揚げ、自家製デミグラスソースをかける)／ジンジャーライス(特製ピラフの上に自家製ソースをからめた豚のしょうが焼きを載せる)", "a": "愛媛県今治市中浜町2-2-27", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%83%89%E3%83%BB%E3%82%AF%E3%82%A4%E3%83%BC%E3%83%B3%E3%83%99%E3%83%AB%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E4%B8%AD%E6%B5%9C%E7%94%BA2-2-27", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-queenbelle", "food": "../japan/ehime/img/imabari/imabari-yoshoku-queenbelle.jpg", "ext": "../japan/ehime/img/imabari/imabari-yoshoku-queenbelle_exterior.jpg"}, {"i": 34, "n": "キッチン エム", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.045464, "lng": 132.998657, "d": "キッチンMのオムライス(ライスと玉子を先に混ぜ、ふわとろの玉子を全体に行き渡らせる)／豚カツ玉子丼(厚いカツを秘伝のたれとふわふわの玉子でとじる)／ハンバーグカレー(洋食屋のコクのある甘口ルーに手作りハンバーグを載せる)", "a": "愛媛県今治市郷六ケ内町1-5-25", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%20%E3%82%A8%E3%83%A0%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E9%83%B7%E5%85%AD%E3%82%B1%E5%86%85%E7%94%BA1-5-25", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-kitchen-m", "food": "../japan/ehime/img/imabari/imabari-yoshoku-kitchen-m.jpg", "ext": ""}, {"i": 35, "n": "欧風イタリア食堂 グラッチャーノ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.05743, "lng": 132.979385, "d": "牛フィレ肉ビーフカツライス 1,320円(揚げた牛フィレカツ・ピラフ・煮込みデミグラスソース)／石窯のナポリピッツァ(表面はぱりっと、縁はもっちり)／カロータドレッシングのサラダ(にんじんをふんだんに使った自家製ドレッシング)", "a": "愛媛県今治市馬越町3-3-36", "m": "https://www.google.com/maps/search/?api=1&query=%E6%AC%A7%E9%A2%A8%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E9%A3%9F%E5%A0%82%20%E3%82%B0%E3%83%A9%E3%83%83%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8E%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E9%A6%AC%E8%B6%8A%E7%94%BA3-3-36", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-gracciano", "food": "../japan/ehime/img/imabari/imabari-yoshoku-gracciano.jpg", "ext": "../japan/ehime/img/imabari/imabari-yoshoku-gracciano_exterior.jpg"}, {"i": 36, "n": "ピザハウスふじい 中浜店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.070045, "lng": 133.003159, "d": "ピザ(熟成チーズをたっぷり載せた薄生地。大・中・小から選べる)／パイナップルベーコン(チーズの塩気とパイナップルの甘みを合わせた、今治では珍しいピザ)", "a": "愛媛県今治市中浜町2-1-12", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%94%E3%82%B6%E3%83%8F%E3%82%A6%E3%82%B9%E3%81%B5%E3%81%98%E3%81%84%20%E4%B8%AD%E6%B5%9C%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E4%B8%AD%E6%B5%9C%E7%94%BA2-1-12", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-pizzahouse-fujii", "food": "../japan/ehime/img/imabari/imabari-yoshoku-pizzahouse-fujii.jpg", "ext": "../japan/ehime/img/imabari/imabari-yoshoku-pizzahouse-fujii_exterior.jpg"}, {"i": 37, "n": "ピッツェリア アウストロ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.109238, "lng": 132.94281, "d": "ピッツァ マルゲリータ(ナポリ直輸入の薪窯で焼く。とろりとしたチーズが看板)／前菜の盛り合わせ(2人前の大皿で、魚介のマリネや揚げパン＝ゼッポリーネなど日替わりで数種)", "a": "愛媛県今治市波方町養老乙327-12", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%94%E3%83%83%E3%83%84%E3%82%A7%E3%83%AA%E3%82%A2%20%E3%82%A2%E3%82%A6%E3%82%B9%E3%83%88%E3%83%AD%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%B3%A2%E6%96%B9%E7%94%BA%E9%A4%8A%E8%80%81%E4%B9%99327-12", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-austro", "food": "../japan/ehime/img/imabari/imabari-yoshoku-austro.jpg", "ext": "../japan/ehime/img/imabari/imabari-yoshoku-austro_exterior.jpg"}, {"i": 38, "n": "トラットリア アズーリ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.065315, "lng": 133.000473, "d": "ずわいがにのトマトクリームパスタ(ほぐした蟹肉をたっぷり使う看板のパスタ)／前菜の盛り合わせ(その日の料理を少しずつ載せた一皿)／牡蠣グラタン(秋冬の定番。大粒の牡蠣を使う)", "a": "愛媛県今治市松本町1-4-2 ヤン写真館1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%88%E3%83%A9%E3%83%83%E3%83%88%E3%83%AA%E3%82%A2%20%E3%82%A2%E3%82%BA%E3%83%BC%E3%83%AA%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9D%BE%E6%9C%AC%E7%94%BA1-4-2%20%E3%83%A4%E3%83%B3%E5%86%99%E7%9C%9F%E9%A4%A81F", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-azzurri", "food": "../japan/ehime/img/imabari/imabari-yoshoku-azzurri.jpg", "ext": ""}, {"i": 39, "n": "ワイン食堂 gosSoya", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.064758, "lng": 132.998947, "d": "gosSoyaの煮豚(看板料理)／自家製ボイルハム／ドルチェポルコ 肩ロースのグリル／リングイッサ(ブラジル風の粗びきソーセージ)", "a": "愛媛県今治市常盤町4-1-13", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AF%E3%82%A4%E3%83%B3%E9%A3%9F%E5%A0%82%20gosSoya%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%B8%B8%E7%9B%A4%E7%94%BA4-1-13", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-gossoya", "food": "../japan/ehime/img/imabari/imabari-yoshoku-gossoya.jpg", "ext": ""}, {"i": 40, "n": "ナマステ食堂 今治ワールドプラザ店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 34.042542, "lng": 133.026886, "d": "ランチのナン・ライス食べ放題(サラダ・ドリンク付き。カレーの辛さを選べる)／バターチキンカレー(炭火で焼いたタンドリーチキンが入る)／チーズナン(二枚目の定番)", "a": "愛媛県今治市東村1-14-2 ワールドプラザ1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%8A%E3%83%9E%E3%82%B9%E3%83%86%E9%A3%9F%E5%A0%82%20%E4%BB%8A%E6%B2%BB%E3%83%AF%E3%83%BC%E3%83%AB%E3%83%89%E3%83%97%E3%83%A9%E3%82%B6%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E6%9D%B1%E6%9D%911-14-2%20%E3%83%AF%E3%83%BC%E3%83%AB%E3%83%89%E3%83%97%E3%83%A9%E3%82%B61F", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-namaste", "food": "../japan/ehime/img/imabari/imabari-yoshoku-namaste.jpg", "ext": ""}, {"i": 41, "n": "マルブン 小松本店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.895889, "lng": 133.112381, "d": "愛媛西条ナポリタン(鉄板に卵を敷き、ナポリタンとソーセージを盛る西条のソウルフード)／マルブン名物「とり天」4個／ココナッツエンジェルフードケーキ", "a": "愛媛県西条市小松町新屋敷甲407-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%83%AB%E3%83%96%E3%83%B3%20%E5%B0%8F%E6%9D%BE%E6%9C%AC%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E8%A5%BF%E6%9D%A1%E5%B8%82%E5%B0%8F%E6%9D%BE%E7%94%BA%E6%96%B0%E5%B1%8B%E6%95%B7%E7%94%B2407-1", "u": "../japan/ehime/imabari.html#c-imabari-yoshoku-marubun-komatsu", "food": "../japan/ehime/img/imabari/imabari-yoshoku-marubun-komatsu.jpg", "ext": "../japan/ehime/img/imabari/imabari-yoshoku-marubun-komatsu_exterior.jpg"}, {"i": 42, "n": "登泉堂", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.042183, "lng": 133.00293, "d": "あまおうミルク金時(中まで赤い苺だけを使った自家製シロップ。1,300円)／ぜんざい(杵つき餅と栗入り。560円)／登泉堂抹茶パフェ(静岡県産高級抹茶使用。900円)", "a": "愛媛県今治市郷新屋敷町2丁目5-30", "m": "https://www.google.com/maps/search/?api=1&query=%E7%99%BB%E6%B3%89%E5%A0%82%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E9%83%B7%E6%96%B0%E5%B1%8B%E6%95%B7%E7%94%BA2%E4%B8%81%E7%9B%AE5-30", "u": "../japan/ehime/imabari.html#c-imabari-cafe-tosendo", "food": "../japan/ehime/img/imabari/imabari-cafe-tosendo.jpg", "ext": ""}, {"i": 43, "n": "WAKKA", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.264148, "lng": 133.043288, "d": "季節のフルーツワッフル 大三島のはちみつがけ(1,350円)／レモンのクリームタルト(750円)／WAKKAレモネード(650円)・島の農家さんのみかんジュース(800円)／WAKKAカレー(愛媛県産牛と島のみかんチャツネ。2,300円)", "a": "愛媛県今治市上浦町井口6691-1", "m": "https://www.google.com/maps/search/?api=1&query=WAKKA%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E4%B8%8A%E6%B5%A6%E7%94%BA%E4%BA%95%E5%8F%A36691-1", "u": "../japan/ehime/imabari.html#c-imabari-cafe-wakka", "food": "../japan/ehime/img/imabari/imabari-cafe-wakka.jpg", "ext": "../japan/ehime/img/imabari/imabari-cafe-wakka_exterior.jpg"}, {"i": 44, "n": "Barrel Coffee & Roasters（バレルコーヒーアンドロースターズ）", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.053555, "lng": 133.015549, "d": "自家焙煎のドリップコーヒー(「あっさり」「しっかり」など濃さの注文ができる)／エスプレッソ／フルーツとコーヒーを合わせたドリンク／ショーケースのケーキとクロワッサン", "a": "愛媛県今治市北高下町1-4-44", "m": "https://www.google.com/maps/search/?api=1&query=Barrel%20Coffee%20%26%20Roasters%EF%BC%88%E3%83%90%E3%83%AC%E3%83%AB%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%E3%82%A2%E3%83%B3%E3%83%89%E3%83%AD%E3%83%BC%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA%EF%BC%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%8C%97%E9%AB%98%E4%B8%8B%E7%94%BA1-4-44", "u": "../japan/ehime/imabari.html#c-imabari-cafe-barrel-coffee-roasters", "food": "../japan/ehime/img/imabari/imabari-cafe-barrel-coffee-roasters.jpg", "ext": ""}, {"i": 45, "n": "Ondata Coffee（オンダータコーヒー）", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.084675, "lng": 132.993546, "d": "エスプレッソのグラニータ(淹れたてのエスプレッソを凍らせたイタリアの夏の氷菓)／クラシコ 欧風カレー(店内で焙煎した小麦粉とバター、黒毛和牛。1,200円)／マラサダ(ハワイの生ドーナツ)／自家焙煎の珈琲", "a": "愛媛県今治市大新田町1丁目4-48", "m": "https://www.google.com/maps/search/?api=1&query=Ondata%20Coffee%EF%BC%88%E3%82%AA%E3%83%B3%E3%83%80%E3%83%BC%E3%82%BF%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%EF%BC%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%A4%A7%E6%96%B0%E7%94%B0%E7%94%BA1%E4%B8%81%E7%9B%AE4-48", "u": "../japan/ehime/imabari.html#c-imabari-cafe-ondata-coffee", "food": "../japan/ehime/img/imabari/imabari-cafe-ondata-coffee.jpg", "ext": "../japan/ehime/img/imabari/imabari-cafe-ondata-coffee_exterior.jpg"}, {"i": 46, "n": "Cafe Shozan（カフェ ショザン）", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.157562, "lng": 133.047775, "d": "ケーキセット(本日のケーキ2種とアイス、ドリンクが付く。1,000円)／マフィンセット(自家製マフィンとドリンク。800円)／ビーフカレー(1,100円)／100％ストレートオレンジジュース(600円)", "a": "愛媛県今治市吉海町福田119", "m": "https://www.google.com/maps/search/?api=1&query=Cafe%20Shozan%EF%BC%88%E3%82%AB%E3%83%95%E3%82%A7%20%E3%82%B7%E3%83%A7%E3%82%B6%E3%83%B3%EF%BC%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%90%89%E6%B5%B7%E7%94%BA%E7%A6%8F%E7%94%B0119", "u": "../japan/ehime/imabari.html#c-imabari-cafe-shozan", "food": "../japan/ehime/img/imabari/imabari-cafe-shozan.jpg", "ext": ""}, {"i": 47, "n": "munimal cafe -眼福-（ムニマルカフェ）", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.288586, "lng": 133.016998, "d": "円相ブレンド(ワイングラスで供される自家焙煎のオリジナルブレンド。アイス1,450円)／瀬戸内レモンスカッシュ(680円)／藻塩アイス(伯方塩業の「されど塩 藻塩」を使った塩アイス。450円)／焙香プリン(ほうじ茶と吉野本葛。450円)／ムニマルカレー", "a": "愛媛県今治市上浦町盛3113", "m": "https://www.google.com/maps/search/?api=1&query=munimal%20cafe%20-%E7%9C%BC%E7%A6%8F-%EF%BC%88%E3%83%A0%E3%83%8B%E3%83%9E%E3%83%AB%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E4%B8%8A%E6%B5%A6%E7%94%BA%E7%9B%9B3113", "u": "../japan/ehime/imabari.html#c-imabari-cafe-munimal", "food": "../japan/ehime/img/imabari/imabari-cafe-munimal.jpg", "ext": "../japan/ehime/img/imabari/imabari-cafe-munimal_exterior.jpg"}, {"i": 48, "n": "Cafe & Bake NAKAMURAYA（カフェ アンド ベイク ナカムラヤ）", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.068489, "lng": 133.004227, "d": "エスプレッソ(400円)／カフェラテ(600円)／プリンアフォガート(自家製カスタードプリンにエスプレッソ。単品900円・ドリンク＋750円)／ベーグルサンド(ドリンク＋650円)／みかんジュース(600円)", "a": "愛媛県今治市常盤町1丁目4番地3", "m": "https://www.google.com/maps/search/?api=1&query=Cafe%20%26%20Bake%20NAKAMURAYA%EF%BC%88%E3%82%AB%E3%83%95%E3%82%A7%20%E3%82%A2%E3%83%B3%E3%83%89%20%E3%83%99%E3%82%A4%E3%82%AF%20%E3%83%8A%E3%82%AB%E3%83%A0%E3%83%A9%E3%83%A4%EF%BC%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E5%B8%B8%E7%9B%A4%E7%94%BA1%E4%B8%81%E7%9B%AE4%E7%95%AA%E5%9C%B03", "u": "../japan/ehime/imabari.html#c-imabari-cafe-nakamuraya", "food": "../japan/ehime/img/imabari/imabari-cafe-nakamuraya.jpg", "ext": "../japan/ehime/img/imabari/imabari-cafe-nakamuraya_exterior.jpg"}, {"i": 49, "n": "カフェ・マグノリア（Cafe Magnolia）", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 34.003204, "lng": 132.934189, "d": "マクロビオティックランチ(鉄羽釜炊き天日干し玄米ご飯と季節の野菜料理。1,800円・11:00〜14:00)／玄米ごはん(終日注文できる定食。1,000円)／有機米粉ロールケーキ(砂糖・卵・乳製品不使用、クリームは国産豆腐。850円)／オーガニックコーヒー(500円)", "a": "愛媛県今治市玉川町長谷甲1060-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%83%9E%E3%82%B0%E3%83%8E%E3%83%AA%E3%82%A2%EF%BC%88Cafe%20Magnolia%EF%BC%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E7%8E%89%E5%B7%9D%E7%94%BA%E9%95%B7%E8%B0%B7%E7%94%B21060-1", "u": "../japan/ehime/imabari.html#c-imabari-cafe-magnolia", "food": "../japan/ehime/img/imabari/imabari-cafe-magnolia.jpg", "ext": "../japan/ehime/img/imabari/imabari-cafe-magnolia_exterior.jpg"}, {"i": 50, "n": "カフェ・アーリーブルーメル 上徳店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 34.03363, "lng": 133.013199, "d": "TODAY'Sシフォン(日替わりのシフォンを3種類のアレンジから選ぶ)／カフェラテ(自慢のラテアート付き)／日替わりパスタランチ(日替わりのパンとパスタに、サラダとフルーツが付くワンプレート)／自社ケーキ工房の手作りケーキ", "a": "愛媛県今治市上徳甲727-5", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%83%BB%E3%82%A2%E3%83%BC%E3%83%AA%E3%83%BC%E3%83%96%E3%83%AB%E3%83%BC%E3%83%A1%E3%83%AB%20%E4%B8%8A%E5%BE%B3%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E4%BB%8A%E6%B2%BB%E5%B8%82%E4%B8%8A%E5%BE%B3%E7%94%B2727-5", "u": "../japan/ehime/imabari.html#c-imabari-cafe-early-blumen-kamitoku", "food": "../japan/ehime/img/imabari/imabari-cafe-early-blumen-kamitoku.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([34.071893,133.003024],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('imabari', "今治");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

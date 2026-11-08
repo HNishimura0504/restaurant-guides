@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>松山 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>松山 の食べ歩き地図<span class="n">71店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="松山 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">松山 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/ehime/matsuyama.html"><span class="sn-e">📄</span>松山のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（107都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "鯛めしかどや ロープウェー街店", "c": ["郷土料理"], "v": "レストラン", "lat": 33.843761, "lng": 132.771744, "d": "宇和島鯛めし 1,980円（伊達真鯛の刺身を生卵入りの特製だしに混ぜてご飯にかける南予の漁師めし。炊き込まない方）／宇和島さつまめし 1,380円（焼いた鯛の身を麦味噌と擂り合わせ、麦飯にかける南予の汁飯）／じゃこ天 470円（宇和海のハランボだけをすり身にして揚げたもの）", "a": "愛媛県松山市大街道3丁目7-4 グリーンフォレスト坂の上1階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AF%9B%E3%82%81%E3%81%97%E3%81%8B%E3%81%A9%E3%82%84%20%E3%83%AD%E3%83%BC%E3%83%97%E3%82%A6%E3%82%A7%E3%83%BC%E8%A1%97%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%933%E4%B8%81%E7%9B%AE7-4%20%E3%82%B0%E3%83%AA%E3%83%BC%E3%83%B3%E3%83%95%E3%82%A9%E3%83%AC%E3%82%B9%E3%83%88%E5%9D%82%E3%81%AE%E4%B8%8A1%E9%9A%8E", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-taimeshi-kadoya-ropeway", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-taimeshi-kadoya-ropeway.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-kyodo-taimeshi-kadoya-ropeway_exterior.jpg"}, {"i": 1, "n": "瀬戸内キッチン まともや", "c": ["郷土料理"], "v": "食材の店", "lat": 33.842125, "lng": 132.770462, "d": "宇和島風鯛めし 1,800円（生の鯛の刺身を卵入りのタレで和えて飯にのせる。炊き込まない方）／鯛素麺 1,100円（焼いた鯛の身を五色の素麺にのせた瀬戸内の祝い料理）／刺身 鯛 990円", "a": "愛媛県松山市大街道3丁目3-5", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3%20%E3%81%BE%E3%81%A8%E3%82%82%E3%82%84%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%933%E4%B8%81%E7%9B%AE3-5", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-setouchi-kitchen-matomoya", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-setouchi-kitchen-matomoya.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-kyodo-setouchi-kitchen-matomoya_exterior.jpg"}, {"i": 2, "n": "郷土料理 五志喜", "c": ["郷土料理"], "v": "レストラン", "lat": 33.837975, "lng": 132.768463, "d": "松山鯛めし御膳 2,000円（鯛を米と一緒に炊き込む中予の鯛めし。1日限定20食）／宇和島鯛めし御膳 2,000円（生卵と出汁ダレに鯛の刺身を漬ける南予の鯛めし）／鯛そうめん（姿身）セット 2,950円（天然小鯛を五色そうめんにのせた祝い料理）／じゃこ天・ふくめん", "a": "愛媛県松山市三番町3-5-4", "m": "https://www.google.com/maps/search/?api=1&query=%E9%83%B7%E5%9C%9F%E6%96%99%E7%90%86%20%E4%BA%94%E5%BF%97%E5%96%9C%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%89%E7%95%AA%E7%94%BA3-5-4", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-goshiki", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-goshiki.jpg", "ext": ""}, {"i": 3, "n": "味ふく", "c": ["郷土料理"], "v": "レストラン", "lat": 33.839737, "lng": 132.773834, "d": "鯛そうめん（要予約）（甘辛く煮た鯛を素麺の上に姿のまま盛り、煮汁を出汁に絡める瀬戸内の祝い料理）／すきやき・しゃぶしゃぶ（味ふく名物の鍋）／本日の刺身の盛合せ（その日に仕入れた瀬戸内の魚）", "a": "愛媛県松山市二番町1-8-2 nicc33ビル別館", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%B3%E3%81%B5%E3%81%8F%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA1-8-2%20nicc33%E3%83%93%E3%83%AB%E5%88%A5%E9%A4%A8", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-ajifuku", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-ajifuku.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-kyodo-ajifuku_exterior.jpg"}, {"i": 4, "n": "郷土和食 銀次郎", "c": ["郷土料理"], "v": "レストラン", "lat": 33.835556, "lng": 132.763, "d": "宇和島鯛めし膳 1,958円（鯛の刺身を生卵入りの出汁ダレで和える南予の鯛めし。小鉢・おひつごはん・漬物・汁物付き）／松山鯛釜めし膳 1,958円（鯛を米と一緒に炊き上げる中予の鯛めし。炊き上がりに約20分）／じゃこ天 748円・しょうゆ豆 330円", "a": "愛媛県松山市湊町5丁目1-1 いよてつ高島屋8F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%83%B7%E5%9C%9F%E5%92%8C%E9%A3%9F%20%E9%8A%80%E6%AC%A1%E9%83%8E%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E6%B9%8A%E7%94%BA5%E4%B8%81%E7%9B%AE1-1%20%E3%81%84%E3%82%88%E3%81%A6%E3%81%A4%E9%AB%98%E5%B3%B6%E5%B1%8B8F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-ginjiro", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-ginjiro.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-kyodo-ginjiro_exterior.jpg"}, {"i": 5, "n": "愛媛の郷土料理 花ゆらり", "c": ["郷土料理"], "v": "レストラン", "lat": 33.841301, "lng": 132.752914, "d": "愛媛ご当地メニュー 1,980円（鯛釜飯＝鯛を米と炊き込む松山鯛めし、じゃこ天、今治せんざんきの盛り合わせ）／かめやの肉うどんセット 1,380円（松山の肉うどんに松山鯛めしと今治せんざんきを付けたもの）／じゃこ天うどん 780円", "a": "愛媛県松山市宮田町4 キスケBOX1F 喜助の湯内", "m": "https://www.google.com/maps/search/?api=1&query=%E6%84%9B%E5%AA%9B%E3%81%AE%E9%83%B7%E5%9C%9F%E6%96%99%E7%90%86%20%E8%8A%B1%E3%82%86%E3%82%89%E3%82%8A%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%AE%AE%E7%94%B0%E7%94%BA4%20%E3%82%AD%E3%82%B9%E3%82%B1BOX1F%20%E5%96%9C%E5%8A%A9%E3%81%AE%E6%B9%AF%E5%86%85", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-hanayurari", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-hanayurari.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-kyodo-hanayurari_exterior.jpg"}, {"i": 6, "n": "伊予食堂おとら", "c": ["郷土料理"], "v": "レストラン", "lat": 33.850529, "lng": 132.785721, "d": "漱石御膳 2,750円（松山鯛釜めし＝鯛を米と炊き込む中予の鯛めしに、八幡浜じゃこ天と鯛刺身を付けた御膳）／坊っちゃん御膳 2,750円（宇和島鯛めし＝生卵とタレの南予の鯛めしに八幡浜じゃこ天）／マドンナ御膳 2,750円（宇和島鯛めしに今治のせんざんき）", "a": "愛媛県松山市道後湯之町3-15", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BC%8A%E4%BA%88%E9%A3%9F%E5%A0%82%E3%81%8A%E3%81%A8%E3%82%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA3-15", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-iyoshokudo-otora", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-iyoshokudo-otora.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-kyodo-iyoshokudo-otora_exterior.jpg"}, {"i": 7, "n": "道後味処 二郎", "c": ["郷土料理"], "v": "レストラン", "lat": 33.85154, "lng": 132.785934, "d": "松山鯛めし（鯛釜飯定食）1,850円（注文ごとに釜で炊き上げる中予の鯛めし。小鉢・汁物付き）／宇和島鯛めし 1,950円（鯛の刺身を特製タレと卵黄で絡める南予の鯛めし）／じゃこかつ丼 1,150円（じゃこ天を揚げたじゃこかつを卵でとじた丼）／郷土料理いもたき 700円", "a": "愛媛県松山市道後湯之町13-26", "m": "https://www.google.com/maps/search/?api=1&query=%E9%81%93%E5%BE%8C%E5%91%B3%E5%87%A6%20%E4%BA%8C%E9%83%8E%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA13-26", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-dogo-ajidokoro-jiro", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-dogo-ajidokoro-jiro.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-kyodo-dogo-ajidokoro-jiro_exterior.jpg"}, {"i": 8, "n": "創業78年 すし丸 道後店", "c": ["郷土料理"], "v": "レストラン", "lat": 33.852287, "lng": 132.786331, "d": "活き鯛めし（ひゅうが飯）膳（鯛の刺身を卵入りのタレに漬けて飯にかける南予の漁師めし。本店の品書きで膳1,705円・単品1,320円）／松山鮓（瀬戸内の魚とおぼろを混ぜた松山の祝いの寿司。コースで提供）／五色そうめん・じゃこ天", "a": "愛媛県松山市道後湯之町20-12 道後温泉本館前 ホテルパティオ・ドウゴ1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E6%A5%AD78%E5%B9%B4%20%E3%81%99%E3%81%97%E4%B8%B8%20%E9%81%93%E5%BE%8C%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA20-12%20%E9%81%93%E5%BE%8C%E6%B8%A9%E6%B3%89%E6%9C%AC%E9%A4%A8%E5%89%8D%20%E3%83%9B%E3%83%86%E3%83%AB%E3%83%91%E3%83%86%E3%82%A3%E3%82%AA%E3%83%BB%E3%83%89%E3%82%A6%E3%82%B41F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-sushimaru-dogo", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-sushimaru-dogo.jpg", "ext": ""}, {"i": 9, "n": "宇和海 一番町店", "c": ["郷土料理"], "v": "レストラン", "lat": 33.84198, "lng": 132.771561, "d": "じゃこカツおろしポン酢（宇和海名物。じゃこ天のすり身をカツに揚げたもの）／揚げたてじゃこカツ（じゃこ天）594円（愛媛近海の小魚を骨ごとすり身にして揚げる）／宇和島鯛めし（汁付）1,260円（生卵と出汁ダレの南予の鯛めし。昼は宇和島風鯛めし900円）", "a": "愛媛県松山市一番町2丁目9-16", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AE%87%E5%92%8C%E6%B5%B7%20%E4%B8%80%E7%95%AA%E7%94%BA%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA2%E4%B8%81%E7%9B%AE9-16", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-uwakai-ichibancho", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-uwakai-ichibancho.jpg", "ext": ""}, {"i": 10, "n": "東道後のそらともり", "c": ["郷土料理"], "v": "レストラン", "lat": 33.819508, "lng": 132.805298, "d": "愛媛名物！2種の鯛めし贅沢膳 2,200円（南予の日向飯と中予の鯛釜飯を一度に味わえる）／日向飯 1,800円（南予地方の鯛めし＝生卵とタレ。じゃこ天付）／鯛釜飯 1,800円（中予地方の鯛めし＝鯛を米と炊き込む釜飯。たこ天付。炊き上がりに約20分）／じゃこ天 480円", "a": "愛媛県松山市南久米町3番地1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9D%B1%E9%81%93%E5%BE%8C%E3%81%AE%E3%81%9D%E3%82%89%E3%81%A8%E3%82%82%E3%82%8A%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%8D%97%E4%B9%85%E7%B1%B3%E7%94%BA3%E7%95%AA%E5%9C%B01", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-soratomori", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-soratomori.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-kyodo-soratomori_exterior.jpg"}, {"i": 11, "n": "あじ彩 松山", "c": ["郷土料理"], "v": "レストラン", "lat": 33.842278, "lng": 132.795639, "d": "宇和島鯛めし 1,318円（単品。鯛の刺身を特製出汁と生卵で和える南予の鯛めし）／名物 鯛釜飯 988円（鯛を米と炊き込む中予の釜飯）／宇和島じゃこてん 495円／伝説の手羽先（継ぎ足しの秘伝タレ）", "a": "愛媛県松山市東野1丁目2-20", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%98%E5%BD%A9%20%E6%9D%BE%E5%B1%B1%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E6%9D%B1%E9%87%8E1%E4%B8%81%E7%9B%AE2-20", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-ajisai-matsuyama", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-ajisai-matsuyama.jpg", "ext": ""}, {"i": 12, "n": "どらもみじ レッド 湯月町", "c": ["郷土料理"], "v": "レストラン", "lat": 33.851318, "lng": 132.787704, "d": "宇和島鯛めし定食 2,380円（生卵とタレの南予の鯛めしに、五色そうめんといもたきが付く）／郷土料理のいもたき 880円（里芋を優しく煮込んだ愛媛の秋の鍋）／ハギ薄造り（店主が松山沖・興居島周辺で釣る。季節限定）", "a": "愛媛県松山市道後湯月町3-11", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A9%E3%82%89%E3%82%82%E3%81%BF%E3%81%98%20%E3%83%AC%E3%83%83%E3%83%89%20%E6%B9%AF%E6%9C%88%E7%94%BA%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E6%9C%88%E7%94%BA3-11", "u": "../japan/ehime/matsuyama.html#c-matsuyama-kyodo-doramomiji-red", "food": "../japan/ehime/img/matsuyama/matsuyama-kyodo-doramomiji-red.jpg", "ext": ""}, {"i": 13, "n": "鍋焼うどん 結庵", "c": ["麺類"], "v": "レストラン", "lat": 33.843357, "lng": 132.769653, "d": "鍋焼うどん(1,080円。甘めのつゆとアルミ鍋。松山のソウルフード)／鍋焼カレーうどん(1,280円。甘いつゆにスパイスを重ねた松山でも珍しい一杯)／坊っちゃんセット(いなり二個・タルト・坊っちゃん団子 +600円)", "a": "愛媛県松山市大街道3丁目2-27", "m": "https://www.google.com/maps/search/?api=1&query=%E9%8D%8B%E7%84%BC%E3%81%86%E3%81%A9%E3%82%93%20%E7%B5%90%E5%BA%B5%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%933%E4%B8%81%E7%9B%AE2-27", "u": "../japan/ehime/matsuyama.html#c-matsuyama-men-yuan", "food": "../japan/ehime/img/matsuyama/matsuyama-men-yuan.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-men-yuan_exterior.jpg"}, {"i": 14, "n": "大黒屋 道後店", "c": ["麺類"], "v": "レストラン", "lat": 33.852161, "lng": 132.780991, "d": "牛鍋焼きうどん(1,020円。アルミ鍋で出す松山の鍋焼き。特上は1,430円)／大黒うどん(950円。錦糸卵と薬味をたっぷりのせた名物)／特製かき揚げうどん(丼とほぼ同じ直径のかき揚げが別皿で付く)", "a": "愛媛県松山市道後喜多町8-21", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%BB%92%E5%B1%8B%20%E9%81%93%E5%BE%8C%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E5%96%9C%E5%A4%9A%E7%94%BA8-21", "u": "../japan/ehime/matsuyama.html#c-matsuyama-men-daikokuya-dogo", "food": "../japan/ehime/img/matsuyama/matsuyama-men-daikokuya-dogo.jpg", "ext": ""}, {"i": 15, "n": "うどん茶屋北斗 三津店", "c": ["麺類"], "v": "レストラン", "lat": 33.859653, "lng": 132.719437, "d": "鍋焼きうどん(アルミ鍋の松山の鍋焼き)／愛媛まんさいうどん(愛媛の食材を盛り込んだ名物うどん)／鯛釜めし(愛媛の鯛を炊き込む。釜めしは単品とセットがある)", "a": "愛媛県松山市祓川1丁目3-27", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%A9%E3%82%93%E8%8C%B6%E5%B1%8B%E5%8C%97%E6%96%97%20%E4%B8%89%E6%B4%A5%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E7%A5%93%E5%B7%9D1%E4%B8%81%E7%9B%AE3-27", "u": "../japan/ehime/matsuyama.html#c-matsuyama-men-hokuto-mitsu", "food": "../japan/ehime/img/matsuyama/matsuyama-men-hokuto-mitsu.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-men-hokuto-mitsu_exterior.jpg"}, {"i": 16, "n": "横浜家系ラーメン 一門家 大街道店", "c": ["麺類"], "v": "レストラン", "lat": 33.838665, "lng": 132.769882, "d": "家系二郎(930円。もやしとキャベツの山に家系の刻み玉ねぎ。中太平打ち麺)／横浜家系ラーメン(麺のかたさ・味の濃さ・アブラの量をコールする)／つけ麺", "a": "愛媛県松山市大街道2-2-7", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A8%AA%E6%B5%9C%E5%AE%B6%E7%B3%BB%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E4%B8%80%E9%96%80%E5%AE%B6%20%E5%A4%A7%E8%A1%97%E9%81%93%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%932-2-7", "u": "../japan/ehime/matsuyama.html#c-matsuyama-men-ichimonya-okaido", "food": "../japan/ehime/img/matsuyama/matsuyama-men-ichimonya-okaido.jpg", "ext": ""}, {"i": 17, "n": "麺のようじ 松山店", "c": ["麺類"], "v": "レストラン", "lat": 33.835556, "lng": 132.763, "d": "鶏節極塩らーめん(1,000円。透き通った鶏の清湯に鶏節が香る。柚子とかいわれ大根が味を変える)／鶏ドロつけ麺(1,300円。煮立った濃厚なつけ汁に冷たい麺。すだち酢が付く)／鶏節油そば(800円)", "a": "愛媛県松山市湊町5丁目1-1 まつちかタウン内", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%81%AE%E3%82%88%E3%81%86%E3%81%98%20%E6%9D%BE%E5%B1%B1%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E6%B9%8A%E7%94%BA5%E4%B8%81%E7%9B%AE1-1%20%E3%81%BE%E3%81%A4%E3%81%A1%E3%81%8B%E3%82%BF%E3%82%A6%E3%83%B3%E5%86%85", "u": "../japan/ehime/matsuyama.html#c-matsuyama-men-mennoyouji", "food": "../japan/ehime/img/matsuyama/matsuyama-men-mennoyouji.jpg", "ext": ""}, {"i": 18, "n": "餃子 のぶ", "c": ["麺類"], "v": "レストラン", "lat": 33.864231, "lng": 132.718033, "d": "中華そば(昔ながらの醤油の一杯。海苔・味玉・チャーシュー・メンマ)／餃子(店で包む手づくり。たれは辛味入り)／つけそば", "a": "愛媛県松山市住吉1-14-18", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A4%83%E5%AD%90%20%E3%81%AE%E3%81%B6%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BD%8F%E5%90%891-14-18", "u": "../japan/ehime/matsuyama.html#c-matsuyama-men-gyoza-nobu", "food": "../japan/ehime/img/matsuyama/matsuyama-men-gyoza-nobu.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-men-gyoza-nobu_exterior.jpg"}, {"i": 19, "n": "鮨かわなか", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.841282, "lng": 132.772934, "d": "おまかせコース(全国の種と瀬戸内の地魚を組み合わせた握りと肴。16,800円税込。男女比や年齢に合わせて構成を替えてくれる)／蒸しかまどの二種のシャリ(高温で一気に炊き上げ、種に合わせて使い分ける)／日本酒30種以上(鮨に合わせて店が選んで出す)", "a": "愛媛県松山市一番町1-11-9", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E3%81%8B%E3%82%8F%E3%81%AA%E3%81%8B%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA1-11-9", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-sushi-kawanaka", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-sushi-kawanaka.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-sushi-kawanaka_exterior.jpg"}, {"i": 20, "n": "鮨 岩城清三", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.839764, "lng": 132.772781, "d": "おまかせコース(愛媛の地物を中心にした握りとつまみ。13,200円〜税込)／お任せコース おつまみ＋お鮨(18,700円税込)／檜の一枚板のカウンター7席(目の前で握る所作が見える)", "a": "愛媛県松山市二番町1-9-12 MORIビル3F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E5%B2%A9%E5%9F%8E%E6%B8%85%E4%B8%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA1-9-12%20MORI%E3%83%93%E3%83%AB3F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-sushi-iwaki-seizo", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-sushi-iwaki-seizo.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-sushi-iwaki-seizo_exterior.jpg"}, {"i": 21, "n": "鮨 まえざわ", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.838806, "lng": 132.773849, "d": "店主おまかせのコース(前菜・先付から握りまで。内容は日替わり)／握りの盛り合わせ(仕入れ次第の瀬戸内の地魚と全国の種を一皿に)／手作りのガリ(大将が仕込む)", "a": "愛媛県松山市三番町1丁目15-1 マドンナTOWNRITZビル103", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E3%81%BE%E3%81%88%E3%81%96%E3%82%8F%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%89%E7%95%AA%E7%94%BA1%E4%B8%81%E7%9B%AE15-1%20%E3%83%9E%E3%83%89%E3%83%B3%E3%83%8ATOWNRITZ%E3%83%93%E3%83%AB103", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-sushi-maezawa", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-sushi-maezawa.jpg", "ext": ""}, {"i": 22, "n": "日本料理寿司 柿八", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.839764, "lng": 132.772781, "d": "おつまみとお寿司のおまかせコース(刺身や焼物に握りを挟む構成。要予約・予算相談制)／早朝仕入れの鮮魚(毎朝選んで仕入れ、店内でさばく)／カウンター8席(店主の手元が見える)", "a": "愛媛県松山市二番町1-9-14", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E5%AF%BF%E5%8F%B8%20%E6%9F%BF%E5%85%AB%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA1-9-14", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-kakihachi", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-kakihachi.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-kakihachi_exterior.jpg"}, {"i": 23, "n": "寿司・割烹 太河", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.838806, "lng": 132.773849, "d": "握りの盛り合わせ(市内の名店で10年修業した店主が握る。全国寿司コンクール銀賞)／ばってら(鯖の押し寿司)／サザエのつぼ焼き(炎を立てて供する)／ふぐコース(全6品14,300円税込。刺身・唐揚げ・雑炊まで)", "a": "愛媛県松山市三番町1丁目15-5 リドビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E5%8F%B8%E3%83%BB%E5%89%B2%E7%83%B9%20%E5%A4%AA%E6%B2%B3%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%89%E7%95%AA%E7%94%BA1%E4%B8%81%E7%9B%AE15-5%20%E3%83%AA%E3%83%89%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-sushi-kappo-taiga", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-sushi-kappo-taiga.jpg", "ext": ""}, {"i": 24, "n": "日光寿し", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.8302, "lng": 132.712006, "d": "大名にぎり(旬の鮮魚12貫。ネタの大きさが売り)／寿し得々天ぷらセット(にぎり・天ぷら・刺身・付きだし・茶碗蒸し・吸物・果物で1,850円税込)／十色巻(具を十種巻き込んだ太巻き)／あらだき・はまちのかま塩焼き(夜の一品)", "a": "愛媛県松山市高岡町860-44", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E5%85%89%E5%AF%BF%E3%81%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%AB%98%E5%B2%A1%E7%94%BA860-44", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-nikkozushi", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-nikkozushi.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-nikkozushi_exterior.jpg"}, {"i": 25, "n": "宇和海の幸 活魚と寿司 明倫館", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.84063, "lng": 132.77034, "d": "明倫館御膳(昼限定2,500円税込。刺身・天ぷら・鯛のあら炊き・握りなど9品)／生け簀の活魚の造り(縞鯵・鯛などその日の魚を生け簀から)／鯛と鰤のしゃぶしゃぶ鍋コース(飲み放題120分付き全6品7,500円税込)／愛媛の地酒(石鎚など)", "a": "愛媛県松山市大街道2丁目5-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AE%87%E5%92%8C%E6%B5%B7%E3%81%AE%E5%B9%B8%20%E6%B4%BB%E9%AD%9A%E3%81%A8%E5%AF%BF%E5%8F%B8%20%E6%98%8E%E5%80%AB%E9%A4%A8%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%932%E4%B8%81%E7%9B%AE5-1", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-meirinkan", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-meirinkan.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-meirinkan_exterior.jpg"}, {"i": 26, "n": "割烹 むつの", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.838806, "lng": 132.773849, "d": "お刺身盛り合わせ 四種/五種/六種(その日の瀬戸内の地魚を中心に)／ずわい蟹・伊勢海老の土鍋御飯(締めに炊き上げる)／天婦羅盛り合わせ 四種/五種(大海老と旬魚)／菊間産のじゃこ天・じゃこカツ(今治・菊間の小魚のすり身)", "a": "愛媛県松山市三番町1丁目15-7 FCIAOビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%20%E3%82%80%E3%81%A4%E3%81%AE%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%89%E7%95%AA%E7%94%BA1%E4%B8%81%E7%9B%AE15-7%20FCIAO%E3%83%93%E3%83%AB2F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-kappo-mutsuno", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-kappo-mutsuno.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-kappo-mutsuno_exterior.jpg"}, {"i": 27, "n": "瀬戸内割烹 媛結び", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.841743, "lng": 132.773743, "d": "媛花籠御膳(昼限定1日15食。8品の小皿＋天婦羅・茶碗蒸し・御飯・デザート。4,180円税込)／御造り七種(瀬戸内の地魚を七種)／特大国産鰻の蒲焼(八年継ぎ足しの特製たれ)／愛姫牛のレアカツ(自家製山椒タルタル)", "a": "愛媛県松山市一番町1-14-9", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E5%89%B2%E7%83%B9%20%E5%AA%9B%E7%B5%90%E3%81%B3%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA1-14-9", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-himemusubi", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-himemusubi.jpg", "ext": ""}, {"i": 28, "n": "和料理 濱もと", "c": ["和食"], "v": "レストラン", "lat": 33.839626, "lng": 132.771011, "d": "おまかせ会席コース(先付から土鍋ご飯・デザートまで。11,000円税込〜。完全予約制)／土鍋ご飯(コースの締めに炊き上げる)／愛媛の地酒を一杯から(山丹正宗『刀』純米大吟醸、京ひな『隠し剣』純米大吟醸、成龍など)", "a": "愛媛県松山市二番町2丁目5-16 第2雅ビル5F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E6%96%99%E7%90%86%20%E6%BF%B1%E3%82%82%E3%81%A8%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA2%E4%B8%81%E7%9B%AE5-16%20%E7%AC%AC2%E9%9B%85%E3%83%93%E3%83%AB5F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-hamamoto", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-hamamoto.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-hamamoto_exterior.jpg"}, {"i": 29, "n": "御料理 月白", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.821808, "lng": 132.726562, "d": "手織り寿司『天色御膳』(1日10食。12種の具材を海苔に巻いて食べる。3,000円税込)／月白御膳(日替わりでメイン2種。2,200円税込)／月白のうな重『琥珀』(鹿児島・宮崎・高知の活鰻を店内でさばき、自家製の甘めのたれで焼く)／愛媛の地酒(賀儀屋・城川郷など)", "a": "愛媛県松山市富久町422-3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BE%A1%E6%96%99%E7%90%86%20%E6%9C%88%E7%99%BD%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%AF%8C%E4%B9%85%E7%94%BA422-3", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-geppaku", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-geppaku.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-geppaku_exterior.jpg"}, {"i": 30, "n": "天ぷら 中村", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.839077, "lng": 132.771774, "d": "おまかせコース(13,200円税込。海老・旬の魚・筍・肉と野菜などを一品ずつ揚げる)／石鎚 純米吟醸 緑ラベル(愛媛・西条の地酒。一合から)／京ひな 輝乃吟(愛媛・内子の地酒。一合から)／カウンター6席(揚げ場の正面)", "a": "愛媛県松山市二番町2丁目1-2 コロネット二番町3F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E3%81%B7%E3%82%89%20%E4%B8%AD%E6%9D%91%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA2%E4%B8%81%E7%9B%AE1-2%20%E3%82%B3%E3%83%AD%E3%83%8D%E3%83%83%E3%83%88%E4%BA%8C%E7%95%AA%E7%94%BA3F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-tempura-nakamura", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-tempura-nakamura.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-tempura-nakamura_exterior.jpg"}, {"i": 31, "n": "旬膳 だるま", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.831436, "lng": 132.772049, "d": "特選だるま刺身盛り合わせ(市場直送の瀬戸内の鮮魚。季節と天候で値段が動く)／ぶりしゃぶ(冬の看板)／季節魚の塩焼き／うに一箱(北海道産の雲丹を箱のまま)", "a": "愛媛県松山市立花1丁目2-29", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%AC%E8%86%B3%20%E3%81%A0%E3%82%8B%E3%81%BE%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E7%AB%8B%E8%8A%B11%E4%B8%81%E7%9B%AE2-29", "u": "../japan/ehime/matsuyama.html#c-matsuyama-washoku-shunzen-daruma", "food": "../japan/ehime/img/matsuyama/matsuyama-washoku-shunzen-daruma.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-washoku-shunzen-daruma_exterior.jpg"}, {"i": 32, "n": "瀬戸内の魚貝と地酒 ひめいちえ 松山", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.838806, "lng": 132.773849, "d": "熟成魚の刺身盛り(活け締めののち寝かせて旨みを出した瀬戸内の魚)／瀬戸内真鯛の土鍋ごはん(真鯛を一尾のせて炊き上げる)／宇和島鯛めし(生卵と出汁ダレに刺身を漬けて食べる南予式)／愛媛の地酒20種以上(石鎚・賀儀屋黒ラベル純米吟醸・山丹正宗・城川郷・初雪盃「媛」・栄光酒造「純米吟醸 松山三井」・媛一会)", "a": "愛媛県松山市三番町1丁目15-6 ニューパールビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E3%81%AE%E9%AD%9A%E8%B2%9D%E3%81%A8%E5%9C%B0%E9%85%92%20%E3%81%B2%E3%82%81%E3%81%84%E3%81%A1%E3%81%88%20%E6%9D%BE%E5%B1%B1%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%89%E7%95%AA%E7%94%BA1%E4%B8%81%E7%9B%AE15-6%20%E3%83%8B%E3%83%A5%E3%83%BC%E3%83%91%E3%83%BC%E3%83%AB%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-himeichie", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-himeichie.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-himeichie_exterior.jpg"}, {"i": 33, "n": "海鮮釜居酒 花火 HANABI 松山", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.839626, "lng": 132.771011, "d": "名物の釜飯(鮭とイクラの親子釜飯ほか。注文を受けてから炊く)／手作り宇和島手押しじゃこ天(小魚のすり身を手で押して揚げる)／海鮮刺身盛り(市場直送の瀬戸内の魚)／愛媛の地酒(城川郷 純米吟醸・石鎚 無濾過純米 槽搾り・寿喜心 限定大吟醸・小富士 超辛口・雪雀の熱燗)", "a": "愛媛県松山市二番町2-5-7 MKビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E9%87%9C%E5%B1%85%E9%85%92%20%E8%8A%B1%E7%81%AB%20HANABI%20%E6%9D%BE%E5%B1%B1%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA2-5-7%20MK%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-hanabi", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-hanabi.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-hanabi_exterior.jpg"}, {"i": 34, "n": "松山炭火焼鳥 鶏じ", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "食べ歩き", "lat": 33.839626, "lng": 132.771011, "d": "媛っこ地鶏の炭火串焼き(愛媛のブランド地鶏)／炙りたたき(地鶏のたたきに薬味をのせた一品)／豚しそ巻(店のすすめる定番串)／愛媛県産の地酒(京ひな「一刀両断」純米大吟醸中汲み・石鎚・賀儀屋・栄光・日本心)", "a": "愛媛県松山市二番町2-5-2", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E5%B1%B1%E7%82%AD%E7%81%AB%E7%84%BC%E9%B3%A5%20%E9%B6%8F%E3%81%98%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA2-5-2", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-toriji", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-toriji.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-toriji_exterior.jpg"}, {"i": 35, "n": "瀬戸内料理 仁平 松山", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 33.839321, "lng": 132.773819, "d": "おこぜ(煮・揚げ・酒蒸しから選ぶ瀬戸内の高級魚)／地物さわら・かつおの刺身とタタキ／鮮魚の薄造り／仁平の牛カツ／雪雀の冷酒(松前町の蔵。1合・1合半・2合で出す)", "a": "愛媛県松山市二番町1-5-15", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E6%96%99%E7%90%86%20%E4%BB%81%E5%B9%B3%20%E6%9D%BE%E5%B1%B1%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA1-5-15", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-nihei", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-nihei.jpg", "ext": ""}, {"i": 36, "n": "媛や ひめや", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.838715, "lng": 132.770279, "d": "日向飯(ひゅうがめし。刺身を生卵と出汁ダレに漬けて飯にかける南予式の鯛めし)／じゃこ天(小魚のすり身の揚げ物。大根おろしを添えて)／伊予鶏の岩塩焼き／媛しゃぶ(海鮮といも豚のしゃぶしゃぶ)／愛媛の地酒(雪雀・梅錦・小富士・賀儀屋・京ひな・石鎚 純米緑ラベル・城川郷 吟醸)", "a": "愛媛県松山市大街道2-1-1 エムズビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AA%9B%E3%82%84%20%E3%81%B2%E3%82%81%E3%82%84%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%932-1-1%20%E3%82%A8%E3%83%A0%E3%82%BA%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-himeya", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-himeya.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-himeya_exterior.jpg"}, {"i": 37, "n": "大衆酒場 マル八 松山大街道店", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 33.838665, "lng": 132.769882, "d": "今治焼き鳥(串に刺さず鉄板に載せ、上から鉄の重しで押して焼く今治式。もも・盛り合わせ)／宇和島じゃこ天・じゃこカツ／宇和島鯛めし／今治焼豚玉子飯／こぼれ巻き寿司", "a": "愛媛県松山市大街道2丁目2-1 アリスト大街道2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%20%E3%83%9E%E3%83%AB%E5%85%AB%20%E6%9D%BE%E5%B1%B1%E5%A4%A7%E8%A1%97%E9%81%93%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%932%E4%B8%81%E7%9B%AE2-1%20%E3%82%A2%E3%83%AA%E3%82%B9%E3%83%88%E5%A4%A7%E8%A1%97%E9%81%932F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-maruhachi", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-maruhachi.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-maruhachi_exterior.jpg"}, {"i": 38, "n": "地酒・地魚・古民家酒場 艶吉 湊町店", "c": ["ビール・バー", "居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.836201, "lng": 132.761169, "d": "媛っこ地鶏の炙り焼き(久万山養鶏研究所から入れる愛媛のブランド地鶏)／特撰お造り各種(漁師直送の地魚)／艶吉のトリカラ(秘伝のタレに漬けた鶏の唐揚げ)／愛媛の地酒(小富士・初雪盃・川亀・石鎚・城川郷・京ひな)", "a": "愛媛県松山市湊町6丁目2-3 清水ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%B0%E9%85%92%E3%83%BB%E5%9C%B0%E9%AD%9A%E3%83%BB%E5%8F%A4%E6%B0%91%E5%AE%B6%E9%85%92%E5%A0%B4%20%E8%89%B6%E5%90%89%20%E6%B9%8A%E7%94%BA%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E6%B9%8A%E7%94%BA6%E4%B8%81%E7%9B%AE2-3%20%E6%B8%85%E6%B0%B4%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-tsuyakichi-minatomachi", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-tsuyakichi-minatomachi.jpg", "ext": ""}, {"i": 39, "n": "愛媛大衆酒場エビスホームラン", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.843163, "lng": 132.751633, "d": "特製しうまい(店の人気1位。肉汁の多い自家製焼売)／パイカ煮込み(豚のあばら軟骨の煮込み)／たい昆布じめ／火星ラーメン(辛口の〆の一杯)／雪雀 純米・田力 純米大吟醸(いずれも愛媛の酒)", "a": "愛媛県松山市宮田町108-9 梶田ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%84%9B%E5%AA%9B%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%E3%82%A8%E3%83%93%E3%82%B9%E3%83%9B%E3%83%BC%E3%83%A0%E3%83%A9%E3%83%B3%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%AE%AE%E7%94%B0%E7%94%BA108-9%20%E6%A2%B6%E7%94%B0%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-ebisu-homerun", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-ebisu-homerun.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-ebisu-homerun_exterior.jpg"}, {"i": 40, "n": "居酒屋 道後 鯛将", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 33.851826, "lng": 132.784424, "d": "真鯛の薄造り(店内の生簀から引く瀬戸内の真鯛)／大将おまかせの活魚のお造り(サザエ・活アジ・伊勢海老)／伊予牛の炙り／じゃこ天／愛媛の地酒(石鎚 緑ラベル・京ひな 一刀両断・千代の亀・城川郷 特別本醸造・雪雀 辛口・道後 純米吟醸酒〈水口酒造〉)", "a": "愛媛県松山市道後湯之町15-28 第七浜崎マンション1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E9%81%93%E5%BE%8C%20%E9%AF%9B%E5%B0%86%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA15-28%20%E7%AC%AC%E4%B8%83%E6%B5%9C%E5%B4%8E%E3%83%9E%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B31F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-dogo-taisho", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-dogo-taisho.jpg", "ext": ""}, {"i": 41, "n": "瀬戸内しまなみ活魚 いよ水産 本店", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 33.84034, "lng": 132.772812, "d": "宇和島風 生鯛めし(刺身を生卵と出汁ダレに漬けて飯にかける南予式)／鯛そうめん／天然真鯛のあら炊き／釜飯(真鯛・たこ・あわび)／地物ウニ板・天然伊勢エビの活き造り／愛媛の地酒(石鎚・千代の亀・川亀・雪雀・小富士 超辛口・京ひな「一刀両断」)", "a": "愛媛県松山市一番町1丁目3-6 1433ビル", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E3%81%97%E3%81%BE%E3%81%AA%E3%81%BF%E6%B4%BB%E9%AD%9A%20%E3%81%84%E3%82%88%E6%B0%B4%E7%94%A3%20%E6%9C%AC%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA1%E4%B8%81%E7%9B%AE3-6%201433%E3%83%93%E3%83%AB", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-iyosuisan", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-iyosuisan.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-iyosuisan_exterior.jpg"}, {"i": 42, "n": "粂の坊ったん", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.814991, "lng": 132.805267, "d": "元祖瓦焼き(熱した瓦の上で黒毛和牛の特選ロース・厚切りタンを焼く店の名物)／媛っこ地鶏(愛媛のブランド地鶏。専用の品書きあり)／坊ったんつくね・鉄板つくね／刺身盛り(本まぐろ・平目・かんぱち・あじ・いか・くじら)／愛媛の地酒(城川郷・川亀・小富士・京ひな「一刀両断」)", "a": "愛媛県松山市南久米町265-1 第7ゴトービル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B2%82%E3%81%AE%E5%9D%8A%E3%81%A3%E3%81%9F%E3%82%93%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%8D%97%E4%B9%85%E7%B1%B3%E7%94%BA265-1%20%E7%AC%AC7%E3%82%B4%E3%83%88%E3%83%BC%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-kumenobottan", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-kumenobottan.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-kumenobottan_exterior.jpg"}, {"i": 43, "n": "炭焼き はぶ鶏", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 33.810989, "lng": 132.704575, "d": "炭火の焼鳥盛り合わせ(カウンター正面の炭床で焼く)／馬刺し赤身／エイヒレの炭炙り／愛媛の地酒(石鎚 純米吟醸・山丹正宗・雪雀・梅錦「媛」)", "a": "愛媛県松山市西垣生町489-4", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%84%BC%E3%81%8D%20%E3%81%AF%E3%81%B6%E9%B6%8F%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%A5%BF%E5%9E%A3%E7%94%9F%E7%94%BA489-4", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-habudori", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-habudori.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-izakaya-habudori_exterior.jpg"}, {"i": 44, "n": "象三", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.839737, "lng": 132.773834, "d": "鯛の塩釜焼き(鯛を塩で包んで焼き、卓で割る店の名物)／自家製じゃこ天／せんざんき(鶏の唐揚げ。今治発祥とされる)／かつおの藁焼き(ポン酢・塩)／地物のたこぶつ・イカ刺し・活さざえ刺し／愛媛の地酒(石鎚 飯盛 純米・京ひな「一刀両断」「吹毛剣」・城川郷 吟醸・小富士 超辛口・久米の井 純米大吟醸)", "a": "愛媛県松山市二番町1-8-1", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B1%A1%E4%B8%89%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA1-8-1", "u": "../japan/ehime/matsuyama.html#c-matsuyama-izakaya-zouzan", "food": "../japan/ehime/img/matsuyama/matsuyama-izakaya-zouzan.jpg", "ext": ""}, {"i": 45, "n": "太養軒", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.8484, "lng": 132.77565, "d": "ガッツ定食（この店の看板。揚げ物と肉の盛り合わせ定食）／ジャンボミンチカツカレー（大判のミンチカツを載せた松山風の甘めのカレー）／デミ焼チーズハンバーグ定食（鉄板のハンバーグにチーズとデミグラス）", "a": "愛媛県松山市道後一万7-13", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%AA%E9%A4%8A%E8%BB%92%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E4%B8%80%E4%B8%877-13", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-taiyoken", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-taiyoken.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-taiyoken_exterior.jpg"}, {"i": 46, "n": "洋食 La Briller", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.790791, "lng": 132.794891, "d": "オムライスランチ（10食限定。薄焼き卵にデミグラスソース）／店主特製ハンバーグ（デミグラスの洋食屋のハンバーグ）／キッシュプレート（10食限定の昼のプレート）／チキンドリア", "a": "愛媛県松山市森松町280-2 Mホーナー森松103", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%20La%20Briller%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E6%A3%AE%E6%9D%BE%E7%94%BA280-2%20M%E3%83%9B%E3%83%BC%E3%83%8A%E3%83%BC%E6%A3%AE%E6%9D%BE103", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-la-briller", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-la-briller.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-la-briller_exterior.jpg"}, {"i": 47, "n": "瀬戸内風仏蘭西料理 レストラン門田", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.837448, "lng": 132.768433, "d": "SHOKADO（松花堂の器に仕立てた、箸で食べられるフレンチのランチコース）／季節のスペシャルコース（四季の瀬戸内の魚介と肉を組んだコース）／アニバーサリーコース（記念日向け）", "a": "愛媛県松山市三番町3丁目4-25", "m": "https://www.google.com/maps/search/?api=1&query=%E7%80%AC%E6%88%B8%E5%86%85%E9%A2%A8%E4%BB%8F%E8%98%AD%E8%A5%BF%E6%96%99%E7%90%86%20%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%96%80%E7%94%B0%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%89%E7%95%AA%E7%94%BA3%E4%B8%81%E7%9B%AE4-25", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-restaurant-kadota", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-restaurant-kadota.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-restaurant-kadota_exterior.jpg"}, {"i": 48, "n": "Sake・Wine 洋食堂サリエ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.839615, "lng": 132.771439, "d": "神の海老のサクッぷりエビフライ（大ぶりの海老を揚げた洋食の定番）／フランス風牛肉のハンバーグ ステックアッシェ（つなぎを抑えた粗挽きのハンバーグ）／ほろほろビーフシチューのポットパイ（パイで蓋をして出すビーフシチュー）／愛南いのししのパテ・ド・カンパーニュ（愛媛・愛南町のいのししを使った田舎風パテ）", "a": "愛媛県松山市二番町2丁目6-5 いしかわビル1F", "m": "https://www.google.com/maps/search/?api=1&query=Sake%E3%83%BBWine%20%E6%B4%8B%E9%A3%9F%E5%A0%82%E3%82%B5%E3%83%AA%E3%82%A8%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA2%E4%B8%81%E7%9B%AE6-5%20%E3%81%84%E3%81%97%E3%81%8B%E3%82%8F%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-sallier", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-sallier.jpg", "ext": ""}, {"i": 49, "n": "フレンチパーラー ラ・クレモンティーヌ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.835556, "lng": 132.763, "d": "国産牛サーロインステーキ シャリアピンソース（玉ねぎのソースを合わせた洋食のステーキ）／オムライス（デミグラスソース。サラダ・スープ付きの昼の皿）／ビーフシチュー（昼のセット）／季節のフレンチコース", "a": "愛媛県松山市湊町5丁目1-1 いよてつ高島屋8階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%83%AC%E3%83%B3%E3%83%81%E3%83%91%E3%83%BC%E3%83%A9%E3%83%BC%20%E3%83%A9%E3%83%BB%E3%82%AF%E3%83%AC%E3%83%A2%E3%83%B3%E3%83%86%E3%82%A3%E3%83%BC%E3%83%8C%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E6%B9%8A%E7%94%BA5%E4%B8%81%E7%9B%AE1-1%20%E3%81%84%E3%82%88%E3%81%A6%E3%81%A4%E9%AB%98%E5%B3%B6%E5%B1%8B8%E9%9A%8E", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-la-clementine", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-la-clementine.jpg", "ext": ""}, {"i": 50, "n": "イタリア料理ながた", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.839027, "lng": 132.77272, "d": "即興オリジナルスパゲッティ（その日の仕入れでシェフが組む一皿）／自家製サルシッチャ100g（粗挽きの生ソーセージ）／姫美豚肩ロースのマスタードパン粉焼き／本日のカルパッチョ 季節のピューレ", "a": "愛媛県松山市二番町1丁目3-12 古唐人月館1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E6%96%99%E7%90%86%E3%81%AA%E3%81%8C%E3%81%9F%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA1%E4%B8%81%E7%9B%AE3-12%20%E5%8F%A4%E5%94%90%E4%BA%BA%E6%9C%88%E9%A4%A81%E9%9A%8E", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-italia-nagata", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-italia-nagata.jpg", "ext": ""}, {"i": 51, "n": "ピッツェリア リストランテ トスカーナの休日", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.808739, "lng": 132.765198, "d": "マルゲリータ（定番のピッツァ）／トスカーナ（店名を冠したトスカーナ風ピッツァ）／クアトロフォルマッジ（4種のチーズ）／スパゲッティペスカトーレ（魚介のトマトソース）／松山ベーコンのシーザーサラダ", "a": "愛媛県松山市古川北4-7-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%94%E3%83%83%E3%83%84%E3%82%A7%E3%83%AA%E3%82%A2%20%E3%83%AA%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%86%20%E3%83%88%E3%82%B9%E3%82%AB%E3%83%BC%E3%83%8A%E3%81%AE%E4%BC%91%E6%97%A5%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%8F%A4%E5%B7%9D%E5%8C%974-7-3", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-toscana-no-kyujitsu", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-toscana-no-kyujitsu.jpg", "ext": ""}, {"i": 52, "n": "シーフードイタリアン GIROLAMO", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.841076, "lng": 132.771606, "d": "鮮魚のカルパッチョ2種盛り（その日の瀬戸内の魚を2種）／海老ときの子のアツアツ！アヒージョ／大人のマルゲリータ（モッツァレラ・トマト・バジル・パンチェッタ）／削りたて!スペシャルチーズリゾット", "a": "愛媛県松山市一番町2-5-9 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%BC%E3%83%95%E3%83%BC%E3%83%89%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E3%83%B3%20GIROLAMO%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%80%E7%95%AA%E7%94%BA2-5-9%201F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-girolamo", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-girolamo.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-girolamo_exterior.jpg"}, {"i": 53, "n": "四川旬菜 アスター", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.812164, "lng": 132.796158, "d": "担々麺935円（皮むきごまを炒るところから作る自家製。店の人気No.1）／麻婆豆腐880円・激辛麻婆968円・アスター麻婆（辛さを選べる）／宝菜飯935円（丼ぶり部門の一番人気）／アスター風バンバンジー（中華クラゲ入り）／杏仁豆腐（創業当時から変わらない味）", "a": "愛媛県松山市南久米町545-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9B%9B%E5%B7%9D%E6%97%AC%E8%8F%9C%20%E3%82%A2%E3%82%B9%E3%82%BF%E3%83%BC%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%8D%97%E4%B9%85%E7%B1%B3%E7%94%BA545-1", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-shisen-shunsai-aster", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-shisen-shunsai-aster.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-shisen-shunsai-aster_exterior.jpg"}, {"i": 54, "n": "中国料理 胡桃", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.833462, "lng": 132.757446, "d": "四川麻婆豆腐（店の一番人気。山椒で痺れる辛さ）／よだれ鶏／エビチリ・エビマヨ／小籠包（3個）／酢豚", "a": "愛媛県松山市藤原町667-1 バナナ館1F", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E8%83%A1%E6%A1%83%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%97%A4%E5%8E%9F%E7%94%BA667-1%20%E3%83%90%E3%83%8A%E3%83%8A%E9%A4%A81F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-chugokuryori-kurumi", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-chugokuryori-kurumi.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-chugokuryori-kurumi_exterior.jpg"}, {"i": 55, "n": "本場インド料理 ケサリ 大手町店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.840389, "lng": 132.757507, "d": "タンドリーコース（カレー・ナン・ライス食べ放題。90分飲み放題を付けられる）／タンドリーチキン（レッグ）／シークカバブ／チキンビリヤニ／ランチセット850円〜", "a": "愛媛県松山市大手町1丁目12-4", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E5%A0%B4%E3%82%A4%E3%83%B3%E3%83%89%E6%96%99%E7%90%86%20%E3%82%B1%E3%82%B5%E3%83%AA%20%E5%A4%A7%E6%89%8B%E7%94%BA%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E6%89%8B%E7%94%BA1%E4%B8%81%E7%9B%AE12-4", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-kesari-otemachi", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-kesari-otemachi.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-kesari-otemachi_exterior.jpg"}, {"i": 56, "n": "イスタンブール・テラス", "c": ["洋食・各国料理"], "v": "ベーカリー・パティスリー", "lat": 33.838715, "lng": 132.770279, "d": "ドネル・ケバブ（回転させながら焼いた肉を削いで出す）／シシ・ケバブ（串焼き）／キョフテ（香辛料を練り込んだ挽き肉のハンバーグ）／サルマ（ぶどうの葉で米を包んだ前菜）／トルコ・アイス", "a": "愛媛県松山市大街道2丁目1-3 3F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%B9%E3%82%BF%E3%83%B3%E3%83%96%E3%83%BC%E3%83%AB%E3%83%BB%E3%83%86%E3%83%A9%E3%82%B9%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%932%E4%B8%81%E7%9B%AE1-3%203F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-istanbul-terrace", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-istanbul-terrace.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-istanbul-terrace_exterior.jpg"}, {"i": 57, "n": "韓国料理 Dining 慶", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.838875, "lng": 132.771637, "d": "サムギョプサル（店の一番人気。豚バラの鉄板焼き）／チャドルバギ（牛バラ薄切りの韓国式焼きしゃぶ）／チーズトッポギ／もちもち韓国餃子／ナムル盛り合わせ", "a": "愛媛県松山市三番町2丁目10-7 二宮ビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%9F%93%E5%9B%BD%E6%96%99%E7%90%86%20Dining%20%E6%85%B6%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%B8%89%E7%95%AA%E7%94%BA2%E4%B8%81%E7%9B%AE10-7%20%E4%BA%8C%E5%AE%AE%E3%83%93%E3%83%AB2F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-kankoku-dining-kyon", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-kankoku-dining-kyon.jpg", "ext": ""}, {"i": 58, "n": "Curry Namara えん", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.861984, "lng": 132.751755, "d": "野菜じゃこ天スープカレー（愛媛のじゃこ天を載せた札幌式スープカレー）／チキンスープカレー（ほろほろのチキンレッグ）／ビーフカレー（赤ワインとフォン・ド・ヴォーで煮込んだルーカレー）／角煮スープカレー", "a": "愛媛県松山市山越5-14-20", "m": "https://www.google.com/maps/search/?api=1&query=Curry%20Namara%20%E3%81%88%E3%82%93%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%B1%B1%E8%B6%8A5-14-20", "u": "../japan/ehime/matsuyama.html#c-matsuyama-yoshoku-curry-namara-en", "food": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-curry-namara-en.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-yoshoku-curry-namara-en_exterior.jpg"}, {"i": 59, "n": "一六本舗 道後本館前店", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.85207, "lng": 132.786011, "d": "一六タルトの天ぷら(名物の一六タルトに薄衣をつけて揚げたもの。柚子餡で後味が重くならない。2025年6月にテレビ番組でも紹介された)／ICHIROKU（16）ソフト 真穴みかん(八幡浜・真穴地区のみかん果汁を使ったソフトクリーム。黒いコーンが選べる)／道後どらバーガー(どら焼きの生地で具を挟んだ食べ歩き用の一品)", "a": "愛媛県松山市道後湯之町20-17", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E5%85%AD%E6%9C%AC%E8%88%97%20%E9%81%93%E5%BE%8C%E6%9C%AC%E9%A4%A8%E5%89%8D%E5%BA%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA20-17", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-ichiroku-dogo-honkanmae", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-ichiroku-dogo-honkanmae.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-cafe-ichiroku-dogo-honkanmae_exterior.jpg"}, {"i": 60, "n": "つぼや菓子舗", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 33.851936, "lng": 132.785187, "d": "元祖 坊っちゃん団子(抹茶・黄(白餡)・小豆の3色の餡で団子を包んだ串菓子。1本ずつ手巻き)／醤油餅(元禄時代から松山で親しまれる蒸し菓子。製造は月2回程度で、製造日は公式Xとオンラインショップで告知)／舟ようかん(夏季限定の餅入り水ようかん)", "a": "愛媛県松山市道後湯之町14-23", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A4%E3%81%BC%E3%82%84%E8%8F%93%E5%AD%90%E8%88%97%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA14-23", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-tsuboya-kashiho", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-tsuboya-kashiho.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-cafe-tsuboya-kashiho_exterior.jpg"}, {"i": 61, "n": "和cafe WA!KKA", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.839626, "lng": 132.771011, "d": "よくばり白玉セット(茹でたて白玉8個に自家製粒あん・きなこ・みたらしの3種と選べるアイス、猫もなかが付く)／かき氷 各種(白蜜・あずき・黒蜜きなこ・ほうじ茶・宇治抹茶・自家製糀甘酒。通年提供)／おはぎ(自家製餡子と雑穀米入りおこわ。1個から)", "a": "愛媛県松山市二番町2丁目5-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8Ccafe%20WA%21KKA%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E4%BA%8C%E7%95%AA%E7%94%BA2%E4%B8%81%E7%9B%AE5-1", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-wa-kka", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-wa-kka.jpg", "ext": ""}, {"i": 62, "n": "my botchan dango 30", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.851322, "lng": 132.785263, "d": "my坊っちゃん団子(30種の餡から3つ選ぶ串団子。原材料は全て国産)／天ぷら団子(串団子に衣をつけて揚げたもの)／フローズン団子(1玉ずつ凍らせた団子)／抹茶(新宮茶の抹茶粉を客が自分で点てる方式)", "a": "愛媛県松山市道後湯之町6-15", "m": "https://www.google.com/maps/search/?api=1&query=my%20botchan%20dango%2030%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA6-15", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-my-botchan-dango-30", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-my-botchan-dango-30.jpg", "ext": ""}, {"i": 63, "n": "道後の町屋", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.851669, "lng": 132.785187, "d": "じゃこ天バーガー(黒胡麻のバンズに松山名物のじゃこ天とトマトサルサを挟む)／パンシチュー(パン・ド・カンパーニュをくり抜いて本日のシチューを入れる)／自家焙煎のハンドドリップ珈琲／シフォンケーキ(卵と小麦粉の力だけで焼く。ドリンク+300円で付けられる)", "a": "愛媛県松山市道後湯之町14-26", "m": "https://www.google.com/maps/search/?api=1&query=%E9%81%93%E5%BE%8C%E3%81%AE%E7%94%BA%E5%B1%8B%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA14-26", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-dogo-no-machiya", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-dogo-no-machiya.jpg", "ext": ""}, {"i": 64, "n": "道後 白鷺珈琲", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.850719, "lng": 132.785187, "d": "季節のパフェ(愛媛県産の旬の果実を使う。月替わり)／モンブラン／かき氷(ぶどう等、季節の果実を使う)／愛媛県産の素材を使ったモーニング(土日祝の9:00〜11:00 L.O.)", "a": "愛媛県松山市道後湯之町12-1 ローソン2階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%81%93%E5%BE%8C%20%E7%99%BD%E9%B7%BA%E7%8F%88%E7%90%B2%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%81%93%E5%BE%8C%E6%B9%AF%E4%B9%8B%E7%94%BA12-1%20%E3%83%AD%E3%83%BC%E3%82%BD%E3%83%B32%E9%9A%8E", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-shirasagi-coffee", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-shirasagi-coffee.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-cafe-shirasagi-coffee_exterior.jpg"}, {"i": 65, "n": "愛媛の学校1970 なましぼり学園", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 33.843761, "lng": 132.771744, "d": "なましぼりみかんジュース(柑橘の旬の時期に出す生搾り。この店の一番の自慢)／蛇口から注ぐ愛媛産柑橘100％のストレート果汁", "a": "愛媛県松山市大街道3-7-6", "m": "https://www.google.com/maps/search/?api=1&query=%E6%84%9B%E5%AA%9B%E3%81%AE%E5%AD%A6%E6%A0%A11970%20%E3%81%AA%E3%81%BE%E3%81%97%E3%81%BC%E3%82%8A%E5%AD%A6%E5%9C%92%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%933-7-6", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-ehime-no-gakko-1970", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-ehime-no-gakko-1970.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-cafe-ehime-no-gakko-1970_exterior.jpg"}, {"i": 66, "n": "MAISON ROSIE", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 33.843357, "lng": 132.769653, "d": "季節のパフェ(旬の果実を使い、月替わりで構成が変わる。1,650円税込〜)／デザート仕立てのフルコース(18時から・完全予約制)／厳選のハーブティー(1,320円税込〜)", "a": "愛媛県松山市大街道3丁目2-27 美工社ビル2階", "m": "https://www.google.com/maps/search/?api=1&query=MAISON%20ROSIE%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E5%A4%A7%E8%A1%97%E9%81%933%E4%B8%81%E7%9B%AE2-27%20%E7%BE%8E%E5%B7%A5%E7%A4%BE%E3%83%93%E3%83%AB2%E9%9A%8E", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-maison-rosie", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-maison-rosie.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-cafe-maison-rosie_exterior.jpg"}, {"i": 67, "n": "わかくさ珈琲", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.844944, "lng": 132.760864, "d": "平日限定モーニングプレート(平日9:00〜11:00。スコーンやサラダを盛り合わせた一皿。ドリンク＋400円税込)／スコーン(手作りディップ付き)／わかくさ珈琲のプリン／わかくさカレー", "a": "愛媛県松山市若草町2-10", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%8F%E3%81%8B%E3%81%8F%E3%81%95%E7%8F%88%E7%90%B2%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E8%8B%A5%E8%8D%89%E7%94%BA2-10", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-wakakusa-coffee", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-wakakusa-coffee.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-cafe-wakakusa-coffee_exterior.jpg"}, {"i": 68, "n": "食堂カフェ ステクル", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.833729, "lng": 132.769821, "d": "季節のパフェ(併設の青果店で仕入れた旬の果実を使う。柑橘の時期はみかんのパフェ)／あんバタートースト(地元の製菓店の餡とバター。ミニフルーツとホイップ付き)／日替わりのランチプレート(サラダバー＋ドリンク付き)", "a": "愛媛県松山市柳井町1丁目11-1 ステクルビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E5%A0%82%E3%82%AB%E3%83%95%E3%82%A7%20%E3%82%B9%E3%83%86%E3%82%AF%E3%83%AB%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E6%9F%B3%E4%BA%95%E7%94%BA1%E4%B8%81%E7%9B%AE11-1%20%E3%82%B9%E3%83%86%E3%82%AF%E3%83%AB%E3%83%93%E3%83%AB1F", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-stekuru", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-stekuru.jpg", "ext": ""}, {"i": 69, "n": "三津カフェ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.857479, "lng": 132.716736, "d": "三津カフェ季節のプレート(愛媛県産の野菜と毎朝市場で仕入れる魚・肉を使う。小鉢が複数付く)／自家製スイーツとケーキ(提供は13時30分から)／かき氷(白玉あずき・いちごなど)", "a": "愛媛県松山市須賀町4-6", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E6%B4%A5%E3%82%AB%E3%83%95%E3%82%A7%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%A0%88%E8%B3%80%E7%94%BA4-6", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-mitsu-cafe", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-mitsu-cafe.jpg", "ext": ""}, {"i": 70, "n": "Cafe Laila", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.799068, "lng": 132.81366, "d": "ライラブレンド(自家焙煎で仕上げたオリジナルのブレンド珈琲)／トロピカルダッチベイビー(焼きたての生地に南国のフルーツを載せる)／ハンバーグロコモコ(特製グレイビーソースと半熟卵)／モチコチキン", "a": "愛媛県松山市高井町714-1", "m": "https://www.google.com/maps/search/?api=1&query=Cafe%20Laila%20%E6%84%9B%E5%AA%9B%E7%9C%8C%E6%9D%BE%E5%B1%B1%E5%B8%82%E9%AB%98%E4%BA%95%E7%94%BA714-1", "u": "../japan/ehime/matsuyama.html#c-matsuyama-cafe-laila", "food": "../japan/ehime/img/matsuyama/matsuyama-cafe-laila.jpg", "ext": "../japan/ehime/img/matsuyama/matsuyama-cafe-laila_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.839200,132.769701],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('matsuyama', "松山");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
