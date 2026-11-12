@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>南国・香南 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>南国・香南 の食べ歩き地図<span class="n">43店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="南国・香南 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">南国・香南 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/kochi/nankoku.html"><span class="sn-e">📄</span>南国・香南のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（109都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "土佐料理 司 高知空港店", "c": ["和食"], "v": "レストラン", "lat": 33.541786, "lng": 133.675613, "d": "鰹の塩たたき（藁と炭で炙った一本釣りの鰹を塩で食べる）、うつぼ料理（高知で食べられる磯魚のうつぼを唐揚げやたたきで）、土佐巻（鰹のたたきを芯にした太巻き）", "a": "高知県南国市久枝乙58（高知龍馬空港内）", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E6%96%99%E7%90%86%20%E5%8F%B8%20%E9%AB%98%E7%9F%A5%E7%A9%BA%E6%B8%AF%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E4%B9%85%E6%9E%9D%E4%B9%9958%EF%BC%88%E9%AB%98%E7%9F%A5%E9%BE%8D%E9%A6%AC%E7%A9%BA%E6%B8%AF%E5%86%85%EF%BC%89", "u": "../japan/kochi/nankoku.html#c-nankoku-kyodo-tsukasa-kochi-airport", "food": "../japan/kochi/img/nankoku/nankoku-kyodo-tsukasa-kochi-airport.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-kyodo-tsukasa-kochi-airport_exterior.jpg"}, {"i": 1, "n": "レストラン グドラック", "c": ["和食"], "v": "レストラン", "lat": 33.566662, "lng": 133.631546, "d": "たたき定食（鰹のたたきに小鉢・味噌汁・ご飯が付く定食）、土佐黒潮定食（鰹のたたきと天ぷらを一膳に盛った御膳）、ごめんケンカシャモのすき焼き（南国市後免の地鶏「ごめんケンカシャモ」を使う）", "a": "高知県南国市明見933", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%B0%E3%83%89%E3%83%A9%E3%83%83%E3%82%AF%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E6%98%8E%E8%A6%8B933", "u": "../japan/kochi/nankoku.html#c-nankoku-kyodo-goodluck", "food": "../japan/kochi/img/nankoku/nankoku-kyodo-goodluck.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-kyodo-goodluck_exterior.jpg"}, {"i": 2, "n": "レストラン風良里", "c": ["和食"], "v": "レストラン", "lat": 33.610767, "lng": 133.642166, "d": "藁焼き鰹のタタキ丼（藁で炙った鰹のたたきを薬味とタレで丼に）、しらす丼（土佐湾のしらすをご飯に敷く）、土佐ブランド鶏と魚だしの塩ラーメン（リニューアル後の看板）", "a": "高知県南国市左右山102-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%A2%A8%E8%89%AF%E9%87%8C%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%B7%A6%E5%8F%B3%E5%B1%B1102-1", "u": "../japan/kochi/nankoku.html#c-nankoku-kyodo-furari", "food": "", "ext": "../japan/kochi/img/nankoku/nankoku-kyodo-furari_exterior.jpg"}, {"i": 3, "n": "喰多朗 南国店", "c": ["和食"], "v": "レストラン", "lat": 33.572264, "lng": 133.648857, "d": "土佐おきゃく皿鉢コース（大皿に刺身・寿司・揚げ物を盛る土佐の宴会料理）、軍鶏鍋（坂本龍馬が好んだと伝わるシャモの鍋）、藁焼きのかつおのタタキ（タレと塩から選べる）", "a": "高知県南国市大埇甲1563-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%B0%E5%A4%9A%E6%9C%97%20%E5%8D%97%E5%9B%BD%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%A4%A7%E5%9F%87%E7%94%B21563-1", "u": "../japan/kochi/nankoku.html#c-nankoku-kyodo-kutaro-nankoku", "food": "../japan/kochi/img/nankoku/nankoku-kyodo-kutaro-nankoku.jpg", "ext": ""}, {"i": 4, "n": "旅館・レストラン かとり", "c": ["和食"], "v": "レストラン", "lat": 33.549091, "lng": 133.716324, "d": "カツオのタタキ定食（鰹のたたきに小鉢とご飯が付く）、ウツボのタタキ（高知で食べられる磯魚うつぼを炙ってたたきに）、土佐巻き（鰹のたたきを芯にした巻き寿司）", "a": "高知県香南市野市町東野1955-2", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%85%E9%A4%A8%E3%83%BB%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%8B%E3%81%A8%E3%82%8A%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E9%87%8E%E5%B8%82%E7%94%BA%E6%9D%B1%E9%87%8E1955-2", "u": "../japan/kochi/nankoku.html#c-nankoku-kyodo-katori", "food": "../japan/kochi/img/nankoku/nankoku-kyodo-katori.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-kyodo-katori_exterior.jpg"}, {"i": 5, "n": "高知黒潮ホテル レストランcolors", "c": ["和食"], "v": "レストラン", "lat": 33.559319, "lng": 133.704086, "d": "鰹のタタキ（高知の定番を定食や夕食の膳で）、四万十川海老の唐揚げ（川海老をそのまま揚げる）、夕食「和の風」（鰹のたたきなど高知の食材を詰めた懐石風の弁当）", "a": "高知県香南市野市町東野1630", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AB%98%E7%9F%A5%E9%BB%92%E6%BD%AE%E3%83%9B%E3%83%86%E3%83%AB%20%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3colors%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E9%87%8E%E5%B8%82%E7%94%BA%E6%9D%B1%E9%87%8E1630", "u": "../japan/kochi/nankoku.html#c-nankoku-kyodo-kuroshio-colors", "food": "../japan/kochi/img/nankoku/nankoku-kyodo-kuroshio-colors.jpg", "ext": ""}, {"i": 6, "n": "リゾートホテル海辺の果樹園", "c": ["和食"], "v": "レストラン", "lat": 33.520531, "lng": 133.761475, "d": "モダン皿鉢料理（土佐の皿鉢料理を白・黒の皿に現代風に盛り替えた夕食の献立）、藁焼き鰹のタタキ（モダン皿鉢の中の一品、実演の企画もある）、海賊焼（地元の魚介を焼く海鮮バーベキュー）", "a": "高知県香南市夜須町手結山506-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%E3%83%9B%E3%83%86%E3%83%AB%E6%B5%B7%E8%BE%BA%E3%81%AE%E6%9E%9C%E6%A8%B9%E5%9C%92%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E5%A4%9C%E9%A0%88%E7%94%BA%E6%89%8B%E7%B5%90%E5%B1%B1506-1", "u": "../japan/kochi/nankoku.html#c-nankoku-kyodo-umibe-no-kajuen", "food": "../japan/kochi/img/nankoku/nankoku-kyodo-umibe-no-kajuen.jpg", "ext": ""}, {"i": 7, "n": "平家の茶屋", "c": ["和食"], "v": "レストラン", "lat": 33.638931, "lng": 133.747482, "d": "鰹の漬け丼（秘伝のタレに漬けた鰹を白飯か酢飯に。ゆずや山椒が香る）、カツオ三昧定食（鰹の塩タタキと鰹の漬け丼を一度に食べる期間限定の定食）、十割そば（自家製粉のそば粉だけで打つつなぎ不使用のそば）", "a": "高知県香美市香北町橋川野597", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B9%B3%E5%AE%B6%E3%81%AE%E8%8C%B6%E5%B1%8B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E7%BE%8E%E5%B8%82%E9%A6%99%E5%8C%97%E7%94%BA%E6%A9%8B%E5%B7%9D%E9%87%8E597", "u": "../japan/kochi/nankoku.html#c-nankoku-kyodo-heike-no-chaya", "food": "../japan/kochi/img/nankoku/nankoku-kyodo-heike-no-chaya.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-kyodo-heike-no-chaya_exterior.jpg"}, {"i": 8, "n": "麺屋・國丸。南国本店", "c": ["麺類"], "v": "レストラン", "lat": 33.569798, "lng": 133.624756, "d": "金の炙り味噌カツラーメン（炙った味噌だれのスープに自家製のとんかつをのせる）／北海道百年味噌サムライラーメン（熟成味噌のスープに厚切りチャーシューを重ねる）／うな重（併設の「うな國」の鰻。並1,580円・上2,280円・特上2,880円）", "a": "高知県南国市明見886-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%E3%83%BB%E5%9C%8B%E4%B8%B8%E3%80%82%E5%8D%97%E5%9B%BD%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E6%98%8E%E8%A6%8B886-1", "u": "../japan/kochi/nankoku.html#c-nankoku-men-kunimaru-nangoku", "food": "../japan/kochi/img/nankoku/nankoku-men-kunimaru-nangoku.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-men-kunimaru-nangoku_exterior.jpg"}, {"i": 9, "n": "製麺処 蔵木 南国店", "c": ["麺類"], "v": "レストラン", "lat": 33.567551, "lng": 133.636078, "d": "牛モツつけ麺（25種の材料を13時間煮込むつけ汁に牛モツを合わせる・970円）／特製牛モツつけ麺（具を増やした上位版・1,200円）／台湾まぜそば（台湾ミンチと卵黄を麺に和える。ごはん付880円）", "a": "高知県南国市篠原37-1", "m": "https://www.google.com/maps/search/?api=1&query=%E8%A3%BD%E9%BA%BA%E5%87%A6%20%E8%94%B5%E6%9C%A8%20%E5%8D%97%E5%9B%BD%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E7%AF%A0%E5%8E%9F37-1", "u": "../japan/kochi/nankoku.html#c-nankoku-men-kuraki-nankoku", "food": "../japan/kochi/img/nankoku/nankoku-men-kuraki-nankoku.jpg", "ext": ""}, {"i": 10, "n": "ラーメン食堂 黒まる", "c": ["麺類"], "v": "レストラン", "lat": 33.572264, "lng": 133.648857, "d": "くろまるラーメン（豚骨ベースのスープに味玉とチャーシュー）／ハーフセット（半分のくろまるラーメン＋ミニチキン南蛮＋半チャーハン・980円）／日替わりランチ（平日のみ・ごはん大盛り無料・880円）", "a": "高知県南国市大そね甲2301-4", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E9%A3%9F%E5%A0%82%20%E9%BB%92%E3%81%BE%E3%82%8B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%A4%A7%E3%81%9D%E3%81%AD%E7%94%B22301-4", "u": "../japan/kochi/nankoku.html#c-nankoku-men-kuromaru", "food": "../japan/kochi/img/nankoku/nankoku-men-kuromaru.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-men-kuromaru_exterior.jpg"}, {"i": 11, "n": "中華そば 楽", "c": ["麺類"], "v": "レストラン", "lat": 33.5625416, "lng": 133.6443721, "d": "中華そば（豚骨ベースに醤油で調味したスープ・750円）／担々麺（ごまの香りを立てた一杯。価格は非公表）", "a": "高知県南国市大そね乙3330-2", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E3%81%9D%E3%81%B0%20%E6%A5%BD%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%A4%A7%E3%81%9D%E3%81%AD%E4%B9%993330-2", "u": "../japan/kochi/nankoku.html#c-nankoku-men-raku", "food": "../japan/kochi/img/nankoku/nankoku-men-raku.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-men-raku_exterior.jpg"}, {"i": 12, "n": "ラーメンの豚太郎 南国バイパス店", "c": ["麺類"], "v": "レストラン", "lat": 33.566662, "lng": 133.631546, "d": "みそカツラーメン（にんにくを効かせた味噌スープに揚げたての自家製とんかつをのせる・1,130円）／座敷で取り分けやすい一般のラーメン各種（価格は店頭のメニュー表による）", "a": "高知県南国市明見963-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E3%81%AE%E8%B1%9A%E5%A4%AA%E9%83%8E%20%E5%8D%97%E5%9B%BD%E3%83%90%E3%82%A4%E3%83%91%E3%82%B9%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E6%98%8E%E8%A6%8B963-1", "u": "../japan/kochi/nankoku.html#c-nankoku-men-tontaro-bypass", "food": "../japan/kochi/img/nankoku/nankoku-men-tontaro-bypass.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-men-tontaro-bypass_exterior.jpg"}, {"i": 13, "n": "中国料理 龍潭", "c": ["麺類"], "v": "レストラン", "lat": 33.572264, "lng": 133.648857, "d": "五目そば（白菜や豚肉などを合わせた餡をかけた中華麺）／天津メン（中華麺にかに玉をのせて餡をかける）／B定食（ごはん・スープ・唐揚げ・酢豚・卵焼き・サラダ・漬物の組み合わせ）", "a": "高知県南国市大そね甲1705-8", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E9%BE%8D%E6%BD%AD%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%A4%A7%E3%81%9D%E3%81%AD%E7%94%B21705-8", "u": "../japan/kochi/nankoku.html#c-nankoku-men-ryutan", "food": "../japan/kochi/img/nankoku/nankoku-men-ryutan.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-men-ryutan_exterior.jpg"}, {"i": 14, "n": "マルトクラーメン", "c": ["麺類"], "v": "レストラン", "lat": 33.55674, "lng": 133.696854, "d": "こってり系のラーメン（店の説明による看板の系統）／まぜそば（卵黄と肉そぼろを麺に和える一杯）", "a": "高知県香南市野市町西野2217-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%83%AB%E3%83%88%E3%82%AF%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E9%87%8E%E5%B8%82%E7%94%BA%E8%A5%BF%E9%87%8E2217-1", "u": "../japan/kochi/nankoku.html#c-nankoku-men-marutoku-noichi", "food": "../japan/kochi/img/nankoku/nankoku-men-marutoku-noichi.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-men-marutoku-noichi_exterior.jpg"}, {"i": 15, "n": "とさを商店", "c": ["麺類"], "v": "レストラン", "lat": 33.544495, "lng": 133.724609, "d": "ちりめん中日そば（中華麺を和風のうどんだしで食べる赤岡の一杯に、ちりめんじゃこを合わせる）／ちりめんおこげ（ちりめんを出汁で煮て揚げ、大根おろしを添える）／ニラ餃子（地元産のニラを使う）", "a": "高知県香南市赤岡町476-4", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%81%95%E3%82%92%E5%95%86%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E8%B5%A4%E5%B2%A1%E7%94%BA476-4", "u": "../japan/kochi/nankoku.html#c-nankoku-men-tosawo-shoten", "food": "../japan/kochi/img/nankoku/nankoku-men-tosawo-shoten.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-men-tosawo-shoten_exterior.jpg"}, {"i": 16, "n": "みなみ家", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.574974, "lng": 133.643906, "d": "鯖の炙り寿司（〆た鯖を炙って握る、店が看板に挙げる寿司）／カツオのタタキ（時価。仕入れにより価格が変わる）／みなみ家堪能コース（あさりの酒蒸し・刺身盛り・寿司4種・牛タタキに2時間飲み放題が付く5,500円）", "a": "高知県南国市後免町260-5", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BF%E3%81%AA%E3%81%BF%E5%AE%B6%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%BE%8C%E5%85%8D%E7%94%BA260-5", "u": "../japan/kochi/nankoku.html#c-nankoku-washoku-minamiya", "food": "../japan/kochi/img/nankoku/nankoku-washoku-minamiya.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-washoku-minamiya_exterior.jpg"}, {"i": 17, "n": "魚菜 稲月", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.494465, "lng": 133.409897, "d": "稲月御膳（小鉢・刺身・揚げ物などを組んだ11品の御膳、3,000円）／小鉢天婦羅膳（メインを選ぶ揚げたての天ぷらと小鉢で10品、1,700円）／鰹のたたきでお昼ごはん（塩かポン酢を選ぶ。1,800円からの時価）", "a": "高知県土佐市蓮池2185-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E8%8F%9C%20%E7%A8%B2%E6%9C%88%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%9C%9F%E4%BD%90%E5%B8%82%E8%93%AE%E6%B1%A02185-1", "u": "../japan/kochi/nankoku.html#c-nankoku-washoku-uona-inatsuki", "food": "../japan/kochi/img/nankoku/nankoku-washoku-uona-inatsuki.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-washoku-uona-inatsuki_exterior.jpg"}, {"i": 18, "n": "あわびめし 栄楽", "c": ["寿司・海鮮"], "v": "食べ歩き", "lat": 33.532578, "lng": 133.756149, "d": "あわびめし（薄味の炊き込みご飯に薄切りのあわびをのせた看板料理）／伊勢エビ料理（姿のまま造りや焼きで出す）", "a": "高知県香南市夜須町千切536-111", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%82%8F%E3%81%B3%E3%82%81%E3%81%97%20%E6%A0%84%E6%A5%BD%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E5%A4%9C%E9%A0%88%E7%94%BA%E5%8D%83%E5%88%87536-111", "u": "../japan/kochi/nankoku.html#c-nankoku-washoku-eiraku-awabimeshi", "food": "../japan/kochi/img/nankoku/nankoku-washoku-eiraku-awabimeshi.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-washoku-eiraku-awabimeshi_exterior.jpg"}, {"i": 19, "n": "うなぎ屋 きた本", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.545128, "lng": 133.69162, "d": "うな重（自社の池で育てた鰻を炭火で焼いて重に盛る）／白焼うなぎ（たれを付けずに焼いたもの。持ち帰りができる）／活うなぎ（生きたままの販売。予約が必要）", "a": "高知県香南市吉川町吉原1264", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%E5%B1%8B%20%E3%81%8D%E3%81%9F%E6%9C%AC%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E5%90%89%E5%B7%9D%E7%94%BA%E5%90%89%E5%8E%9F1264", "u": "../japan/kochi/nankoku.html#c-nankoku-washoku-unagiya-kitamoto", "food": "../japan/kochi/img/nankoku/nankoku-washoku-unagiya-kitamoto.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-washoku-unagiya-kitamoto_exterior.jpg"}, {"i": 20, "n": "食・蔵一", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.544495, "lng": 133.724609, "d": "ちりめん定食（地元のじゃこ屋で釜揚げされたちりめんをご飯にのせる、950円）／日替わり定食（肉か魚を選ぶ、700円）／弁当（肉か魚のメインを選ぶ。当日の午前10時までに電話で注文）", "a": "高知県香南市赤岡町744-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E3%83%BB%E8%94%B5%E4%B8%80%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E8%B5%A4%E5%B2%A1%E7%94%BA744-1", "u": "../japan/kochi/nankoku.html#c-nankoku-washoku-syoku-kuraichi", "food": "../japan/kochi/img/nankoku/nankoku-washoku-syoku-kuraichi.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-washoku-syoku-kuraichi_exterior.jpg"}, {"i": 21, "n": "楽や", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.56226, "lng": 133.699768, "d": "季節の創作料理（旬の食材を使い、献立が時期で入れ替わる）／個室のコース（2階の宴会スペースは40名まで。予算に応じて組む）", "a": "高知県香南市野市町西野573-2", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A5%BD%E3%82%84%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E9%87%8E%E5%B8%82%E7%94%BA%E8%A5%BF%E9%87%8E573-2", "u": "../japan/kochi/nankoku.html#c-nankoku-washoku-rakuya", "food": "../japan/kochi/img/nankoku/nankoku-washoku-rakuya.jpg", "ext": ""}, {"i": 22, "n": "和牛焼肉あおき屋 南国店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.572264, "lng": 133.648857, "d": "焼きすき（すき焼き仕立てに焼いた肉を溶き卵にくぐらせる一皿）／幻の尾崎牛カルビ（宮崎の尾崎牛のカルビ）／3秒炙りあおき屋ロース（表面だけ炙るロース）", "a": "高知県南国市大埇甲1215-11 酒井ビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E7%89%9B%E7%84%BC%E8%82%89%E3%81%82%E3%81%8A%E3%81%8D%E5%B1%8B%20%E5%8D%97%E5%9B%BD%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%A4%A7%E5%9F%87%E7%94%B21215-11%20%E9%85%92%E4%BA%95%E3%83%93%E3%83%AB2F", "u": "../japan/kochi/nankoku.html#c-nankoku-izakaya-aokiya", "food": "../japan/kochi/img/nankoku/nankoku-izakaya-aokiya.jpg", "ext": ""}, {"i": 23, "n": "牛藩 南国店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.560665, "lng": 133.664932, "d": "牛藩カルビ（店名を冠した定番のカルビ）／牛ネギ塩上タン（ねぎ塩をのせた上タン）／スーパーヤングマンセット（肉と小鉢を組んだ盛り合わせ 3,938円）", "a": "高知県南国市田村甲517-1", "m": "https://www.google.com/maps/search/?api=1&query=%E7%89%9B%E8%97%A9%20%E5%8D%97%E5%9B%BD%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E7%94%B0%E6%9D%91%E7%94%B2517-1", "u": "../japan/kochi/nankoku.html#c-nankoku-izakaya-gyuhan", "food": "../japan/kochi/img/nankoku/nankoku-izakaya-gyuhan.jpg", "ext": ""}, {"i": 24, "n": "TACOLO＠ヒゲとカフェ", "c": ["居酒屋・焼肉"], "v": "カフェ", "lat": 33.602005, "lng": 133.680145, "d": "のり弁タコス（白身魚のフライときんぴらを海苔と合わせた和風のタコス）／タコス・デ・カルニタス（四万十ポークを煮込んだ定番のタコス）／手作りかき氷（ミルクソースをかけたもの。650円〜）", "a": "高知県香美市土佐山田町宝町5-8-9", "m": "https://www.google.com/maps/search/?api=1&query=TACOLO%EF%BC%A0%E3%83%92%E3%82%B2%E3%81%A8%E3%82%AB%E3%83%95%E3%82%A7%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E7%BE%8E%E5%B8%82%E5%9C%9F%E4%BD%90%E5%B1%B1%E7%94%B0%E7%94%BA%E5%AE%9D%E7%94%BA5-8-9", "u": "../japan/kochi/nankoku.html#c-nankoku-izakaya-tacolo", "food": "../japan/kochi/img/nankoku/nankoku-izakaya-tacolo.jpg", "ext": ""}, {"i": 25, "n": "Wayfarer Brewing Company", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 33.601257, "lng": 133.639862, "d": "樽生5タップ（醸造所直結の注ぎたて。缶にしていない限定醸造が入ることがある）／PAUL（エクストラペールエール。アルコール5.0％・IBU32、ホップはチヌーク、英国Paul's Malt社のペールモルトを使用）／グラウラー（容量592mlの保冷ボトル。樽生を詰めて持ち帰れる）", "a": "高知県南国市国分1278-1", "m": "https://www.google.com/maps/search/?api=1&query=Wayfarer%20Brewing%20Company%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%9B%BD%E5%88%861278-1", "u": "../japan/kochi/nankoku.html#c-nankoku-izakaya-wayfarer", "food": "../japan/kochi/img/nankoku/nankoku-izakaya-wayfarer.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-izakaya-wayfarer_exterior.jpg"}, {"i": 26, "n": "TOSACO TAP STAND", "c": ["ビール・バー"], "v": "バー・居酒屋・パブ", "lat": 33.638931, "lng": 133.747482, "d": "樽生9タップの飲み比べ（ゆず・赤しそ・フルーツトマトなど県内各地の食材を副原料に使う）／手ぶらでBBQ（土佐あかうしのBBQセット。ガーデン席で焼く。要予約）／ビールフロート（黒糖スタウトに雪ヶ峰ジャージーミルクのジェラートを浮かべる）", "a": "高知県香美市香北町橋川野584-1", "m": "https://www.google.com/maps/search/?api=1&query=TOSACO%20TAP%20STAND%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E7%BE%8E%E5%B8%82%E9%A6%99%E5%8C%97%E7%94%BA%E6%A9%8B%E5%B7%9D%E9%87%8E584-1", "u": "../japan/kochi/nankoku.html#c-nankoku-izakaya-tosaco-tapstand", "food": "../japan/kochi/img/nankoku/nankoku-izakaya-tosaco-tapstand.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-izakaya-tosaco-tapstand_exterior.jpg"}, {"i": 27, "n": "焼肉 大門", "c": ["居酒屋・焼肉", "ビール・バー"], "v": "レストラン", "lat": 33.602554, "lng": 133.676376, "d": "土佐あかうしの盛合せ（ロース・カルビ・モモの3種。脂が少なく赤身が多い高知の和牛。要事前予約）／特上ハラミ（入荷の少ない黒毛和牛・土佐あかうしのハラミ）／塩タン（香美市産のユズを添えて出す。トッピング用のネギは30円）", "a": "高知県香美市土佐山田町栄町7-57", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E5%A4%A7%E9%96%80%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E7%BE%8E%E5%B8%82%E5%9C%9F%E4%BD%90%E5%B1%B1%E7%94%B0%E7%94%BA%E6%A0%84%E7%94%BA7-57", "u": "../japan/kochi/nankoku.html#c-nankoku-izakaya-daimon", "food": "../japan/kochi/img/nankoku/nankoku-izakaya-daimon.jpg", "ext": ""}, {"i": 28, "n": "農園レストラン トリトン", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.5625416, "lng": 133.6443721, "d": "土佐あかうしと四万十ポークの手ごねハンバーグ（高知の褐毛和種と四万十ポークを合わせて手でこねたハンバーグ）／シャモピッツァ（はちきん地鶏をのせた窯焼きのピッツァ）／須崎産おとめ鯛の魚ピラフセット（須崎で獲れたおとめ鯛を使った魚のピラフ）", "a": "高知県南国市大埇乙847-1", "m": "https://www.google.com/maps/search/?api=1&query=%E8%BE%B2%E5%9C%92%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%88%E3%83%AA%E3%83%88%E3%83%B3%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%A4%A7%E5%9F%87%E4%B9%99847-1", "u": "../japan/kochi/nankoku.html#c-nankoku-yoshoku-triton", "food": "../japan/kochi/img/nankoku/nankoku-yoshoku-triton.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-yoshoku-triton_exterior.jpg"}, {"i": 29, "n": "レストラン ネレウス", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.5625416, "lng": 133.6443721, "d": "くまさんステーキ（鉄板で出す定番のステーキ）／ビフテキ丼（ステーキをのせた丼）／ネレウス御膳（だしの効いた炊き込みご飯や春巻きなどを組み合わせた御膳）", "a": "高知県南国市大埇乙854-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%8D%E3%83%AC%E3%82%A6%E3%82%B9%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%A4%A7%E5%9F%87%E4%B9%99854-1", "u": "../japan/kochi/nankoku.html#c-nankoku-yoshoku-nereus", "food": "../japan/kochi/img/nankoku/nankoku-yoshoku-nereus.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-yoshoku-nereus_exterior.jpg"}, {"i": 30, "n": "錆と煤", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.571323, "lng": 133.66748, "d": "南インドスペシャルミールス（高知の野菜を使った数種のおかず、サンバル、ラッサムなどを1枚の皿に盛る南インドの定食）／マトンビリヤニ（スパイスとマトンを米と炊き合わせた混ぜご飯）／モヒート風ジンジャーミントジュース（ミントをたっぷり使ったノンアルコールの飲み物）", "a": "高知県南国市立田632-19", "m": "https://www.google.com/maps/search/?api=1&query=%E9%8C%86%E3%81%A8%E7%85%A4%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E7%AB%8B%E7%94%B0632-19", "u": "../japan/kochi/nankoku.html#c-nankoku-yoshoku-sabitosusu", "food": "../japan/kochi/img/nankoku/nankoku-yoshoku-sabitosusu.jpg", "ext": ""}, {"i": 31, "n": "景福宮", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.591057, "lng": 133.659164, "d": "石焼きビビンバ定食（高知県産の野菜を使った石焼ビビンバに日替わりおかずのビュッフェが付く定食）／チーズタッカルビ（鶏肉と野菜をコチュジャンだれで炒めチーズを合わせた鉄板料理）／ホットク（くるみ・黒砂糖・シナモンを包んで焼く韓国の屋台菓子）", "a": "高知県南国市上末松316", "m": "https://www.google.com/maps/search/?api=1&query=%E6%99%AF%E7%A6%8F%E5%AE%AE%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E4%B8%8A%E6%9C%AB%E6%9D%BE316", "u": "../japan/kochi/nankoku.html#c-nankoku-yoshoku-kyonbokkun", "food": "../japan/kochi/img/nankoku/nankoku-yoshoku-kyonbokkun.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-yoshoku-kyonbokkun_exterior.jpg"}, {"i": 32, "n": "イタリア家庭料理 ナポリの風", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.530521, "lng": 133.636627, "d": "石窯焼きのピッツァ（薪の石窯で焼く、生地が薄くパリッとしたナポリ風のピッツァ）／ピザランチ（ピッツァにサラダ・ドリンクなどを組み合わせた月〜土限定の昼の定食）／パスタ（イタリアの家庭料理を基にしたパスタ各種）", "a": "高知県南国市浜改田888-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%BF%E3%83%AA%E3%82%A2%E5%AE%B6%E5%BA%AD%E6%96%99%E7%90%86%20%E3%83%8A%E3%83%9D%E3%83%AA%E3%81%AE%E9%A2%A8%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E6%B5%9C%E6%94%B9%E7%94%B0888-3", "u": "../japan/kochi/nankoku.html#c-nankoku-yoshoku-napolinokaze", "food": "../japan/kochi/img/nankoku/nankoku-yoshoku-napolinokaze.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-yoshoku-napolinokaze_exterior.jpg"}, {"i": 33, "n": "5019 PREMIUM FACTORY 南国店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.597427, "lng": 133.630539, "d": "強引具バーガー（具を重ねた南国店の看板バーガー）／土佐備長炭ハンバーグステーキ（土佐和牛を当日挽いて室戸産の土佐備長炭で焼くハンバーグ）／5019フライングバーガー（南国店だけのテイクアウト用バーガー）", "a": "高知県南国市岡豊町八幡835-1", "m": "https://www.google.com/maps/search/?api=1&query=5019%20PREMIUM%20FACTORY%20%E5%8D%97%E5%9B%BD%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%B2%A1%E8%B1%8A%E7%94%BA%E5%85%AB%E5%B9%A1835-1", "u": "../japan/kochi/nankoku.html#c-nankoku-yoshoku-5019-nangoku", "food": "../japan/kochi/img/nankoku/nankoku-yoshoku-5019-nangoku.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-yoshoku-5019-nangoku_exterior.jpg"}, {"i": 34, "n": "いちごカフェ（西島園芸団地）", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.592369, "lng": 133.639359, "d": "メロンのしっぽ（半分に割ったマスクメロンにソフトクリームを立てたもの。大・小の2種）／メロンパンケーキ（園内のメロンをのせた厚焼きパンケーキ）／トマトカレー（西島産フルーツトマトと野菜でつくるカレー。第1回土佐の食1グランプリ優勝）", "a": "高知県南国市廿枝600", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%A1%E3%81%94%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%88%E8%A5%BF%E5%B3%B6%E5%9C%92%E8%8A%B8%E5%9B%A3%E5%9C%B0%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%BB%BF%E6%9E%9D600", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-nishijima-ichigo", "food": "../japan/kochi/img/nankoku/nankoku-cafe-nishijima-ichigo.jpg", "ext": ""}, {"i": 35, "n": "焙煎香房・古具 庵", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.657955, "lng": 133.757141, "d": "ハンドドリップのスペシャルティコーヒー（中南米・アジア・アフリカの27種から選ぶ）／庵の厚切りバタートースト 350円（厚切り食パンにバター）／ベルギーワッフル 250円（焼き立てを皿で提供）", "a": "高知県香美市香北町五百蔵1513", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%99%E7%85%8E%E9%A6%99%E6%88%BF%E3%83%BB%E5%8F%A4%E5%85%B7%20%E5%BA%B5%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E7%BE%8E%E5%B8%82%E9%A6%99%E5%8C%97%E7%94%BA%E4%BA%94%E7%99%BE%E8%94%B51513", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-kogu-iori", "food": "../japan/kochi/img/nankoku/nankoku-cafe-kogu-iori.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-cafe-kogu-iori_exterior.jpg"}, {"i": 36, "n": "ドルチェかがみ", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 33.538876, "lng": 133.737457, "d": "日替わりジェラート（その日仕入れた果物・野菜でつくる。2026年11月9日は高知市のDeer Land Farm岡﨑牧場の牛乳、抹茶、キウイフルーツ、南国市・西島園芸団地のイチゴなど）／土佐リアンジェラート（高知県産の素材だけでつくるシリーズ）／ヘルシージェラート（砂糖不使用）", "a": "高知県香南市香我美町岸本417-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%89%E3%83%AB%E3%83%81%E3%82%A7%E3%81%8B%E3%81%8C%E3%81%BF%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E5%8D%97%E5%B8%82%E9%A6%99%E6%88%91%E7%BE%8E%E7%94%BA%E5%B2%B8%E6%9C%AC417-1", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-dolce-kagami", "food": "../japan/kochi/img/nankoku/nankoku-cafe-dolce-kagami.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-cafe-dolce-kagami_exterior.jpg"}, {"i": 37, "n": "喫茶HAMADA", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.572264, "lng": 133.648857, "d": "モーニングサービス 600円（11種類から選ぶ。南国市観光協会の掲載写真では、チーズをのせたトースト・スープ・ゆで卵・サラダ・果物が一枚のお盆にのる）／コーヒーなどの飲み物 450円〜（モーニングと合わせて頼む）／回数券（モーニング券10枚つづり5,500円、コーヒー券10枚つづり5,000円。通う人向け）", "a": "高知県南国市大そね甲1219-12", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6HAMADA%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%A4%A7%E3%81%9D%E3%81%AD%E7%94%B21219-12", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-kissa-hamada", "food": "../japan/kochi/img/nankoku/nankoku-cafe-kissa-hamada.jpg", "ext": ""}, {"i": 38, "n": "道の駅南国 風良里 KUBOTAアイスクリームショップ", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.610767, "lng": 133.642166, "d": "土佐ジローアイスクリン（高知の地鶏・土佐ジローの卵を使ったアイスクリン。シングル320円、ダブル450円。コーンかカップを選ぶ）／ソフトクリーム（南国市観光協会の掲載写真に写る店頭の掲示ではバニラ・コーヒー・ミックスの3種、各320円税込）／アイスキャンデーと季節の限定デザート（高知県産の果実を使った久保田食品の商品。贈答用のギフトもここで買える）", "a": "高知県南国市左右山102-1 道の駅南国風良里内", "m": "https://www.google.com/maps/search/?api=1&query=%E9%81%93%E3%81%AE%E9%A7%85%E5%8D%97%E5%9B%BD%20%E9%A2%A8%E8%89%AF%E9%87%8C%20KUBOTA%E3%82%A2%E3%82%A4%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%A0%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%B7%A6%E5%8F%B3%E5%B1%B1102-1%20%E9%81%93%E3%81%AE%E9%A7%85%E5%8D%97%E5%9B%BD%E9%A2%A8%E8%89%AF%E9%87%8C%E5%86%85", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-kubota-ice-furari", "food": "../japan/kochi/img/nankoku/nankoku-cafe-kubota-ice-furari.jpg", "ext": ""}, {"i": 39, "n": "コハマーコーヒー", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.715141, "lng": 133.91713, "d": "手作りの柚子ドリンク（高知の柚子を使った自家製の飲み物）／柚子かりんとう（同じく柚子を使った焼き菓子）／スコーンのあんバターサンド（店が人気1位と挙げる品。スコーンに餡とバターをはさむ）", "a": "高知県香美市物部町小浜732-4", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B3%E3%83%8F%E3%83%9E%E3%83%BC%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E7%BE%8E%E5%B8%82%E7%89%A9%E9%83%A8%E7%94%BA%E5%B0%8F%E6%B5%9C732-4", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-kohama-coffee", "food": "../japan/kochi/img/nankoku/nankoku-cafe-kohama-coffee.jpg", "ext": ""}, {"i": 40, "n": "カフェオルソン", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.566231, "lng": 133.635361, "d": "プリンパフェ 550円（自家製のプリンとバニラアイスを重ねたパフェ）／和風パフェ 580円（抹茶アイスと小倉あん）／モーニング（スープ・サラダ・ゆで卵・果物が付く。A＝トースト600円、B＝クロワッサンサンドとぶどうパン780円、C＝胚芽入りトースト650円）", "a": "高知県南国市篠原43", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%E3%82%AA%E3%83%AB%E3%82%BD%E3%83%B3%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E7%AF%A0%E5%8E%9F43", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-olson", "food": "../japan/kochi/img/nankoku/nankoku-cafe-olson.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-cafe-olson_exterior.jpg"}, {"i": 41, "n": "えんのお菓子屋さん", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.545582, "lng": 133.664856, "d": "季節のケーキ 400円〜（店主が露地で農薬を使わずに育てた旬の果実や野菜を使う）／焼菓子と手作りジャム（持ち帰り用。原材料は国内産・国内製造）／手作りジュース（店内で食べるときのみの品）", "a": "高知県南国市前浜2318", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%88%E3%82%93%E3%81%AE%E3%81%8A%E8%8F%93%E5%AD%90%E5%B1%8B%E3%81%95%E3%82%93%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E5%8D%97%E5%9B%BD%E5%B8%82%E5%89%8D%E6%B5%9C2318", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-en-no-okashiya", "food": "../japan/kochi/img/nankoku/nankoku-cafe-en-no-okashiya.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-cafe-en-no-okashiya_exterior.jpg"}, {"i": 42, "n": "茶房 古古", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.61916, "lng": 133.715714, "d": "日替わりランチ（内容は日によって変わる。品目と価格は公的機関の掲載ページに記載が無く未確認）／お子様ランチ（予約制）／季節の果物を使った甘いもの（物部川DMO協議会の掲載写真には、りんごを模した飴がけのデザートをグラスにのせた品が写る）", "a": "高知県香美市土佐山田町神母ノ木338-7", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8C%B6%E6%88%BF%20%E5%8F%A4%E5%8F%A4%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%A6%99%E7%BE%8E%E5%B8%82%E5%9C%9F%E4%BD%90%E5%B1%B1%E7%94%B0%E7%94%BA%E7%A5%9E%E6%AF%8D%E3%83%8E%E6%9C%A8338-7", "u": "../japan/kochi/nankoku.html#c-nankoku-cafe-sabou-coco", "food": "../japan/kochi/img/nankoku/nankoku-cafe-sabou-coco.jpg", "ext": "../japan/kochi/img/nankoku/nankoku-cafe-sabou-coco_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.575279,133.674597],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('nankoku', "南国・香南");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>高知 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>高知 の食べ歩き地図<span class="n">49店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="高知 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">高知 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/kochi/kochi.html"><span class="sn-e">📄</span>高知のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（109都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "明神丸 ひろめ市場店", "c": ["和食"], "v": "レストラン", "lat": 33.560104, "lng": 133.536026, "d": "鰹の塩たたき（藁で焼いた鰹に黒潮町産の天日塩と薬味）／たたき定食（たたき・ご飯・みそ汁）／塩たたき握り（塩たたきを握りにした一品・500円）", "a": "高知県高知市帯屋町2-3-1 ひろめ市場内", "m": "https://www.google.com/maps/search/?api=1&query=%E6%98%8E%E7%A5%9E%E4%B8%B8%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2-3-1%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%86%85", "u": "../japan/kochi/kochi.html#c-kochi-kyodo-myojinmaru-hirome", "food": "../japan/kochi/img/kochi/kochi-kyodo-myojinmaru-hirome.jpg", "ext": "../japan/kochi/img/kochi/kochi-kyodo-myojinmaru-hirome_exterior.jpg"}, {"i": 1, "n": "明神丸 本店", "c": ["和食"], "v": "レストラン", "lat": 33.559765, "lng": 133.539764, "d": "藁焼き鰹の塩たたき（黒潮町産の天日塩・ゆず果汁・にんにく）／タレたたき（明神丸特製のポン酢ダレと大葉・にんにく・茗荷）／宴会コース（公式サイトに宴会コースメニューのPDFあり）", "a": "高知県高知市本町1-1-2", "m": "https://www.google.com/maps/search/?api=1&query=%E6%98%8E%E7%A5%9E%E4%B8%B8%20%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%9C%AC%E7%94%BA1-1-2", "u": "../japan/kochi/kochi.html#c-kochi-kyodo-myojinmaru-honten", "food": "../japan/kochi/img/kochi/kochi-kyodo-myojinmaru-honten.jpg", "ext": "../japan/kochi/img/kochi/kochi-kyodo-myojinmaru-honten_exterior.jpg"}, {"i": 2, "n": "土佐料理 司 高知本店", "c": ["和食"], "v": "レストラン", "lat": 33.560463, "lng": 133.542267, "d": "皿鉢料理（刺身・鰹のたたき・組物・寿司を一枚の大皿に盛った土佐の宴会料理）／一本釣り鰹の塩たたき／うつぼのたたき（皮と身がゼラチン質のうつぼを炙って切ったもの）", "a": "高知県高知市はりまや町1-2-15", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E6%96%99%E7%90%86%20%E5%8F%B8%20%E9%AB%98%E7%9F%A5%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA1-2-15", "u": "../japan/kochi/kochi.html#c-kochi-kyodo-tsukasa-honten", "food": "../japan/kochi/img/kochi/kochi-kyodo-tsukasa-honten.jpg", "ext": "../japan/kochi/img/kochi/kochi-kyodo-tsukasa-honten_exterior.jpg"}, {"i": 3, "n": "土佐乃居酒屋 葉牡丹", "c": ["和食"], "v": "バー・居酒屋・パブ", "lat": 33.559475, "lng": 133.540527, "d": "どろめ（片口いわしの稚魚の生。ぬたや酢味噌で）／鯨たたき・鯨フライ（高知で古くから食べられてきた鯨料理）／串フライ盛合せ（海老・豚・いか・キス・なすの5本）", "a": "高知県高知市堺町2-21", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E4%B9%83%E5%B1%85%E9%85%92%E5%B1%8B%20%E8%91%89%E7%89%A1%E4%B8%B9%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%A0%BA%E7%94%BA2-21", "u": "../japan/kochi/kochi.html#c-kochi-kyodo-habotan", "food": "../japan/kochi/img/kochi/kochi-kyodo-habotan.jpg", "ext": "../japan/kochi/img/kochi/kochi-kyodo-habotan_exterior.jpg"}, {"i": 4, "n": "とさごはん 酔鯨亭", "c": ["和食"], "v": "レストラン", "lat": 33.55896, "lng": 133.543777, "d": "ミニ皿鉢（鰹たたき・くじら竜田揚げ・チャンバラ貝のいそ煮・土佐巻きなど9品の盛合せ・要予約）／鯨のすき焼き（2〜4名向け・一台6,000円・要予約）／土佐御膳（鰹のタタキ、ウツボのテリーヌ、ニロギの唐揚げなど9品の御膳）", "a": "高知県高知市南はりまや町1丁目17-25", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%81%95%E3%81%94%E3%81%AF%E3%82%93%20%E9%85%94%E9%AF%A8%E4%BA%AD%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8D%97%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA1%E4%B8%81%E7%9B%AE17-25", "u": "../japan/kochi/kochi.html#c-kochi-kyodo-suigeitei", "food": "../japan/kochi/img/kochi/kochi-kyodo-suigeitei.jpg", "ext": "../japan/kochi/img/kochi/kochi-kyodo-suigeitei_exterior.jpg"}, {"i": 5, "n": "魚頭 大熊", "c": ["和食"], "v": "レストラン", "lat": 33.562939, "lng": 133.540375, "d": "とろ鰹焼切（炙った鰹を塩と仏手柑を搾って食べる塩たたき）／うつぼ唐揚げ 生にんにく仕立て／さえずり酢味噌（鯨の舌を酢味噌で和えたもの）", "a": "高知県高知市廿代町4-9 メトロポリタンビル1F・2F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E9%A0%AD%20%E5%A4%A7%E7%86%8A%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA4-9%20%E3%83%A1%E3%83%88%E3%83%AD%E3%83%9D%E3%83%AA%E3%82%BF%E3%83%B3%E3%83%93%E3%83%AB1F%E3%83%BB2F", "u": "../japan/kochi/kochi.html#c-kochi-kyodo-uogashira-daikuma", "food": "../japan/kochi/img/kochi/kochi-kyodo-uogashira-daikuma.jpg", "ext": "../japan/kochi/img/kochi/kochi-kyodo-uogashira-daikuma_exterior.jpg"}, {"i": 6, "n": "土佐タタキ道場（ドライブインかつお船）", "c": ["和食"], "v": "レストラン", "lat": 33.512127, "lng": 133.580353, "d": "鰹タタキ定食（自分で藁焼きした鰹のたたきに、ご飯・汁物・小鉢が付く）／鰹タタキ単品／藁焼き体験龍馬膳（団体向け・ご飯と汁物付 2,640円）", "a": "高知県高知市仁井田201-2", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E3%82%BF%E3%82%BF%E3%82%AD%E9%81%93%E5%A0%B4%EF%BC%88%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E3%82%A4%E3%83%B3%E3%81%8B%E3%81%A4%E3%81%8A%E8%88%B9%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E4%BB%81%E4%BA%95%E7%94%B0201-2", "u": "../japan/kochi/kochi.html#c-kochi-kyodo-tosa-tataki-dojo", "food": "../japan/kochi/img/kochi/kochi-kyodo-tosa-tataki-dojo.jpg", "ext": "../japan/kochi/img/kochi/kochi-kyodo-tosa-tataki-dojo_exterior.jpg"}, {"i": 7, "n": "寿し柳 はりまや橋本店・新館", "c": ["和食"], "v": "レストラン", "lat": 33.558826, "lng": 133.542328, "d": "田舎にぎり寿し（なす浅漬け・みょうがなど高知の野菜を使った寿司。1個から注文可）／かつお定食（鰹の刺身またはたたきに小鉢・ご飯・漬物・汁物）／皿鉢料理（出前。組物は季節の魚介・野菜・肉の料理が約18種）", "a": "高知県高知市南はりまや町1丁目2-20", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%E6%9F%B3%20%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E6%A9%8B%E6%9C%AC%E5%BA%97%E3%83%BB%E6%96%B0%E9%A4%A8%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8D%97%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA1%E4%B8%81%E7%9B%AE2-20", "u": "../japan/kochi/kochi.html#c-kochi-kyodo-sushiryu", "food": "../japan/kochi/img/kochi/kochi-kyodo-sushiryu.jpg", "ext": ""}, {"i": 8, "n": "本場博多とんこつラーメン神 元祖本店", "c": ["麺類"], "v": "レストラン", "lat": 33.561607, "lng": 133.541962, "d": "黒こげラーメン（黒く焦がした香味油を効かせた豚骨スープ。本店限定）／土佐のかつおラーメン（かつおだしを合わせた一杯）／神特製つけ麺（かつおだれで食べるつけ麺。1,480円）", "a": "高知県高知市追手筋1-1-5", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E5%A0%B4%E5%8D%9A%E5%A4%9A%E3%81%A8%E3%82%93%E3%81%93%E3%81%A4%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E7%A5%9E%20%E5%85%83%E7%A5%96%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BF%BD%E6%89%8B%E7%AD%8B1-1-5", "u": "../japan/kochi/kochi.html#c-kochi-men-ramen-jin-ganso", "food": "../japan/kochi/img/kochi/kochi-men-ramen-jin-ganso.jpg", "ext": "../japan/kochi/img/kochi/kochi-men-ramen-jin-ganso_exterior.jpg"}, {"i": 9, "n": "桂浜美食館 神", "c": ["麺類"], "v": "レストラン", "lat": 33.499077, "lng": 133.57576, "d": "かつおラーメン（かつおだしのスープ。公式系の取材記事では完成まで8年かけたと紹介されている）／はちきん地鶏塩ラーメン（高知県の地鶏はちきん地鶏を使った塩ラーメン）／ピリ辛かつお混ぜ麺（汁なしの混ぜ麺）", "a": "高知県高知市浦戸6 桂浜公園商業施設A棟", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A1%82%E6%B5%9C%E7%BE%8E%E9%A3%9F%E9%A4%A8%20%E7%A5%9E%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%B5%A6%E6%88%B86%20%E6%A1%82%E6%B5%9C%E5%85%AC%E5%9C%92%E5%95%86%E6%A5%AD%E6%96%BD%E8%A8%ADA%E6%A3%9F", "u": "../japan/kochi/kochi.html#c-kochi-men-katsurahama-jin", "food": "../japan/kochi/img/kochi/kochi-men-katsurahama-jin.jpg", "ext": "../japan/kochi/img/kochi/kochi-men-katsurahama-jin_exterior.jpg"}, {"i": 10, "n": "まんしゅう 本店", "c": ["麺類"], "v": "レストラン", "lat": 33.558678, "lng": 133.551605, "d": "ジャン麺（鶏がらスープに豆板醤とホルモン・卵・高知県産ニラを合わせた旨辛あんかけ麺）／ゆでホル炒め（夜17時以降限定。ホルモンの旨みを吸った野菜にニンニクとショウガを効かせた特製ダレ）／手作りからあげ", "a": "高知県高知市城見町9-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%82%93%E3%81%97%E3%82%85%E3%81%86%20%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%9F%8E%E8%A6%8B%E7%94%BA9-3", "u": "../japan/kochi/kochi.html#c-kochi-men-mansyu-honten", "food": "../japan/kochi/img/kochi/kochi-men-mansyu-honten.jpg", "ext": "../japan/kochi/img/kochi/kochi-men-mansyu-honten_exterior.jpg"}, {"i": 11, "n": "鍋焼きラーメン谷口食堂", "c": ["麺類"], "v": "レストラン", "lat": 33.56216, "lng": 133.538986, "d": "鍋焼きラーメン（土鍋で出す鶏ガラ醤油のラーメン。ちくわ・ねぎ・生卵が入る須崎式）／鍋焼きラーメン キムチ（上の鍋焼きラーメンにキムチを加えたもの）", "a": "高知県高知市追手筋1丁目7-14 田村ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%8D%8B%E7%84%BC%E3%81%8D%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E8%B0%B7%E5%8F%A3%E9%A3%9F%E5%A0%82%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BF%BD%E6%89%8B%E7%AD%8B1%E4%B8%81%E7%9B%AE7-14%20%E7%94%B0%E6%9D%91%E3%83%93%E3%83%AB1F", "u": "../japan/kochi/kochi.html#c-kochi-men-taniguchi-shokudo", "food": "../japan/kochi/img/kochi/kochi-men-taniguchi-shokudo.jpg", "ext": "../japan/kochi/img/kochi/kochi-men-taniguchi-shokudo_exterior.jpg"}, {"i": 12, "n": "麺屋・國丸。土佐道路店。", "c": ["麺類"], "v": "レストラン", "lat": 33.546024, "lng": 133.504974, "d": "金の炙り味噌カツラーメン（三年熟成の赤味噌を炙った薬膳味噌のスープに、揚げたてのとんかつを載せた一杯。高知発祥の味噌カツラーメン）／北海道百年味噌ラーメン（塩味と辛味の強い熟成赤味噌を使う國丸の原点）／牛モツ味噌ラーメン（百年味噌のスープに牛モツを合わせたもの）", "a": "高知県高知市鴨部1095番1号", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%E3%83%BB%E5%9C%8B%E4%B8%B8%E3%80%82%E5%9C%9F%E4%BD%90%E9%81%93%E8%B7%AF%E5%BA%97%E3%80%82%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E9%B4%A8%E9%83%A81095%E7%95%AA1%E5%8F%B7", "u": "../japan/kochi/kochi.html#c-kochi-men-kunimaru-tosadoro", "food": "../japan/kochi/img/kochi/kochi-men-kunimaru-tosadoro.jpg", "ext": ""}, {"i": 13, "n": "しなとら 高須店", "c": ["麺類"], "v": "レストラン", "lat": 33.558281, "lng": 133.588303, "d": "しなとららーめん（自家製熟成麺を使う定番。830円）／濃厚醤油とんこつらーめん（豚骨を強火で炊き出したとろみのあるスープにチャーシューの漬け醤油を合わせたもの。880円）／焼餃子（1人前6個330円。一部店舗は鉄板餃子で提供）", "a": "高知県高知市高須1-18-13", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%97%E3%81%AA%E3%81%A8%E3%82%89%20%E9%AB%98%E9%A0%88%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E9%AB%98%E9%A0%881-18-13", "u": "../japan/kochi/kochi.html#c-kochi-men-shinatora-takasu", "food": "../japan/kochi/img/kochi/kochi-men-shinatora-takasu.jpg", "ext": ""}, {"i": 14, "n": "製麺処 蔵木", "c": ["麺類"], "v": "レストラン", "lat": 33.560482, "lng": 133.539337, "d": "牛モツつけ麺（魚粉だしの濃厚なつけ汁に国産和牛のホルモンを入れた看板メニュー。全粒粉入りの自家製太麺）／蔵木の中華そば・醤油（鶏ガラと煮干しのスープに細めの麺を合わせたあっさり系）／スープ割り・ごはん割り（残ったつけ汁を割って二度楽しむ締め）", "a": "高知県高知市帯屋町1-10-12 竹屋ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E8%A3%BD%E9%BA%BA%E5%87%A6%20%E8%94%B5%E6%9C%A8%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-10-12%20%E7%AB%B9%E5%B1%8B%E3%83%93%E3%83%AB1F", "u": "../japan/kochi/kochi.html#c-kochi-men-kuraki-obiyamachi", "food": "../japan/kochi/img/kochi/kochi-men-kuraki-obiyamachi.jpg", "ext": "../japan/kochi/img/kochi/kochi-men-kuraki-obiyamachi_exterior.jpg"}, {"i": 15, "n": "鍋焼きラーメンのがろ～ とさのさとアグリコレット店", "c": ["麺類"], "v": "レストラン", "lat": 33.569, "lng": 133.560562, "d": "鍋焼きラーメン おや鳥（親鳥の切り身・ねぎ・ちくわ・生卵が入る基本の一杯。鶏と魚介のだしに自家製醤油だれを合わせ、土鍋のまま煮立った状態で出る）／赤辛（16種類のスパイスを独自に配合した旨辛仕立て。辛さを5段階から選ぶ）／ニンニクホルモン（ぷりぷりのホルモンとすりおろし生ニンニクを入れたスタミナ系。ニンニクは少なめ・別皿も可）", "a": "高知県高知市北御座10-10 とさのさと AGRI COLLETTO内", "m": "https://www.google.com/maps/search/?api=1&query=%E9%8D%8B%E7%84%BC%E3%81%8D%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E3%81%AE%E3%81%8C%E3%82%8D%EF%BD%9E%20%E3%81%A8%E3%81%95%E3%81%AE%E3%81%95%E3%81%A8%E3%82%A2%E3%82%B0%E3%83%AA%E3%82%B3%E3%83%AC%E3%83%83%E3%83%88%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8C%97%E5%BE%A1%E5%BA%A710-10%20%E3%81%A8%E3%81%95%E3%81%AE%E3%81%95%E3%81%A8%20AGRI%20COLLETTO%E5%86%85", "u": "../japan/kochi/kochi.html#c-kochi-men-garo-tosanosato", "food": "../japan/kochi/img/kochi/kochi-men-garo-tosanosato.jpg", "ext": "../japan/kochi/img/kochi/kochi-men-garo-tosanosato_exterior.jpg"}, {"i": 16, "n": "麺房 三宅", "c": ["麺類"], "v": "レストラン", "lat": 33.569759, "lng": 133.530411, "d": "ざるうどん（店のうどんの層になった食感が最もわかる一品。うずら卵・胡麻・ねぎ・天かすとつけ汁が付く）／天ぷらうどん（注文後に揚げる海老と季節の野菜の天ぷらをのせる）／カレーうどん（女将が無添加ルーとミンチ肉に香辛料を調合して作る）", "a": "高知県高知市伊勢崎町5-18", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E6%88%BF%20%E4%B8%89%E5%AE%85%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E4%BC%8A%E5%8B%A2%E5%B4%8E%E7%94%BA5-18", "u": "../japan/kochi/kochi.html#c-kochi-men-menbo-miyake", "food": "../japan/kochi/img/kochi/kochi-men-menbo-miyake.jpg", "ext": "../japan/kochi/img/kochi/kochi-men-menbo-miyake_exterior.jpg"}, {"i": 17, "n": "座屋 高知本店", "c": ["和食"], "v": "レストラン", "lat": 33.563274, "lng": 133.541794, "d": "月替わりの季節のお料理コース(全9品。8,800円。1階カウンターと2階で内容が替わる)／藁焼きの鰹のタタキ(高知の港から直送した鰹を藁で一気に炙る)／記念日の会席コース(18,000円〜。献立は相談に応じる)", "a": "高知県高知市廿代町2-8 廿代ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BA%A7%E5%B1%8B%20%E9%AB%98%E7%9F%A5%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA2-8%20%E5%BB%BF%E4%BB%A3%E3%83%93%E3%83%AB1F", "u": "../japan/kochi/kochi.html#c-kochi-washoku-izariya-kochi", "food": "../japan/kochi/img/kochi/kochi-washoku-izariya-kochi.jpg", "ext": ""}, {"i": 18, "n": "鮨と肴 哲-tetsu-", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.562962, "lng": 133.544952, "d": "上にぎり(近海の旬を中心にした握りの盛合せ)／天ぷら盛合せ(旬の野菜と魚介を揚げたてで)／1番人気☆飲み放題コース(全8品に飲み放題が付く。6,600円税込)", "a": "高知県高知市はりまや町3丁目 志和ビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E3%81%A8%E8%82%B4%20%E5%93%B2-tetsu-%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA3%E4%B8%81%E7%9B%AE%20%E5%BF%97%E5%92%8C%E3%83%93%E3%83%AB2F", "u": "../japan/kochi/kochi.html#c-kochi-washoku-sushi-tetsu", "food": "../japan/kochi/img/kochi/kochi-washoku-sushi-tetsu.jpg", "ext": ""}, {"i": 19, "n": "土佐鮨処 康 弐号店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.561699, "lng": 133.541168, "d": "【土佐清水産】清水さば(立縄漁で一本釣りされる土佐清水のサバ。1,650円税込)／うつぼタタキ(高知名物のうつぼを炙ったタタキ。1,650円税込)／特選トロ鰹三昧(鰹刺身・自家製ポン酢のタタキ・高知産岩塩の塩タタキの三種。1,980円税込)", "a": "高知県高知市追手筋1-4-8 中央ビル1F北", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E9%AE%A8%E5%87%A6%20%E5%BA%B7%20%E5%BC%90%E5%8F%B7%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BF%BD%E6%89%8B%E7%AD%8B1-4-8%20%E4%B8%AD%E5%A4%AE%E3%83%93%E3%83%AB1F%E5%8C%97", "u": "../japan/kochi/kochi.html#c-kochi-washoku-tosasushi-yasu", "food": "../japan/kochi/img/kochi/kochi-washoku-tosasushi-yasu.jpg", "ext": "../japan/kochi/img/kochi/kochi-washoku-tosasushi-yasu_exterior.jpg"}, {"i": 20, "n": "睦月処 穂寿美", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.560013, "lng": 133.538361, "d": "赤シャリ寿司(独自ブレンドの赤酢で仕上げたシャリで握る江戸前の赤シャリ)／須崎直送の生鰹のタタキ(冷凍を使わない生の鰹を塩かポン酢で)／和牛すき焼きコース(和牛150g・刺身3種盛・押し寿司など。2時間飲み放題付7,000円税込)", "a": "高知県高知市帯屋町1-13-10 S・コモンズビル1F・2F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%9D%A6%E6%9C%88%E5%87%A6%20%E7%A9%82%E5%AF%BF%E7%BE%8E%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-13-10%20S%E3%83%BB%E3%82%B3%E3%83%A2%E3%83%B3%E3%82%BA%E3%83%93%E3%83%AB1F%E3%83%BB2F", "u": "../japan/kochi/kochi.html#c-kochi-washoku-hozumi", "food": "../japan/kochi/img/kochi/kochi-washoku-hozumi.jpg", "ext": "../japan/kochi/img/kochi/kochi-washoku-hozumi_exterior.jpg"}, {"i": 21, "n": "和餐 帯や勘助", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.5602, "lng": 133.536682, "d": "勘助 田舎寿司(みょうが・たけのこ・しいたけ・こんにゃく・油揚げ・さばの6種を各2貫。2,200円税込、1週間前までに予約)／九石大敷組合直送の刺身盛り合わせ(須崎市の定置網で揚がった天然魚。2,178円税込)／自家製じゃこスティック(須崎の漁港で朝獲れのアジやトビウオを店内で加工。550円税込)", "a": "高知県高知市帯屋町2-2-15", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E9%A4%90%20%E5%B8%AF%E3%82%84%E5%8B%98%E5%8A%A9%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2-2-15", "u": "../japan/kochi/kochi.html#c-kochi-washoku-obiya-kansuke", "food": "../japan/kochi/img/kochi/kochi-washoku-obiya-kansuke.jpg", "ext": "../japan/kochi/img/kochi/kochi-washoku-obiya-kansuke_exterior.jpg"}, {"i": 22, "n": "asｙukutei（あしゅくてい）", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.560394, "lng": 133.539719, "d": "お寿司各種(羽釜で炊きてんさい糖を使ったシャリで握る。1貫200円〜)／旬のお刺身各種(日替わり。500円〜)／南瓜の揚げ出し(南瓜の揚げ出し豆腐。600円)", "a": "高知県高知市帯屋町1-12-9", "m": "https://www.google.com/maps/search/?api=1&query=as%EF%BD%99ukutei%EF%BC%88%E3%81%82%E3%81%97%E3%82%85%E3%81%8F%E3%81%A6%E3%81%84%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-12-9", "u": "../japan/kochi/kochi.html#c-kochi-washoku-ashukutei", "food": "../japan/kochi/img/kochi/kochi-washoku-ashukutei.jpg", "ext": ""}, {"i": 23, "n": "料亭 濱長", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.557198, "lng": 133.54332, "d": "田舎寿司入り ひとり皿鉢(田舎寿司と鰹のたたきを1人前に仕立てる。5,400円税込・要予約)／季節の土佐会席(出汁を利かせた日本料理。献立は季節で替わる)／クエ鍋(2人前から。冬の品)", "a": "高知県高知市唐人町6-6", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%20%E6%BF%B1%E9%95%B7%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%94%90%E4%BA%BA%E7%94%BA6-6", "u": "../japan/kochi/kochi.html#c-kochi-washoku-hamacho", "food": "../japan/kochi/img/kochi/kochi-washoku-hamacho.jpg", "ext": ""}, {"i": 24, "n": "屋台安兵衛", "c": ["屋台・食べ歩き"], "v": "食材の店", "lat": 33.563301, "lng": 133.540985, "d": "屋台餃子（一般の餃子の半分ほどの薄皮で包み、豚肉・キャベツに高知県産のニラとショウガを合わせた野菜多めの餡。焼きとも揚げともつかない方法で黄金色に焼き揚げる。7ヶで一人前、にんにく有無は店舗により選べる）／らーめん（昔ながらの味。半めん・大盛・チャーシューめんにできる）／おでん盛り合わせ（あっさりした醤油味で5〜6品）", "a": "高知県高知市廿代町4-19", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%8B%E5%8F%B0%E5%AE%89%E5%85%B5%E8%A1%9B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA4-19", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-yatai-yasube", "food": "../japan/kochi/img/kochi/kochi-izakaya-yatai-yasube.jpg", "ext": "../japan/kochi/img/kochi/kochi-izakaya-yatai-yasube_exterior.jpg"}, {"i": 25, "n": "いまどき安兵衛", "c": ["屋台・食べ歩き"], "v": "ベーカリー・パティスリー", "lat": 33.562107, "lng": 133.543976, "d": "屋台餃子（薄皮で小ぶり、高知県産のニラとショウガを使った野菜多めの餡。7ヶで一人前、にんにく有無を選べる）／水餃子（別添えのスープと一緒に、またはタレで食べる）／じゃこ飯（高知県産の釜揚げちりめんじゃこを飯にのせ、高菜とかつお節を添える）", "a": "高知県高知市はりまや町2-7-6", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%BE%E3%81%A9%E3%81%8D%E5%AE%89%E5%85%B5%E8%A1%9B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA2-7-6", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-imadoki-yasube", "food": "../japan/kochi/img/kochi/kochi-izakaya-imadoki-yasube.jpg", "ext": "../japan/kochi/img/kochi/kochi-izakaya-imadoki-yasube_exterior.jpg"}, {"i": 26, "n": "土佐食人 こうじ家", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.563118, "lng": 133.539719, "d": "地酒利きくらべ（3種セット。まず好みの1種を選び、残りを店が組み合わせる）／本場高知の鰹のたたき（中土佐町久礼の漁港から届く朝獲れの鰹。ポン酢・塩・漁師風ぶっかけから選ぶ）／土佐ジローの炭火焼き（高知の地鶏。モモ肉と胸肉の味くらべもある）", "a": "高知県高知市廿代町7-23 マツチヨビル2F・3F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E9%A3%9F%E4%BA%BA%20%E3%81%93%E3%81%86%E3%81%98%E5%AE%B6%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA7-23%20%E3%83%9E%E3%83%84%E3%83%81%E3%83%A8%E3%83%93%E3%83%AB2F%E3%83%BB3F", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-kojiya", "food": "../japan/kochi/img/kochi/kochi-izakaya-kojiya.jpg", "ext": "../japan/kochi/img/kochi/kochi-izakaya-kojiya_exterior.jpg"}, {"i": 27, "n": "居酒屋 土佐 いろり 炉ばた 八一六（やいろ）", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.562752, "lng": 133.541214, "d": "特大 大エビ 炉端焼き（囲炉裏の炭火で焼き上げる名物。目の前で焼く）／実演！鰹の藁焼きたたき（注文を受けてから店内で藁に火を入れて焼く）／焼き鳥盛り合わせ 5本（はつ・砂ずり・鳥なんこつ・皮・ささみなどから）", "a": "高知県高知市廿代町5-1 ウインズエステートビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%9C%9F%E4%BD%90%20%E3%81%84%E3%82%8D%E3%82%8A%20%E7%82%89%E3%81%B0%E3%81%9F%20%E5%85%AB%E4%B8%80%E5%85%AD%EF%BC%88%E3%82%84%E3%81%84%E3%82%8D%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA5-1%20%E3%82%A6%E3%82%A4%E3%83%B3%E3%82%BA%E3%82%A8%E3%82%B9%E3%83%86%E3%83%BC%E3%83%88%E3%83%93%E3%83%AB1F", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-yairo", "food": "../japan/kochi/img/kochi/kochi-izakaya-yairo.jpg", "ext": "../japan/kochi/img/kochi/kochi-izakaya-yairo_exterior.jpg"}, {"i": 28, "n": "居酒屋 稲屋", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.560211, "lng": 133.539536, "d": "生鰹のタタキ 塩／たれ（高知名物の藁焼き。カウンターでは焼く様子が見える）／ウツボの唐揚げ（外は固く、中はやわらかい高知の珍味）／どろめ（鰯の稚魚。日本酒に合わせる土佐の肴）", "a": "高知県高知市帯屋町1-12-3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E7%A8%B2%E5%B1%8B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-12-3", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-inaya", "food": "../japan/kochi/img/kochi/kochi-izakaya-inaya.jpg", "ext": "../japan/kochi/img/kochi/kochi-izakaya-inaya_exterior.jpg"}, {"i": 29, "n": "居酒屋 なるこ屋", "c": ["居酒屋・焼肉", "屋台・食べ歩き"], "v": "バー・居酒屋・パブ", "lat": 33.561199, "lng": 133.539566, "d": "串揚げ（食べ放題と飲み放題を合わせた組み合わせがある）／とり皮餃子（鶏皮で包んだ餃子）／ちくきゅう（きゅうりを丸ごとちくわに入れた高知の定番の肴）", "a": "高知県高知市帯屋町1丁目9-18", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%AA%E3%82%8B%E3%81%93%E5%B1%8B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1%E4%B8%81%E7%9B%AE9-18", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-narukoya", "food": "../japan/kochi/img/kochi/kochi-izakaya-narukoya.jpg", "ext": "../japan/kochi/img/kochi/kochi-izakaya-narukoya_exterior.jpg"}, {"i": 30, "n": "うめ丸", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.561665, "lng": 133.539215, "d": "かつおわら焼き 天然塩タタキ（六切れ。注文を受けてから藁で炙る）／どろめ（いわしの稚魚。高知名物）／サバ炙り寿し（炙った鯖の棒寿司）", "a": "高知県高知市追手筋1-8-16", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%82%81%E4%B8%B8%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BF%BD%E6%89%8B%E7%AD%8B1-8-16", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-umemaru", "food": "../japan/kochi/img/kochi/kochi-izakaya-umemaru.jpg", "ext": "../japan/kochi/img/kochi/kochi-izakaya-umemaru_exterior.jpg"}, {"i": 31, "n": "焼鳥 せいわ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.561783, "lng": 133.543396, "d": "なんこつつくね（鶏ミンチに軟骨を混ぜたつくね。濃いタレと卵黄を絡めて食べる）／おまかせ盛り 串5種（その日の串を大将が選ぶ）／高知産生姜と大葉のエビトースト（高知が生産量日本一の生姜を使った一品）", "a": "高知県高知市はりまや町2-3-1", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%9B%E3%81%84%E3%82%8F%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA2-3-1", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-seiwa", "food": "../japan/kochi/img/kochi/kochi-izakaya-seiwa.jpg", "ext": ""}, {"i": 32, "n": "帯や町 商人", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.559963, "lng": 133.537079, "d": "土佐沖漁れ 刺し身盛り（高知の地魚の盛り合わせ）／鰹三種盛り（刺身・塩たたき・タレたたきを10切で食べくらべ）／宇佐どれ 長太郎浜焼（土佐市宇佐の長太郎貝を殻ごと焼く）", "a": "高知県高知市帯屋町2-1-14 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B8%AF%E3%82%84%E7%94%BA%20%E5%95%86%E4%BA%BA%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2-1-14%201F", "u": "../japan/kochi/kochi.html#c-kochi-izakaya-akindo", "food": "../japan/kochi/img/kochi/kochi-izakaya-akindo.jpg", "ext": "../japan/kochi/img/kochi/kochi-izakaya-akindo_exterior.jpg"}, {"i": 33, "n": "アーリオ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.559807, "lng": 133.537827, "d": "海老と貝のペスカトーレ（海老と貝をトマトソースであえたスパゲッティ）／牛肉の赤ワイン煮込み（牛肉を赤ワインで煮込んだ皿）／国産牛のタリアータ（国産牛を薄く切ったロースト）", "a": "高知県高知市本町2丁目1-34", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%BC%E3%83%AA%E3%82%AA%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE1-34", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-ario", "food": "../japan/kochi/img/kochi/kochi-yoshoku-ario.jpg", "ext": ""}, {"i": 34, "n": "Cafe＆Bar Molto Lieto", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.560673, "lng": 133.539841, "d": "ハンバーグ定食（ハンバーグにライスなどを付けた定食）／チーズフォンデュのコース（溶かしたチーズに具材を絡める2,500円のコース）／ステーキ（鉄皿で供する牛肉のステーキ）", "a": "高知県高知市帯屋町1-10-18 正栄ビル2F", "m": "https://www.google.com/maps/search/?api=1&query=Cafe%EF%BC%86Bar%20Molto%20Lieto%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-10-18%20%E6%AD%A3%E6%A0%84%E3%83%93%E3%83%AB2F", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-molto-lieto", "food": "../japan/kochi/img/kochi/kochi-yoshoku-molto-lieto.jpg", "ext": ""}, {"i": 35, "n": "レストラン アンティーク（ホテル セリーズ）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.569489, "lng": 133.575928, "d": "四万十ポークのヒレカツ御膳（四万十町産の豚ヒレを揚げた御膳 2,750円）／和フレンチコース（ディナー限定・数量限定のコース 4,800円）／和牛ホホ肉のブレゼ ボルト酒風味（和牛の頬肉をポルト酒風味で煮込んだ皿 4,100円）", "a": "高知県高知市高須砂地155", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%A2%E3%83%B3%E3%83%86%E3%82%A3%E3%83%BC%E3%82%AF%EF%BC%88%E3%83%9B%E3%83%86%E3%83%AB%20%E3%82%BB%E3%83%AA%E3%83%BC%E3%82%BA%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E9%AB%98%E9%A0%88%E7%A0%82%E5%9C%B0155", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-cerise-antique", "food": "../japan/kochi/img/kochi/kochi-yoshoku-cerise-antique.jpg", "ext": "../japan/kochi/img/kochi/kochi-yoshoku-cerise-antique_exterior.jpg"}, {"i": 36, "n": "南欧Baru Amistad", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.561115, "lng": 133.542313, "d": "パエリャ・マリスコス（魚介のパエリア。出汁から取ると掲載店ページに記載）／海老のアヒージョ（海老をオリーブ油とにんにくで煮た小鍋 900円）／3種貝のサラダ（つぶ貝・ほっき貝・帆立のサラダ 1,300円）", "a": "高知県高知市帯屋町1-2-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%97%E6%AC%A7Baru%20Amistad%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-2-1", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-amistad", "food": "../japan/kochi/img/kochi/kochi-yoshoku-amistad.jpg", "ext": ""}, {"i": 37, "n": "香港四季楼 虎嘯", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.558186, "lng": 133.549393, "d": "うつぼのピリ辛炒め（高知で食べるうつぼを唐辛子で辛く炒めた皿 1,600円）／高知ニラ香る焼売3個（高知産のニラを包んだ焼売 550円）／干し海老入りブラック焼飯（干し海老を使った黒い焼飯 1,100円）", "a": "高知県高知市農人町5-29 サウスブリーズホテル高知海月2階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A6%99%E6%B8%AF%E5%9B%9B%E5%AD%A3%E6%A5%BC%20%E8%99%8E%E5%98%AF%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BE%B2%E4%BA%BA%E7%94%BA5-29%20%E3%82%B5%E3%82%A6%E3%82%B9%E3%83%96%E3%83%AA%E3%83%BC%E3%82%BA%E3%83%9B%E3%83%86%E3%83%AB%E9%AB%98%E7%9F%A5%E6%B5%B7%E6%9C%882%E9%9A%8E", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-kosho", "food": "../japan/kochi/img/kochi/kochi-yoshoku-kosho.jpg", "ext": ""}, {"i": 38, "n": "フォンバインミー", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.560623, "lng": 133.55455, "d": "焼肉バインミー（焼いた肉と香草をバゲットに挟んだベトナム風サンドイッチ 700円）／ハノイコース（前菜からデザートまでの一番人気のコース 3,000円）／揚げ春巻き3本（米の皮で巻いて揚げた春巻き 400円）", "a": "高知県高知市宝永町3-12 あや家4号", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%82%A9%E3%83%B3%E3%83%90%E3%82%A4%E3%83%B3%E3%83%9F%E3%83%BC%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%AE%9D%E6%B0%B8%E7%94%BA3-12%20%E3%81%82%E3%82%84%E5%AE%B64%E5%8F%B7", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-phon-banh-mi", "food": "../japan/kochi/img/kochi/kochi-yoshoku-phon-banh-mi.jpg", "ext": ""}, {"i": 39, "n": "アメイエン", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.558197, "lng": 133.536713, "d": "モウン・ヒンガー（魚と魚味噌で作る汁に米麺と野菜を合わせたミャンマーの朝食麺 1,100円）／チャッターヒン（ミャンマー風のチキンカレーにライスとスープを付けたセット 1,450円）／チェッウー・チョー（卵のミャンマー風揚げ 900円）", "a": "高知県高知市本町2丁目3-23", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%A1%E3%82%A4%E3%82%A8%E3%83%B3%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE3-23", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-ameien", "food": "../japan/kochi/img/kochi/kochi-yoshoku-ameien.jpg", "ext": ""}, {"i": 40, "n": "レストランボルベール", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.56736, "lng": 133.560272, "d": "土佐黒毛和牛のステーキ（高知県産の黒毛和牛を焼いた皿 3,200円）／竹炭ピザ（竹炭を練り込んだ黒い生地のピザ。3種きのことガーリックが看板）／季節野菜の薬膳パエリア（季節の野菜と薬膳の素材で炊くパエリア 3,200円）", "a": "高知県高知市南御座16-23", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%9C%E3%83%AB%E3%83%99%E3%83%BC%E3%83%AB%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8D%97%E5%BE%A1%E5%BA%A716-23", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-volver", "food": "../japan/kochi/img/kochi/kochi-yoshoku-volver.jpg", "ext": "../japan/kochi/img/kochi/kochi-yoshoku-volver_exterior.jpg"}, {"i": 41, "n": "BISTRO&CAFE FLAG", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.576801, "lng": 133.556213, "d": "ランチプレート（肉か魚のメインに副菜を合わせた皿 800円から）／ビストロコース（焼いた肉料理や魚料理にソースを合わせるコース 4,000円から）／自家製ベーグル（エビとアボカドを挟んだベーグル 1,000円）", "a": "高知県高知市薊野西町3丁目35番地29号 フクヤ建設本社2階", "m": "https://www.google.com/maps/search/?api=1&query=BISTRO%26CAFE%20FLAG%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%96%8A%E9%87%8E%E8%A5%BF%E7%94%BA3%E4%B8%81%E7%9B%AE35%E7%95%AA%E5%9C%B029%E5%8F%B7%20%E3%83%95%E3%82%AF%E3%83%A4%E5%BB%BA%E8%A8%AD%E6%9C%AC%E7%A4%BE2%E9%9A%8E", "u": "../japan/kochi/kochi.html#c-kochi-yoshoku-bistro-cafe-flag", "food": "../japan/kochi/img/kochi/kochi-yoshoku-bistro-cafe-flag.jpg", "ext": "../japan/kochi/img/kochi/kochi-yoshoku-bistro-cafe-flag_exterior.jpg"}, {"i": 42, "n": "COFFEE SHOP ZUMZUM", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.557301, "lng": 133.533493, "d": "リコッタチーズの手作りパンケーキ(卵白と卵黄を分けて泡立てた生地にリコッタチーズを加え、注文後に1枚ずつ焼く。750円)／ブレンドコーヒー(1971年の開業当時から変えていない5種の豆のブレンド。450円)／日替定食(主菜に副菜3品・サラダ・フルーツ・味噌汁が付く。850円)", "a": "高知県高知市本町4丁目2-20", "m": "https://www.google.com/maps/search/?api=1&query=COFFEE%20SHOP%20ZUMZUM%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%9C%AC%E7%94%BA4%E4%B8%81%E7%9B%AE2-20", "u": "../japan/kochi/kochi.html#c-kochi-cafe-zumzum-honten", "food": "../japan/kochi/img/kochi/kochi-cafe-zumzum-honten.jpg", "ext": ""}, {"i": 43, "n": "COFFEE SHOP ZUMZUM 北久保店", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.569195, "lng": 133.564606, "d": "リコッタチーズの手造りパンケーキ(卵白と卵黄を分けて泡立てた生地にリコッタチーズを加えて焼く。北久保店ではフルーツのトッピングを加える。750円)／日替定食(弁当のように仕切った定食)／サービスランチ(麺とご飯の組み合わせ)", "a": "高知県高知市北久保2-39", "m": "https://www.google.com/maps/search/?api=1&query=COFFEE%20SHOP%20ZUMZUM%20%E5%8C%97%E4%B9%85%E4%BF%9D%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8C%97%E4%B9%85%E4%BF%9D2-39", "u": "../japan/kochi/kochi.html#c-kochi-cafe-zumzum-kitakubo", "food": "../japan/kochi/img/kochi/kochi-cafe-zumzum-kitakubo.jpg", "ext": "../japan/kochi/img/kochi/kochi-cafe-zumzum-kitakubo_exterior.jpg"}, {"i": 44, "n": "紡ぎ珈琲焙煎所", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.545242, "lng": 133.544266, "d": "自家焙煎のスペシャルティコーヒー(店で焙煎した豆を注文ごとに淹れる)／焼き菓子とパン(コーヒーと合わせる)", "a": "高知県高知市百石町4-18-19", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B4%A1%E3%81%8E%E7%8F%88%E7%90%B2%E7%84%99%E7%85%8E%E6%89%80%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E7%99%BE%E7%9F%B3%E7%94%BA4-18-19", "u": "../japan/kochi/kochi.html#c-kochi-cafe-tsumugi-roaster", "food": "../japan/kochi/img/kochi/kochi-cafe-tsumugi-roaster.jpg", "ext": ""}, {"i": 45, "n": "を菓子と。Coffee and Bake", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.563534, "lng": 133.539917, "d": "毎日カヌレ(周りは固く中はしっとり。プレーンのほかチョコレート・塩キャラメル・抹茶などのフレーバー。350円〜)／季節の果物のタルト(生菓子は約6種を日替わりで)", "a": "高知県高知市廿代町9-2 コーポすずきⅢ 1F東", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%92%E8%8F%93%E5%AD%90%E3%81%A8%E3%80%82Coffee%20and%20Bake%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA9-2%20%E3%82%B3%E3%83%BC%E3%83%9D%E3%81%99%E3%81%9A%E3%81%8D%E2%85%A2%201F%E6%9D%B1", "u": "../japan/kochi/kochi.html#c-kochi-cafe-wokashito", "food": "../japan/kochi/img/kochi/kochi-cafe-wokashito.jpg", "ext": "../japan/kochi/img/kochi/kochi-cafe-wokashito_exterior.jpg"}, {"i": 46, "n": "日曜市のいも天 大平商店 ひろめ市場店", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 33.560104, "lng": 133.536026, "d": "いも天(国産の金時系さつまいもを、50年以上門外不出という自家製の衣で注文後に揚げる)／高知の名物を合わせたドリンクと軽食(店の案内による)", "a": "高知県高知市帯屋町2丁目3-1 ひろめ市場内", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9B%9C%E5%B8%82%E3%81%AE%E3%81%84%E3%82%82%E5%A4%A9%20%E5%A4%A7%E5%B9%B3%E5%95%86%E5%BA%97%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2%E4%B8%81%E7%9B%AE3-1%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%86%85", "u": "../japan/kochi/kochi.html#c-kochi-cafe-imoten-hirome", "food": "../japan/kochi/img/kochi/kochi-cafe-imoten-hirome.jpg", "ext": "../japan/kochi/img/kochi/kochi-cafe-imoten-hirome_exterior.jpg"}, {"i": 47, "n": "スイーツ食堂マンテンノホシ", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.560104, "lng": 133.536026, "d": "ほうじ茶大福(津野町産のほうじ茶の粉をまぶした大福。店の看板商品)／ランチ御膳(炊き込みご飯・小鉢3種・味噌汁にほうじ茶大福とほうじ茶が付く。980円)", "a": "高知県高知市帯屋町2丁目3-1 ひろめ市場内", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%82%A4%E3%83%BC%E3%83%84%E9%A3%9F%E5%A0%82%E3%83%9E%E3%83%B3%E3%83%86%E3%83%B3%E3%83%8E%E3%83%9B%E3%82%B7%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2%E4%B8%81%E7%9B%AE3-1%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%86%85", "u": "../japan/kochi/kochi.html#c-kochi-cafe-mantennohoshi-hirome", "food": "../japan/kochi/img/kochi/kochi-cafe-mantennohoshi-hirome.jpg", "ext": "../japan/kochi/img/kochi/kochi-cafe-mantennohoshi-hirome_exterior.jpg"}, {"i": 48, "n": "アンテナショップ満天の星", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.572491, "lng": 133.563293, "d": "茶円(煎茶の大福・ほうじ茶ロールケーキ・ほうじ茶ソフトクリームなどお茶づくしのセット。ドリンク付700円・税抜)／お団子三昧(ほうじ茶大福・季節の大福・6色の白玉団子。ドリンク付1,000円・税抜)／松保っくり(ほうじ茶づくしの和風パフェ。780円・税抜)", "a": "高知県高知市南川添24-15", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%B3%E3%83%86%E3%83%8A%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%E6%BA%80%E5%A4%A9%E3%81%AE%E6%98%9F%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8D%97%E5%B7%9D%E6%B7%BB24-15", "u": "../japan/kochi/kochi.html#c-kochi-cafe-mantennohoshi-antenna", "food": "../japan/kochi/img/kochi/kochi-cafe-mantennohoshi-antenna.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.559179,133.545279],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('kochi', "高知");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
