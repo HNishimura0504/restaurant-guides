@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>高知美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  /* 外観写真（2026-10-19・外観写真の欠落3度目）: 料理・店内の hero の下に、店構えを1枚添える。
+     地図のポップアップと Notion 記事は <sid>_exterior.jpg を別に拾うので、ここは PDF・ガイド本文で見せるための行。 */
+  .extfig{position:relative; margin:0;}
+  .extfig img{display:block; width:100%; height:40mm; object-fit:cover; border-top:2px solid #fff;}
+  .extfig figcaption{position:absolute; left:2mm; bottom:1.5mm; background:rgba(0,0,0,.55); color:#fff; font-size:7pt; padding:.3mm 1.6mm; border-radius:1mm;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">高知美食ガイド<span class="sn-n">49店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/kochi.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="高知ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">高知ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/kochi.html"><span class="sn-e">🗺️</span>高知の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-kyodo"><span class="sn-e">・</span>鰹の藁焼きたたき・皿鉢・土佐料理</a><a href="#s-men"><span class="sn-e">・</span>ラーメン・うどん・麺類</a><a href="#s-washoku"><span class="sn-e">・</span>寿司・和食・割烹（土佐湾の魚）</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・土佐酒・屋台餃子</a><a href="#s-yoshoku"><span class="sn-e">・</span>洋食・各国料理</a><a href="#s-cafe"><span class="sn-e">・</span>カフェ・喫茶・甘味（アイスクリン・文旦）</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全109都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全109都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / KOCHI・高知県高知市 🇯🇵</div>
+  <h1>高知美食ガイド</h1>
+  <div class="sub">土佐湾に開き、高知城とはりまや橋を抱く四国の南の県都。ひろめ市場と帯屋町のアーケード、日曜市が立つ追手筋、夜の廿代町（にじゅうよまち）・堀詰の飲み屋街、そしてJR高知駅前まで、食べる場所が歩いてつながる。名物は藁で焼いた鰹の塩たたき、大皿に盛る皿鉢（さわち）料理、深夜の屋台餃子、ミョウガやリュウキュウを使う田舎寿司、そして土佐酒。厳選49スポットに営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年11月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kochi/_map.jpg" alt="全域マップ">
+<a href="#c-kochi-kyodo-myojinmaru-hirome" style="left:39.86%;top:25.79%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-kyodo-myojinmaru-honten" style="left:43.21%;top:26.34%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-kyodo-tsukasa-honten" style="left:45.76%;top:26.7%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-kyodo-habotan" style="left:44.07%;top:27.72%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-kyodo-suigeitei" style="left:47.22%;top:28.25%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-kyodo-uogashira-daikuma" style="left:43.6%;top:23.2%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-kyodo-tosa-tataki-dojo" style="left:82.73%;top:76.73%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-kyodo-sushiryu" style="left:45.81%;top:28.39%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-ramen-jin-ganso" style="left:45.63%;top:24.92%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-katsurahama-jin" style="left:78.27%;top:90.23%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-mansyu-honten" style="left:54.82%;top:28.54%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-taniguchi-shokudo" style="left:42.68%;top:24.35%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-kunimaru-tosadoro" style="left:9.55%;top:41.64%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-shinatora-takasu" style="left:90.45%;top:28.95%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-kuraki-obiyamachi" style="left:43.2%;top:25.61%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-garo-tosanosato" style="left:63.52%;top:17.86%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-men-menbo-miyake" style="left:34.24%;top:17.07%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-washoku-izariya-kochi" style="left:45.3%;top:23.78%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-washoku-sushi-tetsu" style="left:48.36%;top:24.11%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-washoku-tosasushi-yasu" style="left:44.69%;top:25.42%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-washoku-hozumi" style="left:41.7%;top:26.42%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-washoku-obiya-kansuke" style="left:41.27%;top:27.04%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-washoku-ashukutei" style="left:44.2%;top:27.15%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-washoku-hamacho" style="left:46.78%;top:30.08%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-yatai-yasube" style="left:44.62%;top:23.2%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-imadoki-yasube" style="left:47.13%;top:24.32%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-kojiya" style="left:43.6%;top:24.88%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-yairo" style="left:44.62%;top:24.88%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-inaya" style="left:43.21%;top:28.03%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-narukoya" style="left:43.13%;top:25.93%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-umemaru" style="left:42.68%;top:26.04%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-seiwa" style="left:47.13%;top:26.0%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-izakaya-akindo" style="left:40.72%;top:27.21%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-ario" style="left:41.7%;top:28.11%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-molto-lieto" style="left:42.2%;top:27.15%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-cerise-antique" style="left:78.44%;top:17.35%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-amistad" style="left:45.63%;top:26.61%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-kosho" style="left:52.67%;top:29.05%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-phon-banh-mi" style="left:57.68%;top:26.53%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-ameien" style="left:40.36%;top:29.04%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-volver" style="left:63.24%;top:19.55%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-yoshoku-bistro-cafe-flag" style="left:59.3%;top:9.78%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-cafe-zumzum-honten" style="left:37.24%;top:29.97%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-cafe-zumzum-kitakubo" style="left:67.45%;top:17.65%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-cafe-tsumugi-roaster" style="left:47.7%;top:42.45%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-cafe-wokashito" style="left:43.47%;top:23.52%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-cafe-imoten-hirome" style="left:39.86%;top:28.3%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-cafe-mantennohoshi-hirome" style="left:38.44%;top:27.04%;width:2.8%;height:2.48%;"></a>
+<a href="#c-kochi-cafe-mantennohoshi-antenna" style="left:66.17%;top:14.24%;width:2.8%;height:2.48%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（49店・番号はピンと同じ）</div>
+<div class="sec red">鰹の藁焼きたたき・皿鉢・土佐料理</div>
+<div class="links">
+<a href="#c-kochi-kyodo-myojinmaru-hirome"><span class="tn" style="background:#e34948;">1</span>塩たたき発祥、藁焼きを目の前で</a>
+<a href="#c-kochi-kyodo-myojinmaru-honten"><span class="tn" style="background:#e34948;">2</span>藁焼き鰹たたきを個室で落ち着いて</a>
+<a href="#c-kochi-kyodo-tsukasa-honten"><span class="tn" style="background:#e34948;">3</span>大正6年創業、皿鉢料理の老舗</a>
+<a href="#c-kochi-kyodo-habotan"><span class="tn" style="background:#e34948;">4</span>昼から開く半世紀の大衆酒場</a>
+<a href="#c-kochi-kyodo-suigeitei"><span class="tn" style="background:#e34948;">5</span>酒蔵直営、ミニ皿鉢と鯨すき焼き</a>
+<a href="#c-kochi-kyodo-uogashira-daikuma"><span class="tn" style="background:#e34948;">6</span>水産会社直営、うつぼと鰹</a>
+<a href="#c-kochi-kyodo-tosa-tataki-dojo"><span class="tn" style="background:#e34948;">7</span>自分で藁焼きするたたき食堂</a>
+<a href="#c-kochi-kyodo-sushiryu"><span class="tn" style="background:#e34948;">8</span>田舎寿司と皿鉢の寿司処</a>
+</div>
+<div class="sec brown">ラーメン・うどん・麺類</div>
+<div class="links">
+<a href="#c-kochi-men-ramen-jin-ganso"><span class="tn" style="background:#8a5a2b;">9</span>追手筋の深夜とんこつと黒こげ</a>
+<a href="#c-kochi-men-katsurahama-jin"><span class="tn" style="background:#8a5a2b;">10</span>桂浜で食べるかつおラーメン</a>
+<a href="#c-kochi-men-mansyu-honten"><span class="tn" style="background:#8a5a2b;">11</span>高知発祥のホルモン麺ジャン麺</a>
+<a href="#c-kochi-men-taniguchi-shokudo"><span class="tn" style="background:#8a5a2b;">12</span>中心街で食べる鍋焼きラーメン</a>
+<a href="#c-kochi-men-kunimaru-tosadoro"><span class="tn" style="background:#8a5a2b;">13</span>高知生まれの味噌ラーメン専門</a>
+<a href="#c-kochi-men-shinatora-takasu"><span class="tn" style="background:#8a5a2b;">14</span>高須の深夜らーめんと餃子</a>
+<a href="#c-kochi-men-kuraki-obiyamachi"><span class="tn" style="background:#8a5a2b;">15</span>帯屋町の牛モツつけ麺と自家製麺</a>
+<a href="#c-kochi-men-garo-tosanosato"><span class="tn" style="background:#8a5a2b;">16</span>須崎名物の鍋焼きラーメンを市内で</a>
+<a href="#c-kochi-men-menbo-miyake"><span class="tn" style="background:#8a5a2b;">17</span>住宅街の手打ちうどんと揚げたて天ぷら</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（土佐湾の魚）</div>
+<div class="links">
+<a href="#c-kochi-washoku-izariya-kochi"><span class="tn" style="background:#2a78d6;">18</span>月替わり会席をカウンターで出す和食店</a>
+<a href="#c-kochi-washoku-sushi-tetsu"><span class="tn" style="background:#2a78d6;">19</span>市場で直に仕入れる近海の鮨と肴</a>
+<a href="#c-kochi-washoku-tosasushi-yasu"><span class="tn" style="background:#2a78d6;">20</span>清水サバやうつぼも出す追手筋の鮨店</a>
+<a href="#c-kochi-washoku-hozumi"><span class="tn" style="background:#2a78d6;">21</span>赤酢のシャリで握る帯屋町の寿司店</a>
+<a href="#c-kochi-washoku-obiya-kansuke"><span class="tn" style="background:#2a78d6;">22</span>6種12貫の田舎寿司を出す帯屋町の和食店</a>
+<a href="#c-kochi-washoku-ashukutei"><span class="tn" style="background:#2a78d6;">23</span>羽釜で炊いたシャリの小さな寿司店</a>
+<a href="#c-kochi-washoku-hamacho"><span class="tn" style="background:#2a78d6;">24</span>芸妓の舞台がある鏡川沿いの料亭</a>
+</div>
+<div class="sec beer">居酒屋・土佐酒・屋台餃子</div>
+<div class="links">
+<a href="#c-kochi-izakaya-yatai-yasube"><span class="tn" style="background:#0d366b;">25</span>高知名物・屋台餃子の元祖</a>
+<a href="#c-kochi-izakaya-imadoki-yasube"><span class="tn" style="background:#0d366b;">26</span>屋台餃子を屋根の下で</a>
+<a href="#c-kochi-izakaya-kojiya"><span class="tn" style="background:#0d366b;">27</span>廿代町で土佐酒を利きくらべ</a>
+<a href="#c-kochi-izakaya-yairo"><span class="tn" style="background:#0d366b;">28</span>囲炉裏を囲んで炉端焼き</a>
+<a href="#c-kochi-izakaya-inaya"><span class="tn" style="background:#0d366b;">29</span>堀詰電停すぐ、土佐酒が銘柄で並ぶ</a>
+<a href="#c-kochi-izakaya-narukoya"><span class="tn" style="background:#0d366b;">30</span>帯屋町小路で朝5時まで</a>
+<a href="#c-kochi-izakaya-umemaru"><span class="tn" style="background:#0d366b;">31</span>追手筋の土佐居酒屋</a>
+<a href="#c-kochi-izakaya-seiwa"><span class="tn" style="background:#0d366b;">32</span>創業56年、東京仕込みの串</a>
+<a href="#c-kochi-izakaya-akindo"><span class="tn" style="background:#0d366b;">33</span>大橋通すぐ、土佐の地酒と地魚</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-kochi-yoshoku-ario"><span class="tn" style="background:#4a3aa7;">34</span>45年続いたパスタの名店を継ぐ</a>
+<a href="#c-kochi-yoshoku-molto-lieto"><span class="tn" style="background:#4a3aa7;">35</span>帯屋町を見下ろす2階の洋食とバー</a>
+<a href="#c-kochi-yoshoku-cerise-antique"><span class="tn" style="background:#4a3aa7;">36</span>四万十ポークのヒレカツが看板</a>
+<a href="#c-kochi-yoshoku-amistad"><span class="tn" style="background:#4a3aa7;">37</span>出汁から取るパエリアのスペインバル</a>
+<a href="#c-kochi-yoshoku-kosho"><span class="tn" style="background:#4a3aa7;">38</span>うつぼを炒める高知の広東料理</a>
+<a href="#c-kochi-yoshoku-phon-banh-mi"><span class="tn" style="background:#4a3aa7;">39</span>日曜市のバインミーが店を構えた</a>
+<a href="#c-kochi-yoshoku-ameien"><span class="tn" style="background:#4a3aa7;">40</span>高知で数少ないミャンマー家庭料理</a>
+<a href="#c-kochi-yoshoku-volver"><span class="tn" style="background:#4a3aa7;">41</span>県産野菜と薬膳の洋食、駐車場あり</a>
+<a href="#c-kochi-yoshoku-bistro-cafe-flag"><span class="tn" style="background:#4a3aa7;">42</span>薊野の2階、朝から夜までのビストロ</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味（アイスクリン・文旦）</div>
+<div class="links">
+<a href="#c-kochi-cafe-zumzum-honten"><span class="tn" style="background:#eda100;">43</span>1971年から続く本町の喫茶。名物はパンケーキ</a>
+<a href="#c-kochi-cafe-zumzum-kitakubo"><span class="tn" style="background:#eda100;">44</span>2026年に開いたZUMZUMの2号店</a>
+<a href="#c-kochi-cafe-tsumugi-roaster"><span class="tn" style="background:#eda100;">45</span>住宅街のプレハブで焼く自家焙煎</a>
+<a href="#c-kochi-cafe-wokashito"><span class="tn" style="background:#eda100;">46</span>夜も開く廿代町の菓子とコーヒーの店</a>
+<a href="#c-kochi-cafe-imoten-hirome"><span class="tn" style="background:#eda100;">47</span>日曜市の名物いも天を毎日揚げる</a>
+<a href="#c-kochi-cafe-mantennohoshi-hirome"><span class="tn" style="background:#eda100;">48</span>市場の中でほうじ茶大福を食べる</a>
+<a href="#c-kochi-cafe-mantennohoshi-antenna"><span class="tn" style="background:#eda100;">49</span>津野町のほうじ茶菓子とカフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 帯屋町・堺町・追手筋（アーケードと日曜市）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kochi/_map2.jpg" alt="中心部拡大1 帯屋町・堺町・追手筋（アーケードと日曜市）">
+<a href="#c-kochi-kyodo-myojinmaru-hirome" style="left:12.83%;top:69.32%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-kyodo-myojinmaru-honten" style="left:59.55%;top:79.87%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-kyodo-tsukasa-honten" style="left:90.84%;top:61.5%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-kyodo-habotan" style="left:69.09%;top:87.5%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-men-ramen-jin-ganso" style="left:87.03%;top:31.4%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-men-taniguchi-shokudo" style="left:49.83%;top:16.84%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-men-kuraki-obiyamachi" style="left:54.21%;top:61.0%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-washoku-tosasushi-yasu" style="left:77.1%;top:28.97%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-washoku-hozumi" style="left:42.01%;top:73.34%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-washoku-obiya-kansuke" style="left:21.03%;top:68.42%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-washoku-ashukutei" style="left:58.99%;top:63.32%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-izakaya-yairo" style="left:77.67%;top:3.82%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-izakaya-inaya" style="left:56.7%;top:68.13%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-izakaya-narukoya" style="left:57.08%;top:42.13%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-izakaya-umemaru" style="left:52.69%;top:29.87%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-izakaya-akindo" style="left:25.99%;top:74.66%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-yoshoku-ario" style="left:35.34%;top:78.76%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-yoshoku-molto-lieto" style="left:60.51%;top:55.97%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-yoshoku-amistad" style="left:91.41%;top:44.34%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-cafe-imoten-hirome" style="left:13.63%;top:71.76%;width:2.26%;height:3.94%;"></a>
+<a href="#c-kochi-cafe-mantennohoshi-hirome" style="left:12.02%;top:71.76%;width:2.26%;height:3.94%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（21店・番号はピンと同じ）</div>
+<div class="sec red">鰹の藁焼きたたき・皿鉢・土佐料理</div>
+<div class="links">
+<a href="#c-kochi-kyodo-myojinmaru-hirome"><span class="tn" style="background:#e34948;">1</span>塩たたき発祥、藁焼きを目の前で</a>
+<a href="#c-kochi-kyodo-myojinmaru-honten"><span class="tn" style="background:#e34948;">2</span>藁焼き鰹たたきを個室で落ち着いて</a>
+<a href="#c-kochi-kyodo-tsukasa-honten"><span class="tn" style="background:#e34948;">3</span>大正6年創業、皿鉢料理の老舗</a>
+<a href="#c-kochi-kyodo-habotan"><span class="tn" style="background:#e34948;">4</span>昼から開く半世紀の大衆酒場</a>
+</div>
+<div class="sec brown">ラーメン・うどん・麺類</div>
+<div class="links">
+<a href="#c-kochi-men-ramen-jin-ganso"><span class="tn" style="background:#8a5a2b;">9</span>追手筋の深夜とんこつと黒こげ</a>
+<a href="#c-kochi-men-taniguchi-shokudo"><span class="tn" style="background:#8a5a2b;">12</span>中心街で食べる鍋焼きラーメン</a>
+<a href="#c-kochi-men-kuraki-obiyamachi"><span class="tn" style="background:#8a5a2b;">15</span>帯屋町の牛モツつけ麺と自家製麺</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（土佐湾の魚）</div>
+<div class="links">
+<a href="#c-kochi-washoku-tosasushi-yasu"><span class="tn" style="background:#2a78d6;">20</span>清水サバやうつぼも出す追手筋の鮨店</a>
+<a href="#c-kochi-washoku-hozumi"><span class="tn" style="background:#2a78d6;">21</span>赤酢のシャリで握る帯屋町の寿司店</a>
+<a href="#c-kochi-washoku-obiya-kansuke"><span class="tn" style="background:#2a78d6;">22</span>6種12貫の田舎寿司を出す帯屋町の和食店</a>
+<a href="#c-kochi-washoku-ashukutei"><span class="tn" style="background:#2a78d6;">23</span>羽釜で炊いたシャリの小さな寿司店</a>
+</div>
+<div class="sec beer">居酒屋・土佐酒・屋台餃子</div>
+<div class="links">
+<a href="#c-kochi-izakaya-yairo"><span class="tn" style="background:#0d366b;">28</span>囲炉裏を囲んで炉端焼き</a>
+<a href="#c-kochi-izakaya-inaya"><span class="tn" style="background:#0d366b;">29</span>堀詰電停すぐ、土佐酒が銘柄で並ぶ</a>
+<a href="#c-kochi-izakaya-narukoya"><span class="tn" style="background:#0d366b;">30</span>帯屋町小路で朝5時まで</a>
+<a href="#c-kochi-izakaya-umemaru"><span class="tn" style="background:#0d366b;">31</span>追手筋の土佐居酒屋</a>
+<a href="#c-kochi-izakaya-akindo"><span class="tn" style="background:#0d366b;">33</span>大橋通すぐ、土佐の地酒と地魚</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-kochi-yoshoku-ario"><span class="tn" style="background:#4a3aa7;">34</span>45年続いたパスタの名店を継ぐ</a>
+<a href="#c-kochi-yoshoku-molto-lieto"><span class="tn" style="background:#4a3aa7;">35</span>帯屋町を見下ろす2階の洋食とバー</a>
+<a href="#c-kochi-yoshoku-amistad"><span class="tn" style="background:#4a3aa7;">37</span>出汁から取るパエリアのスペインバル</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味（アイスクリン・文旦）</div>
+<div class="links">
+<a href="#c-kochi-cafe-imoten-hirome"><span class="tn" style="background:#eda100;">47</span>日曜市の名物いも天を毎日揚げる</a>
+<a href="#c-kochi-cafe-mantennohoshi-hirome"><span class="tn" style="background:#eda100;">48</span>市場の中でほうじ茶大福を食べる</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 廿代町・はりまや橋・南はりまや町・唐人町（夜の飲み屋街）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kochi/_map3.jpg" alt="中心部拡大2 廿代町・はりまや橋・南はりまや町・唐人町（夜の飲み屋街）">
+<a href="#c-kochi-kyodo-myojinmaru-honten" style="left:10.91%;top:60.5%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-kyodo-tsukasa-honten" style="left:46.67%;top:50.53%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-kyodo-habotan" style="left:21.81%;top:64.64%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-kyodo-suigeitei" style="left:68.24%;top:72.0%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-kyodo-uogashira-daikuma" style="left:19.64%;top:15.16%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-kyodo-sushiryu" style="left:47.54%;top:73.92%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-men-ramen-jin-ganso" style="left:42.31%;top:34.19%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-men-kuraki-obiyamachi" style="left:4.81%;top:50.26%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-washoku-izariya-kochi" style="left:39.91%;top:10.37%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-washoku-sushi-tetsu" style="left:85.03%;top:14.83%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-washoku-tosasushi-yasu" style="left:30.97%;top:32.87%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-washoku-ashukutei" style="left:10.27%;top:51.52%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-washoku-hamacho" style="left:61.71%;top:97.17%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-izakaya-yatai-yasube" style="left:28.36%;top:9.99%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-izakaya-imadoki-yasube" style="left:71.09%;top:27.04%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-izakaya-kojiya" style="left:10.27%;top:12.6%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-izakaya-yairo" style="left:31.63%;top:17.83%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-izakaya-inaya" style="left:7.66%;top:54.13%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-izakaya-narukoya" style="left:8.09%;top:40.02%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-izakaya-umemaru" style="left:3.07%;top:33.36%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-izakaya-seiwa" style="left:62.8%;top:31.67%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-yoshoku-molto-lieto" style="left:12.01%;top:47.53%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-yoshoku-amistad" style="left:47.33%;top:41.22%;width:2.58%;height:2.14%;"></a>
+<a href="#c-kochi-cafe-wokashito" style="left:13.1%;top:6.66%;width:2.58%;height:2.14%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（24店・番号はピンと同じ）</div>
+<div class="sec red">鰹の藁焼きたたき・皿鉢・土佐料理</div>
+<div class="links">
+<a href="#c-kochi-kyodo-myojinmaru-honten"><span class="tn" style="background:#e34948;">2</span>藁焼き鰹たたきを個室で落ち着いて</a>
+<a href="#c-kochi-kyodo-tsukasa-honten"><span class="tn" style="background:#e34948;">3</span>大正6年創業、皿鉢料理の老舗</a>
+<a href="#c-kochi-kyodo-habotan"><span class="tn" style="background:#e34948;">4</span>昼から開く半世紀の大衆酒場</a>
+<a href="#c-kochi-kyodo-suigeitei"><span class="tn" style="background:#e34948;">5</span>酒蔵直営、ミニ皿鉢と鯨すき焼き</a>
+<a href="#c-kochi-kyodo-uogashira-daikuma"><span class="tn" style="background:#e34948;">6</span>水産会社直営、うつぼと鰹</a>
+<a href="#c-kochi-kyodo-sushiryu"><span class="tn" style="background:#e34948;">8</span>田舎寿司と皿鉢の寿司処</a>
+</div>
+<div class="sec brown">ラーメン・うどん・麺類</div>
+<div class="links">
+<a href="#c-kochi-men-ramen-jin-ganso"><span class="tn" style="background:#8a5a2b;">9</span>追手筋の深夜とんこつと黒こげ</a>
+<a href="#c-kochi-men-kuraki-obiyamachi"><span class="tn" style="background:#8a5a2b;">15</span>帯屋町の牛モツつけ麺と自家製麺</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（土佐湾の魚）</div>
+<div class="links">
+<a href="#c-kochi-washoku-izariya-kochi"><span class="tn" style="background:#2a78d6;">18</span>月替わり会席をカウンターで出す和食店</a>
+<a href="#c-kochi-washoku-sushi-tetsu"><span class="tn" style="background:#2a78d6;">19</span>市場で直に仕入れる近海の鮨と肴</a>
+<a href="#c-kochi-washoku-tosasushi-yasu"><span class="tn" style="background:#2a78d6;">20</span>清水サバやうつぼも出す追手筋の鮨店</a>
+<a href="#c-kochi-washoku-ashukutei"><span class="tn" style="background:#2a78d6;">23</span>羽釜で炊いたシャリの小さな寿司店</a>
+<a href="#c-kochi-washoku-hamacho"><span class="tn" style="background:#2a78d6;">24</span>芸妓の舞台がある鏡川沿いの料亭</a>
+</div>
+<div class="sec beer">居酒屋・土佐酒・屋台餃子</div>
+<div class="links">
+<a href="#c-kochi-izakaya-yatai-yasube"><span class="tn" style="background:#0d366b;">25</span>高知名物・屋台餃子の元祖</a>
+<a href="#c-kochi-izakaya-imadoki-yasube"><span class="tn" style="background:#0d366b;">26</span>屋台餃子を屋根の下で</a>
+<a href="#c-kochi-izakaya-kojiya"><span class="tn" style="background:#0d366b;">27</span>廿代町で土佐酒を利きくらべ</a>
+<a href="#c-kochi-izakaya-yairo"><span class="tn" style="background:#0d366b;">28</span>囲炉裏を囲んで炉端焼き</a>
+<a href="#c-kochi-izakaya-inaya"><span class="tn" style="background:#0d366b;">29</span>堀詰電停すぐ、土佐酒が銘柄で並ぶ</a>
+<a href="#c-kochi-izakaya-narukoya"><span class="tn" style="background:#0d366b;">30</span>帯屋町小路で朝5時まで</a>
+<a href="#c-kochi-izakaya-umemaru"><span class="tn" style="background:#0d366b;">31</span>追手筋の土佐居酒屋</a>
+<a href="#c-kochi-izakaya-seiwa"><span class="tn" style="background:#0d366b;">32</span>創業56年、東京仕込みの串</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-kochi-yoshoku-molto-lieto"><span class="tn" style="background:#4a3aa7;">35</span>帯屋町を見下ろす2階の洋食とバー</a>
+<a href="#c-kochi-yoshoku-amistad"><span class="tn" style="background:#4a3aa7;">37</span>出汁から取るパエリアのスペインバル</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味（アイスクリン・文旦）</div>
+<div class="links">
+<a href="#c-kochi-cafe-wokashito"><span class="tn" style="background:#eda100;">46</span>夜も開く廿代町の菓子とコーヒーの店</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 本町・城見町・農人町・宝永町（高知城の南）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kochi/_map4.jpg" alt="中心部拡大3 本町・城見町・農人町・宝永町（高知城の南）">
+<a href="#c-kochi-kyodo-myojinmaru-hirome" style="left:15.0%;top:22.97%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-kyodo-myojinmaru-honten" style="left:30.91%;top:34.7%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-kyodo-tsukasa-honten" style="left:41.56%;top:20.74%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-kyodo-habotan" style="left:34.16%;top:40.5%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-kyodo-suigeitei" style="left:47.99%;top:50.8%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-kyodo-sushiryu" style="left:41.82%;top:53.48%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-men-mansyu-honten" style="left:81.3%;top:56.44%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-men-kuraki-obiyamachi" style="left:29.09%;top:20.36%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-washoku-hozumi" style="left:24.94%;top:29.74%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-washoku-obiya-kansuke" style="left:17.8%;top:26.0%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-washoku-ashukutei" style="left:30.72%;top:22.12%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-washoku-hamacho" style="left:46.04%;top:86.04%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-izakaya-inaya" style="left:29.94%;top:25.78%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-izakaya-narukoya" style="left:30.07%;top:8.53%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-izakaya-akindo" style="left:19.49%;top:30.74%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-yoshoku-ario" style="left:22.67%;top:33.86%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-yoshoku-molto-lieto" style="left:31.24%;top:16.54%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-yoshoku-amistad" style="left:41.76%;top:8.53%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-yoshoku-kosho" style="left:71.89%;top:66.28%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-yoshoku-phon-banh-mi" style="left:93.83%;top:17.54%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-yoshoku-ameien" style="left:17.93%;top:66.06%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-cafe-zumzum-honten" style="left:4.23%;top:83.98%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-cafe-imoten-hirome" style="left:16.1%;top:30.39%;width:3.06%;height:12.0%;"></a>
+<a href="#c-kochi-cafe-mantennohoshi-hirome" style="left:13.91%;top:30.39%;width:3.06%;height:12.0%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（24店・番号はピンと同じ）</div>
+<div class="sec red">鰹の藁焼きたたき・皿鉢・土佐料理</div>
+<div class="links">
+<a href="#c-kochi-kyodo-myojinmaru-hirome"><span class="tn" style="background:#e34948;">1</span>塩たたき発祥、藁焼きを目の前で</a>
+<a href="#c-kochi-kyodo-myojinmaru-honten"><span class="tn" style="background:#e34948;">2</span>藁焼き鰹たたきを個室で落ち着いて</a>
+<a href="#c-kochi-kyodo-tsukasa-honten"><span class="tn" style="background:#e34948;">3</span>大正6年創業、皿鉢料理の老舗</a>
+<a href="#c-kochi-kyodo-habotan"><span class="tn" style="background:#e34948;">4</span>昼から開く半世紀の大衆酒場</a>
+<a href="#c-kochi-kyodo-suigeitei"><span class="tn" style="background:#e34948;">5</span>酒蔵直営、ミニ皿鉢と鯨すき焼き</a>
+<a href="#c-kochi-kyodo-sushiryu"><span class="tn" style="background:#e34948;">8</span>田舎寿司と皿鉢の寿司処</a>
+</div>
+<div class="sec brown">ラーメン・うどん・麺類</div>
+<div class="links">
+<a href="#c-kochi-men-mansyu-honten"><span class="tn" style="background:#8a5a2b;">11</span>高知発祥のホルモン麺ジャン麺</a>
+<a href="#c-kochi-men-kuraki-obiyamachi"><span class="tn" style="background:#8a5a2b;">15</span>帯屋町の牛モツつけ麺と自家製麺</a>
+</div>
+<div class="sec blue">寿司・和食・割烹（土佐湾の魚）</div>
+<div class="links">
+<a href="#c-kochi-washoku-hozumi"><span class="tn" style="background:#2a78d6;">21</span>赤酢のシャリで握る帯屋町の寿司店</a>
+<a href="#c-kochi-washoku-obiya-kansuke"><span class="tn" style="background:#2a78d6;">22</span>6種12貫の田舎寿司を出す帯屋町の和食店</a>
+<a href="#c-kochi-washoku-ashukutei"><span class="tn" style="background:#2a78d6;">23</span>羽釜で炊いたシャリの小さな寿司店</a>
+<a href="#c-kochi-washoku-hamacho"><span class="tn" style="background:#2a78d6;">24</span>芸妓の舞台がある鏡川沿いの料亭</a>
+</div>
+<div class="sec beer">居酒屋・土佐酒・屋台餃子</div>
+<div class="links">
+<a href="#c-kochi-izakaya-inaya"><span class="tn" style="background:#0d366b;">29</span>堀詰電停すぐ、土佐酒が銘柄で並ぶ</a>
+<a href="#c-kochi-izakaya-narukoya"><span class="tn" style="background:#0d366b;">30</span>帯屋町小路で朝5時まで</a>
+<a href="#c-kochi-izakaya-akindo"><span class="tn" style="background:#0d366b;">33</span>大橋通すぐ、土佐の地酒と地魚</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-kochi-yoshoku-ario"><span class="tn" style="background:#4a3aa7;">34</span>45年続いたパスタの名店を継ぐ</a>
+<a href="#c-kochi-yoshoku-molto-lieto"><span class="tn" style="background:#4a3aa7;">35</span>帯屋町を見下ろす2階の洋食とバー</a>
+<a href="#c-kochi-yoshoku-amistad"><span class="tn" style="background:#4a3aa7;">37</span>出汁から取るパエリアのスペインバル</a>
+<a href="#c-kochi-yoshoku-kosho"><span class="tn" style="background:#4a3aa7;">38</span>うつぼを炒める高知の広東料理</a>
+<a href="#c-kochi-yoshoku-phon-banh-mi"><span class="tn" style="background:#4a3aa7;">39</span>日曜市のバインミーが店を構えた</a>
+<a href="#c-kochi-yoshoku-ameien"><span class="tn" style="background:#4a3aa7;">40</span>高知で数少ないミャンマー家庭料理</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味（アイスクリン・文旦）</div>
+<div class="links">
+<a href="#c-kochi-cafe-zumzum-honten"><span class="tn" style="background:#eda100;">43</span>1971年から続く本町の喫茶。名物はパンケーキ</a>
+<a href="#c-kochi-cafe-imoten-hirome"><span class="tn" style="background:#eda100;">47</span>日曜市の名物いも天を毎日揚げる</a>
+<a href="#c-kochi-cafe-mantennohoshi-hirome"><span class="tn" style="background:#eda100;">48</span>市場の中でほうじ茶大福を食べる</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 東の郊外 北御座・南御座・北久保・南川添・薊野西町・高須・五台山（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/kochi/_map5.jpg" alt="中心部拡大4 東の郊外 北御座・南御座・北久保・南川添・薊野西町・高須・五台山">
+<a href="#c-kochi-men-shinatora-takasu" style="left:95.15%;top:59.2%;width:2.06%;height:1.72%;"></a>
+<a href="#c-kochi-men-garo-tosanosato" style="left:15.89%;top:28.58%;width:2.06%;height:1.72%;"></a>
+<a href="#c-kochi-yoshoku-cerise-antique" style="left:59.79%;top:27.18%;width:2.06%;height:1.72%;"></a>
+<a href="#c-kochi-yoshoku-volver" style="left:15.06%;top:33.26%;width:2.06%;height:1.72%;"></a>
+<a href="#c-kochi-yoshoku-bistro-cafe-flag" style="left:3.47%;top:6.28%;width:2.06%;height:1.72%;"></a>
+<a href="#c-kochi-cafe-zumzum-kitakubo" style="left:27.45%;top:28.02%;width:2.06%;height:1.72%;"></a>
+<a href="#c-kochi-cafe-mantennohoshi-antenna" style="left:23.69%;top:18.6%;width:2.06%;height:1.72%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（7店・番号はピンと同じ）</div>
+<div class="sec brown">ラーメン・うどん・麺類</div>
+<div class="links">
+<a href="#c-kochi-men-shinatora-takasu"><span class="tn" style="background:#8a5a2b;">14</span>高須の深夜らーめんと餃子</a>
+<a href="#c-kochi-men-garo-tosanosato"><span class="tn" style="background:#8a5a2b;">16</span>須崎名物の鍋焼きラーメンを市内で</a>
+</div>
+<div class="sec violet">洋食・各国料理</div>
+<div class="links">
+<a href="#c-kochi-yoshoku-cerise-antique"><span class="tn" style="background:#4a3aa7;">36</span>四万十ポークのヒレカツが看板</a>
+<a href="#c-kochi-yoshoku-volver"><span class="tn" style="background:#4a3aa7;">41</span>県産野菜と薬膳の洋食、駐車場あり</a>
+<a href="#c-kochi-yoshoku-bistro-cafe-flag"><span class="tn" style="background:#4a3aa7;">42</span>薊野の2階、朝から夜までのビストロ</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・甘味（アイスクリン・文旦）</div>
+<div class="links">
+<a href="#c-kochi-cafe-zumzum-kitakubo"><span class="tn" style="background:#eda100;">44</span>2026年に開いたZUMZUMの2号店</a>
+<a href="#c-kochi-cafe-mantennohoshi-antenna"><span class="tn" style="background:#eda100;">49</span>津野町のほうじ茶菓子とカフェ</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>高知市の店は6つのかたまりに分かれる。①**ひろめ市場**＝屋根の下に60余りの店が並び、買った料理を共用の卓で食べる。昼から飲める ②**帯屋町（おびやまち）・帯屋町筋**＝ひろめ市場から東へ伸びるアーケード。老舗と昼の店 ③**廿代町（にじゅうよまち）・堀詰・追手筋**＝夜の飲み屋街。屋台餃子と2軒目の店はここ ④**JR高知駅前**＝北の玄関口。はりまや橋から路面電車で5分 ⑤**日曜市**＝追手筋に毎週日曜の朝から1km以上並ぶ露天（いも天・田舎寿司） ⑥**郊外**＝桂浜・朝倉・一宮。車で行く店。**高知市の名物**＝**鰹の藁焼き塩たたき**（藁の炎で表面だけ焼き、塩で食べる。ポン酢でなく塩が土佐の作法）、**皿鉢（さわち）料理**（大皿に刺身・寿司・揚げ物・果物まで盛り合わせる宴会の形式）、**屋台餃子**（薄皮で小ぶり、酢と胡椒で食べる。深夜まで開く）、**田舎寿司**（ミョウガ・リュウキュウ・タケノコ・コンニャクを使う山の寿司。酢飯が甘い）、**どろめ**（イワシの稚魚の生。ぬたで食べる）、**うつぼ**（たたき・唐揚げ）、**クジラ**（赤身の刺身・ハリハリ鍋）、**チャンバラ貝**、**四方竹**（秋）、**ぐる煮**、**土佐巻き**（鰹のたたきを巻いた太巻き）。甘いものは**アイスクリン**（卵と練乳のシャーベット状の氷菓。桂浜と日曜市の屋台）、**帽子パン**、**ミレービスケット**、**文旦（ぶんたん）**と**小夏（こなつ）**。酒は**土佐酒**（酔鯨・司牡丹・亀泉・文佳人・美丈夫・南・豊能梅ほか）で、**辛口で冷やでも燗でも飲ませる酒が多い。** **高知は「献杯・返杯」の作法があり、注がれた盃を飲んで相手に返す。** 車で来るなら代行か路面電車を使うこと。</div>
+
+<h2 id="s-kyodo" class="c-red">鰹の藁焼きたたき・皿鉢・土佐料理</h2>
+<div class="card" id="c-kochi-kyodo-myojinmaru-hirome">
+<img class="hero" src="img/kochi/kochi-kyodo-myojinmaru-hirome.jpg" alt="明神丸 ひろめ市場店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-kyodo-myojinmaru-hirome_exterior.jpg" alt="明神丸 ひろめ市場店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>明神丸 ひろめ市場店<span class="yomi">みょうじんまる ひろめいちばてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">ひろめ市場の中にある明神丸の第1号店で、鰹の「塩たたき」を始めた店。鰹の一本釣りで知られる明神水産が母体で、注文を受けてから藁の炎で焼くため、混む時間は順番待ちになる。フードコート形式のため席の予約は受け付けておらず、持ち帰りも扱わない（持ち帰りは同社の大橋通り店 088-821-8808）。支払いはPayPayとAlipayのQRコード決済に対応。料理は店の前で受け取り、市場の共用の卓へ運んで食べる。休みはひろめ市場の休館日に準じ、店独自の臨時休業はひろめ市場の「お知らせ」と明神丸の公式サイトに月ごとに出る。</div>
+<div class="sig"><b>一皿:</b>鰹の塩たたき（藁で焼いた鰹に黒潮町産の天日塩と薬味）／たたき定食（たたき・ご飯・みそ汁）／塩たたき握り（塩たたきを握りにした一品・500円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 11:00〜21:00／日 10:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">無休（ひろめ市場の休館日に準ずる。店独自の臨時休業が月ごとに入る）</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町2-3-1 ひろめ市場内</td></tr>
+<tr><th>予約</th><td>予約不可（フードコートのため席の予約を受け付けていない）。持ち帰りも不可 — <a href="https://shop.myojinmaru.jp/shop/hiromeichiba/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鰹の藁焼き塩たたきを市場の中で実演している店で、本章の中心にあたる。営業確認1＝明神丸 公式サイトのお知らせ「高知エリア 11月度店休日・特別営業時間」（2026年10月28日付）に「ひろめ市場店 店休日5日(木)／特別営業22日(日)9:00〜21:00、23日(月・祝)10:00〜22:00」と記載。あわせてひろめ市場 公式サイトのお知らせ（2026年11月03日付）に「【明神丸】11/5（木）臨時休業、11/10（火）営業いたします！（2026.11.3 明神丸より）」と店名で署名された告知がある。営業確認2＝営業確認2の『&lt;店名&gt; 閉店／移転／リニューアル』の検索は、本ターンの共有Web検索枠が途中で尽きたため実行できていない（未実施）。代わりに、店自身が出した直近の営業告知を直接読んで営業中であることを確認した。公式SNSのアカウント名は公式サイトのリンク表記で確認した。 公式サイト（shop.myojinmaru.jp）とひろめ市場の店舗ページがいずれも現行の店名「明神丸」で生きており、2026年11月分の営業告知が出ている。 phone は空にした＝公式サイトの店舗ページもひろめ市場の店舗ページも、この店の電話番号を載せていない（席の予約もテイクアウトも受け付けていないため）。問い合わせはひろめ市場の館内インフォメーション 088-822-5287、持ち帰りは大橋通り店 088-821-8808。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%98%8E%E7%A5%9E%E4%B8%B8%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2-3-1%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（shop.myojinmaru.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://shop.myojinmaru.jp/shop/hiromeichiba/">公式サイトの店舗ページ（住所・営業時間・定休日・支払い方法・予約不可）2026-11-10 取得</a> / <a href="https://myojinmaru.jp/news/644/">公式サイトのお知らせ「高知エリア 11月度店休日・特別営業時間」（2026年10月28日）2026-11-10 取得</a> / <a href="https://shop.myojinmaru.jp/wp-content/uploads/2024/03/01_menu.pdf">公式グランドメニューPDF（価格）2026-11-10 取得</a> / <a href="https://hirome.co.jp/shop-details.php?id=14">ひろめ市場 公式サイトの店舗ページ（営業時間・定休日・店の紹介）2026-11-10 取得</a> / <a href="https://hirome.co.jp/notice.php">ひろめ市場 公式サイトのお知らせ（2026年11月03日・明神丸の臨時休業と営業の告知）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-kyodo-myojinmaru-honten">
+<img class="hero" src="img/kochi/kochi-kyodo-myojinmaru-honten.jpg" alt="明神丸 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-kyodo-myojinmaru-honten_exterior.jpg" alt="明神丸 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>明神丸 本店<span class="yomi">みょうじんまる ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">ひろめ市場の屋台形式とは別に、座って食べたいときに使える明神丸の本店。路面電車の堀詰電停のそばにあり、夜のみの営業。1階は小上がりのテーブル席で、人数に合わせて卓を動かせる。10名以下の宴会に向く完全個室がある。塩たたきは黒潮町産の天日塩を使い、注文を受けてから藁で焼くため提供まで時間がかかる。支払いはクレジットカード（VISA・Master・JCB・AMEX・Diners・UnionPay）、電子マネー（楽天Edy・iD・QUICPay）、交通系電子マネー、PayPay・Alipayに対応。電話とネットで予約できる。</div>
+<div class="sig"><b>一皿:</b>藁焼き鰹の塩たたき（黒潮町産の天日塩・ゆず果汁・にんにく）／タレたたき（明神丸特製のポン酢ダレと大葉・にんにく・茗荷）／宴会コース（公式サイトに宴会コースメニューのPDFあり）</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜23:30（L.O.23:00）</td></tr>
+<tr><th>定休日</th><td class="off">毎週月曜（2026年11月は4日も休み。月ごとの店休日は公式サイトのお知らせに掲載）</td></tr>
+<tr><th>住所</th><td>高知県高知市本町1-1-2</td></tr>
+<tr><th>予約</th><td>電話 088-820-6505 で予約可。公式サイトから24時間ネット予約も可 — <a href="tel:0888206505">☎ 088-820-6505</a> ／ <a href="https://shop.myojinmaru.jp/shop/honten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ひろめ市場の立ち食い形式では落ち着かない人向けに、同じ藁焼き塩たたきを席で食べられる店として章に入れる。営業確認1＝明神丸 公式サイトのお知らせ「高知エリア 11月度店休日・特別営業時間」（2026年10月28日付）に「本店 店休日＝毎週月曜・4日(水)／特別営業＝23日(月・祝)17:00〜23:30」と記載。本店のグランドメニューPDFは2025年3月3日作成のものが公式サイトに掲示されている。営業確認2＝営業確認2の『&lt;店名&gt; 閉店／移転／リニューアル』の検索は、本ターンの共有Web検索枠が途中で尽きたため実行できていない（未実施）。代わりに、店自身が出した直近の営業告知を直接読んで営業中であることを確認した。公式SNSのアカウント名は公式サイトのリンク表記で確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%98%8E%E7%A5%9E%E4%B8%B8%20%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%9C%AC%E7%94%BA1-1-2">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（shop.myojinmaru.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://shop.myojinmaru.jp/shop/honten/">公式サイトの店舗ページ（住所・電話・営業時間・支払い方法・予約）2026-11-10 取得</a> / <a href="https://myojinmaru.jp/news/644/">公式サイトのお知らせ「高知エリア 11月度店休日・特別営業時間」（2026年10月28日）2026-11-10 取得</a> / <a href="https://shop.myojinmaru.jp/wp-content/uploads/2024/03/honten-menu.pdf">公式サイト 本店グランドメニューPDF（価格・2025年3月3日作成）2026-11-10 取得</a> / <a href="https://shop.myojinmaru.jp/shop_guide/">公式サイトの店舗一覧（住所・電話）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-kyodo-tsukasa-honten">
+<img class="hero" src="img/kochi/kochi-kyodo-tsukasa-honten.jpg" alt="土佐料理 司 高知本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-kyodo-tsukasa-honten_exterior.jpg" alt="土佐料理 司 高知本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>土佐料理 司 高知本店<span class="yomi">とさりょうり つかさ こうちほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">大正6年（1917年）に八百屋町（今のはりまや町界隈）で創業し、「土佐料理」という呼び名を広めた店。皿鉢は刺身・鰹のたたき・組物（揚物や煮物の盛合せ）・寿司で構成され、2名用から4名用まで大きさを選べる。皿鉢をメインにした人数単位のコースもある。席は掘炬燵が2〜5名、イス・テーブル席が2〜20名、座敷の個室が6〜100名で、最大100名の宴会に対応する。年末年始（12月30日〜1月1日）は休み、そのほかに不定休がある。予約は電話のほかネット予約も受け付けている。なお公式サイトの本店ページは夜を21:30まで、系列の会社サイトの店舗情報は平日夜を21:00までと書いており、記載が食い違う。遅い時間に行くなら電話で確認した方がよい。</div>
+<div class="sig"><b>一皿:</b>皿鉢料理（刺身・鰹のたたき・組物・寿司を一枚の大皿に盛った土佐の宴会料理）／一本釣り鰹の塩たたき／うつぼのたたき（皮と身がゼラチン質のうつぼを炙って切ったもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 12:00〜15:00（料理L.O.14:30／ドリンクL.O.14:30）、17:00〜21:30（料理L.O.20:30／ドリンクL.O.21:00）／日・祝 11:30〜15:00（L.O.14:30）、17:00〜21:30（料理L.O.20:30／ドリンクL.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">年末年始（12月30日〜1月1日）。ほかに不定休あり</td></tr>
+<tr><th>住所</th><td>高知県高知市はりまや町1-2-15</td></tr>
+<tr><th>予約</th><td>電話 088-873-4351 で予約可。ホットペッパーグルメからネット予約も可。皿鉢とコースは人数単位のため事前連絡が確実 — <a href="tel:0888734351">☎ 088-873-4351</a> ／ <a href="https://kazuoh.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>皿鉢料理を通年で出す高知市の老舗で、本章の皿鉢の軸になる。どろめ・うつぼ・鯨・チャンバラ貝など土佐の珍味も単品で揃う。営業確認1＝公式サイト（kazuoh.com）のお知らせ欄に「2025.9.12【日本経済新聞に掲載されました｜司の皿鉢（さわち）料理】」、系列の会社サイト（katsuo.co.jp）のお知らせに「2025年11月 朝日放送テレビ『朝だ！生です旅サラダ』10月25日(土)放送回で司食堂が紹介されました」の記載がある。営業確認2＝営業確認2の『&lt;店名&gt; 閉店／移転／リニューアル』の検索は、本ターンの共有Web検索枠が途中で尽きたため実行できていない（未実施）。代わりに、店自身が出した直近の営業告知を直接読んで営業中であることを確認した。公式SNSのアカウント名は公式サイトのリンク表記で確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E6%96%99%E7%90%86%20%E5%8F%B8%20%E9%AB%98%E7%9F%A5%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA1-2-15">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kazuoh.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://kazuoh.com/">公式サイト（住所・電話・営業時間・定休日・創業・お知らせ2025.9.12）2026-11-10 取得</a> / <a href="https://kazuoh.com/sawachi">公式サイト 皿鉢（さわち）ページ（皿鉢と皿鉢コースの価格）2026-11-10 取得</a> / <a href="https://kazuoh.com/course/">公式サイト 土佐風会席ページ（コース価格）2026-11-10 取得</a> / <a href="https://www.katsuo.co.jp/shop">会社サイトの店舗情報一覧（住所・電話・席・アクセス）2026-11-10 取得</a> / <a href="https://www.katsuo.co.jp/news">会社サイトのお知らせ（2025年11月のメディア掲載）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000112349/">ホットペッパーグルメ 掲載ページ（営業時間・写真）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-kyodo-habotan">
+<img class="hero" src="img/kochi/kochi-kyodo-habotan.jpg" alt="土佐乃居酒屋 葉牡丹 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-kyodo-habotan_exterior.jpg" alt="土佐乃居酒屋 葉牡丹 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>土佐乃居酒屋 葉牡丹<span class="yomi">とさのいざかや はぼたん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">開店から半世紀を超える大衆酒場で、11時から23時まで通しで営業し、昼から酒を飲める。ランチは11時から14時まで（日曜・祝日はランチなし）。席は最大150名で、カウンター、1〜2人席から7〜8人席まであり、2階は10席×4部屋（最大40名）。貸切は電話で相談する。品書きは串焼き・串フライが1本95円からと安く、どろめ（片口いわしの稚魚）、ちゃんばら貝、鯨たたき・鯨フライといった土佐の珍味を一皿ずつ頼める。公式サイトのお知らせ欄で臨時休業を告知している。</div>
+<div class="sig"><b>一皿:</b>どろめ（片口いわしの稚魚の生。ぬたや酢味噌で）／鯨たたき・鯨フライ（高知で古くから食べられてきた鯨料理）／串フライ盛合せ（海老・豚・いか・キス・なすの5本）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜23:00（ランチ 11:00〜14:00。日曜・祝日はランチなし）</td></tr>
+<tr><th>定休日</th><td class="off">水曜（2026年12月24日・12月31日・2027年1月1日は公式サイトで休業を告知）</td></tr>
+<tr><th>住所</th><td>高知県高知市堺町2-21</td></tr>
+<tr><th>予約</th><td>電話 088-872-1330 で予約・貸切の相談が可。公式サイトからオンライン予約（ヒトサラ）へのリンクあり — <a href="tel:0888721330">☎ 088-872-1330</a> ／ <a href="https://habotan.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>どろめ・ちゃんばら貝・鯨といった土佐の珍味を一皿ずつ安く頼める大衆酒場で、皿鉢や藁焼きの専門店とは別の入り口として章に入れる。営業確認1＝公式サイト（habotan.jp）のお知らせ欄に「2026年11月10日 12/24（木）、12/31（木）、1/1（金）は、休みになります。」「2026年8月21日 9/24（木）は、休みになります。」の記載があり、取得日当日の更新が確認できる。営業確認2＝営業確認2の『&lt;店名&gt; 閉店／移転／リニューアル』の検索は、本ターンの共有Web検索枠が途中で尽きたため実行できていない（未実施）。代わりに、店自身が出した直近の営業告知を直接読んで営業中であることを確認した。公式SNSのアカウント名は公式サイトのリンク表記で確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E4%B9%83%E5%B1%85%E9%85%92%E5%B1%8B%20%E8%91%89%E7%89%A1%E4%B8%B9%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%A0%BA%E7%94%BA2-21">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（habotan.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://habotan.jp/">公式サイト トップ（お知らせ 2026年11月10日・営業時間・定休日・住所・電話）2026-11-10 取得</a> / <a href="https://habotan.jp/loc">公式サイト 地図と詳細（座席・駐車場・貸切・道順）2026-11-10 取得</a> / <a href="https://habotan.jp/menu">公式サイト 料理と酒（価格）2026-11-10 取得</a> / <a href="https://habotan.jp/info/">公式サイト お知らせ一覧 2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-kyodo-suigeitei">
+<img class="hero" src="img/kochi/kochi-kyodo-suigeitei.jpg" alt="とさごはん 酔鯨亭 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-kyodo-suigeitei_exterior.jpg" alt="とさごはん 酔鯨亭 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>とさごはん 酔鯨亭<span class="yomi">とさごはん すいげいてい</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">高知の酒蔵「酔鯨酒造」が営む店で、料理と自社の日本酒を合わせて出す。60席（カウンター6席、テーブル54席）で全席禁煙。夜のみの営業で、火曜と水曜が休み。2〜4名向けの「ミニ皿鉢」は一皿に鰹たたき、くじら竜田揚げ、チャンバラ貝のいそ煮、土佐の細工かまぼこ、土佐巻きなど9品が載る構成で、事前の予約が要る。鯨のすき焼きも要予約。一人で来る人向けには、皿鉢を一膳にまとめた「土佐御膳」がある。支払いは現金・クレジットカード・電子マネー・QRコード決済。公式サイトのイベント欄で日本酒の会などを告知している。</div>
+<div class="sig"><b>一皿:</b>ミニ皿鉢（鰹たたき・くじら竜田揚げ・チャンバラ貝のいそ煮・土佐巻きなど9品の盛合せ・要予約）／鯨のすき焼き（2〜4名向け・一台6,000円・要予約）／土佐御膳（鰹のタタキ、ウツボのテリーヌ、ニロギの唐揚げなど9品の御膳）</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜22:30（L.O.22:00）</td></tr>
+<tr><th>定休日</th><td class="off">毎週火曜・水曜</td></tr>
+<tr><th>住所</th><td>高知県高知市南はりまや町1丁目17-25</td></tr>
+<tr><th>予約</th><td>電話 088-855-3520 または公式サイトの予約ページ（reserve.toretaasia.com/suigeitei）。ミニ皿鉢と鯨のすき焼きは事前予約が必要 — <a href="tel:0888553520">☎ 088-855-3520</a> ／ <a href="https://www.suigeitei.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>皿鉢を少人数でも頼める「ミニ皿鉢」と、鯨・ウツボ・チャンバラ貝・土佐巻きといった郷土の品が一通り揃う店として章に入れる。営業確認1＝公式サイト（suigeitei.com）のイベントページに「12/4（金）酔鯨の新酒を楽しむ会（19:00〜・定員20名・参加費6,000円）」の告知があり、12月4日が金曜になるのは2026年。料理ページの画像も2026年7月更新のものが載っている。営業確認2＝営業確認2の『&lt;店名&gt; 閉店／移転／リニューアル』の検索は、本ターンの共有Web検索枠が途中で尽きたため実行できていない（未実施）。代わりに、店自身が出した直近の営業告知を直接読んで営業中であることを確認した。公式SNSのアカウント名は公式サイトのリンク表記で確認した。 公式サイトのリンク表記は「酔鯨亭公式 Instagram（suigeitei_kochi）」で、店名の変更は確認されない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%81%95%E3%81%94%E3%81%AF%E3%82%93%20%E9%85%94%E9%AF%A8%E4%BA%AD%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8D%97%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA1%E4%B8%81%E7%9B%AE17-25">Googleマップで開く</a>
+<div class="src">写真: とさごはん 酔鯨亭 公式サイトより引用 / 外観: 出典ページ / 参照元: <a href="https://www.suigeitei.com/">公式サイト トップ（住所・電話・営業時間・定休日・席数・支払い方法）2026-11-10 取得</a> / <a href="https://www.suigeitei.com/%E3%82%A4%E3%83%99%E3%83%B3%E3%83%88/">公式サイト イベント（12/4 酔鯨の新酒を楽しむ会）2026-11-10 取得</a> / <a href="https://www.suigeitei.com/%E6%96%99%E7%90%86/%E3%83%9F%E3%83%8B%E7%9A%BF%E9%89%A2/">公式サイト 料理／ミニ皿鉢（内容と価格）2026-11-10 取得</a> / <a href="https://www.suigeitei.com/%E6%96%99%E7%90%86/%E9%AB%98%E7%9F%A5%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC/">公式サイト 料理／高知メニュー（単品価格）2026-11-10 取得</a> / <a href="https://www.suigeitei.com/%E6%96%99%E7%90%86/%E5%9C%9F%E4%BD%90%E5%BE%A1%E8%86%B3/">公式サイト 料理／土佐御膳（内容と価格）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-kyodo-uogashira-daikuma">
+<img class="hero" src="img/kochi/kochi-kyodo-uogashira-daikuma.jpg" alt="魚頭 大熊 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-kyodo-uogashira-daikuma_exterior.jpg" alt="魚頭 大熊 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>魚頭 大熊<span class="yomi">うおがしら だいくま</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">高知市内の水産会社が営む居酒屋で、1階がカウンターとテーブル、2階が掘りごたつと個室。1階と2階で終了時刻が違い、2階の方が1時間早く閉まる。日曜が休みだが、祝日にあたる日曜は営業する。品書きは刺身と寿司が中心で、うつぼの唐揚げ、さえずり（鯨の舌）の酢味噌、どろめ酢、鯨ベーコンなど土佐の珍味が通年で並ぶ。支払いは現金のほか主要なクレジットカード、交通系を含む電子マネー、楽天ペイ・PayPayに対応。公式サイトのブログを週に数回更新しており、入荷の様子や宴会の受付状況が分かる。</div>
+<div class="sig"><b>一皿:</b>とろ鰹焼切（炙った鰹を塩と仏手柑を搾って食べる塩たたき）／うつぼ唐揚げ 生にんにく仕立て／さえずり酢味噌（鯨の舌を酢味噌で和えたもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 1階 17:00〜23:00（L.O.22:30）／2階 17:00〜22:00（L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>高知県高知市廿代町4-9 メトロポリタンビル1F・2F</td></tr>
+<tr><th>予約</th><td>電話 088-802-2177。ホットペッパーグルメから24時間ネット予約も可 — <a href="tel:0888022177">☎ 088-802-2177</a> ／ <a href="https://uogashira-daikuma.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>うつぼ・鯨・どろめ・土佐巻きという土佐の郷土の品を、水産会社直営の鮮度で通年出している店として章に入れる。営業確認1＝公式サイト（uogashira-daikuma.com）のブログが2026年11月9日、11月6日、11月4日、11月2日、10月31日と連日に近い頻度で更新されており、11月9日の記事は「新物・戻り鰹が続々入荷中／忘年会のご予約受付」。営業確認2＝営業確認2の『&lt;店名&gt; 閉店／移転／リニューアル』の検索は、本ターンの共有Web検索枠が途中で尽きたため実行できていない（未実施）。代わりに、店自身が出した直近の営業告知を直接読んで営業中であることを確認した。公式SNSのアカウント名は公式サイトのリンク表記で確認した。 公式サイトは店名表記が「高知の居酒屋【公式】魚頭大熊」のままで、移転や改称の告知は見当たらない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E9%A0%AD%20%E5%A4%A7%E7%86%8A%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA4-9%20%E3%83%A1%E3%83%88%E3%83%AD%E3%83%9D%E3%83%AA%E3%82%BF%E3%83%B3%E3%83%93%E3%83%AB1F%E3%83%BB2F">Googleマップで開く</a>
+<div class="src">写真: 魚頭 大熊 公式サイトより引用 / 外観: 出典ページ / 参照元: <a href="https://uogashira-daikuma.com/">公式サイト トップ（店舗情報・ブログの更新日 2026.11.09）2026-11-10 取得</a> / <a href="https://uogashira-daikuma.com/information/">公式サイト 店舗情報（住所・電話・営業時間・定休日・支払い方法）2026-11-10 取得</a> / <a href="https://uogashira-daikuma.com/menu/">公式サイト お料理（価格）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000549231/">ホットペッパーグルメ 掲載ページ（席・外観写真）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-kyodo-tosa-tataki-dojo">
+<img class="hero" src="img/kochi/kochi-kyodo-tosa-tataki-dojo.jpg" alt="土佐タタキ道場（ドライブインかつお船） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-kyodo-tosa-tataki-dojo_exterior.jpg" alt="土佐タタキ道場（ドライブインかつお船） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>土佐タタキ道場（ドライブインかつお船）<span class="yomi">とさたたきどうじょう どらいぶいんかつおぶね</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">桂浜の近くにある船の形のドライブインの中にある食堂で、鰹の身を刺した串を渡され、自分で藁の炎にかざして焼く。焼き上がるとスタッフが切って皿に盛ってくれる。予約は受け付けておらず、来店順に案内される。その日に仕入れた鰹が無くなり次第オーダーストップで、15時より早く終わることがある。台風などで漁に出られなかった日は冷凍の鰹になる。1階は土産物売場、2階は団体向けの食事スペースで、椅子席240席と座敷椅子席120席の合わせて最大360名。団体は要予約で、藁焼き体験龍馬膳を用意している。多目的トイレ、おむつ替えコーナー、AEDがある。</div>
+<div class="sig"><b>一皿:</b>鰹タタキ定食（自分で藁焼きした鰹のたたきに、ご飯・汁物・小鉢が付く）／鰹タタキ単品／藁焼き体験龍馬膳（団体向け・ご飯と汁物付 2,640円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:30〜15:00（その日の鰹が無くなり次第終了。売店は8:30から営業）</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>高知県高知市仁井田201-2</td></tr>
+<tr><th>予約</th><td>個人は予約不可（来店順の案内）。団体は要予約で、電話 088-847-3255 またはFAX 088-847-0152 — <a href="tel:0888473255">☎ 088-847-3255</a> ／ <a href="https://www.tataki.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鰹の藁焼きを見るだけでなく自分で焼ける店で、本章の「藁焼き」をいちばん近くで体験できる一軒として入れる。営業確認1＝公式サイト（tataki.co.jp）のトップページがサーバー上で2026年10月12日に更新されており、通信販売ページのお知らせに「令和8年熊本地震の影響による九州方面のお届け遅延」（令和8年＝2026年）の掲示がある。アクセスページは2025年11月14日、店舗ページは2026年1月5日の更新。営業確認2＝営業確認2の『&lt;店名&gt; 閉店／移転／リニューアル』の検索は、本ターンの共有Web検索枠が途中で尽きたため実行できていない（未実施）。代わりに、店自身が出した直近の営業告知を直接読んで営業中であることを確認した。公式SNSのアカウント名は公式サイトのリンク表記で確認した。 公式サイトの運営は「株式会社かつお船」のままで、店名の変更や移転の告知は見当たらない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E3%82%BF%E3%82%BF%E3%82%AD%E9%81%93%E5%A0%B4%EF%BC%88%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E3%82%A4%E3%83%B3%E3%81%8B%E3%81%A4%E3%81%8A%E8%88%B9%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E4%BB%81%E4%BA%95%E7%94%B0201-2">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.tataki.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.tataki.co.jp/index.htm">公式サイト トップ（施設の紹介・藁焼き体験）2026-11-10 取得</a> / <a href="https://www.tataki.co.jp/tenpo.htm">公式サイト お食事処（土佐タタキ道場の営業時間・予約不可・鰹が無くなり次第終了）2026-11-10 取得</a> / <a href="https://www.tataki.co.jp/s_dantai.htm">公式サイト 団体のお客様（席数・団体予約の電話とFAX・藁焼き体験龍馬膳2,640円）2026-11-10 取得</a> / <a href="https://www.tataki.co.jp/shisetsu.htm">公式サイト インフォメーション（施設・設備）2026-11-10 取得</a> / <a href="https://www.tataki.co.jp/online/">公式オンラインショップのお知らせ（令和8年＝2026年の配送遅延告知）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000954719/">ホットペッパーグルメ 掲載ページ（住所・営業時間・定休日・席数・予算帯）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-kyodo-sushiryu">
+<img class="hero" src="img/kochi/kochi-kyodo-sushiryu.jpg" alt="寿し柳 はりまや橋本店・新館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>寿し柳 はりまや橋本店・新館<span class="yomi">すしやなぎ はりまやばしほんてん・しんかん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">はりまや橋のすぐそばにある寿司と和食割烹の店。同じ住所に本店と新館があり、電話も共通。新館は寿司カウンター14席、2階にテーブル4卓と4人掛けの掘りごたつ席が4つあり、11時から21時まで（14時から17時は休憩）営業する。本店は1階が白木のカウンター、2階がテーブルと掘りごたつで最大80名の座敷があり、予約のみの受付。高知ならではの田舎寿司（なす、みょうが、こんにゃくなどを使う野菜の寿司）を1個から頼める。皿鉢料理は出前の扱いで、組物（40cm・4〜5人前）17,500円、鰹のたたき（40cm・4〜5人前）18,500円など。出前は10,000円以上から、弁当・皿鉢・大人数の注文は3日前までの予約が要る。</div>
+<div class="sig"><b>一皿:</b>田舎にぎり寿し（なす浅漬け・みょうがなど高知の野菜を使った寿司。1個から注文可）／かつお定食（鰹の刺身またはたたきに小鉢・ご飯・漬物・汁物）／皿鉢料理（出前。組物は季節の魚介・野菜・肉の料理が約18種）</div>
+<table class="info">
+<tr><th>営業時間</th><td>新館 月〜日 11:00〜21:00（14:00〜17:00は休憩）／本店は予約のみの営業</td></tr>
+<tr><th>定休日</th><td class="off">毎週水曜（お盆・正月などの繁忙期を除く）。そのほか月ごとの臨時休業は公式サイトの営業カレンダーに掲載</td></tr>
+<tr><th>住所</th><td>高知県高知市南はりまや町1丁目2-20</td></tr>
+<tr><th>予約</th><td>電話 088-823-0101（本店は予約のみ）。ホットペッパーグルメからネット予約も可。出前は専用ダイヤル 088-823-0102、10,000円以上・弁当や皿鉢は3日前まで — <a href="tel:0888230101">☎ 088-823-0101</a> ／ <a href="https://www.sushiryu.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>田舎寿司と皿鉢料理の両方を扱う高知市の寿司処で、本章の「土佐の郷土料理」側を埋める一軒。営業確認1＝公式サイト（sushiryu.co.jp）のお知らせ欄が月ごとの営業カレンダーで更新されており、直近は「2026/10/05 ☆10月営業日のお知らせ☆」、その前が「2026/09/01 ☆9月営業日のお知らせ☆」「2026/08/06 ☆8月営業日のお知らせ☆」。営業確認2＝営業確認2の『&lt;店名&gt; 閉店／移転／リニューアル』の検索は、本ターンの共有Web検索枠が途中で尽きたため実行できていない（未実施）。代わりに、店自身が出した直近の営業告知を直接読んで営業中であることを確認した。公式SNSのアカウント名は公式サイトのリンク表記で確認した。 公式サイトの屋号表記は「はりまや橋 寿し柳」のままで、移転や改称の告知は見当たらない。 外観（建物の正面・入口）の実写は、公式サイト・ホットペッパーグルメの掲載写真のいずれにも見当たらず（ホットペッパーの『外観』区分の写真は全てカウンターや個室の内観だった）、転載してよい出どころから取得できなかったため ext_urls は空にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%E6%9F%B3%20%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E6%A9%8B%E6%9C%AC%E5%BA%97%E3%83%BB%E6%96%B0%E9%A4%A8%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8D%97%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA1%E4%B8%81%E7%9B%AE2-20">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.sushiryu.co.jp/">公式サイト トップ（お知らせ 2026/10/05 ほか月ごとの営業日告知・定休日）2026-11-10 取得</a> / <a href="https://www.sushiryu.co.jp/store.htm">公式サイト 店舗案内（本店・新館の住所・電話・営業時間・席）2026-11-10 取得</a> / <a href="https://www.sushiryu.co.jp/menu.htm">公式サイト お品書き・宴会（定食・一品・コースの価格・席）2026-11-10 取得</a> / <a href="https://www.sushiryu.co.jp/catering.htm">公式サイト 出前料理（皿鉢料理の構成と価格・出前の条件）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000549402/">ホットペッパーグルメ 掲載ページ（アクセス・写真）2026-11-10 取得</a></div>
+</div></div>
+<h2 id="s-men" class="c-brown">ラーメン・うどん・麺類</h2>
+<div class="card" id="c-kochi-men-ramen-jin-ganso">
+<img class="hero" src="img/kochi/kochi-men-ramen-jin-ganso.jpg" alt="本場博多とんこつラーメン神 元祖本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-men-ramen-jin-ganso_exterior.jpg" alt="本場博多とんこつラーメン神 元祖本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">9</span>本場博多とんこつラーメン神 元祖本店<span class="yomi">ほんばはかたとんこつらーめんじん がんそほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">追手筋沿いで夜だけ開ける豚骨ラーメンの店。運営は高知市天神町の株式会社ジャパンダイニング。営業は18時からで、平日は翌3時30分、土日と祝前日は翌4時30分まで。定休日は水曜だが、公式サイトに「変更になる場合もあります」と注記がある。麺は極細麺で、茹で加減を6段階から選べる。18時〜21時は替え玉1玉が無料になるキャンペーンを公式サイトが告知している（予告なく終了する場合あり）。黒こげラーメンは本店だけの品。席数と支払い方法は公式サイトに記載がなく未確認。電話予約は050-5448-4196。</div>
+<div class="sig"><b>一皿:</b>黒こげラーメン（黒く焦がした香味油を効かせた豚骨スープ。本店限定）／土佐のかつおラーメン（かつおだしを合わせた一杯）／神特製つけ麺（かつおだれで食べるつけ麺。1,480円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日18:00〜翌3:30／土・日・祝前日18:00〜翌4:30（公式サイトの表記は 18:00-27:30／18:00-28:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日（公式サイトに「変更になる場合もあります」との注記あり）</td></tr>
+<tr><th>住所</th><td>高知県高知市追手筋1-1-5</td></tr>
+<tr><th>予約</th><td>電話予約可（050-5448-4196）。公式サイトに「電話でのご予約はこちら」と記載。ネット予約の受付は無し。 — <a href="tel:05054484196">☎ 050-5448-4196</a> ／ <a href="https://ramen-jin-kochi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市中心部の飲んだあとの締めの定番で、土佐のかつおラーメン・土佐のしょうが塩ラーメンなど高知の素材を使った麺を出すため麺類の章に入れた。営業の根拠＝(1)店の公式サイト ramen-jin-kochi.com のブログが2026.11.09・2026.11.06・2026.11.04・2026.11.02・2026.10.30 と連日更新されており、2026-11-10 時点で最新記事は前日のもの。(2)同サイトの店舗情報ページ（2026-11-10 取得）に閉店・移転・休業の告知は無く、営業時間・定休日が現行表記で掲載され、フッターは「© 2026」。公式メニューサイト kou-d.jp も現行価格を掲載。※ブリーフが求める「&lt;店名&gt; 閉店／移転／リニューアル」の3通りの検索は、この作業の途中で当ターンの共有Web検索枠（200回）を使い切ったため実行できていない。代わりに、店が自分で前日に更新した記事があることと、公式サイト・公式メニューサイトに閉店／移転の記載が無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E5%A0%B4%E5%8D%9A%E5%A4%9A%E3%81%A8%E3%82%93%E3%81%93%E3%81%A4%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E7%A5%9E%20%E5%85%83%E7%A5%96%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BF%BD%E6%89%8B%E7%AD%8B1-1-5">Googleマップで開く</a>
+<div class="src">写真: 本場博多とんこつラーメン神 公式サイトより引用 / 外観: 出典ページ / 参照元: <a href="https://ramen-jin-kochi.com/">公式サイト トップ（ブログ最新 2026.11.09・替え玉キャンペーン告知）2026-11-10 取得</a> / <a href="https://ramen-jin-kochi.com/information/">公式サイト 店舗情報（住所・営業時間・定休日・予約電話）2026-11-10 取得</a> / <a href="https://kou-d.jp/ramen/menu/">公式おしながき（ラーメン各種の価格・替え玉120円）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-men-katsurahama-jin">
+<img class="hero" src="img/kochi/kochi-men-katsurahama-jin.jpg" alt="桂浜美食館 神 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-men-katsurahama-jin_exterior.jpg" alt="桂浜美食館 神 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">10</span>桂浜美食館 神<span class="yomi">かつらはまびしょくかん じん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">桂浜公園の商業施設A棟にある食堂。10時〜18時の通し営業で、イベント開催時は21時まで延びる。定休日は不定休。かつおの藁焼きタタキや土佐あかうしの丼と並んで、ラーメンを10種以上そろえているのが特徴で、かつおラーメン・はちきん地鶏塩ラーメン・生姜塩ラーメン・トマトラーメン・ピリ辛かつお混ぜ麺など高知の素材を使った麺がある。店内は窓の大きいテーブル席中心の広いフロアで、電話またはメール（katsurahamajin@sss-gr.jp）で最大100名の団体予約を受ける。支払い方法は公式サイトに記載がなく未確認。</div>
+<div class="sig"><b>一皿:</b>かつおラーメン（かつおだしのスープ。公式系の取材記事では完成まで8年かけたと紹介されている）／はちきん地鶏塩ラーメン（高知県の地鶏はちきん地鶏を使った塩ラーメン）／ピリ辛かつお混ぜ麺（汁なしの混ぜ麺）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜18:00（イベント開催時は10:00〜21:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>高知県高知市浦戸6 桂浜公園商業施設A棟</td></tr>
+<tr><th>予約</th><td>電話（088-855-9977）またはメール（katsurahamajin@sss-gr.jp）で予約可。最大100名までの団体予約を受け付けると公式サイトに記載。 — <a href="tel:0888559977">☎ 088-855-9977</a> ／ <a href="https://katsurahama-jin.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市内で高知の食材（かつお・はちきん地鶏）を前面に出した麺を10種以上そろえている数少ない店で、観光で桂浜へ行く人が昼に麺を食べられる場所として章に入れた。営業の根拠＝(1)店の公式サイト katsurahama-jin.com のブログが2026.11.09・2026.11.06・2026.11.04・2026.11.02・2026.10.29 と連日更新されており、2026-11-10 時点の最新記事は前日のもの。(2)同サイト（2026-11-10 取得）に閉店・移転の告知は無く、営業時間・不定休・団体予約の案内が現行表記で載っている。公式おしながき sss-gr.jp も現行価格を掲載。※「&lt;店名&gt; 閉店／移転／リニューアル」の3通りの検索は、当ターンの共有Web検索枠を使い切ったため未実行。代わりに前日付けの自店発信と、公式サイトに閉店・移転の記載が無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A1%82%E6%B5%9C%E7%BE%8E%E9%A3%9F%E9%A4%A8%20%E7%A5%9E%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%B5%A6%E6%88%B86%20%E6%A1%82%E6%B5%9C%E5%85%AC%E5%9C%92%E5%95%86%E6%A5%AD%E6%96%BD%E8%A8%ADA%E6%A3%9F">Googleマップで開く</a>
+<div class="src">写真: 桂浜美食館 神 公式サイトより引用 / 外観: 出典ページ / 参照元: <a href="https://katsurahama-jin.com/">公式サイト（住所・電話・営業時間・不定休、ブログ最新 2026.11.09）2026-11-10 取得</a> / <a href="https://sss-gr.jp/katsurahama/menu/">公式おしながき（ラーメン各種の価格）2026-11-10 取得</a> / <a href="https://kochike.jp/column/219255/">高知県公式サイト「高知家の◯◯」（かつおラーメンの成り立ち。2023年5月17日時点の情報）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-men-mansyu-honten">
+<img class="hero" src="img/kochi/kochi-men-mansyu-honten.jpg" alt="まんしゅう 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-men-mansyu-honten_exterior.jpg" alt="まんしゅう 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">11</span>まんしゅう 本店<span class="yomi">まんしゅう ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">高知生まれのホルモンラーメン「ジャン麺」を看板にする店で、2015年11月の開店。鶏がらスープに豆板醤と細かく刻んだホルモンを合わせたとろみのあるあんかけに、卵と高知県産のニラが入る。麺はスープのよく絡む中細のストレート麺。辛さは「辛めプラス」「激辛プラス」で足せる。店内はカウンター席と座敷席があり、子ども用の椅子と食器も置いている。駐車場は12台。予約は受け付けていない。夜（17時〜）限定の「ゆでホル炒め」は、ジャン麺の前にビールと頼む常連が多い品。冷凍のジャン麺を店頭と通信販売で扱っている。</div>
+<div class="sig"><b>一皿:</b>ジャン麺（鶏がらスープに豆板醤とホルモン・卵・高知県産ニラを合わせた旨辛あんかけ麺）／ゆでホル炒め（夜17時以降限定。ホルモンの旨みを吸った野菜にニンニクとショウガを効かせた特製ダレ）／手作りからあげ</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00／17:00〜21:00（公式サイト）。高知県公式サイトの2026年3月17日時点の掲載では、月・火・木・金 11:00〜14:45と17:00〜21:00、土・日 11:00〜15:00と17:00〜21:00。</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>高知県高知市城見町9-3</td></tr>
+<tr><th>予約</th><td>予約不可（公式サイトの店舗ページに「予約不可」と記載） — <a href="tel:0888555889">☎ 088-855-5889</a> ／ <a href="https://janmen.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ジャン麺は高知市で生まれ高知県公式サイトが「高知名物」と紹介している麺で、その元祖を名乗る本店は麺類の章の中心になる。営業の根拠＝(1)店を運営する SHINING株式会社（高知市城見町9-3＝本店と同じ住所）の公式オンラインショップのお知らせに「2025.12.05 オンラインショップ年末年始の発送業務休業のお知らせ」（2025年12月28日〜2026年1月4日の休業告知）が掲載されている。(2)公式サイト janmen.jp の店舗ページ（2026-11-10 取得）に本店が現行の住所・電話・営業時間・水曜定休で掲載され、閉店・移転の記載は無い。(3)高知県公式サイト「高知家の◯◯」の本店紹介記事が「この情報は2026年3月17日時点の情報となります」と明記し、店主の谷淵さんへの取材を載せている。※「&lt;店名&gt; 閉店／移転／リニューアル」の3通りの検索は、当ターンの共有Web検索枠を使い切ったため未実行。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%82%93%E3%81%97%E3%82%85%E3%81%86%20%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%9F%8E%E8%A6%8B%E7%94%BA9-3">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（janmen.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://janmen.jp/shop.html">公式サイト 店舗ページ（本店の住所・電話・営業時間・定休日・駐車場12台・予約不可）2026-11-10 取得</a> / <a href="https://shop.janmen.jp/user_data/news">公式オンラインショップ お知らせ（2025.12.05 年末年始の発送休業）2026-11-10 取得</a> / <a href="https://kochike.jp/column/376041/">高知県公式サイト「高知家の◯◯」本店紹介（2026年3月17日時点の情報。店主取材・宝永町電停から徒歩2分）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-men-taniguchi-shokudo">
+<img class="hero" src="img/kochi/kochi-men-taniguchi-shokudo.jpg" alt="鍋焼きラーメン谷口食堂 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-men-taniguchi-shokudo_exterior.jpg" alt="鍋焼きラーメン谷口食堂 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">12</span>鍋焼きラーメン谷口食堂<span class="yomi">なべやきらーめんたにぐちしょくどう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">隣の須崎市の名物である鍋焼きラーメンを、高知市の中心街で出す店。土鍋のまま出てくる鶏ガラ醤油のラーメンで、並と大、キムチ入りが選べる。月曜から土曜と祝日は17時30分から翌3時まで（ラストオーダー翌2時30分）の夜通し営業で、飲んだあとの締めに使う客が多い。日曜だけは11時〜15時（LO14時30分）と17時〜20時（LO19時30分）の二部制。定休日は無いが、ゴールデンウィークと年末年始は休みが変わる。20席、全席禁煙、駐車場なし。公式サイトはクレジットカード（VISA・マスター・JCB・アメックス・ダイナースほか）が使えると書いているが、ホットペッパーグルメの掲載は「利用不可」で食い違うので、カード払いは来店前に確認したい。</div>
+<div class="sig"><b>一皿:</b>鍋焼きラーメン（土鍋で出す鶏ガラ醤油のラーメン。ちくわ・ねぎ・生卵が入る須崎式）／鍋焼きラーメン キムチ（上の鍋焼きラーメンにキムチを加えたもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:30〜翌3:00（LO 翌2:30）／日曜 11:00〜15:00（LO 14:30）・17:00〜20:00（LO 19:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休（ゴールデンウィーク・年末年始は休みが変わる場合あり）</td></tr>
+<tr><th>住所</th><td>高知県高知市追手筋1丁目7-14 田村ビル1F</td></tr>
+<tr><th>予約</th><td>公式サイトに予約の案内は無い。問い合わせは088-873-2184。 — <a href="tel:0888732184">☎ 088-873-2184</a> ／ <a href="https://taniguchi-shokudo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>鍋焼きラーメンは高知県を代表するご当地麺で、本場の須崎市まで行かずに高知市の中心街で深夜まで食べられる店として章に入れた。営業の根拠＝(1)店の公式サイト taniguchi-shokudo.com が現行の住所・電話・営業時間・価格を掲載し、フッターは「Ⓒ2026 谷口食堂」。同サイトが配信している写真の更新日時（HTTPのLast-Modifiedヘッダ）は、店内・料理写真が 2025-06-06、メニュー写真が 2025-06-26 と 2025-06-27 で、2025年に店が自分でサイトを更新している。(2)同サイト（2026-11-10 取得）に閉店・移転・休業の告知は無い。※「&lt;店名&gt; 閉店／移転／リニューアル」の3通りの検索は、当ターンの共有Web検索枠を使い切ったため未実行。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%8D%8B%E7%84%BC%E3%81%8D%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E8%B0%B7%E5%8F%A3%E9%A3%9F%E5%A0%82%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BF%BD%E6%89%8B%E7%AD%8B1%E4%B8%81%E7%9B%AE7-14%20%E7%94%B0%E6%9D%91%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: 旅色（tabiiro.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://taniguchi-shokudo.com/">公式サイト（住所・電話・営業時間・価格・支払い方法。サイト写真のLast-Modifiedは2025-06-06〜2025-06-27）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ001216785/">ホットペッパーグルメ 掲載（堀詰電停から徒歩5分・20席・全席禁煙・駐車場なし。2022/12/19 更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-men-kunimaru-tosadoro">
+<img class="hero" src="img/kochi/kochi-men-kunimaru-tosadoro.jpg" alt="麺屋・國丸。土佐道路店。 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">13</span>麺屋・國丸。土佐道路店。<span class="yomi">めんや・くにまる とさどうろてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">高知市杉井流に本社を置く株式会社國丸（設立1999年12月）が営む味噌ラーメン専門店の高知市内店。北海道百年味噌、三年熟成の赤味噌に白ワイン・アーモンド・山椒を合わせた金の炙り味噌、九州麦味噌の銀のまろ味噌、辛味噌の4系統を基本に、味噌を炙ってからスープに合わせる。金の炙り味噌カツラーメンは、公式サイトが「高知県発祥の味噌カツラーメン」と説明している品。平日は15時〜17時30分が中休みで、土日祝は通し営業。定休日なし。ホットペッパーグルメの掲載（2021年3月3日更新）では36席・全席禁煙・クレジットカードと電子マネーは利用不可。</div>
+<div class="sig"><b>一皿:</b>金の炙り味噌カツラーメン（三年熟成の赤味噌を炙った薬膳味噌のスープに、揚げたてのとんかつを載せた一杯。高知発祥の味噌カツラーメン）／北海道百年味噌ラーメン（塩味と辛味の強い熟成赤味噌を使う國丸の原点）／牛モツ味噌ラーメン（百年味噌のスープに牛モツを合わせたもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日11:00〜15:00・17:30〜23:00（LO 22:30）／土・日・祝日11:00〜23:00（LO 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>高知県高知市鴨部1095番1号</td></tr>
+<tr><th>予約</th><td>公式サイトに予約の案内は無く、ホットペッパーグルメもネット予約を受け付けていない。問い合わせは088-850-9238。 — <a href="tel:0888509238">☎ 088-850-9238</a> ／ <a href="https://www.kunimaru.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知で生まれた「味噌カツラーメン」を看板に据える、高知市に本社を置く味噌ラーメン専門店で、高知市内の店舗は土佐道路店のみ。価格は公式サイトのお品書きにも掲載が無く、ホットペッパーグルメも予算帯（ランチ501〜1000円）しか載せていないため、代表品の金額が確認できず price を空欄にした。営業の根拠＝(1)公式サイト kunimaru.net のお知らせに「2026/01/29 じゃがバターコーン味噌ラーメン（2月1日から）」「2025/12/26 大仏コロッケ味噌ラーメン（1月5日から）」「2025/12/25 年末年始の休業のお知らせ」と店の発信が日付つきで並ぶ。(2)同サイトの店舗案内ページ（2026-11-10 取得）に土佐道路店が現行の住所・電話・営業時間・定休日なしで掲載され、閉店・移転の記載は無い。※「&lt;店名&gt; 閉店／移転／リニューアル」の3通りの検索は、当ターンの共有Web検索枠を使い切ったため未実行。 外観写真（ext_urls）は0本＝公式サイトの店舗案内に載る土佐道路店の外観写真 kunimaru.net/wp-content/uploads/2023/05/img-store02.jpg が336×245pxで、幅400px未満のため採らなかった。ほかに使ってよい出どころ（店自身・自治体・編集部取材の地域媒体）の外観写真は見つからなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%E3%83%BB%E5%9C%8B%E4%B8%B8%E3%80%82%E5%9C%9F%E4%BD%90%E9%81%93%E8%B7%AF%E5%BA%97%E3%80%82%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E9%B4%A8%E9%83%A81095%E7%95%AA1%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kunimaru.net）より引用 / 外観: 写真なし / 参照元: <a href="https://www.kunimaru.net/shop/">公式サイト 店舗案内（土佐道路店の住所・電話・営業時間・定休日）2026-11-10 取得</a> / <a href="https://www.kunimaru.net/">公式サイト トップ（お知らせ 2026/01/29・2025/12/26・2025/12/25）2026-11-10 取得</a> / <a href="https://www.kunimaru.net/company/">公式サイト 会社概要（株式会社國丸・高知市杉井流5-18・設立1999年12月）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ001266814/">ホットペッパーグルメ 掲載（36席・全席禁煙・カード不可・アクセス。2021/03/03 更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-men-shinatora-takasu">
+<img class="hero" src="img/kochi/kochi-men-shinatora-takasu.jpg" alt="しなとら 高須店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">14</span>しなとら 高須店<span class="yomi">しなとら たかすてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">らーめんと餃子の店で、公式サイトの店舗一覧では高知県内に高須・天神橋通・土佐道路・中村・安芸の5店、県外は愛知・岐阜・秋田の3店を載せている。高須店は深夜まで開いているのが特徴で、公式サイトの表記では月〜木が11時〜15時と18時〜翌0時30分、金土日が11時〜15時と17時30分〜翌0時30分。ホットペッパーグルメ側は11時〜14時45分と18時〜23時30分・水曜定休と掲載していて食い違うので、深夜に向かうときは電話で確かめたい。醤油・塩・味噌・とんこつ・台湾らーめん・四川担々麺まで品数が多く、唐揚セット（＋350円）や半チャーハンセット（＋440円）も付けられる。駐車場あり。</div>
+<div class="sig"><b>一皿:</b>しなとららーめん（自家製熟成麺を使う定番。830円）／濃厚醤油とんこつらーめん（豚骨を強火で炊き出したとろみのあるスープにチャーシューの漬け醤油を合わせたもの。880円）／焼餃子（1人前6個330円。一部店舗は鉄板餃子で提供）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 11:00〜15:00・18:00〜翌0:30／金・土・日 11:00〜15:00・17:30〜翌0:30（公式サイト）。ホットペッパーグルメ掲載は 11:00〜14:45・18:00〜23:30。</td></tr>
+<tr><th>定休日</th><td class="off">公式サイトの店舗情報に定休日の記載なし。ホットペッパーグルメ掲載は水曜定休。</td></tr>
+<tr><th>住所</th><td>高知県高知市高須1-18-13</td></tr>
+<tr><th>予約</th><td>公式サイトに予約の案内は無く、ホットペッパーグルメもネット予約を受け付けていない。問い合わせは088-878-1600。 — <a href="tel:0888781600">☎ 088-878-1600</a> ／ <a href="http://www.shinatora.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知県内に5店を構え、深夜まで開く地元のらーめんチェーンとして、飲んだあとや夜遅くに使える麺の店を章に入れるために採った。営業の根拠＝(1)公式サイト www.shinatora.jp トップの月間ランキング写真3点のファイル更新日時（HTTPのLast-Modifiedヘッダ）がいずれも 2026-10-28 で、店が自分でサイトを更新している。ファイル名にも 20261028 が入る。(2)同サイトの店舗情報ページ（2026-11-10 取得）に高須店が現行の住所・電話・営業時間で掲載され、閉店・移転の記載は無い。※「&lt;店名&gt; 閉店／移転／リニューアル」の3通りの検索は、当ターンの共有Web検索枠を使い切ったため未実行。 外観写真（ext_urls）は0本＝公式サイトに店舗の外観写真が1枚も無く、ホットペッパーグルメの掲載写真も高須店の外観ではなかったため。料理写真も、公式サイトで幅400px以上あるのは月間ランキングの3点のみで、ほかのメニュー写真は幅220〜270pxなので採らなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%97%E3%81%AA%E3%81%A8%E3%82%89%20%E9%AB%98%E9%A0%88%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E9%AB%98%E9%A0%881-18-13">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.shinatora.jp）より引用 / 外観: 写真なし / 参照元: <a href="http://www.shinatora.jp/store/">公式サイト 店舗情報（高須店の住所・電話・営業時間）2026-11-10 取得</a> / <a href="http://www.shinatora.jp/menu/">公式サイト メニュー（らーめん・餃子・セットの価格）2026-11-10 取得</a> / <a href="http://www.shinatora.jp/">公式サイト トップ（月間ランキング写真3点のLast-Modifiedが2026-10-28）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000551038/">ホットペッパーグルメ 掲載（最寄り駅・駐車場あり・水曜定休）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-men-kuraki-obiyamachi">
+<img class="hero" src="img/kochi/kochi-men-kuraki-obiyamachi.jpg" alt="製麺処 蔵木 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-men-kuraki-obiyamachi_exterior.jpg" alt="製麺処 蔵木 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">15</span>製麺処 蔵木<span class="yomi">せいめんどころ くらき</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">高知市の中心商店街・帯屋町にある自家製麺のラーメン店。2025年2月の高知県公式サイトの取材記事の時点で創業15年で、帯屋町店のほかに高知インター通りと南国市にも店がある。濃厚な魚介とんこつのつけ汁と、その日仕入れた丸鶏でとる清湯スープの2系統があり、つけ麺の麺は全粒粉入りの自家製太麺、中華そばは細麺と使い分ける。つけ汁はスープ割り・ごはん割りで最後まで食べられる。学生は大盛り無料。店の酒も置いており、飲んだあとの締めに来る客も多いと店長が同記事で述べている。ホットペッパーグルメの未管理の掲載ページ（店舗が編集していない掲載）では総席数21席（カウンター5席・テーブル18席）、クレジットカード不可・電子マネー不可、QRコード決済はPayPay・d払い・楽天ペイ・au PAYが可、駐車場なしと出ているが、この掲載は運営側が「情報が正確でない可能性があります」と注記しているため、席数と支払い方法は未確認として扱う。</div>
+<div class="sig"><b>一皿:</b>牛モツつけ麺（魚粉だしの濃厚なつけ汁に国産和牛のホルモンを入れた看板メニュー。全粒粉入りの自家製太麺）／蔵木の中華そば・醤油（鶏ガラと煮干しのスープに細めの麺を合わせたあっさり系）／スープ割り・ごはん割り（残ったつけ汁を割って二度楽しむ締め）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜16:00、17:30〜翌0:00（高知家の〇〇 2025-02-14 掲載）。高知県観光コンベンション協会「こうち旅ネット」の掲載（更新日 2022年4月22日）は「11:30〜16:00、17:30〜0:00 ※土曜は翌2:00まで」、同協会の訪日向けサイトは「11:00〜16:00、17:30〜翌0:00 ※土曜は翌2:00まで」と、出典で開店時刻と土曜の終了時刻が食い違う。</td></tr>
+<tr><th>定休日</th><td class="off">無休（ただし12月31日・1月1日は休み）</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町1-10-12 竹屋ビル1F</td></tr>
+<tr><th>予約</th><td>予約の可否について公式の出典に記載がなく未確認。ホットペッパーグルメにはネット予約枠が無い（店舗が管理していない掲載のため）。行列ができる店なので、来店前に088-871-4059へ確認するのが確実。 — <a href="tel:0888714059">☎ 088-871-4059</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市中心部の帯屋町で自家製麺のつけ麺を看板にしている店で、既に採用済みの6店に太麺のつけ麺専門格の店が無いため麺類の章に入れた。営業の根拠＝【条件①（この回の差し替え2＝高知県の公式サイト）】高知県の公式サイト「高知家の〇〇」（kochike.jp・運営は高知県地産外商公社、© Kochi Prefecture）の取材記事 https://kochike.jp/column/322071/ が同サイトの column-sitemap.xml で lastmod 2025-02-14T03:09:18+00:00（記事の掲載日 2025-02-14）と実測でき、本文に住所・電話・営業時間・定休日が現行表記で載り、閉店・移転の記載が無い。同サイトは閉店した店を記事タイトルの頭に「※閉店」と付けて明示する運用で（実例＝「※閉店【高知グルメ】…「高知うどん もとちか」」https://kochike.jp/column/362411/ ）、本記事にその表記は無い。あわせて高知県観光コンベンション協会「こうち旅ネット」のスポットページ（更新日 2022年4月22日）と同協会の訪日向け公式サイト visitkochijapan.com の掲載が現住所・現電話で継続。【条件②】①「製麺処 蔵木 閉店」（空白あり）と「製麺処蔵木閉店 帯屋町」（詰めた形）の両方で検索し、閉店の告知・報道は0件（2026-11-10 実施）。②公式SNSのアカウント名の確認＝「製麺処 蔵木 instagram 公式アカウント」で検索したが公式SNSアカウントは見つからず、店の公式サイトも存在しない。この実行環境からは Instagram・Facebook が読めない（HTTP 429・ログイン壁）ため、アカウント名の読み取りは実施できていない＝未確認。③「製麺処 蔵木 移転」「製麺処 蔵木 リニューアル 高知」でも各1回検索し、いずれも該当0件。※店名の表記は高知県観光コンベンション協会の2サイトとも「製麺処 蔵木」（読みは「せいめんどころくらき」）で、「高知家の〇〇」の記事本文だけが「製麺所 蔵木」と書いている。本稿は前者を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%A3%BD%E9%BA%BA%E5%87%A6%20%E8%94%B5%E6%9C%A8%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-10-12%20%E7%AB%B9%E5%B1%8B%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: 高知県「高知家の◯◯」（kochike.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://kochike.jp/column/322071/">高知県公式サイト「高知家の〇〇」取材記事（牛モツつけ麺970円・中華そば720円・住所・電話・営業時間・定休日・駐車場。掲載日 2025-02-14）2026-11-10 取得</a> / <a href="https://kochike.jp/column-sitemap.xml">同サイトのサイトマップ（上記記事の lastmod が 2025-02-14T03:09:18+00:00 であることの実測）2026-11-10 取得</a> / <a href="https://kochi-tabi.jp/search_spot_food.html?id=7711">高知県観光コンベンション協会「こうち旅ネット」スポットページ（正式表記・読み・営業時間・休日・アクセス・駐車場。更新日 2022年4月22日）2026-11-10 取得</a> / <a href="https://visitkochijapan.com/en/taste-of-kochi/10277">高知県観光コンベンション協会 訪日向け公式サイト（現住所・現電話での掲載継続）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-men-garo-tosanosato">
+<img class="hero" src="img/kochi/kochi-men-garo-tosanosato.jpg" alt="鍋焼きラーメンのがろ～ とさのさとアグリコレット店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-men-garo-tosanosato_exterior.jpg" alt="鍋焼きラーメンのがろ～ とさのさとアグリコレット店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">16</span>鍋焼きラーメンのがろ～ とさのさとアグリコレット店<span class="yomi">なべやきらーめんのがろー とさのさとあぐりこれっとてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">須崎市で創業した鍋焼きラーメンの店が高知市に構える店舗で、公式サイトの店舗案内に載る唯一の実店舗。鍋焼きラーメンは須崎市が定める7つの定義（親鳥の鶏がら醤油スープ、細麺ストレートを硬め、具は親鳥の肉・ねぎ・生卵・ちくわ、器は土鍋、沸騰した状態で提供、たくわんを添える）に沿った一杯で、スープは親鶏のガラと野菜を7時間以上煮込んでとる。麺の茹で時間は約10秒で、バリカタ・普通・柔らかめから選べ、スープの濃さも調整できる。大盛りは無いが具と麺が標準でやや多め。総席数25席でカウンターとテーブル、全席禁煙、Wi-Fiとバリアフリー対応あり、貸切不可、子ども連れ歓迎、持ち帰り可。クレジットカード（VISA・マスター・アメックス・DINERS・JCB・Discover・銀聯）、電子マネー（PASMO・ICOCA・iD・QUICPay・Apple Pay）、QRコード決済（PayPay・楽天ペイ・d払い・au PAY・メルペイ）が使える。混雑時は店頭のウェイティングリストに記名して順番待ちとなる。</div>
+<div class="sig"><b>一皿:</b>鍋焼きラーメン おや鳥（親鳥の切り身・ねぎ・ちくわ・生卵が入る基本の一杯。鶏と魚介のだしに自家製醤油だれを合わせ、土鍋のまま煮立った状態で出る）／赤辛（16種類のスパイスを独自に配合した旨辛仕立て。辛さを5段階から選ぶ）／ニンニクホルモン（ぷりぷりのホルモンとすりおろし生ニンニクを入れたスタミナ系。ニンニクは少なめ・別皿も可）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・土・日・祝日・祝前日 10:00〜20:00（料理L.O.19:30／ドリンクL.O.20:00）、金 10:00〜16:00（料理L.O.15:00／ドリンクL.O.16:00）（ホットペッパーグルメ店舗ページ 2026/09/08 更新 2026-11-10 取得）。公式サイトの店舗案内は「10:00〜20:00」、高知家の〇〇の2025年5月の記事は「午前10時〜午後7時」と記載があり、出典で終了時刻が異なる。</td></tr>
+<tr><th>定休日</th><td class="off">第3金曜（ホットペッパーグルメ店舗ページ 2026-11-10 取得。同ページの予約カレンダーでも第3金曜が「休」になっている）。公式サイトの店舗案内は「無休」、高知家の〇〇の2025年5月の記事は「第3金曜 ※その他、とさのさと AGRI COLLETTO の休みに準ずる」。施設自体の定休日は1月1日〜1月2日。</td></tr>
+<tr><th>住所</th><td>高知県高知市北御座10-10 とさのさと AGRI COLLETTO内</td></tr>
+<tr><th>予約</th><td>ホットペッパーグルメからネット予約ができる（即予約は来店日当日19時まで受付）。一方、GOOD LUCK TRIP に載る掲載施設自身の回答（2026年4月29日更新）は「予約はできません。先着順での案内となります」で、出典が食い違う。確実にしたい場合は088-856-7030へ。 — <a href="tel:0888567030">☎ 088-856-7030</a> ／ <a href="https://www.nabeyaki.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>須崎市発祥の高知のご当地麺「鍋焼きラーメン」を高知市内で出す店で、既採用の谷口食堂と並べて鍋焼きラーメンの選択肢を複数示せること、土産物と併せて立ち寄れる施設内にあることから麺類の章に入れた。営業の根拠＝【条件①】(1)店が自分で出している情報＝ホットペッパーグルメの店舗掲載ページ https://www.hotpepper.jp/strJ001277137/ は店舗が管理する掲載で、店舗情報欄の更新日が「2026/09/08 更新」と表示され、2026年11月・12月・2027年1月のネット予約カレンダーが稼働中。公式サイト https://www.nabeyaki.net/ の店舗案内も当店を現住所・現電話で掲載。(2)差し替え条件2＝高知県公式サイト「高知家の〇〇」の記事2本。2025年5月の単独取材記事 https://kochike.jp/column/334843/ （sitemap lastmod 2025-05-12T08:53:21+00:00）と、2026年9月の施設紹介記事 https://kochike.jp/column/398401/ （sitemap lastmod 2026-09-19T23:00:00+00:00・掲載日 2026-09-20）で、後者は「とさのさと AGRI COLLETTO」の現在の注目店3つの1つとして当店を名指ししている。どちらにも閉店の記載は無い。さらに観光媒体 GOOD LUCK TRIP の「掲載施設による公式確認を経た情報」ページが2026年4月29日更新で営業中として掲載。【条件②】①「鍋焼きラーメンのがろ〜 とさのさと 閉店」（空白あり）と「がろ〜閉店 鍋焼きラーメン 高知」（詰めた形）の両方で検索し、当店の閉店情報は0件（2026-11-10 実施。検索結果に出た閉店告知は別店舗「たなぼた」のもの）。②公式SNSのアカウント名の確認＝公式サイトからリンクされている公式Facebookのアカウント名は「garonabeyaki」（https://www.facebook.com/garonabeyaki/ ・リンク文言は「鍋焼きラーメンのがろ～」のまま）で、旧店名・改名の表示は無い。ただしこの実行環境からは Facebook 本体のページを開けない（ログイン壁）ため、読み取れたのは公式サイト側に置かれたアカウント名とリンク先URLまで。③「鍋焼きラーメンのがろ〜 移転 高知市」「鍋焼きラーメンのがろ〜 リニューアル」でも各1回検索し、該当0件。※店名の表記ゆれ＝公式サイトの店舗案内は「鍋焼きラーメンのがろ～とさのさとアグリコレット」、ホットペッパーグルメの登録名は「鍋焼きラーメンのがろ～ とさのさとAGURICOLLETTO店」、GOOD LUCK TRIP の正式名称欄は「鍋焼きラーメン がろ〜 とさのさとアグリコレット本店」。本稿は高知県公式サイトの表記に合わせた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%8D%8B%E7%84%BC%E3%81%8D%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E3%81%AE%E3%81%8C%E3%82%8D%EF%BD%9E%20%E3%81%A8%E3%81%95%E3%81%AE%E3%81%95%E3%81%A8%E3%82%A2%E3%82%B0%E3%83%AA%E3%82%B3%E3%83%AC%E3%83%83%E3%83%88%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8C%97%E5%BE%A1%E5%BA%A710-10%20%E3%81%A8%E3%81%95%E3%81%AE%E3%81%95%E3%81%A8%20AGRI%20COLLETTO%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001277137/">店舗が管理するホットペッパーグルメ掲載ページ（メニュー価格・営業時間・定休日・席数25席・支払い方法・禁煙・駐車場。店舗情報欄 2026/09/08 更新、メニュー欄 2024/10/08 更新）2026-11-10 取得</a> / <a href="https://www.nabeyaki.net/">公式サイト 店舗案内（住所・電話・営業時間・定休日・無料大型駐車場・公式Facebookへのリンク）2026-11-10 取得</a> / <a href="https://kochike.jp/column/334843/">高知県公式サイト「高知家の〇〇」取材記事（おや鳥1100円・鍋焼きラーメンの7つの定義・店長インタビュー。掲載日 2025-05-12）2026-11-10 取得</a> / <a href="https://kochike.jp/column/398401/">高知県公式サイト「高知家の〇〇」施設記事（2026年時点で当店が「とさのさと AGRI COLLETTO」の注目3店の1つとして営業中。掲載日 2026-09-20・sitemap lastmod 2026-09-19）2026-11-10 取得</a> / <a href="https://www.gltjp.com/ja/directory/item/17905/">GOOD LUCK TRIP 掲載施設の公式確認を経た情報（正式名称・27席・麺の硬さ・予約不可の公式FAQ。2026年4月29日更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-men-menbo-miyake">
+<img class="hero" src="img/kochi/kochi-men-menbo-miyake.jpg" alt="麺房 三宅 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-men-menbo-miyake_exterior.jpg" alt="麺房 三宅 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">17</span>麺房 三宅<span class="yomi">めんぼう みやけ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">創業から40年以上続く手打ちうどんの店で、現在地では平成8年（1996年）1月から営業し、それ以前は13年間別の場所で営業していた。店主は朝5時台から生地を作り、折りたたんで打っては寝かせる工程を繰り返して層を作り、うどんは35分かけて茹でる。そのため柔らかさとコシが層になった独特の食感になる。だしは日高昆布と羅臼昆布、メジカ、鯖節でとり、醤油と清酒を合わせる。天ぷらは注文が入ってから揚げる。1日に打つのは約150食分で、11時の開店前から並び始め、開店と同時に満席になることが多く、麺がなくなり次第終了する。店内のほかに中庭にも席があり、総席数は33席（2014年時点の高知県観光コンベンション協会の掲載）。薬味の量や具材の有無など注文時の細かい希望に応じてくれると同協会のページが紹介している。支払い方法は公式の出典に記載がなく未確認。</div>
+<div class="sig"><b>一皿:</b>ざるうどん（店のうどんの層になった食感が最もわかる一品。うずら卵・胡麻・ねぎ・天かすとつけ汁が付く）／天ぷらうどん（注文後に揚げる海老と季節の野菜の天ぷらをのせる）／カレーうどん（女将が無添加ルーとミンチ肉に香辛料を調合して作る）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00（麺がなくなり次第終了）（高知県観光コンベンション協会の掲載 2026-11-10 取得）。第三者の掲載サイトにはこれと異なる営業時間が出ているため、来店前に088-873-3120で確認するのが確実。</td></tr>
+<tr><th>定休日</th><td class="off">水曜、および月2回の火曜（高知県観光コンベンション協会の掲載 2026-11-10 取得。同協会の2014年の掲載は「水曜、月1回火曜」で、回数の表記が年によって違う）</td></tr>
+<tr><th>住所</th><td>高知県高知市伊勢崎町5-18</td></tr>
+<tr><th>予約</th><td>予約の可否について公式の出典に記載がなく未確認。開店前から並ぶ店で、麺がなくなり次第終了するため、確実にしたい場合は088-873-3120へ。 — <a href="tel:0888733120">☎ 088-873-3120</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章の題が「ラーメン・うどん・麺類」なのに既採用の6店はすべてラーメンで、うどん・そばの専門店が1軒も入っていなかったため、高知市内で最も公式の記録が厚いうどん店として入れた。高知県公式サイトが「高知は隠れたうどん県」として組んだ市内8店の特集の筆頭に置かれている店でもある。営業の根拠＝【条件①（この回の差し替え2＝高知県の公式サイト）】高知県公式サイト「高知家の〇〇」の特集記事「Neoうどんの国 高知のおススメ11選」 https://kochike.jp/column/357761/ が、同サイトの column-sitemap.xml で lastmod 2026-05-13T23:00:00+00:00（掲載日 2026-05-14・記事データの modified は 2026-05-08）と実測でき、高知市内のうどん店の1軒目として当店を現住所・現電話で紹介し、閉店の記載が無い。同サイトは閉店した店を記事タイトル頭に「※閉店」と明示する運用で（実例＝https://kochike.jp/column/362411/ ）、本記事にも当店の単独記事2本（lastmod 2026-07-13）にもその表記は無い。あわせて高知県観光コンベンション協会の訪日向け公式サイト https://visitkochijapan.com/en/taste-of-kochi/10231 が現住所・現電話・営業時間・定休日・駐車場12台で掲載を継続。【条件②】①「麺房 三宅 閉店 高知」（空白あり）と「麺房三宅閉店 伊勢崎町 うどん」（詰めた形）の両方で検索し、閉店の告知・報道は0件（2026-11-10 実施。検索結果に出た閉店は別店舗「宮本屋」2023年12月31日閉店のもの）。②公式SNSのアカウント名の確認＝検索しても公式SNSアカウントも公式サイトも見つからず、この実行環境からは Instagram・Facebook が読めないため、アカウント名の読み取りは実施できていない＝未確認。③「麺房 三宅 移転 高知市」「麺房 三宅 リニューアル 高知」でも各1回検索し、該当0件。【写真について】高知県観光コンベンション協会の訪日向け公式サイト visitkochijapan.com にも当店の実写3点があるが、同サイトのサイトポリシー（https://visitkochijapan.com/en/policy ）が画像への直リンクを明文で禁じているため1本も使っていない。採用したのは高知県公式サイト「高知家の〇〇」（© Kochi Prefecture）の取材写真のみ。なお、同記事には店主の顔が写った写真も複数あるが、保守的に除いた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E6%88%BF%20%E4%B8%89%E5%AE%85%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E4%BC%8A%E5%8B%A2%E5%B4%8E%E7%94%BA5-18">Googleマップで開く</a>
+<div class="src">写真: 高知県「高知家の◯◯」（kochike.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://kochike.jp/column/357761/">高知県公式サイト「高知家の〇〇」特集記事（高知市内のうどん店8選の筆頭に当店。住所・電話。掲載日 2026-05-14）2026-11-10 取得</a> / <a href="https://kochike.jp/column-sitemap.xml">同サイトのサイトマップ（上記記事の lastmod が 2026-05-13T23:00:00+00:00 であることの実測）2026-11-10 取得</a> / <a href="https://kochike.jp/column/200703/">高知県公式サイト「高知家の〇〇」単独記事（打ち方・だしの素材・創業40年・ざる／肉おろし／カレーうどん／とり天あんかけ。sitemap lastmod 2026-07-13）2026-11-10 取得</a> / <a href="https://kochike.jp/column/219542/">高知県公式サイト「高知家の〇〇」単独記事（1日約150食・11時開店前から行列・やまぶきうどん・わかめとじあんかけ。sitemap lastmod 2026-07-13）2026-11-10 取得</a> / <a href="https://kochike.jp/column/34419/">高知県公式サイト「高知家の〇〇」記事（現在地は平成8年1月から・それ以前は13年別の場所・うどんを35分茹でる・中庭の席）2026-11-10 取得</a> / <a href="https://visitkochijapan.com/en/taste-of-kochi/10231">高知県観光コンベンション協会 訪日向け公式サイト（住所・電話・11:00-16:00 売り切れ次第終了・水曜と月2回の火曜休・駐車12台・店内禁煙）2026-11-10 取得</a> / <a href="https://kochi-tabi.jp/lp/sousenkyo/2014/result/dtl18df.html?ID=20">高知県観光政策課・高知県観光コンベンション協会「高知家の食卓」県民総選挙2014 公式ページ（2014年4月時点の価格3品・33席・駐車場12台）2026-11-10 取得</a></div>
+</div></div>
+<h2 id="s-washoku">寿司・和食・割烹（土佐湾の魚）</h2>
+<div class="card" id="c-kochi-washoku-izariya-kochi">
+<img class="hero" src="img/kochi/kochi-washoku-izariya-kochi.jpg" alt="座屋 高知本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>座屋 高知本店<span class="yomi">いざりや こうちほんてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">47席で、1階はカウンター11席、2階は4名用の掘りごたつ個室7室、3階はソファー席1室。1階のカウンターはオーナーが店にいる日だけ開け、月替わりの会席コースのみを出す。2階は7室をつなげて最大40名の宴会に対応する。全席禁煙。クレジットカード（VISA・Mastercard・AMEX・JCB・銀聯）とスマート支払いが使えるが、電子マネーとQRコード決済は不可。ネット予約は当日13時までの即予約と前日17時までのリクエスト予約で、コースは来店2日前の23時以降のキャンセルで全額かかる。東京・銀座、神戸、マドリードにも同名の店がある。</div>
+<div class="sig"><b>一皿:</b>月替わりの季節のお料理コース(全9品。8,800円。1階カウンターと2階で内容が替わる)／藁焼きの鰹のタタキ(高知の港から直送した鰹を藁で一気に炙る)／記念日の会席コース(18,000円〜。献立は相談に応じる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・日・祝日 12:00〜14:00（料理L.O. 13:30）／18:00〜21:30（料理・ドリンクL.O. 21:00）、土 17:30〜23:00（料理L.O. 22:00、ドリンクL.O. 22:30）、祝前日 12:00〜14:00／17:30〜23:00（ホットペッパーグルメ 2026-11-01更新）</td></tr>
+<tr><th>定休日</th><td class="off">定休日なし（2026年11月の店休日は1日・10日・25日）</td></tr>
+<tr><th>住所</th><td>高知県高知市廿代町2-8 廿代ビル1F</td></tr>
+<tr><th>予約</th><td>可。ネット予約は当日13時までの即予約・前日17時までのリクエスト予約。電話は088-824-1308。コースは来店2日前の23時以降のキャンセルで全額。 — <a href="tel:0888241308">☎ 088-824-1308</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>土佐の魚を会席に仕立てて出す店で、カウンターの月替わり会席を章の中心の一つに置いた。営業の根拠＝①店が自分で出した情報: ホットペッパーグルメの店舗情報が2026/11/01更新で、2026年11月の店休日（1日・10日・25日）とカウンターの休業日が日付単位で入力されている（2026-11-10 取得）。②閉店していないことの確認: 同ページに閉店・移転の告知がなく、住所（廿代町2-8）・電話（088-824-1308）が従来の掲載と一致する（2026-11-10 取得）。※本ターンはWeb検索の実行枠を使い切ったため、『店名 閉店』の空白ありと詰めた形の2通り・『店名 移転』『店名 リニューアル』の各検索、および公式SNSのアカウント名そのものの確認は未実施。上記の確認はWebFetchで到達できた範囲にとどまる。 公式サイト izariya.com は当方の環境から接続できず、SNSの確認もできていない。 外観写真（ext_urls）は0本＝ホットペッパーグルメの写真20点がすべて料理と店内で外観が無く、公式サイト izariya.com にも接続できなかったため（2026-11-10 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%A7%E5%B1%8B%20%E9%AB%98%E7%9F%A5%E6%9C%AC%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA2-8%20%E5%BB%BF%E4%BB%A3%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000635858/">ホットペッパーグルメ 店舗ページ（住所・営業時間・11月の店休日・席数・支払い・予約条件。店舗情報2026/11/01更新）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000635858/photo/">ホットペッパーグルメ 写真ページ（料理・店内の原寸画像）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-washoku-sushi-tetsu">
+<img class="hero" src="img/kochi/kochi-washoku-sushi-tetsu.jpg" alt="鮨と肴 哲-tetsu- 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>鮨と肴 哲-tetsu-<span class="yomi">すしとさかな てつ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">23席で、カウンター4席、2〜4名のテーブル2卓、3〜5名と3〜6名の座敷、7〜10名の半個室があり、23名で貸切もできる。店主が市場で直接仕入れた近海の魚を使う。全席禁煙で、店の外に灰皿を置く。Wi-Fiと英語メニューがある。クレジットカード（VISA・Mastercard・AMEX・Diners・JCB・Discover・銀聯）、iD・QUICPay、スマート支払いが使えるが、QRコード決済は不可。ネット予約は当日21時までの即予約と前日17時までのリクエスト予約で、コースは前日17時以降のキャンセルで1人あたり全額かかる。日本酒は美丈夫の特別純米酒や酔鯨の純米大吟醸などを置き、鮨に合わせるワインもそろえる。</div>
+<div class="sig"><b>一皿:</b>上にぎり(近海の旬を中心にした握りの盛合せ)／天ぷら盛合せ(旬の野菜と魚介を揚げたてで)／1番人気☆飲み放題コース(全8品に飲み放題が付く。6,600円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝日・祝前日 17:00〜23:00（料理・ドリンクL.O. 22:30）（ホットペッパーグルメ 2026-04-02更新）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・不定休</td></tr>
+<tr><th>住所</th><td>高知県高知市はりまや町3丁目 志和ビル2F</td></tr>
+<tr><th>予約</th><td>可。ネット予約は当日21時までの即予約・前日17時までのリクエスト予約。電話は080-2465-0057。コースは前日17時以降のキャンセルで1人あたり全額。 — <a href="tel:08024650057">☎ 080-2465-0057</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知近海の魚を店主が市場で直接仕入れて握るカウンター中心の鮨店で、少人数で入りやすい一軒として入れた。営業の根拠＝①店が自分で出した情報: ホットペッパーグルメの店舗情報とアラカルトのメニューがともに2026/04/02更新で、コース価格6,600円・8,800円が掲載されている（2026-11-10 取得）。②閉店していないことの確認: 同ページに閉店・移転の告知がなく、ネット予約が当日21時まで受付の状態で稼働している（2026-11-10 取得）。※本ターンはWeb検索の実行枠を使い切ったため、『店名 閉店』の空白ありと詰めた形の2通り・『店名 移転』『店名 リニューアル』の各検索、および公式SNSのアカウント名そのものの確認は未実施。上記の確認はWebFetchで到達できた範囲にとどまる。 公式サイト・公式SNSは掲載されておらず、所在も確認できていない。 外観写真（ext_urls）は0本＝ホットペッパーグルメの写真35点がすべて料理・ドリンク・店内で外観が無く、公式サイトも公式SNSも掲載されていないため（2026-11-10 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%E3%81%A8%E8%82%B4%20%E5%93%B2-tetsu-%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA3%E4%B8%81%E7%9B%AE%20%E5%BF%97%E5%92%8C%E3%83%93%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ003893997/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・支払い・予約条件・単品価格。店舗情報2026/04/02更新）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ003893997/photo/">ホットペッパーグルメ 写真ページ（料理・店内の原寸画像）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ003893997/tel/">ホットペッパーグルメ 電話番号ページ（080-2465-0057）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-washoku-tosasushi-yasu">
+<img class="hero" src="img/kochi/kochi-washoku-tosasushi-yasu.jpg" alt="土佐鮨処 康 弐号店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-washoku-tosasushi-yasu_exterior.jpg" alt="土佐鮨処 康 弐号店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>土佐鮨処 康 弐号店<span class="yomi">とさすしどころ やす にごうてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">32席で、カウンター7席、4名の完全個室、テーブル席、6〜20名の掘りごたつ個室があり、32名で貸切もできる。大将は18歳から大阪で修行し、毎朝市場で仕入れた地元の魚を握る。お通し500円は別で、ガリのおかわりは500円。20歳未満は同伴でも入店できない。入口付近の席は禁煙、テーブルとカウンターは喫煙可の分煙。クレジットカードはVISAとJCB、QRコード決済はd払いのみで、電子マネーは使えない。ネット予約は当日23時までの即予約と前日17時までのリクエスト予約を受け、電話予約は17時から。土佐清水の清水さば、うつぼのタタキ、室戸の金目鯛を単品で出すので、土佐湾の魚を一品ずつ頼める。</div>
+<div class="sig"><b>一皿:</b>【土佐清水産】清水さば(立縄漁で一本釣りされる土佐清水のサバ。1,650円税込)／うつぼタタキ(高知名物のうつぼを炙ったタタキ。1,650円税込)／特選トロ鰹三昧(鰹刺身・自家製ポン酢のタタキ・高知産岩塩の塩タタキの三種。1,980円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 17:30〜翌0:00（料理・ドリンクL.O. 23:30）。予約の受付は17:00から（ホットペッパーグルメ 2025-09-08更新／公式ページも同じ）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・日曜</td></tr>
+<tr><th>住所</th><td>高知県高知市追手筋1-4-8 中央ビル1F北</td></tr>
+<tr><th>予約</th><td>可。ネット予約は当日23時までの即予約・前日17時までのリクエスト予約。電話は088-823-9919で17時から受付。 — <a href="tel:0888239919">☎ 088-823-9919</a> ／ <a href="https://yasunigoutenn.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>清水サバ・うつぼ・金目鯛を単品で出す鮨店で、土佐湾の魚を品書きから選べる一軒として入れた。営業の根拠＝①店が自分で出した情報: ホットペッパーグルメの店舗情報とメニューが2025/09/08更新、クーポンが2025/04/21更新（2026-11-10 取得）。店が運営する公式ページ yasunigoutenn.owst.jp も到達でき、住所・電話・営業時間が掲載ページと一致する（2026-11-10 取得）。②閉店していないことの確認: 公式ページとホットペッパーグルメの双方で住所（追手筋1-4-8 中央ビル1F北）と電話（088-823-9919）が一致し、閉店・移転の告知がない（2026-11-10 取得）。※本ターンはWeb検索の実行枠を使い切ったため、『店名 閉店』の空白ありと詰めた形の2通り・『店名 移転』『店名 リニューアル』の各検索、および公式SNSのアカウント名そのものの確認は未実施。上記の確認はWebFetchで到達できた範囲にとどまる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E9%AE%A8%E5%87%A6%20%E5%BA%B7%20%E5%BC%90%E5%8F%B7%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BF%BD%E6%89%8B%E7%AD%8B1-4-8%20%E4%B8%AD%E5%A4%AE%E3%83%93%E3%83%AB1F%E5%8C%97">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000980069/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・支払い・単品価格。店舗情報2025/09/08更新）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000980069/photo/">ホットペッパーグルメ 写真ページ（料理・店内・外観の原寸画像）2026-11-10 取得</a> / <a href="https://yasunigoutenn.owst.jp/">店の公式ページ（住所・電話・営業時間・にぎり165円〜）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-washoku-hozumi">
+<img class="hero" src="img/kochi/kochi-washoku-hozumi.jpg" alt="睦月処 穂寿美 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-washoku-hozumi_exterior.jpg" alt="睦月処 穂寿美 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>睦月処 穂寿美<span class="yomi">むつきどころ ほずみ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">104席で、1階はカウンター11席と4名・7名・8名・12名の掘りごたつ個室、2階は最大50名の宴会場と、外階段から出入りする12名の特別室がある。独自にブレンドした赤酢で仕上げる赤シャリの握りが看板で、須崎から直送する鰹は冷凍を使わない。築地と直接契約した天然の本マグロや伊勢海老も置き、和食と洋食の料理人がそれぞれいる。全席喫煙可で、20歳未満は同伴でも入店できない。カードは使えるが電子マネー・QRコード決済は不可。コースは前日14時以降のキャンセルで1人あたり70%がかかる。公式サイトは営業時間を平日17:00〜23:30と記し掲載と食い違う。</div>
+<div class="sig"><b>一皿:</b>赤シャリ寿司(独自ブレンドの赤酢で仕上げたシャリで握る江戸前の赤シャリ)／須崎直送の生鰹のタタキ(冷凍を使わない生の鰹を塩かポン酢で)／和牛すき焼きコース(和牛150g・刺身3種盛・押し寿司など。2時間飲み放題付7,000円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 17:00〜22:30（料理・ドリンクL.O. 22:00）、金・土・祝前日 17:00〜23:00（料理・ドリンクL.O. 22:30）（ホットペッパーグルメ 2025-10-28更新）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（月曜が祝日のときは日曜に営業し月曜休み）</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町1-13-10 S・コモンズビル1F・2F</td></tr>
+<tr><th>予約</th><td>可。ネット予約は当日21時までの即予約・前日17時までのリクエスト予約。電話は088-823-2737。コースは前日14時以降のキャンセルで1人あたり70%。 — <a href="tel:0888232737">☎ 088-823-2737</a> ／ <a href="https://hozumi-kochi.com/index.htm">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知では珍しい赤酢のシャリで握る寿司店で、須崎直送の生鰹も出すため章に入れた。営業の根拠＝①店が自分で出した情報: ホットペッパーグルメの店舗情報が2025/10/28更新（2026-11-10 取得）。公式サイト hozumi-kochi.com が到達でき、宴会メニューの画像ファイル名が enkai-menu2026.jpg で、正月のチラシも掲載されている（2026-11-10 取得）。②閉店していないことの確認: 公式サイトは帯屋町の店として営業時間・定休日を現在形で掲げ、閉店・移転・リニューアルの告知がない。住所（帯屋町1-13-10 S・コモンズビル）と電話（088-823-2737）が掲載ページと一致する（2026-11-10 取得）。※本ターンはWeb検索の実行枠を使い切ったため、『店名 閉店』の空白ありと詰めた形の2通り・『店名 移転』『店名 リニューアル』の各検索、および公式SNSのアカウント名そのものの確認は未実施。上記の確認はWebFetchで到達できた範囲にとどまる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%9D%A6%E6%9C%88%E5%87%A6%20%E7%A9%82%E5%AF%BF%E7%BE%8E%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-13-10%20S%E3%83%BB%E3%82%B3%E3%83%A2%E3%83%B3%E3%82%BA%E3%83%93%E3%83%AB1F%E3%83%BB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000977765/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・支払い・コース価格。情報2025/10/28更新）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000977765/photo/">ホットペッパーグルメ 写真ページ（料理・店内・外観の原寸画像）2026-11-10 取得</a> / <a href="https://hozumi-kochi.com/index.htm">公式サイト（店名・帯屋町・営業時間・定休日。2026年の宴会メニューを掲載）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-washoku-obiya-kansuke">
+<img class="hero" src="img/kochi/kochi-washoku-obiya-kansuke.jpg" alt="和餐 帯や勘助 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-washoku-obiya-kansuke_exterior.jpg" alt="和餐 帯や勘助 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>和餐 帯や勘助<span class="yomi">わさん おびやかんすけ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">185席で、4名から72名までの個室がそろい、2階の大広間は掘りごたつで最大72名。中央に中庭があり、黒を基調にした内装。全席禁煙で喫煙専用室がある。カード・交通系電子マネー・PayPayが使える。お通しは350円で、ランチとコースには付かない。高知県の紹介ページに載る「勘助 田舎寿司」はみょうが・たけのこ・しいたけ・こんにゃく・油揚げ・さばの6種を2貫ずつ出し、1週間前までの予約が要る。須崎市の九石大敷組合から定置網の天然魚を直送する。郷土の味グループ早川の店で創業から約50年。電話は高知県のページが088-823-1341と記し、掲載と食い違う。</div>
+<div class="sig"><b>一皿:</b>勘助 田舎寿司(みょうが・たけのこ・しいたけ・こんにゃく・油揚げ・さばの6種を各2貫。2,200円税込、1週間前までに予約)／九石大敷組合直送の刺身盛り合わせ(須崎市の定置網で揚がった天然魚。2,178円税込)／自家製じゃこスティック(須崎の漁港で朝獲れのアジやトビウオを店内で加工。550円税込)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜木・祝前日 11:30〜14:30／17:00〜22:00、金・土 11:30〜14:30／17:00〜23:00、日 11:30〜15:00／17:00〜21:00、祝日 11:30〜14:30／17:00〜21:00（ホットペッパーグルメ 店舗情報 2026-10-10更新）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町2-2-15</td></tr>
+<tr><th>予約</th><td>可。ネット予約は当日21時までの即予約・前日17時までのリクエスト予約。電話は088-823-4180。勘助 田舎寿司は1週間前までに要予約。 — <a href="tel:0888234180">☎ 088-823-4180</a> ／ <a href="https://hayakawa.group/obiya.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知県の土佐寿司の紹介ページに田舎寿司の提供店として載り、山の幸6種の田舎寿司を品書きに持つ和食店なので章に入れた。皿鉢ではなく田舎寿司と刺身を軸に選んでいる。営業の根拠＝①店が自分で出した情報: ホットペッパーグルメの店舗情報が2026/10/10更新、メニューが2026/07/20更新（2026-11-10 取得）。グループ公式サイト hayakawa.group の店舗ページに2026年の新年会コースと年末年始の営業日が掲載されている（2026-11-10 取得）。②閉店していないことの確認: 公式サイトの店舗ページが現在の営業時間・定休日を掲げ、閉店・移転の告知がない。住所（帯屋町2-2-15）が高知県のページ・掲載ページ・公式ページの3つで一致する（2026-11-10 取得）。※本ターンはWeb検索の実行枠を使い切ったため、『店名 閉店』の空白ありと詰めた形の2通り・『店名 移転』『店名 リニューアル』の各検索、および公式SNSのアカウント名そのものの確認は未実施。上記の確認はWebFetchで到達できた範囲にとどまる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E9%A4%90%20%E5%B8%AF%E3%82%84%E5%8B%98%E5%8A%A9%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2-2-15">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000039029/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・支払い・単品価格。店舗情報2026/10/10更新）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000039029/photo/">ホットペッパーグルメ 写真ページ（料理・店内・外観の原寸画像）2026-11-10 取得</a> / <a href="https://hayakawa.group/obiya.html">グループ公式サイト 帯や勘助のページ（住所・電話・営業時間・定休日・2026年の新年会コース）2026-11-10 取得</a> / <a href="https://www.chisanchisho.pref.kochi.lg.jp/life/dtl.php?hdnKey=1693">高知県「おいしい風土こうち」土佐寿司のお店 和餐 帯や勘助（勘助 田舎寿司2,200円・6種各2貫・1週間前までに要予約）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-washoku-ashukutei">
+<img class="hero" src="img/kochi/kochi-washoku-ashukutei.jpg" alt="asｙukutei（あしゅくてい） 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>asｙukutei（あしゅくてい）<span class="yomi">あしゅくてい</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">20席の小さな店で、宴会も最大20名、貸切は8〜15名程度に応じる。羽釜で炊いたシャリにてんさい糖を使う。昼は11:30から14:00まで、夜は17:30（月曜のみ18:00）から22:00まで開ける。全席禁煙で、Wi-Fiとバリアフリー設備はない。クレジットカード（VISA・Mastercard・AMEX・Diners・JCB・Discover・銀聯）は使えるが、電子マネー・QRコード決済・スマート支払いは不可。掲載ページではネット予約を受け付けておらず、予約は電話088-871-1866（受付は11:30〜14:00と17:30〜22:00）。小さな子ども連れも受け入れる。</div>
+<div class="sig"><b>一皿:</b>お寿司各種(羽釜で炊きてんさい糖を使ったシャリで握る。1貫200円〜)／旬のお刺身各種(日替わり。500円〜)／南瓜の揚げ出し(南瓜の揚げ出し豆腐。600円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>月 11:30〜14:00／18:00〜22:00、火〜土・祝日・祝前日 11:30〜14:00／17:30〜22:00（料理・ドリンクL.O. 昼14:00・夜22:00）（ホットペッパーグルメ 2025-08-26更新）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町1-12-9</td></tr>
+<tr><th>予約</th><td>掲載ページではネット予約を受け付けていない。予約は電話088-871-1866（受付は11:30〜14:00と17:30〜22:00）。貸切は8〜15名程度まで相談できる。 — <a href="tel:0888711866">☎ 088-871-1866</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>羽釜で炊くシャリを看板にする小体な寿司店で、カウンターで数貫ずつ頼める一軒として章に入れた。営業の根拠＝①店が自分で出した情報: ホットペッパーグルメの店舗情報が2025/08/26更新で、営業時間・定休日・席数・支払い方法が入力されている（2026-11-10 取得）。②閉店していないことの確認: 掲載ページに閉店・移転の告知がなく、住所（帯屋町1-12-9）と電話（088-871-1866）が掲載されている（2026-11-10 取得）。※本ターンはWeb検索の実行枠を使い切ったため、『店名 閉店』の空白ありと詰めた形の2通り・『店名 移転』『店名 リニューアル』の各検索、および公式SNSのアカウント名そのものの確認は未実施。上記の確認はWebFetchで到達できた範囲にとどまる。 公式サイト・公式SNSは掲載されておらず、所在も確認できていない。9店のうち確認の強さは低い方なので、現地に行く前に電話で確かめたい。 外観写真（ext_urls）は0本＝ホットペッパーグルメの写真12点がすべて料理と店内で外観が無く、公式サイトも公式SNSも掲載されていないため（2026-11-10 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=as%EF%BD%99ukutei%EF%BC%88%E3%81%82%E3%81%97%E3%82%85%E3%81%8F%E3%81%A6%E3%81%84%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-12-9">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000972873/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・支払い・単品価格。店舗情報2025/08/26更新）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000972873/photo/">ホットペッパーグルメ 写真ページ（料理・店内の原寸画像）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000972873/tel/">ホットペッパーグルメ 電話番号ページ（088-871-1866）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-washoku-hamacho">
+<img class="hero" src="img/kochi/kochi-washoku-hamacho.jpg" alt="料亭 濱長 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>料亭 濱長<span class="yomi">りょうてい はまちょう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">160席で、1階は鏡川に面したカウンター4席とテーブル席、10名までのテラス席、2階は大舞台を囲む6室（襖を外して最大60名）、3階は1〜16名の完全個室5室、4階は100名の貸切に使える。2階では毎夜、芸妓が舞台で舞を披露し、可杯や箸拳といったお座敷遊びもできる。1階は1人でも入れる料亭カフェとして使える。全席喫煙可だが個室では分煙にできる。カードとPayPay・d払いが使えるが電子マネーは不可。掲載ページではネット予約を受け付けておらず、予約は電話。定休日は掲載ページが月曜、高知県のページが無休と記し食い違う。</div>
+<div class="sig"><b>一皿:</b>田舎寿司入り ひとり皿鉢(田舎寿司と鰹のたたきを1人前に仕立てる。5,400円税込・要予約)／季節の土佐会席(出汁を利かせた日本料理。献立は季節で替わる)／クエ鍋(2人前から。冬の品)</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・木〜日・祝日・祝前日 11:30〜14:00（料理・ドリンクL.O. 13:00）／17:00〜23:00（料理・ドリンクL.O. 22:00）、水 11:30〜14:00／17:00〜23:00（ホットペッパーグルメ 店舗情報 2026-01-10更新）</td></tr>
+<tr><th>定休日</th><td class="off">月曜（月曜が祝日のときは振替休あり）。高知県「おいしい風土こうち」の掲載は無休と記しており食い違う</td></tr>
+<tr><th>住所</th><td>高知県高知市唐人町6-6</td></tr>
+<tr><th>予約</th><td>掲載ページではネット予約を受け付けていない。予約は電話088-884-0080。田舎寿司入りのひとり皿鉢は要予約、田舎寿司と土佐づくし御膳は前日までに要予約。 — <a href="tel:0888840080">☎ 088-884-0080</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>懐石・割烹の枠で章に入れた料亭で、高知県の土佐寿司の紹介ページに「田舎寿司入り ひとり皿鉢」「田舎寿司と土佐づくし御膳」の2品が載る。皿鉢専門として採ったのではなく、土佐会席と田舎寿司を出す料亭として採っている。営業の根拠＝①店が自分で出した情報: ホットペッパーグルメの店舗情報が2026/01/10更新（2026-11-10 取得）。②閉店していないことの確認: 掲載ページと高知県のページの双方で住所（唐人町6-6）と電話（088-884-0080）が一致し、閉店・移転の告知がない（2026-11-10 取得）。公式サイト k-hamacho.com は掲載ページにURLがあるが、当方の実行環境からはHTTP 403で本文を読めなかったため、website欄を空にした。※本ターンはWeb検索の実行枠を使い切ったため、『店名 閉店』の空白ありと詰めた形の2通り・『店名 移転』『店名 リニューアル』の各検索、および公式SNSのアカウント名そのものの確認は未実施。上記の確認はWebFetchで到達できた範囲にとどまる。 外観写真（ext_urls）は0本＝ホットペッパーグルメの写真24点に外観が無く（残りは利用者の投稿写真で使えない）、公式サイト k-hamacho.com は当方の環境からHTTP 403で読めなかったため（2026-11-10 確認）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%20%E6%BF%B1%E9%95%B7%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%94%90%E4%BA%BA%E7%94%BA6-6">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000715332/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・支払い・駐車場。店舗情報2026/01/10更新）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000715332/photo/">ホットペッパーグルメ 写真ページ（料理・店内の原寸画像）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000715332/tel/">ホットペッパーグルメ 電話番号ページ（088-884-0080）2026-11-10 取得</a> / <a href="https://www.chisanchisho.pref.kochi.lg.jp/life/dtl.php?hdnKey=1499">高知県「おいしい風土こうち」土佐寿司のお店 料亭 濱長（田舎寿司入りひとり皿鉢5,400円・田舎寿司と土佐づくし御膳）2026-11-10 取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・土佐酒・屋台餃子</h2>
+<div class="card" id="c-kochi-izakaya-yatai-yasube">
+<img class="hero" src="img/kochi/kochi-izakaya-yatai-yasube.jpg" alt="屋台安兵衛 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-izakaya-yatai-yasube_exterior.jpg" alt="屋台安兵衛 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">25</span>屋台安兵衛<span class="yomi">やたいやすべえ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">創業は昭和45年（1970年）。高知市の繁華街から少し離れた川沿いに出した5〜6席ほどの屋台が始まりで、公式サイトは現在も毎日屋台を組み立ててブルーシートを張り、提灯を灯して営業していると説明している。注文を受けてから職人が1つずつ皮で包み、専用の鉄のフライパンで大量の油を使って一人前ずつ焼き揚げる。品書きは屋台餃子・らーめん・おでんと飲み物に絞られ、公式お品書きには価格が税込で印刷されている。席の予約は受け付けていない（公式サイトに明記）。餃子とおでんは持ち帰り・出前ができるが、店内の客を優先するため待つ場合・断られる場合がある。日曜定休で、悪天候の日は休業。支払い方法は公式の記載がないため未確認。</div>
+<div class="sig"><b>一皿:</b>屋台餃子（一般の餃子の半分ほどの薄皮で包み、豚肉・キャベツに高知県産のニラとショウガを合わせた野菜多めの餡。焼きとも揚げともつかない方法で黄金色に焼き揚げる。7ヶで一人前、にんにく有無は店舗により選べる）／らーめん（昔ながらの味。半めん・大盛・チャーシューめんにできる）／おでん盛り合わせ（あっさりした醤油味で5〜6品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>19:00〜翌3:00（ラストオーダーは閉店30分前）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（悪天候の日は休業）</td></tr>
+<tr><th>住所</th><td>高知県高知市廿代町4-19</td></tr>
+<tr><th>予約</th><td>席の予約は不可（公式サイトに「当店ではお席のご予約をお受けしておりません」）。持ち帰り・出前は電話で注文できる。 — <a href="tel:0888732773">☎ 088-873-2773</a> ／ <a href="https://mfc-group.jp/yasube/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知の「屋台餃子」という食べ方そのものを生んだ店で、この章の中核。営業の根拠＝①店自身の2026年の情報: 公式サイトのお知らせ最新が 2026-11-06（サイト更新）、2026-11-03（テレビ西日本の番組で屋台安兵衛が紹介）。公式お品書きPDFのファイル名が yatai_20260630（2026-06-30版）で、同PDFに営業時間「19時〜翌3時」「定休日 日曜日」と電話番号 088-873-2773 が印刷されている（いずれも 2026-11-10 取得）。②閉店していないことの確認: 「屋台安兵衛 閉店」（空白入り）で検索（2026-11-10）→閉店情報なし。「屋台安兵衛 移転 リニューアル」で検索（2026-11-10）→移転・改装の情報なし。公式SNSのアカウント名は Instagram が @yasube1970、Facebook が「屋台餃子安兵衛」（公式お品書きPDFとサイトのリンク先。旧店名・改称の表記はない）で、サイト埋め込みのInstagramフィードに現行の投稿（屋台に列ができている写真など）が出ている。**未確認**: 「屋台安兵衛閉店」（空白を詰めた形）での検索は、この作業の環境のWeb検索回数の上限に達したため実施できていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%8B%E5%8F%B0%E5%AE%89%E5%85%B5%E8%A1%9B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA4-19">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（mfc-group.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://mfc-group.jp/yasube/shop.html">公式サイト 店舗情報（住所・電話・営業時間・定休日・予約不可）2026-11-10 取得</a> / <a href="https://mfc-group.jp/yasube/news.php">公式サイト お知らせ（最新 2026-11-06 サイト更新／2026-11-03 テレビ紹介）2026-11-10 取得</a> / <a href="https://mfc-group.jp/yasube/images/menu/yatai_20260630.pdf">公式お品書きPDF（2026-06-30版・価格と営業時間）2026-11-10 取得</a> / <a href="https://mfc-group.jp/yasube/kodawari.html">公式サイト 屋台餃子の由来・創業昭和45年 2026-11-10 取得</a> / <a href="https://visitkochijapan.com/en/taste-of-kochi/10234">高知県観光コンベンション協会 公式観光サイトの掲載（住所・電話・営業時間・駐車場なし）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-izakaya-imadoki-yasube">
+<img class="hero" src="img/kochi/kochi-izakaya-imadoki-yasube.jpg" alt="いまどき安兵衛 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-izakaya-imadoki-yasube_exterior.jpg" alt="いまどき安兵衛 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>いまどき安兵衛<span class="yomi">いまどきやすべえ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">屋台安兵衛と同じ株式会社エムエフシー（高知市稲荷町）が営む店で、屋台ではなく店舗として16時から深夜0時まで開ける。屋台安兵衛が餃子・らーめん・おでんだけなのに対し、こちらは水餃子、じゃこ飯・かつを飯・チャーシュー飯のごはん物、すまき・ちくきゅう・酒盗などの一品、アイスクリンまで品書きが広い。飲み物は生ビール600円、やかんビール（生ビール4杯分）1,980円、土佐の地酒 各640円〜、レモン酎ハイ660円など。席の予約は受け付けていない（公式サイトに明記）。持ち帰り用の品書きが別にあり、電話で予約注文ができる。火曜定休。支払い方法は公式の記載がないため未確認。</div>
+<div class="sig"><b>一皿:</b>屋台餃子（薄皮で小ぶり、高知県産のニラとショウガを使った野菜多めの餡。7ヶで一人前、にんにく有無を選べる）／水餃子（別添えのスープと一緒に、またはタレで食べる）／じゃこ飯（高知県産の釜揚げちりめんじゃこを飯にのせ、高菜とかつお節を添える）</div>
+<table class="info">
+<tr><th>営業時間</th><td>16:00〜24:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>高知県高知市はりまや町2-7-6</td></tr>
+<tr><th>予約</th><td>席の予約は不可（公式サイトに「当店ではお席のご予約をお受けしておりません」）。持ち帰りは電話で予約注文できる。 — <a href="tel:0888857762">☎ 088-885-7762</a> ／ <a href="https://mfc-group.jp/yasube/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>屋台安兵衛の屋台は19時からで雨の日は休むため、同じ屋台餃子を確実に食べられる受け皿としてこの章に要る。章の条件「屋台餃子を出す店を2店以上」の2店目。営業の根拠＝①店自身の2026年の情報: 公式サイトのお知らせ最新が 2026-11-06（サイト更新）、公式お品書きPDFのファイル名が imadoki_20260402（2026-04-02版）で、同PDFに電話番号 088-885-7762 と税込価格が印刷されている（2026-11-10 取得）。公式サイトの店舗情報にも「いまどき安兵衛／はりまや町2-7-6／16:00-24:00／火曜定休」が現行店として載っている。②閉店していないことの確認: 公式SNSのアカウント名は Instagram @yasube1970・Facebook「屋台餃子安兵衛」（旧店名・改称の表記なし）で、現行の投稿がある。**未確認**: 「いまどき安兵衛 閉店」「いまどき安兵衛閉店」「いまどき安兵衛 移転」「いまどき安兵衛 リニューアル」の検索は、この作業の環境のWeb検索回数の上限に達したため実施できていない（屋台安兵衛については実施済み）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%BE%E3%81%A9%E3%81%8D%E5%AE%89%E5%85%B5%E8%A1%9B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA2-7-6">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（mfc-group.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://mfc-group.jp/yasube/shop.html">公式サイト 店舗情報（住所・電話・営業時間・定休日・予約不可）2026-11-10 取得</a> / <a href="https://mfc-group.jp/yasube/images/menu/imadoki_20260402.pdf">公式お品書きPDF（2026-04-02版・食事と飲み物の税込価格、持ち帰り品書き）2026-11-10 取得</a> / <a href="https://mfc-group.jp/yasube/menu.html">公式サイト 人気メニュー（店舗ごとの取り扱い）2026-11-10 取得</a> / <a href="https://mfc-group.jp/yasube/news.php">公式サイト お知らせ（最新 2026-11-06 サイト更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-izakaya-kojiya">
+<img class="hero" src="img/kochi/kochi-izakaya-kojiya.jpg" alt="土佐食人 こうじ家 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-izakaya-kojiya_exterior.jpg" alt="土佐食人 こうじ家 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>土佐食人 こうじ家<span class="yomi">とさしょくにん こうじや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">廿代町のグリーンロード沿い、ビルの2階と3階を使う70席の店。高知の地酒を枡酒やグラスで出し、3種を選ぶ「地酒利きくらべ」がある。酒の品書きには亀泉・文佳人・久礼・安芸虎・美丈夫・土佐鶴といった高知の蔵が並び、ぽんかん・山北みかん・仙頭の梅酒など高知県産の果実酒も置く。料理は鰹のたたき、土佐あかうしのたたき、ウツボのたたき、鯨のさえずり、土佐ジローの炭火焼きなど土佐の素材が中心。2〜6名用の個室風の席とカウンターがあり、お通し代は480円（料理おまかせコースには付かない）。全席禁煙で店内に喫煙所がある（混雑時・連休は全面禁煙になる場合あり）。カードはVISA・マスター・アメックス・DINERS・JCBが使え、電子マネーとQRコード決済は使えない。日曜定休で、土曜のみ昼も開ける。</div>
+<div class="sig"><b>一皿:</b>地酒利きくらべ（3種セット。まず好みの1種を選び、残りを店が組み合わせる）／本場高知の鰹のたたき（中土佐町久礼の漁港から届く朝獲れの鰹。ポン酢・塩・漁師風ぶっかけから選ぶ）／土佐ジローの炭火焼き（高知の地鶏。モモ肉と胸肉の味くらべもある）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 17:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）／土 11:30〜14:30（料理L.O. 14:00）と17:00〜23:00／祝日・祝前日 17:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（連休期間は日曜の振替営業あり）</td></tr>
+<tr><th>住所</th><td>高知県高知市廿代町7-23 マツチヨビル2F・3F</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-875-1233）またはホットペッパーグルメのネット予約。貸切は相談。 — <a href="tel:0888751233">☎ 088-875-1233</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の柱である「土佐酒を揃える店」で、しかも飲み屋街の廿代町にある。亀泉・文佳人・久礼・安芸虎・美丈夫と高知の蔵が実名で品書きに出ていて、利きくらべで3種飲める点が冊子向き。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページで、店が入稿する料理・ドリンクの内容が 2026-05-04 更新、クーポンが 2026-05-12 更新と表示されている（2026-11-10 取得）。②**未確認**: 「土佐食人 こうじ家 閉店」「土佐食人こうじ家閉店」「こうじ家 移転」「こうじ家 リニューアル」の検索と、公式SNSのアカウント名の確認は、この作業の環境のWeb検索回数の上限に達したため実施できていない。公式サイト・公式SNSも見つけられていない。採用の可否は、この4点を確認してから確定すること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E4%BD%90%E9%A3%9F%E4%BA%BA%20%E3%81%93%E3%81%86%E3%81%98%E5%AE%B6%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA7-23%20%E3%83%9E%E3%83%84%E3%83%81%E3%83%A8%E3%83%93%E3%83%AB2F%E3%83%BB3F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000550975/">ホットペッパーグルメ 店舗情報（住所・電話・営業時間・定休日・席数・支払い方法）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000550975/food/">ホットペッパーグルメ 料理（2026-05-04 更新・鰹のたたき/土佐ジローの価格）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000550975/drink/">ホットペッパーグルメ ドリンク（2026-05-04 更新・地酒利きくらべ/亀泉/文佳人/久礼/安芸虎の価格）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-izakaya-yairo">
+<img class="hero" src="img/kochi/kochi-izakaya-yairo.jpg" alt="居酒屋 土佐 いろり 炉ばた 八一六（やいろ） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-izakaya-yairo_exterior.jpg" alt="居酒屋 土佐 いろり 炉ばた 八一六（やいろ） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>居酒屋 土佐 いろり 炉ばた 八一六（やいろ）<span class="yomi">いざかや とさ いろり ろばた やいろ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">廿代町にある54席の炉端焼きの店で、店内の囲炉裏に串を立てて魚を炙る様子を目の前で見られる。炉端の品書きは大エビ、ブリカマ、カンパチのカマ、トロトロ塩サバ、イカの一日干し、鮎などで、鰹は注文を受けてから店内で藁焼きにする。日本酒は酔鯨・文佳人・桂月・美丈夫・土佐鶴といった高知の蔵が銘柄ごとに並び、精米歩合とアルコール度数まで品書きに書かれている。個室とカウンターがあり、20名から店のフロアを貸し切れる。全席禁煙で喫煙は店外。カードはVISA・マスター・アメックス・DINERS・JCB、QRコード決済はPayPayとd払いが使える。電子マネーは使えない。月曜定休。</div>
+<div class="sig"><b>一皿:</b>特大 大エビ 炉端焼き（囲炉裏の炭火で焼き上げる名物。目の前で焼く）／実演！鰹の藁焼きたたき（注文を受けてから店内で藁に火を入れて焼く）／焼き鳥盛り合わせ 5本（はつ・砂ずり・鳥なんこつ・皮・ささみなどから）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜日・祝日・祝前日 17:00〜翌0:00（料理L.O. 22:30／ドリンクL.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜日</td></tr>
+<tr><th>住所</th><td>高知県高知市廿代町5-1 ウインズエステートビル1F</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-875-0378）または店のホームページ・ホットペッパーグルメのネット予約。20名から貸切可。 — <a href="tel:0888750378">☎ 088-875-0378</a> ／ <a href="https://izakayatosairorirobatayairo.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>飲み屋街の廿代町にあり、炉端と串、そして土佐酒を銘柄で選べるという、この章が集めたい三つの要素が1軒に揃う。営業の根拠＝①店自身の情報: 店が運営するホームページ（ホットペッパーのお店ホームページ）に、今季（2026年末〜2027年始）の「【忘新年会に】☆八一六宴会コース☆」が現行の品書きとして載っている。ホットペッパーグルメの店舗ページでは店が入稿するドリンクが 2026-08-06 更新、クーポンが 2026-10-08 更新と表示（2026-11-10 取得）。②**未確認**: 「八一六 やいろ 閉店」「八一六やいろ閉店」「八一六 移転」「八一六 リニューアル」の検索と、公式SNSのアカウント名の確認は、この作業の環境のWeb検索回数の上限に達したため実施できていない。採用の可否は、この4点を確認してから確定すること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%9C%9F%E4%BD%90%20%E3%81%84%E3%82%8D%E3%82%8A%20%E7%82%89%E3%81%B0%E3%81%9F%20%E5%85%AB%E4%B8%80%E5%85%AD%EF%BC%88%E3%82%84%E3%81%84%E3%82%8D%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA5-1%20%E3%82%A6%E3%82%A4%E3%83%B3%E3%82%BA%E3%82%A8%E3%82%B9%E3%83%86%E3%83%BC%E3%83%88%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://tosairorirobatayairo.owst.jp/">店のホームページ（店名・電話・住所・現行の宴会コース）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ001017551/">ホットペッパーグルメ 店舗情報（住所・営業時間・定休日・席数・支払い方法）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ001017551/food/">ホットペッパーグルメ 料理（2025-09-22 更新・炉端焼きの価格）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ001017551/drink/">ホットペッパーグルメ ドリンク（2026-08-06 更新・酔鯨/文佳人/桂月/美丈夫の価格）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-izakaya-inaya">
+<img class="hero" src="img/kochi/kochi-izakaya-inaya.jpg" alt="居酒屋 稲屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-izakaya-inaya_exterior.jpg" alt="居酒屋 稲屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>居酒屋 稲屋<span class="yomi">いざかや いなや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">堀詰電停の目の前にある123席の大きな店で、1階はカウンター16〜18席、2階は掘りごたつの個室が中心。カウンターでは藁焼きを目の前で見られる。日本酒は銘柄ごとに品書きがあり、酔鯨・司牡丹（船中八策、仁淀ブルー）・亀泉・美丈夫・桂月・土佐鶴・瀧嵐と高知の蔵が揃う。栗焼酎ダバダ火振りや、柚子・文旦・小夏のサワーも置く。料理は生鰹の藁焼きたたき、どろめ、ノレソレ、酒盗、ウツボの唐揚げ、鯨肉の串カツなど高知の珍味が並ぶ。席代が1人500円（税込）かかる。分煙で、飲食禁止の喫煙専用室がある（個室は全席禁煙）。カード・電子マネー・PayPayなど各種QRコード決済が使える。平日15時、土日祝は11時30分から開ける。</div>
+<div class="sig"><b>一皿:</b>生鰹のタタキ 塩／たれ（高知名物の藁焼き。カウンターでは焼く様子が見える）／ウツボの唐揚げ（外は固く、中はやわらかい高知の珍味）／どろめ（鰯の稚魚。日本酒に合わせる土佐の肴）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 15:00〜23:00／土・日・祝日 11:30〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町1-12-3</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-855-5715）またはホットペッパーグルメのネット予約。週末・繁忙期の2名の予約は1階カウンター席（喫煙席）になる。 — <a href="tel:0888555715">☎ 088-855-5715</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>堀詰の飲み屋街の入口にあり、酔鯨・司牡丹・亀泉・美丈夫と、この章が挙げる土佐酒がそのまま品書きに並ぶ。藁焼きと高知の珍味も揃い、人数の融通も利く。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページで、店が入稿する料理の内容が 2026-10-12 更新、クーポンが 2026-10-05 更新と表示されている（2026-11-10 取得）。②**未確認**: 「居酒屋 稲屋 閉店」「居酒屋稲屋閉店」「稲屋 移転」「稲屋 リニューアル」の検索と、公式SNSのアカウント名の確認は、この作業の環境のWeb検索回数の上限に達したため実施できていない。店のホームページ（https://akr8910735942.owst.jp）はアクセスすると404を返した（2026-11-10）ので、website は空にした。採用の可否は、この4点を確認してから確定すること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E7%A8%B2%E5%B1%8B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-12-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001247038/">ホットペッパーグルメ 店舗情報（住所・電話・営業時間・定休日・席数・席代・支払い方法）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ001247038/food/">ホットペッパーグルメ 料理（2026-10-12 更新・ウツボの唐揚げ/鯨肉の串カツ/どろめの価格）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ001247038/drink/">ホットペッパーグルメ ドリンク（2026-03-27 更新・酔鯨/司牡丹/亀泉/美丈夫/桂月の価格）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-izakaya-narukoya">
+<img class="hero" src="img/kochi/kochi-izakaya-narukoya.jpg" alt="居酒屋 なるこ屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-izakaya-narukoya_exterior.jpg" alt="居酒屋 なるこ屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>居酒屋 なるこ屋<span class="yomi">いざかや なるこや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">帯屋町の小路にある30席の大衆酒場で、18時から翌朝5時（料理・ドリンクのラストオーダーは翌4時30分）まで開けている。屋台餃子や土佐料理の店が閉まったあと、締めに使える数少ない時間帯の店。レンガ調の外壁と木目のガラス扉が目印で、2階は15〜22名ほどの貸切に使える。品書きは串揚げ、唐揚げ、手羽先、とり皮餃子、ジャンボシューマイ、天むすびなどで、高知らしいところでは「ちくきゅう」（きゅうりを丸ごとちくわに入れたもの）がある。全席喫煙可なので、煙が苦手な場合は入店時に声をかける。カード、交通系を含む各種電子マネー、PayPay・楽天ペイ・d払い・au PAY・メルペイなどのQRコード決済が使え、持ち帰りもできる。定休日は不定休。</div>
+<div class="sig"><b>一皿:</b>串揚げ（食べ放題と飲み放題を合わせた組み合わせがある）／とり皮餃子（鶏皮で包んだ餃子）／ちくきゅう（きゅうりを丸ごとちくわに入れた高知の定番の肴）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 18:00〜翌5:00（料理L.O. 翌4:30／ドリンクL.O. 翌4:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町1丁目9-18</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-873-3030）またはホットペッパーグルメのネット予約。2階は貸切可。 — <a href="tel:0888733030">☎ 088-873-3030</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章の店はほとんどが0時前後に閉まるため、深夜〜早朝まで開く店が1軒要る。帯屋町の小路という場所も、飲み屋街を歩く読者の動線に合う。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページで、店が入稿する写真が 2026-06-30 更新、クーポンが 2026-08-31 更新と表示されている（2026-11-10 取得）。②**未確認**: 「居酒屋 なるこ屋 閉店」「居酒屋なるこ屋閉店」「なるこ屋 移転」「なるこ屋 リニューアル」の検索と、公式SNSのアカウント名の確認は、この作業の環境のWeb検索回数の上限に達したため実施できていない。公式サイトも見つけられていない。採用の可否は、この4点を確認してから確定すること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%AA%E3%82%8B%E3%81%93%E5%B1%8B%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1%E4%B8%81%E7%9B%AE9-18">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004050102/">ホットペッパーグルメ 店舗情報（住所・電話・営業時間・定休日・席数・支払い方法）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ004050102/food/">ホットペッパーグルメ 料理（2025-08-08 更新・唐揚げ/とり皮餃子/手羽先の価格）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ004050102/photo/">ホットペッパーグルメ 写真（外観・店内・料理）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-izakaya-umemaru">
+<img class="hero" src="img/kochi/kochi-izakaya-umemaru.jpg" alt="うめ丸 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-izakaya-umemaru_exterior.jpg" alt="うめ丸 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>うめ丸<span class="yomi">うめまる</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">追手筋にある63席の土佐居酒屋で、ホットペッパーグルメの紹介文では「20年以上続く」店とされている。1階はカウンターとテーブル座敷4席、2階は18名・30名・45名の個室で、2階全体の貸切は相談に応じる。鰹は注文が入ってから藁で炙り、塩たたき・ポン酢たたき・刺身・四種盛りと切り分け方を選べる。どろめ、カツオユッケ、サバ炙り寿し、にぎり盛りなど寿司もある。宴会は「土佐のおきゃく」（高知の方言で宴会）と名づけたコースを2時間飲み放題付きで出す。お通し代は300円（コースには付かない）。全席禁煙。カードはVISA・マスター・アメックス・DINERS・JCBが使えるが、コースはカード不可。電子マネーとQRコード決済は使えない。日曜定休（祝前日の場合は翌月曜休み）。</div>
+<div class="sig"><b>一皿:</b>かつおわら焼き 天然塩タタキ（六切れ。注文を受けてから藁で炙る）／どろめ（いわしの稚魚。高知名物）／サバ炙り寿し（炙った鯖の棒寿司）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:30〜翌0:00（料理L.O. 23:30／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（祝前日の場合は翌月曜休み）</td></tr>
+<tr><th>住所</th><td>高知県高知市追手筋1-8-16</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-873-9690）または店のホームページ・ホットペッパーグルメのネット予約。2階の貸切は要相談。 — <a href="tel:0888739690">☎ 088-873-9690</a> ／ <a href="https://umemarukochi.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>追手筋という章の指定エリアにあり、鰹の藁焼きと土佐の肴、地酒を揃える地元の居酒屋として外せない。「おきゃく」という高知の宴会文化を名前にしたコースがあるのも冊子向き。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページで、店が入稿する料理の内容が **2026-11-10 更新**（この調査と同日）、クーポンが 2026-09-05 更新と表示されている（2026-11-10 取得）。店が運営するホームページ（https://umemarukochi.owst.jp/）も開ける。②**未確認**: 「うめ丸 閉店」「うめ丸閉店」「うめ丸 移転」「うめ丸 リニューアル」の検索と、公式SNSのアカウント名の確認は、この作業の環境のWeb検索回数の上限に達したため実施できていない。採用の可否は、この4点を確認してから確定すること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%82%81%E4%B8%B8%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BF%BD%E6%89%8B%E7%AD%8B1-8-16">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000034414/">ホットペッパーグルメ 店舗情報（住所・電話・営業時間・定休日・席数・支払い方法・20年以上続く店との紹介）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000034414/food/">ホットペッパーグルメ 料理（2026-11-10 更新・かつおわら焼き/刺身五種盛/どろめ/コースの価格）2026-11-10 取得</a> / <a href="https://umemarukochi.owst.jp/">店のホームページ 2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-izakaya-seiwa">
+<img class="hero" src="img/kochi/kochi-izakaya-seiwa.jpg" alt="焼鳥 せいわ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>焼鳥 せいわ<span class="yomi">やきとり せいわ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">ホットペッパーグルメの掲載で「創業56年」「東京仕込み」とうたう焼き鳥の店。席は30席で、テーブル座敷4卓とカウンター10席という構成（カウンターは1名×10席）。個室はなく、25〜30名で店を使う形の貸切のみ相談できる。品書きは、ねぎま、せせり、レバー、アスパラ巻きといった串のほか、その日の良い串を大将が選ぶ「おまかせ盛り」が串3種と串5種の2通り。鶏ミンチに軟骨を入れた「なんこつつくね」に卵黄とタレを絡めるのが看板で、高知県産の生姜と大葉を使ったエビトースト、馬刺しも置く。全席禁煙で灰皿は外。カードはVISA・マスター・JCBのみで、電子マネーとQRコード決済は使えない。日曜定休のほか隔週で不定休がある。</div>
+<div class="sig"><b>一皿:</b>なんこつつくね（鶏ミンチに軟骨を混ぜたつくね。濃いタレと卵黄を絡めて食べる）／おまかせ盛り 串5種（その日の串を大将が選ぶ）／高知産生姜と大葉のエビトースト（高知が生産量日本一の生姜を使った一品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜23:00（料理L.O. 22:00／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（ほかに隔週で不定休あり）</td></tr>
+<tr><th>住所</th><td>高知県高知市はりまや町2-3-1</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-882-3064）またはホットペッパーグルメのネット予約。貸切は25〜30名で相談。 — <a href="tel:0888823064">☎ 088-882-3064</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の条件にある「焼き鳥・串の店」。半世紀を超えて同じ場所で続く店で、蓮池町通の電停から1分という立地も、屋台安兵衛やいまどき安兵衛とはしごしやすい。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページで、店が入稿する料理の内容が 2026-10-28 更新、クーポンが 2026-10-20 更新と表示され、掲載写真も新しい番号で入れ替わっている（2026-11-10 取得）。②**未確認**: 「焼鳥 せいわ 閉店」「焼鳥せいわ閉店」「せいわ 移転」「せいわ リニューアル」の検索と、公式SNSのアカウント名の確認は、この作業の環境のWeb検索回数の上限に達したため実施できていない。公式サイトも見つけられていない。採用の可否は、この4点を確認してから確定すること。 写真について＝外観の実写が見つからないため ext_urls は空。ホットペッパーグルメの「店内・外観」22枚を1枚ずつ目で確認したが、外観（建物の正面・入口・店構え）を写したものは1枚も無く、料理・カウンター・座敷だけだった（2026-11-10 確認）。公式サイトも見つけられていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%9B%E3%81%84%E3%82%8F%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E3%81%AF%E3%82%8A%E3%81%BE%E3%82%84%E7%94%BA2-3-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000112352/">ホットペッパーグルメ 店舗情報（住所・電話・営業時間・定休日・席数・支払い方法・創業56年の表示）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000112352/food/">ホットペッパーグルメ 料理（2026-10-28 更新・なんこつつくね/おまかせ盛り/コースの価格）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ000112352/photo/">ホットペッパーグルメ 写真（店内・料理）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-izakaya-akindo">
+<img class="hero" src="img/kochi/kochi-izakaya-akindo.jpg" alt="帯や町 商人 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-izakaya-akindo_exterior.jpg" alt="帯や町 商人 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>帯や町 商人<span class="yomi">おびやまち あきんど</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">帯屋町のビル1階にある32席の店。掘りごたつ席（6名×2、つなげて約10名）とテーブル席で、人数に合わせて仕切って個室のように使える。約30名から店ごと貸し切れる。品書きは高知の地魚の刺し身盛り、鰹の三種盛り（刺身・塩たたき・タレたたき）、宇佐どれの長太郎貝の浜焼き、なめろうなど地のものと、A5ランクの土佐和牛の炙りや3時間煮込んだ牛バラ肉の赤ワイン煮込みといった肉料理が並ぶ。日本酒は土佐の地酒を揃える。全席喫煙可。お通し代あり。カードはVISA・マスター・JCB（タッチ決済対応のもののみ）で、電子マネーとQRコード決済は使えない。昼の営業は当面休み。店の電話がつながらないときの連絡先として 090-1573-0427 も案内されている。</div>
+<div class="sig"><b>一皿:</b>土佐沖漁れ 刺し身盛り（高知の地魚の盛り合わせ）／鰹三種盛り（刺身・塩たたき・タレたたきを10切で食べくらべ）／宇佐どれ 長太郎浜焼（土佐市宇佐の長太郎貝を殻ごと焼く）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:30〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）。昼の営業は当面休み。</td></tr>
+<tr><th>定休日</th><td class="off">記載なし（ホットペッパーグルメの定休日欄に曜日の記載がない）</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町2-1-14 1F</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-856-9680。つながらないときは 090-1573-0427）または店のホームページ・ホットペッパーグルメのネット予約。約30名から店貸切可。 — <a href="tel:0888569680">☎ 088-856-9680</a> ／ <a href="https://obiyamachiakindo.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>帯屋町のど真ん中で、土佐の地酒と地魚を手頃な単品で出す店。コース中心の大箱が多いこの一帯で、少人数で寄れる規模（32席）なのが読者に役立つ。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページで、店が入稿する写真が 2026-09-28 更新、料理が 2026-01-22 更新と表示されている（2026-11-10 取得）。店が運営するホームページ（https://obiyamachiakindo.owst.jp/）も開ける。②**未確認**: 「帯や町 商人 閉店」「帯や町商人閉店」「帯や町 商人 移転」「帯や町 商人 リニューアル」の検索と、公式SNSのアカウント名の確認は、この作業の環境のWeb検索回数の上限に達したため実施できていない。採用の可否は、この4点を確認してから確定すること。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B8%AF%E3%82%84%E7%94%BA%20%E5%95%86%E4%BA%BA%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2-1-14%201F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001152995/">ホットペッパーグルメ 店舗情報（住所・電話・営業時間・席数・支払い方法・連絡先の案内）2026-11-10 取得</a> / <a href="https://www.hotpepper.jp/strJ001152995/food/">ホットペッパーグルメ 料理（2026-01-22 更新・刺し身盛り/土佐和牛炙り/長太郎浜焼/鰹三種盛りの価格）2026-11-10 取得</a> / <a href="https://obiyamachiakindo.owst.jp/">店のホームページ 2026-11-10 取得</a></div>
+</div></div>
+<h2 id="s-yoshoku" class="c-violet">洋食・各国料理</h2>
+<div class="card" id="c-kochi-yoshoku-ario">
+<img class="hero" src="img/kochi/kochi-yoshoku-ario.jpg" alt="アーリオ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">34</span>アーリオ<span class="yomi">あーりお</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数32席、最大32名まで。掲載店ページの紹介文に「45年愛されたパスタの名店が9月にリニューアルOPEN」とあり、長く続いたパスタ店を引き継いだ形で2026年9月に再開した店。支払いはクレジットカード（VISA・マスター・アメックス・DINERS・JCB）と電子マネー（楽天Edy・ApplePay）が使え、QRコード決済は不可。予算欄はディナー4,000円（税込）、コースは3,500円から。20名以上の宴会・貸切にも対応すると掲載店ページに記載。月・火が定休で、昼は14:30まで、夜は17:30から。</div>
+<div class="sig"><b>一皿:</b>海老と貝のペスカトーレ（海老と貝をトマトソースであえたスパゲッティ）／牛肉の赤ワイン煮込み（牛肉を赤ワインで煮込んだ皿）／国産牛のタリアータ（国産牛を薄く切ったロースト）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水・木・金・土・日・祝日・祝前日 11:00～14:30（料理L.O.14:00／ドリンクL.O.14:00）、17:30～21:30（料理L.O.21:00／ドリンクL.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜</td></tr>
+<tr><th>住所</th><td>高知県高知市本町2丁目1-34</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-824-7211）またはホットペッパーグルメの掲載店ページから。コースは3,500円から。 — <a href="tel:0888247211">☎ 088-824-7211</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>帯屋町の中心で45年続いたパスタ店を引き継いだイタリアンで、洋食・各国料理の章の軸になる。営業の根拠＝店舗が管理するホットペッパーグルメ掲載店ページが2026-10-01に店舗詳細、2026-09-18にメニューを更新（2026-11-10 取得）。同ページ本文に2026年9月のリニューアルOPENの記載あり。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。外観＝掲載店ページの写真18枚に建物の正面・入口を写したものが無く（看板付きの画像はロゴを重ねた合成のため不可）、公式サイト・公式SNSも確認できなかったので ext_urls は空。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%BC%E3%83%AA%E3%82%AA%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE1-34">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000549641/">店舗管理の掲載店ページ。住所・電話・営業時間・定休日・席数・価格・2026年9月リニューアルの記載（2026-09-18／2026-10-01 更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-yoshoku-molto-lieto">
+<img class="hero" src="img/kochi/kochi-yoshoku-molto-lieto.jpg" alt="Cafe＆Bar Molto Lieto 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">35</span>Cafe＆Bar Molto Lieto<span class="yomi">かふぇあんどばー もるとりえと</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数25席（4人掛けテーブル3卓・2人掛け1卓のほか掘りごたつカウンター）。最大25名まで貸切可。昼は12:00から14:30まで、夜は17:30から翌2:00までで、遅い時間の予約が無い日は早く閉めることがあると掲載店ページに記載。定休日は不定休なので行く前に電話で確かめたい。クレジットカード（VISA・マスター・JCB）、交通系を含む電子マネー、PayPayなどのQRコード決済が使える。予算欄は昼800円（税込）、夜2,500円（税込）。</div>
+<div class="sig"><b>一皿:</b>ハンバーグ定食（ハンバーグにライスなどを付けた定食）／チーズフォンデュのコース（溶かしたチーズに具材を絡める2,500円のコース）／ステーキ（鉄皿で供する牛肉のステーキ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月～日・祝日・祝前日 12:00～14:30（料理L.O.14:00／ドリンクL.O.14:00）、17:30～翌2:00（料理L.O.翌1:30／ドリンクL.O.翌1:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町1-10-18 正栄ビル2F</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-873-0177）またはホットペッパーグルメの掲載店ページから。貸切は25名まで。 — <a href="tel:0888730177">☎ 088-873-0177</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>帯屋町の中心で昼の洋食定食から深夜のバー利用までつながる店で、夜遅くまで開く洋食の受け皿として章に必要。営業の根拠＝店舗が管理するホットペッパーグルメ掲載店ページが2026-09-24に店舗詳細、2026-09-16にメニューを更新（2026-11-10 取得）。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。外観＝ビル2階の店で、掲載店ページの写真30枚はすべて料理・店内・席で、建物の正面や入口を写したものが無いため ext_urls は空。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Cafe%EF%BC%86Bar%20Molto%20Lieto%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-10-18%20%E6%AD%A3%E6%A0%84%E3%83%93%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004510018/">店舗管理の掲載店ページ。住所・電話・営業時間・席数・支払い方法・価格（2026-09-16／2026-09-24 更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-yoshoku-cerise-antique">
+<img class="hero" src="img/kochi/kochi-yoshoku-cerise-antique.jpg" alt="レストラン アンティーク（ホテル セリーズ） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-yoshoku-cerise-antique_exterior.jpg" alt="レストラン アンティーク（ホテル セリーズ） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">36</span>レストラン アンティーク（ホテル セリーズ）<span class="yomi">れすとらん あんてぃーく</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">ホテル セリーズ（CHRES）の1階にあるレストランで、公式サイトの表記は「レストラン アンティーク」、ホットペッパーグルメの掲載名は「高須 セリーズ」。総席数60席（4名席15卓）のほか個室がある。創作おまかせ会席は前日までの予約が要る。支払いはクレジットカード（VISA・マスター・アメックス・DINERS・JCB）、電子マネー（楽天Edy・WAON・Suica・nanaco・QUICPay）、QRコード決済（PayPay・au PAY）が使える。問い合わせは9:00から21:00まで。水曜定休。</div>
+<div class="sig"><b>一皿:</b>四万十ポークのヒレカツ御膳（四万十町産の豚ヒレを揚げた御膳 2,750円）／和フレンチコース（ディナー限定・数量限定のコース 4,800円）／和牛ホホ肉のブレゼ ボルト酒風味（和牛の頬肉をポルト酒風味で煮込んだ皿 4,100円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:00～14:30（料理L.O.14:00／ドリンクL.O.14:00）、17:00～21:00（料理L.O.20:00／ドリンクL.O.20:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>高知県高知市高須砂地155</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-866-7000／ホテルフロント）またはホットペッパーグルメの掲載店ページから。創作おまかせ会席は前日までの予約が必要。 — <a href="tel:0888667000">☎ 088-866-7000</a> ／ <a href="http://www.chres.jp/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>四万十ポークを定番の御膳として通年で出しており、高知の食材を使う洋食として章の優先条件に合う。無料駐車場400台で車で行きやすい点も他の掲載店と性格が違う。営業の根拠＝店舗が管理するホットペッパーグルメ掲載店ページが2026-10-31に店舗詳細とメニューを更新（2026-11-10 取得）。公式サイト（chres.jp/restaurant/）も2026-11-10時点で閲覧できる。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%82%A2%E3%83%B3%E3%83%86%E3%82%A3%E3%83%BC%E3%82%AF%EF%BC%88%E3%83%9B%E3%83%86%E3%83%AB%20%E3%82%BB%E3%83%AA%E3%83%BC%E3%82%BA%EF%BC%89%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E9%AB%98%E9%A0%88%E7%A0%82%E5%9C%B0155">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001101671/">店舗管理の掲載店ページ。住所・営業時間・定休日・席数・支払い方法・四万十ポークのヒレカツ御膳など価格（2026-10-31 更新）2026-11-10 取得</a> / <a href="http://www.chres.jp/restaurant/">公式サイト。施設名・レストラン名「アンティーク」・住所・電話・水曜定休（2026-11-10 取得）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-yoshoku-amistad">
+<img class="hero" src="img/kochi/kochi-yoshoku-amistad.jpg" alt="南欧Baru Amistad 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">37</span>南欧Baru Amistad<span class="yomi">なんおうばる あみすた</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数41席、宴会は最大45名まで。カウンター席があり、25名から貸切にできる。18:00から翌2:00までの夜だけの営業で日曜定休。支払いはクレジットカード（VISA・マスター・アメックス）、電子マネー、PayPayなどのQRコード決済が使える。予算欄は3,500円（税込）。なおパエリャ・マリスコスの価格は掲載店ページ内で見出しが1,980円から、本文が2,200円からと食い違っており、本稿は本文側を採った。当日23時まで即時のネット予約が入る。</div>
+<div class="sig"><b>一皿:</b>パエリャ・マリスコス（魚介のパエリア。出汁から取ると掲載店ページに記載）／海老のアヒージョ（海老をオリーブ油とにんにくで煮た小鍋 900円）／3種貝のサラダ（つぶ貝・ほっき貝・帆立のサラダ 1,300円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月～土・祝日・祝前日 18:00～翌2:00（料理L.O.翌1:00／ドリンクL.O.翌1:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町1-2-1</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-824-1255）またはホットペッパーグルメの掲載店ページから（当日23時まで即時予約、リクエスト予約は前日17時まで）。コース予約は当日15時以降のキャンセルでコース料金の全額、席のみの予約は当日17時以降で1名3,000円のキャンセル料。 — <a href="tel:0888241255">☎ 088-824-1255</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市中心部で数少ないスペイン料理の専門店で、章の「各国料理」の幅を担う。深夜まで開くので二軒目にも使える。営業の根拠＝店舗が管理するホットペッパーグルメ掲載店ページが2025-08-04に店舗詳細を更新（2026-11-10 取得）。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。外観＝掲載店ページの写真30枚に建物の正面・入口を写したものが無く（店名入りの1枚はロゴを重ねた合成のため不可）、公式サイトも無いため ext_urls は空。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%97%E6%AC%A7Baru%20Amistad%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA1-2-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001035246/">店舗管理の掲載店ページ。住所・電話・営業時間・定休日・席数・支払い方法・価格・キャンセル規定（2025-08-04 更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-yoshoku-kosho">
+<img class="hero" src="img/kochi/kochi-yoshoku-kosho.jpg" alt="香港四季楼 虎嘯 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">38</span>香港四季楼 虎嘯<span class="yomi">ほんこんしきろう こしょう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数50席で、宴会は最大30名まで。大小の個室と掘りごたつ席があり、30名までの完全個室を貸切にできる。支払いの手段が広く、クレジットカード7種、交通系を含む電子マネー9種、PayPay・d払い・Alipay・WeChat Payなど9種のQRコード決済とスマート支払いが使える。予算欄は昼1,001～1,500円、夜4,001～5,000円。フカヒレ姿煮込み7,500円は要予約。月曜定休で、昼は11:30から14:00、夜は18:00から22:00。</div>
+<div class="sig"><b>一皿:</b>うつぼのピリ辛炒め（高知で食べるうつぼを唐辛子で辛く炒めた皿 1,600円）／高知ニラ香る焼売3個（高知産のニラを包んだ焼売 550円）／干し海老入りブラック焼飯（干し海老を使った黒い焼飯 1,100円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火～日 11:30～14:00（料理L.O.13:30）、18:00～22:00（料理L.O.21:00／ドリンクL.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>高知県高知市農人町5-29 サウスブリーズホテル高知海月2階</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-879-3684）、公式サイト、またはホットペッパーグルメの掲載店ページから。フカヒレ姿煮込みと30名までの完全個室の貸切は要予約。 — <a href="tel:0888793684">☎ 088-879-3684</a> ／ <a href="https://kosho.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>うつぼや高知ニラなど県内の食材を広東料理に仕立てており、章の「中華料理店」枠かつ高知の食材を使う店として優先度が高い。営業の根拠＝店舗が管理するホットペッパーグルメ掲載店ページが2026-02-13に店舗詳細、2026-02-24にメニューを更新（2026-11-10 取得）。公式サイト（kosho.owst.jp）も2026-11-10時点で閲覧でき、住所・電話・営業時間が掲載店ページと一致する。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。外観＝ホテル2階の店で、掲載店ページと公式サイトのどちらにも店の入口や建物正面の写真が無いため ext_urls は空（ホテル建物の写真は店の外観ではないので採らない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A6%99%E6%B8%AF%E5%9B%9B%E5%AD%A3%E6%A5%BC%20%E8%99%8E%E5%98%AF%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%BE%B2%E4%BA%BA%E7%94%BA5-29%20%E3%82%B5%E3%82%A6%E3%82%B9%E3%83%96%E3%83%AA%E3%83%BC%E3%82%BA%E3%83%9B%E3%83%86%E3%83%AB%E9%AB%98%E7%9F%A5%E6%B5%B7%E6%9C%882%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ003926004/">店舗管理の掲載店ページ。住所・電話・営業時間・定休日・席数・支払い方法・価格（2026-02-13／2026-02-24 更新）2026-11-10 取得</a> / <a href="https://kosho.owst.jp/">公式サイト。店名・住所・電話・営業時間・月曜定休（2026-11-10 取得）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-yoshoku-phon-banh-mi">
+<img class="hero" src="img/kochi/kochi-yoshoku-phon-banh-mi.jpg" alt="フォンバインミー 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">39</span>フォンバインミー<span class="yomi">ふぉんばいんみー</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数22席でカウンター席がある。高知の日曜市で売っていたバインミーの店が実店舗を構えたと掲載店ページに記載。昼は10:30から16:30までの通し営業で、19:00から21:00は予約があれば開ける。火曜と日曜が定休。支払いはクレジットカード（VISA・マスター・アメックス・JCB）、電子マネー（iD・QUICPay）、PayPayが使える。予算欄はランチ1,001～1,500円（税込）。コースはハノイ3,000円とサイゴン3,500円の2本立て。</div>
+<div class="sig"><b>一皿:</b>焼肉バインミー（焼いた肉と香草をバゲットに挟んだベトナム風サンドイッチ 700円）／ハノイコース（前菜からデザートまでの一番人気のコース 3,000円）／揚げ春巻き3本（米の皮で巻いて揚げた春巻き 400円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土・祝日・祝前日 10:30～16:30（料理L.O.16:00／ドリンクL.O.16:00）。19:00～21:00は予約があれば営業</td></tr>
+<tr><th>定休日</th><td class="off">火曜・日曜</td></tr>
+<tr><th>住所</th><td>高知県高知市宝永町3-12 あや家4号</td></tr>
+<tr><th>予約</th><td>予約可。電話（090-7572-0800）またはホットペッパーグルメの掲載店ページから。19:00～21:00の夜営業は予約が前提。 — <a href="tel:09075720800">☎ 090-7572-0800</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知の日曜市から実店舗になった経緯があり、県外から来た人が行きやすい形でベトナム料理を出す店として章に要る。昼の通し営業で遅い昼食に使える点も実用的。営業の根拠＝店舗が管理するホットペッパーグルメ掲載店ページが2026-10-06に更新され、移転後の住所が反映されている（2026-11-10 取得）。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。外観＝2026年8月中旬の移転直後で、掲載店ページの写真は料理・店内・席のみ。移転後の建物正面・入口を写した画像が確認できないため ext_urls は空。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%82%A9%E3%83%B3%E3%83%90%E3%82%A4%E3%83%B3%E3%83%9F%E3%83%BC%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%AE%9D%E6%B0%B8%E7%94%BA3-12%20%E3%81%82%E3%82%84%E5%AE%B64%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004612094/">店舗管理の掲載店ページ。住所・電話・営業時間・定休日・席数・価格・宝永町への移転の記載（2026-10-06 更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-yoshoku-ameien">
+<img class="hero" src="img/kochi/kochi-yoshoku-ameien.jpg" alt="アメイエン 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">40</span>アメイエン<span class="yomi">あめいえん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数21席で、カウンター席、ソファー席、4人掛けテーブル2卓（つなげて最大8名）という構成。全席禁煙で、各席にモバイルオーダーの端末がある。Wi-Fiあり。水曜定休で、昼は11:00から14:00、夜は18:00から23:00。支払いはクレジットカード6種と電子マネー5種（Suica・PASMO・ICOCA・QUICPay・ApplePay）が使えるが、QRコード決済は不可。予算欄はランチ1,100円、ディナー2,000円。</div>
+<div class="sig"><b>一皿:</b>モウン・ヒンガー（魚と魚味噌で作る汁に米麺と野菜を合わせたミャンマーの朝食麺 1,100円）／チャッターヒン（ミャンマー風のチキンカレーにライスとスープを付けたセット 1,450円）／チェッウー・チョー（卵のミャンマー風揚げ 900円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日・祝日・祝前日 11:00～14:00（料理L.O.13:30／ドリンクL.O.13:30）、18:00～23:00（料理L.O.22:30／ドリンクL.O.22:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>高知県高知市本町2丁目3-23</td></tr>
+<tr><th>予約</th><td>予約可。電話（090-8694-8444）またはホットペッパーグルメの掲載店ページから。21席までの貸切に対応。 — <a href="tel:09086948444">☎ 090-8694-8444</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市でミャンマー料理を出す店は少なく、章の「アジア・エスニック」を一般的なタイ・インドの外へ広げられる。大橋通電停から徒歩2分で中心部から歩ける。営業の根拠＝店舗が管理するホットペッパーグルメ掲載店ページが2026-07-02に店舗詳細、2026-07-10にメニューを更新（2026-11-10 取得）。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。外観＝掲載店ページの写真35枚はすべて料理・店内・席・設備で、建物の正面や入口を写したものが無いため ext_urls は空。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%A1%E3%82%A4%E3%82%A8%E3%83%B3%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%9C%AC%E7%94%BA2%E4%B8%81%E7%9B%AE3-23">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004612136/">店舗管理の掲載店ページ。住所・電話・営業時間・定休日・席数・支払い方法・価格（2026-07-02／2026-07-10 更新）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-yoshoku-volver">
+<img class="hero" src="img/kochi/kochi-yoshoku-volver.jpg" alt="レストランボルベール 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-yoshoku-volver_exterior.jpg" alt="レストランボルベール 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">41</span>レストランボルベール<span class="yomi">れすとらんぼるべーる</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数50席でテラス席とカウンター席があり、30名から貸切にできる。2階の個室はレンタルスペースとして貸し出している。ヴィーガン、卵・乳製品不使用、グルテンフリー、低糖質の皿を用意すると公式サイトに記載。支払いはクレジットカード7種が使え、電子マネーとQRコード決済は不可。予算欄は3,000円（税込）。営業時間は掲載店ページが昼11:30～15:00（L.O.14:30）・夜18:00～21:00（L.O.20:30）、公式サイトは昼L.O.14:15・夜L.O.20:15と食い違うので、行く前に電話で確かめたい。</div>
+<div class="sig"><b>一皿:</b>土佐黒毛和牛のステーキ（高知県産の黒毛和牛を焼いた皿 3,200円）／竹炭ピザ（竹炭を練り込んだ黒い生地のピザ。3種きのことガーリックが看板）／季節野菜の薬膳パエリア（季節の野菜と薬膳の素材で炊くパエリア 3,200円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・日 11:30～15:00（料理L.O.14:30／ドリンクL.O.14:30）、18:00～21:00（料理L.O.20:30／ドリンクL.O.20:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜・第4木曜（変更あり）</td></tr>
+<tr><th>住所</th><td>高知県高知市南御座16-23</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-861-2228）またはホットペッパーグルメの掲載店ページから。貸切は30名から。テイクアウトは1時間前までの注文が必要。 — <a href="tel:0888612228">☎ 088-861-2228</a> ／ <a href="https://xn--zck4azcl8dnbb0eze.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>安芸市のナスとトマト、土佐黒毛和牛など県内の食材を使う洋食で、章の優先条件に合う。駐車場があり中心部の店と動線が違うので、車で回る読者の受け皿になる。営業の根拠＝公式サイトのお知らせ欄に2025-06-03「６月のお知らせ」ほか2025年の投稿が並び、店舗が管理するホットペッパーグルメ掲載店ページが2026-07-08に更新（ともに2026-11-10 取得）。北久保9-32から南御座16-23へ移っているが、電話番号088-861-2228は同じで、公式サイトと掲載店ページの双方が南御座を現住所としている。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%83%9C%E3%83%AB%E3%83%99%E3%83%BC%E3%83%AB%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8D%97%E5%BE%A1%E5%BA%A716-23">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004509813/">店舗管理の掲載店ページ。住所・電話・営業時間・定休日・席数・駐車場・価格（2025-12-16／2026-07-08 更新）2026-11-10 取得</a> / <a href="https://xn--zck4azcl8dnbb0eze.com/">公式サイト。現住所（南御座16-23）・電話・営業時間・定休日・2025年のお知らせ（最新2025-06-03）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-yoshoku-bistro-cafe-flag">
+<img class="hero" src="img/kochi/kochi-yoshoku-bistro-cafe-flag.jpg" alt="BISTRO&amp;CAFE FLAG 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-yoshoku-bistro-cafe-flag_exterior.jpg" alt="BISTRO&amp;CAFE FLAG 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#4a3aa7;">42</span>BISTRO&amp;CAFE FLAG<span class="yomi">びすとろあんどかふぇ ふらっぐ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数40席。着席40名・立食60名までの宴会に対応し、20～50名の貸切もできる。日曜だけ8:00から10:30のモーニングがあり、ランチは11:00から14:30、カフェは14:30から17:00、ディナーは予約制という時間割。定休日は水曜で、掲載店ページに「10/7より、水曜定休になります」と変更の記載がある。支払いはクレジットカード（VISA・マスター・JCB・銀聯）、電子マネー（iD・QUICPay）、PayPayが使える。予算欄は昼1,500円、夜4,500円。</div>
+<div class="sig"><b>一皿:</b>ランチプレート（肉か魚のメインに副菜を合わせた皿 800円から）／ビストロコース（焼いた肉料理や魚料理にソースを合わせるコース 4,000円から）／自家製ベーグル（エビとアボカドを挟んだベーグル 1,000円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金・土・祝日・祝前日 11:00～21:00（料理L.O.20:30／ドリンクL.O.20:30）。日曜 8:00～10:30（L.O.10:00／モーニング）、11:00～21:00（L.O.20:30）。内訳はランチ11:00～14:30（L.O.14:00）、カフェ14:30～17:00（L.O.16:30）、ディナーは予約制</td></tr>
+<tr><th>定休日</th><td class="off">水曜（掲載店ページに「10/7より、水曜定休になります」と記載）</td></tr>
+<tr><th>住所</th><td>高知県高知市薊野西町3丁目35番地29号 フクヤ建設本社2階</td></tr>
+<tr><th>予約</th><td>予約可。電話（088-879-3618）またはホットペッパーグルメの掲載店ページから。ディナーは予約制。貸切は20～50名。 — <a href="tel:0888793618">☎ 088-879-3618</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市の東寄り、薊野駅から歩ける位置にあるビストロで、朝・昼・カフェ・夜と時間帯の幅が広く、中心部の店が閉まる時間帯の受け皿になる。駐車場15台で車でも行ける。営業の根拠＝店舗が管理するホットペッパーグルメ掲載店ページが2026-09-22に店舗詳細、2026-09-29にも更新されており、2026年10月7日からの定休日変更という先の予定まで書かれている（2026-11-10 取得）。【営業確認②は一部未実施】閉店の2表記での検索・公式SNSアカウント名の読み取りは、本ターンのWeb検索の上限に達したため未実施。移転／リニューアルの確認は店舗管理の掲載店ページ本文で2026-11-10に実施済み。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=BISTRO%26CAFE%20FLAG%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E8%96%8A%E9%87%8E%E8%A5%BF%E7%94%BA3%E4%B8%81%E7%9B%AE35%E7%95%AA%E5%9C%B029%E5%8F%B7%20%E3%83%95%E3%82%AF%E3%83%A4%E5%BB%BA%E8%A8%AD%E6%9C%AC%E7%A4%BE2%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004660055/">店舗管理の掲載店ページ。住所・電話・営業時間・定休日の変更・席数・駐車場・価格（2026-07-24／2026-09-22／2026-09-29 更新）2026-11-10 取得</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・喫茶・甘味（アイスクリン・文旦）</h2>
+<div class="card" id="c-kochi-cafe-zumzum-honten">
+<img class="hero" src="img/kochi/kochi-cafe-zumzum-honten.jpg" alt="COFFEE SHOP ZUMZUM 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>COFFEE SHOP ZUMZUM<span class="yomi">こーひーしょっぷ ずむずむ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1971年（昭和46年）開業の喫茶店で、公式サイトによれば源流は1907年に安芸市で始めた料亭「精養軒」。喫茶の営業は平日9時から14時までで土日祝は休み、ラストオーダーは閉店30分前。モーニングは9時から11時まで。昼は日替定食とサービスランチの2本立てで、公式サイトのトップに当週（11/9〜11/15）の献立表が日ごとに掲示される。弁当のテイクアウトと宅配も受けており、ZUM弁は当日朝10時まで、幕ノ内弁当は前々日までの連絡が要る（0120-087-999）。2026年4月1日に2号店の北久保店が開いた。席数と支払い方法は公式サイトに記載が無く未確認。</div>
+<div class="sig"><b>一皿:</b>リコッタチーズの手作りパンケーキ(卵白と卵黄を分けて泡立てた生地にリコッタチーズを加え、注文後に1枚ずつ焼く。750円)／ブレンドコーヒー(1971年の開業当時から変えていない5種の豆のブレンド。450円)／日替定食(主菜に副菜3品・サラダ・フルーツ・味噌汁が付く。850円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 9:00〜14:00（ラストオーダーは閉店30分前）※モーニングは9:00〜11:00</td></tr>
+<tr><th>定休日</th><td class="off">土曜・日曜・祝日</td></tr>
+<tr><th>住所</th><td>高知県高知市本町4丁目2-20</td></tr>
+<tr><th>予約</th><td>公式サイトに喫茶の予約に関する記載は無い。弁当のテイクアウト・宅配は 0120-087-999 へ（ZUM弁は当日朝10時まで、幕ノ内弁当は前々日まで） — <a href="tel:0888220500">☎ 088-822-0500</a> ／ <a href="https://zumzum.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市街で半世紀続く喫茶で、ハワイで食べた朝食から生まれたというパンケーキが看板。章の軸になる老舗喫茶。営業の根拠＝①公式サイトのお知らせ欄に「2026.04.01 北久保店オープン」「2025.10.07 平常営業のお知らせ」「2025.09.21 エアコン故障による営業変更について」と自社発信の日付が並ぶ ②公式サイトのトップに「This week's LUNCH」として11/9（月）〜11/15（日）の献立が掲示され、11/14（土）と11/15（日）の休みまで記載されている（2026-11-10 取得）。なお共通規約の「閉店／移転／リニューアル」3通りの検索は、このターンの Web 検索枠が尽きたため実行できていない（未実施）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=COFFEE%20SHOP%20ZUMZUM%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E6%9C%AC%E7%94%BA4%E4%B8%81%E7%9B%AE2-20">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（zumzum.co.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://zumzum.co.jp/">COFFEE SHOP ZUMZUM 公式サイト トップ（お知らせ 2026.04.01／2025.10.07／2025.09.21、当週11/9〜11/15のランチ表、住所・電話・営業時間・定休日・駐車場5台）2026-11-10 取得</a> / <a href="https://zumzum.co.jp/shop/">同 公式サイト SHOP（住所・電話・営業時間・定休日・駐車場・1971年創業の記載）2026-11-10 取得</a> / <a href="https://zumzum.co.jp/menu/">同 公式サイト MENU（モーニング・ランチ・ドリンク・デザートの価格）2026-11-10 取得</a> / <a href="https://hotkochi.co.jp/gourmet/108393/">ほっとこうち（高知のタウン情報誌・編集部取材）2025年4月3日付記事『朝の甘いご褒美「ZUMZUM」のパンケーキモーニング』（住所・営業時間・定休日・電話）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-cafe-zumzum-kitakubo">
+<img class="hero" src="img/kochi/kochi-cafe-zumzum-kitakubo.jpg" alt="COFFEE SHOP ZUMZUM 北久保店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-cafe-zumzum-kitakubo_exterior.jpg" alt="COFFEE SHOP ZUMZUM 北久保店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>COFFEE SHOP ZUMZUM 北久保店<span class="yomi">こーひーしょっぷ ずむずむ きたくぼてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">本町の本店が2026年4月1日に開いた2号店。緑に囲まれた建物で、窓に沿って席が並ぶ。営業は平日の9時から14時まで（ラストオーダー13時30分）で土日祝は休み。昼は日替定食とサービスランチの2本立て。本店で長年出してきたリコッタチーズの手造りパンケーキを北久保店でも出しており、こちらはフルーツのトッピングなど本店と違うアレンジを加える。モーニングもある。その日の献立は店舗入口か公式サイトで確認できるが、公式サイトのランチ表は本店のもので、北久保店の献立は店頭で確認する必要がある。席数と支払い方法は未確認。</div>
+<div class="sig"><b>一皿:</b>リコッタチーズの手造りパンケーキ(卵白と卵黄を分けて泡立てた生地にリコッタチーズを加えて焼く。北久保店ではフルーツのトッピングを加える。750円)／日替定食(弁当のように仕切った定食)／サービスランチ(麺とご飯の組み合わせ)</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜14:00（ラストオーダー13:30）</td></tr>
+<tr><th>定休日</th><td class="off">土曜・日曜・祝日</td></tr>
+<tr><th>住所</th><td>高知県高知市北久保2-39</td></tr>
+<tr><th>予約</th><td>公式サイト・取材記事とも予約に関する記載は無い — <a href="tel:0888216001">☎ 088-821-6001</a> ／ <a href="https://zumzum.co.jp/shop/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>本店と同じ味を新しい建物で出す店で、本店が土日祝休み・平日14時までと間口が狭いぶん、行ける日を増やす受け皿になる。営業の根拠＝①運営会社の公式サイトのお知らせ欄に「2026.04.01 北久保店オープン」と自社発信の日付がある ②公式サイト SHOP ページが現行の店舗として掲載 ③ほっとこうち（高知のタウン情報誌）2026年10月25日付の取材記事に住所・電話・営業時間・定休日・現地写真。なお共通規約の「閉店／移転／リニューアル」3通りの検索は、このターンの Web 検索枠が尽きたため実行できていない（未実施）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=COFFEE%20SHOP%20ZUMZUM%20%E5%8C%97%E4%B9%85%E4%BF%9D%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8C%97%E4%B9%85%E4%BF%9D2-39">Googleマップで開く</a>
+<div class="src">写真: タウン情報誌ほっとこうち（hotkochi.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://zumzum.co.jp/">COFFEE SHOP ZUMZUM 公式サイト（お知らせ「2026.04.01 北久保店オープン」、北久保店の献立は店頭確認の注記）2026-11-10 取得</a> / <a href="https://hotkochi.co.jp/gourmet/123881/">ほっとこうち（高知のタウン情報誌・編集部取材）2026年10月25日付記事『半世紀以上愛される喫茶の2号店へ「COFFEE SHOP ZUMZUM 北久保店」でカフェ&amp;ランチ』（住所・営業時間・定休日・電話・駐車場・パンケーキ750円・店内外の写真）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-cafe-tsumugi-roaster">
+<img class="hero" src="img/kochi/kochi-cafe-tsumugi-roaster.jpg" alt="紡ぎ珈琲焙煎所 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>紡ぎ珈琲焙煎所<span class="yomi">つむぎこーひーばいせんじょ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">オーストラリア留学中にカフェで人と人が近くなる様子を見たことをきっかけに開いたという自家焙煎のコーヒースタンド。代表は堀川大貴。プレハブ小屋を使った小さな店で、席は1人席と2人席のみ、持ち帰りが中心（EIMONS の取材記事）。営業は10時から17時、定休は火曜と不定休で、休みの詳細はInstagramで案内すると公式サイトに書かれている。支払いは現金・クレジットカード・交通系ICカード・電子マネーに対応。豆の卸販売や全国への配送も行う。同じ代表が高知市廿代町の「を菓子と。Coffee and Bake」と帯屋町のカヌレの店「LOU」も営む。飲み物と焼き菓子の価格は公式サイトに記載が無い。</div>
+<div class="sig"><b>一皿:</b>自家焙煎のスペシャルティコーヒー(店で焙煎した豆を注文ごとに淹れる)／焼き菓子とパン(コーヒーと合わせる)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜・不定休（休みの詳細は公式Instagramで案内）</td></tr>
+<tr><th>住所</th><td>高知県高知市百石町4-18-19</td></tr>
+<tr><th>予約</th><td>公式サイトに予約に関する記載は無い — <a href="https://www.taycoffeestand.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市街で自家焙煎を掲げる小さな店の代表例で、豆の販売もしているため土産にも向く。公式サイトに席の規模・支払い方法・駐車の条件まで書かれており、行く前の情報が揃っている。営業の根拠＝①公式サイトのブログに「2025.01.11 KOCHI COFFEE FESTIVAL2025」「2025.01.02 年末年始営業日のお知らせ」と自社発信の日付がある ②公式サイトの固定バナー画像が2025年7月にアップロードされている（ファイルパスの年月）③公式サイト SHOPINFO が現行の店舗情報として住所・営業時間・定休日・支払い方法を掲載（2026-11-10 取得）。なお共通規約の「閉店／移転／リニューアル」3通りの検索は、このターンの Web 検索枠が尽きたため実行できていない（未実施）。価格は公式サイト・取材記事のいずれにも記載が無いため price を空にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%B4%A1%E3%81%8E%E7%8F%88%E7%90%B2%E7%84%99%E7%85%8E%E6%89%80%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E7%99%BE%E7%9F%B3%E7%94%BA4-18-19">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.taycoffeestand.com）より引用 / 外観: 写真なし / 参照元: <a href="https://www.taycoffeestand.com/information/">紡ぎ珈琲焙煎所 公式サイト SHOPINFO（住所・営業時間・定休日・支払い方法・駐車場・代表者名）2026-11-10 取得</a> / <a href="https://www.taycoffeestand.com/blog/">同 公式サイト BLOG（2025.01.11・2025.01.02 の自社投稿）2026-11-10 取得</a> / <a href="https://eimons.jp/gourmet/tsumugiroaster">EIMONS（高知の地域メディア・編集部取材）記事（店内は1人席と2人席のみ・持ち帰りが中心・駐車の案内）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-cafe-wokashito">
+<img class="hero" src="img/kochi/kochi-cafe-wokashito.jpg" alt="を菓子と。Coffee and Bake 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-cafe-wokashito_exterior.jpg" alt="を菓子と。Coffee and Bake 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>を菓子と。Coffee and Bake<span class="yomi">をかしと。こーひーあんどべいく</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">紡ぎ珈琲焙煎所と同じ堀川大貴が営む、菓子とコーヒーの店。白い壁と間接照明の細長い店内にカウンターとテーブルがあり、夜も開ける。出すのは姉妹店のコーヒーと、女性パティシエが作る生菓子約6種と焼き菓子。公式サイトの店舗情報では営業は11時から17時と19時から22時の2部制、定休は月曜・火曜・水曜。支払いは現金・クレジットカード・交通系ICカード・電子マネーに対応。取材記事（2023年）には水曜から日曜で時間帯が異なる別の営業時間が載っており食い違うので、行く前に公式サイトかInstagramで確認したい。</div>
+<div class="sig"><b>一皿:</b>毎日カヌレ(周りは固く中はしっとり。プレーンのほかチョコレート・塩キャラメル・抹茶などのフレーバー。350円〜)／季節の果物のタルト(生菓子は約6種を日替わりで)</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00／19:00〜22:00（公式サイト SHOPINFO）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜・水曜（公式サイト SHOPINFO）</td></tr>
+<tr><th>住所</th><td>高知県高知市廿代町9-2 コーポすずきⅢ 1F東</td></tr>
+<tr><th>予約</th><td>公式サイトに予約に関する記載は無い — <a href="tel:09062989066">☎ 090-6298-9066</a> ／ <a href="https://www.taycoffeestand.com/information/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市街で夜まで甘いものを食べられる数少ない店で、飲みの後の2軒目にも使える。コーヒーは自家焙煎の姉妹店から。営業の根拠＝①運営する紡ぎ珈琲焙煎所の公式サイトのブログに2025.01.11・2025.01.02 の自社投稿があり、同サイトの SHOPINFO に当店の現行の営業時間・定休日・支払い方法が掲載されている ②同サイトの固定バナー画像が2025年7月アップロード（2026-11-10 取得）③ほっとこうち（高知のタウン情報誌）の取材記事に住所・電話・店内外の写真。なお共通規約の「閉店／移転／リニューアル」3通りの検索は、このターンの Web 検索枠が尽きたため実行できていない（未実施）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%92%E8%8F%93%E5%AD%90%E3%81%A8%E3%80%82Coffee%20and%20Bake%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%BB%BF%E4%BB%A3%E7%94%BA9-2%20%E3%82%B3%E3%83%BC%E3%83%9D%E3%81%99%E3%81%9A%E3%81%8D%E2%85%A2%201F%E6%9D%B1">Googleマップで開く</a>
+<div class="src">写真: タウン情報誌ほっとこうち（hotkochi.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.taycoffeestand.com/information/">紡ぎ珈琲焙煎所 公式サイト SHOPINFO 内「を菓子と。Coffee and Bake 店舗情報」（住所・営業時間・定休日・支払い方法・駐車場）2026-11-10 取得</a> / <a href="https://hotkochi.co.jp/gourmet/89119/">ほっとこうち（高知のタウン情報誌・編集部取材）2023年11月24日付記事（住所・電話・毎日カヌレ350円〜・生菓子約6種・店内外の写真）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-cafe-imoten-hirome">
+<img class="hero" src="img/kochi/kochi-cafe-imoten-hirome.jpg" alt="日曜市のいも天 大平商店 ひろめ市場店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/kochi/kochi-cafe-imoten-hirome_exterior.jpg" alt="日曜市のいも天 大平商店 ひろめ市場店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>日曜市のいも天 大平商店 ひろめ市場店<span class="yomi">にちようしのいもてん おおひらしょうてん ひろめいちばてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">追手筋の日曜市と県庁前の木曜市に出している大平商店が、ひろめ市場に出した常設店。さつまいもは国産の金時系のほっくりしたものを使い、衣は50年以上門外不出という自家製で、注文を受けてから揚げる。公式サイトによると芋天は約35年前に祖母が作り始めたもの。ひろめ市場は館内に共用の卓が置かれた造りで、買ったものをその場で食べられる（館内への飲食物の持ち込みは不可）。営業時間は公式サイトが10時〜21時、ひろめ市場の店舗ページが11時〜21時と食い違うので早い時間に行くなら確認を。いずれも売り切れ次第終了で定休は不定期。価格は公式サイト・市場の店舗ページとも記載が無い。</div>
+<div class="sig"><b>一皿:</b>いも天(国産の金時系さつまいもを、50年以上門外不出という自家製の衣で注文後に揚げる)／高知の名物を合わせたドリンクと軽食(店の案内による)</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜21:00（大平商店 公式サイト）／11:00〜21:00（ひろめ市場 公式サイトの店舗ページ）※いずれも売り切れ次第終了</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町2丁目3-1 ひろめ市場内</td></tr>
+<tr><th>予約</th><td>予約に関する記載は無い（市場内の屋台形式） — <a href="tel:0888557330">☎ 088-855-7330</a> ／ <a href="https://imoten-japan.com/shop/hiromeichiba/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>日曜市でしか食べられないと思われがちないも天を、市場の中で曜日を問わず食べられる店。高知の甘いものの章に日曜市の味を入れる受け皿になる。営業の根拠＝①大平商店の公式サイトのメディア掲載情報に「2026年9月24日 じゃらんニュースで紹介されました（ひろめ市場店）」「2026年2月13日 BS朝日」「2026年1月30日 ひるおび」と自社発信の日付が並び、ひろめ市場店の店舗ページが現行の営業時間・アクセスを掲載 ②ひろめ市場の公式サイト（お知らせの最新が2026/11/03）の店舗一覧に69番として掲載（2026-11-10 取得）。なお共通規約の「閉店／移転／リニューアル」3通りの検索は、このターンの Web 検索枠が尽きたため実行できていない（未実施）。価格は出典に記載が無いため price を空にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9B%9C%E5%B8%82%E3%81%AE%E3%81%84%E3%82%82%E5%A4%A9%20%E5%A4%A7%E5%B9%B3%E5%95%86%E5%BA%97%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%BA%97%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2%E4%B8%81%E7%9B%AE3-1%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（imoten-japan.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://imoten-japan.com/">大平商店 公式サイト トップ（メディア掲載情報 2026年9月24日・2026年2月13日・2026年1月30日、いも天の材料と衣の説明、直営店一覧）2026-11-10 取得</a> / <a href="https://imoten-japan.com/shop/hiromeichiba/">大平商店 公式サイト ひろめ市場店ページ（営業時間10時〜21時・定休不定期・住所・大橋通駅から徒歩3分）2026-11-10 取得</a> / <a href="https://hirome.co.jp/shop-details.php?id=60">ひろめ市場 公式サイト 店舗ページ「日曜市のいも天 ひろめ市場店」（営業時間11時〜21時・定休不定休・電話・店頭写真）2026-11-10 取得</a> / <a href="https://hirome.co.jp/shop.html">ひろめ市場 公式サイト お店のご紹介（館内マップ・共用設備・館内への飲食物の持ち込み不可の注意）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-cafe-mantennohoshi-hirome">
+<img class="hero" src="img/kochi/kochi-cafe-mantennohoshi-hirome.jpg" alt="スイーツ食堂マンテンノホシ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>スイーツ食堂マンテンノホシ<span class="yomi">すいーつしょくどう まんてんのほし</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">四万十川の源流域にある津野町の菓子店「満天の星」がひろめ市場に出している店。看板はほうじ茶の粉をたっぷりまぶしたほうじ茶大福で、茶葉は津野町産を使う。市場の店舗ページによれば炊き込みご飯を主役にした昼の御膳も出しており、ほうじ茶大福とほうじ茶が付いて980円。営業は12時から23時までと市場の中では遅くまで開いており、定休は月曜。市場公式の店頭写真ではカウンターに背の高い椅子が並び、その場で食べられる。市場は館内に共用の卓があり、館内への飲食物の持ち込みは断っている。</div>
+<div class="sig"><b>一皿:</b>ほうじ茶大福(津野町産のほうじ茶の粉をまぶした大福。店の看板商品)／ランチ御膳(炊き込みご飯・小鉢3種・味噌汁にほうじ茶大福とほうじ茶が付く。980円)</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜23:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>高知県高知市帯屋町2丁目3-1 ひろめ市場内</td></tr>
+<tr><th>予約</th><td>予約に関する記載は無い — <a href="tel:0888216621">☎ 088-821-6621</a> ／ <a href="http://www.manten-hoshi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ひろめ市場で甘いものを座って食べられる数少ない店で、しかも高知の山の茶を使う。夜11時まで開いているので飲んだ後にも寄れる。営業の根拠＝①運営する満天の星の公式オンラインショップのお知らせに「[2026/01/27] 2026年2月1日、価格改定のお知らせ」と自社発信の2026年の日付がある ②満天の星の公式サイトの店舗一覧に「ひろめ市場店『スイーツ食堂マンテンノホシ』」として住所・電話が掲載 ③ひろめ市場の公式サイト（お知らせの最新が2026/11/03）の店舗一覧に45番として掲載（2026-11-10 取得）。なお共通規約の「閉店／移転／リニューアル」3通りの検索は、このターンの Web 検索枠が尽きたため実行できていない（未実施）。料理・店内の実写は、ひろめ市場公式・満天の星公式とも当店のものが店頭写真1点しか無く、残りは幅180pxで使えないため photo_urls を空にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%82%A4%E3%83%BC%E3%83%84%E9%A3%9F%E5%A0%82%E3%83%9E%E3%83%B3%E3%83%86%E3%83%B3%E3%83%8E%E3%83%9B%E3%82%B7%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%B8%AF%E5%B1%8B%E7%94%BA2%E4%B8%81%E7%9B%AE3-1%20%E3%81%B2%E3%82%8D%E3%82%81%E5%B8%82%E5%A0%B4%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: ひろめ市場（www.hirome.co.jp）より引用 / 外観: 写真なし / 参照元: <a href="http://www.manten-hoshi.jp/">満天の星 公式サイト（店舗一覧にひろめ市場店『スイーツ食堂マンテンノホシ』の住所・電話。ほうじ茶大福の説明）2026-11-10 取得</a> / <a href="https://shop.manten-hoshi.jp/">満天の星 公式オンラインショップ（お知らせ「[2026/01/27] 2026年2月1日、価格改定のお知らせ」）2026-11-10 取得</a> / <a href="https://hirome.co.jp/shop-details.php?id=41">ひろめ市場 公式サイト 店舗ページ「スイーツ食堂マンテンノホシ」（営業時間・定休日・電話・ランチ980円の案内・店頭写真）2026-11-10 取得</a> / <a href="https://hirome.co.jp/">ひろめ市場 公式サイト トップ（お知らせ 2026/11/03・2026/11/01 ほか、運営会社と館の営業時間）2026-11-10 取得</a></div>
+</div></div>
+<div class="card" id="c-kochi-cafe-mantennohoshi-antenna">
+<img class="hero" src="img/kochi/kochi-cafe-mantennohoshi-antenna.jpg" alt="アンテナショップ満天の星 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>アンテナショップ満天の星<span class="yomi">あんてなしょっぷ まんてんのほし</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">四万十川の源流域にある津野町の物産店で、店内は町内産の野菜・加工品・花・雑貨を並べる産直の売り場と、ほうじ茶の菓子の売り場、地元の食材で作るカフェレストに分かれる。公式サイトによれば野菜は毎朝町内25か所の出荷小屋から集めて運ばれる。店舗の営業は9時30分から17時、カフェは11時から17時（ラストオーダー16時30分）で、定休は年末年始のみ。食事の後にはほうじ茶とほうじ茶大福が付く。甘いものは煎茶の大福・ほうじ茶ロールケーキ・ほうじ茶ソフトクリームを集めた茶円や、ほうじ茶づくしのパフェ「松保っくり」など。席数と支払い方法は公式サイトに記載が無く未確認。</div>
+<div class="sig"><b>一皿:</b>茶円(煎茶の大福・ほうじ茶ロールケーキ・ほうじ茶ソフトクリームなどお茶づくしのセット。ドリンク付700円・税抜)／お団子三昧(ほうじ茶大福・季節の大福・6色の白玉団子。ドリンク付1,000円・税抜)／松保っくり(ほうじ茶づくしの和風パフェ。780円・税抜)</div>
+<table class="info">
+<tr><th>営業時間</th><td>店舗 9:30〜17:00／カフェ 11:00〜17:00（ラストオーダー16:30）</td></tr>
+<tr><th>定休日</th><td class="off">年末年始</td></tr>
+<tr><th>住所</th><td>高知県高知市南川添24-15</td></tr>
+<tr><th>予約</th><td>公式サイトに予約に関する記載は無い — <a href="tel:0888835039">☎ 088-883-5039</a> ／ <a href="http://www.manten-hoshi.jp/shop/index.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>高知市内で山の茶を使った甘いものをまとめて食べられる店で、カフェの時間と価格が公式に出ている。土産の売り場も兼ねるので1回で済む。営業の根拠＝①運営する満天の星の公式オンラインショップのお知らせに「[2026/01/27] 2026年2月1日、価格改定のお知らせ」と自社発信の2026年の日付がある ②公式サイトのアンテナショップ紹介ページが現行の営業時間・定休日・駐車台数・メニューと価格を掲載（2026-11-10 取得）。なお共通規約の「閉店／移転／リニューアル」3通りの検索は、このターンの Web 検索枠が尽きたため実行できていない（未実施）。外観の実写は公式サイトに幅400px以上のものが無いため ext_urls を空にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%A2%E3%83%B3%E3%83%86%E3%83%8A%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%E6%BA%80%E5%A4%A9%E3%81%AE%E6%98%9F%20%E9%AB%98%E7%9F%A5%E7%9C%8C%E9%AB%98%E7%9F%A5%E5%B8%82%E5%8D%97%E5%B7%9D%E6%B7%BB24-15">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.manten-hoshi.jp）より引用 / 外観: 写真なし / 参照元: <a href="http://www.manten-hoshi.jp/shop/index.html">満天の星 公式サイト アンテナショップ紹介（住所・電話・営業時間・カフェの時間・定休日・駐車24台・メニューと価格）2026-11-10 取得</a> / <a href="https://shop.manten-hoshi.jp/">満天の星 公式オンラインショップ（お知らせ「[2026/01/27] 2026年2月1日、価格改定のお知らせ」）2026-11-10 取得</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年11月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>
