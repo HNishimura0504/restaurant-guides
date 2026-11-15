@@ -1,3 +1,45 @@
+### Le Baron Rouge（ル・バロン・ルージュ）
+
+@@IMG:europe/france/img/paris/le-baron-rouge.jpg@@
+
+@@IMG:europe/france/img/paris/le-baron-rouge_exterior.jpg@@
+
+`口コミ突出` `食の専門街・市場`
+
+マルシェ・ダリーグルのすぐ脇に立つ、樽から直接ワインを注ぐ昔ながらの立ち飲みワインバー。壁一面のワイン樽と黒板メニューが絵になる店内で、週末は店先の樽テーブルまで人があふれる。
+
+- **一皿**: 樽出しワインと生牡蠣(壁際の樽の蛇口から注ぐグラスワイン。9月中旬〜4月末の週末には店頭で殻を開ける生牡蠣との定番コンビが楽しめる)
+- **営業時間**: 月 17:00-21:00、火〜金 10:00-14:00 / 17:00-21:00、土 10:00-15:00 / 17:00-21:00、日 10:00-16:00
+- **定休日**: 無休(月曜は夕方のみ)
+- **住所**: 1 Rue Théophile Roussel, 75012 Paris(12区)
+- **予約**: 可(推奨) — ☎ 電話で予約 +33 1 43 43 14 32 ／ [公式サイト](http://lebaronrouge.net/)
+- **公式**: [公式サイト](http://lebaronrouge.net/)
+- **選定理由**: 公式サイトで営業時間と牡蠣の季節営業を確認。在住者ガイド(Paris Eater等)がパリの定番ワインバーとして必ず挙げる一軒。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Baron%20Rouge%201%20Rue%20Th%C3%A9ophile%20Roussel%2C%2075012%20Paris%2812%E5%8C%BA%29)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [lebaronrouge.net](https://lebaronrouge.net/) / [pariseater.com](https://www.pariseater.com/bars/best-wine-bars-in-paris/)
+
+### La Buvette（ラ・ビュヴェット）
+
+@@IMG:europe/france/img/paris/la-buvette.jpg@@
+
+@@IMG:europe/france/img/paris/la-buvette_exterior.jpg@@
+
+`ブログ推薦`
+
+元乳製品店の小さな空間を利用した、カミーユ・フルモン営む11区の自然派ワインバー(ビュヴェット=軽い飲み屋)。少数精鋭の小皿料理と日替わりの自然派ワインで世界の食通を惹きつける。
+
+- **一皿**: 白いんげん豆のレモンゼスト和え(大粒の白いんげん豆にレモンの皮とオイルを効かせた同店の代名詞的小皿。チーズやシャルキュトリーの盛り合わせも定番)
+- **営業時間**: 月〜日 5:00〜22:00
+- **定休日**: なし
+- **住所**: 67 Rue Saint-Maur, 75011 Paris(11区)
+- **予約**: 可(推奨) — ☎ 電話で予約 +33 9 83 56 94 11 ／ [公式サイト](http://www.labuvette.paris/)
+- **公式**: [公式サイト](http://www.labuvette.paris/)
+- **選定理由**: AFARやParis Eaterなど在住者・旅行メディアがパリの自然派ワインバーの代表として推薦。店主フルモンは著書もある著名人。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Buvette%2067%20Rue%20Saint-Maur%2C%2075011%20Paris%2811%E5%8C%BA%29)
+- **参照元**: 外観写真: 公式サイト / 参照元: [afar.com](https://www.afar.com/places/la-buvette-paris) / [pariseater.com](https://www.pariseater.com/bars/best-wine-bars-in-paris/)
+
+## 非フランス欧州料理
+
 ### Ober Mamma（オベール・マンマ）
 
 @@IMG:europe/france/img/paris/ober-mamma.jpg@@
@@ -38,6 +80,8 @@
 
 @@IMG:europe/france/img/paris/bellota-bellota.jpg@@
 
+@@IMG:europe/france/img/paris/bellota-bellota_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 スペイン料理。エッフェル塔近く7区のイベリコハム専門店兼タパスバーで、どんぐり肥育の最高級ハモン・イベリコ・デ・ベジョータをその場で切り出して味わえる。スペインワインの品揃えも充実。
@@ -50,7 +94,7 @@
 - **公式**: [公式サイト](https://www.bellota-bellota.com/fr/)
 - **選定理由**: goopが「パリで最高級のスペイン食材店兼レストラン」として紹介、Yelpのパリ・タパス上位常連。イベリコハムの品質評価が突出。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bellota-Bellota%20Tour%20Eiffel%2018%20Rue%20Jean-Nicot%2C%2075007%20Paris%287%E5%8C%BA%29)
-- **参照元**: [goop.com](https://goop.com/place/france/paris/7th-arrondissement-specialty/bellota-bellota/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187147-d949849-Reviews-Bellota_BellotaR_Tour_Eiffel-Paris_Ile_de_France.html)
+- **参照元**: 外観写真: 公式サイト（Tour Eiffel 店ページ） / 参照元: [goop.com](https://goop.com/place/france/paris/7th-arrondissement-specialty/bellota-bellota/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187147-d949849-Reviews-Bellota_BellotaR_Tour_Eiffel-Paris_Ile_de_France.html)
 
 ### Comme à Lisbonne（コム・ア・リスボン）
 
@@ -76,6 +120,8 @@
 
 @@IMG:europe/france/img/paris/liza.jpg@@
 
+@@IMG:europe/france/img/paris/liza_exterior.jpg@@
+
 `ブログ推薦`
 
 レバノン料理。ベイルート出身のリザ・アセイリーが2区ブルス地区で営むモダン・レバノン料理店で、ミシュランガイドにも掲載。明るい中東モダンの内装でメゼやグリル、ファテを供する。
@@ -87,7 +133,7 @@
 - **予約**: 可(推奨) — ☎ 電話で予約 +33 1 55 35 00 66
 - **選定理由**: 在住フードライターDavid Lebovitzが自ブログで推薦し、ミシュランガイド掲載(1カトラリー)。パリのレバノン料理の代表格として複数媒体が言及。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Liza%2014%20Rue%20de%20la%20Banque%2C%2075002%20Paris%282%E5%8C%BA%29)
-- **参照元**: [davidlebovitz.com](https://www.davidlebovitz.com/liza-restaurant-lebanese-food-paris/) / [guide.michelin.com](https://guide.michelin.com/rs/en/ile-de-france/paris/restaurant/liza)
+- **参照元**: 外観写真: Guide Michelin（店ページ） / 参照元: [davidlebovitz.com](https://www.davidlebovitz.com/liza-restaurant-lebanese-food-paris/) / [guide.michelin.com](https://guide.michelin.com/rs/en/ile-de-france/paris/restaurant/liza)
 
 ### Le 404（ル・キャトルサンキャトル）
 
@@ -131,6 +177,8 @@
 
 @@IMG:europe/france/img/paris/bmk-paris-bamako.jpg@@
 
+@@IMG:europe/france/img/paris/bmk-paris-bamako_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 マリを中心とする西アフリカ料理。10区ゲール・ド・レスト近くの食堂兼食材店で、家庭的なマフェやヤッサを現代的な雰囲気で提供。パリの新世代アフリカ料理ブームを牽引する一軒。
@@ -143,7 +191,7 @@
 - **公式**: [公式サイト](http://www.bmkparis.com/)
 - **選定理由**: Le Bonbonの「パリのアフリカ料理ベスト」に掲載、TripAdvisorで4.6と口コミ評価が突出(パリ全体上位5%圏)。公式サイトで営業確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=BMK%20Paris-Bamako%2014%20Rue%20de%20la%20Fid%C3%A9lit%C3%A9%2C%2075010%20Paris%2810%E5%8C%BA%29)
-- **参照元**: [bmkparis.com](https://www.bmkparis.com/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187147-d12728905-Reviews-BMK_Paris_Bamako-Paris_Ile_de_France.html)
+- **参照元**: 外観写真: 公式サイト / 参照元: [bmkparis.com](https://www.bmkparis.com/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187147-d12728905-Reviews-BMK_Paris_Bamako-Paris_Ile_de_France.html)
 
 ### Menelik（メネリク）
 
@@ -187,6 +235,8 @@
 
 @@IMG:europe/france/img/paris/sanukiya.jpg@@
 
+@@IMG:europe/france/img/paris/sanukiya_exterior.jpg@@
+
 `食の専門街・市場` `口コミ突出`
 
 日本料理(讃岐うどん)。日本食街サンタンヌ通り界隈のアルジャントゥイユ通りにある行列必至のうどん専門店で、スタッフも日本人。コシのある自家製麺と丁寧な出汁が在住日本人にも支持される。
@@ -199,7 +249,7 @@
 - **公式**: [公式サイト](https://www.facebook.com/sanukiyaparis)
 - **選定理由**: 在住者フードブログSugared & Spicedが再訪記事で推薦、Yelp/TripAdvisorでもパリのうどん最高評価クラス。オペラ地区日本食街の立地。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Sanukiya%28%E8%AE%83%E5%B2%90%E5%AE%B6%29%209%20Rue%20d%27Argenteuil%2C%2075001%20Paris%281%E5%8C%BA%29)
-- **参照元**: [sugarednspiced.com](https://www.sugarednspiced.com/paris-sanukiya-2/) / [yelp.com](https://www.yelp.com/biz/sanukiya-paris)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [sugarednspiced.com](https://www.sugarednspiced.com/paris-sanukiya-2/) / [yelp.com](https://www.yelp.com/biz/sanukiya-paris)
 
 ### JanTchi（ジャンチ）
 
@@ -240,6 +290,8 @@
 
 @@IMG:europe/france/img/paris/trois-fois-plus-de-piment.jpg@@
 
+@@IMG:europe/france/img/paris/trois-fois-plus-de-piment_exterior.jpg@@
+
 `口コミ突出` `ブログ推薦`
 
 中国・四川料理。ポンピドゥーセンター近くの小さな麺・水餃子専門店で、店名は「三倍辛い」の意。辛さを0〜5から選ぶ担担麺スタイルの四川麺で、Fooding誌のベスト・ヌードル賞を受賞した。
@@ -252,11 +304,13 @@
 - **公式**: [公式サイト](http://troisfoisplusdepiment.fr/)
 - **選定理由**: Foodingガイド2016「ベスト・ヌードル」賞受賞。Sortiraparisが「パリで一番辛い中華」として特集し、行列の絶えない人気を報告。公式サイトで営業確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Trois%20Fois%20Plus%20de%20Piment%20184%20Rue%20Saint-Martin%2C%2075003%20Paris%283%E5%8C%BA%29)
-- **参照元**: [troisfoisplusdepiment.fr](https://troisfoisplusdepiment.fr/en) / [sortiraparis.com](https://www.sortiraparis.com/en/where-to-eat-in-paris/restaurant/articles/177238-trois-fois-plus-de-piment-the-spiciest-chinese-restaurant-in-paris)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [troisfoisplusdepiment.fr](https://troisfoisplusdepiment.fr/en) / [sortiraparis.com](https://www.sortiraparis.com/en/where-to-eat-in-paris/restaurant/articles/177238-trois-fois-plus-de-piment-the-spiciest-chinese-restaurant-in-paris)
 
 ### Saravanaa Bhavan（サラヴァナ・バワン）
 
 @@IMG:europe/france/img/paris/saravanaa-bhavan.jpg@@
+
+@@IMG:europe/france/img/paris/saravanaa-bhavan_exterior.jpg@@
 
 `食の専門街・市場` `口コミ突出`
 
@@ -270,7 +324,7 @@
 - **公式**: [公式サイト](https://nkaryabhavan.fr/en/)
 - **選定理由**: インド人街ラ・シャペル地区の代表格としてYelp・TripAdvisorの口コミで高評価。「Krishna Bhavanより上」との現地レビューも複数。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Saravanaa%20Bhavan%20170%20Rue%20du%20Faubourg%20Saint-Denis%2C%2075010%20Paris%2810%E5%8C%BA%29)
-- **参照元**: [yelp.com](https://www.yelp.com/biz/saravanaa-bhavan-paris-2) / [petitfute.co.uk](https://www.petitfute.co.uk/v17231-17284-paris-75010/c1165-restaurants/c1031-cuisines-du-monde/c1035-cuisine-d-asie/c54-restaurant-indien/559618-saravanaa-bhavan.html)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [yelp.com](https://www.yelp.com/biz/saravanaa-bhavan-paris-2) / [petitfute.co.uk](https://www.petitfute.co.uk/v17231-17284-paris-75010/c1165-restaurants/c1031-cuisines-du-monde/c1035-cuisine-d-asie/c54-restaurant-indien/559618-saravanaa-bhavan.html)
 
 ## 中南米料理
 
@@ -291,27 +345,3 @@
 - **選定理由**: HiP Parisが「パリの本格タケリア」として特集、併設バーはWorld's 50 Best Barsの選出歴があり口コミ人気も突出。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Candelaria%2052%20Rue%20de%20Saintonge%2C%2075003%20Paris%283%E5%8C%BA%29)
 - **参照元**: [hipparis.com](https://hipparis.com/candelaria-tacos-and-clandestine-cocktails-in-paris/) / [theworlds50best.com](https://www.theworlds50best.com/discovery/Establishments/France/Paris/Candelaria.html)
-
-### La Cevicheria（ラ・セビチェリア）
-
-@@IMG:europe/france/img/paris/la-cevicheria.jpg@@
-
-`口コミ突出`
-
-ペルー料理。「パリのセビーチェの殿堂」と呼ばれるセビーチェ専門店で、モントルグイユ地区のバショーモン通り店を中心に市内複数店舗を展開。彩り豊かな創作セビーチェとピスコのカクテルが看板。
-
-- **一皿**: セビーチェ(白身魚などをライムでしめ、赤玉ねぎ・唐辛子・コリアンダーと和えるペルーの国民的料理。とうもろこしやサツマイモを添える)
-- **営業時間**: 月〜金 12:00〜15:00 / 18:00〜0:00 / 土 12:00〜0:00
-- **定休日**: 日曜
-- **住所**: 14 Rue Bachaumont, 75002 Paris(2区)※他に12 Rue Martel(10区)等
-- **予約**: 可(推奨) — ☎ 電話で予約 +33 9 74 73 55 47 ／ [公式サイト](https://www.privateaser.com/lieu/59221-la-cevicheria-bachaumont)
-- **公式**: [公式サイト](https://www.privateaser.com/lieu/59221-la-cevicheria-bachaumont)
-- **選定理由**: Sortiraparisのセビーチェ特集で「パリのセビーチェの殿堂」として筆頭掲載。Petit Futéにもペルー料理店として掲載され、複数店舗展開の人気を確認。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Cevicheria%2014%20Rue%20Bachaumont%2C%2075002%20Paris%282%E5%8C%BA%29%E2%80%BB%E4%BB%96%E3%81%AB12%20Rue%20Martel%2810%E5%8C%BA%29%E7%AD%89)
-- **参照元**: [sortiraparis.com](https://www.sortiraparis.com/en/where-to-eat-in-paris/restaurant/guides/192878-ceviche-paris) / [petitfute.co.uk](https://www.petitfute.co.uk/v17231-17297-paris-75002/c1165-restaurants/c1031-cuisines-du-monde/c1034-cuisine-ameriques-caraibes/c45-restaurant-peruvien/1556193-la-cevicheria.html)
-
-## 半日モデルルート
-
----
-
-> 選考基準: ①個人・公式ブログ/現地メディアでの名店言及 ②複数レビューサイトでの口コミ・行列の突出 ③創業年・代替わりのある老舗 ④食の専門街・市場立地 ⑤受賞歴・ガイド掲載。写真は各店の料理・店内の実写(Google Maps投稿写真、© Google)。予約は各カードの「予約」欄のリンク(電話/予約サイト)から。営業時間・定休日は2026年7月時点の各種サイト情報で、変更があり得ます。

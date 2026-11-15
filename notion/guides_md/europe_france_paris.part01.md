@@ -1,6 +1,6 @@
 FRANCE / PARIS 🇫🇷
 
-ビストロ・ブラッスリー・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選36スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)です。
+ビストロ・ブラッスリー・チーズ・惣菜・スイーツに加え、食べ歩きと世界の料理(欧州・中東・アフリカ・アジア・中南米)まで、厳選36スポット。各店に営業時間・定休日・予約情報(電話/予約サイトのリンク)・選定理由・参照元・Googleマップリンク付き。写真は各店の料理・店内の実写(Google Maps投稿写真)と、見つかった店の外観写真(公式サイト・観光局・ブログ・Wikimedia Commons等。出典は各カード)です。
 
 > 2026年7月調査 / 営業時間・定休日は変動あり・訪問前にマップで最終確認を
 
@@ -35,6 +35,8 @@ FRANCE / PARIS 🇫🇷
 
 @@IMG:europe/france/img/paris/bistrot-paul-bert.jpg@@
 
+@@IMG:europe/france/img/paris/bistrot-paul-bert_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 1997年創業ながら「パリの理想のビストロ」と称される11区の名店。黒板メニューと年代物の内装の中で、完璧な火入れのステーキと自家製フリットを求めて地元客と食通が集う。
@@ -47,7 +49,7 @@ FRANCE / PARIS 🇫🇷
 - **公式**: [公式サイト](https://bistrotpaulbert.fr/)
 - **選定理由**: Paris by Mouthが「クラシックビストロの筆頭」として掲載、David Lebovitzも推薦、ミシュランガイド2026にも掲載される定番中の定番。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bistrot%20Paul%20Bert%2018%20Rue%20Paul%20Bert%2C%2075011%20Paris%2811%E5%8C%BA%29)
-- **参照元**: [parisbymouth.com](https://parisbymouth.com/bistrot-paul-bert/) / [guide.michelin.com](https://guide.michelin.com/en/ile-de-france/paris/restaurant/bistrot-paul-bert)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [parisbymouth.com](https://parisbymouth.com/bistrot-paul-bert/) / [guide.michelin.com](https://guide.michelin.com/en/ile-de-france/paris/restaurant/bistrot-paul-bert)
 
 ### Joséphine Chez Dumonet（ジョゼフィーヌ・シェ・デュモネ）
 
@@ -71,6 +73,8 @@ FRANCE / PARIS 🇫🇷
 
 @@IMG:europe/france/img/paris/chez-lami-jean.jpg@@
 
+@@IMG:europe/france/img/paris/chez-lami-jean_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 エッフェル塔近く7区の路地に立つ、シェフ、ステファン・ジェゴ率いる活気あふれるバスク系ビストロ。豪快かつ繊細な現代ビストロ料理の代表格で、狭い店内は常に満席。
@@ -83,7 +87,7 @@ FRANCE / PARIS 🇫🇷
 - **公式**: [公式サイト](http://lamijean.fr/)
 - **選定理由**: Paris by Mouthが長年推薦する現代ビストロの名店で、ミシュランガイドにも掲載。名物リ・オ・レは公式サイトでも「神話的」と紹介される。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Chez%20l%27Ami%20Jean%2027%20Rue%20Malar%2C%2075007%20Paris%287%E5%8C%BA%29)
-- **参照元**: [lamijean.fr](https://lamijean.fr/) / [parisbymouth.com](https://parisbymouth.com/chez-lami-jean/)
+- **参照元**: 外観写真: 公式サイト / 参照元: [lamijean.fr](https://lamijean.fr/) / [parisbymouth.com](https://parisbymouth.com/chez-lami-jean/)
 
 ### Le Servan（ル・セルヴァン）
 
@@ -107,6 +111,8 @@ FRANCE / PARIS 🇫🇷
 
 @@IMG:europe/france/img/paris/bouillon-chartier.jpg@@
 
+@@IMG:europe/france/img/paris/bouillon-chartier_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 1896年創業、歴史的建造物指定の大衆食堂「ブイヨン」の代名詞。天井の高いベル・エポックの大広間で、ギャルソンが紙のテーブルクロスに注文を直接書き込む名物スタイルが今も続く。
@@ -119,7 +125,7 @@ FRANCE / PARIS 🇫🇷
 - **公式**: [公式サイト](https://www.bouillon-chartier.com/bouillon-chartier-grands-boulevards/?utm_source=google&utm_medium=organic&utm_campaign=mybusiness-website)
 - **選定理由**: 130年続く老舗として公式サイト・Wikipediaで沿革が確認でき、定番フレンチを格安で出す店として多数のガイドが推薦。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bouillon%20Chartier%20%28Grands%20Boulevards%29%207%20Rue%20du%20Faubourg%20Montmartre%2C%2075009%20Paris%289%E5%8C%BA%29)
-- **参照元**: [bouillon-chartier.com](https://www.bouillon-chartier.com/en/bouillon-chartier-grands-boulevards-en/) / [en.wikipedia.org](https://en.wikipedia.org/wiki/Bouillon_Chartier)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [bouillon-chartier.com](https://www.bouillon-chartier.com/en/bouillon-chartier-grands-boulevards-en/) / [en.wikipedia.org](https://en.wikipedia.org/wiki/Bouillon_Chartier)
 
 ### Chez Georges（シェ・ジョルジュ）
 
@@ -145,6 +151,8 @@ FRANCE / PARIS 🇫🇷
 
 @@IMG:europe/france/img/paris/las-du-fallafel.jpg@@
 
+@@IMG:europe/france/img/paris/las-du-fallafel_exterior.jpg@@
+
 `口コミ突出` `食の専門街・市場`
 
 マレ地区のユダヤ人街ロジエ通りで1979年から続くファラフェルの王者。行列自体が名物になるほどの人気で、揚げたてのファラフェルを詰めたピタサンドはパリのストリートフードの象徴。
@@ -157,7 +165,7 @@ FRANCE / PARIS 🇫🇷
 - **公式**: [公式サイト](https://asdufallafel.com/)
 - **選定理由**: Wikipediaに項目があるほどの知名度で、Paris by Mouthもパリ最高のファラフェルとして掲載。行列必至だが観光価格ではない。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=L%27As%20du%20Fallafel%2034%20Rue%20des%20Rosiers%2C%2075004%20Paris%284%E5%8C%BA%E3%83%BB%E3%83%9E%E3%83%AC%E5%9C%B0%E5%8C%BA%29)
-- **参照元**: [en.wikipedia.org](https://en.wikipedia.org/wiki/L%27As_du_Fallafel) / [parisbymouth.com](https://parisbymouth.com/las-du-falafel/)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [en.wikipedia.org](https://en.wikipedia.org/wiki/L%27As_du_Fallafel) / [parisbymouth.com](https://parisbymouth.com/las-du-falafel/)
 
 ### Breizh Café (Le Marais)（ブレッツ・カフェ(マレ店)）
 
@@ -181,6 +189,8 @@ FRANCE / PARIS 🇫🇷
 
 @@IMG:europe/france/img/paris/creperie-josselin.jpg@@
 
+@@IMG:europe/france/img/paris/creperie-josselin_exterior.jpg@@
+
 `老舗・歴史` `食の専門街・市場`
 
 クレープリーが軒を連ねるモンパルナス通り「クレープ街」の代表格。予約不可・地元客が並ぶ昔ながらの店構えで、木の内装のこぢんまりした店内で焼きたてのそば粉ガレットを頬張れる。
@@ -192,11 +202,13 @@ FRANCE / PARIS 🇫🇷
 - **予約**: 不要(店頭) — ☎ 電話で予約 +33 1 43 20 93 50
 - **選定理由**: ブルターニュ移民の歴史を持つモンパルナスのクレープ街で最も評判が高く、Paris by Mouthが個別ページで推薦。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Cr%C3%AAperie%20de%20Josselin%2067%20Rue%20du%20Montparnasse%2C%2075014%20Paris%2814%E5%8C%BA%29)
-- **参照元**: [parisbymouth.com](https://parisbymouth.com/creperie-josselin/) / [yelp.com](https://www.yelp.com/biz/la-cr%C3%AAperie-de-josselin-paris)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [parisbymouth.com](https://parisbymouth.com/creperie-josselin/) / [yelp.com](https://www.yelp.com/biz/la-cr%C3%AAperie-de-josselin-paris)
 
 ### Chez Alain Miam Miam（シェ・アラン・ミャム・ミャム）
 
 @@IMG:europe/france/img/paris/chez-alain-miam-miam.jpg@@
+
+@@IMG:europe/france/img/paris/chez-alain-miam-miam_exterior.jpg@@
 
 `口コミ突出` `食の専門街・市場`
 
@@ -210,7 +222,7 @@ FRANCE / PARIS 🇫🇷
 - **公式**: [公式サイト](https://www.facebook.com/ChezAlainMiamMiam)
 - **選定理由**: パリ最古の市場マルシェ・デ・ザンファン・ルージュの看板屋台として多数メディアが紹介。口コミ評価も突出(Yelp 511枚超の写真・228件レビュー)。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Chez%20Alain%20Miam%20Miam%2026%20Rue%20Charlot%2C%2075003%20Paris%283%E5%8C%BA%E3%83%BB%E3%83%9E%E3%83%AC%E5%9C%B0%E5%8C%BA%E3%80%81%E3%83%9E%E3%83%AB%E3%82%B7%E3%82%A7%E3%83%BB%E3%83%87%E3%83%BB%E3%82%B6%E3%83%B3%E3%83%95%E3%82%A1%E3%83%B3%E3%83%BB%E3%83%AB%E3%83%BC%E3%82%B8%E3%83%A5%E5%86%85%E3%81%AB%E3%82%82%E5%B1%8B%E5%8F%B0%E3%81%82%E3%82%8A%29)
-- **参照元**: [chezalainmiammiam.com](https://chezalainmiammiam.com/en/) / [yelp.com](https://www.yelp.com/biz/chez-alain-miam-miam-paris)
+- **参照元**: 外観写真: 公式サイト / 参照元: [chezalainmiammiam.com](https://chezalainmiammiam.com/en/) / [yelp.com](https://www.yelp.com/biz/chez-alain-miam-miam-paris)
 
 ## チーズ・加工肉・惣菜・市場
 
@@ -254,6 +266,8 @@ FRANCE / PARIS 🇫🇷
 
 @@IMG:europe/france/img/paris/marche-daligre.jpg@@
 
+@@IMG:europe/france/img/paris/marche-daligre_exterior.jpg@@
+
 `食の専門街・市場` `口コミ突出`
 
 バスティーユとナシオンの間、12区の地元密着型マルシェ。青空市場・18世紀の屋根付き市場ボーヴォー・蚤の市が同じ広場に共存し、観光地化されていないパリの日常の食風景が見られる。
@@ -265,11 +279,13 @@ FRANCE / PARIS 🇫🇷
 - **予約**: 不要(店頭)
 - **選定理由**: パリ市公式観光サイトparisjetaimeが「パリジャンに愛される市場」として紹介し、Paris Insiders Guide等も地元度の高さを評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=March%C3%A9%20d%27Aligre%20%28March%C3%A9%20Beauvau%29%20Place%20d%27Aligre%20/%20Rue%20d%27Aligre%2C%2075012%20Paris%2812%E5%8C%BA%29)
-- **参照元**: [parisjetaime.com](https://parisjetaime.com/eng/shopping/marche-beauvau-marche-d-aligre-p2488) / [parisinsidersguide.com](https://www.parisinsidersguide.com/aligre-market.html)
+- **参照元**: 外観写真: Wikimedia Commons／Paris Insiders Guide / 参照元: [parisjetaime.com](https://parisjetaime.com/eng/shopping/marche-beauvau-marche-d-aligre-p2488) / [parisinsidersguide.com](https://www.parisinsidersguide.com/aligre-market.html)
 
 ### La Grande Épicerie de Paris（ラ・グランド・エピスリー・ド・パリ）
 
 @@IMG:europe/france/img/paris/la-grande-epicerie.jpg@@
+
+@@IMG:europe/france/img/paris/la-grande-epicerie_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -283,7 +299,7 @@ FRANCE / PARIS 🇫🇷
 - **公式**: [公式サイト](https://www.lagrandeepicerie.com/)
 - **選定理由**: Paris by Mouthが個別ページで紹介し、パリ市公式観光サイトparisjetaimeにも掲載される左岸随一の食の殿堂。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Grande%20%C3%89picerie%20de%20Paris%2038%20Rue%20de%20S%C3%A8vres%2C%2075007%20Paris%287%E5%8C%BA%29)
-- **参照元**: [lagrandeepicerie.com](https://www.lagrandeepicerie.com/fr/rive-gauche) / [parisbymouth.com](https://parisbymouth.com/la-grande-epicerie/)
+- **参照元**: 外観写真: Wikimedia Commons / 参照元: [lagrandeepicerie.com](https://www.lagrandeepicerie.com/fr/rive-gauche) / [parisbymouth.com](https://parisbymouth.com/la-grande-epicerie/)
 
 ## パン・スイーツ
 
@@ -308,6 +324,8 @@ FRANCE / PARIS 🇫🇷
 
 @@IMG:europe/france/img/paris/du-pain-et-des-idees.jpg@@
 
+@@IMG:europe/france/img/paris/du-pain-et-des-idees_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 サン・マルタン運河近く、1889年築の美しい店構えのブーランジェリー。元スタイリストのクリストフ・ヴァスールが有機素材と長時間発酵にこだわり、パリのヴィエノワズリー人気を牽引する。
@@ -320,11 +338,13 @@ FRANCE / PARIS 🇫🇷
 - **公式**: [公式サイト](http://dupainetdesidees.com/)
 - **選定理由**: HiP Parisのベストクロワッサン特集はじめ在住者メディアが常連で推薦する名店。公式サイトで有機素材・長時間発酵の方針を確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Du%20Pain%20et%20des%20Id%C3%A9es%2034%20Rue%20Yves%20Toudic%2C%2075010%20Paris%2810%E5%8C%BA%29)
-- **参照元**: [dupainetdesidees.com](https://dupainetdesidees.com/en/) / [hipparis.com](https://hipparis.com/its-all-about-the-croissants-where-to-find-the-best-croissants-in-paris/)
+- **参照元**: 外観写真: 公式サイト／Wikimedia Commons / 参照元: [dupainetdesidees.com](https://dupainetdesidees.com/en/) / [hipparis.com](https://hipparis.com/its-all-about-the-croissants-where-to-find-the-best-croissants-in-paris/)
 
 ### Pâtisserie Stohrer（パティスリー・ストレー）
 
 @@IMG:europe/france/img/paris/stohrer.jpg@@
+
+@@IMG:europe/france/img/paris/stohrer_exterior.jpg@@
 
 `老舗・歴史`
 
@@ -338,44 +358,6 @@ FRANCE / PARIS 🇫🇷
 - **公式**: [公式サイト](https://stohrer.fr/)
 - **選定理由**: 公式サイトで1730年創業とババ・オ・ラム発祥を確認。パリ最古のパティスリーとして多数の観光・グルメメディアが紹介。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=P%C3%A2tisserie%20Stohrer%2051%20Rue%20Montorgueil%2C%2075002%20Paris%282%E5%8C%BA%29)
-- **参照元**: [stohrer.fr](https://stohrer.fr/) / [solosophie.com](https://www.solosophie.com/stohrer-visiting-the-oldest-patisserie-in-paris/)
+- **参照元**: 外観写真: 公式サイト／Wikimedia Commons／個人ブログ Solosophie / 参照元: [stohrer.fr](https://stohrer.fr/) / [solosophie.com](https://www.solosophie.com/stohrer-visiting-the-oldest-patisserie-in-paris/)
 
 ## ワインバー・カーヴ
-
-### Le Baron Rouge（ル・バロン・ルージュ）
-
-@@IMG:europe/france/img/paris/le-baron-rouge.jpg@@
-
-`口コミ突出` `食の専門街・市場`
-
-マルシェ・ダリーグルのすぐ脇に立つ、樽から直接ワインを注ぐ昔ながらの立ち飲みワインバー。壁一面のワイン樽と黒板メニューが絵になる店内で、週末は店先の樽テーブルまで人があふれる。
-
-- **一皿**: 樽出しワインと生牡蠣(壁際の樽の蛇口から注ぐグラスワイン。9月中旬〜4月末の週末には店頭で殻を開ける生牡蠣との定番コンビが楽しめる)
-- **営業時間**: 月 17:00-21:00、火〜金 10:00-14:00 / 17:00-21:00、土 10:00-15:00 / 17:00-21:00、日 10:00-16:00
-- **定休日**: 無休(月曜は夕方のみ)
-- **住所**: 1 Rue Théophile Roussel, 75012 Paris(12区)
-- **予約**: 可(推奨) — ☎ 電話で予約 +33 1 43 43 14 32 ／ [公式サイト](http://lebaronrouge.net/)
-- **公式**: [公式サイト](http://lebaronrouge.net/)
-- **選定理由**: 公式サイトで営業時間と牡蠣の季節営業を確認。在住者ガイド(Paris Eater等)がパリの定番ワインバーとして必ず挙げる一軒。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Baron%20Rouge%201%20Rue%20Th%C3%A9ophile%20Roussel%2C%2075012%20Paris%2812%E5%8C%BA%29)
-- **参照元**: [lebaronrouge.net](https://lebaronrouge.net/) / [pariseater.com](https://www.pariseater.com/bars/best-wine-bars-in-paris/)
-
-### La Buvette（ラ・ビュヴェット）
-
-@@IMG:europe/france/img/paris/la-buvette.jpg@@
-
-`ブログ推薦`
-
-元乳製品店の小さな空間を利用した、カミーユ・フルモン営む11区の自然派ワインバー(ビュヴェット=軽い飲み屋)。少数精鋭の小皿料理と日替わりの自然派ワインで世界の食通を惹きつける。
-
-- **一皿**: 白いんげん豆のレモンゼスト和え(大粒の白いんげん豆にレモンの皮とオイルを効かせた同店の代名詞的小皿。チーズやシャルキュトリーの盛り合わせも定番)
-- **営業時間**: 月〜日 5:00〜22:00
-- **定休日**: なし
-- **住所**: 67 Rue Saint-Maur, 75011 Paris(11区)
-- **予約**: 可(推奨) — ☎ 電話で予約 +33 9 83 56 94 11 ／ [公式サイト](http://www.labuvette.paris/)
-- **公式**: [公式サイト](http://www.labuvette.paris/)
-- **選定理由**: AFARやParis Eaterなど在住者・旅行メディアがパリの自然派ワインバーの代表として推薦。店主フルモンは著書もある著名人。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Buvette%2067%20Rue%20Saint-Maur%2C%2075011%20Paris%2811%E5%8C%BA%29)
-- **参照元**: [afar.com](https://www.afar.com/places/la-buvette-paris) / [pariseater.com](https://www.pariseater.com/bars/best-wine-bars-in-paris/)
-
-## 非フランス欧州料理
