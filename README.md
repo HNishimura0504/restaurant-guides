@@ -108,8 +108,10 @@
 | 愛媛県 | 今治市 | 51 | [japan/ehime/](japan/ehime/) |
 | 高知県 | 高知市 | 49 | [japan/kochi/](japan/kochi/) |
 | 高知県 | 南国市 | 43 | [japan/kochi/](japan/kochi/) |
+| 福岡県 | 福岡市 | 72 | [japan/fukuoka/](japan/fukuoka/) |
+| 福岡県 | 北九州市 | 73 | [japan/fukuoka/](japan/fukuoka/) |
 
-小計 80冊 / 4451店
+小計 82冊 / 4596店
 
 ## 欧州
 

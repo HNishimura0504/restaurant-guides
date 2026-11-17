@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>北九州 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>北九州 の食べ歩き地図<span class="n">73店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="北九州 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">北九州 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/fukuoka/kitakyushu.html"><span class="sn-e">📄</span>北九州のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（111都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "だるま堂", "c": ["麺類"], "v": "レストラン", "lat": 33.884617, "lng": 130.880814, "d": "焼うどん だるま堂味（配給の干しうどんを湯がいて焼く初代からの味。具はキャベツ・玉ねぎ・豚バラ肉のみで、豚の背脂で炒め、あっさりしたソースに魚粉をふる）／焼うどん 研究所味（小倉焼うどん研究所が仕立てた生麺の濃い味）／焼うどん 天窓（焼うどんに半熟の目玉焼きをのせたもの。天井の窓から望む月に見立てた呼び名で、この店が生んだ言葉）", "a": "福岡県北九州市小倉北区魚町1-4-16 魚町みらい広場", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A0%E3%82%8B%E3%81%BE%E5%A0%82%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%AD%9A%E7%94%BA1-4-16%20%E9%AD%9A%E7%94%BA%E3%81%BF%E3%82%89%E3%81%84%E5%BA%83%E5%A0%B4", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-darumado", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-darumado.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-darumado_exterior.jpg"}, {"i": 1, "n": "お好み焼き いしん", "c": ["麺類"], "v": "レストラン", "lat": 33.88266, "lng": 130.879608, "d": "天まど小倉発祥焼うどん（干しうどんを茹でた発祥スタイルの細麺を焼うどん専用のバトルソースで焼き、温玉をのせる。「天窓」は天井の窓から見える月に玉子を見立てた小倉独特の呼び名）／小倉丸腸焼うどん（小倉で人気の和牛ホルモンのマルチョウを味噌だれで焼き上げた太麺の焼うどん）／いしん焼き（創業以来の看板のお好み焼き）", "a": "福岡県北九州市小倉北区魚町3-1-11 クロスロード魚町1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%20%E3%81%84%E3%81%97%E3%82%93%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%AD%9A%E7%94%BA3-1-11%20%E3%82%AF%E3%83%AD%E3%82%B9%E3%83%AD%E3%83%BC%E3%83%89%E9%AD%9A%E7%94%BA1%E9%9A%8E", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-ishin", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-ishin.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-ishin_exterior.jpg"}, {"i": 2, "n": "鉄板焼 羽", "c": ["麺類"], "v": "レストラン", "lat": 33.883274, "lng": 130.883926, "d": "小倉名物 焼うどん（1,080円税込。鉄板で焼くソース味の焼うどん）／ホルモン焼うどん（1,380円税込。和牛ホルモンを合わせた焼うどん）／広島風お好み焼 ミックス（1,500円税込。えび・イカ・豚・麺入りで、麺は広島から取り寄せ）", "a": "福岡県北九州市小倉北区鍛冶町1-8-14 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%89%84%E6%9D%BF%E7%84%BC%20%E7%BE%BD%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%8D%9B%E5%86%B6%E7%94%BA1-8-14%201%E9%9A%8E", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-hane", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-hane.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-hane_exterior.jpg"}, {"i": 3, "n": "鉄板酒場ひとじまん", "c": ["麺類"], "v": "レストラン", "lat": 33.833313, "lng": 130.930618, "d": "焼きうどん ブタ（968円税込。ミックスは1,188円税込、和牛スジは1,298円税込）／自家製 黒豚餃子 4個（418円税込。ニンニクを使わないひとくちサイズで、8個638円・12個858円・16個1,078円もある）／ふわとろ山芋鉄板 明太チーズ（968円税込。すりおろした山芋を鉄板で焼き、明太子とチーズをのせる）", "a": "福岡県北九州市小倉南区下曽根新町5-5-101", "m": "https://www.google.com/maps/search/?api=1&query=%E9%89%84%E6%9D%BF%E9%85%92%E5%A0%B4%E3%81%B2%E3%81%A8%E3%81%98%E3%81%BE%E3%82%93%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8D%97%E5%8C%BA%E4%B8%8B%E6%9B%BD%E6%A0%B9%E6%96%B0%E7%94%BA5-5-101", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-hitojiman", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-hitojiman.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-hitojiman_exterior.jpg"}, {"i": 4, "n": "ぽんこっ亭", "c": ["麺類"], "v": "レストラン", "lat": 33.903122, "lng": 130.935318, "d": "焼うどん（500円税込。鉄板で焼くソース味で、北九州のソウルフードとして店が掲げる一皿）／広島焼き（400円税込〜。トッピングを足して仕上げる広島焼を店流にアレンジ）／ナスのその日の気分焼き（600円税込。トマトとチーズの洋風か、めんつゆと生姜の和風かを客が選ぶ）", "a": "福岡県北九州市門司区柳町2-3-10", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BD%E3%82%93%E3%81%93%E3%81%A3%E4%BA%AD%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%9F%B3%E7%94%BA2-3-10", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-ponkottei", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-ponkottei.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-ponkottei_exterior.jpg"}, {"i": 5, "n": "食べ放題 お好み焼き専門店 どんどん亭 小倉セントシティ店", "c": ["麺類"], "v": "レストラン", "lat": 33.885117, "lng": 130.882538, "d": "ぶた焼うどん（970円税込。豚肉入りのソース焼うどんで、焼そばと同じ並びのメニュー）／ぶた玉（790円税込。空気を含ませた専用生地の関西風お好み焼）／福岡風ぶた高菜モダン焼（1,070円税込。高菜を使った福岡風のモダン焼）", "a": "福岡県北九州市小倉北区京町3-1-1 セントシティ11階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E3%81%B9%E6%94%BE%E9%A1%8C%20%E3%81%8A%E5%A5%BD%E3%81%BF%E7%84%BC%E3%81%8D%E5%B0%82%E9%96%80%E5%BA%97%20%E3%81%A9%E3%82%93%E3%81%A9%E3%82%93%E4%BA%AD%20%E5%B0%8F%E5%80%89%E3%82%BB%E3%83%B3%E3%83%88%E3%82%B7%E3%83%86%E3%82%A3%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E4%BA%AC%E7%94%BA3-1-1%20%E3%82%BB%E3%83%B3%E3%83%88%E3%82%B7%E3%83%86%E3%82%A311%E9%9A%8E", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-dondontei-centcity", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-dondontei-centcity.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-dondontei-centcity_exterior.jpg"}, {"i": 6, "n": "串揚げと鉄板焼き 福助商店 小倉", "c": ["麺類"], "v": "レストラン", "lat": 33.88398, "lng": 130.880325, "d": "小倉牛すじ焼きそば（748円税込。じっくり煮込んだ牛すじ入りで、麺ダブル＋110円・目玉のせ＋88円）／ホルモン鉄板（704円税込。鉄板で焼く牛ホルモン）／どて煮2本（308円税込。串をみそだれで煮込んだ大阪下町の一品）", "a": "福岡県北九州市小倉北区魚町2-4-18 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E6%8F%9A%E3%81%92%E3%81%A8%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%20%E7%A6%8F%E5%8A%A9%E5%95%86%E5%BA%97%20%E5%B0%8F%E5%80%89%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%AD%9A%E7%94%BA2-4-18%201%E9%9A%8E", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-fukusuke", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-fukusuke.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-fukusuke_exterior.jpg"}, {"i": 7, "n": "鉄板焼きと月見つくね カミサマ", "c": ["麺類"], "v": "レストラン", "lat": 33.88398, "lng": 130.880325, "d": "カミサマの月見つくね鉄板（825円税込。鉄板のつくねに卵黄をのせる看板料理）／元祖！！山芋鉄板（759円税込。プレーンか明太チーズを選ぶ）／レトロな鉄板ベビソバ飯（701円税込。ベビースターを混ぜたそば飯を鉄板で仕上げる）", "a": "福岡県北九州市小倉北区魚町2-4-8 2階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%89%84%E6%9D%BF%E7%84%BC%E3%81%8D%E3%81%A8%E6%9C%88%E8%A6%8B%E3%81%A4%E3%81%8F%E3%81%AD%20%E3%82%AB%E3%83%9F%E3%82%B5%E3%83%9E%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%AD%9A%E7%94%BA2-4-8%202%E9%9A%8E", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-kamisama", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-kamisama.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-kamisama_exterior.jpg"}, {"i": 8, "n": "豪傑鉄板 マッスルミート", "c": ["麺類"], "v": "レストラン", "lat": 33.866146, "lng": 130.882309, "d": "ウシマッスル（2,530円税込。サガリ150g・カルビ150g・ハラミ150gから2種類を選ぶ鉄板の盛り合わせ）／黒豚骨付きカルビ（700円税込。鹿児島県産黒豚の希少部位で、売り切れることがある）／とん平焼き（鉄板で焼いた豚肉を卵で包む定番の鉄板料理）", "a": "福岡県北九州市小倉北区片野3-9-6", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B1%AA%E5%82%91%E9%89%84%E6%9D%BF%20%E3%83%9E%E3%83%83%E3%82%B9%E3%83%AB%E3%83%9F%E3%83%BC%E3%83%88%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E7%89%87%E9%87%8E3-9-6", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-musclemeat", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-musclemeat.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-musclemeat_exterior.jpg"}, {"i": 9, "n": "平凡", "c": ["麺類"], "v": "レストラン", "lat": 33.894905, "lng": 130.833084, "d": "焼うどん（戸畑チャンポンの蒸し麺を自家製ソースで鉄板焼きにしたもの。焼き時間を延ばした縁のお焦げが身上）／スペシャル焼きそば（同じ蒸し麺を使う一番人気。具だくさんで、店の人が目の前の鉄板で仕上げる）／「平凡」（豚肉・イカ・ホタテ・エビ・紅生姜・海藻・卵が入る店名を冠したお好み焼き）", "a": "福岡県北九州市戸畑区天神1-12-12", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B9%B3%E5%87%A1%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E6%88%B8%E7%95%91%E5%8C%BA%E5%A4%A9%E7%A5%9E1-12-12", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiudon-heibon", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiudon-heibon.jpg", "ext": ""}, {"i": 10, "n": "魁龍 小倉本店", "c": ["麺類"], "v": "レストラン", "lat": 33.864967, "lng": 130.873474, "d": "ラーメン（豚の頭と背脂を炊いた超濃厚スープ、中細麺、チャーシュー2枚・メンマ・ねぎ・焼きのり）／魁龍ラーメン（チャーシュー4枚・ワンタン2個・メンマ・ねぎ・焼きのりを全部のせた一杯）／替え玉（130円。麺だけの追加）", "a": "福岡県北九州市小倉北区東篠崎2丁目1番6号", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%81%E9%BE%8D%20%E5%B0%8F%E5%80%89%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E6%9D%B1%E7%AF%A0%E5%B4%8E2%E4%B8%81%E7%9B%AE1%E7%95%AA6%E5%8F%B7", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-kairyu-kokura", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-kairyu-kokura.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-kairyu-kokura_exterior.jpg"}, {"i": 11, "n": "珍竜軒 総本店", "c": ["麺類"], "v": "レストラン", "lat": 33.866089, "lng": 130.887894, "d": "ラーメン（豚骨でありながらややサラサラのスープに自社工場の熟成生麺）／黒玉ラーメン（味付背脂を生かしたコクのある濃厚版）／肉盛ラーメン（特製ダレで煮込んだ九州産豚のチャーシューを麺の上に敷き詰めた一杯）", "a": "福岡県北九州市小倉北区三郎丸1-5-5", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8F%8D%E7%AB%9C%E8%BB%92%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E4%B8%89%E9%83%8E%E4%B8%B81-5-5", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-chinryuken-sohonten", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-chinryuken-sohonten.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-chinryuken-sohonten_exterior.jpg"}, {"i": 12, "n": "ぎょらん亭 本店", "c": ["麺類"], "v": "レストラン", "lat": 33.868591, "lng": 130.887833, "d": "十割ラーメン（国産げんこつ100％のど豚骨。北九州ヤマニ醤油の吟醸薄口をかえしに使い、厚切りチャーシュー1枚）／二八ラーメン（鶏ガラと香味野菜の黄金スープを十割スープにブレンドしたマイルドな一杯）／どろラーメン（きめ細かい泡を立てた濃厚な泡系スープ、中太の硬麺）", "a": "福岡県北九州市小倉北区三郎丸3丁目6-29", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8E%E3%82%87%E3%82%89%E3%82%93%E4%BA%AD%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E4%B8%89%E9%83%8E%E4%B8%B83%E4%B8%81%E7%9B%AE6-29", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-gyorantei-honten", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-gyorantei-honten.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-gyorantei-honten_exterior.jpg"}, {"i": 13, "n": "麺と酒 錦龍", "c": ["麺類"], "v": "レストラン", "lat": 33.883129, "lng": 130.885681, "d": "ちゃんぽん（長崎系ではなく町中華の系譜の一杯。1,000円）／唐揚げちゃんぽん（店の特製唐揚げをのせた名物）／錦龍の麻婆豆腐（山椒を効かせた本格中華。850円）", "a": "福岡県北九州市小倉北区鍛冶町2丁目1-7 第4エルザビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%81%A8%E9%85%92%20%E9%8C%A6%E9%BE%8D%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%8D%9B%E5%86%B6%E7%94%BA2%E4%B8%81%E7%9B%AE1-7%20%E7%AC%AC4%E3%82%A8%E3%83%AB%E3%82%B6%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-kinryu", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-kinryu.jpg", "ext": ""}, {"i": 14, "n": "麺処太陽", "c": ["麺類"], "v": "レストラン", "lat": 33.849678, "lng": 130.749054, "d": "担々麺（北九州の豚骨の中では数少ない担々麺の専門的な一杯）／ハーフ唐揚げカレー（担々麺と組むセットの相方）／水素水ラーメン（店が掲げる看板メニューのひとつ）", "a": "福岡県北九州市八幡西区相生町5-18 シャルマンコード古賀101", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%87%A6%E5%A4%AA%E9%99%BD%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E7%9B%B8%E7%94%9F%E7%94%BA5-18%20%E3%82%B7%E3%83%A3%E3%83%AB%E3%83%9E%E3%83%B3%E3%82%B3%E3%83%BC%E3%83%89%E5%8F%A4%E8%B3%80101", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-menjo-taiyo", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-menjo-taiyo.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-menjo-taiyo_exterior.jpg"}, {"i": 15, "n": "資さんうどん 小倉東インター店（本店）", "c": ["麺類"], "v": "レストラン", "lat": 33.837086, "lng": 130.909988, "d": "肉ごぼ天うどん（甘辛く炊いた牛肉とスティック状のごぼ天をのせた看板。720円）／かしわうどん（北九州のご当地。甘辛く炊いた若鶏と親鶏をブレンド。570円）／ぼた餅（店で毎日手作り。国産もち米と北海道産小豆。130円。持ち帰りも可）", "a": "福岡県北九州市小倉南区上葛原2-18-50", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B3%87%E3%81%95%E3%82%93%E3%81%86%E3%81%A9%E3%82%93%20%E5%B0%8F%E5%80%89%E6%9D%B1%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E5%BA%97%EF%BC%88%E6%9C%AC%E5%BA%97%EF%BC%89%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8D%97%E5%8C%BA%E4%B8%8A%E8%91%9B%E5%8E%9F2-18-50", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-sukesan-kokurahigashi", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-sukesan-kokurahigashi.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-sukesan-kokurahigashi_exterior.jpg"}, {"i": 16, "n": "東筑軒 折尾本店", "c": ["麺類"], "v": "レストラン", "lat": 33.863323, "lng": 130.712051, "d": "かしわうどん（甘辛い鶏肉と錦糸卵をのせた北九州の定番。410円）／ごぼ天うどん（1本ずつ揚げたごぼ天が5本。510円）／全部うどん（かしわ・ごぼ天・丸天・わかめ・月見などを全部のせ、器も大きい。790円）", "a": "福岡県北九州市八幡西区堀川町4-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9D%B1%E7%AD%91%E8%BB%92%20%E6%8A%98%E5%B0%BE%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E5%A0%80%E5%B7%9D%E7%94%BA4-1", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-tochikuken-orio-honten", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-tochikuken-orio-honten.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-tochikuken-orio-honten_exterior.jpg"}, {"i": 17, "n": "東筑軒 折尾駅うどん店", "c": ["麺類"], "v": "レストラン", "lat": 33.864891, "lng": 130.712997, "d": "かしわうどん（甘辛い鶏肉入り。410円）／丸天うどん（北九州ではどの店にもある薄い丸い練り物。510円。店によっては半分に切って盛る）／かしわおにぎり（駅弁かしわめしと同じ炊き込みご飯のおにぎり。130円）", "a": "福岡県北九州市八幡西区折尾1丁目12-1 JR折尾駅 駅舎内1階（改札内）", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9D%B1%E7%AD%91%E8%BB%92%20%E6%8A%98%E5%B0%BE%E9%A7%85%E3%81%86%E3%81%A9%E3%82%93%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E6%8A%98%E5%B0%BE1%E4%B8%81%E7%9B%AE12-1%20JR%E6%8A%98%E5%B0%BE%E9%A7%85%20%E9%A7%85%E8%88%8E%E5%86%851%E9%9A%8E%EF%BC%88%E6%94%B9%E6%9C%AD%E5%86%85%EF%BC%89", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-tochikuken-orio-eki", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-tochikuken-orio-eki.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-tochikuken-orio-eki_exterior.jpg"}, {"i": 18, "n": "清龍", "c": ["麺類"], "v": "レストラン", "lat": 33.896946, "lng": 130.823593, "d": "戸畑ちゃんぽん（細くてコシのある蒸し麺に、10時間以上煮込んだ豚骨スープと炒め野菜。680円）／とんこつラーメン（先代から受け継いだ老舗の味。550円）／餃子8個（皮から手作り。持ち帰りも人気。530円）", "a": "福岡県北九州市戸畑区中本町5-3", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B8%85%E9%BE%8D%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E6%88%B8%E7%95%91%E5%8C%BA%E4%B8%AD%E6%9C%AC%E7%94%BA5-3", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-seiryu-tobata", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-seiryu-tobata.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-seiryu-tobata_exterior.jpg"}, {"i": 19, "n": "福龍", "c": ["麺類"], "v": "レストラン", "lat": 33.897335, "lng": 130.838531, "d": "戸畑チャンポン（豚骨100％を長時間かけて仕上げたまろやかなスープ＋細くてコシのある蒸し麺＋たっぷりの野菜。並800円）／みそチャンポン（850円）／チャンポンセット（1,070円）", "a": "福岡県北九州市戸畑区中原西1-1-36", "m": "https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E9%BE%8D%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E6%88%B8%E7%95%91%E5%8C%BA%E4%B8%AD%E5%8E%9F%E8%A5%BF1-1-36", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-ramen-fukuryu-tobata", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-ramen-fukuryu-tobata.jpg", "ext": ""}, {"i": 20, "n": "海鮮処 寿司 海人 門司港本店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.945992, "lng": 130.964844, "d": "とらふぐフルコース（刺身・唐揚げ・握り・鍋の4品を通しで出す定番コース）／名物とらぶつ（厚切りのふぐにたっぷりの葱とぽん酢を絡めたもの）／とらふぐ白子焼き（外は香ばしく中は滑らかに焼いた白子）", "a": "福岡県北九州市門司区港町3番3号", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E5%87%A6%20%E5%AF%BF%E5%8F%B8%20%E6%B5%B7%E4%BA%BA%20%E9%96%80%E5%8F%B8%E6%B8%AF%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%B8%AF%E7%94%BA3%E7%95%AA3%E5%8F%B7", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-kaito-mojiko", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-kaito-mojiko.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-kaito-mojiko_exterior.jpg"}, {"i": 21, "n": "三宜楼茶寮KAITO", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.942993, "lng": 130.963791, "d": "とらふぐフルコース【月】（薄造り・唐揚げ・ふぐちり鍋・ふぐの旨味が溶けた雑炊）／とらふぐフルコース【花】（薄造りと、厚切りのふぐに葱とぽん酢を絡めた名物「とらぶつ」を食べ比べ、季節の逸品を添える）／やきふぐ（ふぐの身を焼いたもの）", "a": "福岡県北九州市門司区清滝3丁目6-8", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%89%E5%AE%9C%E6%A5%BC%E8%8C%B6%E5%AF%AEKAITO%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%B8%85%E6%BB%9D3%E4%B8%81%E7%9B%AE6-8", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-sankirou-kaito", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-sankirou-kaito.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-sankirou-kaito_exterior.jpg"}, {"i": 22, "n": "日本料理・ふぐ懐石 てん花", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.945667, "lng": 130.966751, "d": "冬ふぐコース（八寸・とらふぐ刺身・ふぐの唐揚げ・ふぐちり・ふぐ雑炊・デザート）／夏ふぐコース（八寸・とらふぐの刺身・ふぐの唐揚げ・ふぐあらの煮物・焼きふぐ・ふぐの釜炊きごはん・デザート）／昼膳 河豚刺膳（ふぐ刺しを組んだ平日限定の昼の膳）", "a": "福岡県北九州市門司区栄町10-8（〒801-0863）", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E3%83%BB%E3%81%B5%E3%81%90%E6%87%90%E7%9F%B3%20%E3%81%A6%E3%82%93%E8%8A%B1%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%A0%84%E7%94%BA10-8%EF%BC%88%E3%80%92801-0863%EF%BC%89", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-tenka", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-tenka.jpg", "ext": ""}, {"i": 23, "n": "海峡レストランぶぜん", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.911663, "lng": 130.934265, "d": "日替わりぶぜんランチ（刺身・小鉢・茶碗蒸し・味噌汁を組んだ日替わりの膳。内容は日によって変わる）／関門海峡の旬の魚を使った宴会コース（グランドメニューPDFに掲載）", "a": "福岡県北九州市門司区大里本町1-10-7", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E5%B3%A1%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%81%B6%E3%81%9C%E3%82%93%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E5%A4%A7%E9%87%8C%E6%9C%AC%E7%94%BA1-10-7", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-buzen", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-buzen.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-buzen_exterior.jpg"}, {"i": 24, "n": "一椿 小倉店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.884453, "lng": 130.882751, "d": "活きとらふぐ鍋コース（前菜・ふぐ刺し・茶碗蒸し・ふぐちり鍋・ふぐ唐揚げ・雑炊・香の物・デザート。下関から直送の活とらふぐを一人鍋で）／活きとらふぐ刺し特盛白子付き鍋コース（特盛のふぐ刺しに、外は香ばしく中は滑らかなとらふぐの白子焼きと大きなふぐ唐揚げが付く）／ミニ懐石「椿膳」（昼のみの小ぶりな懐石）", "a": "福岡県北九州市小倉北区米町1-2-10", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E6%A4%BF%20%E5%B0%8F%E5%80%89%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E7%B1%B3%E7%94%BA1-2-10", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-hitotsubaki-kokura", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-hitotsubaki-kokura.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-hitotsubaki-kokura_exterior.jpg"}, {"i": 25, "n": "江戸前鮨 二鶴", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.868774, "lng": 130.898407, "d": "おまかせの握り（関門海峡・小倉に集まる鮨種を、塩と酢で味を付けた酢飯と合わせる）／本手返しで握る一貫（手数の多い伝統的な握り方）／九州メロワール（関門の鮨種と九州の赤酢・醤油・塩を合わせる店の取り組み）", "a": "福岡県北九州市小倉北区足立1丁目4-31（〒802-0042）", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B1%9F%E6%88%B8%E5%89%8D%E9%AE%A8%20%E4%BA%8C%E9%B6%B4%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E8%B6%B3%E7%AB%8B1%E4%B8%81%E7%9B%AE4-31%EF%BC%88%E3%80%92802-0042%EF%BC%89", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-nikaku", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-nikaku.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-nikaku_exterior.jpg"}, {"i": 26, "n": "赤酢を使った本格江戸前寿司 赤ずし", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.886177, "lng": 130.880249, "d": "特上十貫にぎり（イカ・白身・青魚・赤貝・炙り・イクラ・エビ・中トロ・うに・穴子）／十貫にぎり（イカ・白身・青魚・本マグロ・赤貝ヒモ・炙り・カニ味噌・エビ・穴子・とび子とみょうが包み）／本ふぐの握り 一貫 500円（税別）", "a": "福岡県北九州市小倉北区京町2丁目1-10", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B5%A4%E9%85%A2%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%9F%E6%9C%AC%E6%A0%BC%E6%B1%9F%E6%88%B8%E5%89%8D%E5%AF%BF%E5%8F%B8%20%E8%B5%A4%E3%81%9A%E3%81%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E4%BA%AC%E7%94%BA2%E4%B8%81%E7%9B%AE1-10", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-akazushi-kyomachi", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-akazushi-kyomachi.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-akazushi-kyomachi_exterior.jpg"}, {"i": 27, "n": "寿司 ふく料理 海人からと市場", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.885441, "lng": 130.877686, "d": "特上にぎり（下関から届く鮮魚を使った板前の握り）／とらふく膳（とらふぐを組んだ膳）／ウニいくらちらし（うにといくらを敷いたちらし）", "a": "福岡県北九州市小倉北区船場町1-1 小倉井筒屋 本館8F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E5%8F%B8%20%E3%81%B5%E3%81%8F%E6%96%99%E7%90%86%20%E6%B5%B7%E4%BA%BA%E3%81%8B%E3%82%89%E3%81%A8%E5%B8%82%E5%A0%B4%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E8%88%B9%E5%A0%B4%E7%94%BA1-1%20%E5%B0%8F%E5%80%89%E4%BA%95%E7%AD%92%E5%B1%8B%20%E6%9C%AC%E9%A4%A88F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-kaito-karato", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-kaito-karato.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-kaito-karato_exterior.jpg"}, {"i": 28, "n": "すし家 魚平（魚平寿し）", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.831261, "lng": 130.894531, "d": "刺身セット（シャリが隠れるほどネタの大きい寿司と刺身、赤だしなどが付くボリュームのある定食）／魚平会席（前菜から通す会席。昼でも予約すれば出せる）／天刺しコース（天ぷらと刺身を組んだ夜の2時間コース）", "a": "福岡県北九州市小倉南区横代北町4-10-24", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E5%AE%B6%20%E9%AD%9A%E5%B9%B3%EF%BC%88%E9%AD%9A%E5%B9%B3%E5%AF%BF%E3%81%97%EF%BC%89%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8D%97%E5%8C%BA%E6%A8%AA%E4%BB%A3%E5%8C%97%E7%94%BA4-10-24", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-kaisen-uohei", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-kaisen-uohei.jpg", "ext": ""}, {"i": 29, "n": "末松酒店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.886944, "lng": 130.875793, "d": "冷蔵庫の缶ビール・缶チューハイ（自分で取り出して飲む）／旦過市場の総菜と焼きたてのめざし（近くの市場から仕入れた惣菜と、その場で焼く干物）／冬のおでん（寒い時期だけ鍋に並ぶ）", "a": "福岡県北九州市小倉北区室町2-4-6", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AB%E6%9D%BE%E9%85%92%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E5%AE%A4%E7%94%BA2-4-6", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-suematsu", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-suematsu.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-suematsu_exterior.jpg"}, {"i": 30, "n": "酒の中村園 魚町店", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.882957, "lng": 130.880875, "d": "3杯のみくらべセット（日本酒を3種類、少量ずつ並べて飲み比べる）／たんがIPA（旦過市場のブルワリーパブ「Brasserie SOMA」が造るクラフトビール）／蔵元直取引の日本酒 約35種（ほとんどが蔵元から直接仕入れる正規特約品）", "a": "福岡県北九州市小倉北区魚町3-4-4", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E3%81%AE%E4%B8%AD%E6%9D%91%E5%9C%92%20%E9%AD%9A%E7%94%BA%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%AD%9A%E7%94%BA3-4-4", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-nakamuraen", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-nakamuraen.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-nakamuraen_exterior.jpg"}, {"i": 31, "n": "ATAGOSAKETEN アタゴ酒店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.882893, "lng": 130.880417, "d": "ペスカトーレ（魚介をたっぷり使ったトマトのパスタ。店の看板料理）／牛ヒレ肉の炭火焼き（炭火であぶった牛ヒレ肉に岩塩を添える）／手作りピッツァ（マルゲリータなど、店で生地から作る窯焼き風のピザ）", "a": "福岡県北九州市小倉北区魚町3-3-8", "m": "https://www.google.com/maps/search/?api=1&query=ATAGOSAKETEN%20%E3%82%A2%E3%82%BF%E3%82%B4%E9%85%92%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%AD%9A%E7%94%BA3-3-8", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-atagosaketen", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-atagosaketen.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-atagosaketen_exterior.jpg"}, {"i": 32, "n": "魚住酒店", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 33.943203, "lng": 130.964844, "d": "升に入ったコップの地酒「天心」「魚住」（升の上にコップを置き、あふれるまで注ぐ出し方。「魚住」は店名を冠した銘柄）／冷蔵庫の缶ビール（自分で取り出して飲む）／カウンターのカゴのつまみ（袋のまま取り、精算まで手元に置く）", "a": "福岡県北九州市門司区清滝4-2-35", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E4%BD%8F%E9%85%92%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%B8%85%E6%BB%9D4-2-35", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-uozumi", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-uozumi.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-uozumi_exterior.jpg"}, {"i": 33, "n": "炭火とおでん えん 煙", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.903175, "lng": 130.934875, "d": "もも焼き(種鶏)（市場に出回りにくい種鶏のもも肉を備長炭で焼いたもの。肉質がしっかりしている）／おでん5点盛り（サバ節のだしで煮た具を5種選ぶ）／おでん出汁のポテトサラダ（おでんのだしを使って作るポテトサラダ）", "a": "福岡県北九州市門司区柳町2-3-29 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E3%81%A8%E3%81%8A%E3%81%A7%E3%82%93%20%E3%81%88%E3%82%93%20%E7%85%99%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%9F%B3%E7%94%BA2-3-29%202F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-enen-moji", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-enen-moji.jpg", "ext": ""}, {"i": 34, "n": "さいとう酒店", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 33.864548, "lng": 130.808838, "d": "ガラスケースの小皿料理（煮物やあえ物などの手作りの家庭料理を自分で選ぶ）／日本酒・焼酎（カウンター越しにおかみさんへ頼む）／看板猫（店内にいる猫。角打ちの常連に親しまれている）", "a": "福岡県北九州市八幡東区中央2-8-19", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%95%E3%81%84%E3%81%A8%E3%81%86%E9%85%92%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E6%9D%B1%E5%8C%BA%E4%B8%AD%E5%A4%AE2-8-19", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-saito", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-saito.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-saito_exterior.jpg"}, {"i": 35, "n": "朝日屋つやちゃん", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.862614, "lng": 130.789261, "d": "夜の品書きは店が公表しておらず、名物料理を特定できなかった（未確認）／昼の食堂「朝日屋」の焼うどん（小倉・八幡で親しまれる焼うどん）／同・玉子うどん（かまぼこと玉子を落としたうどん）", "a": "福岡県北九州市八幡東区祇園2-8-11", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%9D%E6%97%A5%E5%B1%8B%E3%81%A4%E3%82%84%E3%81%A1%E3%82%83%E3%82%93%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E6%9D%B1%E5%8C%BA%E7%A5%87%E5%9C%922-8-11", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-asahiya-tsuyachan", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-asahiya-tsuyachan.jpg", "ext": ""}, {"i": 36, "n": "いのくち酒店", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.863953, "lng": 130.76796, "d": "ホッピー（焼酎を炭酸の麦芽飲料で割る昭和からの飲み方）／カウンターの乾き物（袋の乾き物や珍味を自分で選ぶ）／焼酎・ビール（壁の品書きから店主に頼む）", "a": "福岡県北九州市八幡西区黒崎2-7-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%AE%E3%81%8F%E3%81%A1%E9%85%92%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E9%BB%92%E5%B4%8E2-7-3", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-inokuchi", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-inokuchi.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-inokuchi_exterior.jpg"}, {"i": 37, "n": "居酒屋えんと", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.863815, "lng": 130.767624, "d": "本日の刺身盛合せ二人前（その日の鮮魚を盛り合わせたもの）／縁人串揚げエビマヨ5本（エビマヨを串に刺して揚げた店の名物）／ゴマ刺し（白ごまのたれで和えた刺身。福岡の定番の肴）", "a": "福岡県北九州市八幡西区黒崎2-7-9 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%E3%81%88%E3%82%93%E3%81%A8%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E9%BB%92%E5%B4%8E2-7-9%202F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-ento-kurosaki", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-ento-kurosaki.jpg", "ext": ""}, {"i": 38, "n": "串屋八兵衛 戸畑店", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.897232, "lng": 130.823608, "d": "串揚げ（海老や野菜などを衣で揚げて串で出す。店の看板）／備長炭の串焼き（かしわ・せせり・バラなどを炭で焼く）／お造り三点盛（玄界灘などから仕入れた鮮魚の刺身）", "a": "福岡県北九州市戸畑区中本町5-13", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E5%B1%8B%E5%85%AB%E5%85%B5%E8%A1%9B%20%E6%88%B8%E7%95%91%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E6%88%B8%E7%95%91%E5%8C%BA%E4%B8%AD%E6%9C%AC%E7%94%BA5-13", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-kushiya-hachibee", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-kushiya-hachibee.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-kushiya-hachibee_exterior.jpg"}, {"i": 39, "n": "居酒屋 いやさか 若松店", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.892605, "lng": 130.740265, "d": "おでん（大根・平飼いたまご・国産牛アキレスなどを1品ずつ頼む）／串あげ（豚バラ・エビ・れんこんなどを1本ずつ。157円から）／熊本直送国産馬刺し（熊本から仕入れる馬刺し）", "a": "福岡県北九州市若松区二島6-1-31", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%81%84%E3%82%84%E3%81%95%E3%81%8B%20%E8%8B%A5%E6%9D%BE%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E8%8B%A5%E6%9D%BE%E5%8C%BA%E4%BA%8C%E5%B3%B66-1-31", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-izakaya-iyasaka-wakamatsu", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-iyasaka-wakamatsu.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-izakaya-iyasaka-wakamatsu_exterior.jpg"}, {"i": 40, "n": "発酵居酒屋 味処 矢野 京町店", "c": ["和食"], "v": "レストラン", "lat": 33.884167, "lng": 130.88443, "d": "イワシのぬか炊き定食（ぬか床で炊いた鰯2尾にぬか漬け・ご飯・味噌汁が付く）／手羽元のぬか炊き定食（鶏手羽元をぬか床で炊き、煮汁をご飯にかけて食べる）／ヒラメの海鮮丼（開店前に水槽の平目を活け締めにして捌く）", "a": "福岡県北九州市小倉北区京町3-12-21 京町ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%99%BA%E9%85%B5%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%91%B3%E5%87%A6%20%E7%9F%A2%E9%87%8E%20%E4%BA%AC%E7%94%BA%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E4%BA%AC%E7%94%BA3-12-21%20%E4%BA%AC%E7%94%BA%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-yano-kyomachi", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-yano-kyomachi.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-yano-kyomachi_exterior.jpg"}, {"i": 41, "n": "本店鉄なべ えきマチ一丁目折尾店", "c": ["和食"], "v": "レストラン", "lat": 33.864082, "lng": 130.713242, "d": "焼きぎょうざ（鉄なべのまま出てくる薄皮の和風餃子10個）／ぬかだき（ぬか床で炊いたさば。持ち帰りはいわしもあり）／肉豆腐", "a": "福岡県北九州市八幡西区北鷹見町13-17", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E5%BA%97%E9%89%84%E3%81%AA%E3%81%B9%20%E3%81%88%E3%81%8D%E3%83%9E%E3%83%81%E4%B8%80%E4%B8%81%E7%9B%AE%E6%8A%98%E5%B0%BE%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E5%8C%97%E9%B7%B9%E8%A6%8B%E7%94%BA13-17", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-tetsunabe-orio", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-tetsunabe-orio.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-tetsunabe-orio_exterior.jpg"}, {"i": 42, "n": "鰻料理 田舎庵 小倉本店", "c": ["和食"], "v": "レストラン", "lat": 33.883453, "lng": 130.881775, "d": "鰻重（肝吸・お漬物付）／せいろ蒸し（蒸籠でご飯ごと蒸し上げる）／ひつまぶし（ねぎと本わさびの薬味付。7・8月は提供なし）", "a": "福岡県北九州市小倉北区鍛冶町1-1-13", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B0%BB%E6%96%99%E7%90%86%20%E7%94%B0%E8%88%8E%E5%BA%B5%20%E5%B0%8F%E5%80%89%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%8D%9B%E5%86%B6%E7%94%BA1-1-13", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-inakaan", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-inakaan.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-inakaan_exterior.jpg"}, {"i": 43, "n": "料亭 金鍋", "c": ["和食"], "v": "レストラン", "lat": 33.904167, "lng": 130.808197, "d": "牛鍋コース（厚切りにした黒毛和牛サーロインを八丁味噌で炊く、創業以来の名物）／魚すきコース（若松で揚がる旬の魚介を伝統の割下で炊く）／懐石（雪6,000円・月9,000円・花11,000円・舞16,000円）", "a": "福岡県北九州市若松区本町2-4-22", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%20%E9%87%91%E9%8D%8B%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E8%8B%A5%E6%9D%BE%E5%8C%BA%E6%9C%AC%E7%94%BA2-4-22", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-kinnabe", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-kinnabe.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-kinnabe_exterior.jpg"}, {"i": 44, "n": "蕎麦処 一徳", "c": ["和食"], "v": "レストラン", "lat": 33.866024, "lng": 130.830627, "d": "天ざるそば（手打ちのざるそばに天ぷらを添える）／鴨せいろそば（くせのない真鴨を使ったつけ汁）／ランチセット（天丼・そば・一品・香の物。平日のみ）", "a": "福岡県北九州市八幡東区高見2-7-4", "m": "https://www.google.com/maps/search/?api=1&query=%E8%95%8E%E9%BA%A6%E5%87%A6%20%E4%B8%80%E5%BE%B3%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E6%9D%B1%E5%8C%BA%E9%AB%98%E8%A6%8B2-7-4", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-ittoku", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-ittoku.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-ittoku_exterior.jpg"}, {"i": 45, "n": "お料理 柚乃花", "c": ["和食"], "v": "レストラン", "lat": 33.897007, "lng": 130.833466, "d": "クエの薄引き会席（冬のクエを薄造りで出す会席、11,000円）／法要会席（6,600円。握り寿司付きは7,920円）／牛鍋（単品2,200円）", "a": "福岡県北九州市戸畑区天神2-6-6 プラティークビラ天神1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E6%96%99%E7%90%86%20%E6%9F%9A%E4%B9%83%E8%8A%B1%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E6%88%B8%E7%95%91%E5%8C%BA%E5%A4%A9%E7%A5%9E2-6-6%20%E3%83%97%E3%83%A9%E3%83%86%E3%82%A3%E3%83%BC%E3%82%AF%E3%83%93%E3%83%A9%E5%A4%A9%E7%A5%9E1F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-yuzunohana", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-yuzunohana.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-yuzunohana_exterior.jpg"}, {"i": 46, "n": "肉×魚×居酒屋 七桜〜nanazakura〜 城野", "c": ["和食"], "v": "レストラン", "lat": 33.858662, "lng": 130.886002, "d": "和牛 小倉牛の肉寿司炙り（小倉牛を炙って握る）／和牛 小倉牛のすきやき鍋（1人前・予約制）／あつあつたこ焼（12個。座敷席では自分で焼ける）", "a": "福岡県北九州市小倉北区若富士町6-19 第8岡部ビル105", "m": "https://www.google.com/maps/search/?api=1&query=%E8%82%89%C3%97%E9%AD%9A%C3%97%E5%B1%85%E9%85%92%E5%B1%8B%20%E4%B8%83%E6%A1%9C%E3%80%9Cnanazakura%E3%80%9C%20%E5%9F%8E%E9%87%8E%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E8%8B%A5%E5%AF%8C%E5%A3%AB%E7%94%BA6-19%20%E7%AC%AC8%E5%B2%A1%E9%83%A8%E3%83%93%E3%83%AB105", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-nanazakura-jono", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-nanazakura-jono.jpg", "ext": ""}, {"i": 47, "n": "一椿 和店", "c": ["和食"], "v": "レストラン", "lat": 33.88311, "lng": 130.883514, "d": "料理長特別懐石（好みを聞いたうえで献立を組む。14,300円税込より）／とらふぐを使った秋冬限定コース／昼の鰻料理（和店限定）", "a": "福岡県北九州市小倉北区鍛冶町1-8-20", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E6%A4%BF%20%E5%92%8C%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%8D%9B%E5%86%B6%E7%94%BA1-8-20", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-hitotsubaki-nagomi", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-hitotsubaki-nagomi.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-hitotsubaki-nagomi_exterior.jpg"}, {"i": 48, "n": "食事の店 小三", "c": ["和食"], "v": "レストラン", "lat": 33.864735, "lng": 130.812378, "d": "バッテラ（仕入れた鯖を秘伝の手法で締める看板料理。品切れの場合あり）／ふくコース（1人7,500円。2人前から）／すっぽん鍋（雑炊付き・3人前コース。3日前までの予約制）", "a": "福岡県北九州市八幡東区中央3-1-12", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E4%BA%8B%E3%81%AE%E5%BA%97%20%E5%B0%8F%E4%B8%89%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E6%9D%B1%E5%8C%BA%E4%B8%AD%E5%A4%AE3-1-12", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-washoku-kozo", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-kozo.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-washoku-kozo_exterior.jpg"}, {"i": 49, "n": "肉処 天穂", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.884766, "lng": 130.880905, "d": "小倉牛特選カルビ（指定店として扱う小倉牛の特選カルビ）／焼きしゃぶ（黒毛和牛を両面さっと焼いて卵黄で食べる名物。4枚1,800円・ハーフ2枚1,000円）／丸腸ホルモン（小腸の丸腸。880円）", "a": "福岡県北九州市小倉北区魚町1-5-6", "m": "https://www.google.com/maps/search/?api=1&query=%E8%82%89%E5%87%A6%20%E5%A4%A9%E7%A9%82%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%AD%9A%E7%94%BA1-5-6", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-tensui", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-tensui.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-tensui_exterior.jpg"}, {"i": 50, "n": "もつ鍋・もつ焼専門 やおき", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.883408, "lng": 130.882065, "d": "京風白味噌もつ鍋（京都の石野味噌を使う一番人気。2人前から）／名物 4代目ミックスホルモン（小腸・マルチョウ・ハツ・シマチョウ・ポンポンの5種盛り 1,980円）／ポンポン（大動脈。イカに似た食感 680円）", "a": "福岡県北九州市小倉北区鍛冶町1-4-20 観音ビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%81%A4%E9%8D%8B%E3%83%BB%E3%82%82%E3%81%A4%E7%84%BC%E5%B0%82%E9%96%80%20%E3%82%84%E3%81%8A%E3%81%8D%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%8D%9B%E5%86%B6%E7%94%BA1-4-20%20%E8%A6%B3%E9%9F%B3%E3%83%93%E3%83%AB2F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-yaoki", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-yaoki.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-yaoki_exterior.jpg"}, {"i": 51, "n": "焼肉まる金ホルモン 徳力店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.828575, "lng": 130.867142, "d": "上マルチョウ（小腸の丸腸。1,000円）／上ミノ（第一胃袋。1,000円）／上センマイ（第三胃袋。900円。センマイ刺し900円もある）", "a": "福岡県北九州市小倉南区徳力3-9-11", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%81%BE%E3%82%8B%E9%87%91%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%20%E5%BE%B3%E5%8A%9B%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8D%97%E5%8C%BA%E5%BE%B3%E5%8A%9B3-9-11", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-marukin-tokuriki", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-marukin-tokuriki.jpg", "ext": ""}, {"i": 52, "n": "やきにく酒場 あぶらや", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.903702, "lng": 130.934769, "d": "あぶらやカルビ（380円の看板カルビ）／MIXホルモン（ホルモン各種の盛り合わせ 680円）／ホルモンチゲ（ホルモン入りのチゲスープ 880円）", "a": "福岡県北九州市門司区柳町2-2-8-101", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%8D%E3%81%AB%E3%81%8F%E9%85%92%E5%A0%B4%20%E3%81%82%E3%81%B6%E3%82%89%E3%82%84%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%9F%B3%E7%94%BA2-2-8-101", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-aburaya", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-aburaya.jpg", "ext": ""}, {"i": 53, "n": "焼肉 晋州", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.89624, "lng": 130.824707, "d": "選べるホルモン3種（ホルモン・ミノ・テッチャン・丸腸・レバー・センマイから3種、タレ味 880円）／黒毛和牛四種盛り（ザブトン・ヒレ・ハラミ・三角バラを各2枚 2,580円）／特上黒タン（黒毛和牛のタン。極上タン1,780円・タン1,280円）", "a": "福岡県北九州市戸畑区浅生2-9-18", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E6%99%8B%E5%B7%9E%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E6%88%B8%E7%95%91%E5%8C%BA%E6%B5%85%E7%94%9F2-9-18", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-shinshu", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-shinshu.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-shinshu_exterior.jpg"}, {"i": 54, "n": "焼肉AZUMA ひびきの店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.896107, "lng": 130.714127, "d": "ホルモン盛（黒毛和牛丸腸・ミノ・しま腸・国産牛センマイ・国産牛レバテキの5種 2,618円）／【有田牛】黒毛和牛丸腸（1,045円。辛口は1,078円）／熟成上タン贅沢盛（上タン・上タンステーキ・ネギ巻き上タン・短冊上タン・ネギ上タン塩 6,028円）", "a": "福岡県北九州市若松区ひびきの北3-3", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89AZUMA%20%E3%81%B2%E3%81%B3%E3%81%8D%E3%81%AE%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E8%8B%A5%E6%9D%BE%E5%8C%BA%E3%81%B2%E3%81%B3%E3%81%8D%E3%81%AE%E5%8C%973-3", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-azuma-hibikino", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-azuma-hibikino.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-azuma-hibikino_exterior.jpg"}, {"i": 55, "n": "肉処弥生", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.86771, "lng": 130.83905, "d": "上塩タン（タン元を使う看板メニュー 1,600円）／丸腸（塩）（小腸の丸腸 800円）／本日の塩ホルモン盛り合わせ（その日のホルモンを塩で 1,600円）", "a": "福岡県北九州市八幡東区昭和1-6-4", "m": "https://www.google.com/maps/search/?api=1&query=%E8%82%89%E5%87%A6%E5%BC%A5%E7%94%9F%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E6%9D%B1%E5%8C%BA%E6%98%AD%E5%92%8C1-6-4", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-yayoi", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-yayoi.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-yayoi_exterior.jpg"}, {"i": 56, "n": "炭火焼肉 はやぶさ 三ヶ森店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.833469, "lng": 130.736725, "d": "丸腸（小腸の丸腸 580円／ハーフ300円）／テッチャン（大腸 500円／ハーフ250円）／やきしゃぶ 牛すき焼味風（卵1つ付 980円。両面をさっと焼いて卵で食べる名物）", "a": "福岡県北九州市八幡西区三ヶ森3-13-5", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E8%82%89%20%E3%81%AF%E3%82%84%E3%81%B6%E3%81%95%20%E4%B8%89%E3%83%B6%E6%A3%AE%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E4%B8%89%E3%83%B6%E6%A3%AE3-13-5", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-hayabusa-mikagamori", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-hayabusa-mikagamori.jpg", "ext": ""}, {"i": 57, "n": "中間ホルモン", "c": ["居酒屋・焼肉"], "v": "ベーカリー・パティスリー", "lat": 33.818329, "lng": 130.71347, "d": "新鮮ホルモン6種食べ比べ（その日のホルモン6点盛り。塩かタレを選ぶ。1人前1,100円・2人前2,200円）／マルチョウ（小腸の丸腸 1,078円）／テッチャン（大腸 1,188円）", "a": "福岡県中間市中尾1-4-8", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E9%96%93%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E4%B8%AD%E9%96%93%E5%B8%82%E4%B8%AD%E5%B0%BE1-4-8", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yakiniku-nakama-horumon", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yakiniku-nakama-horumon.jpg", "ext": ""}, {"i": 58, "n": "展望レストラン 陽のあたる場所", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.94577, "lng": 130.961395, "d": "鉄板焼きカレードリア（牛肉入りバターライスに、イタリアンの技法で仕上げ10年以上継ぎ足したデミグラスソースのカレーを重ね、パン粉とチーズをのせて鉄板で焼く。卵は入らず、パン粉の香ばしさとデミグラスの濃さが他店との違い。第2回門司港焼きカレーフェアのグランプリ受賞）／パルミジャーノリゾット（パルミジャーノ・レッジャーノの塊を器にして仕上げるイタリア米カルナローリのリゾット。単品1,500円・税込）", "a": "福岡県北九州市門司区西海岸1-4-3 日産船舶ビル7F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%95%E6%9C%9B%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E9%99%BD%E3%81%AE%E3%81%82%E3%81%9F%E3%82%8B%E5%A0%B4%E6%89%80%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E8%A5%BF%E6%B5%B7%E5%B2%B81-4-3%20%E6%97%A5%E7%94%A3%E8%88%B9%E8%88%B6%E3%83%93%E3%83%AB7F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-hinoataru", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-hinoataru.jpg", "ext": ""}, {"i": 59, "n": "門司港NO.1焼きカレー ごちそうダイニングプリンセスピピ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.945511, "lng": 130.96109, "d": "野菜ソムリエの王様焼きカレー（1日30食限定。万田酵素栽培米の小豆玄米ごはんに毎朝作るカレーを重ね、グリルした旬野菜をたっぷり載せて焼く。門司港焼きカレーフェアで24店舗中1位）／めんたい焼カレー（王様焼きカレーをパエリア鍋で仕上げ、鍋肌のおこげと明太子、半熟卵を合わせる）／まるごと伊勢海老焼きカレー（伊勢海老を1尾そのまま載せて焼く看板の高額メニュー）", "a": "福岡県北九州市門司区西海岸1丁目4-7 B1・1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%96%80%E5%8F%B8%E6%B8%AFNO.1%E7%84%BC%E3%81%8D%E3%82%AB%E3%83%AC%E3%83%BC%20%E3%81%94%E3%81%A1%E3%81%9D%E3%81%86%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%E3%83%97%E3%83%AA%E3%83%B3%E3%82%BB%E3%82%B9%E3%83%94%E3%83%94%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E8%A5%BF%E6%B5%B7%E5%B2%B81%E4%B8%81%E7%9B%AE4-7%20B1%E3%83%BB1F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-princess-phiphi", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-princess-phiphi.jpg", "ext": ""}, {"i": 60, "n": "curry&sweets Dolce（ドルチェ）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.945721, "lng": 130.96315, "d": "焼カレー（カレーに卵を落とし、チーズをのせてオーブンで焼く門司港の基本形。1,100円）／野菜入り焼きカレー（ズッキーニ・パプリカ・ナスをグリルして入れる。1,350円）／ハーフ焼カレー＆ケーキセット（卵なしのハーフサイズの焼きカレーに、好きなケーキとドリンクが付く。1,500円）", "a": "福岡県北九州市門司区港町6-12", "m": "https://www.google.com/maps/search/?api=1&query=curry%26sweets%20Dolce%EF%BC%88%E3%83%89%E3%83%AB%E3%83%81%E3%82%A7%EF%BC%89%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%B8%AF%E7%94%BA6-12", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-dolce", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-dolce.jpg", "ext": ""}, {"i": 61, "n": "インド料理マサラカレー 門司港レトロ店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.945595, "lng": 130.963608, "d": "門司港名物 焼きカレー（インド料理店らしくスパイスを効かせたカレーをオーブンで焼き、チーズを濃厚にからめる。甘い／普通／中辛／辛口／超辛／激辛の6段階から辛さを選べるのが他の焼きカレー店との大きな違い。980円〜）／焼きカレー＋ナンセット（焼きカレーに大きなナンとサラダを合わせる。イカ・エビ・アサリ入り）／チキンタンドリー（タンドール窯で焼く定番）", "a": "福岡県北九州市門司区港町5-1 門司港レトロ海峡プラザ 東館1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%83%B3%E3%83%89%E6%96%99%E7%90%86%E3%83%9E%E3%82%B5%E3%83%A9%E3%82%AB%E3%83%AC%E3%83%BC%20%E9%96%80%E5%8F%B8%E6%B8%AF%E3%83%AC%E3%83%88%E3%83%AD%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%B8%AF%E7%94%BA5-1%20%E9%96%80%E5%8F%B8%E6%B8%AF%E3%83%AC%E3%83%88%E3%83%AD%E6%B5%B7%E5%B3%A1%E3%83%97%E3%83%A9%E3%82%B6%20%E6%9D%B1%E9%A4%A81F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-masala-curry", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-masala-curry.jpg", "ext": ""}, {"i": 62, "n": "喫茶GINZA", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.843449, "lng": 130.751678, "d": "元祖イタスパ（イタリアンスパゲッティ。開店当時からの品で、ケチャップとバターだけのあっさりした味を熱い鉄板で出す。1,100円・税込）／チーズオムレツのせバーグ鉄板（ハンバーグにチーズ入りオムレツを載せて鉄板で出す定番。150gで1,540円、250gで2,200円・税込）／シーフードドリア（1,280円・税込）", "a": "福岡県北九州市八幡西区引野2-12-30 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6GINZA%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E5%BC%95%E9%87%8E2-12-30%201F", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-kissa-ginza", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-kissa-ginza.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-kissa-ginza_exterior.jpg"}, {"i": 63, "n": "レストラン道草", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.849873, "lng": 130.744919, "d": "ハンバーグセット（標準150g、ダブルは300gで2,100円。ライスかパン・サラダ・スープ・デザート付きで1,300円・税込）／ナポリタン（目玉焼きをのせた昔ながらの洋食屋のナポリタン。セット1,300円・単品1,100円・税込）／和牛ビーフシチューセット（1,600円・税込）", "a": "福岡県北九州市八幡西区竹末1丁目19-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%81%93%E8%8D%89%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E8%A5%BF%E5%8C%BA%E7%AB%B9%E6%9C%AB1%E4%B8%81%E7%9B%AE19-1", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-michikusa", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-michikusa.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-michikusa_exterior.jpg"}, {"i": 64, "n": "ステーキハウス モーシャトー", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.865231, "lng": 130.810837, "d": "特選牛シャトーブリアンヒレステーキ（九州の和牛のヒレの中心部を鉄板で焼く看板。スープ・サラダ付きで6,600円・税込）／テキ重（ステーキを重に仕立てた手軽な一品。1,650円・税込）／ガーリックライス（鉄板で仕上げる締め。880円・税込）", "a": "福岡県北九州市八幡東区中央2-19-9", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E3%83%8F%E3%82%A6%E3%82%B9%20%E3%83%A2%E3%83%BC%E3%82%B7%E3%83%A3%E3%83%88%E3%83%BC%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%85%AB%E5%B9%A1%E6%9D%B1%E5%8C%BA%E4%B8%AD%E5%A4%AE2-19-9", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-mauchateau", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-mauchateau.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-mauchateau_exterior.jpg"}, {"i": 65, "n": "ビストロ サトウ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.871338, "lng": 130.84877, "d": "シェアコース（前菜盛り合わせ、ソーセージ盛り合わせのザワークラウト添え、プレッツェル、フラムクーヘン＝ドイツ風ピザ、シュニッツェル＝ポークカツレツを少しずつ分ける。4,950円・税込。＋550円でシュニッツェルをアイスバインかシュヴァイネハクセに変更できる）／おまかせフルコース（前菜・スープ・魚料理・肉料理・デザート・コーヒー。6,600円・税込）", "a": "福岡県北九州市小倉北区金鶏町10-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%20%E3%82%B5%E3%83%88%E3%82%A6%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%87%91%E9%B6%8F%E7%94%BA10-1", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-bistro-sato", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-bistro-sato.jpg", "ext": ""}, {"i": 66, "n": "DONZ ドンズ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.897491, "lng": 130.824234, "d": "スリランカ スペシャルライス&カレー（パパダムと数種類の副菜、メインカレーを一皿に盛り、全部を混ぜて食べる現地の伝統スタイル。1,800円・税込）／ビーフコットゥ（小麦粉の生地を広げて細かく刻み、具と炒め合わせるスリランカの麺料理。1,300円・税込）／スリランカ風デビルチキン（ローストスパイスの辛さが立つ一品）", "a": "福岡県北九州市戸畑区旭町3-7 サンエイビル", "m": "https://www.google.com/maps/search/?api=1&query=DONZ%20%E3%83%89%E3%83%B3%E3%82%BA%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E6%88%B8%E7%95%91%E5%8C%BA%E6%97%AD%E7%94%BA3-7%20%E3%82%B5%E3%83%B3%E3%82%A8%E3%82%A4%E3%83%93%E3%83%AB", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-yoshoku-donz", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-yoshoku-donz.jpg", "ext": ""}, {"i": 67, "n": "ドン珈琲館", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.88496, "lng": 130.883774, "d": "モーニングセット（ホットサンド・サラダ・コーヒー。提供は10時まで）／イタリアンローストのコーヒー（「鬼萩」のカップで提供）／3種のカレー", "a": "福岡県北九州市小倉北区京町3-6-19", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%89%E3%83%B3%E7%8F%88%E7%90%B2%E9%A4%A8%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E4%BA%AC%E7%94%BA3-6-19", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-cafe-don-kohikan", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-don-kohikan.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-don-kohikan_exterior.jpg"}, {"i": 68, "n": "グリーングラス", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.88792, "lng": 130.882034, "d": "和食モーニングセット（ライス・みそ汁・生たまご・のり・漬物・小鉢）／ハンバーグスパゲッティ（鉄板で出す手作りハンバーグとナポリタン）／洋食モーニングセット（トースト・ハムエッグ）", "a": "福岡県北九州市小倉北区浅野1-2-6", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B0%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B0%E3%83%A9%E3%82%B9%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E6%B5%85%E9%87%8E1-2-6", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-cafe-green-grass", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-green-grass.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-green-grass_exterior.jpg"}, {"i": 69, "n": "CAFE DE FANFAN", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.885815, "lng": 130.878448, "d": "モーニングセット（厚切りトースト・ハムエッグまたはベーコンエッグ・サラダ・コーヒー）／ネルドリップのコーヒー／クリームソーダ", "a": "福岡県北九州市小倉北区京町1-2-8", "m": "https://www.google.com/maps/search/?api=1&query=CAFE%20DE%20FANFAN%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E4%BA%AC%E7%94%BA1-2-8", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-cafe-de-fanfan", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-de-fanfan.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-de-fanfan_exterior.jpg"}, {"i": 70, "n": "六曜舘", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.946041, "lng": 130.965607, "d": "焼きカレーポット（パンをくり抜いた器に焼きカレーを入れて焼いたもの）／焼きカレー（門司港名物）／クリームソーダ", "a": "福岡県北九州市門司区栄町3-5（門司港レトロパーキング1階）", "m": "https://www.google.com/maps/search/?api=1&query=%E5%85%AD%E6%9B%9C%E8%88%98%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E9%96%80%E5%8F%B8%E5%8C%BA%E6%A0%84%E7%94%BA3-5%EF%BC%88%E9%96%80%E5%8F%B8%E6%B8%AF%E3%83%AC%E3%83%88%E3%83%AD%E3%83%91%E3%83%BC%E3%82%AD%E3%83%B3%E3%82%B01%E9%9A%8E%EF%BC%89", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-cafe-rokuyokan", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-rokuyokan.jpg", "ext": ""}, {"i": 71, "n": "湖月堂 喫茶去 本店", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.885483, "lng": 130.880737, "d": "栗饅頭（北海道産の白小豆の餡に蜜漬けの栗を入れて焼いた北九州銘菓）／白玉ぜんざい／ぎおん太鼓（バターのパイ生地でこし餡と粒餡を包んだ和洋菓子。小倉祇園祭の太鼓の形）", "a": "福岡県北九州市小倉北区魚町1-3-11", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B9%96%E6%9C%88%E5%A0%82%20%E5%96%AB%E8%8C%B6%E5%8E%BB%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8C%97%E5%8C%BA%E9%AD%9A%E7%94%BA1-3-11", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-cafe-kogetsudo-kissako", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-kogetsudo-kissako.jpg", "ext": ""}, {"i": 72, "n": "菓匠きくたろう 本店", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 33.816437, "lng": 130.950714, "d": "もちもちわらびドリンク（黒糖で味付けした自家製わらび餅入りのドリンク）／カスタムサラダ（約20種のデリから選んで組み立てるワンプレート）／どら焼き（職人が炊いた自家製の粒あんを挟んだもの）", "a": "福岡県北九州市小倉南区上曽根新町11-11", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8F%93%E5%8C%A0%E3%81%8D%E3%81%8F%E3%81%9F%E3%82%8D%E3%81%86%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E5%8C%97%E4%B9%9D%E5%B7%9E%E5%B8%82%E5%B0%8F%E5%80%89%E5%8D%97%E5%8C%BA%E4%B8%8A%E6%9B%BD%E6%A0%B9%E6%96%B0%E7%94%BA11-11", "u": "../japan/fukuoka/kitakyushu.html#c-kitakyushu-cafe-kikutaro-honten", "food": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-kikutaro-honten.jpg", "ext": "../japan/fukuoka/img/kitakyushu/kitakyushu-cafe-kikutaro-honten_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.883204,130.860893],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('kitakyushu', "北九州");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>

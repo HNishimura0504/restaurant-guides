@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>福岡 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>福岡 の食べ歩き地図<span class="n">72店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="福岡 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">福岡 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/fukuoka/fukuoka.html"><span class="sn-e">📄</span>福岡のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（111都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "かろのうろん", "c": ["麺類"], "v": "レストラン", "lat": 33.592434, "lng": 130.411041, "d": "ごぼう天うろん（細切りのごぼうを揚げた天ぷらをのせた一番人気）／丸天うろん（魚のすり身を丸く揚げた博多の定番天ぷら）／肉うろん（甘辛く煮た肉をたっぷり入れた一杯）", "a": "福岡県福岡市博多区上川端町2-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%82%8D%E3%81%AE%E3%81%86%E3%82%8D%E3%82%93%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%8A%E5%B7%9D%E7%AB%AF%E7%94%BA2-1", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-karonouron", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-karonouron.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-karonouron_exterior.jpg"}, {"i": 1, "n": "博多一幸舎 総本店", "c": ["麺類"], "v": "レストラン", "lat": 33.588211, "lng": 130.417114, "d": "泡系豚骨ラーメン（天然の脂泡が立つクリーミーな豚骨）／泡系豚骨チャーシューメン（低温調理の大判チャーシュー入り）／博多一口餃子5ヶ（皮も具も手作りの小ぶりな餃子）", "a": "福岡県福岡市博多区博多駅前3-23-12", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E4%B8%80%E5%B9%B8%E8%88%8E%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E5%8D%9A%E5%A4%9A%E9%A7%85%E5%89%8D3-23-12", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-ikkousha-sohonten", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-ikkousha-sohonten.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-ikkousha-sohonten_exterior.jpg"}, {"i": 2, "n": "博多らーめん Shin-Shin 天神本店", "c": ["麺類"], "v": "食べ歩き", "lat": 33.592651, "lng": 130.397049, "d": "博多ShinShinらーめん（あっさりした豚骨スープに細麺。870円）／チャーシューメン（チャーシューを重ねた一杯。1,110円）／餃子8個（創業当時から変わらないもちもちの皮。590円）", "a": "福岡県福岡市中央区天神3-2-19 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%20Shin-Shin%20%E5%A4%A9%E7%A5%9E%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%A5%9E3-2-19%201F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-shinshin-tenjin", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-shinshin-tenjin.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-shinshin-tenjin_exterior.jpg"}, {"i": 3, "n": "一蘭 那の川店", "c": ["麺類"], "v": "レストラン", "lat": 33.574787, "lng": 130.412613, "d": "天然とんこつラーメン（赤い秘伝のたれを加える創業以来の一杯）／替玉（麺だけの追加。席の呼出ボタンで注文する）", "a": "福岡県福岡市南区那の川2-2-10", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E8%98%AD%20%E9%82%A3%E3%81%AE%E5%B7%9D%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%97%E5%8C%BA%E9%82%A3%E3%81%AE%E5%B7%9D2-2-10", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-ichiran-nanokawa", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-ichiran-nanokawa.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-ichiran-nanokawa_exterior.jpg"}, {"i": 4, "n": "一風堂 大名本店", "c": ["麺類"], "v": "食材の店", "lat": 33.587868, "lng": 130.395844, "d": "本店白丸（この店だけの白丸。豚骨の基本形）／本店赤丸（辛みそと香油を落とした一杯）／博多しょうゆらぁめん（店舗限定の醤油）", "a": "福岡県福岡市中央区大名1-13-14", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E9%A2%A8%E5%A0%82%20%E5%A4%A7%E5%90%8D%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E5%90%8D1-13-14", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-ippudo-daimyo", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-ippudo-daimyo.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-ippudo-daimyo_exterior.jpg"}, {"i": 5, "n": "大地のうどん 本店", "c": ["麺類"], "v": "レストラン", "lat": 33.57497, "lng": 130.303955, "d": "ごぼう天うどん（薄く大きく切ったごぼうを揚げて丼からはみ出すほどのせる看板）／肉かきあげうどん／大地かやく（ごぼう天・海老天2尾・肉・わかめ・温玉・キツネをのせた大盛りの丼）", "a": "福岡県福岡市西区上山門2-1-18", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%9C%B0%E3%81%AE%E3%81%86%E3%81%A9%E3%82%93%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%B8%8A%E5%B1%B1%E9%96%802-1-18", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-daichinoudon-honten", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-daichinoudon-honten.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-daichinoudon-honten_exterior.jpg"}, {"i": 6, "n": "博多だるま 総本店", "c": ["麺類"], "v": "レストラン", "lat": 33.584652, "lng": 130.406067, "d": "ラーメン（骨の香りを強く残した濃厚な豚骨スープに極細麺）／替玉（麺のかたさを指定して追加する）", "a": "福岡県福岡市中央区渡辺通1-8-26 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%81%A0%E3%82%8B%E3%81%BE%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B8%A1%E8%BE%BA%E9%80%9A1-8-26%201F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-hakata-daruma", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-hakata-daruma.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-hakata-daruma_exterior.jpg"}, {"i": 7, "n": "長浜ナンバーワン 祇園店", "c": ["麺類"], "v": "レストラン", "lat": 33.593258, "lng": 130.413132, "d": "長浜らーめん（長浜の屋台の系譜を引く細麺の豚骨）／長浜伝説らーめん／替玉（麺のかたさを指定して追加する）", "a": "福岡県福岡市博多区祇園町4-64 ニューウイングビル祇園1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E6%B5%9C%E3%83%8A%E3%83%B3%E3%83%90%E3%83%BC%E3%83%AF%E3%83%B3%20%E7%A5%87%E5%9C%92%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E7%A5%87%E5%9C%92%E7%94%BA4-64%20%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%A6%E3%82%A4%E3%83%B3%E3%82%B0%E3%83%93%E3%83%AB%E7%A5%87%E5%9C%921F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-nagahama-no1-gion", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-nagahama-no1-gion.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-nagahama-no1-gion_exterior.jpg"}, {"i": 8, "n": "めんくいや 薬院本店", "c": ["麺類"], "v": "レストラン", "lat": 33.582661, "lng": 130.403763, "d": "博多ラーメン（あっさりしたライト系の豚骨スープ。開店当初から出している看板。750円）／とろとろチャーシューメン（箸で切れる自家製チャーシューをのせた人気の一杯。1,050円）／焼き餃子（卓上の定番で、ラーメンと一緒に頼まれる。500円）", "a": "福岡県福岡市中央区渡辺通2-3-27 待鳥ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%81%E3%82%93%E3%81%8F%E3%81%84%E3%82%84%20%E8%96%AC%E9%99%A2%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B8%A1%E8%BE%BA%E9%80%9A2-3-27%20%E5%BE%85%E9%B3%A5%E3%83%93%E3%83%AB1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-ramen-menkuiya-yakuin", "food": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-menkuiya-yakuin.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-ramen-menkuiya-yakuin_exterior.jpg"}, {"i": 9, "n": "牛もつ鍋 おおいし 美野島店", "c": ["和食"], "v": "レストラン", "lat": 33.578835, "lng": 130.420105, "d": "国産牛もつ鍋 みそ味（4種類のみそをブレンドした、コクがありながら後味の軽いスープ）／水炊き風（しょうゆベースで煮込んだ牛もつと野菜を酢じょうゆで食べる）／チャンポン玉（締めの麺。330円。うどん玉380円、ご飯並330円も選べる）", "a": "福岡県福岡市博多区美野島3-1-32", "m": "https://www.google.com/maps/search/?api=1&query=%E7%89%9B%E3%82%82%E3%81%A4%E9%8D%8B%20%E3%81%8A%E3%81%8A%E3%81%84%E3%81%97%20%E7%BE%8E%E9%87%8E%E5%B3%B6%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E7%BE%8E%E9%87%8E%E5%B3%B63-1-32", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-ooishi-minoshima", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-ooishi-minoshima.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-ooishi-minoshima_exterior.jpg"}, {"i": 10, "n": "博多もつ鍋 やま中 赤坂店", "c": ["和食"], "v": "レストラン", "lat": 33.587429, "lng": 130.3909, "d": "もつ鍋 みそ味（九州産味噌を数種類ブレンドした、やま中が発祥とされるみそスープ）／もつ鍋 しゃぶしゃぶ風（利尻産昆布と薄口醤油の出し汁で、唐辛子・にんにく不使用。自家製ポン酢で食べる）／ちゃんぽん麺（締めの麺。350円。うどん玉・雑炊用ごはんも各350円）", "a": "福岡県福岡市中央区赤坂1-9-1 サニー赤坂店 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%82%82%E3%81%A4%E9%8D%8B%20%E3%82%84%E3%81%BE%E4%B8%AD%20%E8%B5%A4%E5%9D%82%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%B5%A4%E5%9D%821-9-1%20%E3%82%B5%E3%83%8B%E3%83%BC%E8%B5%A4%E5%9D%82%E5%BA%97%202F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-yamanaka-akasaka", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-yamanaka-akasaka.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-yamanaka-akasaka_exterior.jpg"}, {"i": 11, "n": "博多もつ鍋 おおやま 本店", "c": ["和食"], "v": "レストラン", "lat": 33.596741, "lng": 130.409668, "d": "もつ鍋 みそ味（九州味噌や西京味噌など数種類をブレンドし、昆布と鰹節の出し汁に特製ダレを加えた濃厚美味のスープ）／もつ鍋 水炊き風（ダシと薄口醤油で薄味に煮て、大根おろし入りポン酢で食べる）／チャンポンめん（締めの麺。319円税込。セットには含まれないので別注文）", "a": "福岡県福岡市博多区店屋町7-28", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%82%82%E3%81%A4%E9%8D%8B%20%E3%81%8A%E3%81%8A%E3%82%84%E3%81%BE%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E5%BA%97%E5%B1%8B%E7%94%BA7-28", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-ooyama-honten", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-ooyama-honten.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-ooyama-honten_exterior.jpg"}, {"i": 12, "n": "もつ料理 幸 薬院本店", "c": ["和食"], "v": "レストラン", "lat": 33.582138, "lng": 130.397263, "d": "もつ鍋（醤油味のみ。カツオと昆布の出汁に秘伝の醤油ダレを合わせた、創業以来変わらないスープ）／サガリ刺し（牛のサガリの刺身）／締めのちゃんぽん麺と雑炊（ちゃんぽんのあとに雑炊で二度味わう公式推奨の食べ方）", "a": "福岡県福岡市中央区薬院1-12-12", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%81%A4%E6%96%99%E7%90%86%20%E5%B9%B8%20%E8%96%AC%E9%99%A2%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%96%AC%E9%99%A21-12-12", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-sachi-yakuin", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-sachi-yakuin.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-sachi-yakuin_exterior.jpg"}, {"i": 13, "n": "博多もつ鍋 しば田 大橋店", "c": ["和食"], "v": "レストラン", "lat": 33.55793, "lng": 130.425125, "d": "水炊き風（1人前1,900円。昆布だししょうゆベースでにんにく・唐辛子不使用、自家製ポン酢だれ付き）／しば田のうま辛担々風（1人前2,000円。締めにチーズリゾットを合わせられる）／ちゃんぽん麺（締めの麺。330円。チーズリゾット700円、おじやセット500円も選べる）", "a": "福岡県福岡市南区大橋1-19-20 プラージュ大橋1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%82%82%E3%81%A4%E9%8D%8B%20%E3%81%97%E3%81%B0%E7%94%B0%20%E5%A4%A7%E6%A9%8B%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%97%E5%8C%BA%E5%A4%A7%E6%A9%8B1-19-20%20%E3%83%97%E3%83%A9%E3%83%BC%E3%82%B8%E3%83%A5%E5%A4%A7%E6%A9%8B1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-shibata-ohashi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-shibata-ohashi.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-shibata-ohashi_exterior.jpg"}, {"i": 14, "n": "もつ鍋 一藤 天神西通り店／別邸店", "c": ["和食"], "v": "レストラン", "lat": 33.589069, "lng": 130.395767, "d": "博多もつ鍋 味噌（国産和牛小腸。自社でブレンドした味噌を提供直前に溶き合わせる）／絶品酢もつ（牛1頭から約300gしか取れない部位を使った酢もつ。759円）／チャンポン麺（締めの麺。雑炊も選べる）", "a": "福岡県福岡市中央区大名2-6-4 プラスゲート天神ビル2F・3F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%81%A4%E9%8D%8B%20%E4%B8%80%E8%97%A4%20%E5%A4%A9%E7%A5%9E%E8%A5%BF%E9%80%9A%E3%82%8A%E5%BA%97%EF%BC%8F%E5%88%A5%E9%82%B8%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E5%90%8D2-6-4%20%E3%83%97%E3%83%A9%E3%82%B9%E3%82%B2%E3%83%BC%E3%83%88%E5%A4%A9%E7%A5%9E%E3%83%93%E3%83%AB2F%E3%83%BB3F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-ichifuji-nishidori", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-ichifuji-nishidori.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-ichifuji-nishidori_exterior.jpg"}, {"i": 15, "n": "もつ鍋慶州 西中洲店", "c": ["和食"], "v": "レストラン", "lat": 33.590698, "lng": 130.404663, "d": "慶州もつ鍋 塩テール味（1人前1,870円。テールの出汁をきかせた塩味で、福岡では数の少ない塩のもつ鍋）／激辛 石焼旨辛ホルモン鍋（1人前1,800円。石焼の器で出す辛味の鍋。具はミックスホルモン）／ちゃんぽん玉（締めの麺。390円。うどん玉390円、雑炊セット460円も選べる）", "a": "福岡県福岡市中央区西中洲2-17", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%81%A4%E9%8D%8B%E6%85%B6%E5%B7%9E%20%E8%A5%BF%E4%B8%AD%E6%B4%B2%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%A5%BF%E4%B8%AD%E6%B4%B22-17", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-keishu-nishinakasu", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-keishu-nishinakasu.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-keishu-nishinakasu_exterior.jpg"}, {"i": 16, "n": "博多もつ鍋 前田屋 総本店", "c": ["和食"], "v": "レストラン", "lat": 33.587627, "lng": 130.425568, "d": "和牛もつ鍋 みそ味（最高級国産和牛の小腸のみを使用。1人前2,068円税込）／呼子直送イカの活き造り（総本店・西中洲店・小倉店のみ。100g 2,178円〜税込）／ちゃんぽん麺（締めの麺。308円税込。博多ちぢれ麺374円、ぞうすい374円も選べる）", "a": "福岡県福岡市博多区博多駅東2-9-20", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%82%82%E3%81%A4%E9%8D%8B%20%E5%89%8D%E7%94%B0%E5%B1%8B%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E5%8D%9A%E5%A4%9A%E9%A7%85%E6%9D%B12-9-20", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-maedaya-sohonten", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-maedaya-sohonten.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-maedaya-sohonten_exterior.jpg"}, {"i": 17, "n": "博多もつ鍋 やま中 大橋本店", "c": ["和食"], "v": "レストラン", "lat": 33.562134, "lng": 130.424744, "d": "もつ鍋 みそ味（創業以来の門外不出のブレンド味噌。一人前2,480円）／食べ比べセット（みそ味としょうゆ味を一度に楽しむ大橋本店限定・三人前分6,980円）／ちゃんぽん麺（締めの麺。350円。うどん玉・雑炊用ごはんも各350円）", "a": "福岡県福岡市南区向野2-2-12", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%82%82%E3%81%A4%E9%8D%8B%20%E3%82%84%E3%81%BE%E4%B8%AD%20%E5%A4%A7%E6%A9%8B%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%97%E5%8C%BA%E5%90%91%E9%87%8E2-2-12", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-motsu-yamanaka-ohashi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-yamanaka-ohashi.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-motsu-yamanaka-ohashi_exterior.jpg"}, {"i": 18, "n": "水たき料亭 新三浦 天神店", "c": ["和食"], "v": "レストラン", "lat": 33.591705, "lng": 130.399902, "d": "水だき（鶏と水だけを10時間以上炊いた白濁スープに九州産の若鶏。大分県産かぼすの自家製ポン酢で食べ、〆はスープかけごはんか雑炊を選ぶ）／名物 親子丼（魚介を一切使わず、鶏の旨みに九州産の甘めの醤油・昆布・椎茸を合わせた秘伝の出汁）／照り焼き玉子丼（とろとろ玉子に甘辛タレをからめたもも肉をのせた丼）", "a": "福岡県福岡市中央区天神1丁目12-1 天神ビルB1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B0%B4%E3%81%9F%E3%81%8D%E6%96%99%E4%BA%AD%20%E6%96%B0%E4%B8%89%E6%B5%A6%20%E5%A4%A9%E7%A5%9E%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%A5%9E1%E4%B8%81%E7%9B%AE12-1%20%E5%A4%A9%E7%A5%9E%E3%83%93%E3%83%ABB1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-shinmiura-tenjin", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-shinmiura-tenjin.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-shinmiura-tenjin_exterior.jpg"}, {"i": 19, "n": "博多名代 水たき長野", "c": ["和食"], "v": "レストラン", "lat": 33.599148, "lng": 130.403046, "d": "【博多名物】水たき長野骨付きコース（骨付き鶏肉と上モツ、キャベツ・春菊・ネギ。酢醤油と紅葉おろしで食べる）／水たき長野ミンチコース（つくね・レバー・ハツ。骨付きコースと混ぜられる）／手羽煮込み（公式サイトが「人気の逸品」と書く一品。500円）", "a": "福岡県福岡市博多区対馬小路1-5", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E5%90%8D%E4%BB%A3%20%E6%B0%B4%E3%81%9F%E3%81%8D%E9%95%B7%E9%87%8E%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E5%AF%BE%E9%A6%AC%E5%B0%8F%E8%B7%AF1-5", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-nagano", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-nagano.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-nagano_exterior.jpg"}, {"i": 20, "n": "博多水炊き とり田 博多本店", "c": ["和食"], "v": "レストラン", "lat": 33.595982, "lng": 130.405884, "d": "水炊き（九州産の鶏の白濁スープ。ぶつ切り・もも切り身・むね切り身・つみれ・とうふ・葛切り・野菜盛り。自家製ぽん酢と柚子胡椒、生七味が付く）／明太たまご雑炊セット（〆。税込660円）／水炊きラーメンセット（〆。税込660円）", "a": "福岡県福岡市博多区下川端町10-5 博多麹屋番ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E6%B0%B4%E7%82%8A%E3%81%8D%20%E3%81%A8%E3%82%8A%E7%94%B0%20%E5%8D%9A%E5%A4%9A%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%8B%E5%B7%9D%E7%AB%AF%E7%94%BA10-5%20%E5%8D%9A%E5%A4%9A%E9%BA%B9%E5%B1%8B%E7%95%AA%E3%83%93%E3%83%AB1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-toriden-hakata", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-toriden-hakata.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-toriden-hakata_exterior.jpg"}, {"i": 21, "n": "水たき料亭 博多華味鳥 中洲本店", "c": ["和食"], "v": "レストラン", "lat": 33.594044, "lng": 130.403778, "d": "華味鳥水たき（自社養鶏の九州産「華味鳥」のぶつ切り・ミンチ・切身・肝と野菜盛、〆は雑炊か麺を選ぶ。全コースに入る）／紅孔雀コース（中洲本店だけのコース。前菜五種と本日の刺身二種盛りが付く。3日前までの要予約・4名から）／博多ごまカンパチ（金華コースに入る一品）", "a": "福岡県福岡市博多区中洲5-4-24 トリゼンビル", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B0%B4%E3%81%9F%E3%81%8D%E6%96%99%E4%BA%AD%20%E5%8D%9A%E5%A4%9A%E8%8F%AF%E5%91%B3%E9%B3%A5%20%E4%B8%AD%E6%B4%B2%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%AD%E6%B4%B25-4-24%20%E3%83%88%E3%83%AA%E3%82%BC%E3%83%B3%E3%83%93%E3%83%AB", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-hanamidori-nakasu", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-hanamidori-nakasu.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-hanamidori-nakasu_exterior.jpg"}, {"i": 22, "n": "博多水炊き大和", "c": ["和食"], "v": "食材の店", "lat": 33.593967, "lng": 130.405731, "d": "名物 博多水炊き（はかた地どりを8時間以上炊いた濃厚な白濁スープ。手づくりポン酢・謹製柚子胡椒・大和特製塩の3種で食べる）／博多胡麻鯖（税込1,430円）／鶏もも肉の唐揚げ（税込880円）", "a": "福岡県福岡市博多区中洲3-7-24 ゲイツビル7F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E6%B0%B4%E7%82%8A%E3%81%8D%E5%A4%A7%E5%92%8C%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%AD%E6%B4%B23-7-24%20%E3%82%B2%E3%82%A4%E3%83%84%E3%83%93%E3%83%AB7F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-yamato", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-yamato.jpg", "ext": ""}, {"i": 23, "n": "個室 水炊き善哉（ぜんざい）", "c": ["和食"], "v": "レストラン", "lat": 33.581551, "lng": 130.408234, "d": "当店自慢水炊き（鶏ガラを長時間じっくり煮込んだ白濁スープ。まず好みの薬味と一緒にスープだけを味わう。税込2,200円）／呼子直送いかの活き造り（生け簀から出して捌く。時価。食べた後は塩焼き・天ぷらなどに作り替えてもらえる）／水炊き付きコース（税込4,400円から。120分の飲み放題が付く）", "a": "福岡県福岡市中央区清川1-11-8", "m": "https://www.google.com/maps/search/?api=1&query=%E5%80%8B%E5%AE%A4%20%E6%B0%B4%E7%82%8A%E3%81%8D%E5%96%84%E5%93%89%EF%BC%88%E3%81%9C%E3%82%93%E3%81%96%E3%81%84%EF%BC%89%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B8%85%E5%B7%9D1-11-8", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-zenzai", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-zenzai.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-zenzai_exterior.jpg"}, {"i": 24, "n": "博多水炊きhiro", "c": ["和食"], "v": "レストラン", "lat": 33.585316, "lng": 130.406052, "d": "はかた地どりの水炊き（8時間炊いたスープ。店員が客の前で作る。単品 税込3,850円）／蘭王卵の極上茶碗蒸し（大分産のブランド卵「蘭王」を使う。店が新名物と呼ぶ一品で祇園コースに付く）／玄界灘漁師会のごま鯖（税込1,320円）", "a": "福岡県福岡市中央区渡辺通3丁目1-1 TKビル3階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E6%B0%B4%E7%82%8A%E3%81%8Dhiro%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B8%A1%E8%BE%BA%E9%80%9A3%E4%B8%81%E7%9B%AE1-1%20TK%E3%83%93%E3%83%AB3%E9%9A%8E", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-hiro", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-hiro.jpg", "ext": ""}, {"i": 25, "n": "鶏料理専門店 トリヤマルハチ 次郎丸店", "c": ["和食"], "v": "レストラン", "lat": 33.553082, "lng": 130.327957, "d": "博多水炊き（店内で4時間以上かけて作る2段仕込みのスープ。2人前から・1,490円。〆雑炊セットは390円）／かしわ飯（自家製の鶏ガラスープで炊き込む釜めし。席で炊き上げる。690円）／鶏たたき盛り合わせ（もも・むねの2種を食べ比べる。990円）", "a": "福岡県福岡市早良区次郎丸2-30-3", "m": "https://www.google.com/maps/search/?api=1&query=%E9%B6%8F%E6%96%99%E7%90%86%E5%B0%82%E9%96%80%E5%BA%97%20%E3%83%88%E3%83%AA%E3%83%A4%E3%83%9E%E3%83%AB%E3%83%8F%E3%83%81%20%E6%AC%A1%E9%83%8E%E4%B8%B8%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E6%97%A9%E8%89%AF%E5%8C%BA%E6%AC%A1%E9%83%8E%E4%B8%B82-30-3", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-toriya-maruhachi-jiromaru", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-toriya-maruhachi-jiromaru.jpg", "ext": ""}, {"i": 26, "n": "博多とよ唐亭 高砂店", "c": ["和食"], "v": "食べ歩き", "lat": 33.577248, "lng": 130.410492, "d": "げんこつからあげ弁当（名物のげんこつからあげが3〜5個。副菜のポテトサラダとさくら漬付き。税込520円〜）／チキンてりマヨ弁当（げんこつからあげにオリジナルのテリヤキソースとマヨネーズ、刻みのり。マヨネーズと刻みのりを抜くこともできる。税込570円〜）／げんこつからあげ単品（1個 税込120円。1つから買える）", "a": "福岡県福岡市中央区高砂2-8-3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%81%A8%E3%82%88%E5%94%90%E4%BA%AD%20%E9%AB%98%E7%A0%82%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%AB%98%E7%A0%822-8-3", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-mizutaki-toyokaratei-takasago", "food": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-toyokaratei-takasago.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-mizutaki-toyokaratei-takasago_exterior.jpg"}, {"i": 27, "n": "小金ちゃん", "c": ["屋台・食べ歩き"], "v": "レストラン", "lat": 33.590851, "lng": 130.396027, "d": "焼きラーメン（ゆでた豚骨ラーメンの麺を鉄板でソースとともに炒めた一皿。この店が考案したとされる）／明太玉子焼き（辛子明太子を巻き込んだ玉子焼き）／どて焼き（牛すじなどを味噌で煮込んだ一品）", "a": "福岡県福岡市中央区天神2-14-13", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E9%87%91%E3%81%A1%E3%82%83%E3%82%93%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%A5%9E2-14-13", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-koganechan", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-koganechan.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-koganechan_exterior.jpg"}, {"i": 28, "n": "喜柳", "c": ["屋台・食べ歩き"], "v": "レストラン", "lat": 33.588455, "lng": 130.401932, "d": "モチモチ餃子（厚めの皮で包んだ焼き餃子）／博多グル巻き（博多の食材を巻いた名物の一品）／焼きラーメン（豚骨ラーメンの麺を鉄板で炒めた福岡の屋台めし）", "a": "福岡県福岡市中央区天神1-4-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%9C%E6%9F%B3%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%A5%9E1-4-1", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-kiryu", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-kiryu.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-kiryu_exterior.jpg"}, {"i": 29, "n": "天神 屋台 あごだし亭きさいち", "c": ["屋台・食べ歩き"], "v": "レストラン", "lat": 33.591782, "lng": 130.398407, "d": "あごだしおでん（飛び魚のだしで炊いたおでん）／あごだし山芋鉄板（すりおろした山芋をあごだしで仕立てた鉄板焼き）／かけうどん（あごだしのつゆで出す〆のうどん）", "a": "福岡県福岡市中央区天神2-12-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E7%A5%9E%20%E5%B1%8B%E5%8F%B0%20%E3%81%82%E3%81%94%E3%81%A0%E3%81%97%E4%BA%AD%E3%81%8D%E3%81%95%E3%81%84%E3%81%A1%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%A5%9E2-12-1", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-kisaichi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-kisaichi.jpg", "ext": ""}, {"i": 30, "n": "博多 屋台バー えびちゃん", "c": ["屋台・食べ歩き"], "v": "レストラン", "lat": 33.593269, "lng": 130.400742, "d": "オリジナルカクテル（グレープフルーツジュースとイチゴのリキュールを使う「これはうまい」など。季節のフルーツやハーブを使った品もある）／カマンベールチーズのマーマレード焼き（チーズにマーマレードをのせて焼いたつまみ）／牛テールスープのおでん（10月〜5月の季節メニュー）", "a": "福岡県福岡市中央区天神4-2-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%20%E5%B1%8B%E5%8F%B0%E3%83%90%E3%83%BC%20%E3%81%88%E3%81%B3%E3%81%A1%E3%82%83%E3%82%93%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%A5%9E4-2-1", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-ebichan", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-ebichan.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-ebichan_exterior.jpg"}, {"i": 31, "n": "レミさんち", "c": ["屋台・食べ歩き"], "v": "レストラン", "lat": 33.587112, "lng": 130.40155, "d": "エスカルゴ（にんにくバターで焼いたフランスの定番前菜）／キッシュ（卵と生クリームの塩味のタルト）／ワイン（グラスで手ごろな値段で出す）", "a": "福岡県福岡市中央区渡辺通4-9", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%83%9F%E3%81%95%E3%82%93%E3%81%A1%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B8%A1%E8%BE%BA%E9%80%9A4-9", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-remisanchi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-remisanchi.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-remisanchi_exterior.jpg"}, {"i": 32, "n": "小島商店", "c": ["屋台・食べ歩き"], "v": "レストラン", "lat": 33.590557, "lng": 130.408463, "d": "博多ラーメン（豚骨スープの細麺ラーメン）／明太オムレツ（辛子明太子を包んだオムレツ）／山芋と明太のふわふわ鉄板（すりおろした山芋と明太子を鉄板で焼いた一品）", "a": "福岡県福岡市博多区中洲1-8", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E5%B3%B6%E5%95%86%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%AD%E6%B4%B21-8", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-kojimashoten", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-kojimashoten.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-kojimashoten_exterior.jpg"}, {"i": 33, "n": "明太中毒", "c": ["屋台・食べ歩き"], "v": "レストラン", "lat": 33.593693, "lng": 130.387955, "d": "明太とろろ鍋（明太子とすりおろした山芋を合わせた鍋）／明太春巻き（明太子を巻いて揚げた春巻き）／明太豚バラレタス巻き（豚バラでレタスと明太子を巻いた一品）", "a": "福岡県福岡市中央区長浜3-14", "m": "https://www.google.com/maps/search/?api=1&query=%E6%98%8E%E5%A4%AA%E4%B8%AD%E6%AF%92%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%95%B7%E6%B5%9C3-14", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-mentaichudoku", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-mentaichudoku.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-mentaichudoku_exterior.jpg"}, {"i": 34, "n": "長浜のひろし", "c": ["屋台・食べ歩き"], "v": "レストラン", "lat": 33.593693, "lng": 130.387955, "d": "レタス巻き（豚バラでレタスを巻いて焼く看板の串）／エノキ巻き（えのきを豚バラで巻いた串）／焼きラーメン（豚骨ラーメンの麺を鉄板で炒めた福岡の屋台めし）", "a": "福岡県福岡市中央区長浜3-14", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E6%B5%9C%E3%81%AE%E3%81%B2%E3%82%8D%E3%81%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E9%95%B7%E6%B5%9C3-14", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-nagahama-hiroshi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-nagahama-hiroshi.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-nagahama-hiroshi_exterior.jpg"}, {"i": 35, "n": "住吉酒販 博多駅店", "c": ["屋台・食べ歩き"], "v": "バー・居酒屋・パブ", "lat": 33.589912, "lng": 130.420395, "d": "イロハニ枡（枡の四面に「イ・ロ・ハ・ニ」と書かれ、趣の異なる日本酒4種を注いで飲み比べる住吉酒販の名物。きき酒遊びにも使える）／住吉IPA（角打ち併設店舗だけで出すクラフトビールの樽生）／九州の地酒（店頭で売っている九州各地の日本酒・焼酎をその場で1杯から）", "a": "福岡県福岡市博多区博多駅中央街1-1 JR博多駅 博多デイトス1F みやげもん市場内", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BD%8F%E5%90%89%E9%85%92%E8%B2%A9%20%E5%8D%9A%E5%A4%9A%E9%A7%85%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E5%8D%9A%E5%A4%9A%E9%A7%85%E4%B8%AD%E5%A4%AE%E8%A1%971-1%20JR%E5%8D%9A%E5%A4%9A%E9%A7%85%20%E5%8D%9A%E5%A4%9A%E3%83%87%E3%82%A4%E3%83%88%E3%82%B91F%20%E3%81%BF%E3%82%84%E3%81%92%E3%82%82%E3%82%93%E5%B8%82%E5%A0%B4%E5%86%85", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yatai-sumiyoshi-hakata", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-sumiyoshi-hakata.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yatai-sumiyoshi-hakata_exterior.jpg"}, {"i": 36, "n": "天麩羅処ひらお 本店", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.584015, "lng": 130.456451, "d": "天ぷら定食（きす・白身・青魚・いか・野菜3品。鯖が付くのはこの定食だけ）／お好み定食（好みのネタを選ぶ一番人気の定食）／いかの塩辛（内臓を入れずに上質なまついかで作る自家製。卓上に置かれる）", "a": "福岡県福岡市博多区東平尾2-4-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E9%BA%A9%E7%BE%85%E5%87%A6%E3%81%B2%E3%82%89%E3%81%8A%20%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E6%9D%B1%E5%B9%B3%E5%B0%BE2-4-1", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-hirao-honten", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-hirao-honten.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-hirao-honten_exterior.jpg"}, {"i": 37, "n": "元祖呼子のイカの活造り 河太郎 中洲本店", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.590134, "lng": 130.409241, "d": "いか活造り（生け簀のいかを注文後にさばく。100gから好みの量で頼める）／胡麻さば（鯖の刺身を胡麻だれで食べる博多の一品。鯖は鮮度が要るため仕入れ次第で出ない日がある）／いかしゅうまい 1,500円（税込1,650円。いかの身を詰めた名物の点心）", "a": "福岡県福岡市博多区中洲1-6-6", "m": "https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%E5%91%BC%E5%AD%90%E3%81%AE%E3%82%A4%E3%82%AB%E3%81%AE%E6%B4%BB%E9%80%A0%E3%82%8A%20%E6%B2%B3%E5%A4%AA%E9%83%8E%20%E4%B8%AD%E6%B4%B2%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%AD%E6%B4%B21-6-6", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-kawataro-nakasu", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-kawataro-nakasu.jpg", "ext": ""}, {"i": 38, "n": "鮨 うち尾", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.58543, "lng": 130.416519, "d": "特選ランチ（先付、摘み2種、握り10貫、汁、茶わん蒸し、巻、デザートの昼のコース）／ディナー「雅」23,000円（摘みを多く組んだ最上位のおまかせ）／握り（雲丹・鮪など、その日の仕入れで内容が変わる）", "a": "福岡県福岡市博多区博多駅前4-5-6", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AE%A8%20%E3%81%86%E3%81%A1%E5%B0%BE%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E5%8D%9A%E5%A4%9A%E9%A7%85%E5%89%8D4-5-6", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-sushi-uchio", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-sushi-uchio.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-sushi-uchio_exterior.jpg"}, {"i": 39, "n": "割烹よし田 天神本店", "c": ["和食"], "v": "レストラン", "lat": 33.592636, "lng": 130.400635, "d": "鯛茶（胡麻だれに漬けた鯛の刺身を飯にのせ、出汁をかけて食べる創業時からの名物。1.5倍 2,530円・2倍 3,410円もある）／鯛茶天ぷらハーフセット（昼の一番人気。天ぷらと鯛茶の組み合わせ）／会席料理「千歳」8,800円（いか活造り・ふぐ刺・博多地鶏の水炊き・鯛茶の構成）", "a": "福岡県福岡市中央区天神1-14-14", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%E3%82%88%E3%81%97%E7%94%B0%20%E5%A4%A9%E7%A5%9E%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%A5%9E1-14-14", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-kappo-yoshida", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-kappo-yoshida.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-kappo-yoshida_exterior.jpg"}, {"i": 40, "n": "博多料亭 稚加榮", "c": ["和食"], "v": "レストラン", "lat": 33.587658, "lng": 130.392075, "d": "昼定食（刺身三種盛り＝活勘八・真鯛・鮪、渡り蟹の味噌汁、天婦羅盛合せ、野菜の炊合せ、茶碗蒸し、明太海苔と明太高菜）／あら炊き（昼定食の蓋物を＋550円で変更できる。数量限定）／辛子明太子（店が自社で作る看板商品で、料理にも使う）", "a": "福岡県福岡市中央区大名2-2-17", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E6%96%99%E4%BA%AD%20%E7%A8%9A%E5%8A%A0%E6%A6%AE%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E5%90%8D2-2-17", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-chikae", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-chikae.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-chikae_exterior.jpg"}, {"i": 41, "n": "博多旬鮮 もみじ 胡麻サバ 焼鳥 もつ鍋", "c": ["寿司・海鮮", "和食"], "v": "レストラン", "lat": 33.582672, "lng": 130.405655, "d": "博多胡麻サバ刺身（鯖の刺身を胡麻だれで和えた博多の名物。仕入れ次第で出ない日がある）／玄海お刺身盛り合わせ（玄界灘の旬の魚を盛り合わせた一皿）／博多出し巻き明太玉子焼き 759円（明太子を巻き込んだ出汁巻き）", "a": "福岡県福岡市中央区渡辺通2-1-82 電気ビル共創館1階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E6%97%AC%E9%AE%AE%20%E3%82%82%E3%81%BF%E3%81%98%20%E8%83%A1%E9%BA%BB%E3%82%B5%E3%83%90%20%E7%84%BC%E9%B3%A5%20%E3%82%82%E3%81%A4%E9%8D%8B%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B8%A1%E8%BE%BA%E9%80%9A2-1-82%20%E9%9B%BB%E6%B0%97%E3%83%93%E3%83%AB%E5%85%B1%E5%89%B5%E9%A4%A81%E9%9A%8E", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-momiji-gomasaba", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-momiji-gomasaba.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-momiji-gomasaba_exterior.jpg"}, {"i": 42, "n": "海鮮居酒屋 博六（ひろむ）柳橋連合市場内", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.58297, "lng": 130.408401, "d": "刺し盛り（長浜市場から直送した魚を盛り合わせる看板。内容で1,500円〜3,000円）／アジフライ（1枚290円から頼める）／和牛酢もつ 850円（酢であえたもつの小皿）", "a": "福岡県福岡市中央区春吉1-6-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%8D%9A%E5%85%AD%EF%BC%88%E3%81%B2%E3%82%8D%E3%82%80%EF%BC%89%E6%9F%B3%E6%A9%8B%E9%80%A3%E5%90%88%E5%B8%82%E5%A0%B4%E5%86%85%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%98%A5%E5%90%891-6-1", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-hiromu-yanagibashi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-hiromu-yanagibashi.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-hiromu-yanagibashi_exterior.jpg"}, {"i": 43, "n": "博多割烹流れ鮨 海進丸（1階 流れ鮨）", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.582191, "lng": 130.356827, "d": "特選にぎり盛りランチセット（てんぷら付き。昼の上位セット）／生本まぐろ3種盛り（本まぐろを3種の部位で）／クエ3種盛り 1,200円（冬の玄界灘で珍重されるクエを握りで）", "a": "福岡県福岡市早良区西新5-1-18 海進丸ビル", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E5%89%B2%E7%83%B9%E6%B5%81%E3%82%8C%E9%AE%A8%20%E6%B5%B7%E9%80%B2%E4%B8%B8%EF%BC%881%E9%9A%8E%20%E6%B5%81%E3%82%8C%E9%AE%A8%EF%BC%89%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E6%97%A9%E8%89%AF%E5%8C%BA%E8%A5%BF%E6%96%B05-1-18%20%E6%B5%B7%E9%80%B2%E4%B8%B8%E3%83%93%E3%83%AB", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-kaishinmaru-nishijin", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-kaishinmaru-nishijin.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-kaishinmaru-nishijin_exterior.jpg"}, {"i": 44, "n": "和食 いしくら 姪浜店", "c": ["和食"], "v": "レストラン", "lat": 33.578636, "lng": 130.323196, "d": "刺身膳（刺身5点、茶碗蒸し、小鉢、味噌汁、ご飯の膳）／和定食（刺身3点と天ぷら、茶碗蒸しの組み合わせ）／いしくら御膳 2,980円（刺身3点盛り・そばずし・焼物・牛ステーキを一つの膳に）", "a": "福岡県福岡市西区内浜1-15-5", "m": "https://www.google.com/maps/search/?api=1&query=%E5%92%8C%E9%A3%9F%20%E3%81%84%E3%81%97%E3%81%8F%E3%82%89%20%E5%A7%AA%E6%B5%9C%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E8%A5%BF%E5%8C%BA%E5%86%85%E6%B5%9C1-15-5", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-washoku-ishikura-meinohama", "food": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-ishikura-meinohama.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-washoku-ishikura-meinohama_exterior.jpg"}, {"i": 45, "n": "とりかわ粋恭 薬院本店", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 33.582035, "lng": 130.397293, "d": "とりかわ（鶏の首皮を串に巻き、何度も焼き重ねて脂を落とした福岡独特の串。220円）／ばら（豚バラ串。福岡では最初の1本に頼む定番。190円）／ササミシギ焼き（ささみをレアに焼き、辛めのわさび醤油で食べる。350円）", "a": "福岡県福岡市中央区薬院1-11-15", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%8A%E3%81%8B%E3%82%8F%E7%B2%8B%E6%81%AD%20%E8%96%AC%E9%99%A2%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%96%AC%E9%99%A21-11-15", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-torikawa-suikyo", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-torikawa-suikyo.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-torikawa-suikyo_exterior.jpg"}, {"i": 46, "n": "焼とりの八兵衛 上人橋通り店", "c": ["居酒屋・焼肉"], "v": "食べ歩き", "lat": 33.583527, "lng": 130.396118, "d": "★豚バラ（店が「BUTABARA TO THE WORLD」を掲げる看板の串。270円）／★黒皮（鶏皮の串。220円）／《名物》えんどう豆の串揚げ（えんどう豆を串に刺して揚げた名物。300円）", "a": "福岡県福岡市中央区警固1-4-27 KEGOエイトビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E3%81%A8%E3%82%8A%E3%81%AE%E5%85%AB%E5%85%B5%E8%A1%9B%20%E4%B8%8A%E4%BA%BA%E6%A9%8B%E9%80%9A%E3%82%8A%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%AD%A6%E5%9B%BA1-4-27%20KEGO%E3%82%A8%E3%82%A4%E3%83%88%E3%83%93%E3%83%AB1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-hachibei-shoninbashi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-hachibei-shoninbashi.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-hachibei-shoninbashi_exterior.jpg"}, {"i": 47, "n": "焼鳥高宮 高宮駅前店", "c": ["居酒屋・焼肉"], "v": "食べ歩き", "lat": 33.56596, "lng": 130.415802, "d": "豚バラ（福岡で最初の1本に頼む定番の串。190円）／鳥皮（鶏皮の串。170円）／しろ（豚の大腸の串。150円）", "a": "福岡県福岡市南区野間1-1-19 高宮駅前ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E9%AB%98%E5%AE%AE%20%E9%AB%98%E5%AE%AE%E9%A7%85%E5%89%8D%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%97%E5%8C%BA%E9%87%8E%E9%96%931-1-19%20%E9%AB%98%E5%AE%AE%E9%A7%85%E5%89%8D%E3%83%93%E3%83%AB1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-yakitori-takamiya-ekimae", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-yakitori-takamiya-ekimae.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-yakitori-takamiya-ekimae_exterior.jpg"}, {"i": 48, "n": "焼とり 権兵衛 香椎店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.657562, "lng": 130.44339, "d": "とりかわ（鶏の首皮だけを巻き、3日かけて素焼きとタレ漬けを繰り返す串。165円）／とり皮すもの（とり皮を酢で和えた一品。220円）／とんそく（462円）", "a": "福岡県福岡市東区香椎駅前1-10-1 ブルームピア香椎104", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E3%81%A8%E3%82%8A%20%E6%A8%A9%E5%85%B5%E8%A1%9B%20%E9%A6%99%E6%A4%8E%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E6%9D%B1%E5%8C%BA%E9%A6%99%E6%A4%8E%E9%A7%85%E5%89%8D1-10-1%20%E3%83%96%E3%83%AB%E3%83%BC%E3%83%A0%E3%83%94%E3%82%A2%E9%A6%99%E6%A4%8E104", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-gonbee-kashii", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-gonbee-kashii.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-gonbee-kashii_exterior.jpg"}, {"i": 49, "n": "焼肉大ちゃん 福岡市早良区有田本店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.562279, "lng": 130.331406, "d": "宮崎牛カルビ（全国チャンピオン牛の指定店として出すカルビ。1,130円）／牛ホルモン・丸腸・牛ミノ・白せんまい・シマ腸・こりこり（大動脈）・トロハツ（牛ホルモンを部位ごとに品書きに分けて出す。690〜950円）／天草大王 かわ（一度絶滅した熊本の地鶏の皮。530円）", "a": "福岡県福岡市早良区有田7-19-29", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E5%A4%A7%E3%81%A1%E3%82%83%E3%82%93%20%E7%A6%8F%E5%B2%A1%E5%B8%82%E6%97%A9%E8%89%AF%E5%8C%BA%E6%9C%89%E7%94%B0%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E6%97%A9%E8%89%AF%E5%8C%BA%E6%9C%89%E7%94%B07-19-29", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-daichan-arita", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-daichan-arita.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-daichan-arita_exterior.jpg"}, {"i": 50, "n": "焼肉くるり今宿店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.581467, "lng": 130.265839, "d": "くるり任せホルモン5種盛り（一頭買いのホルモンを店任せで5種。2,990円）／上物希少部位5種盛り（ザブトン・リブ巻き・イチボなど希少部位の盛り合わせ。9,300円）／くるり特選弁当（薄切りカルビとカルビの持ち帰り弁当。1,850円）", "a": "福岡県福岡市西区今宿3-7-9", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%81%8F%E3%82%8B%E3%82%8A%E4%BB%8A%E5%AE%BF%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E8%A5%BF%E5%8C%BA%E4%BB%8A%E5%AE%BF3-7-9", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-kururi-imajuku", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-kururi-imajuku.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-kururi-imajuku_exterior.jpg"}, {"i": 51, "n": "高宮ホルモン まる福", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.567471, "lng": 130.414825, "d": "下町ホルモン（みそか赤辛のタレを選ぶ看板のホルモン。869円）／ホルモン焼の部位別品書き（上ミノ・シマ腸・赤センマイ・牛レバー・ハツを660〜869円で、タレも選べる）／0秒ロース（薄切りロースを炙って溶き卵にくぐらせる。1,199円）", "a": "福岡県福岡市南区大楠3-20-1 宮崎ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AB%98%E5%AE%AE%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%20%E3%81%BE%E3%82%8B%E7%A6%8F%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%97%E5%8C%BA%E5%A4%A7%E6%A5%A03-20-1%20%E5%AE%AE%E5%B4%8E%E3%83%93%E3%83%AB1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-takamiya-horumon-marufuku", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-takamiya-horumon-marufuku.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-takamiya-horumon-marufuku_exterior.jpg"}, {"i": 52, "n": "とり皮 お市", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 33.599308, "lng": 130.408646, "d": "とり皮（たまり）（鶏皮を手で串に巻き、タケシゲ醤油の合わせだれに漬けて5日かけて脂を落としてから焼く看板の1本。200円）／福岡糸島産バラ串（糸島産の豚バラ。福岡の焼鳥で最初に頼まれる定番の串。300円）／名物ごまさば（活〆のサバをごまだれで和えた博多の定番。1,300円）", "a": "福岡県福岡市博多区中呉服町3-29 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%8A%E7%9A%AE%20%E3%81%8A%E5%B8%82%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%AD%E5%91%89%E6%9C%8D%E7%94%BA3-29%201F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-torikawa-oichi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-torikawa-oichi.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-torikawa-oichi_exterior.jpg"}, {"i": 53, "n": "焼鳥 とりかわ 友家 福岡干隈店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.550587, "lng": 130.348694, "d": "タレかわ（鶏皮をぐるぐる巻きにして焼き重ねた、たれ味のとりかわ。170円）／塩かわ（同じとりかわを塩で。170円）／ささみのしぎ焼き（ささみをレアに焼いて出す一品。500円）", "a": "福岡県福岡市城南区干隈2-55-15", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%A8%E3%82%8A%E3%81%8B%E3%82%8F%20%E5%8F%8B%E5%AE%B6%20%E7%A6%8F%E5%B2%A1%E5%B9%B2%E9%9A%88%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%9F%8E%E5%8D%97%E5%8C%BA%E5%B9%B2%E9%9A%882-55-15", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yakiniku-torikawa-tomoya-hoshikuma", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yakiniku-torikawa-tomoya-hoshikuma.jpg", "ext": ""}, {"i": 54, "n": "バークレー", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.594368, "lng": 130.406769, "d": "ハンバーグカレー（鉄のフライパンで供するハンバーグに欧風カレーを合わせた看板の一皿）／ハンバーグステーキセット（サラダ・味噌汁・ライスが付く定食仕立て）／エビフライカレー（大ぶりの海老フライを欧風カレーにのせたもの）", "a": "福岡県福岡市博多区上川端町11-8", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%BC%E3%82%AF%E3%83%AC%E3%83%BC%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%8A%E5%B7%9D%E7%AB%AF%E7%94%BA11-8", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-barkley", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-barkley.jpg", "ext": ""}, {"i": 55, "n": "レストラン花の木", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.589401, "lng": 130.373947, "d": "Dejeuner A（平日限定のランチコース。アミューズ・ブーシュ／スープ／メイン料理／デセール／プティフール／カフェ）／和牛フィレ肉ステーキ（コースのメインを＋4,000円で替えられる看板の一品）／オニオン・グラタン・スープ（＋1,600円で加えられる、古典の技法を受け継ぐ定番）", "a": "福岡県福岡市中央区大濠公園1-3 ボートハウス大濠パーク2F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E8%8A%B1%E3%81%AE%E6%9C%A8%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E6%BF%A0%E5%85%AC%E5%9C%921-3%20%E3%83%9C%E3%83%BC%E3%83%88%E3%83%8F%E3%82%A6%E3%82%B9%E5%A4%A7%E6%BF%A0%E3%83%91%E3%83%BC%E3%82%AF2F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-hananoki", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-hananoki.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-hananoki_exterior.jpg"}, {"i": 56, "n": "ピエトロ本店 セントラーレ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.591728, "lng": 130.396255, "d": "能古島にんにくたっぷり 本気のペペロンチーノ（本店限定。能古島の自社農場で育てたにんにくを使う）／能古島サラダ（同じ農場の野菜を使う本店限定のサラダ。1,300円・税込1,430円）／ピエトロクラシカルプリン（本店でしか食べられない固めのプリン。450円・税込495円）", "a": "福岡県福岡市中央区天神3-4-5 ピエトロビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%94%E3%82%A8%E3%83%88%E3%83%AD%E6%9C%AC%E5%BA%97%20%E3%82%BB%E3%83%B3%E3%83%88%E3%83%A9%E3%83%BC%E3%83%AC%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A9%E7%A5%9E3-4-5%20%E3%83%94%E3%82%A8%E3%83%88%E3%83%AD%E3%83%93%E3%83%AB1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-pietro-centrale", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-pietro-centrale.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-pietro-centrale_exterior.jpg"}, {"i": 57, "n": "タイ屋台居酒屋 ガムランディー 大名本店", "c": ["洋食・各国料理"], "v": "バー・居酒屋・パブ", "lat": 33.586044, "lng": 130.395523, "d": "タイ式チキンライス（カオマンガイ／鶏のスープで炊いた飯に蒸し鶏をのせ、タオチオ〈タイの豆味噌〉のタレで食べる）／海老の酸辛スープ（トムヤムクン／辛さと酸味の効いたタイの代表的なスープ）／グリーンパパイヤのサラダ（ソムタム／青いパパイヤを唐辛子とライムで和えた東北タイのサラダ）", "a": "福岡県福岡市中央区大名1-1-20 南風ビルB1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%BF%E3%82%A4%E5%B1%8B%E5%8F%B0%E5%B1%85%E9%85%92%E5%B1%8B%20%E3%82%AC%E3%83%A0%E3%83%A9%E3%83%B3%E3%83%87%E3%82%A3%E3%83%BC%20%E5%A4%A7%E5%90%8D%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E5%90%8D1-1-20%20%E5%8D%97%E9%A2%A8%E3%83%93%E3%83%ABB1", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-gamrandii", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-gamrandii.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-gamrandii_exterior.jpg"}, {"i": 58, "n": "中華酒場 隆興 呉服町本店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.597187, "lng": 130.411774, "d": "麻婆豆腐（867円。ハッピーアワーでは434円）／担々麺（867円。辛さを4段階から選べる）／羊蝎子（ヤンシェズ）火鍋（5,038円・2〜3人分。羊の背骨を煮込む北京の鍋で、野菜セット付き）", "a": "福岡県福岡市博多区上呉服町2-122", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E9%85%92%E5%A0%B4%20%E9%9A%86%E8%88%88%20%E5%91%89%E6%9C%8D%E7%94%BA%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%8A%E5%91%89%E6%9C%8D%E7%94%BA2-122", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-ryukou", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-ryukou.jpg", "ext": ""}, {"i": 59, "n": "小さな韓国 あぷろ 天神大名店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.586906, "lng": 130.391617, "d": "【鹿児島産】霧島山麓豚のサムギョプサル（厚切りの三枚肉を鉄板で焼き、エゴマの葉や大根スライスで巻いて食べる。2人前から）／あぷろのナッコプセ（ホルモン・海老・タコを特製のヤンニョムで煮込む辛い鍋。2人前から）／あぷろチヂミ（この店の定番として長く出している韓国風お好み焼き）", "a": "福岡県福岡市中央区大名1-9-23 大名ハーモニービル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E3%81%95%E3%81%AA%E9%9F%93%E5%9B%BD%20%E3%81%82%E3%81%B7%E3%82%8D%20%E5%A4%A9%E7%A5%9E%E5%A4%A7%E5%90%8D%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E5%90%8D1-9-23%20%E5%A4%A7%E5%90%8D%E3%83%8F%E3%83%BC%E3%83%A2%E3%83%8B%E3%83%BC%E3%83%93%E3%83%AB1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-apuro-daimyo", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-apuro-daimyo.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-apuro-daimyo_exterior.jpg"}, {"i": 60, "n": "ステーキハウス かも川", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.580593, "lng": 130.396378, "d": "テンダーロインステーキ（ヒレ。100g 8,250円。季節の野菜ソテーとサラダ付き、量は100g単位で調整できる）／サーロインステーキ（ロース。100g 8,250円）／エスカルゴブルギニョン（バターとにんにくで焼くエスカルゴ。2,750円）", "a": "福岡県福岡市中央区薬院2-3-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E3%83%8F%E3%82%A6%E3%82%B9%20%E3%81%8B%E3%82%82%E5%B7%9D%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%96%AC%E9%99%A22-3-3", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-kamogawa", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-kamogawa.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-kamogawa_exterior.jpg"}, {"i": 61, "n": "欧風ライスカレー Ken's 住吉本店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.583862, "lng": 130.416412, "d": "牛とろ肉入りカレー（佐賀牛・伊万里牛のA4ランク以上をルーに溶かし込んだ看板の一皿。1,080円）／溶岩チーズカレー（キーマカレーに溶かしたチーズと温泉卵をのせる。1,530円）／たっぷり茄子カレー（茄子を多く入れた定番。930円）", "a": "福岡県福岡市博多区住吉5-1-6", "m": "https://www.google.com/maps/search/?api=1&query=%E6%AC%A7%E9%A2%A8%E3%83%A9%E3%82%A4%E3%82%B9%E3%82%AB%E3%83%AC%E3%83%BC%20Ken%27s%20%E4%BD%8F%E5%90%89%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%BD%8F%E5%90%895-1-6", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-kens-sumiyoshi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-kens-sumiyoshi.jpg", "ext": ""}, {"i": 62, "n": "うえすたん 警固店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.58469, "lng": 130.391235, "d": "ビフテキサーロイン（もやしを敷いた鉄板で出す看板の一皿。150gで1,980円、100g〜450gの8段階）／ジャポネハンバーグ（200gのハンバーグを和風だれで。1,280円）／手造りハムのサラダ（自社工房の自家製ハムを使うサラダ）", "a": "福岡県福岡市中央区警固2-14-5", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%88%E3%81%99%E3%81%9F%E3%82%93%20%E8%AD%A6%E5%9B%BA%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%AD%A6%E5%9B%BA2-14-5", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-yoshoku-western-kego", "food": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-western-kego.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-yoshoku-western-kego_exterior.jpg"}, {"i": 63, "n": "珈琲舎のだ 大名本店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.589756, "lng": 130.393112, "d": "のだブレンド（厳選した高級豆を3種類以上ブレンドし、サイフォンで抽出する定番。まろやかなコクと芳醇な香り）／ウィンナーコーヒー（生クリームに温かい珈琲を注ぎ、途中でざらめを入れて味を変える一杯）／のだプリン（大名本店だけで出す自家製プリン）", "a": "福岡県福岡市中央区大名2丁目10-1 シャンボール大名1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E8%88%8E%E3%81%AE%E3%81%A0%20%E5%A4%A7%E5%90%8D%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E5%A4%A7%E5%90%8D2%E4%B8%81%E7%9B%AE10-1%20%E3%82%B7%E3%83%A3%E3%83%B3%E3%83%9C%E3%83%BC%E3%83%AB%E5%A4%A7%E5%90%8D1F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-noda-daimyo", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-noda-daimyo.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-noda-daimyo_exterior.jpg"}, {"i": 64, "n": "珈琲美美", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.582676, "lng": 130.382446, "d": "中味ブレンド（ハラール・モカをベースにした定番。ネルドリップで抽出する）／趣味ブレンド（深煎りのフレンチロースト。アイスコーヒーにも使う）／フルーツケーキ（7種の果実をそれぞれ別の酒で漬け込んだ、この店で唯一のフードメニュー）", "a": "福岡県福岡市中央区赤坂2-6-27", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E7%BE%8E%E7%BE%8E%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%B5%A4%E5%9D%822-6-27", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-bimi", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-bimi.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-bimi_exterior.jpg"}, {"i": 65, "n": "REC COFFEE 薬院駅前店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.581341, "lng": 130.403809, "d": "TODAY'S COFFEE（その日のドリップ。レギュラー560円・ラージ660円）／REC'S SPECIALTY #04（店の看板にあたるスペシャルティ。レギュラー830円）／BUTTER TOAST（平日11時までのモーニング価格で480円）", "a": "福岡県福岡市中央区白金1-1-26 1F", "m": "https://www.google.com/maps/search/?api=1&query=REC%20COFFEE%20%E8%96%AC%E9%99%A2%E9%A7%85%E5%89%8D%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%99%BD%E9%87%911-1-26%201F", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-rec-yakuin", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-rec-yakuin.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-rec-yakuin_exterior.jpg"}, {"i": 66, "n": "manucoffee roasters クジラ店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.580662, "lng": 130.402817, "d": "クジラブレンド（この店の焙煎所で焼く定番のブレンド豆。ミルクに合わせることを想定した配合）／カフェラテ（クジラブレンドを使った一杯。開店時の紹介記事では520円）／モンスタークッキー（マヌの看板にあたる大きなクッキー。開店時の紹介記事では220円）", "a": "福岡県福岡市中央区白金1-18-28", "m": "https://www.google.com/maps/search/?api=1&query=manucoffee%20roasters%20%E3%82%AF%E3%82%B8%E3%83%A9%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E7%99%BD%E9%87%911-18-28", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-manu-kujira", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-manu-kujira.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-manu-kujira_exterior.jpg"}, {"i": 67, "n": "豆香洞コーヒー 博多リバレインモール店", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.595295, "lng": 130.405487, "d": "豆香洞ブレンド（店の看板にあたるハウスブレンド。きれいなあと口と豊かなコク）／フレンチブレンド（薫り高い深煎り。アイスコーヒーやカフェオレ向き）／珈琲羊羹（和菓子好きの店主が作ったコーヒー風味の羊羹。1,242円）", "a": "福岡県福岡市博多区下川端町3-1 博多リバレインモール 地下2階", "m": "https://www.google.com/maps/search/?api=1&query=%E8%B1%86%E9%A6%99%E6%B4%9E%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%20%E5%8D%9A%E5%A4%9A%E3%83%AA%E3%83%90%E3%83%AC%E3%82%A4%E3%83%B3%E3%83%A2%E3%83%BC%E3%83%AB%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%8B%E5%B7%9D%E7%AB%AF%E7%94%BA3-1%20%E5%8D%9A%E5%A4%9A%E3%83%AA%E3%83%90%E3%83%AC%E3%82%A4%E3%83%B3%E3%83%A2%E3%83%BC%E3%83%AB%20%E5%9C%B0%E4%B8%8B2%E9%9A%8E", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-tokado-riverain", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-tokado-riverain.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-tokado-riverain_exterior.jpg"}, {"i": 68, "n": "鈴懸 博多 鈴懸本店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.594852, "lng": 130.406662, "d": "すずのパフェ（鈴の形の最中をのせたパフェ。本店だけで出す）／あんみつ（果物を多めに盛り、追加料金でアイスをのせられる）／季節のお茶（月替わりで内容が変わる、茶舗だけの一服）", "a": "福岡県福岡市博多区上川端町12-20 ふくぎん博多ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E9%88%B4%E6%87%B8%20%E5%8D%9A%E5%A4%9A%20%E9%88%B4%E6%87%B8%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%8A%E5%B7%9D%E7%AB%AF%E7%94%BA12-20%20%E3%81%B5%E3%81%8F%E3%81%8E%E3%82%93%E5%8D%9A%E5%A4%9A%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-suzukake-honten", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-suzukake-honten.jpg", "ext": ""}, {"i": 69, "n": "川端ぜんざい広場", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.593697, "lng": 130.407867, "d": "川端ぜんざい（北海道大納言の粒を残した強い甘さのぜんざいに、焼きたての餅を2個のせる）／氷ぜんざい（夏季限定のかき氷。小豆がたっぷり入る）／持ち帰り用ぜんざい（1人前450円で持ち帰れる）", "a": "福岡県福岡市博多区上川端町10-254", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E7%AB%AF%E3%81%9C%E3%82%93%E3%81%96%E3%81%84%E5%BA%83%E5%A0%B4%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E5%8D%9A%E5%A4%9A%E5%8C%BA%E4%B8%8A%E5%B7%9D%E7%AB%AF%E7%94%BA10-254", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-kawabata-zenzai", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-kawabata-zenzai.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-kawabata-zenzai_exterior.jpg"}, {"i": 70, "n": "フランス菓子16区", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.578526, "lng": 130.39444, "d": "今月のデセール（月替わりの喫茶限定の皿盛り菓子。2026年11月はアールグレイのスープにチーズのテリーヌを合わせた一皿）／ダックワーズ（この店が日本に広めた焼き菓子）／八女玉露のテリーヌ（1日25本の数量限定で出す季節の菓子）", "a": "福岡県福岡市中央区薬院4丁目20-10", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%83%A9%E3%83%B3%E3%82%B9%E8%8F%93%E5%AD%9016%E5%8C%BA%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E8%96%AC%E9%99%A24%E4%B8%81%E7%9B%AE20-10", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-16ku", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-16ku.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-16ku_exterior.jpg"}, {"i": 71, "n": "抹茶カフェHACHI 姪浜本店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.57793, "lng": 130.32431, "d": "桝のティラミス（一合枡に入れた抹茶ティラミス。ほうじ茶味も選べる。1,000円）／抹茶パフェ（抹茶アイス・白玉・小豆を重ねたパフェ）／HACHIのよくばり三段重（抹茶ロール・わらび餅黒蜜かけ・ミニ抹茶タルト・ミニシフォンケーキの三段重。1,500円）", "a": "福岡県福岡市西区姪浜駅南2-25-43", "m": "https://www.google.com/maps/search/?api=1&query=%E6%8A%B9%E8%8C%B6%E3%82%AB%E3%83%95%E3%82%A7HACHI%20%E5%A7%AA%E6%B5%9C%E6%9C%AC%E5%BA%97%20%E7%A6%8F%E5%B2%A1%E7%9C%8C%E7%A6%8F%E5%B2%A1%E5%B8%82%E8%A5%BF%E5%8C%BA%E5%A7%AA%E6%B5%9C%E9%A7%85%E5%8D%972-25-43", "u": "../japan/fukuoka/fukuoka.html#c-fukuoka-cafe-matcha-hachi-meinohama", "food": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-matcha-hachi-meinohama.jpg", "ext": "../japan/fukuoka/img/fukuoka/fukuoka-cafe-matcha-hachi-meinohama_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.585854,130.396122],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('fukuoka', "福岡");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
