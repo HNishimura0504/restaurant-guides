@@ -110,8 +110,10 @@
 | 高知県 | 南国市 | 43 | [japan/kochi/](japan/kochi/) |
 | 福岡県 | 福岡市 | 72 | [japan/fukuoka/](japan/fukuoka/) |
 | 福岡県 | 北九州市 | 73 | [japan/fukuoka/](japan/fukuoka/) |
+| 佐賀県 | 佐賀市 | 50 | [japan/saga/](japan/saga/) |
+| 佐賀県 | 唐津市 | 45 | [japan/saga/](japan/saga/) |
 
-小計 82冊 / 4596店
+小計 84冊 / 4691店
 
 ## 欧州
 

@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>唐津 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>唐津 の食べ歩き地図<span class="n">45店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="唐津 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">唐津 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/saga/karatsu.html"><span class="sn-e">📄</span>唐津のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（113都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "河太郎 呼子店", "c": ["和食"], "v": "レストラン", "lat": 33.546768, "lng": 129.891251, "d": "いか活造り定食（注文を受けてからいけすのイカを捌く定番。活造りを食べ終えたあとゲソを天ぷらにして出す「後造り」つき。いかしゅうまい・吸物・小鉢・ご飯・デザート付きで3,850円）／河太郎定食（いか活造りに加えてイカを余すところなく食べられる定食。4,950円）／呼子 河太郎 しゅうまい（店オリジナルのいかしゅうまい。8個入1,404円、店内で単品でも食べられる）", "a": "佐賀県唐津市呼子町呼子1744-17", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B2%B3%E5%A4%AA%E9%83%8E%20%E5%91%BC%E5%AD%90%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E5%91%BC%E5%AD%901744-17", "u": "../japan/saga/karatsu.html#c-karatsu-ika-kawataro-yobuko", "food": "../japan/saga/img/karatsu/karatsu-ika-kawataro-yobuko.jpg", "ext": "../japan/saga/img/karatsu/karatsu-ika-kawataro-yobuko_exterior.jpg"}, {"i": 1, "n": "海中レストラン萬坊", "c": ["和食"], "v": "レストラン", "lat": 33.538461, "lng": 129.884628, "d": "いか三昧（いか活き造り200gが入るコース。4,950円）／萬坊（いか活き造り100gを含む最上位コース。7,000円）／いか丼（白ご飯をいか丼ハーフに変更するオプションが+880円で付けられる）", "a": "佐賀県唐津市呼子町殿ノ浦1944番地1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E4%B8%AD%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E8%90%AC%E5%9D%8A%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E6%AE%BF%E3%83%8E%E6%B5%A61944%E7%95%AA%E5%9C%B01", "u": "../japan/saga/karatsu.html#c-karatsu-ika-manbou", "food": "../japan/saga/img/karatsu/karatsu-ika-manbou.jpg", "ext": "../japan/saga/img/karatsu/karatsu-ika-manbou_exterior.jpg"}, {"i": 2, "n": "活魚料理 かべしま", "c": ["和食"], "v": "レストラン", "lat": 33.563399, "lng": 129.884814, "d": "呼子イカの活造り（看板料理。いけすの活きイカを重さで提供する。各種コースの主菜）／いかしゅうまい（呼子名物。店によって味が違い、かべしまはふわふわの食感が売り。直売所とネットショップでも売る）／いかコロッケ（プレーン・カレー・チーズなどの種類がある揚げ物。直売所とネットショップで扱う）", "a": "佐賀県唐津市呼子町加部島260-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%BB%E9%AD%9A%E6%96%99%E7%90%86%20%E3%81%8B%E3%81%B9%E3%81%97%E3%81%BE%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E5%8A%A0%E9%83%A8%E5%B3%B6260-1", "u": "../japan/saga/karatsu.html#c-karatsu-ika-kabeshima", "food": "../japan/saga/img/karatsu/karatsu-ika-kabeshima.jpg", "ext": "../japan/saga/img/karatsu/karatsu-ika-kabeshima_exterior.jpg"}, {"i": 3, "n": "いか道楽", "c": ["和食"], "v": "レストラン", "lat": 33.55574, "lng": 129.881485, "d": "いか活き造り定食（活き造りと下足の天ぷら、小鉢、いかしゅうまい、茶碗蒸し、ごはん、赤だし、香物、デザート。3,960円）／いか釜活き造り定食（上の内容のごはんをいか釜めしに替えたもの。4,290円）／いか一杯活き造り（イカを一杯まるごと。200g 3,410円・300g 4,950円・350g 5,720円。下足は刺身か天ぷらを選ぶ）", "a": "佐賀県唐津市呼子町加部島3606", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%8B%E9%81%93%E6%A5%BD%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E5%8A%A0%E9%83%A8%E5%B3%B63606", "u": "../japan/saga/karatsu.html#c-karatsu-ika-ikadoraku", "food": "../japan/saga/img/karatsu/karatsu-ika-ikadoraku.jpg", "ext": "../japan/saga/img/karatsu/karatsu-ika-ikadoraku_exterior.jpg"}, {"i": 4, "n": "玄海いか舟処 海舟", "c": ["和食"], "v": "レストラン", "lat": 33.532246, "lng": 129.883118, "d": "いか活き造り定食（イカ活き造りと「いか後造り」を天ぷらか塩焼きから選べる定食。いかしゅうまい2個・茶碗蒸し・小鉢・ご飯・吸物・香物・デザート付きで3,900円）／いかづくし会席（活き造り・後造りに刺身盛合わせとイカ丼が付く。5,400円）／Qサバのお造り定食（唐津市と九州大学が開発した完全養殖の真サバ。平日限定・要事前問い合わせで3,500円）", "a": "佐賀県唐津市呼子町殿ノ浦552-2", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8E%84%E6%B5%B7%E3%81%84%E3%81%8B%E8%88%9F%E5%87%A6%20%E6%B5%B7%E8%88%9F%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E6%AE%BF%E3%83%8E%E6%B5%A6552-2", "u": "../japan/saga/karatsu.html#c-karatsu-ika-kaisyu", "food": "../japan/saga/img/karatsu/karatsu-ika-kaisyu.jpg", "ext": "../japan/saga/img/karatsu/karatsu-ika-kaisyu_exterior.jpg"}, {"i": 5, "n": "お魚処 玄海", "c": ["和食"], "v": "レストラン", "lat": 33.530136, "lng": 129.884796, "d": "いか活き造り膳（活き造りに「下足のお好み」が付き、天ぷら・塩焼き・煮付け・刺身から一つ選べる。いかしゅうまい・小鉢・吸物・ご飯・香物・デザート付きで3,850円）／小潮会席 活きいか（刺身2種盛りと活き造り、下足のお好み、煮つけ、焼物などが付く会席。4,300円、増量は5,200円）／吟さばの造り・たたき（約2週間餌を与えず泳がせて自然選別した真サバ。時価、前もって予約が要る）", "a": "佐賀県唐津市呼子町殿ノ浦508-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%AD%9A%E5%87%A6%20%E7%8E%84%E6%B5%B7%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E6%AE%BF%E3%83%8E%E6%B5%A6508-3", "u": "../japan/saga/karatsu.html#c-karatsu-ika-yobuko-genkai", "food": "../japan/saga/img/karatsu/karatsu-ika-yobuko-genkai.jpg", "ext": "../japan/saga/img/karatsu/karatsu-ika-yobuko-genkai_exterior.jpg"}, {"i": 6, "n": "活魚料理 漁火", "c": ["和食"], "v": "レストラン", "lat": 33.546692, "lng": 129.899261, "d": "いか活造りコース（いか活き造りと後造り天ぷら、いかしゅうまい、吸物、小鉢、茶碗蒸し、ご飯、デザート。4,260円）／漁火コース（活き造りと後造り天ぷらに旬の刺身盛り合わせとうに丼（小）が付く最上位コース。7,700円）／漁火のいかしゅうまい（店の名物。8個入り1,500円、全国発送可）", "a": "佐賀県唐津市呼子町呼子1467-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%BB%E9%AD%9A%E6%96%99%E7%90%86%20%E6%BC%81%E7%81%AB%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E5%91%BC%E5%AD%901467-1", "u": "../japan/saga/karatsu.html#c-karatsu-ika-isaribi", "food": "../japan/saga/img/karatsu/karatsu-ika-isaribi.jpg", "ext": "../japan/saga/img/karatsu/karatsu-ika-isaribi_exterior.jpg"}, {"i": 7, "n": "唐津茶屋", "c": ["和食"], "v": "レストラン", "lat": 33.454475, "lng": 129.973572, "d": "イカ活造りコース（小鉢、イカ活き造り、後料理（天ぷらまたは塩焼き）、イカシュウマイ、佐賀県産米「夢しずく」の白御飯、味噌汁、フルーツ。3,950円）／イカ活造りコース 上（上の内容に茶そば山芋掛け、イカ茶碗蒸し、イカ釜飯、甘味が付く。4,500円）／イカ活き造り（単品・生け簀料理。小 3,700円前後、中 8,000円前後、大 14,000円前後の時価）", "a": "佐賀県唐津市東城内4-3 渚館きむら4階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%94%90%E6%B4%A5%E8%8C%B6%E5%B1%8B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9D%B1%E5%9F%8E%E5%86%854-3%20%E6%B8%9A%E9%A4%A8%E3%81%8D%E3%82%80%E3%82%894%E9%9A%8E", "u": "../japan/saga/karatsu.html#c-karatsu-ika-karatsu-chaya", "food": "../japan/saga/img/karatsu/karatsu-ika-karatsu-chaya.jpg", "ext": "../japan/saga/img/karatsu/karatsu-ika-karatsu-chaya_exterior.jpg"}, {"i": 8, "n": "日本料理 松風（唐津シーサイドホテル）", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.450829, "lng": 129.986938, "d": "からつの幸（13品の会席。12,000円）／ふぐの刺身（冬季限定・時価。活魚をさばく）／刺身盛り合わせ（五種2,900円から）", "a": "佐賀県唐津市東唐津4-182 唐津シーサイドホテル西館2F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%20%E6%9D%BE%E9%A2%A8%EF%BC%88%E5%94%90%E6%B4%A5%E3%82%B7%E3%83%BC%E3%82%B5%E3%82%A4%E3%83%89%E3%83%9B%E3%83%86%E3%83%AB%EF%BC%89%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9D%B1%E5%94%90%E6%B4%A54-182%20%E5%94%90%E6%B4%A5%E3%82%B7%E3%83%BC%E3%82%B5%E3%82%A4%E3%83%89%E3%83%9B%E3%83%86%E3%83%AB%E8%A5%BF%E9%A4%A82F", "u": "../japan/saga/karatsu.html#c-karatsu-kaisen-matsukaze", "food": "../japan/saga/img/karatsu/karatsu-kaisen-matsukaze.jpg", "ext": "../japan/saga/img/karatsu/karatsu-kaisen-matsukaze_exterior.jpg"}, {"i": 9, "n": "寿し幸", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.443367, "lng": 129.980896, "d": "特上にぎり（汁物付き。3,300円）／海鮮丼（汁物・デザート付き。1,600円、大盛り2,000円）／炙りサーモン丼（表面を炙って中はレア。1,800円）", "a": "佐賀県唐津市東町54-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AF%BF%E3%81%97%E5%B9%B8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9D%B1%E7%94%BA54-1", "u": "../japan/saga/karatsu.html#c-karatsu-kaisen-sushiko", "food": "../japan/saga/img/karatsu/karatsu-kaisen-sushiko.jpg", "ext": "../japan/saga/img/karatsu/karatsu-kaisen-sushiko_exterior.jpg"}, {"i": 10, "n": "活魚料理 潮路乃", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.489082, "lng": 129.944809, "d": "唐津Qサバ活造り（唐津市と九州大学が共同開発した完全養殖のマサバ。店の生簀で泳がせたものを活造りにする。5,500円）／鯛の荒炊き（2,750円。定食は2,800円で、注文後に炊くため30分ほどかかる）／さざえのつぼ焼き（3個2,100円）・あわびステーキ（4,600円より）", "a": "佐賀県唐津市浦5183-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%BB%E9%AD%9A%E6%96%99%E7%90%86%20%E6%BD%AE%E8%B7%AF%E4%B9%83%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%B5%A65183-1", "u": "../japan/saga/karatsu.html#c-karatsu-kaisen-shiojino", "food": "../japan/saga/img/karatsu/karatsu-kaisen-shiojino.jpg", "ext": "../japan/saga/img/karatsu/karatsu-kaisen-shiojino_exterior.jpg"}, {"i": 11, "n": "彩食亭 やま吟", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.447983, "lng": 129.972794, "d": "やま吟のあら鍋（佐賀県公認のご当地グルメ「幻の唐津んあら鍋」。1人前4,000円、3日前までに要予約・2名から）／ヒラメの薄造り／唐津産 鱧と松茸の土瓶蒸し（秋の品。鱧を骨切りして土瓶で蒸す）", "a": "佐賀県唐津市材木町2080-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BD%A9%E9%A3%9F%E4%BA%AD%20%E3%82%84%E3%81%BE%E5%90%9F%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9D%90%E6%9C%A8%E7%94%BA2080-1", "u": "../japan/saga/karatsu.html#c-karatsu-kaisen-saishokutei-yamagin", "food": "../japan/saga/img/karatsu/karatsu-kaisen-saishokutei-yamagin.jpg", "ext": "../japan/saga/img/karatsu/karatsu-kaisen-saishokutei-yamagin_exterior.jpg"}, {"i": 12, "n": "居酒家しあわせの駅", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.448143, "lng": 129.971436, "d": "名物 鯵フライ（刺身で食べられる鮮度の鯵を、注文を受けてから粗めの生パン粉で中はレアに揚げる。1枚550円）／さしみ4種盛り合せ（駅長おすすめコース5,000円に入る）／出汁たまご焼き（おでん出汁を含ませて鉄板で焼く）", "a": "佐賀県唐津市木綿町1959 商工共済会館", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%AE%B6%E3%81%97%E3%81%82%E3%82%8F%E3%81%9B%E3%81%AE%E9%A7%85%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9C%A8%E7%B6%BF%E7%94%BA1959%20%E5%95%86%E5%B7%A5%E5%85%B1%E6%B8%88%E4%BC%9A%E9%A4%A8", "u": "../japan/saga/karatsu.html#c-karatsu-kaisen-shiawaseno-eki", "food": "../japan/saga/img/karatsu/karatsu-kaisen-shiawaseno-eki.jpg", "ext": "../japan/saga/img/karatsu/karatsu-kaisen-shiawaseno-eki_exterior.jpg"}, {"i": 13, "n": "波戸岬の宿 レストラン鎮西（旧 国民宿舎 波戸岬）", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.551485, "lng": 129.851339, "d": "刺身定食（小鉢・茶碗蒸し・刺身・吸物・御飯・香の物・デザート。2,500円）／太閤煌御膳（刺身・焼物・イカ焼売・煮物・天ぷら・吸物・御飯・香の物・デザート。2,000円）／アジ姿造り（単品1,100円）・海鮮丼（1,700円）", "a": "佐賀県唐津市鎮西町波戸1082", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B3%A2%E6%88%B8%E5%B2%AC%E3%81%AE%E5%AE%BF%20%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E9%8E%AE%E8%A5%BF%EF%BC%88%E6%97%A7%20%E5%9B%BD%E6%B0%91%E5%AE%BF%E8%88%8E%20%E6%B3%A2%E6%88%B8%E5%B2%AC%EF%BC%89%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E9%8E%AE%E8%A5%BF%E7%94%BA%E6%B3%A2%E6%88%B81082", "u": "../japan/saga/karatsu.html#c-karatsu-kaisen-hadomisaki-chinzei", "food": "../japan/saga/img/karatsu/karatsu-kaisen-hadomisaki-chinzei.jpg", "ext": "../japan/saga/img/karatsu/karatsu-kaisen-hadomisaki-chinzei_exterior.jpg"}, {"i": 14, "n": "川魚・季節料理 笹舟", "c": ["和食"], "v": "レストラン", "lat": 33.459064, "lng": 130.088699, "d": "鯉づくし（鯉刺身・鯉塩〆・鯉洗い・鱗煎餅の三種盛に白飯・鯉こく・水物が付く一人前4,400円。1名だけの注文は4,800円）／鰻の蒲焼膳（地野菜三種盛・鰻の蒲焼のお重・お吸物・水物で4,000円）／山女魚づくし（2日前までの予約制。山女魚の刺身か背ごし、塩焼、骨煎餅、握り鮨、吸物など6,600円）", "a": "佐賀県唐津市七山白木1687", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B7%9D%E9%AD%9A%E3%83%BB%E5%AD%A3%E7%AF%80%E6%96%99%E7%90%86%20%E7%AC%B9%E8%88%9F%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E4%B8%83%E5%B1%B1%E7%99%BD%E6%9C%A81687", "u": "../japan/saga/karatsu.html#c-karatsu-washoku-sasabune", "food": "../japan/saga/img/karatsu/karatsu-washoku-sasabune.jpg", "ext": "../japan/saga/img/karatsu/karatsu-washoku-sasabune_exterior.jpg"}, {"i": 15, "n": "飴源", "c": ["和食"], "v": "レストラン", "lat": 33.441025, "lng": 130.067734, "d": "川魚コース（玉島川の鮎・ヤマメ・白魚・鯉などを唐津焼の器で出すコース。7,700円〜）／蟹コース（9月〜1月のツガニを姿煮や蟹飯にするコース。7,700円〜）／鮎の飴焼（創業時から受け継ぐ秘伝のタレで焼く名物。「ふる里宅配便」で全国発送もする）", "a": "佐賀県唐津市浜玉町五反田1058-2", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%B4%E6%BA%90%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%B5%9C%E7%8E%89%E7%94%BA%E4%BA%94%E5%8F%8D%E7%94%B01058-2", "u": "../japan/saga/karatsu.html#c-karatsu-washoku-amegen", "food": "../japan/saga/img/karatsu/karatsu-washoku-amegen.jpg", "ext": "../japan/saga/img/karatsu/karatsu-washoku-amegen_exterior.jpg"}, {"i": 16, "n": "中町 たつ馬", "c": ["和食"], "v": "レストラン", "lat": 33.448933, "lng": 129.96965, "d": "おまかせ会席（毎月1日に入れ替わる標準のコース。5,170円税込）／季節会席（6,600円税込）／ふぐ会席（13,200円税込）", "a": "佐賀県唐津市中町1513-31", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E7%94%BA%20%E3%81%9F%E3%81%A4%E9%A6%AC%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E4%B8%AD%E7%94%BA1513-31", "u": "../japan/saga/karatsu.html#c-karatsu-washoku-tatsuma", "food": "../japan/saga/img/karatsu/karatsu-washoku-tatsuma.jpg", "ext": "../japan/saga/img/karatsu/karatsu-washoku-tatsuma_exterior.jpg"}, {"i": 17, "n": "たまとり", "c": ["和食"], "v": "レストラン", "lat": 33.447201, "lng": 129.969467, "d": "ランチコース（3,500円と5,000円の2本立て。唐津の旬を monohanako の唐津焼で出す）／ディナーコース（8,000円）／アラカルト（夜のみ。内容は季節と仕入れで替わる）", "a": "佐賀県唐津市京町1783 KARAE 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9F%E3%81%BE%E3%81%A8%E3%82%8A%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E4%BA%AC%E7%94%BA1783%20KARAE%201%E9%9A%8E", "u": "../japan/saga/karatsu.html#c-karatsu-washoku-tamatori", "food": "../japan/saga/img/karatsu/karatsu-washoku-tamatori.jpg", "ext": "../japan/saga/img/karatsu/karatsu-washoku-tamatori_exterior.jpg"}, {"i": 18, "n": "いけす和食料理 玄洋", "c": ["和食"], "v": "レストラン", "lat": 33.453415, "lng": 129.968567, "d": "いか活き造り御膳（呼子から毎朝届くイカを砕いた氷の上に盛る。1人およそ200g、いかしゅうまい・茶碗蒸し・小うどん付き、後造りは天ぷらか塩焼き。5,140円税込）／懐石（2階個室。6,000円・8,800円・11,000円の3本立て、特別懐石は16,500円・22,000円）／鰻の棒寿司（折詰・持ち帰り。6,000円税込）", "a": "佐賀県唐津市北城内1-16", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%91%E3%81%99%E5%92%8C%E9%A3%9F%E6%96%99%E7%90%86%20%E7%8E%84%E6%B4%8B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%8C%97%E5%9F%8E%E5%86%851-16", "u": "../japan/saga/karatsu.html#c-karatsu-washoku-genyo", "food": "../japan/saga/img/karatsu/karatsu-washoku-genyo.jpg", "ext": "../japan/saga/img/karatsu/karatsu-washoku-genyo_exterior.jpg"}, {"i": 19, "n": "ひら田", "c": ["和食"], "v": "レストラン", "lat": 33.45311, "lng": 129.96994, "d": "昼のコース（5,500円。前日までの予約制で、入店は中学生以上）／夜のコース（8,800円・13,200円・22,000円の3本立て）／煮物椀「真蒸」（出汁とあしらいを合わせた持ち帰り用の一組。税込1,200円）", "a": "佐賀県唐津市北城内1-3-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B2%E3%82%89%E7%94%B0%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%8C%97%E5%9F%8E%E5%86%851-3-2", "u": "../japan/saga/karatsu.html#c-karatsu-washoku-hirata", "food": "../japan/saga/img/karatsu/karatsu-washoku-hirata.jpg", "ext": "../japan/saga/img/karatsu/karatsu-washoku-hirata_exterior.jpg"}, {"i": 20, "n": "龍虎軒 大名小路店", "c": ["麺類"], "v": "レストラン", "lat": 33.451878, "lng": 129.972641, "d": "ラーメン（脂分を抑えた半濁の豚骨スープに自家製麺。750円）／特製ラーメン（850円）／ワンタンメン（唐津観光協会がおすすめに挙げる一品。価格は未確認）", "a": "佐賀県唐津市大名小路2-41", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BE%8D%E8%99%8E%E8%BB%92%20%E5%A4%A7%E5%90%8D%E5%B0%8F%E8%B7%AF%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%A4%A7%E5%90%8D%E5%B0%8F%E8%B7%AF2-41", "u": "../japan/saga/karatsu.html#c-karatsu-men-ryukoken", "food": "../japan/saga/img/karatsu/karatsu-men-ryukoken.jpg", "ext": "../japan/saga/img/karatsu/karatsu-men-ryukoken_exterior.jpg"}, {"i": 21, "n": "竜里", "c": ["麺類"], "v": "レストラン", "lat": 33.452705, "lng": 129.959045, "d": "ラーメン（豚骨と鶏がらの濃厚スープに細麺。丼の底に骨の髄がたまる。750円）／チャーシューメン（価格は店の公表値を確認できなかった）／大盛り（替え玉が無いので量が欲しいときはこちら）", "a": "佐賀県唐津市菜畑4070-2", "m": "https://www.google.com/maps/search/?api=1&query=%E7%AB%9C%E9%87%8C%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E8%8F%9C%E7%95%914070-2", "u": "../japan/saga/karatsu.html#c-karatsu-men-ryuzato", "food": "../japan/saga/img/karatsu/karatsu-men-ryuzato.jpg", "ext": "../japan/saga/img/karatsu/karatsu-men-ryuzato_exterior.jpg"}, {"i": 22, "n": "お食事処 ほりばた", "c": ["麺類"], "v": "食べ歩き", "lat": 33.441761, "lng": 129.995865, "d": "ほりばたちゃんぽん（創業時から同じ製麺業者の麺に、あっさりした豚骨スープと炒めたキャベツ・もやし・豚肉。900円）／激辛ちゃんぽん（ハバネロパウダーと特製の唐辛子みそで0辛〜30辛。1辛1,150円、8辛1,500円）／もつちゃんぽん（ピリ辛のスープに和牛のモツ。1,600円）", "a": "佐賀県唐津市松南町1-78", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%20%E3%81%BB%E3%82%8A%E3%81%B0%E3%81%9F%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9D%BE%E5%8D%97%E7%94%BA1-78", "u": "../japan/saga/karatsu.html#c-karatsu-men-horibata", "food": "../japan/saga/img/karatsu/karatsu-men-horibata.jpg", "ext": "../japan/saga/img/karatsu/karatsu-men-horibata_exterior.jpg"}, {"i": 23, "n": "関東軒", "c": ["麺類"], "v": "レストラン", "lat": 33.436737, "lng": 129.981415, "d": "支那そば（琥珀色の透き通った醤油スープに自家製の平打ちちぢれ麺。770円）／支那チャーシュー麺（支那そばに自家製チャーシューをたっぷり載せた一番人気。940円）／自家製焼き餃子（皮から手作りのパリもち。3個300円・5個360円・10個720円）", "a": "佐賀県唐津市和多田先石4-2-8", "m": "https://www.google.com/maps/search/?api=1&query=%E9%96%A2%E6%9D%B1%E8%BB%92%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%92%8C%E5%A4%9A%E7%94%B0%E5%85%88%E7%9F%B34-2-8", "u": "../japan/saga/karatsu.html#c-karatsu-men-kantouken", "food": "../japan/saga/img/karatsu/karatsu-men-kantouken.jpg", "ext": "../japan/saga/img/karatsu/karatsu-men-kantouken_exterior.jpg"}, {"i": 24, "n": "らぁ麺 むらまさ 唐津本店", "c": ["麺類"], "v": "レストラン", "lat": 33.44994, "lng": 129.957611, "d": "塩らぁ麺（加唐島の「一の塩」と豚骨・みつせ鶏・アゴだしの淡麗スープ。880円）／醤油らぁ麺（マツキン醸造の生醤油のかえし。880円）／味噌らぁ麺（北海道産をはじめ5種類の味噌をブレンド。980円）", "a": "佐賀県唐津市菜畑3609-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%81%E9%BA%BA%20%E3%82%80%E3%82%89%E3%81%BE%E3%81%95%20%E5%94%90%E6%B4%A5%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E8%8F%9C%E7%95%913609-2", "u": "../japan/saga/karatsu.html#c-karatsu-men-muramasa", "food": "../japan/saga/img/karatsu/karatsu-men-muramasa.jpg", "ext": ""}, {"i": 25, "n": "井手ちゃんぽん 唐津店", "c": ["麺類"], "v": "レストラン", "lat": 33.431816, "lng": 130.007477, "d": "ちゃんぽん 並盛（麺とスープが隠れるほど野菜が載る看板メニュー。970円。小盛890円・麺大盛1,150円）／カツ丼（980円）／唐揚げ（4個440円・2個220円）", "a": "佐賀県唐津市鏡田中3561-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BA%95%E6%89%8B%E3%81%A1%E3%82%83%E3%82%93%E3%81%BD%E3%82%93%20%E5%94%90%E6%B4%A5%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E9%8F%A1%E7%94%B0%E4%B8%AD3561-1", "u": "../japan/saga/karatsu.html#c-karatsu-men-ide-chanpon", "food": "../japan/saga/img/karatsu/karatsu-men-ide-chanpon.jpg", "ext": "../japan/saga/img/karatsu/karatsu-men-ide-chanpon_exterior.jpg"}, {"i": 26, "n": "らぁめん食堂・からもり", "c": ["麺類"], "v": "レストラン", "lat": 33.438538, "lng": 130.030319, "d": "とんこつラーメン（骨50キロを3日炊いた自家製スープ＋特注22番麺。麺の硬さを4段階から選べる。780円）／唐津式担々麺（胡麻ペーストを使わず唐津産唐辛子の自家製ラー油と自家製ミンチで仕上げる豚骨ベース。890円）／有明のり玉ラーメン（有明海苔と卵黄を合わせる。1,030円）", "a": "佐賀県唐津市浜玉町浜崎1922 マリンセンターおさかな村内", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%89%E3%81%81%E3%82%81%E3%82%93%E9%A3%9F%E5%A0%82%E3%83%BB%E3%81%8B%E3%82%89%E3%82%82%E3%82%8A%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%B5%9C%E7%8E%89%E7%94%BA%E6%B5%9C%E5%B4%8E1922%20%E3%83%9E%E3%83%AA%E3%83%B3%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC%E3%81%8A%E3%81%95%E3%81%8B%E3%81%AA%E6%9D%91%E5%86%85", "u": "../japan/saga/karatsu.html#c-karatsu-men-karamori", "food": "../japan/saga/img/karatsu/karatsu-men-karamori.jpg", "ext": ""}, {"i": 27, "n": "大助うどん唐津", "c": ["麺類"], "v": "レストラン", "lat": 33.445045, "lng": 129.962738, "d": "ごぼう天うどん・そば（細切りのごぼう天。700円）／かしわうどん・そば（680円）／天ざるうどん・そば（1,530円）", "a": "佐賀県唐津市熊原町3098-2", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%8A%A9%E3%81%86%E3%81%A9%E3%82%93%E5%94%90%E6%B4%A5%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E7%86%8A%E5%8E%9F%E7%94%BA3098-2", "u": "../japan/saga/karatsu.html#c-karatsu-men-daisuke-udon", "food": "../japan/saga/img/karatsu/karatsu-men-daisuke-udon.jpg", "ext": "../japan/saga/img/karatsu/karatsu-men-daisuke-udon_exterior.jpg"}, {"i": 28, "n": "大手門食堂", "c": ["麺類"], "v": "レストラン", "lat": 33.530167, "lng": 129.86763, "d": "ちゃんぽん（地元の食材をたっぷり使う、店でいちばん人気の一品）／ホットク（韓国のおやつ。生地の中に餡を入れて焼く）／甘夏ゼリー（甘夏の実をくりぬき、その皮を器にして固めるデザート）", "a": "佐賀県唐津市鎮西町名護屋1935", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E6%89%8B%E9%96%80%E9%A3%9F%E5%A0%82%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E9%8E%AE%E8%A5%BF%E7%94%BA%E5%90%8D%E8%AD%B7%E5%B1%8B1935", "u": "../japan/saga/karatsu.html#c-karatsu-men-otemon", "food": "../japan/saga/img/karatsu/karatsu-men-otemon.jpg", "ext": "../japan/saga/img/karatsu/karatsu-men-otemon_exterior.jpg"}, {"i": 29, "n": "串もんがば家", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.448612, "lng": 129.968613, "d": "羽根付き鉄板餃子（鉄板で焼き上げる羽根つきの餃子。店が「自慢の一品」と掲げる看板。580円）／地獄うどん（唐辛子をたっぷり入れた辛い鍋焼きうどん。600円）／白身魚のマヨネーズ焼き（白身魚とたっぷりの野菜をマヨネーズでグラタン風に焼いた熱々の一品。490円）", "a": "佐賀県唐津市刀町1522-2 サンゴビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%B2%E3%82%82%E3%82%93%E3%81%8C%E3%81%B0%E5%AE%B6%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%88%80%E7%94%BA1522-2%20%E3%82%B5%E3%83%B3%E3%82%B4%E3%83%93%E3%83%AB1F", "u": "../japan/saga/karatsu.html#c-karatsu-izakaya-kushimon-gabaya", "food": "../japan/saga/img/karatsu/karatsu-izakaya-kushimon-gabaya.jpg", "ext": "../japan/saga/img/karatsu/karatsu-izakaya-kushimon-gabaya_exterior.jpg"}, {"i": 30, "n": "焼鳥 てっぺん", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.448933, "lng": 129.96965, "d": "野菜巻き（新鮮な野菜を豚バラで巻いて炭火で焼く看板の串。秘伝の手作りスパイスを付けて食べる）／おまかせ焼鳥セット（8本はタレか塩を選んで豚バラ・鳥皮・四つ身・砂ずり・ささみ・せせり・ぼんじり・巻物、4本は豚バラ・砂ずり・四つ身・巻物）／お一人様お任せコース（1,100円と2,200円の2本立てで、1名から予約できる）", "a": "佐賀県唐津市中町1513", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%A6%E3%81%A3%E3%81%BA%E3%82%93%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E4%B8%AD%E7%94%BA1513", "u": "../japan/saga/karatsu.html#c-karatsu-izakaya-yakitori-teppen", "food": "../japan/saga/img/karatsu/karatsu-izakaya-yakitori-teppen.jpg", "ext": ""}, {"i": 31, "n": "網焼鳥 達丸", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.447983, "lng": 129.972794, "d": "鳥三昧セット（若どり・とり皮・鳥ハラミ・せせり・ぼんじりの5種盛り。3,740円）／ジンギスカン 焼き野菜付（2人前からの注文。1,450円）／よくばり桜セット（鶏に牛カルビ・牛ハラミ・豚バラ・ホルモン3種を足した2〜3人前の大皿。7,920円）", "a": "佐賀県唐津市材木町2081-1 さくらビル1F・2F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%B6%B2%E7%84%BC%E9%B3%A5%20%E9%81%94%E4%B8%B8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9D%90%E6%9C%A8%E7%94%BA2081-1%20%E3%81%95%E3%81%8F%E3%82%89%E3%83%93%E3%83%AB1F%E3%83%BB2F", "u": "../japan/saga/karatsu.html#c-karatsu-izakaya-amiyakitori-tatsumaru", "food": "../japan/saga/img/karatsu/karatsu-izakaya-amiyakitori-tatsumaru.jpg", "ext": "../japan/saga/img/karatsu/karatsu-izakaya-amiyakitori-tatsumaru_exterior.jpg"}, {"i": 32, "n": "特選和牛 炭火焼 上場亭 枝去木本店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.485928, "lng": 129.91098, "d": "佐賀牛スタンダードコース 焼肉コース（佐賀牛を軸にした20品。2名から3,300円）／佐賀牛 極美コース（佐賀牛三種盛り・佐賀県産豚二種盛り・佐賀県産鶏二種盛り・和牛ホルモン盛り合わせ・佐賀牛ローストビーフ握りなどに2時間飲み放題が付く。4名から5,500円）／極旨もつ鍋 醤油味・塩味（佐賀和牛のホルモンを使った鍋。コースで選べる）", "a": "佐賀県唐津市枝去木2032-3", "m": "https://www.google.com/maps/search/?api=1&query=%E7%89%B9%E9%81%B8%E5%92%8C%E7%89%9B%20%E7%82%AD%E7%81%AB%E7%84%BC%20%E4%B8%8A%E5%A0%B4%E4%BA%AD%20%E6%9E%9D%E5%8E%BB%E6%9C%A8%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9E%9D%E5%8E%BB%E6%9C%A82032-3", "u": "../japan/saga/karatsu.html#c-karatsu-izakaya-uwabatei-esaruki", "food": "../japan/saga/img/karatsu/karatsu-izakaya-uwabatei-esaruki.jpg", "ext": "../japan/saga/img/karatsu/karatsu-izakaya-uwabatei-esaruki_exterior.jpg"}, {"i": 33, "n": "肉DINING IPPUKU", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.448162, "lng": 129.969772, "d": "佐賀牛コース（牛タンから佐賀牛の上カルビ・ロース・ランプのサイコロステーキ・肉寿司まで。5,000円）／よりどりいっ福コース（佐賀牛・唐津産和豚もちぶた・ありたどりを一度に食べ比べる。4,000円）／佐賀牛の肉寿司（コースに入るほか単品でも頼める）", "a": "佐賀県唐津市中町1830-1", "m": "https://www.google.com/maps/search/?api=1&query=%E8%82%89DINING%20IPPUKU%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E4%B8%AD%E7%94%BA1830-1", "u": "../japan/saga/karatsu.html#c-karatsu-izakaya-niku-dining-ippuku", "food": "../japan/saga/img/karatsu/karatsu-izakaya-niku-dining-ippuku.jpg", "ext": "../japan/saga/img/karatsu/karatsu-izakaya-niku-dining-ippuku_exterior.jpg"}, {"i": 34, "n": "ステーキハウス 蜂 唐津本店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.447922, "lng": 130.045441, "d": "ハンバーグステーキ（手捏ねで成形し、甘口のデミグラスソースか和風のジャポネソースを選ぶ。単品1,300円、セット1,600円）／佐賀牛ヒレ ステーキセット（佐賀牛のヒレにサラダ・ライスまたはパン・コーヒーが付く。150g 14,000円／200g 17,000円）／活ロブスターの鉄板焼（一匹12,000円。ステーキとのコンビセットは2人用26,500円〜）", "a": "佐賀県唐津市浜玉町浜崎217-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E3%83%8F%E3%82%A6%E3%82%B9%20%E8%9C%82%20%E5%94%90%E6%B4%A5%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%B5%9C%E7%8E%89%E7%94%BA%E6%B5%9C%E5%B4%8E217-2", "u": "../japan/saga/karatsu.html#c-karatsu-izakaya-steakhouse-hachi", "food": "../japan/saga/img/karatsu/karatsu-izakaya-steakhouse-hachi.jpg", "ext": "../japan/saga/img/karatsu/karatsu-izakaya-steakhouse-hachi_exterior.jpg"}, {"i": 35, "n": "キャラバン", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.448162, "lng": 129.969772, "d": "特選A5佐賀牛ハンバーグセット（A5ランクの佐賀牛・伊万里牛を使った和牛100％のハンバーグ。唐津の玉葱・卵・塩を使う。昼1,700円／夜2,200円）／特選佐賀牛ステーキセット（佐賀牛を鉄板で焼き上げる看板。昼6,000円〜／夜7,000円〜）／キャラバン特製ドレッシング（1979年の創業以来のもので、地元産の素材を使う。通販で670円から）", "a": "佐賀県唐津市中町1845 丸廣ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AD%E3%83%A3%E3%83%A9%E3%83%90%E3%83%B3%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E4%B8%AD%E7%94%BA1845%20%E4%B8%B8%E5%BB%A3%E3%83%93%E3%83%AB1F", "u": "../japan/saga/karatsu.html#c-karatsu-izakaya-caravan", "food": "../japan/saga/img/karatsu/karatsu-izakaya-caravan.jpg", "ext": ""}, {"i": 36, "n": "Whale Brewing 呼子クラフトビール醸造所", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.541702, "lng": 129.894119, "d": "ペールエール（たっぷりのモルトとホップを使った、朝市に合わせた1杯。700円）／IPA（3種のホップが香る、呼子の青空をイメージした苦みのある1杯。800円）／イカカツ（呼子のイカを使った揚げ物のおつまみ。500円）", "a": "佐賀県唐津市呼子町呼子3764-4", "m": "https://www.google.com/maps/search/?api=1&query=Whale%20Brewing%20%E5%91%BC%E5%AD%90%E3%82%AF%E3%83%A9%E3%83%95%E3%83%88%E3%83%93%E3%83%BC%E3%83%AB%E9%86%B8%E9%80%A0%E6%89%80%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E5%91%BC%E5%AD%903764-4", "u": "../japan/saga/karatsu.html#c-karatsu-izakaya-whale-brewing", "food": "../japan/saga/img/karatsu/karatsu-izakaya-whale-brewing.jpg", "ext": "../japan/saga/img/karatsu/karatsu-izakaya-whale-brewing_exterior.jpg"}, {"i": 37, "n": "からつバーガー 虹ノ松原本店", "c": ["ビール・バー"], "v": "カフェ", "lat": 33.444261, "lng": 130.000095, "d": "スペシャルバーガー（バンズ・たまご・チーズ・パティ・ハム・レタス・デミグラスソースを重ねた一番人気。710円）／ハンバーガー（バンズ・パティ・レタス・デミグラスソースだけの創業からの基本形。440円）／生絞りみかんジュース（その場で絞るみかんのジュース。600円）", "a": "佐賀県唐津市虹ノ松原 虹の松原", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8B%E3%82%89%E3%81%A4%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%20%E8%99%B9%E3%83%8E%E6%9D%BE%E5%8E%9F%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E8%99%B9%E3%83%8E%E6%9D%BE%E5%8E%9F%20%E8%99%B9%E3%81%AE%E6%9D%BE%E5%8E%9F", "u": "../japan/saga/karatsu.html#c-karatsu-cafe-karatsuburger", "food": "../japan/saga/img/karatsu/karatsu-cafe-karatsuburger.jpg", "ext": "../japan/saga/img/karatsu/karatsu-cafe-karatsuburger_exterior.jpg"}, {"i": 38, "n": "大原老舗 和多田店", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 33.432884, "lng": 129.980759, "d": "松露饅頭（虹の松原に自生するキノコ「松露」に見立てた丸い焼き饅頭。こしあんを薄いカステラ生地で包み、銅板で一つずつ手焼きする）／松露路（しょうろじ。精選したこし餡に白小豆を加えて練り上げ、流し型で固めた半生菓子）／もなかあいす（八女抹茶のアイスを、新潟県産もち米の最中ではさんだもの）", "a": "佐賀県唐津市和多田本村4-51", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E5%8E%9F%E8%80%81%E8%88%97%20%E5%92%8C%E5%A4%9A%E7%94%B0%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%92%8C%E5%A4%9A%E7%94%B0%E6%9C%AC%E6%9D%914-51", "u": "../japan/saga/karatsu.html#c-karatsu-cafe-oohara-watada", "food": "../japan/saga/img/karatsu/karatsu-cafe-oohara-watada.jpg", "ext": "../japan/saga/img/karatsu/karatsu-cafe-oohara-watada_exterior.jpg"}, {"i": 39, "n": "Tea ＆ Space 基幸庵", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.450699, "lng": 129.98201, "d": "抹茶と和生菓子の盆（唐津焼の器でいただく抹茶と、厳木の草生庵がつくる和生菓子）／基幸庵風あんみつパフェ（自家製の大納言あずきと抹茶かんてん、白玉に黒蜜。ほうじ茶付き）／宇治の松原（夏季限定のかき氷。ふわふわの氷に自家製の抹茶蜜と大粒の大納言あずき）", "a": "佐賀県唐津市東唐津1丁目9-21", "m": "https://www.google.com/maps/search/?api=1&query=Tea%20%EF%BC%86%20Space%20%E5%9F%BA%E5%B9%B8%E5%BA%B5%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9D%B1%E5%94%90%E6%B4%A51%E4%B8%81%E7%9B%AE9-21", "u": "../japan/saga/karatsu.html#c-karatsu-cafe-kikouan", "food": "../japan/saga/img/karatsu/karatsu-cafe-kikouan.jpg", "ext": "../japan/saga/img/karatsu/karatsu-cafe-kikouan_exterior.jpg"}, {"i": 40, "n": "KARAE TABLE", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.447201, "lng": 129.969467, "d": "さくらポークと季節野菜の特製キーマカレー（佐賀県産ブランド豚「肥前さくらポーク」と、地元農家の野菜をペーストにしてオリジナルブレンドのスパイスで煮込む。十六穀米に「みのり農場」のゆで卵をのせる。単品1,200円）／KARAE TABLEパスタ（旬の唐津食材を使うソースが日替わり。単品1,200円）／唐津焼のマグカップを選べるコーヒーと、季節ごとに変わるスウィーツ", "a": "佐賀県唐津市京町1783 KARAE（唐重）1階", "m": "https://www.google.com/maps/search/?api=1&query=KARAE%20TABLE%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E4%BA%AC%E7%94%BA1783%20KARAE%EF%BC%88%E5%94%90%E9%87%8D%EF%BC%891%E9%9A%8E", "u": "../japan/saga/karatsu.html#c-karatsu-cafe-karae-table", "food": "../japan/saga/img/karatsu/karatsu-cafe-karae-table.jpg", "ext": ""}, {"i": 41, "n": "ファニーななやま", "c": ["カフェ・パン・スイーツ", "ビール・バー"], "v": "レストラン", "lat": 33.435997, "lng": 130.130981, "d": "チリチキン＆ライス（野菜の上に甘くてピリ辛のチキンをのせ、ご飯と混ぜて食べる看板料理。ドリンク付き1,200円）／ブルーベリースイートピザ（ブルーベリーをたっぷりのせたデザートのピザ。700円）／コーヒー（先代からの喫茶店の一杯。クラフトビール「隅田川ブルーイング」の生ビールもある）", "a": "佐賀県唐津市七山滝川540-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%95%E3%82%A1%E3%83%8B%E3%83%BC%E3%81%AA%E3%81%AA%E3%82%84%E3%81%BE%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E4%B8%83%E5%B1%B1%E6%BB%9D%E5%B7%9D540-2", "u": "../japan/saga/karatsu.html#c-karatsu-cafe-funny-nanayama", "food": "../japan/saga/img/karatsu/karatsu-cafe-funny-nanayama.jpg", "ext": "../japan/saga/img/karatsu/karatsu-cafe-funny-nanayama_exterior.jpg"}, {"i": 42, "n": "CALALI", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.452038, "lng": 129.964523, "d": "コーヒー（素材にこだわった飲み物として公式サイトが掲げる一杯）／季節のスイーツ（ショーケースの甘味。日によって替わる）／ポットで出す茶（ガラスのポットで供する。畳の大広間でゆっくり飲める）", "a": "佐賀県唐津市江川町627", "m": "https://www.google.com/maps/search/?api=1&query=CALALI%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%B1%9F%E5%B7%9D%E7%94%BA627", "u": "../japan/saga/karatsu.html#c-karatsu-cafe-calali", "food": "../japan/saga/img/karatsu/karatsu-cafe-calali.jpg", "ext": "../japan/saga/img/karatsu/karatsu-cafe-calali_exterior.jpg"}, {"i": 43, "n": "唐津くん煙工房", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.438999, "lng": 129.995483, "d": "クロックムッシュ・サンドイッチ（自家製のハムとソーセージを使った惣菜パン。売り切れることがある）／石窯ピザ（店内で焼くピザ。冷凍の持ち帰り用もある）／粉雪サラミ（カマンベールチーズと同系統の白カビで熟成させた生サラミ。45g 999円）", "a": "佐賀県唐津市松南町2-76", "m": "https://www.google.com/maps/search/?api=1&query=%E5%94%90%E6%B4%A5%E3%81%8F%E3%82%93%E7%85%99%E5%B7%A5%E6%88%BF%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E6%9D%BE%E5%8D%97%E7%94%BA2-76", "u": "../japan/saga/karatsu.html#c-karatsu-cafe-kunenkobo", "food": "../japan/saga/img/karatsu/karatsu-cafe-kunenkobo.jpg", "ext": "../japan/saga/img/karatsu/karatsu-cafe-kunenkobo_exterior.jpg"}, {"i": 44, "n": "呼子 甚六果実店", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 33.538609, "lng": 129.892756, "d": "唐津の柑橘 甘夏（甘夏かあちゃんの夢甘夏ゼリー、浜玉産ミント、唐津産甘夏シロップ、唐津産柑橘ジュレ、ジンジャークリーム。びんつけや茶舗のほうじ茶が別添。三藤窯の器。1,650円）／トンカ豆薫る いちご（浜玉産エディブルフラワー、ピスタチオ、いちごさんシロップ、メレンゲ、クリームチーズ、ラベンダーパンナコッタ。健太郎窯の器。1,650円）／ライム薫る メロン（九州産メロンと玄海町のキンショウメロンのシロップ、バイマックルーミルク、水切りヨーグルト。隆太窯 健太さんの器。1,650円）", "a": "佐賀県唐津市呼子町呼子3766", "m": "https://www.google.com/maps/search/?api=1&query=%E5%91%BC%E5%AD%90%20%E7%94%9A%E5%85%AD%E6%9E%9C%E5%AE%9F%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%94%90%E6%B4%A5%E5%B8%82%E5%91%BC%E5%AD%90%E7%94%BA%E5%91%BC%E5%AD%903766", "u": "../japan/saga/karatsu.html#c-karatsu-cafe-jinroku-kajitsuten", "food": "../japan/saga/img/karatsu/karatsu-cafe-jinroku-kajitsuten.jpg", "ext": "../japan/saga/img/karatsu/karatsu-cafe-jinroku-kajitsuten_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.471961,129.961714],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('karatsu', "唐津");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
