@@ -1,6 +1,26 @@
+### Café Weidenweber (Erste Frankfurter Zeilbäckerei)（カフェ・ヴァイデンヴェーバー）
+
+@@IMG:europe/germany/img/frankfurt/cafe-weidenweber.jpg@@
+
+`老舗・歴史`
+
+「ツァイル通り初のベーカリー」を名乗り80年以上続く老舗のカフェ・コンディトライ。古い秘伝レシピによるベートマンヒェンやフランクフルター・クランツなど、郷土菓子を守り続けている。
+
+- **一皿**: フランクフルター・クランツ(バタークリームとカラメルアーモンド(クロカント)を重ねた王冠形のリングケーキ。フランクフルトが神聖ローマ皇帝の戴冠都市だったことにちなむ銘菓)
+- **営業時間**: 月〜土 7:00〜18:00
+- **定休日**: 日曜
+- **住所**: Große Friedberger Straße 10, 60313 Frankfurt am Main
+- **予約**: 不要(店頭) — ☎ 電話で予約 +49 69 284538 ／ [公式サイト](http://www.weidenweber.de/)
+- **公式**: [公式サイト](http://www.weidenweber.de/)
+- **選定理由**: 公式サイトが80年以上の歴史と秘伝レシピのベートマンヒェン、フランクフルター・クランツ等の郷土菓子を明記。中心部ツァイル至近で立ち寄りやすい老舗として選定。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Weidenweber%20%28Erste%20Frankfurter%20Zeilb%C3%A4ckerei%29%20Gro%C3%9Fe%20Friedberger%20Stra%C3%9Fe%2010%2C%2060313%20Frankfurt%20am%20Main)
+- **参照元**: [weidenweber.de](https://www.weidenweber.de/) / [gelbeseiten.de](https://www.gelbeseiten.de/gsbiz/17d7daab-af4f-45ad-8c92-1d44c96d4e17)
+
 ### Bitter & Zart Chocolaterie（ビター・ウント・ツァルト）
 
 @@IMG:europe/germany/img/frankfurt/bitter-und-zart.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/bitter-und-zart_exterior.jpg@@
 
 `ブログ推薦` `口コミ突出`
 
@@ -14,13 +34,15 @@
 - **公式**: [公式サイト](http://www.bitterundzart.de/)
 - **選定理由**: TripAdvisorやローカル誌で「市内で最も美しいカフェ」と紹介される定番スイーツ店。美術館街と旧市街散策の動線上にあり、ガイドの甘味枠として最適。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Bitter%20%26%20Zart%20Chocolaterie%20Braubachstra%C3%9Fe%2014%2C%2060311%20Frankfurt%20am%20Main)
-- **参照元**: [bitterundzart.de](https://www.bitterundzart.de/impressum/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d2691406-Reviews-Bitter_Zart-Frankfurt_Hesse.html)
+- **参照元**: 外観写真: 公式サイト（ショーウィンドウ・看板） / 参照元: [bitterundzart.de](https://www.bitterundzart.de/impressum/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d2691406-Reviews-Bitter_Zart-Frankfurt_Hesse.html)
 
 ## アプフェルヴァイン・ワイン
 
 ### Kelterei Possmann（ケルタライ・ポスマン）
 
 @@IMG:europe/germany/img/frankfurt/kelterei-possmann.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/kelterei-possmann_exterior.jpg@@
 
 `老舗・歴史`
 
@@ -34,11 +56,13 @@
 - **公式**: [公式サイト](https://www.possmann.de/)
 - **選定理由**: 公式サイトが1881年創業・敷地内食堂・見学ツアーを明記。「作り手を訪ねる」体験ができる市内唯一級のスポットとしてドリンク枠に選定(ザクセンハウゼンの酒場とは重複しない)。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Kelterei%20Possmann%20Eschborner%20Landstra%C3%9Fe%20156-162%2C%2060489%20Frankfurt%20am%20Main%20%28R%C3%B6delheim%29)
-- **参照元**: [possmann.de](https://www.possmann.de/english/our-family-winery/) / [possmann.de(見学)](https://www.possmann.de/english/our-family-winery/guided-tours/)／写真: [visitfrankfurt.travel](https://www.visitfrankfurt.travel/gastro/kelterei-possmann-und-frankfurter-aepfelwein-botschaft)
+- **参照元**: 外観写真: 公式サイト（屋外の庭席。建物正面ではない） / 参照元: [possmann.de](https://www.possmann.de/english/our-family-winery/) / [possmann.de(見学)](https://www.possmann.de/english/our-family-winery/guided-tours/)／写真: [visitfrankfurt.travel](https://www.visitfrankfurt.travel/gastro/kelterei-possmann-und-frankfurter-aepfelwein-botschaft)
 
 ### Weingut Rollanderhof Weinterrasse (Kleinmarkthalle)（ロランダーホーフ・ヴァインテラッセ）
 
 @@IMG:europe/germany/img/frankfurt/rollanderhof-weinterrasse.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/rollanderhof-weinterrasse_exterior.jpg@@
 
 `ブログ推薦` `食の専門街・市場`
 
@@ -52,13 +76,15 @@
 - **公式**: [公式サイト](http://www.weingut-rollanderhof.de/)
 - **選定理由**: ワイナリー公式サイトがテラスの存在を明記し、Genussmagazin Frankfurt が「土曜昼に地元の社交界が集う」名物スポットとして紹介。市場観光と組み合わせられるドリンク枠として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Weingut%20Rollanderhof%20Weinterrasse%20%28Kleinmarkthalle%29%20Kleinmarkthalle%20%28%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC%E9%9A%8E%29%2C%20Hasengasse%205-7%2C%2060311%20Frankfurt%20am%20Main)
-- **参照元**: [weingut-rollanderhof.de](https://www.weingut-rollanderhof.de/pages/weinterrasse) / [genussmagazin-frankfurt.de](https://www.genussmagazin-frankfurt.de/gastro_service/Kulinarische-Fuehrungen-109/Kleinmarkthalle-Frankfurt-1417.html)／写真: [weingut-rollanderhof.de](https://www.weingut-rollanderhof.de/pages/wochenmarkte)
+- **参照元**: 外観写真: 公式サイト（Kleinmarkthalle 屋上テラス）／Kleinmarkthalle 公式 / 参照元: [weingut-rollanderhof.de](https://www.weingut-rollanderhof.de/pages/weinterrasse) / [genussmagazin-frankfurt.de](https://www.genussmagazin-frankfurt.de/gastro_service/Kulinarische-Fuehrungen-109/Kleinmarkthalle-Frankfurt-1417.html)／写真: [weingut-rollanderhof.de](https://www.weingut-rollanderhof.de/pages/wochenmarkte)
 
 ## 非ドイツ欧州料理
 
 ### Ristorante Carmelo Greco（リストランテ・カルメロ・グレコ）
 
 @@IMG:europe/germany/img/frankfurt/carmelo-greco.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/carmelo-greco_exterior.jpg@@
 
 `ブログ推薦`
 
@@ -72,7 +98,7 @@
 - **公式**: [公式サイト](http://www.carmelo-greco.de/)
 - **選定理由**: ミシュランガイド独版で1つ星として掲載され、Falstaffなどのグルメメディアもフランクフルト随一のイタリアンとして評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ristorante%20Carmelo%20Greco%20Ziegelh%C3%BCttenweg%201-3%2C%2060598%20Frankfurt%20am%20Main)
-- **参照元**: [guide.michelin.com](https://guide.michelin.com/us/en/hessen/frankfurt-am-main/restaurant/carmelo-greco) / [carmelo-greco.de](https://carmelo-greco.de/)
+- **参照元**: 外観写真: Frankfurt Tourismus（visitfrankfurt.travel） / 参照元: [guide.michelin.com](https://guide.michelin.com/us/en/hessen/frankfurt-am-main/restaurant/carmelo-greco) / [carmelo-greco.de](https://carmelo-greco.de/)
 
 ### Megaron（メガロン）
 
@@ -114,6 +140,8 @@
 
 @@IMG:europe/germany/img/frankfurt/mon-amie-maxi.jpg@@
 
+@@IMG:europe/germany/img/frankfurt/mon-amie-maxi_exterior.jpg@@
+
 `ブログ推薦` `口コミ突出`
 
 ヴェストエント地区の1925年築の邸宅に構えるフランス料理のブラッスリー&オイスターバー。豪奢な内装と活気ある雰囲気の中で牡蠣やロブスター、グリル料理を味わえる。
@@ -126,7 +154,7 @@
 - **公式**: [公式サイト](http://www.mook-group.de/)
 - **選定理由**: ミシュランガイドに掲載され、Falstaffなどのメディアでもフランクフルトを代表するフレンチブラッスリーとして高評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Mon%20Amie%20Maxi%20Bockenheimer%20Landstra%C3%9Fe%2031%2C%2060325%20Frankfurt%20am%20Main)
-- **参照元**: [guide.michelin.com](https://guide.michelin.com/us/en/hessen/frankfurt-am-main/restaurant/mon-amie-maxi) / [mook-group.de](https://www.mook-group.de/monamiemaxi/)
+- **参照元**: 外観写真: 公式サイト（mook-group.de） / 参照元: [guide.michelin.com](https://guide.michelin.com/us/en/hessen/frankfurt-am-main/restaurant/mon-amie-maxi) / [mook-group.de](https://www.mook-group.de/monamiemaxi/)
 
 ## 中東・トルコ料理
 
@@ -169,6 +197,8 @@
 
 @@IMG:europe/germany/img/frankfurt/babam.jpg@@
 
+@@IMG:europe/germany/img/frankfurt/babam_exterior.jpg@@
+
 `食の専門街・市場` `ブログ推薦`
 
 バーンホフスフィアテルのミュンヘナー通りにある気取らないペルシャ(イラン)料理店。サフランライスと炭火焼きケバブを中心に、手頃な価格で本場の味を提供する。
@@ -181,13 +211,15 @@
 - **公式**: [公式サイト](http://babam.de/)
 - **選定理由**: 地元誌FRIZZ Frankfurtのレストラン試食記事で紹介され、在住イラン人コミュニティ向けサイトkojast.deでも中央駅近くの本格ペルシャ料理として掲載。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Babam%20M%C3%BCnchener%20Stra%C3%9Fe%2011%2C%2060329%20Frankfurt%20am%20Main)
-- **参照元**: [babam.de](https://www.babam.de/) / [frizz-frankfurt.de](https://frizz-frankfurt.de/gastro/gasttrotest/babam-%E2%80%93-persische-k%C3%BCche-1001-nacht/)
+- **参照元**: 外観写真: 公式サイト / 参照元: [babam.de](https://www.babam.de/) / [frizz-frankfurt.de](https://frizz-frankfurt.de/gastro/gasttrotest/babam-%E2%80%93-persische-k%C3%BCche-1001-nacht/)
 
 ## アフリカ料理
 
 ### Erta Ale - Afrikanisches Restaurant（エルタ・アレ）
 
 @@IMG:europe/germany/img/frankfurt/erta-ale.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/erta-ale_exterior.jpg@@
 
 `口コミ突出`
 
@@ -201,7 +233,7 @@
 - **公式**: [公式サイト](http://www.ertaale.net/)
 - **選定理由**: OpenTableに公式掲載され、TripAdvisorやWanderlogのフランクフルト・エチオピア料理ランキングでも上位に挙げられる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Erta%20Ale%20-%20Afrikanisches%20Restaurant%20Leipziger%20Stra%C3%9Fe%2047%2C%2060487%20Frankfurt%20am%20Main%28%E5%85%A5%E5%8F%A3%E3%81%AFRohmerstra%C3%9Fe%204%29)
-- **参照元**: [opentable.com](https://www.opentable.com/r/erta-ale-afrikanisches-restaurant-frankfurt-am-main) / [ertaalefrankfurtammain.de](https://www.ertaalefrankfurtammain.de/contact)
+- **参照元**: 外観写真: 公式サイト（ertaale.net。画像は公式サイトのホスティング上） / 参照元: [opentable.com](https://www.opentable.com/r/erta-ale-afrikanisches-restaurant-frankfurt-am-main) / [ertaalefrankfurtammain.de](https://www.ertaalefrankfurtammain.de/contact)
 
 ### Im Herzen Afrikas（イム・ヘルツェン・アフリカス）
 
@@ -311,41 +343,3 @@
 - **選定理由**: 在住者ガイドSpotted by Localsやローカルブログ The Frankfurt Edit が「本当に伝統的な韓国の味」として推薦。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Sonamu%20%7C%20Casual%20Korean%20Dining%20Berger%20Stra%C3%9Fe%20184%2C%2060385%20Frankfurt%20am%20Main)
 - **参照元**: [sonamu-frankfurt.de](https://sonamu-frankfurt.de/) / [spottedbylocals.com](https://www.spottedbylocals.com/frankfurt/sonamu-restaurant/)
-
-### Saravanaa Bhavan Frankfurt（サラヴァナ・バヴァン）
-
-@@IMG:europe/germany/img/frankfurt/saravanaa-bhavan.jpg@@
-
-`食の専門街・市場` `口コミ突出`
-
-世界各地に展開する南インド・ベジタリアン料理の名門チェーンのフランクフルト店。多国籍な食の通りミュンヘナー通りに位置し、350種を超える完全菜食メニューを揃える。
-
-- **一皿**: ドーサ(米と豆の発酵生地を薄くパリッと焼き上げ、スパイス風味のじゃがいも等を包む南インドの代表的なクレープ料理)
-- **営業時間**: 月〜日 9:00〜22:30
-- **定休日**: なし
-- **住所**: Münchener Straße 30, 60329 Frankfurt am Main
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 69 25626378 ／ [公式サイト](https://saravanaabhavan.de/frankfurt-4/)
-- **公式**: [公式サイト](https://saravanaabhavan.de/frankfurt-4/)
-- **選定理由**: TripAdvisorのレビューで「素晴らしい南インドのベジタリアン料理」と評され、本場チェンナイ発祥チェーンとして在住インド人にも支持される。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Saravanaa%20Bhavan%20Frankfurt%20M%C3%BCnchener%20Stra%C3%9Fe%2030%2C%2060329%20Frankfurt%20am%20Main)
-- **参照元**: [saravanaabhavan.de](https://saravanaabhavan.de/frankfurt-4/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d4755959-Reviews-Saravanaa_Bhavan-Frankfurt_Hesse.html)
-
-## 中南米料理
-
-### La Cevi（ラ・セヴィ）
-
-@@IMG:europe/germany/img/frankfurt/la-cevi.jpg@@
-
-`ブログ推薦`
-
-ノルトエント地区にあるペルー料理のセビーチェ専門レストラン。ペルーの色彩を取り入れたモダンな空間で、伝統のセビーチェを創作的にアレンジした料理を提供する。
-
-- **一皿**: セビーチェ(新鮮な白身魚をライムの搾り汁と唐辛子、赤玉ねぎでマリネするペルーの国民的料理)
-- **営業時間**: 火〜木 18:00〜24:00、金 17:00〜24:00、土日 12:00〜24:00
-- **定休日**: 月曜
-- **住所**: Weberstraße 84, 60318 Frankfurt am Main
-- **予約**: 可(推奨) — ☎ 電話で予約 +49 69 66377778 ／ [公式サイト](http://www.la-cevi.de/)
-- **公式**: [公式サイト](http://www.la-cevi.de/)
-- **選定理由**: グルメガイドSchlemmer-Atlasや食ブログ(Schlingen mit Stil、haochibites等)が「フランクフルトの本格ペルー料理」として紹介。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Cevi%20Weberstra%C3%9Fe%2084%2C%2060318%20Frankfurt%20am%20Main)
-- **参照元**: [la-cevi.de](https://la-cevi.de/) / [schlemmer-atlas.de](https://www.schlemmer-atlas.de/restaurants/deutschland/frankfurt-am-main/la-cevi/)
