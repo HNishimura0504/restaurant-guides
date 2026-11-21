@@ -35,6 +35,8 @@ GERMANY / FRANKFURT 🇩🇪
 
 @@IMG:europe/germany/img/frankfurt/apfelwein-wagner.jpg@@
 
+@@IMG:europe/germany/img/frankfurt/apfelwein-wagner_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 1931年創業、ザクセンハウゼンのシュヴァイツァー通りに立つ家族経営のアプフェルヴァイン酒場の代表格。長机相席の伝統スタイルで、地元客と観光客が肩を並べてベンベル(陶器の壺)から注ぐリンゴ酒を楽しむ。
@@ -47,11 +49,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](http://www.apfelwein-wagner.com/)
 - **選定理由**: 公式サイトが1931年以来の家族経営を明記し、TripAdvisorでも郷土料理の定番として高評価。在住者ブログ(eattherightstuff等)でも「観光地化しすぎない本物の一軒」として推薦される。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Apfelwein%20Wagner%20Schweizer%20Stra%C3%9Fe%2071%2C%2060594%20Frankfurt%20am%20Main)
-- **参照元**: [apfelwein-wagner.com](https://www.apfelwein-wagner.com/en/start-en/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d1155072-Reviews-Apfelwein_Wagner-Frankfurt_Hesse.html)
+- **参照元**: 外観写真: Wikimedia Commons（File:Frankfurt, Schweizer Straße 71.jpg） / 参照元: [apfelwein-wagner.com](https://www.apfelwein-wagner.com/en/start-en/) / [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d1155072-Reviews-Apfelwein_Wagner-Frankfurt_Hesse.html)
 
 ### Zum Gemalten Haus（ツム・ゲマールテン・ハウス）
 
 @@IMG:europe/germany/img/frankfurt/zum-gemalten-haus.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/zum-gemalten-haus_exterior.jpg@@
 
 `老舗・歴史` `ブログ推薦`
 
@@ -65,11 +69,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](http://www.zumgemaltenhaus.de/)
 - **選定理由**: 公式サイトで営業時間・名物を確認。在住者フードブログ eattherightstuff が「最も伝統的で視覚的にも印象的な酒場」として紹介する定番店。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Zum%20Gemalten%20Haus%20Schweizer%20Stra%C3%9Fe%2067%2C%2060594%20Frankfurt%20am%20Main)
-- **参照元**: [zumgemaltenhaus.de](https://www.zumgemaltenhaus.de/) / [eattherightstuff.com](https://www.eattherightstuff.com/frankfurt/2017/1/4/best-traditional-german-deutsche)
+- **参照元**: 外観写真: Frankfurt Tourismus（visitfrankfurt.travel）／Wikimedia Commons / 参照元: [zumgemaltenhaus.de](https://www.zumgemaltenhaus.de/) / [eattherightstuff.com](https://www.eattherightstuff.com/frankfurt/2017/1/4/best-traditional-german-deutsche)
 
 ### Apfelwein-Wirtschaft Fichtekränzi（フィヒテクレンツィ）
 
 @@IMG:europe/germany/img/frankfurt/fichtekraenzi.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/fichtekraenzi_exterior.jpg@@
 
 `老舗・歴史` `ブログ推薦`
 
@@ -83,11 +89,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](http://www.fichtekraenzi.de/)
 - **選定理由**: 公式サイトが1849年創業を明記し、フランクフルト公式観光サイト visitfrankfurt.travel も伝統酒場として掲載。夕方からのみ営業する「飲み屋」らしさが残る。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Apfelwein-Wirtschaft%20Fichtekr%C3%A4nzi%20Wallstra%C3%9Fe%205%2C%2060594%20Frankfurt%20am%20Main)
-- **参照元**: [fichtekraenzi.de](https://www.fichtekraenzi.de/) / [visitfrankfurt.travel](https://www.visitfrankfurt.travel/gastro/apfelwein-wirtschaft-fichtekraenzi)
+- **参照元**: 外観写真: Frankfurt Tourismus（visitfrankfurt.travel） / 参照元: [fichtekraenzi.de](https://www.fichtekraenzi.de/) / [visitfrankfurt.travel](https://www.visitfrankfurt.travel/gastro/apfelwein-wirtschaft-fichtekraenzi)
 
 ### Apfelweinwirtschaft Atschel（アッチェル）
 
 @@IMG:europe/germany/img/frankfurt/atschel.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/atschel_exterior.jpg@@
 
 `ブログ推薦` `老舗・歴史`
 
@@ -101,11 +109,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](http://www.atschel.de/)
 - **選定理由**: 公式サイトで実在・所在地を確認。現地グルメブログ Schlingen mit Stil が「アルトザクセンハウゼンの気取らない名酒場」として推薦し、Yelpでも200件超のレビューで高評価。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Apfelweinwirtschaft%20Atschel%20Wallstra%C3%9Fe%207%2C%2060594%20Frankfurt%20am%20Main)
-- **参照元**: [atschel.de](https://www.atschel.de/index.php?lang=en) / [schlingenmitstil.de](https://www.schlingenmitstil.de/schlingen-mit-stil/atschel)
+- **参照元**: 外観写真: 公式サイト（建物外観）／Frankfurt Tourismus（中庭席） / 参照元: [atschel.de](https://www.atschel.de/index.php?lang=en) / [schlingenmitstil.de](https://www.schlingenmitstil.de/schlingen-mit-stil/atschel)
 
 ### Apfelweinwirtschaft Dauth-Schneider（ダウト・シュナイダー）
 
 @@IMG:europe/germany/img/frankfurt/dauth-schneider.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/dauth-schneider_exterior.jpg@@
 
 `老舗・歴史` `口コミ突出`
 
@@ -119,11 +129,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](https://www.dauth-schneider.de/)
 - **選定理由**: 公式サイトで通し営業を確認。1849年創業の来歴は業界ポータル apfelweinwirte.de 等が伝え、アプフェルヴァイン紹介ブログ(shortgirltravels等)でも定番として挙がる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Apfelweinwirtschaft%20Dauth-Schneider%20Neuer%20Wall%205-7%2C%2060594%20Frankfurt%20am%20Main)
-- **参照元**: [dauth-schneider.de](https://www.dauth-schneider.de/) / [apfelweinwirte.de](https://www.apfelweinwirte.de/apfelweinwirtschaft-dauth-schneider)
+- **参照元**: 外観写真: Frankfurt Tourismus／公式サイト（入口） / 参照元: [dauth-schneider.de](https://www.dauth-schneider.de/) / [apfelweinwirte.de](https://www.apfelweinwirte.de/apfelweinwirtschaft-dauth-schneider)
 
 ### Apfelweinwirtschaft Lorsbacher Thal（ロルスバッハー・タール）
 
 @@IMG:europe/germany/img/frankfurt/lorsbacher-thal.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/lorsbacher-thal_exterior.jpg@@
 
 `老舗・歴史` `ブログ推薦`
 
@@ -137,11 +149,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](https://www.daheim-familie.de/)
 - **選定理由**: 公式サイトが1803年からの歴史と300種超のリンゴ酒リスト、Hessen à la carte加盟を明記。リンゴ酒を深掘りしたい読者向けの一軒として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Apfelweinwirtschaft%20Lorsbacher%20Thal%20Gro%C3%9Fe%20Rittergasse%2049%2C%2060594%20Frankfurt%20am%20Main)
-- **参照元**: [lorsbacher-thal.de](https://www.lorsbacher-thal.de/)
+- **参照元**: 外観写真: 公式サイト（中庭の屋外席） / 参照元: [lorsbacher-thal.de](https://www.lorsbacher-thal.de/)
 
 ### Ebbelwoi Unser（エッベルヴォイ・ウンザー）
 
 @@IMG:europe/germany/img/frankfurt/ebbelwoi-unser.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/ebbelwoi-unser_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -155,7 +169,7 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](http://www.ebbelwoi-unser.de/)
 - **選定理由**: 現地情報サイト frankfurt-tipp.de が「心のこもったもてなしと良質な料理」と紹介し、グルメブログ Schlingen mit Stil もシュニッツェルを絶賛。Yelp/Googleの口コミ評価も突出して高い。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Ebbelwoi%20Unser%20Abtsg%C3%A4%C3%9Fchen%208%2C%2060594%20Frankfurt%20am%20Main)
-- **参照元**: [ebbelwoi-unser.de](https://www.ebbelwoi-unser.de/) / [frankfurt-tipp.de](https://www.frankfurt-tipp.de/en/index/genuss/s/geniessertipp/hearty-hospitality-and-good-cuisine-in-the-ebbelwoi-unser.html)
+- **参照元**: 外観写真: Frankfurt Tourismus（visitfrankfurt.travel） / 参照元: [ebbelwoi-unser.de](https://www.ebbelwoi-unser.de/) / [frankfurt-tipp.de](https://www.frankfurt-tipp.de/en/index/genuss/s/geniessertipp/hearty-hospitality-and-good-cuisine-in-the-ebbelwoi-unser.html)
 
 ## 食べ歩き — ソーセージ・市場グルメ
 
@@ -181,6 +195,8 @@ GERMANY / FRANKFURT 🇩🇪
 
 @@IMG:europe/germany/img/frankfurt/gref-voelsings.jpg@@
 
+@@IMG:europe/germany/img/frankfurt/gref-voelsings_exterior.jpg@@
+
 `老舗・歴史` `食の専門街・市場`
 
 1894年創業、1913年からハナウアー・ラント通りの現店舗で営む5代目の精肉店兼スタンド。牛肉100%の「リンツヴルスト」発祥の店として知られ、毎日約7,500本を自家製造する。
@@ -193,7 +209,7 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](http://www.gref-voelsings.de/)
 - **選定理由**: 公式サイトが130年の歴史と製法を詳述。美食メディア Falstaff のストリートフードガイドが市内屈指のスタンドとして掲載する、フランクフルトの食文化を象徴する一軒。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Gref-V%C3%B6lsings%20Rindswurst%20Hanauer%20Landstra%C3%9Fe%20132%2C%2060314%20Frankfurt%20am%20Main)
-- **参照元**: [gref-voelsings.de](https://www.gref-voelsings.de/) / [falstaff.com](https://www.falstaff.com/en/streetfood/gref-voelsings-rindswurst)
+- **参照元**: 外観写真: Wikimedia Commons（File:Gref-voelsing-ffm003.jpg） / 参照元: [gref-voelsings.de](https://www.gref-voelsings.de/) / [falstaff.com](https://www.falstaff.com/en/streetfood/gref-voelsings-rindswurst)
 
 ### Wursthelden（ヴルストヘルデン）
 
@@ -219,6 +235,8 @@ GERMANY / FRANKFURT 🇩🇪
 
 @@IMG:europe/germany/img/frankfurt/metzgerei-schreiber.jpg@@
 
+@@IMG:europe/germany/img/frankfurt/metzgerei-schreiber_exterior.jpg@@
+
 `口コミ突出` `食の専門街・市場`
 
 クラインマルクトハレ入口近くで開業以来店に立ち続けるシュライバー夫人の精肉スタンド。昼時は常時20人超の行列ができる市場一番の名物で、「フランクフルトで一番のヴルスト」と称される。
@@ -231,11 +249,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](https://www.kleinmarkthalle.com/haendlerportraits/detail/metzgerei-schreiber)
 - **選定理由**: TripAdvisorで「市場内で最高のヴルスト」とのレビューが多数、Yelpでも高評価。フードブログ GastroGays も連日の大行列と名物性を報告する、市場観光のハイライト。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Metzgerei%20Schreiber%20%28Kleinmarkthalle%29%20Kleinmarkthalle%2C%20Hasengasse%205-7%2C%2060311%20Frankfurt%20am%20Main)
-- **参照元**: [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d8000892-Reviews-Metzgerei_Schreiber-Frankfurt_Hesse.html) / [yelp.com](https://www.yelp.com/biz/metzgerei-schreiber-frankfurt-am-main-2)
+- **参照元**: 外観写真: Kleinmarkthalle 公式サイト（kleinmarkthalle.de・市場の建物外観） / 参照元: [tripadvisor.com](https://www.tripadvisor.com/Restaurant_Review-g187337-d8000892-Reviews-Metzgerei_Schreiber-Frankfurt_Hesse.html) / [yelp.com](https://www.yelp.com/biz/metzgerei-schreiber-frankfurt-am-main-2)
 
 ### Käse Thomas (Kleinmarkthalle)（ケーゼ・トーマス）
 
 @@IMG:europe/germany/img/frankfurt/kaese-thomas.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/kaese-thomas_exterior.jpg@@
 
 `食の専門街・市場`
 
@@ -249,11 +269,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](https://kleinmarkthalle.de/)
 - **選定理由**: 市場公式のホールプランにスタンド68-69として掲載。現地グルメ誌 Genussmagazin Frankfurt の市場ガイドでも珍味を扱う代表的スタンドの一つとして名前が挙がる。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=K%C3%A4se%20Thomas%20%28Kleinmarkthalle%29%20Kleinmarkthalle%20%28Stand%2068-69%29%2C%20Hasengasse%205-7%2C%2060311%20Frankfurt%20am%20Main)
-- **参照元**: [kleinmarkthalle.com](https://www.kleinmarkthalle.com/hallenplan) / [genussmagazin-frankfurt.de](https://www.genussmagazin-frankfurt.de/gastro_service/Kulinarische-Fuehrungen-109/Kleinmarkthalle-Frankfurt-1417.html)
+- **参照元**: 外観写真: Kleinmarkthalle 公式サイト（kleinmarkthalle.de・市場の建物外観） / 参照元: [kleinmarkthalle.com](https://www.kleinmarkthalle.com/hallenplan) / [genussmagazin-frankfurt.de](https://www.genussmagazin-frankfurt.de/gastro_service/Kulinarische-Fuehrungen-109/Kleinmarkthalle-Frankfurt-1417.html)
 
 ### Das Persienhaus (Kleinmarkthalle)（ダス・ペルジエンハウス）
 
 @@IMG:europe/germany/img/frankfurt/das-persienhaus.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/das-persienhaus_exterior.jpg@@
 
 `口コミ突出` `食の専門街・市場`
 
@@ -267,11 +289,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](https://das-persienhaus.de/)
 - **選定理由**: 市場公式ホールプランに掲載。フードブログ GastroGays が「小さな屋台から市場最大級に成長した」名物スタンドとして紹介し、食べ歩き土産の定番となっている。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Das%20Persienhaus%20%28Kleinmarkthalle%29%20Kleinmarkthalle%20%28Stand%20102-103%29%2C%20Hasengasse%205-7%2C%2060311%20Frankfurt%20am%20Main)
-- **参照元**: [kleinmarkthalle.com](https://www.kleinmarkthalle.com/hallenplan) / [gastrogays.com](https://gastrogays.com/kleinmarkthalle-frankfurt/)
+- **参照元**: 外観写真: Kleinmarkthalle 公式サイト（kleinmarkthalle.de・市場の建物外観） / 参照元: [kleinmarkthalle.com](https://www.kleinmarkthalle.com/hallenplan) / [gastrogays.com](https://gastrogays.com/kleinmarkthalle-frankfurt/)
 
 ### Frankfurter Kaffeerösterei Cafébar (Kleinmarkthalle)（フランクフルター・カフェレースタライ）
 
 @@IMG:europe/germany/img/frankfurt/frankfurter-kaffeeroesterei.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/frankfurter-kaffeeroesterei_exterior.jpg@@
 
 `食の専門街・市場` `ブログ推薦`
 
@@ -285,13 +309,15 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](https://frankfurter-kaffeeroesterei.de/service/cafebars/)
 - **選定理由**: 市場公式サイトのガストロノミー欄に「淹れたてのコーヒーとペイストリー」の店として掲載。2007年からの市場内カフェバーとしてレビューサイトでも定着している。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Frankfurter%20Kaffeer%C3%B6sterei%20Caf%C3%A9bar%20%28Kleinmarkthalle%29%20Kleinmarkthalle%2C%20Hasengasse%205-7%2C%2060311%20Frankfurt%20am%20Main)
-- **参照元**: [kleinmarkthalle.com](https://www.kleinmarkthalle.com/gastronomie-staende) / [restaurantguru.com](https://restaurantguru.com/Frankfurter-Kaffeerosterei-Frankfurt-2)
+- **参照元**: 外観写真: Kleinmarkthalle 公式サイト（kleinmarkthalle.de・市場の建物外観） / 参照元: [kleinmarkthalle.com](https://www.kleinmarkthalle.com/gastronomie-staende) / [restaurantguru.com](https://restaurantguru.com/Frankfurter-Kaffeerosterei-Frankfurt-2)
 
 ## パン・スイーツ
 
 ### Zeit für Brot（ツァイト・フュア・ブロート）
 
 @@IMG:europe/germany/img/frankfurt/zeit-fuer-brot.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/zeit-fuer-brot_exterior.jpg@@
 
 `口コミ突出` `ブログ推薦`
 
@@ -305,11 +331,13 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](http://zeitfuerbrot.com/)
 - **選定理由**: 美食メディア Falstaff のベーカリーガイドに掲載され、Yelp/TripAdvisorでも市内ベーカリーの口コミ数・評価が突出。フランクフルト発祥という物語性も強い。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Zeit%20f%C3%BCr%20Brot%20Oeder%20Weg%2015%2C%2060318%20Frankfurt%20am%20Main)
-- **参照元**: [zeitfuerbrot.com](https://zeitfuerbrot.com/en/bakeries) / [falstaff.com](https://www.falstaff.com/en/bakeries/zeit-fuer-brot)
+- **参照元**: 外観写真: 公式サイト（Oeder Weg 15 店） / 参照元: [zeitfuerbrot.com](https://zeitfuerbrot.com/en/bakeries) / [falstaff.com](https://www.falstaff.com/en/bakeries/zeit-fuer-brot)
 
 ### Rausch's Konditorei & Bäckerei（ラウシュス・コンディトライ）
 
 @@IMG:europe/germany/img/frankfurt/rauschs-konditorei.jpg@@
+
+@@IMG:europe/germany/img/frankfurt/rauschs-konditorei_exterior.jpg@@
 
 `老舗・歴史` `ブログ推薦`
 
@@ -323,22 +351,4 @@ GERMANY / FRANKFURT 🇩🇪
 - **公式**: [公式サイト](https://www.rauschs-konditorei.de/)
 - **選定理由**: 公式サイトが1898年創業・4代目・DLG金賞受賞のベートマンヒェンを明記。伝統菓子を通年で買える数少ない専門店として選定。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Rausch%27s%20Konditorei%20%26%20B%C3%A4ckerei%20Wiesenstra%C3%9Fe%2030%2C%2060385%20Frankfurt%20am%20Main)
-- **参照元**: [rauschs-konditorei.de](https://www.rauschs-konditorei.de/) / [rauschs-konditorei.de(商品)](https://www.rauschs-konditorei.de/shop/product/bethmaennchen-im-handverzierten-frankfurt-bembel-6-stueck)
-
-### Café Weidenweber (Erste Frankfurter Zeilbäckerei)（カフェ・ヴァイデンヴェーバー）
-
-@@IMG:europe/germany/img/frankfurt/cafe-weidenweber.jpg@@
-
-`老舗・歴史`
-
-「ツァイル通り初のベーカリー」を名乗り80年以上続く老舗のカフェ・コンディトライ。古い秘伝レシピによるベートマンヒェンやフランクフルター・クランツなど、郷土菓子を守り続けている。
-
-- **一皿**: フランクフルター・クランツ(バタークリームとカラメルアーモンド(クロカント)を重ねた王冠形のリングケーキ。フランクフルトが神聖ローマ皇帝の戴冠都市だったことにちなむ銘菓)
-- **営業時間**: 月〜土 7:00〜18:00
-- **定休日**: 日曜
-- **住所**: Große Friedberger Straße 10, 60313 Frankfurt am Main
-- **予約**: 不要(店頭) — ☎ 電話で予約 +49 69 284538 ／ [公式サイト](http://www.weidenweber.de/)
-- **公式**: [公式サイト](http://www.weidenweber.de/)
-- **選定理由**: 公式サイトが80年以上の歴史と秘伝レシピのベートマンヒェン、フランクフルター・クランツ等の郷土菓子を明記。中心部ツァイル至近で立ち寄りやすい老舗として選定。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Weidenweber%20%28Erste%20Frankfurter%20Zeilb%C3%A4ckerei%29%20Gro%C3%9Fe%20Friedberger%20Stra%C3%9Fe%2010%2C%2060313%20Frankfurt%20am%20Main)
-- **参照元**: [weidenweber.de](https://www.weidenweber.de/) / [gelbeseiten.de](https://www.gelbeseiten.de/gsbiz/17d7daab-af4f-45ad-8c92-1d44c96d4e17)
+- **参照元**: 外観写真: 公式サイト（Über uns・店頭。原寸678px、やや古い写真） / 参照元: [rauschs-konditorei.de](https://www.rauschs-konditorei.de/) / [rauschs-konditorei.de(商品)](https://www.rauschs-konditorei.de/shop/product/bethmaennchen-im-handverzierten-frankfurt-bembel-6-stueck)
