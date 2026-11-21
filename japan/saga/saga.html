@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>佐賀美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  /* 外観写真（2026-10-19・外観写真の欠落3度目）: 料理・店内の hero の下に、店構えを1枚添える。
+     地図のポップアップと Notion 記事は <sid>_exterior.jpg を別に拾うので、ここは PDF・ガイド本文で見せるための行。 */
+  .extfig{position:relative; margin:0;}
+  /* 【2026-11-16 ユーザー指示・恒久】外観写真は切り取らず、元の縦横比のまま貼る。
+     原文「外観写真は勝手にトリミングしないで元画像を元の縦横比のまま貼り付けてよ？」。
+     以前は height:40mm + object-fit:cover で、**縦長の写真は上下が、横長は左右が切れていた**。
+     height:auto にすると比率が保たれる。max-height は縦長の1枚でカードが伸びすぎるのを抑える
+     だけの上限で、**切り取りではない**（幅が比率どおりに縮み、object-fit:contain が念押し）。 */
+  .extfig img{display:block; width:100%; height:auto; max-height:88mm; object-fit:contain;
+    margin:0 auto; border-top:2px solid #fff;}
+  .extfig figcaption{position:absolute; left:2mm; bottom:1.5mm; background:rgba(0,0,0,.55); color:#fff; font-size:7pt; padding:.3mm 1.6mm; border-radius:1mm;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">佐賀美食ガイド<span class="sn-n">50店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/saga.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="佐賀ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">佐賀ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/saga.html"><span class="sn-e">🗺️</span>佐賀の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-gyu"><span class="sn-e">・</span>佐賀牛・焼肉・ステーキ</a><a href="#s-sicilian"><span class="sn-e">・</span>シシリアンライス・洋食</a><a href="#s-ariake"><span class="sn-e">・</span>有明海の魚・寿司・和食</a><a href="#s-men"><span class="sn-e">・</span>佐賀ラーメン・ちゃんぽん・うどん</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・郷土料理</a><a href="#s-cafe"><span class="sn-e">・</span>カフェ・喫茶・丸ぼうろ</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全113都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全113都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / SAGA・佐賀県佐賀市 🇯🇵</div>
+  <h1>佐賀美食ガイド</h1>
+  <div class="sub">有明海と背振山地のあいだに広がる佐賀平野の中心。クリークの走る水田が市街のすぐ外まで続き、有明海からはムツゴロウ・ワラスボ・クチゾコが上がる。名物は佐賀牛、シシリアンライス、有明海の珍魚、佐賀ラーメン、井手ちゃんぽん、丸ぼうろ。厳選50スポットに営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年11月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/saga/_map.jpg" alt="全域マップ">
+<a href="#c-saga-gyu-kira-honten" style="left:66.84%;top:78.42%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-gyu-yorankan" style="left:39.03%;top:92.68%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-gyu-ryuokan-ekimae" style="left:65.01%;top:78.26%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-gyu-kisarara" style="left:67.95%;top:75.71%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-gyu-momiji" style="left:64.66%;top:79.25%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-gyu-tanaka-shoten" style="left:64.48%;top:77.98%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-gyu-nikumaru" style="left:66.36%;top:81.14%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-gyu-steak-maru-hyogo" style="left:71.78%;top:77.25%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-gyu-yakinikukan-sho-hyogo" style="left:72.41%;top:76.56%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-romanza" style="left:68.15%;top:81.0%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-grill-takeshita" style="left:64.27%;top:77.07%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-hanakago" style="left:63.26%;top:78.63%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-cafe-tres" style="left:65.72%;top:83.84%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-sarasa" style="left:65.82%;top:74.98%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-shirayama-bunga" style="left:64.71%;top:80.66%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-tamago-no-tamago" style="left:73.74%;top:81.51%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-chateau-bunga" style="left:54.9%;top:59.64%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-sicilian-lampada" style="left:64.99%;top:79.36%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-daiichi-sankichimaru" style="left:62.9%;top:77.36%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-kura" style="left:65.74%;top:79.23%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-genki-jirushi" style="left:63.65%;top:76.42%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-ureshino-sushi" style="left:60.54%;top:74.39%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-osakanaya-ureshino" style="left:68.08%;top:76.84%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-sushi-sakaba-uomi" style="left:65.89%;top:80.25%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-sakana-shiwa" style="left:38.4%;top:84.78%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-honjo-unagiya" style="left:73.93%;top:78.62%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-ariake-ikesu-kaiko" style="left:54.39%;top:84.09%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-men-ichirakudo-hyogo" style="left:71.78%;top:77.91%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-men-ide-yamato" style="left:55.33%;top:63.5%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-men-jinrikiya-ozai" style="left:68.21%;top:78.21%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-men-marufuku-hyogo" style="left:79.35%;top:74.3%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-men-komorebi" style="left:49.49%;top:7.34%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-men-ikkyuken-honten" style="left:58.68%;top:72.04%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-men-ekimae-bigone" style="left:64.27%;top:78.18%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-men-koyokaku" style="left:54.46%;top:84.51%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-izakaya-misao" style="left:65.89%;top:81.36%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-izakaya-mogura" style="left:65.74%;top:80.34%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-izakaya-kadoya" style="left:64.06%;top:77.36%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-izakaya-new-murahachi" style="left:52.97%;top:74.34%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-izakaya-kobanya" style="left:60.29%;top:64.87%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-izakaya-ashida-shoten" style="left:64.48%;top:79.09%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-izakaya-hananagushi" style="left:61.27%;top:84.57%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-izakaya-nabeya-wagen" style="left:54.92%;top:64.17%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-cafe-shalom" style="left:74.57%;top:82.59%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-cafe-kogure" style="left:65.93%;top:80.37%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-cafe-tsuitachi" style="left:64.05%;top:80.37%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-cafe-ganso-yoshinoya" style="left:51.86%;top:56.36%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-cafe-cinematheque" style="left:66.39%;top:80.2%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-cafe-muraoka-sohonpo" style="left:20.65%;top:65.48%;width:2.64%;height:1.64%;"></a>
+<a href="#c-saga-cafe-konekuriya" style="left:68.85%;top:80.94%;width:2.64%;height:1.64%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（50店・番号はピンと同じ）</div>
+<div class="sec red">佐賀牛・焼肉・ステーキ</div>
+<div class="links">
+<a href="#c-saga-gyu-kira-honten"><span class="tn" style="background:#e34948;">1</span>JAさが直営の佐賀牛専門店</a>
+<a href="#c-saga-gyu-yorankan"><span class="tn" style="background:#e34948;">2</span>季楽と同じ運営の安い佐賀牛焼肉</a>
+<a href="#c-saga-gyu-ryuokan-ekimae"><span class="tn" style="background:#e34948;">3</span>佐賀駅5分、個室中心の黒毛和牛焼肉</a>
+<a href="#c-saga-gyu-kisarara"><span class="tn" style="background:#e34948;">4</span>90分食べ放題のある兵庫北の焼肉</a>
+<a href="#c-saga-gyu-momiji"><span class="tn" style="background:#e34948;">5</span>佐賀牛と宮崎牛を部位で選ぶ26席</a>
+<a href="#c-saga-gyu-tanaka-shoten"><span class="tn" style="background:#e34948;">6</span>駅南のビル2階、炭火の夜だけの店</a>
+<a href="#c-saga-gyu-nikumaru"><span class="tn" style="background:#e34948;">7</span>中央本町、翌3時までの現金のみ</a>
+<a href="#c-saga-gyu-steak-maru-hyogo"><span class="tn" style="background:#e34948;">8</span>千円台のステーキ定食、60席</a>
+<a href="#c-saga-gyu-yakinikukan-sho-hyogo"><span class="tn" style="background:#e34948;">9</span>86席、昼も開く郊外の焼肉</a>
+</div>
+<div class="sec aqua">シシリアンライス・洋食</div>
+<div class="links">
+<a href="#c-saga-sicilian-romanza"><span class="tn" style="background:#1baf7a;">10</span>大正の洋館で食べるシシリアンライス</a>
+<a href="#c-saga-sicilian-grill-takeshita"><span class="tn" style="background:#1baf7a;">11</span>佐賀駅前、朝6時半から開く洋食店</a>
+<a href="#c-saga-sicilian-hanakago"><span class="tn" style="background:#1baf7a;">12</span>ホテルで気軽に食べるシシリアンライス</a>
+<a href="#c-saga-sicilian-cafe-tres"><span class="tn" style="background:#1baf7a;">13</span>県立博物館1階の県産野菜のカフェ</a>
+<a href="#c-saga-sicilian-sarasa"><span class="tn" style="background:#1baf7a;">14</span>御膳仕立てで出すシシリアンライス</a>
+<a href="#c-saga-sicilian-shirayama-bunga"><span class="tn" style="background:#1baf7a;">15</span>1958年創業の欧風カレーの老舗</a>
+<a href="#c-saga-sicilian-tamago-no-tamago"><span class="tn" style="background:#1baf7a;">16</span>オムライスだけで30種のモール内洋食</a>
+<a href="#c-saga-sicilian-chateau-bunga"><span class="tn" style="background:#1baf7a;">17</span>大和町のフランス料理、2026年で50年</a>
+<a href="#c-saga-sicilian-lampada"><span class="tn" style="background:#1baf7a;">18</span>ピザ窯とラクレットチーズの夜の店</a>
+</div>
+<div class="sec blue">有明海の魚・寿司・和食</div>
+<div class="links">
+<a href="#c-saga-ariake-daiichi-sankichimaru"><span class="tn" style="background:#2a78d6;">19</span>有明海の珍魚を通年そろえる駅前の居酒屋</a>
+<a href="#c-saga-ariake-kura"><span class="tn" style="background:#2a78d6;">20</span>昭和20年からの魚の仲買人が開いた直営店</a>
+<a href="#c-saga-ariake-genki-jirushi"><span class="tn" style="background:#2a78d6;">21</span>佐賀駅北口すぐ、活イカと佐賀牛の居酒屋</a>
+<a href="#c-saga-ariake-ureshino-sushi"><span class="tn" style="background:#2a78d6;">22</span>1974年創業、品書きに時価が無い寿司屋</a>
+<a href="#c-saga-ariake-osakanaya-ureshino"><span class="tn" style="background:#2a78d6;">23</span>嬉乃すしの姉妹店。魚の定食と御膳</a>
+<a href="#c-saga-ariake-sushi-sakaba-uomi"><span class="tn" style="background:#2a78d6;">24</span>翌3時まで開く寿司と串カツの酒場</a>
+<a href="#c-saga-ariake-sakana-shiwa"><span class="tn" style="background:#2a78d6;">25</span>ミシュラン一つ星、田園の中の割烹</a>
+<a href="#c-saga-ariake-honjo-unagiya"><span class="tn" style="background:#2a78d6;">26</span>昭和45年創業、先代考案の瀬田焼き</a>
+<a href="#c-saga-ariake-ikesu-kaiko"><span class="tn" style="background:#2a78d6;">27</span>大型いけすを囲む、有明海の白えびも</a>
+</div>
+<div class="sec brown">佐賀ラーメン・ちゃんぽん・うどん</div>
+<div class="links">
+<a href="#c-saga-men-ichirakudo-hyogo"><span class="tn" style="background:#8a5a2b;">28</span>創業30年、自家製の豚骨とちゃんぽん</a>
+<a href="#c-saga-men-ide-yamato"><span class="tn" style="background:#8a5a2b;">29</span>昭和24年創業、野菜の山のちゃんぽん</a>
+<a href="#c-saga-men-jinrikiya-ozai"><span class="tn" style="background:#8a5a2b;">30</span>深夜3時まで開く手延べうどん</a>
+<a href="#c-saga-men-marufuku-hyogo"><span class="tn" style="background:#8a5a2b;">31</span>券売機で選ぶ280円からのうどん</a>
+<a href="#c-saga-men-komorebi"><span class="tn" style="background:#8a5a2b;">32</span>在来種「北山そば」を育てる農家の店</a>
+<a href="#c-saga-men-ikkyuken-honten"><span class="tn" style="background:#8a5a2b;">33</span>佐賀ラーメンの源流とされる店</a>
+<a href="#c-saga-men-ekimae-bigone"><span class="tn" style="background:#8a5a2b;">34</span>佐賀駅から100歩の店炊き豚骨</a>
+<a href="#c-saga-men-koyokaku"><span class="tn" style="background:#8a5a2b;">35</span>一休軒ゆずりの濃厚豚骨、焼肉店だった造り</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理</div>
+<div class="links">
+<a href="#c-saga-izakaya-misao"><span class="tn" style="background:#0d366b;">36</span>生簀のある白山の炉端焼き</a>
+<a href="#c-saga-izakaya-mogura"><span class="tn" style="background:#0d366b;">37</span>佐賀の地酒約30種を置く大財の居酒屋</a>
+<a href="#c-saga-izakaya-kadoya"><span class="tn" style="background:#0d366b;">38</span>佐賀駅北口徒歩1分、焼鳥と利き酒</a>
+<a href="#c-saga-izakaya-new-murahachi"><span class="tn" style="background:#0d366b;">39</span>1998年創業、もつ鍋といぶしもも焼き</a>
+<a href="#c-saga-izakaya-kobanya"><span class="tn" style="background:#0d366b;">40</span>先代から継いだ大和町の串焼きと刺身</a>
+<a href="#c-saga-izakaya-ashida-shoten"><span class="tn" style="background:#0d366b;">41</span>野菜巻き串と囲炉裏の原始焼き</a>
+<a href="#c-saga-izakaya-hananagushi"><span class="tn" style="background:#0d366b;">42</span>佐賀大前の全席掘りごたつ個室、現金のみ</a>
+<a href="#c-saga-izakaya-nabeya-wagen"><span class="tn" style="background:#0d366b;">43</span>全14部屋個室の鍋専門店</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・丸ぼうろ</div>
+<div class="links">
+<a href="#c-saga-cafe-shalom"><span class="tn" style="background:#eda100;">44</span>1953年創業、佐賀で最初のラーメン店</a>
+<a href="#c-saga-cafe-kogure"><span class="tn" style="background:#eda100;">45</span>焙煎所を併設、豆を選んで一杯ずつ</a>
+<a href="#c-saga-cafe-tsuitachi"><span class="tn" style="background:#eda100;">46</span>珈琲に小城羊羹がつく築110年の古民家</a>
+<a href="#c-saga-cafe-ganso-yoshinoya"><span class="tn" style="background:#eda100;">47</span>明治15年創業、川上峡の白玉饅頭と和カフェ</a>
+<a href="#c-saga-cafe-cinematheque"><span class="tn" style="background:#eda100;">48</span>午後2時から開く、レコードのジャズ喫茶</a>
+<a href="#c-saga-cafe-muraoka-sohonpo"><span class="tn" style="background:#eda100;">49</span>砂糖蔵を改装した資料館で羊羹と抹茶</a>
+<a href="#c-saga-cafe-konekuriya"><span class="tn" style="background:#eda100;">50</span>大正10年の履物問屋を使う古民家カフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 佐賀駅〜白山・呉服元町・唐人・中央本町・大財（市街の中心）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/saga/_map2.jpg" alt="中心部拡大1 佐賀駅〜白山・呉服元町・唐人・中央本町・大財（市街の中心）">
+<a href="#c-saga-gyu-kira-honten" style="left:62.38%;top:54.25%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-gyu-ryuokan-ekimae" style="left:38.95%;top:52.05%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-gyu-kisarara" style="left:76.65%;top:16.23%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-gyu-momiji" style="left:34.46%;top:66.0%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-gyu-tanaka-shoten" style="left:30.87%;top:54.25%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-gyu-nikumaru" style="left:56.28%;top:92.38%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-sicilian-romanza" style="left:79.25%;top:90.51%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-sicilian-grill-takeshita" style="left:28.99%;top:45.93%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-sicilian-hanakago" style="left:16.42%;top:57.26%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-sicilian-sarasa" style="left:49.36%;top:6.07%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-sicilian-shirayama-bunga" style="left:35.0%;top:85.71%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-sicilian-lampada" style="left:38.5%;top:75.75%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-ariake-daiichi-sankichimaru" style="left:11.75%;top:39.43%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-ariake-kura" style="left:48.38%;top:74.27%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-ariake-genki-jirushi" style="left:21.45%;top:26.27%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-ariake-osakanaya-ureshino" style="left:78.35%;top:32.14%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-ariake-sushi-sakaba-uomi" style="left:49.54%;top:88.16%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-men-jinrikiya-ozai" style="left:80.06%;top:51.36%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-men-ekimae-bigone" style="left:29.88%;top:40.39%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-izakaya-misao" style="left:50.98%;top:87.29%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-izakaya-mogura" style="left:48.19%;top:72.51%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-izakaya-kadoya" style="left:26.74%;top:39.41%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-izakaya-ashida-shoten" style="left:33.39%;top:57.57%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-cafe-kogure" style="left:38.41%;top:80.04%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-cafe-tsuitachi" style="left:38.95%;top:75.01%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-cafe-cinematheque" style="left:56.64%;top:79.32%;width:4.24%;height:2.86%;"></a>
+<a href="#c-saga-cafe-konekuriya" style="left:88.23%;top:89.69%;width:4.24%;height:2.86%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（27店・番号はピンと同じ）</div>
+<div class="sec red">佐賀牛・焼肉・ステーキ</div>
+<div class="links">
+<a href="#c-saga-gyu-kira-honten"><span class="tn" style="background:#e34948;">1</span>JAさが直営の佐賀牛専門店</a>
+<a href="#c-saga-gyu-ryuokan-ekimae"><span class="tn" style="background:#e34948;">3</span>佐賀駅5分、個室中心の黒毛和牛焼肉</a>
+<a href="#c-saga-gyu-kisarara"><span class="tn" style="background:#e34948;">4</span>90分食べ放題のある兵庫北の焼肉</a>
+<a href="#c-saga-gyu-momiji"><span class="tn" style="background:#e34948;">5</span>佐賀牛と宮崎牛を部位で選ぶ26席</a>
+<a href="#c-saga-gyu-tanaka-shoten"><span class="tn" style="background:#e34948;">6</span>駅南のビル2階、炭火の夜だけの店</a>
+<a href="#c-saga-gyu-nikumaru"><span class="tn" style="background:#e34948;">7</span>中央本町、翌3時までの現金のみ</a>
+</div>
+<div class="sec aqua">シシリアンライス・洋食</div>
+<div class="links">
+<a href="#c-saga-sicilian-romanza"><span class="tn" style="background:#1baf7a;">10</span>大正の洋館で食べるシシリアンライス</a>
+<a href="#c-saga-sicilian-grill-takeshita"><span class="tn" style="background:#1baf7a;">11</span>佐賀駅前、朝6時半から開く洋食店</a>
+<a href="#c-saga-sicilian-hanakago"><span class="tn" style="background:#1baf7a;">12</span>ホテルで気軽に食べるシシリアンライス</a>
+<a href="#c-saga-sicilian-sarasa"><span class="tn" style="background:#1baf7a;">14</span>御膳仕立てで出すシシリアンライス</a>
+<a href="#c-saga-sicilian-shirayama-bunga"><span class="tn" style="background:#1baf7a;">15</span>1958年創業の欧風カレーの老舗</a>
+<a href="#c-saga-sicilian-lampada"><span class="tn" style="background:#1baf7a;">18</span>ピザ窯とラクレットチーズの夜の店</a>
+</div>
+<div class="sec blue">有明海の魚・寿司・和食</div>
+<div class="links">
+<a href="#c-saga-ariake-daiichi-sankichimaru"><span class="tn" style="background:#2a78d6;">19</span>有明海の珍魚を通年そろえる駅前の居酒屋</a>
+<a href="#c-saga-ariake-kura"><span class="tn" style="background:#2a78d6;">20</span>昭和20年からの魚の仲買人が開いた直営店</a>
+<a href="#c-saga-ariake-genki-jirushi"><span class="tn" style="background:#2a78d6;">21</span>佐賀駅北口すぐ、活イカと佐賀牛の居酒屋</a>
+<a href="#c-saga-ariake-osakanaya-ureshino"><span class="tn" style="background:#2a78d6;">23</span>嬉乃すしの姉妹店。魚の定食と御膳</a>
+<a href="#c-saga-ariake-sushi-sakaba-uomi"><span class="tn" style="background:#2a78d6;">24</span>翌3時まで開く寿司と串カツの酒場</a>
+</div>
+<div class="sec brown">佐賀ラーメン・ちゃんぽん・うどん</div>
+<div class="links">
+<a href="#c-saga-men-jinrikiya-ozai"><span class="tn" style="background:#8a5a2b;">30</span>深夜3時まで開く手延べうどん</a>
+<a href="#c-saga-men-ekimae-bigone"><span class="tn" style="background:#8a5a2b;">34</span>佐賀駅から100歩の店炊き豚骨</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理</div>
+<div class="links">
+<a href="#c-saga-izakaya-misao"><span class="tn" style="background:#0d366b;">36</span>生簀のある白山の炉端焼き</a>
+<a href="#c-saga-izakaya-mogura"><span class="tn" style="background:#0d366b;">37</span>佐賀の地酒約30種を置く大財の居酒屋</a>
+<a href="#c-saga-izakaya-kadoya"><span class="tn" style="background:#0d366b;">38</span>佐賀駅北口徒歩1分、焼鳥と利き酒</a>
+<a href="#c-saga-izakaya-ashida-shoten"><span class="tn" style="background:#0d366b;">41</span>野菜巻き串と囲炉裏の原始焼き</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・丸ぼうろ</div>
+<div class="links">
+<a href="#c-saga-cafe-kogure"><span class="tn" style="background:#eda100;">45</span>焙煎所を併設、豆を選んで一杯ずつ</a>
+<a href="#c-saga-cafe-tsuitachi"><span class="tn" style="background:#eda100;">46</span>珈琲に小城羊羹がつく築110年の古民家</a>
+<a href="#c-saga-cafe-cinematheque"><span class="tn" style="background:#eda100;">48</span>午後2時から開く、レコードのジャズ喫茶</a>
+<a href="#c-saga-cafe-konekuriya"><span class="tn" style="background:#eda100;">50</span>大正10年の履物問屋を使う古民家カフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 本庄町・兵庫南（国道264号の東側）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/saga/_map3.jpg" alt="中心部拡大2 本庄町・兵庫南（国道264号の東側）">
+<a href="#c-saga-gyu-kisarara" style="left:2.18%;top:2.06%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-gyu-steak-maru-hyogo" style="left:32.33%;top:21.55%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-gyu-yakinikukan-sho-hyogo" style="left:37.56%;top:12.69%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-sicilian-romanza" style="left:2.18%;top:69.59%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-sicilian-tamago-no-tamago" style="left:48.77%;top:76.15%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-ariake-osakanaya-ureshino" style="left:2.18%;top:16.3%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-ariake-honjo-unagiya" style="left:50.37%;top:39.08%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-men-ichirakudo-hyogo" style="left:32.28%;top:30.02%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-men-jinrikiya-ozai" style="left:2.35%;top:33.85%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-cafe-shalom" style="left:55.75%;top:89.96%;width:2.78%;height:2.62%;"></a>
+<a href="#c-saga-cafe-konekuriya" style="left:7.69%;top:68.85%;width:2.78%;height:2.62%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（11店・番号はピンと同じ）</div>
+<div class="sec red">佐賀牛・焼肉・ステーキ</div>
+<div class="links">
+<a href="#c-saga-gyu-kisarara"><span class="tn" style="background:#e34948;">4</span>90分食べ放題のある兵庫北の焼肉</a>
+<a href="#c-saga-gyu-steak-maru-hyogo"><span class="tn" style="background:#e34948;">8</span>千円台のステーキ定食、60席</a>
+<a href="#c-saga-gyu-yakinikukan-sho-hyogo"><span class="tn" style="background:#e34948;">9</span>86席、昼も開く郊外の焼肉</a>
+</div>
+<div class="sec aqua">シシリアンライス・洋食</div>
+<div class="links">
+<a href="#c-saga-sicilian-romanza"><span class="tn" style="background:#1baf7a;">10</span>大正の洋館で食べるシシリアンライス</a>
+<a href="#c-saga-sicilian-tamago-no-tamago"><span class="tn" style="background:#1baf7a;">16</span>オムライスだけで30種のモール内洋食</a>
+</div>
+<div class="sec blue">有明海の魚・寿司・和食</div>
+<div class="links">
+<a href="#c-saga-ariake-osakanaya-ureshino"><span class="tn" style="background:#2a78d6;">23</span>嬉乃すしの姉妹店。魚の定食と御膳</a>
+<a href="#c-saga-ariake-honjo-unagiya"><span class="tn" style="background:#2a78d6;">26</span>昭和45年創業、先代考案の瀬田焼き</a>
+</div>
+<div class="sec brown">佐賀ラーメン・ちゃんぽん・うどん</div>
+<div class="links">
+<a href="#c-saga-men-ichirakudo-hyogo"><span class="tn" style="background:#8a5a2b;">28</span>創業30年、自家製の豚骨とちゃんぽん</a>
+<a href="#c-saga-men-jinrikiya-ozai"><span class="tn" style="background:#8a5a2b;">30</span>深夜3時まで開く手延べうどん</a>
+</div>
+<div class="sec yellow">カフェ・喫茶・丸ぼうろ</div>
+<div class="links">
+<a href="#c-saga-cafe-shalom"><span class="tn" style="background:#eda100;">44</span>1953年創業、佐賀で最初のラーメン店</a>
+<a href="#c-saga-cafe-konekuriya"><span class="tn" style="background:#eda100;">50</span>大正10年の履物問屋を使う古民家カフェ</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 鍋島・高木瀬（市街の北）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/saga/_map4.jpg" alt="中心部拡大3 鍋島・高木瀬（市街の北）">
+<a href="#c-saga-men-ide-yamato" style="left:46.24%;top:40.57%;width:2.58%;height:2.74%;"></a>
+<a href="#c-saga-izakaya-nabeya-wagen" style="left:39.81%;top:58.46%;width:2.58%;height:2.74%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（2店・番号はピンと同じ）</div>
+<div class="sec brown">佐賀ラーメン・ちゃんぽん・うどん</div>
+<div class="links">
+<a href="#c-saga-men-ide-yamato"><span class="tn" style="background:#8a5a2b;">29</span>昭和24年創業、野菜の山のちゃんぽん</a>
+</div>
+<div class="sec beer">居酒屋・郷土料理</div>
+<div class="links">
+<a href="#c-saga-izakaya-nabeya-wagen"><span class="tn" style="background:#0d366b;">43</span>全14部屋個室の鍋専門店</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 嘉瀬町・久保田（市街の南西）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/saga/_map5.jpg" alt="中心部拡大4 嘉瀬町・久保田（市街の南西）">
+<a href="#c-saga-ariake-ikesu-kaiko" style="left:45.81%;top:46.4%;width:2.58%;height:2.74%;"></a>
+<a href="#c-saga-men-koyokaku" style="left:47.01%;top:57.6%;width:2.58%;height:2.74%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（2店・番号はピンと同じ）</div>
+<div class="sec blue">有明海の魚・寿司・和食</div>
+<div class="links">
+<a href="#c-saga-ariake-ikesu-kaiko"><span class="tn" style="background:#2a78d6;">27</span>大型いけすを囲む、有明海の白えびも</a>
+</div>
+<div class="sec brown">佐賀ラーメン・ちゃんぽん・うどん</div>
+<div class="links">
+<a href="#c-saga-men-koyokaku"><span class="tn" style="background:#8a5a2b;">35</span>一休軒ゆずりの濃厚豚骨、焼肉店だった造り</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>佐賀市の店は4つのかたまりに分かれる。①**佐賀駅周辺（駅前中央・駅南本町）**＝ホテルとチェーンが多い。夜の個人店は少ない ②**中央大通り・白山・呉服元町**＝**夜の繁華街**。佐賀駅から南へ1.5km、徒歩20分か市営バス。シシリアンライス発祥の店もこの一帯 ③**松原・城内（佐賀城跡）**＝佐賀城本丸歴史館と県立博物館のまわり。昼の店 ④**郊外（兵庫町・鍋島・巨勢・大和町）**＝国道沿いの車で行く店。駐車場が広い。**佐賀市の名物**＝**佐賀牛**（JAグループ佐賀が扱う黒毛和牛のうち、肉質等級4以上・BMS7以上だけが名乗れる）、**シシリアンライス**（温かいご飯に炒めた肉と生野菜をのせマヨネーズをかけた市の名物。1970年代に喫茶店で生まれた）、**有明海の魚**（ムツゴロウの蒲焼き、ワラスボ、クチゾコ〈舌平目〉、エツ）、**佐賀ラーメン**（とんこつだが博多より白濁が穏やかで、生卵を落とす店が多い）、**井手ちゃんぽん**（武雄発祥。野菜を高く盛る）、**佐賀牛のローストビーフ丼**。甘いものは**丸ぼうろ**（南蛮菓子由来の素朴な焼き菓子）、**小城羊羹**（小城市）、**ブラックモンブラン**（竹下製菓のアイス。県内のスーパーに必ず在る）。酒は**鍋島**（鹿島市の富久千代酒造）・**東一**（五町田酒造）・**窓乃梅**。**夜の個人店は中央大通りの南側に集まり、日曜休みが多い。**</div>
+
+<h2 id="s-gyu" class="c-red">佐賀牛・焼肉・ステーキ</h2>
+<div class="card" id="c-saga-gyu-kira-honten">
+<img class="hero" src="img/saga/saga-gyu-kira-honten.jpg" alt="佐賀牛レストラン 季楽 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-gyu-kira-honten_exterior.jpg" alt="佐賀牛レストラン 季楽 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>佐賀牛レストラン 季楽 本店<span class="yomi">さがぎゅうれすとらん きら ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">JAグループ佐賀の子会社・株式会社JAフーズさがが直営する佐賀牛の専門店で、同社は銀座季楽・与羅ん館も運営する。席はテーブル席・個室・鉄板カウンターの3種で、メニューも3種に分かれる。個室は大人4名以上から、ディナーは個室料10％、ランチの個室利用は1名4,000円以上の料理から。鉄板カウンターは10歳以上が対象で、ディナーは別途サービス料10％。ランチは土日祝を中心に混み合い、早い時間で入店を断る場合があると公式に記載。しゃぶしゃぶ・すきやき・せいろ蒸しは2名以上から。カードはVISA・マスター・JCB・AMEX・ダイナース、PayPay可。ネット予約あり。2026年7月27日からSAGAプレミアムPay・商品券が使える。2026年5月20日に個室をリニューアル。</div>
+<div class="sig"><b>一皿:</b>佐賀牛ロースステーキランチ（小鉢・サラダ・野菜盛・ご飯・汁物・デザート・食後の飲物付き、5,800円）／佐賀牛ロースせいろ蒸し（赤身やロースを蒸し野菜と一緒にせいろで蒸す、9,800円・2名以上）／きらカレー（サラダと食後の飲物付きの昼の最安メニュー、1,300円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（オーダーストップ14:00）／17:00〜22:00（オーダーストップ21:00）</td></tr>
+<tr><th>定休日</th><td class="off">第二水曜日（予告なく変更になる場合あり）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大財3丁目9-16</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-28-4132（フリーダイヤル0120-297-132）か公式サイトのネット予約。個室は大人4名以上から。鉄板カウンターの網焼きステーキランチは要予約。食物アレルギーは予約時に申告 — <a href="tel:0952284132">☎ 0952-28-4132</a> ／ <a href="https://kira.saga-ja.jp/honten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市の佐賀牛を代表する店で、JAグループ佐賀の直営という成り立ちが章の軸になる。営業の根拠＝①店自身の情報: 公式サイト kira.saga-ja.jp のお知らせ欄に「2026年7月27日 『SAGAプレミアムPay・商品券』をご利用いただけます【季楽本店】」「2026年5月20日 個室リニューアルのお知らせ【季楽本店】」（2026-11-21 直読み）。同一ドメインのお知らせ欄の最新記事は2026年11月19日付（与羅ん館のフェア告知）で、サイト自体が現役で更新されている。②閉店確認3通り: (a)「佐賀牛レストラン 季楽 本店 閉店」（空白あり）と「佐賀牛レストラン季楽本店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝Instagram「kira_honten」（公式サイト本店ページからリンク、2026-11-21 確認）。(c)「季楽 本店 佐賀 移転」「季楽 本店 佐賀 リニューアル」で各1回検索し、移転の告知は0件。リニューアルは公式お知らせの「個室リニューアル」（部分改装で営業継続）のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BD%90%E8%B3%80%E7%89%9B%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E5%AD%A3%E6%A5%BD%20%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A13%E4%B8%81%E7%9B%AE9-16">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kira.saga-ja.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://kira.saga-ja.jp/honten/">公式サイト本店ページ。営業時間・定休日・住所・電話・駐車場・お知らせ（2026年7月27日／2026年5月20日）2026-11-21 取得</a> / <a href="https://kira.saga-ja.jp/honten/lunch">公式サイト ランチメニュー。きらカレー1,300円ほかの価格（2026-11-21）2026-11-21 取得</a> / <a href="https://kira.saga-ja.jp/honten/dinner">公式サイト ディナーメニュー。鉄板コース「嘉瀬」18,000円・せいろ蒸し9,800円ほか（2026-11-21）2026-11-21 取得</a> / <a href="https://jafoods.saga-ja.jp/business/restaurant">運営会社 株式会社JAフーズさが レストラン事業ページ。直営であること・FAX・駐車場約40台（2026-11-21）2026-11-21 取得</a> / <a href="https://www.asobo-saga.jp/gourmets/search/detail/cf059deb-de1e-4133-a09f-d6f874f32315">佐賀県観光連盟「あそぼーさが」グルメ掲載。JAグループ佐賀直営、鉄板焼コーナーがミシュランガイド福岡・佐賀特別版で一つ星（2026-11-21）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-gyu-yorankan">
+<img class="hero" src="img/saga/saga-gyu-yorankan.jpg" alt="焼肉レストラン 与羅ん館 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-gyu-yorankan_exterior.jpg" alt="焼肉レストラン 与羅ん館 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>焼肉レストラン 与羅ん館<span class="yomi">やきにくれすとらん よらんかん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">季楽本店・銀座季楽と同じ株式会社JAフーズさがが運営する焼肉店で、同じ佐賀牛を定食の価格帯で出す位置づけ。ランチは数量限定のハンバーグランチ600円を筆頭に、焼肉定食（肥前さくらポーク）1,380円、ステーキ定食（国産牛）2,480円、佐賀牛レモンステーキ定食・佐賀牛網焼定食が各2,880円。ご飯は佐賀県産米でおかわり自由、シシリアンライス1,100円もある。ランチタイムの予約は受け付けておらず、ディナーのみネット予約が可能。価格は税込表示。2026年11月19日から「焼肉×鍋フェア」を実施し、佐賀牛しゃぶ／すきやき1人前6,500円を3割引の4,550円などで出している。</div>
+<div class="sig"><b>一皿:</b>ハンバーグランチ（限定50食・1人1食限り、600円）／佐賀牛網焼定食（希少部位のミスジ・ウデミ・モモミを使用、2,880円）／佐賀牛レモンステーキ定食（2,880円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30（オーダーストップ14:00）／17:00〜22:00（オーダーストップ21:00）</td></tr>
+<tr><th>定休日</th><td class="off">第三火曜日（異なる場合あり）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市久保田町大字久富3983-3</td></tr>
+<tr><th>予約</th><td>ランチは予約を受け付けていない。ディナーのみ予約可で、電話0952-68-4777か公式サイトのネット予約 — <a href="tel:0952684777">☎ 0952-68-4777</a> ／ <a href="https://kira.saga-ja.jp/yorankan">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀牛を定食の値段で食べられる数少ない店で、季楽本店と同じ運営という対比が章の中で効く。営業の根拠＝①店自身の情報: 公式サイトのお知らせに「2026年11月19日 焼肉×鍋フェアのお知らせ【与羅ん館】」（2026-11-21 直読み。2日前の告知で、フェアの割引価格まで記載）。②閉店確認3通り: (a)「焼肉レストラン 与羅ん館 閉店」（空白あり）と「与羅ん館閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝Instagram「yorankan」（公式サイト与羅ん館ページおよびお知らせ記事からリンク、2026-11-21 確認）。(c)「与羅ん館 移転」「与羅ん館 リニューアル」で各1回検索し、いずれも該当0件。 写真について: 公式サイト（kira.saga-ja.jp）の与羅ん館の料理画像は最大でも140×105pxで、740pxの画像は宣伝文字が焼き込まれたバナー、お知らせ欄の画像はフェアのチラシだった。ホットペッパーグルメに掲載がなく、佐賀県観光連盟「あそぼーさが」と佐賀市観光協会「サガバイ」のサイト内検索でも該当0件。運営会社JAフーズさがのメディアライブラリを検索して取れたのは外観1枚とロゴだけだった。そのため料理・店内の写真は0本で、外観1枚のみ。 【2026-11-21 追記・写真の追加】佐賀県 農林水産部 農業経営課の「さが農村ひろば」の与羅ん館のページから、料理2枚（ハンバーグランチ 1338×728／特選和牛大皿盛 2502×1501）と夕景の外観1枚（1920×996）を足し、料理・店内は0本から2本、外観は1本から2本になった。6本には届かなかった。追加で当たって駄目だった経路＝①ホットペッパーグルメには店舗ページ（strJ000571862）が在るが「掲載情報が正確でない可能性があります」の自動生成ページで写真は0枚 ②運営会社JAフーズさがのWordPressメディアライブラリを全件取得（画像URL1,501本）して照合したが、与羅ん館のものはロゴ3点と外観1枚だけ ③公式サイト kira.saga-ja.jp の与羅ん館・ランチ・ディナーの3ページの料理写真は原寸が140×105px、お知らせ欄の画像はフェアのチラシ ④サガテレビ「kachi kachi plus」の与羅ん館の記事2本（2025年10月）とEDITORS SAGAは、どちらもサイトに「当サイトの画像及び情報を許可なく転載・二次利用する事を禁じます」と明記があるので使わなかった ⑤公式Instagram「yorankan」は本実行環境から429で開けない。なお「特選和牛大皿盛」の写真は右下に「写真は特選和牛大皿盛となります。」という細い注記文字が焼き込まれている（帯ではないが、紙面に使うときは下端を切るか差し替える判断が要る）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E4%B8%8E%E7%BE%85%E3%82%93%E9%A4%A8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B9%85%E4%BF%9D%E7%94%B0%E7%94%BA%E5%A4%A7%E5%AD%97%E4%B9%85%E5%AF%8C3983-3">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（saga-nouson.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://kira.saga-ja.jp/yorankan">公式サイト 与羅ん館ページ。営業時間・定休日・住所・電話・お知らせ（2026年11月19日／2026年7月27日）2026-11-21 取得</a> / <a href="https://kira.saga-ja.jp/yorankan/lunch">公式サイト 与羅ん館ランチメニュー。ハンバーグランチ600円ほかの価格（2026-11-21）2026-11-21 取得</a> / <a href="https://kira.saga-ja.jp/news/archives/335">公式お知らせ「焼肉×鍋フェアのお知らせ【与羅ん館】」（2026年11月19日）2026-11-21 取得</a> / <a href="https://jafoods.saga-ja.jp/business/restaurant">運営会社 株式会社JAフーズさが レストラン事業ページ。住所・FAX・駐車場約20台・店休日第三火曜日（2026-11-21）2026-11-21 取得</a> / <a href="https://saga-nouson.jp/spot/restaurant/763/">佐賀県 農林水産部 農業経営課「さが農村ひろば」農家レストラン 焼肉レストラン 与羅ん館。住所・電話・FAX・営業時間・定休日（第一・第三火曜日）・駐車場約20台・ハンバーグランチ（50食限定）・特選和牛大皿盛11,800円・佐賀牛盛7,700円、および外観と料理の写真 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-gyu-ryuokan-ekimae">
+<img class="hero" src="img/saga/saga-gyu-ryuokan-ekimae.jpg" alt="焼肉 龍王館 佐賀駅前店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-gyu-ryuokan-ekimae_exterior.jpg" alt="焼肉 龍王館 佐賀駅前店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>焼肉 龍王館 佐賀駅前店<span class="yomi">やきにく りゅうおうかん さがえきまえてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">総席数90席で、テーブル個室と掘りごたつ個室を複数備え、4名からの完全個室が使える和モダンの造り。最大宴会収容は60人、10名以上のコース予約なら平日限定（月〜木、祝前日は不可）で佐賀市内の送迎バスを出す。全席禁煙で屋外に喫煙スペース。注文はタブレット。カードはVISA・マスター・AMEX・ダイナース・JCB・銀聯・楽天・イオン、PayPay可。Wi-Fiあり、子ども用の椅子・食器・メニューあり、ベビーカー入店可。ハッピーアワーは月〜金17〜18時、土日祝16〜18時。掲載の電話番号0952-97-5929に対し、店の公式ページ（ぐるなび系）の構造化データは+81-50-5484-3359を載せており、どちらかが掲載側の転送番号の可能性がある（未確認）。</div>
+<div class="sig"><b>一皿:</b>「佐賀牛」特選5種盛り（上ロース・上カルビ・カルビ・上赤身・中落ちカルビと焼き野菜、2〜3人前で7,898円）／ドラゴンカルビ（先代から受け継いだ秘伝のタレに漬け込んだ下味付きカルビ、1,078円）／肉寿司（黒毛和牛をバーナーで炙る直火焼き寿司）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 17:00〜23:00（料理L.O.22:00・ドリンクL.O.22:45）／土 16:00〜23:00（同）／日・祝 16:00〜22:00（料理L.O.21:30・ドリンクL.O.21:45）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市愛敬町11-10</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-97-5929、またはホットペッパーグルメのネット予約（即予約は来店日当日20時まで、リクエスト予約は前日17時まで） — <a href="tel:0952975929">☎ 0952-97-5929</a> ／ <a href="https://f628911.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀駅から歩ける範囲で個室の佐賀牛焼肉が食べられる店として章に要る。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページのコース欄が「2026/11/19 更新」、料理欄が「2026/11/02 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「焼肉 龍王館 佐賀駅前店 閉店」（空白あり）と「焼肉龍王館佐賀駅前店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（公式ページ f628911.gorp.jp と店舗ページのどちらにもSNSアカウントの記載がない。これは閉店の証拠ではない）。(c)「焼肉 龍王館 佐賀駅前店 移転」「同 リニューアル」で各1回検索し、いずれも該当0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E9%BE%8D%E7%8E%8B%E9%A4%A8%20%E4%BD%90%E8%B3%80%E9%A7%85%E5%89%8D%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%84%9B%E6%95%AC%E7%94%BA11-10">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003671205/">ホットペッパーグルメ 店舗ページ。住所・営業時間・定休日・席数・駐車場・支払い方法（2026/11/19 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003671205/food/">ホットペッパーグルメ 料理ページ。佐賀牛特選5種盛り7,898円ほかの価格（2026/11/02 更新）2026-11-21 取得</a> / <a href="https://f628911.gorp.jp/">店の公式ページ（ぐるなび系）。住所・電話+81-50-5484-3359・予算の構造化データ（2026-11-21）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-gyu-kisarara">
+<img class="hero" src="img/saga/saga-gyu-kisarara.jpg" alt="焼肉 季咲楽 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-gyu-kisarara_exterior.jpg" alt="焼肉 季咲楽 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>焼肉 季咲楽<span class="yomi">やきにく きさら</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数20席の小さな店だが、2名×2・4名×4の個室と8名×1・4名×2の掘りごたつを持ち、最大40人まで。昼も通しで営業し、一人焼肉の利用が多い。90分の食べ放題が2本（4,378円／5,478円）あり、シニア・小学生・4〜6歳の子ども料金が別に設定され3歳以下は無料。飲み放題は90分2,750円。全席禁煙で店外に喫煙スペース、喫煙専用室あり。カードはVISA・マスター・AMEX・JCB、電子マネーは楽天Edy・WAON・Suica・PASMO・nanaco・ICOCA・iD・QUICPay、PayPayも使える。モバイルオーダー制。来店のピークは19時まで。</div>
+<div class="sig"><b>一皿:</b>季咲楽盛り（牛タン塩・和牛カルビ・佐賀牛赤身・鶏もも・豚カルビ・ハラミにサイドメニュー1品、2〜3人前で5,478円）／ファミリー盛り（上記に厳選赤身2種・ウインナー・三田川ホルモンを足した3〜4人前、8,778円）／特選赤身盛り（フリソデ・トンビ・クリミ・カワラ・ミスジの食べ比べ、5,060円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・祝前日 11:30〜15:00（L.O.14:30）／17:00〜23:00（L.O.22:30）、土・日・祝 11:30〜23:00（L.O.22:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市兵庫北2-25-18</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-97-6955（問い合わせは11:00〜）、またはホットペッパーグルメのネット予約（即予約は来店日当日21時まで、リクエスト予約は前日17時まで） — <a href="tel:0952976955">☎ 0952-97-6955</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀牛と和牛を食べ放題でも単品でも出す、章の中の価格の下側を受け持つ店。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/10/22 更新」、コース欄が「2026/10/17 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「焼肉 季咲楽 佐賀 閉店」（空白あり）と「焼肉季咲楽閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（店舗ページの「お店のホームページ」はGoogleマップへのリンクで、SNSアカウントの記載がない。これは閉店の証拠ではない）。(c)「焼肉 季咲楽 兵庫北 移転」「焼肉 季咲楽 佐賀市 リニューアル」で各1回検索し、いずれも該当0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E5%AD%A3%E5%92%B2%E6%A5%BD%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E5%8C%972-25-18">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001246926/">ホットペッパーグルメ 店舗ページ。住所・営業時間・席数・個室・支払い方法・食べ放題（2026/10/22 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001246926/course/">ホットペッパーグルメ コースページ。食べ放題90分4,378円／5,478円（2026/10/17 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001246926/food/">ホットペッパーグルメ 料理ページ。季咲楽盛り5,478円・特選赤身盛り5,060円ほか 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-gyu-momiji">
+<img class="hero" src="img/saga/saga-gyu-momiji.jpg" alt="焼肉椛 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-gyu-momiji_exterior.jpg" alt="焼肉椛 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>焼肉椛<span class="yomi">やきにくもみじ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数26席の小規模店。佐賀牛と宮崎牛の2種を置き、カルビ系は佐賀牛、ロース系は宮崎牛と使い分けて部位ごとに単品で出す。カルビ食べ比べ（カルビ・赤身・上・特上）3,900円、ロース食べ比べ（宮崎牛ロース・上・上焼きしゃぶ・特上）4,200円といった食べ比べの組み立てが中心。コースは平日限定4,000円から全16品12,000円まで3種類で、コースは来店当日16時以降のキャンセルで料金の100％が発生する。全席禁煙、英語メニューあり、20名から貸切可。カードと電子マネー、QRコード決済（COIN＋・楽天ペイ・d払い・au PAY・Alipay）が広く使える。日本酒は佐賀の銘柄、焼酎は宮崎から仕入れている。来店のピークは19時まで。</div>
+<div class="sig"><b>一皿:</b>椛盛合わせ（佐賀牛と宮崎牛を厳選した当店自慢の盛り合わせ、3,500円）／佐賀牛極上ヒレ150g（在庫がなくなり次第終了、5,500円）／石焼フレンチトースト（締めのデザート。ホットペッパー限定クーポンで2人前800円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 11:00〜15:00（L.O.14:30）／17:00〜22:30（L.O.22:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市唐人1丁目5-37</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-37-1129（営業時間内）、またはホットペッパーグルメのネット予約（即予約は来店日当日17時まで、リクエスト予約は前日17時まで）。コースは当日16時以降のキャンセルで100％のキャンセル料 — <a href="tel:0952371129">☎ 0952-37-1129</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀牛と宮崎牛を同じ卓で比べられる構成が、佐賀牛一色になりがちな章の中で役割を持つ。営業の根拠＝①店自身の情報: ホットペッパーグルメのコース欄が「2026/06/16 更新」、店舗ページが「2026/05/29 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「焼肉椛 佐賀 唐人 閉店」（空白あり）と「焼肉椛閉店佐賀」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21。同じ唐人1丁目の「椿食堂」の閉店表示が混ざるが別の店）。(b) 公式SNS＝対象なし（店舗ページにホームページ・SNSの記載がない。これは閉店の証拠ではない）。(c)「焼肉椛 佐賀 移転」「焼肉椛 佐賀 リニューアル」で各1回検索し、いずれも該当0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E6%A4%9B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%94%90%E4%BA%BA1%E4%B8%81%E7%9B%AE5-37">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003850103/">ホットペッパーグルメ 店舗ページ。住所・営業時間・席数・支払い方法・キャンセル規定（2026/05/29 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003850103/course/">ホットペッパーグルメ コースページ。平日限定4,000円コース・全16品12,000円コース（2026/06/16 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003850103/food/">ホットペッパーグルメ 料理ページ。椛盛合わせ3,500円・佐賀牛極上ヒレ5,500円ほか 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-gyu-tanaka-shoten">
+<img class="hero" src="img/saga/saga-gyu-tanaka-shoten.jpg" alt="炭火焼肉田中商店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-gyu-tanaka-shoten_exterior.jpg" alt="炭火焼肉田中商店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>炭火焼肉田中商店<span class="yomi">すみびやきにくたなかしょうてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数22席でカウンターもあり、1人から入れる。夜のみの営業で、炭火で焼く。コースは料理のみの極コース（11品）5,500円、2時間飲み放題付きの極上コース（12品）6,600円、2時間の日本酒を含む飲み放題付きの贅沢コース（12品）7,700円の3本立て。単品は和牛赤身1,607円、和牛カルビ1,298円など。生牛タンは超厚切り1,694円・薄切り1,309円・切り落とし858円・タンゲタ693円と刻みが細かい。全席禁煙。貸切は18〜22名で相談。カード各種とiD・QUICPay・PayPayが使える。掲載の電話番号050-8888-1239は佐賀市の市外局番ではなく、掲載側の転送番号の可能性がある（未確認）。</div>
+<div class="sig"><b>一皿:</b>炭火燻製ネギカルビ（炭の香りをまとわせた看板の一品、968円）／葱包みタン3個（薄切りのタンで味付けした白ネギを包む、1,254円）／超厚切り生牛タン（厚いのに柔らかく、両面をしっかり焼いて食べる、1,694円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日 17:00〜翌0:00（料理L.O.23:00・ドリンクL.O.23:00）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市駅南本町3-8 草場ビル2階</td></tr>
+<tr><th>予約</th><td>予約可。電話050-8888-1239、またはホットペッパーグルメのネット予約（即予約は来店日当日18時まで） — <a href="tel:05088881239">☎ 050-8888-1239</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀駅の近くで炭火の焼肉を出す数少ない店で、カウンターがあり1人でも入れる点が章の中で独自。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/08/18 更新」、コース欄が「2026/05/12 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「炭火焼肉 田中商店 佐賀 駅南本町 閉店」（空白あり）と「炭火焼肉田中商店佐賀閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（店舗ページにSNSアカウントの記載がない。これは閉店の証拠ではない）。(c)「炭火焼肉 田中商店 佐賀 移転」「同 リニューアル」で各1回検索し、いずれも該当0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E8%82%89%E7%94%B0%E4%B8%AD%E5%95%86%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%8D%97%E6%9C%AC%E7%94%BA3-8%20%E8%8D%89%E5%A0%B4%E3%83%93%E3%83%AB2%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003850082/">ホットペッパーグルメ 店舗ページ。住所・営業時間・席数・駐車場・支払い方法（2026/08/18 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003850082/course/">ホットペッパーグルメ コースページ。極コース5,500円・極上コース6,600円・贅沢コース7,700円（2026/05/12 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003850082/food/">ホットペッパーグルメ 料理ページ。炭火燻製ネギカルビ968円・超厚切り生牛タン1,694円ほか 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-gyu-nikumaru">
+<img class="hero" src="img/saga/saga-gyu-nikumaru.jpg" alt="大衆焼肉 肉まる 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>大衆焼肉 肉まる<span class="yomi">たいしゅうやきにく にくまる</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数34席、カウンターあり。月〜土は18時から翌3時まで開いており、佐賀市の繁華街で飲んだあとに行ける数少ない焼肉店。**クレジットカード・電子マネー・QRコード決済はいずれも使えず現金のみ**で、料金は税別表示の掲示がある（口コミ）。全席禁煙。子ども連れは不可。佐賀牛の薄切りを炙って卵黄にくぐらせる「飲めるロース」、タン刺しやセンマイ刺しなどの刺し物、有田鶏といった品を置く。盛り合わせは肉まる盛り（1人前3,850円）とホルモン盛り3,630円。来店のピークは21時まで。</div>
+<div class="sig"><b>一皿:</b>肉まる盛り（牛タンや上ホルモンなど全8品の盛り合わせ、3,500円）／飲めるロース（薄切りの佐賀牛をさっと炙って濃厚な卵黄にくぐらせる1枚、1,078円）／タン刺し（九州産の甘めの醤油で食べる刺し物、880円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 18:00〜翌3:00（料理L.O.翌2:30・ドリンクL.O.翌2:30）／日 17:00〜翌0:00（L.O.23:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市中央本町7-8</td></tr>
+<tr><th>予約</th><td>予約可。電話095-229-3500、またはホットペッパーグルメのネット予約（即予約は来店日の翌0時まで、リクエスト予約は前日17時まで）。支払いは現金のみ — <a href="tel:0952293500">☎ 0952-29-3500</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>深夜まで開いていて現金のみという、佐賀市の繁華街の夜の受け皿として章に要る。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/06/20 更新」（同ページ内に2026/05/14・2026/02/24・2026/02/18 の更新表示もある。2026-11-21 直読み）。②閉店確認3通り: (a)「大衆焼肉 肉まる 佐賀 中央本町 閉店」（空白あり）と「大衆焼肉肉まる佐賀閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（店舗ページにSNSアカウントの記載がない。これは閉店の証拠ではない）。(c)「大衆焼肉 肉まる 佐賀 移転」「同 リニューアル」で各1回検索し、いずれも該当0件。 外観写真について: ホットペッパーグルメの「appearance」分類の6枚をすべて目で見たが、全部が店内で、外観は1本も取れなかった。 【2026-11-21 訂正と追記】①電話番号を 095-229-3500 から 0952-29-3500 に直した（佐賀市の市外局番は0952。佐賀経済新聞 2026年2月26日の記事とEDITORS SAGA 2026年5月27日の記事がともに 0952-29-3500 と記載）。②この欄に「公式SNS＝対象なし」と書いていたのは誤りで、公式Instagram のアカウント名は「yakinikunikumaru」（2026-11-21 に Yahoo! JAPAN の検索結果ページでアカウント名を確認。アプリ本体は本実行環境から429で開けない）。③同じ章の「ステーキまる 兵庫店」と同系列かどうかを照合した結果は別経営（下の外観の項に併記）。④外観写真は今回も0本。ホットペッパーグルメの掲載18枚を原寸で全部目視したが外観は1枚も無く（appearance 分類の6枚も全部が店内）、佐賀県観光連盟「あそぼーさが」の掲載画像は238×238pxの1枚のみ、公式サイトは無い。外観を載せている記事（EDITORS SAGA 2026年5月27日）は「当サイトの画像及び情報を許可なく転載・二次利用する事を禁じます」と明記があるため使わなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E7%84%BC%E8%82%89%20%E8%82%89%E3%81%BE%E3%82%8B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B8%AD%E5%A4%AE%E6%9C%AC%E7%94%BA7-8">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004559031/">ホットペッパーグルメ 店舗ページ。住所・営業時間・席数・支払い方法（現金のみ）（2026/06/20 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004559031/food/">ホットペッパーグルメ 料理ページ。肉まる盛り3,500円・飲めるロース1,078円・タン刺し880円 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-gyu-steak-maru-hyogo">
+<img class="hero" src="img/saga/saga-gyu-steak-maru-hyogo.jpg" alt="ステーキまる 兵庫店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>ステーキまる 兵庫店<span class="yomi">すてーきまる ひょうごてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">総席数60席でカウンターもあり、1人でも入れる。注文は食券機（店の求人案内による）。定食はサラダ・スープ・ご飯付き。ステーキは低温調理で火を入れ、特製スパイスで仕上げる。唐揚げ定食は普通3個640円・がっつり6個990円。全席禁煙。カード・電子マネー・QRコード決済はいずれも使えず現金のみ。小城店もある。**営業時間は出典で食い違う**——ホットペッパーグルメは月〜金・祝前日11:30〜14:30／18:00〜21:00、土日祝11:30〜21:00、定休日なし。店の公式LINEアカウント「ステーキまる」の店舗案内は昼11:30〜15:00／夜18:00〜22:00で、火曜・水曜は夜のみとする。ここの hours はホットペッパー側を載せているので、行く前に電話で確かめたほうがよい。</div>
+<div class="sig"><b>一皿:</b>がっぱいステーキ定食（低温調理のステーキに特製スパイス。サラダ・スープ・ご飯付きで人気No.1、シングル1,380円）／レモンステーキ定食（薄切り肉をすき焼き風に仕立てレモンでさっぱり食べる。残ったご飯にソースを絡める、1,480円）／唐りん唐揚げ定食（秘伝のタレに漬けて二度揚げ、3個640円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・祝前日 11:30〜14:30／18:00〜21:00、土・日・祝 11:30〜21:00（ホットペッパーグルメの掲載。公式LINEの店舗案内は昼11:30〜15:00／夜18:00〜22:00で火・水は夜のみ、と食い違う）</td></tr>
+<tr><th>定休日</th><td class="off">なし（ホットペッパーグルメの掲載）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市兵庫南2丁目736-1</td></tr>
+<tr><th>予約</th><td>ホットペッパーグルメのリクエスト予約のみ（来店日の前日17時まで）。電話は0952-97-8456 — <a href="tel:0952978456">☎ 0952-97-8456</a> ／ <a href="https://steak-en.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>千円台で肉をしっかり食べられる定食の店として、価格帯の下限を担当する。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/06/14 更新」（同ページ内に2026/06/02 の更新表示もある。2026-11-21 直読み）。②閉店確認3通り: (a)「ステーキまる 兵庫店 佐賀 閉店」（空白あり）と「ステーキまる兵庫店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝Instagram「steak.maru.saga」（ホットペッパーの「お店のホームページ」欄からリンク）およびLINE公式アカウント「ステーキまる」（友だち2,142人。2026-11-21 直読み）。(c)「ステーキまる 佐賀 兵庫店 移転」「同 リニューアル」で各1回検索し、いずれも該当0件。 外観写真について: ホットペッパーグルメの掲載写真4枚はいずれも料理で、外観は1本も取れなかった。公式LINEアカウントのページにも写真はない。 【2026-11-21 追記】①公式サイトが見つかった（steak-en.jp。旧屋号「ステーキえん」のドメインのまま）。website 欄を Instagram から公式サイトへ差し替え、公式サイト掲載の料理写真3枚（各2250×1500）を足して料理写真は7本になった。②同じ章の「大衆焼肉 肉まる」と同系列かどうかを照合した結果は別経営。運営はアンジェルクス株式会社（代表取締役 千住英正。佐賀市本庄町大字本庄10、設立2009年9月1日）で、同社の飲食事業ページが挙げる事業店舗は「ステーキまる兵庫店・ステーキまる小城店」の2店だけ、会社概要の沿革（2024年10月まで）にも肉まるは出てこない。一方の肉まるは2025年12月23日開店・店長は成清博人さんで、アンジェルクスのどの資料にも現れない。③外観写真は今回も0本。公式サイトの画像は料理5枚とロゴだけで外観が無く、ホットペッパーグルメの写真105枚は3枚の料理写真を除く102枚が公式Instagramの転載（scontent.cdninstagram.com。URLに期限 oe= が付くので印刷までに切れる）で使えない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E3%81%BE%E3%82%8B%20%E5%85%B5%E5%BA%AB%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E5%8D%972%E4%B8%81%E7%9B%AE736-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（steak-en.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004620002/">ホットペッパーグルメ 店舗ページ。住所・営業時間・席数・支払い方法・Instagram（2026/06/14 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004620002/food/">ホットペッパーグルメ 料理ページ。がっぱいステーキ定食1,380円・レモンステーキ定食1,480円・唐揚げ定食640円 2026-11-21 取得</a> / <a href="https://page.line.me/567glskl">店の公式LINEアカウント「ステーキまる」。店舗MAPの営業時間（昼11:30〜15:00／夜18:00〜22:00、火・水は夜のみ）・電話・小城店 2026-11-21 取得</a> / <a href="https://steak-en.jp/%e5%ba%97%e8%88%97%e6%83%85%e5%a0%b1/">公式サイト「ステーキ まる」店舗情報。兵庫店の住所・電話0952-97-8456・営業時間（月〜金 11:30〜14:30／18:00〜21:00、土日 11:30〜21:00）・定休日 不定休・アクセス（佐賀中部病院西交差点を西に2分、佐賀共栄銀行兵庫支店横）2026-11-21 取得</a> / <a href="https://angelux-saga.com/insyoku/">運営会社 アンジェルクス株式会社 飲食事業ページ。事業店舗は「ステーキまる兵庫店・ステーキまる小城店」の2店、従業員数10人 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-gyu-yakinikukan-sho-hyogo">
+<img class="hero" src="img/saga/saga-gyu-yakinikukan-sho-hyogo.jpg" alt="焼肉館 勝 佐賀兵庫店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">9</span>焼肉館 勝 佐賀兵庫店<span class="yomi">やきにくかん しょう さがひょうごてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数86席の郊外型の焼肉店で、昼夜とも通しで営業する。個室・座敷・掘りごたつはなく、最大宴会は26人（要相談）。全席禁煙で屋外に喫煙スペース。カードはVISA・マスター・AMEX・ダイナース・JCB、PayPayも使える。飲み放題あり、子ども連れ可。デザートプレートの用意ができるので、祝い事は店に相談する。伊万里牛を自家牧場で育てる松尾牧場の系列で、伊万里店や武雄店もある。料理の個別価格はホットペッパーの掲載に出ておらず、ここでは予算区分のみを載せている。</div>
+<div class="sig"><b>一皿:</b>スペシャルランチ（口コミで「ランチには少し高価だが値段以上の上質な肉」と書かれている昼の上位メニュー）／牛汁（肉の旨味を効かせた汁物でおかわりしたくなると評される）／デザートプレート（祝い事向け。店に事前確認）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 11:30〜15:00（料理L.O.14:30・ドリンクL.O.14:30）／17:00〜22:00（料理L.O.21:20・ドリンクL.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市兵庫南3-3-12</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-40-0055、またはホットペッパーグルメのネット予約（即予約は来店日当日20時まで）。昼は満席になることがあるので予約が無難 — <a href="tel:0952400055">☎ 0952-40-0055</a> ／ <a href="https://www.instagram.com/saga_show1997/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市の郊外で昼から焼肉が食べられる大箱として、駅前の個室型・深夜型とは別の役割を持つ。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/11/12 更新」（同ページ内に2026/10/13 の更新表示もある。2026-11-21 直読み）。②閉店確認3通り: (a)「焼肉館 勝 佐賀兵庫店 閉店」（空白あり）と「焼肉館勝佐賀兵庫店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21。同じ兵庫地区の「焼肉なべしま 佐賀兵庫店」が混ざるが別の店）。(b) 公式SNSのアカウント名＝Instagram「saga_show1997」（ホットペッパーの「お店のホームページ」欄からリンク、2026-11-21 確認）。(c)「焼肉館 勝 佐賀兵庫店 移転」「同 リニューアル」で各1回検索し、いずれも該当0件。 写真について: ホットペッパーグルメの店舗ページに写真が1枚（480×320px）しかなく、写真ページ自体が存在しない。公的機関（佐賀県観光連盟「あそぼーさが」）のサイト内検索でも該当0件、公式サイトも見つからず（Instagramは本実行環境から429で開けない）。そのため料理写真1本のみ、外観は0本。 【2026-11-21 追記】外観写真を改めて探したが0本のまま。ホットペッパーグルメの店舗ページに在る画像は P051449785 の1枚だけで写真ページ自体が無いこと、佐賀県観光連盟・佐賀市観光協会・佐賀県「さがすたいる」のいずれにも該当ページが無いこと、公式サイトが存在せず Instagram「saga_show1997」は本実行環境から429で開けないことを再確認した（2026-11-21）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E9%A4%A8%20%E5%8B%9D%20%E4%BD%90%E8%B3%80%E5%85%B5%E5%BA%AB%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E5%8D%973-3-12">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004723351/">ホットペッパーグルメ 店舗ページ。住所・営業時間・席数86席・駐車場15台・支払い方法・Instagram（2026/11/12 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004723351/course/">ホットペッパーグルメ コースページ。予算区分（ディナー4,001〜5,000円／ランチ1,501〜2,000円）2026-11-21 取得</a></div>
+</div></div>
+<h2 id="s-sicilian" class="c-aqua">シシリアンライス・洋食</h2>
+<div class="card" id="c-saga-sicilian-romanza">
+<img class="hero" src="img/saga/saga-sicilian-romanza.jpg" alt="Restaurant &amp; Cafe 浪漫座 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-romanza_exterior.jpg" alt="Restaurant &amp; Cafe 浪漫座 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">10</span>Restaurant &amp; Cafe 浪漫座<span class="yomi">れすとらんあんどかふぇ ろまんざ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐賀市歴史民俗館・旧古賀銀行（1906年竣工、1916年に西側を増築。1995年に佐賀市重要文化財、1997年から歴史民俗館として公開）の1階にある。2005年にオーナーの角田さんが音楽と文化の発信拠点として始めた店で、週末はジャズやクラシックの演奏会が開かれる。そのため土日祝は貸切になることがあり、出かける前に店へ確認するよう佐賀市歴史民俗館の公式サイトが勧めている。喫茶と食事で時間帯が分かれる。佐賀市観光協会の掲載では電子決済は不可。館はスロープ・車椅子・身障者用トイレを備え、入館は無料。営業時間は資料で差があり、佐賀市観光協会と街なかかわらばん佐賀は10:00〜16:00、歴史民俗館の公式サイトは喫茶10:00〜17:00・食事11:30〜14:30と書いている。</div>
+<div class="sig"><b>一皿:</b>浪漫座風シシリアンライス（温かいご飯にデミソースをかけた国産牛のローストビーフをのせ、10種類以上の野菜を盛ってイタリアン・バジル・コールスローの3種のドレッシングで仕上げる）／オリジナルコーヒー（厳選した豆で淹れる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜16:00（ランチタイム 11:30〜14:00 オーダーストップ、喫茶 10:00〜16:00 オーダーストップ）</td></tr>
+<tr><th>定休日</th><td class="off">月曜日（当日が祝日の場合は火曜日）、祝日の翌日（当日が土曜日の場合は開館）、12月29日〜1月3日。佐賀市歴史民俗館の休館日と同じ</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市柳町2番9号 佐賀市歴史民俗館 旧古賀銀行内1階</td></tr>
+<tr><th>予約</th><td>電話（0952-24-4883）で受け付ける。ネット予約は無い。コンサートなどで貸切になることがあるため、来店前の電話確認が公式に勧められている。 — <a href="tel:0952244883">☎ 0952-24-4883</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>シシリアンライスの章の中心に置ける1軒。旧古賀銀行という大正期の洋館の1階という場所そのものが目的地になり、炒めた牛バラ肉ではなくローストビーフを使う点でほかの店と重ならない。営業の根拠＝①公的機関の日付つき紹介: 佐賀市観光協会の公式ポータル「サガバイドットコム」の浪漫座のページ（紹介文・住所・営業時間・定休日・電話を掲載、［更新日：2026年7月10日］、2026-11-21 取得）。あわせて地域情報紙「街なかかわらばん佐賀」の取材記事（2026年11月12日、店の現況と価格を掲載）も確認した。店自身の情報は、佐賀市歴史民俗館が案内する公式サイト http://www.romanza.jp/ が 2026-11-21 の取得時に HTTP 503 で応答せず、Instagram も本実行環境からは読めなかったため、佐賀県の特例に従い公的機関の日付つき紹介で代用した。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「レストラン＆カフェ 浪漫座 佐賀 閉店」（空白を入れた形）と「浪漫座閉店」（詰めた形）、「レストラン＆カフェ 浪漫座 佐賀 移転」、「浪漫座 佐賀 旧古賀銀行 リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった。公式SNSのアカウント名は Instagram「romanza.2005」（佐賀市歴史民俗館の案内と街なかかわらばん佐賀の記事が同じ名前を載せている）で、名前自体に閉店を示す語は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Restaurant%20%26%20Cafe%20%E6%B5%AA%E6%BC%AB%E5%BA%A7%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%9F%B3%E7%94%BA2%E7%95%AA9%E5%8F%B7%20%E4%BD%90%E8%B3%80%E5%B8%82%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E9%A4%A8%20%E6%97%A7%E5%8F%A4%E8%B3%80%E9%8A%80%E8%A1%8C%E5%86%851%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.sagabai.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sagarekimin.jp/facility/kogabank/">佐賀市歴史民俗館 公式サイト 旧古賀銀行のページ（浪漫座の住所・電話・営業時間・店休日・旧古賀銀行の沿革）2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=316">佐賀市観光協会「サガバイドットコム」浪漫座のページ（営業時間・定休日・駐車場50台・電子決済不可・［更新日：2026年7月10日］）2026-11-21 取得</a> / <a href="https://kawaraban-web.com/14367/">街なかかわらばん佐賀「国産牛のローストビーフをあしらった 上品なシシリアンライス【Restaurant &amp; Cafe 浪漫座】」（2026年11月12日。価格1,200円税込・2005年開業・Instagram @romanza.2005）2026-11-21 取得</a> / <a href="https://www.sagarekimin.jp/">佐賀市歴史民俗館 公式サイト トップ（アクセス・無料駐車場40台）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-sicilian-grill-takeshita">
+<img class="hero" src="img/saga/saga-sicilian-grill-takeshita.jpg" alt="グリル タケシタ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-grill-takeshita_exterior.jpg" alt="グリル タケシタ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">11</span>グリル タケシタ<span class="yomi">ぐりる たけした</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">竹下コーポレーションが運営する洋食店で、同社のグループ会社がアイス「ブラックモンブラン」の竹下製菓。ランチには関連企業である竹下製菓のアイスの食べ放題が付く。朝6時半から朝食を出し、宿泊者以外も利用できる。扉と壁のあるテーブル個室「カトレア」があり、16名・32名・48名の3通りの使い方ができる。全席禁煙。カード（VISA・Master・JCB・アメリカン・エキスプレス・ダイナースクラブ・Discover・UC・NICOS・銀聯）と iD・QUICPay＋・PayPay が使え、Wi-Fiは無料。席数はホットペッパーグルメの掲載が58席、ぐるなびのオフィシャルページの掲載が84席で食い違うので、大人数で行くときは電話で確認するのが安全。</div>
+<div class="sig"><b>一皿:</b>シシリアンライス（ご飯の上にサラダと肉をのせマヨネーズをかけた佐賀のご当地料理）／こだわりのハンバーグ（焼き目を付けてから特製ソースで煮込み、鉄鍋で熱々のまま出す）／鉄鍋焼きご飯（有明鶏とごろごろ野菜のホワイトソース、佐賀の魚介のイカ墨の2種）</div>
+<table class="info">
+<tr><th>営業時間</th><td>モーニング 6:30〜9:30（9:00受付終了）／ランチ 11:30〜15:00（14:00受付終了）／ディナー 17:00〜21:00（ラストオーダー20:00、土・日・祝のみ）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日（ほか不定休）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市駅前中央1-164 アパホテル〈佐賀南口〉1階</td></tr>
+<tr><th>予約</th><td>電話（0952-25-3811）のほか、ぐるなび・ホットペッパーグルメでネット予約ができる。即予約は来店日当日17時まで、リクエスト予約は3日前まで。団体は電話で受け付ける。 — <a href="tel:0952253811">☎ 0952-25-3811</a> ／ <a href="https://faw0900.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀駅から最も近いシシリアンライスの1軒で、朝6時半から夜まで通しに近い形で開くため旅程に組み込みやすい。ブラックモンブランの竹下製菓と同じグループが運営し、ランチにそのアイスの食べ放題が付くという佐賀らしさもある。営業の根拠＝①店自身の2025〜2026年の情報: ホットペッパーグルメの店舗ページが「2026/06/21 更新」、同じサイトの料理ページが「最終更新日：2025/12/11」（いずれも店が入稿した日付。2026-11-21 取得）。ぐるなびのオフィシャルページ（faw0900.gorp.jp）も写真の更新日を 2025-12-10 と表示する。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「グリル タケシタ 佐賀 閉店」（空白を入れた形）と「グリルタケシタ閉店」（詰めた形）、「グリル タケシタ 佐賀 移転」、「グリル タケシタ 佐賀 リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった。店そのものの公式SNSのアカウントは見つからず、運営会社側のアカウント名は Instagram「takeshitaseika_official」（竹下製菓）・Facebook「blackmonblanc」で、名前に閉店を示す語は無い。店単独のアカウントは対象なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B0%E3%83%AA%E3%83%AB%20%E3%82%BF%E3%82%B1%E3%82%B7%E3%82%BF%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%89%8D%E4%B8%AD%E5%A4%AE1-164%20%E3%82%A2%E3%83%91%E3%83%9B%E3%83%86%E3%83%AB%E3%80%88%E4%BD%90%E8%B3%80%E5%8D%97%E5%8F%A3%E3%80%891%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://faw0900.gorp.jp/">グリル タケシタ ぐるなびオフィシャルページ（住所・営業時間・定休日・席数84席・支払い方法・駐車場・写真更新日2025-12-10）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000832899/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・58席・全席禁煙・2026/06/21 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000832899/food/">ホットペッパーグルメ 料理ページ（シシリアンライス2,000円ほかの価格・最終更新日 2025/12/11）2026-11-21 取得</a> / <a href="https://takeshitacorporation.com/">竹下コーポレーション 公式サイト 事業内容（グリルタケシタ・アパホテル佐賀駅南口の運営、竹下製菓はグループ会社）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-sicilian-hanakago">
+<img class="hero" src="img/saga/saga-sicilian-hanakago.jpg" alt="カフェ＆レストラン はなかご 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-hanakago_exterior.jpg" alt="カフェ＆レストラン はなかご 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">12</span>カフェ＆レストラン はなかご<span class="yomi">かふぇあんどれすとらん はなかご</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">ホテルグランデはがくれのレストラン。シシリアンライスとホテルカレーは17時までの販売で、夜は出ない。ランチタイムは予約なしでも入れるが、予約を受けるのは11:30〜12:00に来店する客に限られる。ディナーは完全予約制で、前日の午前中までにフロントか予約課へ申し込む。電話での当日予約は受け付けていない。全席禁煙。洋室の個室が2部屋（定員5〜8名）あり、ランチは税込2,800円以上、ディナーは税込3,800円以上のメニューを事前予約した場合に案内される。平日限定の曜日替わりランチ1,430円にはセルフサービスのランチバー（小鉢・サラダ・ごはん・味噌汁・スープ・ソフトドリンク、14時まで）が付く。</div>
+<div class="sig"><b>一皿:</b>シシリアンライス（1,650円。17時まで）／佐賀県産和牛ローストビーフ丼（1,870円、数量限定）／ホテル特製ビーフシチュー（ランチバーセット付き1,540円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜14:00（ラストオーダー14:00）／喫茶・軽食 14:00〜17:00／ディナー 18:00〜21:00（ラストオーダー20:00、完全予約制）</td></tr>
+<tr><th>定休日</th><td class="off">なし（佐賀市観光協会の掲載、［更新日：2026年7月6日］）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市天神2丁目1番36号 ホテルグランデはがくれ1階</td></tr>
+<tr><th>予約</th><td>前日の午前中までにフロントまたは予約課へ電話（0952-25-2212）。電話での当日予約は受け付けていない。ディナーは完全予約制。ランチは予約なしでも入れるが、予約できるのは11:30〜12:00の来店に限る。 — <a href="tel:0952252212">☎ 0952-25-2212</a> ／ <a href="https://www.grande-hagakure.com/restaurant.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀駅から歩ける範囲でシシリアンライスを出す店のうち、定休日が無く、170台の駐車場が使え、個室もあるという点で旅程に組みにくい時間帯でも当てにできる1軒。ホテルのレストランなので一人でも家族連れでも入りやすい。営業の根拠＝①店自身の2025〜2026年の情報: ホテルグランデはがくれ公式サイトのレストランのお知らせが「2026.11.13【12月】クリスマスウイークファミリーバイキング」「2026.11.1 11月1日(日)〜12月29日(火) レストランイベント膳『冬の味覚御膳』ご予約承り中！」を掲載している（2026-11-21 取得）。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「はなかご 佐賀 ホテルグランデはがくれ 閉店」（空白を入れた形）と「はなかご閉店 佐賀」（詰めた形）、「カフェ＆レストラン はなかご 佐賀 移転」、「はなかご グランデはがくれ リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった。公式SNSのアカウント名は Instagram「grande.hagakure」（ホテル公式サイトからの導線）で、名前に閉店を示す語は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%86%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%AF%E3%81%AA%E3%81%8B%E3%81%94%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A9%E7%A5%9E2%E4%B8%81%E7%9B%AE1%E7%95%AA36%E5%8F%B7%20%E3%83%9B%E3%83%86%E3%83%AB%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%87%E3%81%AF%E3%81%8C%E3%81%8F%E3%82%8C1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.grande-hagakure.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.grande-hagakure.com/restaurant.html">ホテルグランデはがくれ 公式サイト レストラン（営業時間・全メニューと価格・個室・駐車場170台・全席禁煙・2026.11.13付のお知らせ）2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=652">佐賀市観光協会「サガバイドットコム」カフェ＆レストランはなかごのページ（住所・営業時間・定休日なし・駐車場170台・［更新日：2026年7月6日］）2026-11-21 取得</a> / <a href="https://www.grande-hagakure.com/about.html">ホテルグランデはがくれ 公式サイト ホテルについて（建物外観の写真）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-sicilian-cafe-tres">
+<img class="hero" src="img/saga/saga-sicilian-cafe-tres.jpg" alt="cafe TRES 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-cafe-tres_exterior.jpg" alt="cafe TRES 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">13</span>cafe TRES<span class="yomi">かふぇ とれす</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐賀県立博物館の1階で営業するカフェ。運営は株式会社サードプレイスで、「地元佐賀の食材を使ったごはんを」という考えで2015年春に開いた。顔の見える生産者の食材を使い、県産の野菜が中心。ガラス張りの壁から自然光が入り、屋外にテラス席がある。持ち帰りのドリンクや、店で使う食材・加工品の販売もする。博物館側とテラス側の2つの入口があり、どちらからも車椅子やベビーカーで入れる（店内に1段の段差がある）。多目的トイレ、キッズスペース、子ども用の椅子や絵本がある。「本日のランチ」は2024年2月29日で終えたが、ほかの食事メニューは続く。月ごとの店休日は博物館の公式サイトに出る。価格はどこにも公開が無いため本書では空欄にした。</div>
+<div class="sig"><b>一皿:</b>日替わりランチ（肉と魚から選べ、デザートも手作り）／県産の野菜を中心に組み立てた食事メニュー／自家製のスイーツとパフェ</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00（ラストオーダー16:30）。ランチタイム 11:30〜14:00、カフェタイム 10:00〜16:30</td></tr>
+<tr><th>定休日</th><td class="off">佐賀県立博物館の休業日と12月29日〜1月3日（佐賀県立博物館 施設案内）。佐賀市観光協会と佐賀県「さがすたいる」の掲載は「月曜日、第2・第4火曜日、博物館の休館日」。月ごとの店休日は博物館公式サイトのお知らせで告知される</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市城内1丁目15-23 佐賀県立博物館1階</td></tr>
+<tr><th>予約</th><td>予約の可否と方法について公開されている情報が無く未確認。確かめるなら 0952-37-8402 へ。 — <a href="tel:0952378402">☎ 0952-37-8402</a> ／ <a href="https://www.3rd-place-co.net">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀城本丸歴史館・県立美術館と並ぶ城内の昼の一帯で、展示を見たあとそのまま入れる1軒。佐賀県産の野菜を前面に出す店はこの章でほかに無く、テラス席があり子ども連れでも入りやすい。価格は非公開なので、予算を決めて行きたい人向けではない。営業の根拠＝①公的機関の日付つき記事: 佐賀県立博物館・佐賀県立美術館の公式サイトのお知らせ「cafe TRES １１月の店休日のお知らせ」（2026年11月12日付、2026-11-21 取得）。あわせて佐賀市観光協会「サガバイドットコム」のページ（［更新日：2026年7月10日］）でも営業時間・電話番号を確認した。店自身の情報は、運営会社サードプレイスの公式サイトが画像1枚だけのページで日付のある更新が読めなかったため、佐賀県の特例に従い公的機関の日付つき記事で代用した。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「cafe TRES 佐賀県立博物館 閉店」（空白を入れた形）と「cafeTRES閉店 佐賀」（詰めた形）、「cafe TRES 佐賀 移転」、「cafe TRES 佐賀県立博物館 リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった。公式SNSのアカウント名は Instagram「cafe.tres」と Facebook ページ「cafe TRES」で、名前に閉店を示す語は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=cafe%20TRES%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%9F%8E%E5%86%851%E4%B8%81%E7%9B%AE15-23%20%E4%BD%90%E8%B3%80%E7%9C%8C%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A81%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.sagabai.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://saga-museum.jp/museum/news/2026/11/004318.html">佐賀県立博物館・佐賀県立美術館 公式サイト お知らせ「cafe TRES １１月の店休日のお知らせ」（2026年11月12日）2026-11-21 取得</a> / <a href="https://saga-museum.jp/museum/facility/cafe.html">佐賀県立博物館・佐賀県立美術館 公式サイト 施設案内 ミュージアムカフェ（営業時間10:00〜17:00 L.O.16:30・休業日・運営会社 株式会社サードプレイス・本日のランチは2024年2月29日で終了）2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=471">佐賀市観光協会「サガバイドットコム」cafe TRES のページ（住所・営業時間・定休日・駐車場・電話0952-37-8402・［更新日：2026年7月10日］）2026-11-21 取得</a> / <a href="https://saga-style.jp/shop/detail.php?id=2597">佐賀県「さがすたいる」cafe TRES のページ（2015年春開業・入口と段差・駐車場39台と身障者等用2台・店内とテラスの写真）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-sicilian-sarasa">
+<img class="hero" src="img/saga/saga-sicilian-sarasa.jpg" alt="創作厨房 更紗 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-sarasa_exterior.jpg" alt="創作厨房 更紗 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">14</span>創作厨房 更紗<span class="yomi">そうさくちゅうぼう さらさ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">四季彩ホテル千代田館の中にあるレストラン。66席で、掘りごたつの個室（8人可）と座敷があり、貸切もできる。バリアフリー対応。シシリアンライスは単品ではなく御膳仕立てで、茶碗蒸し・小鉢・香の物・味噌汁・フルーツが付く（コーヒーは別料金）。ほかに小町御膳、お刺身御膳、天婦羅御膳、地産地消御膳「肥前」、会席（蓮・凛・華）があり、季節ごとの限定御膳も出す。カードはVISA・Master・JCB・AMEX・Diners、交通系電子マネーや楽天Edy・nanaco・WAON・iD・QUICPay、PayPay・d払い・楽天ペイ・auPAY・Alipay・WeChatPayが使える。子ども可でお子様メニューがあり、ベビーカーはテーブル席限定。地元佐賀の日本酒も揃える。</div>
+<div class="sig"><b>一皿:</b>シシリアンライス（御膳仕立て、2,090円）／小町御膳（季節の料理・天婦羅・刺身・煮物・ご飯・味噌汁・香の物）／地産地消御膳「肥前」（お造り・桜ポークカツ・有明鶏の釜飯）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00（ラストオーダー14:00）／17:00〜22:00（ラストオーダー21:00）</td></tr>
+<tr><th>定休日</th><td class="off">12月31日、ほか不定休（佐賀市観光協会の掲載、［更新日：2026年7月10日］）。2026年2月と3月は月曜日を定休日とする告知が公式サイトに出た（2026年1月13日）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市高木瀬町東高木216-1 四季彩ホテル千代田館内</td></tr>
+<tr><th>予約</th><td>電話（0952-32-5115）。鯛の浜焼きは要予約。宴会・会議の利用も電話で受け付ける。ホットペッパーグルメにも掲載があるがネット予約の可否は未確認。 — <a href="tel:0952325115">☎ 0952-32-5115</a> ／ <a href="https://chiyodakan.jp/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>シシリアンライスを一皿ものではなく御膳として出す店で、この章の中では性格がはっきり違う。駐車場が80台あり、個室と座敷があるので車で来る家族連れや年配の人と一緒のときに使える。営業の根拠＝①店自身の2025〜2026年の情報: 四季彩ホテル千代田館の公式サイトのお知らせ「【レストラン更紗】2月・3月の定休日のご案内」（2026.01.13付）と「四季彩ホテル千代田館、創作厨房更紗より、新年のご挨拶を申し上げます。」（2026.01.01付）（2026-11-21 取得）。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「創作厨房 更紗 四季彩ホテル千代田館 閉店」（空白を入れた形）と「創作厨房更紗閉店」（詰めた形）、「創作厨房 更紗 佐賀 移転」、「創作厨房 更紗 千代田館 リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった。店とホテルの公式SNSのアカウントは見つからず、読むべきアカウント名が無いことを確認した（対象なし）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%8E%A8%E6%88%BF%20%E6%9B%B4%E7%B4%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%AB%98%E6%9C%A8%E7%80%AC%E7%94%BA%E6%9D%B1%E9%AB%98%E6%9C%A8216-1%20%E5%9B%9B%E5%AD%A3%E5%BD%A9%E3%83%9B%E3%83%86%E3%83%AB%E5%8D%83%E4%BB%A3%E7%94%B0%E9%A4%A8%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（chiyodakan.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://chiyodakan.jp/restaurant/">四季彩ホテル千代田館 公式サイト レストラン更紗（全メニューと価格・66席・住所・電話）2026-11-21 取得</a> / <a href="https://chiyodakan.jp/news/">四季彩ホテル千代田館 公式サイト お知らせ「【レストラン更紗】2月・3月の定休日のご案内」（2026.01.13）2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=654">佐賀市観光協会「サガバイドットコム」創作厨房 更紗のページ（営業時間・定休日・駐車場80台・［更新日：2026年7月10日］）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000832898/">ホットペッパーグルメ 店舗ページ（66席・個室8人可・掘りごたつ・駐車場80台・支払い方法）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-sicilian-shirayama-bunga">
+<img class="hero" src="img/saga/saga-sicilian-shirayama-bunga.jpg" alt="欧風カレー 白山文雅 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-shirayama-bunga_exterior.jpg" alt="欧風カレー 白山文雅 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">15</span>欧風カレー 白山文雅<span class="yomi">おうふうかれー しらやまぶんが</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1958年（昭和33年）に創業者の父が佐賀市白山に洋食店「グリル文雅」を開いたのが始まりで、1969年（昭和44年）に「白山文雅」としてリニューアルした。1976年（昭和51年）に創業者がフランス料理店「シャトー文雅」として独立し、白山文雅は姉夫婦が引き継いだ（シャトー文雅の公式サイトの沿革による。両店は住所も電話も別の店）。32席でソファー席があり、全席禁煙。カードはVISA・Master・JCBとPayPayが使える。カレーは甘口のフルーツカレーから最も辛い辛口ジャワカレーまで幅があり、コース（カレーパーティー、2色カレーコース）もある。冷凍の真空パックを店頭とオンラインストアで売っている。福岡市早良区に姉妹店「白山舎」がある。夜は木曜だけ休みになる点に注意。</div>
+<div class="sig"><b>一皿:</b>伝統のビーフカレー（開業以来つぎ足している専用の煮汁で煮込んだ牛肉の欧風カレー）／牛タンシチューカレー（6時間半煮込んだ厚切りの牛タン、3,600円）／文雅カレー（さっと焼いた黒毛和牛フィレ肉を欧風ソースと生クリームで、4,200円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜金 11:00〜14:30（ラストオーダー）／土・日・祝 11:00〜15:00（ラストオーダー）／夜は火〜日・祝 17:30〜20:00（ラストオーダー）</td></tr>
+<tr><th>定休日</th><td class="off">月曜日（祝日の場合は翌日）。木曜は夜の部のみ休み</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市白山1-2-1</td></tr>
+<tr><th>予約</th><td>電話（0952-23-4789）。コース（カレーパーティーなど）と持ち帰りの注文も同じ番号で受け付ける。繁忙時は弁当の注文に時間がかかる。 — <a href="tel:0952234789">☎ 0952-23-4789</a> ／ <a href="https://shirayamabunga.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市でいちばん古い部類の洋食の流れを今に伝える店で、シシリアンライスの章の隣に置く「洋食」の軸になる。シャトー文雅と同じ家から分かれた店で、2軒をつなげて読めるのも利点。営業の根拠＝①店自身の2025〜2026年の情報: 公式サイトのお知らせが「2026.11.11 イベント出展情報」「2026.10.14【テレビ放送のお知らせ】」「2026.09.01 冷凍カレー常設販売情報」を掲載している（2026-11-21 取得）。ホットペッパーグルメの料理ページも「2026/02/10 更新」。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「レストラン 白山文雅 佐賀 閉店」（空白を入れた形）と「白山文雅閉店」（詰めた形）、「欧風カレー 白山文雅 佐賀 移転」、「欧風カレー 白山文雅 リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった。公式SNSのアカウント名は Instagram「shirayamabunga1958」と Facebook「shirayamabunga」（いずれも公式サイトからの導線）で、名前に閉店を示す語は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%AC%A7%E9%A2%A8%E3%82%AB%E3%83%AC%E3%83%BC%20%E7%99%BD%E5%B1%B1%E6%96%87%E9%9B%85%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E7%99%BD%E5%B1%B11-2-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://shirayamabunga.com/">白山文雅 公式サイト トップ（お知らせ 2026.11.11／2026.10.14／2026.09.01）2026-11-21 取得</a> / <a href="https://shirayamabunga.com/menu">白山文雅 公式サイト お品書き（佐賀店の住所・営業時間・定休日・駐車場6台・電話0952-23-4789・持ち帰り価格）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000113028/food/">ホットペッパーグルメ 料理ページ（店内で出すカレーの価格一覧・2026/02/10 更新）2026-11-21 取得</a> / <a href="https://fbm8100.gorp.jp/">欧風カレー 白山文雅 ぐるなびオフィシャルページ（営業時間・定休日・32席・支払い方法・駐車場6台・佐賀駅から徒歩14分・写真更新日 2025-06-10・「〜1958年創業〜」）2026-11-21 取得</a> / <a href="https://www.bunga.jp/contents/history/">シャトー文雅 公式サイト 文雅の歴史（昭和33年グリル文雅開店→昭和44年白山文雅→昭和51年シャトー文雅として独立し白山文雅は姉夫婦へ）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-sicilian-tamago-no-tamago">
+<img class="hero" src="img/saga/saga-sicilian-tamago-no-tamago.jpg" alt="手づくりオムライスレストラン たまごのたまご 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-tamago-no-tamago_exterior.jpg" alt="手づくりオムライスレストラン たまごのたまご 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>手づくりオムライスレストラン たまごのたまご<span class="yomi">てづくりおむらいすれすとらん たまごのたまご</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">ショッピングモール「モラージュ佐賀」の北館1階にある洋食店。オムライスだけで30種あり、ほかにパスタ、ドリア、石焼メニュー、ピザ、パフェが並ぶ。60席（6名がけのボックス席が2つ）で全席禁煙、貸切は不可。カードはVISA・Master・AMEX・Diners・JCB、楽天Edy・WAON・Suica・PASMO・nanaco・ICOCA・iD・QUICPayが使える。ランチメニュー限定でAセット（サラダバー・スープバー・ドリンクバー）が税抜250円、デザート付きのBセットが390円になる。11時から22時までの通し営業で、夜はおつまみとアルコールも出す。持ち帰りができる。商業施設の中なのでバリアフリー。</div>
+<div class="sig"><b>一皿:</b>昔ながらのオムライス（ケチャップ味の定番、869円）／大人のお子様ランチ（デミオムライス・カニクリームコロッケ・ハンバーグ・エビフライ・フライドポテト・サラダ・ミニデザート、1,232円）／パフェ各種（ベリーチーズケーキ、スペシャルなど）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 11:00〜22:00（料理ラストオーダー21:30／ドリンクラストオーダー21:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（モラージュ佐賀の営業に準じる）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市巨勢町牛島730番地115 モラージュ佐賀 北館1階</td></tr>
+<tr><th>予約</th><td>電話（0952-41-6033、受付は11:00〜22:00）。ホットペッパーグルメにも掲載がある。 — <a href="tel:0952416033">☎ 0952-41-6033</a> ／ <a href="https://tamagonotamago.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>郊外のモールにある店なので車で動く日に組み込みやすく、11時から22時までの通し営業で時間を選ばない。オムライス30種という振れ幅は佐賀市のほかの洋食店に無く、子ども連れの選択肢としてこの章に要る。営業の根拠＝①店自身の2025〜2026年の情報: ホットペッパーグルメの店舗ページが「2025/06/09 更新」（店が入稿した日付。2026-11-21 取得）。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「たまごのたまご モラージュ佐賀 閉店」（空白を入れた形）と「たまごのたまご閉店 佐賀」（詰めた形）、「たまごのたまご 佐賀 移転」、「たまごのたまご モラージュ佐賀 リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった。公式SNSのアカウント名は Instagram「tamagonotamago_mallage」で、名前に閉店を示す語は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E3%81%A5%E3%81%8F%E3%82%8A%E3%82%AA%E3%83%A0%E3%83%A9%E3%82%A4%E3%82%B9%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%9F%E3%81%BE%E3%81%94%E3%81%AE%E3%81%9F%E3%81%BE%E3%81%94%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%B7%A8%E5%8B%A2%E7%94%BA%E7%89%9B%E5%B3%B6730%E7%95%AA%E5%9C%B0115%20%E3%83%A2%E3%83%A9%E3%83%BC%E3%82%B8%E3%83%A5%E4%BD%90%E8%B3%80%20%E5%8C%97%E9%A4%A81%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://tamagonotamago.owst.jp/">手づくりオムライスレストラン たまごのたまご 公式サイト（住所・電話・営業時間・定休日・60席・支払い方法・価格）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000571552/">ホットペッパーグルメ 店舗ページ（住所・営業時間・60席・全席禁煙・オムライス30種・ランチのセット価格・2025/06/09 更新）2026-11-21 取得</a> / <a href="https://www.mallage-saga.com/shop_guide/detail/?id=45">モラージュ佐賀 公式サイト ショップガイド（北館1階の出店）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-sicilian-chateau-bunga">
+<img class="hero" src="img/saga/saga-sicilian-chateau-bunga.jpg" alt="シャトー文雅 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-chateau-bunga_exterior.jpg" alt="シャトー文雅 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">17</span>シャトー文雅<span class="yomi">しゃとー ぶんが</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1976年（昭和51年）に創業者が佐賀市南部バイパス沿いで開き、1991年（平成3年）に現在地へ移った。2014年10月の火災で建物が全焼し、2015年10月1日にリニューアルオープンしている。2026年で開店50周年にあたり、記念のコースや抽選会が行われた。レストランは螺旋階段を上った2階にあり、個室感のあるブース席と、結納や接待向けの個室席がある。看板は黒毛和牛ハンバーグと、創業期に生まれたビーフカレー。日本で早い時期のゴマドレッシングを生んだ店でもあり、オリジナル商品を店とオンラインで売る。同じ敷地に2022年8月開業のベーカリーカフェ「BUNGA VILLAGE」と宴会場、教会がある。コースは前日まで、内容によっては3日前までの予約が要る。</div>
+<div class="sig"><b>一皿:</b>名物 黒毛和牛ハンバーグ（和風ソースまたはデミグラス。コースの主菜）／文雅自慢 森の茸のプチカレーライス（創業期からのビーフカレーの流れをくむ締めの一品）／小皿×フルコースのデギュスタシオンコース</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜15:30（ラストオーダー14:30）／ディナー 17:30〜21:30（ラストオーダー20:00）</td></tr>
+<tr><th>定休日</th><td class="off">毎週月曜日・火曜日（祝日の場合は翌日に振替）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大和町久池井2592-1</td></tr>
+<tr><th>予約</th><td>電話（0952-62-5444）。コースは前日までの完全予約制で、シェフおまかせコースや会席仕立ての内容は3日前まで。フレンチ鉄板を頼むときは予約時にその旨を伝える。 — <a href="tel:0952625444">☎ 0952-62-5444</a> ／ <a href="https://www.bunga.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市の洋食の系譜をたどるとき、白山文雅と対で読むべき1軒。1976年開業で2026年に50周年、火災からの再建という来歴も含めて、この章に「きちんとした食事の日」の選択肢を置ける。営業の根拠＝①店自身の2025〜2026年の情報: 公式サイトの「50周年記念特別イベント」ページが、記念コースの期間を2026年9月2日（水）〜11月8日（日）、抽選会の第2回を2026年9月2日〜10月31日と明記している（2026-11-21 取得）。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「シャトー文雅 佐賀 閉店」（空白を入れた形）と「シャトー文雅閉店」（詰めた形）、「シャトー文雅 佐賀 移転」、「シャトー文雅 佐賀 リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった（2015年の火災からの再建は公式サイトの沿革に記載）。公式SNSのアカウント名は Instagram「chateaubunga」（公式サイトと佐賀市観光協会のページからの導線）と Facebook ページ「シャトー文雅」で、名前に閉店を示す語は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%A3%E3%83%88%E3%83%BC%E6%96%87%E9%9B%85%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E4%B9%85%E6%B1%A0%E4%BA%952592-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.bunga.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.bunga.jp/contents/restaurant/">シャトー文雅 公式サイト レストラン（営業時間・店休日・全コースと価格）2026-11-21 取得</a> / <a href="https://www.bunga.jp/50th-anniversary.html">シャトー文雅 公式サイト 50周年記念特別イベント（2026年9月2日〜11月8日の記念コース、2026年の抽選会、住所・電話）2026-11-21 取得</a> / <a href="https://www.bunga.jp/contents/history/">シャトー文雅 公式サイト 文雅の歴史（昭和51年開業、平成3年に現在地へ移転、平成26年10月の火災と平成27年10月1日のリニューアルオープン、2022年8月のBUNGA VILLAGE開業）2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=182">佐賀市観光協会「サガバイドットコム」シャトー文雅のページ（営業時間・定休日・駐車場80台・電話・Instagram・［更新日：2026年7月10日］）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-sicilian-lampada">
+<img class="hero" src="img/saga/saga-sicilian-lampada.jpg" alt="Lampada（ランパーダ） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-sicilian-lampada_exterior.jpg" alt="Lampada（ランパーダ） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>Lampada（ランパーダ）<span class="yomi">らんぱーだ</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">夜だけ開くイタリア料理店。66席の内訳はボックス席12・テーブル席32・半個室6・テラス席16で、最大宴会収容は56人。貸切は不可で全席禁煙、カウンターとテラス席があり、バリアフリー対応。店内のピザ窯で注文を受けてから焼くピッツァと、席で仕上げるラクレットチーズが看板。ワインは世界各国から約200種。夜パフェは21時から。カード、各種電子マネー、PayPay・楽天ペイ・au PAY が使える。飲み放題のみの利用が税込2,178円で可能。ペット同伴可。電話での問い合わせは営業日の16時以降にとされている。キャンセル料は来店当日0時以降に発生する（コース予約は料金の100%、席のみは1名2,000円）。</div>
+<div class="sig"><b>一皿:</b>ランパーダ名物ラクレットチーズ（溶かしたラクレットを席で具材にかける、1,639円）／ピッツァ（店内のピザ窯で焼く。マルゲリータ1,254円、4種チーズのクワトロフロマッジ1,474円）／夜パフェ（21時から。モンブラン、ティラミスなど各1,100〜1,210円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 18:00〜翌0:00（料理ラストオーダー23:00／ドリンクラストオーダー23:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（祝前日の日曜は通常営業し、翌月曜が店休日になる）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市唐人2-2-14</td></tr>
+<tr><th>予約</th><td>電話（0952-27-8641、問い合わせは営業日の16時以降）のほか、公式サイトとホットペッパーグルメでネット予約ができる。当日0時以降のキャンセルはキャンセル料がかかる。 — <a href="tel:0952278641">☎ 0952-27-8641</a> ／ <a href="https://lampada.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で唯一の夜だけの店で、佐賀市の夜の繁華街側に置ける1軒。ピザ窯とラクレットという組み合わせは市内のほかの店に無く、テラス席があるのも珍しい。昼の店が並ぶこの章の締めに使える。営業の根拠＝①店自身の2025〜2026年の情報: ホットペッパーグルメの料理ページが「2026/09/11 更新」、店舗ページが「2026/05/16 更新」（いずれも店が入稿した日付。2026-11-21 取得）。公式サイト lampada.owst.jp も店が運営するページ。②閉店していないことの確認（すべて 2026-11-21 に実施）: 「Lampada ランパーダ 佐賀 唐人 閉店」（空白を入れた形）と「ランパーダ閉店 佐賀」（詰めた形）、「Lampada ランパーダ 佐賀 移転」、「Lampada ランパーダ 佐賀 リニューアル」の4通りを検索し、閉店・移転・改装の記載は無かった。店の公式SNSのアカウントは公式サイトからも検索からも見つからず、読むべきアカウント名が無いことを確認した（対象なし）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Lampada%EF%BC%88%E3%83%A9%E3%83%B3%E3%83%91%E3%83%BC%E3%83%80%EF%BC%89%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%94%90%E4%BA%BA2-2-14">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://lampada.owst.jp/">Lampada 佐賀【公式】（住所・電話・営業時間・定休日・66席・支払い方法・設備・キャンセル規定）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001199786/food/">ホットペッパーグルメ 料理ページ（ラクレットチーズ・ピッツァ・夜パフェの価格、2026/09/11 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001199786/">ホットペッパーグルメ 店舗ページ（2026/05/16 更新・2026/09/11 更新の表示、来店日2026/11/10の口コミ）2026-11-21 取得</a></div>
+</div></div>
+<h2 id="s-ariake">有明海の魚・寿司・和食</h2>
+<div class="card" id="c-saga-ariake-daiichi-sankichimaru">
+<img class="hero" src="img/saga/saga-ariake-daiichi-sankichimaru.jpg" alt="おとなの海鮮居酒屋 第一三吉丸 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-daiichi-sankichimaru_exterior.jpg" alt="おとなの海鮮居酒屋 第一三吉丸 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>おとなの海鮮居酒屋 第一三吉丸<span class="yomi">おとなのかいせんいざかや だいいちさんきちまる</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">115席（1階カウンター8席・テーブル27席、2階座敷80席）で個室は7人以上用。支払いは現金のみでカード不可、全席喫煙可。日曜定休だが20名以上の予約があれば営業し、宴会は最大80名。公式サイトからネット予約ができる。佐賀県産業労働部産業政策課の取材記事（2022年3月公開）によると、店主の南川久則さんが開いて当時24年目。店名は取引先の漁船「三吉丸」から許可を得て付け、読みだけ「さんきちまる」に変えた。開店当初は普通の居酒屋で、客に「駅前で佐賀のものを出さないのか」と言われたのが郷土料理に転じたきっかけ。住所の枝番は公式サイトと佐賀市観光協会が2-4-55、同取材記事が2-4-56で食い違う。昼は佐賀市の一覧に「平日11:30〜14:00」とあるが、公式サイトの現在の表示は夜のみ。</div>
+<div class="sig"><b>一皿:</b>むつごろう煮付け（有明海の干潟の魚ムツゴロウを甘辛く炊いたもの。1,078円）／〈有明海〉エイリアン!!唐揚げ（ワラスボの唐揚げ。見た目から「有明海のエイリアン」と呼ばれる魚。800円）／くちぞこ（有明海のシタビラメ。煮付けなどで出す）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・土・祝・祝前日 17:00〜24:00（L.O.23:30）（公式サイト）。※佐賀市公式の一覧（2026年5月25日更新）は「平日11:30〜14:00／17:00〜23:30、土日祝17:00〜23:30」としており食い違う</td></tr>
+<tr><th>定休日</th><td class="off">毎週日曜日（20名以上の予約に限り営業）。年末年始は12/30〜1/2休、1/3営業、1/4休、1/5から通常営業。※佐賀市公式の一覧（2026年5月25日更新）は「第1・3・5日曜日」としている</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市神野東2丁目4-55</td></tr>
+<tr><th>予約</th><td>可。電話 0952-33-5334、または公式サイトのネット予約。宴会は最大80名まで — <a href="tel:0952335334">☎ 0952-33-5334</a> ／ <a href="https://sankichimaru.foodre.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>有明海のムツゴロウ・ワラスボ・クチゾコを通年の品書きに載せる数少ない駅前の店で、佐賀市のワラスボ料理提供店一覧にも載る。営業の根拠＝①店自身の日付つき情報：公式サイト（sankichimaru.foodre.jp）の「最新情報」に 2026/11/11「忘年会のご予約受付中♪」、2026/10/05「佐賀の郷土料理をお楽しみください♪」の投稿があり、年末年始の休業日（12/30〜1/2 ほか）も掲示されている。②閉店していないことの確認：「第一三吉丸 閉店」（空白あり）と「第一三吉丸閉店」（詰めた形）、「第一三吉丸 移転」、「第一三吉丸 リニューアル」の4通りを2026-11-21に検索したが、閉店・移転・改装を伝える情報は1件も無かった。公式SNSのアカウントは公式サイト・佐賀市観光協会のいずれにも記載が無く対象なし（これは閉店の証拠ではない）。補助として佐賀市観光協会の店舗ページが2026年7月10日更新、佐賀市公式の「W・R・S・B（ワラスボ）」一覧が2026年5月25日更新で掲載を続けている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%A8%E3%81%AA%E3%81%AE%E6%B5%B7%E9%AE%AE%E5%B1%85%E9%85%92%E5%B1%8B%20%E7%AC%AC%E4%B8%80%E4%B8%89%E5%90%89%E4%B8%B8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E7%A5%9E%E9%87%8E%E6%9D%B12%E4%B8%81%E7%9B%AE4-55">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.sagabai.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://sankichimaru.foodre.jp/">公式サイト。最新情報 2026/11/11・2026/10/05、営業時間・定休日・席数・住所（2026-11-11）2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=208">佐賀市観光協会サガバイドットコム 店舗ページ。住所・電話・駐車場（2026年7月10日更新）2026-11-21 取得</a> / <a href="https://saga-nokositaimise.com/wp-content/themes/sagakosei/pickup/pickup26.html">佐賀県産業労働部産業政策課「後世に残したい店」取材記事。創業・店名の由来・店主の話（令和3年度・2022年3月公開）2026-11-21 取得</a> / <a href="https://www.city.saga.lg.jp/city-promotion/promotion/226/14/838.html">佐賀市公式「【W・R・S・B】ここで、みんな、食べられてしまう！」ワラスボ料理が食べられる店の一覧（2026年5月25日更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-ariake-kura">
+<img class="hero" src="img/saga/saga-ariake-kura.jpg" alt="産地直送 仲買人直営店 蔵 KURA 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-kura_exterior.jpg" alt="産地直送 仲買人直営店 蔵 KURA 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>産地直送 仲買人直営店 蔵 KURA<span class="yomi">さんちちょくそう なかがいにんちょくえいてん くら</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">総席数150席。掘りごたつ個室が34名用1室と10名用2室、座敷個室が4名用2室あり、貸切は50〜80名、着席の宴会は最大40名。店内全面禁煙。カードはJCBのみ。テイクアウトと飲み放題メニューがある。運営元は昭和20年から佐賀市内で魚の仲買をしてきた会社で、その目利きと仕入れ力を生かして「安くて美味しいものを」という趣旨で始めた店だと公式サイトに書かれている。店内にはいけすがあり、やりいか・あじ・かわはぎなどが泳ぐ。有明海のワラスボは刺身で出す（佐賀市公式のワラスボ料理提供店一覧の備考欄に「刺身あり」）。ただし季節や海の状況で入荷できない日があるため、事前の問い合わせが要る。</div>
+<div class="sig"><b>一皿:</b>ワラスボの刺身（有明海の干潟の魚。佐賀市の一覧で当店は「刺身あり」と記載）／大箱刺盛（仲買人直営の仕入れを生かした木箱入りの刺身盛り。3,300円）／やりいか（いけすから揚げる活きのやりいか。2,200円〜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木 15:00〜24:00（料理L.O.23:00、ドリンクL.O.23:30）／金・土・祝前日 15:00〜翌2:00（料理L.O.翌1:00、ドリンクL.O.翌1:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日（祝前日の場合は営業し翌月曜休み）。※佐賀市公式の一覧（2026年5月25日更新）は「不定休」としている</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大財1丁目3-19</td></tr>
+<tr><th>予約</th><td>可。電話 0952-24-3030。公式ページ（kura-sagashi.gorp.jp）からネット予約もできる — <a href="tel:0952243030">☎ 0952-24-3030</a> ／ <a href="https://www.kura-saga.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>有明海の珍魚を刺身で出す数少ない店で、昭和20年から続く魚の仲買人の直営という成り立ちがこの章の軸に合う。営業の根拠＝①店自身の日付つき情報：公式サイト（kura-sagashi.gorp.jp）の店舗情報の定休日欄に「その他（2025年07月21日）／※2025年7月20日は休まず営業いたします」という店が出した2025年の告知が載っている。公式サイト掲載の写真も2025-10-23付の更新時刻を持つ。②閉店していないことの確認：「蔵 KURA 佐賀 大財 閉店」（空白あり）と「蔵KURA佐賀閉店」（詰めた形）、「仲買人直営店 蔵 佐賀 移転」、「仲買人直営店 蔵 佐賀 リニューアル」の4通りを2026-11-21に検索したが、閉店・移転・改装の情報は1件も無かった。公式SNS＝Facebookページ「kurasaga」（https://www.facebook.com/kurasaga）が公式サイトからリンクされている。補助として佐賀市観光協会の店舗ページが2026年7月10日更新、佐賀市公式のワラスボ一覧が2026年5月25日更新。 外観の写真は、公式サイト・公式の店舗ページ・佐賀市観光協会のいずれにも1枚も無く、ホットペッパーグルメにも掲載が無いため ext_urls は空にした（使える出どころの中に建物を写した画像が存在しない）。 【2026-11-21 追記】外観写真1枚（1280×850。公式サイト kura-saga.com の「shop」欄にある、夜の蔵の看板と入口を写した1枚）を足して外観0本から1本にした。右下・左下を切り出して目視し、透かしが無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%94%A3%E5%9C%B0%E7%9B%B4%E9%80%81%20%E4%BB%B2%E8%B2%B7%E4%BA%BA%E7%9B%B4%E5%96%B6%E5%BA%97%20%E8%94%B5%20KURA%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A11%E4%B8%81%E7%9B%AE3-19">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.sagabai.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.kura-saga.com/">公式サイト（コンセプト・昭和20年からの仲買人という成り立ち）2026-11-21 取得</a> / <a href="https://kura-sagashi.gorp.jp/">公式の店舗ページ。営業時間・定休日・席数・個室・価格、2025年7月21日の臨時休業告知（2025-07-21）2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=327">佐賀市観光協会サガバイドットコム 店舗ページ。住所・電話・席数・駐車場（2026年7月10日更新）2026-11-21 取得</a> / <a href="https://www.city.saga.lg.jp/city-promotion/promotion/226/14/838.html">佐賀市公式「【W・R・S・B】ここで、みんな、食べられてしまう！」。当店の備考「刺身あり」（2026年5月25日更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-ariake-genki-jirushi">
+<img class="hero" src="img/saga/saga-ariake-genki-jirushi.jpg" alt="食想市場 元気じるし 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-genki-jirushi_exterior.jpg" alt="食想市場 元気じるし 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>食想市場 元気じるし<span class="yomi">しょくそういちば げんきじるし</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">50席（カウンター・テーブル・座敷・個室）。3階は30名まで入る完全個室、2階に畳の個室が2室。最大宴会30人。全席禁煙で喫煙専用室あり。カード可（VISA・マスター・アメックス・DINERS・JCB）、電子マネーはiDのみ、QRコード決済は不可。チャージ200円。単品飲み放題2,000円（2時間制）。有明海のワラスボは刺身のみの提供（佐賀市公式のワラスボ料理提供店一覧の備考欄）。入荷は季節と海の状況によるため事前の問い合わせがいる。営業時間はホットペッパー（2026/10/30更新）が23:00まで、佐賀市観光協会（2026年7月8日更新）と佐賀市公式の一覧（2026年5月25日更新）が24:00までとしており食い違う。</div>
+<div class="sig"><b>一皿:</b>ワラスボの刺身（有明海の干潟の魚。当店は刺身のみの提供）／イカの活造り（玄海直送の活きイカ。2,000円）／佐賀牛・佐賀さくらポークの蒸籠蒸し（1,980円〜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜23:00（料理L.O.22:00、ドリンクL.O.22:30）（ホットペッパーグルメ 2026/10/30更新）。※佐賀市観光協会（2026年7月8日更新）と佐賀市公式の一覧（2026年5月25日更新）は「17:00〜24:00（オーダーストップ23:00）」としており食い違う</td></tr>
+<tr><th>定休日</th><td class="off">日曜（日曜が祝日のときは月曜休み）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市神野東3丁目1-46</td></tr>
+<tr><th>予約</th><td>可。電話 0952-30-3587（問い合わせ16:00〜22:00）、またはホットペッパーグルメのネット予約（即予約は来店前日22時まで）。公式サイトは見当たらないため website は空 — <a href="tel:0952303587">☎ 0952-30-3587</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市公式のワラスボ料理提供店一覧に載る6店のうちの1つで、駅から徒歩5分と最も寄りやすい。営業の根拠＝①店自身の日付つき情報：ホットペッパーグルメの店舗ページに「2026/10/30 更新」の表示があり、店が出した営業時間・設備の情報が更新されている。②閉店していないことの確認：「食想市場 元気じるし 佐賀 閉店」（空白あり）と「食想市場元気じるし閉店」（詰めた形）、「元気じるし 佐賀 神野東 移転」、「元気じるし 佐賀 神野東 リニューアル」の4通りを2026-11-21に検索したが、閉店・移転・改装の情報は1件も無かった。公式SNSのアカウントは公式サイトが無く佐賀市観光協会のページにも記載が無いため対象なし（これは閉店の証拠ではない）。補助として佐賀市観光協会の店舗ページが2026年7月8日更新、佐賀市公式のワラスボ一覧が2026年5月25日更新。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E6%83%B3%E5%B8%82%E5%A0%B4%20%E5%85%83%E6%B0%97%E3%81%98%E3%82%8B%E3%81%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E7%A5%9E%E9%87%8E%E6%9D%B13%E4%B8%81%E7%9B%AE1-46">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000571307/">ホットペッパーグルメ 店舗ページ。営業時間・定休日・席数・支払い方法（2026/10/30 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000571307/food/">ホットペッパーグルメ 料理ページ。活きイカ・佐賀牛蒸籠蒸し・嬉野温湯豆腐の価格（2024/07/08 更新）2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=227">佐賀市観光協会サガバイドットコム 店舗ページ。住所・電話・営業時間（2026年7月8日更新）2026-11-21 取得</a> / <a href="https://www.city.saga.lg.jp/city-promotion/promotion/226/14/838.html">佐賀市公式「【W・R・S・B】ここで、みんな、食べられてしまう！」。当店の備考「刺身のみの提供」（2026年5月25日更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-ariake-ureshino-sushi">
+<img class="hero" src="img/saga/saga-ariake-ureshino-sushi.jpg" alt="嬉乃すし 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-ureshino-sushi_exterior.jpg" alt="嬉乃すし 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>嬉乃すし<span class="yomi">うれしのすし</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1974年の創業。総席数76席で、個室の貸切は2〜42名、店内全体の貸切は80名から（部屋代1,000円）。カードはVisa・Master・Diners・Discoverが使えるが店内のみ（VisaとMasterは宅配時も可）、電子マネーはPayPay。出前・仕出し・持ち帰りと冷凍寿司の通販もある。10名以上の宴会予約で送迎バスが無料。予約の変更・キャンセルは1週間前まで、6〜2日前は50%、前日・当日は100%の料金が発生する場合がある。特殊な冷凍技術で鮮度を保つため、公式サイトは「嬉乃すしの品書きに時価はありません」と明記している。定休日は公式サイトが月曜・火曜、佐賀市公式の一覧が月曜日、ホットペッパーが「なし」と三者で食い違い、席数も公式の76席に対しホットペッパーは130席。</div>
+<div class="sig"><b>一皿:</b>ワラスボ料理（有明海の干潟の魚。佐賀市公式のワラスボ料理提供店一覧に掲載。入荷は季節と海の状況による）／うみたけの一夜干し（有明海の二枚貝ウミタケを干したもの。1,500円）／雅ランチ（平日昼だけの11貫・茶碗蒸し・吸物・小鉢付き。3,500円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【昼】11:00〜14:30（オーダーストップ14:00）【夜】17:00〜21:30閉店（オーダーストップ21:00）。出前宅配は11:00〜21:00（受付10:00〜20:00）</td></tr>
+<tr><th>定休日</th><td class="off">月曜日・火曜日（祝日は除く）（公式サイト）。※佐賀市公式の一覧（2026年5月25日更新）は「月曜日」、ホットペッパー（2020/03/12更新）は「なし」としており食い違う</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市若宮1-7-30</td></tr>
+<tr><th>予約</th><td>可。フリーダイヤル 0120-30-1469（携帯電話からも可）か 0952-30-1469、または公式サイトのWEB予約。慶事・会席は要予約 — <a href="tel:0952301469">☎ 0952-30-1469</a> ／ <a href="https://www.ureshino-sushi.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市公式のワラスボ料理提供店一覧に載る寿司屋で、品書きに時価が無いため価格が読める点がこの章の案内に向く。営業の根拠＝①店自身の日付つき情報：公式サイトが2026年8月からの営業日カレンダー（pdf/calen2026_2027.pdf、サーバの最終更新2026-07-28）と年末年始の寿司の案内（pdf/newyear-sushi.pdf、同2026-10-23）を掲示している。②閉店していないことの確認：「嬉乃すし 佐賀 閉店」（空白あり）と「嬉乃すし閉店」（詰めた形）、「嬉乃すし 移転」、「嬉乃すし リニューアル」の4通りを2026-11-21に検索したが、閉店・移転・改装の情報は1件も無かった。公式SNS＝Instagram「ureshino_sushi」「sushi_ureshino」、Facebookページ「ureshinosushi」が公式サイトからリンクされている。補助として佐賀市公式のワラスボ一覧が2026年5月25日更新で掲載を続けている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AC%89%E4%B9%83%E3%81%99%E3%81%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E8%8B%A5%E5%AE%AE1-7-30">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.ureshino-sushi.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.ureshino-sushi.jp/">公式サイト。創業年・営業時間・定休日・席数・支払い方法・キャンセル規定（2026-11-21時点）2026-11-21 取得</a> / <a href="https://www.ureshino-sushi.jp/menu.html">公式サイトのお品書き。にぎり・一品料理の価格と「品書きに時価はありません」の記載 2026-11-21 取得</a> / <a href="https://www.ureshino-sushi.jp/pdf/calen2026_2027.pdf">公式サイトの営業日カレンダー（2026年8月〜。サーバの最終更新 2026-07-28）2026-11-21 取得</a> / <a href="https://www.city.saga.lg.jp/city-promotion/promotion/226/14/838.html">佐賀市公式「【W・R・S・B】ここで、みんな、食べられてしまう！」ワラスボ料理が食べられる店の一覧（2026年5月25日更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000934993/">ホットペッパーグルメ 店舗ページ。席数・設備（2020/03/12 更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-ariake-osakanaya-ureshino">
+<img class="hero" src="img/saga/saga-ariake-osakanaya-ureshino.jpg" alt="おさかな家 嬉乃 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-osakanaya-ureshino_exterior.jpg" alt="おさかな家 嬉乃 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>おさかな家 嬉乃<span class="yomi">おさかなや うれしの</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">寿司屋「嬉乃すし」の姉妹店で、昼は定食と丼、夜は御膳と一品を出す。公式サイトは2026年7月14日に開設された。支払いは現金のみ（公式サイト）。40席（テーブルと座敷18席）、最大宴会30人で、平日の夜も火〜日は宴会を受ける。コースは4,400円〜15,000円、120分飲み放題は＋2,200円。10名以上の予約で送迎バスが無料。ランチタイムは全席禁煙、17:30以降は全席喫煙（ホットペッパーグルメ 2024/04/16更新）。公式サイトの先頭に待ち組数と待ち時間の表示がある。営業時間は公式サイトとホットペッパーで食い違う。</div>
+<div class="sig"><b>一皿:</b>ウミタケの粕漬（有明海の二枚貝ウミタケを酒粕に漬けた小鉢。500円）／鯛のあら炊き定食（開店当時からの名物。1,800円）／海鮮づけ丼定食（1,600円、得盛2,100円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【火・水・木】昼 11:00〜15:00（L.O.14:30）【金・土・日】昼 11:00〜14:30（L.O.14:00）／夜 17:30〜21:00（L.O.20:30）（公式サイト）。※ホットペッパーグルメ（2024/04/16更新）は「火〜木・祝前日 11:00〜15:00／金〜日・祝 11:00〜15:00、17:00〜20:00」としており食い違う</td></tr>
+<tr><th>定休日</th><td class="off">月曜日（祝祭日の場合は要問い合わせ）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市駅前中央3丁目2-21</td></tr>
+<tr><th>予約</th><td>可。電話 0952-37-9535。宴会・コース（4,400円〜）は要相談・要予約 — <a href="tel:0952379535">☎ 0952-37-9535</a> ／ <a href="https://osakanaya-ureshino.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>有明海のウミタケを粕漬で通年出しており、昼に1,000〜2,000円台で魚を食べられる店としてこの章の価格帯の幅を埋める。嬉乃すしの姉妹店で住所・電話とも別（駅前中央3-2-21／0952-37-9535）のため重複ではない。営業の根拠＝①店自身の日付つき情報：公式サイト（osakanaya-ureshino.com）のNEWSに「2026.07.14 ホームページを開設しました。」とあり、サイト内の写真も2026年10月23日・10月28日・11月12日付の更新時刻を持つ。②閉店していないことの確認：「おさかな家 嬉乃 佐賀 閉店」（空白あり）と「おさかな家嬉乃閉店」（詰めた形）、「おさかな家 嬉乃 移転 リニューアル」の3通りを2026-11-21に検索したが、閉店・移転・改装の情報は1件も無かった（WebSearch の回数上限40回の都合で、移転とリニューアルを1回にまとめた）。公式SNS＝Instagram「saga_osakanaya_ureshino」が公式サイトからリンクされている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%95%E3%81%8B%E3%81%AA%E5%AE%B6%20%E5%AC%89%E4%B9%83%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%89%8D%E4%B8%AD%E5%A4%AE3%E4%B8%81%E7%9B%AE2-21">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（osakanaya-ureshino.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://osakanaya-ureshino.com/">公式サイト。NEWS「2026.07.14 ホームページを開設しました。」、住所・電話・営業時間・定休日・支払い方法（2026-07-14）2026-11-21 取得</a> / <a href="https://osakanaya-ureshino.com/menu.php">公式サイトのお品書き。嬉乃御膳・定食・ウミタケの粕漬の価格 2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000979400/">ホットペッパーグルメ 店舗ページ。席数・駐車場・喫煙（2024/04/16 更新）2026-11-21 取得</a> / <a href="https://www.ureshino-sushi.jp/">嬉乃すし公式サイト（姉妹店であることの確認）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-ariake-sushi-sakaba-uomi">
+<img class="hero" src="img/saga/saga-ariake-sushi-sakaba-uomi.jpg" alt="すし酒場うおみ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-sushi-sakaba-uomi_exterior.jpg" alt="すし酒場うおみ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>すし酒場うおみ<span class="yomi">すしさかばうおみ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">32席で、カウンター11席、テーブル4名×2と2名×1、6名の掘りごたつ個室がある。18:00から翌3:00までの深夜営業で、日曜のみ休み（翌日が祝日なら営業）。全席喫煙可だが加熱式たばこ限定。カード可（VISA・マスター・アメックス・JCB）、電子マネーとQRコード決済は不可。貸切可。市場から朝市直送の生の本マグロを安く出すのと、本場大阪仕込みで1本ずつ仕込み注文後に揚げる串カツが柱。ホットペッパーの店舗ページのお知らせ欄に「20歳未満の方は入店不可（同伴の方も含む）」とある。品書きの大半は店内のメニュー表を撮った写真でしか公開されておらず、個々の価格は未確認。</div>
+<div class="sig"><b>一皿:</b>本マグロ赤身（市場から朝市直送の生の本マグロ。308円）／串カツ盛り合わせ（大阪式に1本ずつ仕込み、注文後に揚げる。1本200円〜）／おすすめ寿司盛り（店内の黒板に日替わりで出る）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 18:00〜翌3:00（料理L.O.翌2:30、ドリンクL.O.翌2:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜（翌日が祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市中央本町3-18 アルファ318ビル1階</td></tr>
+<tr><th>予約</th><td>可。電話 080-4365-5375、またはホットペッパーグルメのネット予約（即予約は来店当日21時まで、リクエスト予約は前日17時まで）。公式サイトは見当たらないため website は空 — <a href="tel:08043655375">☎ 080-4365-5375</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章で唯一、深夜（翌3時）まで寿司と刺身を出す店で、佐賀駅周辺で遅い時間に食べる選択肢になる。営業の根拠＝①店自身の日付つき情報：ホットペッパーグルメの店舗ページに「2026/06/05 更新」、料理ページに「最終更新日：2025/12/02」の表示がある。②閉店していないことの確認：「すし酒場 うおみ 佐賀 閉店」（空白あり）と「すし酒場うおみ閉店」（詰めた形）、「すし酒場うおみ 佐賀 中央本町 移転」、「すし酒場うおみ 佐賀 リニューアル」の4通りを2026-11-21に検索したが、閉店・移転・改装の情報は1件も無かった（検索では佐賀駅前の別の店「魚民（うおたみ）」が混ざって出るが、住所・電話とも別の店）。公式SNSのアカウントは見当たらず対象なし（これは閉店の証拠ではない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E9%85%92%E5%A0%B4%E3%81%86%E3%81%8A%E3%81%BF%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B8%AD%E5%A4%AE%E6%9C%AC%E7%94%BA3-18%20%E3%82%A2%E3%83%AB%E3%83%95%E3%82%A1318%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003885002/">ホットペッパーグルメ 店舗ページ。営業時間・定休日・席数・支払い方法・20歳未満入店不可の告知（2026/06/05 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003885002/food/">ホットペッパーグルメ 料理ページ。本マグロ赤身308円・串カツ1本200円から（最終更新日 2025/12/02）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003885002/photo/">ホットペッパーグルメ 写真ページ。店内・外観・料理の掲載写真 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-ariake-sakana-shiwa">
+<img class="hero" src="img/saga/saga-ariake-sakana-shiwa.jpg" alt="酒菜 志波 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-sakana-shiwa_exterior.jpg" alt="酒菜 志波 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>酒菜 志波<span class="yomi">さかな しわ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数100席、最大宴会80人、駐車場20台。全席禁煙。カードはVISA・マスター・アメックス・DINERS・JCB・Discover・銀聯、電子マネーとQRコード決済も広く使える。子供連れ可、ペット同伴可。飲み放題は男性2,000円・女性1,500円。ミシュランガイド福岡・佐賀2014特別版で一つ星。店主が一人で調理を担当し、コースは完全予約制で、その日に仕入れた素材によって11〜12品が決まる。玄界灘と有明海の双方の魚を使う。公式サイト（sakana-shiwa.owst.jp）は2026-11-21時点で404のため website は空にした。ホットペッパーの店舗ページのお知らせ欄に「20歳未満の方は入店不可（同伴の方も含む）」とある。</div>
+<div class="sig"><b>一皿:</b>夜の会席料理（先付・小鉢・前菜・お造り・吸物・焼き物・揚げ物・蒸し物など11〜12品。4,400円〜）／甘鯛の桜蒸し（コースの一品。季節で中身が変わる）／旬の魚の煮付け（玄界灘と有明海の魚を使う）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 11:30〜14:00／17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市久保田町徳万499-1</td></tr>
+<tr><th>予約</th><td>コースは完全予約制。電話 0952-68-2063、またはホットペッパーグルメのネット予約（即予約・リクエスト予約とも来店前日17時まで）。公式サイトは現在404のため website は空 — <a href="tel:0952682063">☎ 0952-68-2063</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市でミシュランの星が付いた数少ない和食店で、この章に「きちんとした会席」の軸を一本入れられる。営業の根拠＝①店自身の日付つき情報：ホットペッパーグルメの店舗ページに「2025/10/07 更新」の表示があり、店が出した営業時間・席数・決済の情報が更新されている。②閉店していないことの確認：「酒菜 志波 佐賀 久保田 閉店」（空白あり）と「酒菜志波閉店」（詰めた形）、「酒菜 志波 佐賀 移転」、「酒菜 志波 佐賀 リニューアル」の4通りを2026-11-21に検索したが、閉店・移転・改装の情報は1件も無かった。まいぷれ佐賀の当店のページ（saga.mypl.net/mp/gotouchi-gourmet/?sid=25074）に【閉店】の表示があるという情報は誤りで、本文に「閉店」の文字は1か所も無い。公式SNSのアカウントは見当たらず対象なし（これは閉店の証拠ではない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%8F%9C%20%E5%BF%97%E6%B3%A2%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B9%85%E4%BF%9D%E7%94%B0%E7%94%BA%E5%BE%B3%E4%B8%87499-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000571854/">ホットペッパーグルメ 店舗ページ。営業時間・定休日・席数・駐車場・決済（2025/10/07 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000571854/food/">ホットペッパーグルメ 料理ページ。夜の会席料理4,400円〜、4,950円・6,270円のコース 2026-11-21 取得</a> / <a href="https://saga.mypl.net/mp/gotouchi-gourmet/?sid=25074">まいぷれ佐賀の当店のページ（本文に「閉店」の記載が無いことを確認）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-ariake-honjo-unagiya">
+<img class="hero" src="img/saga/saga-ariake-honjo-unagiya.jpg" alt="本庄うなぎ屋 本庄店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-honjo-unagiya_exterior.jpg" alt="本庄うなぎ屋 本庄店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">26</span>本庄うなぎ屋 本庄店<span class="yomi">ほんじょううなぎや ほんじょうてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">昭和45年（1970年）創業で、佐賀市内に本庄店・北部店・東部店の3店舗がある。関西風の地焼きに焼きの技術を加え、せいろむし・蒲焼・佐賀ひつまぶしを出す。先代が名付けた「瀬田焼き」は、腹開きにした鰻に金串を打って火にかける焼き方で、外側だけでなく内側まで火が通ってやわらかくなる、と公式サイトが説明している。客席はすべて個室（2人用・4人用）で座敷もある。カード可（VISA・JCB・AMEX・Diners）、電子マネー可、QRコード決済可。持ち帰り（蒲焼五切2,950円、せいろ弁当3,440円ほか）と出前があり、出前の注文は0952-24-3681。公式サイトに本庄店の店舗カレンダーがあり、水曜以外の臨時休業日も載る。うなぎづくしコースは要予約。</div>
+<div class="sig"><b>一皿:</b>瀬田焼きの蒲焼（腹開きにした鰻に金串を打って焼く、先代が名付けた焼き方）／特せいろむし（蒲焼五切をのせたせいろ蒸し。5,400円）／佐賀ひつまぶし（薬味と出汁で食べ方を変える）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜20:30（鰻次第、20時オーダーストップ）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日ほか（祝日の場合は営業）。臨時の店休日は公式サイトの店舗カレンダーに載る</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市本庄町大字末次394-7</td></tr>
+<tr><th>予約</th><td>電話 0952-28-9160 で可。うなぎづくしコース（8,200円）は要予約。出前の注文は 0952-24-3681 — <a href="tel:0952289160">☎ 0952-28-9160</a> ／ <a href="https://honjounagiya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>有明海に注ぐ佐賀平野のクリーク地帯で続く鰻の老舗で、この章に「川の魚」の軸を入れられる。営業の根拠＝①店自身の日付つき情報：公式サイト（honjounagiya.com）のお知らせに「2026年10月01日 臨時休業のお知らせ」「2026年08月01日 お盆期間について(8/8から8/16)」があり、本庄店の店舗カレンダーに2026年11月・12月の店休日（11/4・11/11・11/18〜20・11/25、12/2・12/9〜10・12/16・12/23・12/30〜1/2）が入っている。②閉店していないことの確認：「本庄うなぎ屋 本庄店 閉店」（空白あり）と「本庄うなぎ屋本庄店閉店」（詰めた形）、「本庄うなぎ屋 移転 リニューアル」の3通りを2026-11-21に検索したが、閉店・移転・改装の情報は1件も無かった（WebSearch の回数上限40回の都合で、移転とリニューアルを1回にまとめた）。公式SNSのアカウントは公式サイトに記載が無く対象なし（これは閉店の証拠ではない）。補助として佐賀市観光協会の店舗ページが2026年7月10日更新。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E5%BA%84%E3%81%86%E3%81%AA%E3%81%8E%E5%B1%8B%20%E6%9C%AC%E5%BA%84%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%9C%AC%E5%BA%84%E7%94%BA%E5%A4%A7%E5%AD%97%E6%9C%AB%E6%AC%A1394-7">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（honjounagiya.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://honjounagiya.com/">公式サイト。お知らせ 2026年10月01日・2026年08月01日、創業年・瀬田焼きの説明・価格（2026-10-01）2026-11-21 取得</a> / <a href="https://honjounagiya.com/place">公式サイト 店舗のご案内。本庄店の住所・電話・営業時間・店休日と2026年11月〜12月の店舗カレンダー 2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=643">佐賀市観光協会サガバイドットコム 本庄店のページ。昭和45年創業・瀬田焼き・住所・電話（2026年7月10日更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004555079/">ホットペッパーグルメ 本庄店のページ。住所・営業時間・定休日・個室・支払い方法 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-ariake-ikesu-kaiko">
+<img class="hero" src="img/saga/saga-ariake-ikesu-kaiko.jpg" alt="日本料理いけす海幸 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-ariake-ikesu-kaiko_exterior.jpg" alt="日本料理いけす海幸 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">27</span>日本料理いけす海幸<span class="yomi">にほんりょうり いけすかいこう</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1階中央の大型いけすに玄界灘で水揚げされた真鯛やカンパチが泳ぎ、アジとイカの水槽もある。注文を受けてからいけすで揚げて調理する。席数は公式サイトが180席（1階80席・2階100席）、ホットペッパーグルメが168席（最大宴会100人）で食い違う。2階に個室、掘りごたつあり。全席禁煙。カード・電子マネー・QRコード決済とも広く使える。コース予約のキャンセルは来店当日0時以降に1名あたりコース料金の100%が発生する。大型バスも停められる駐車場があり団体の受け入れを前提にした造り。姉妹店に佐賀駅北口の「シャンリーはなれ」がある。営業時間は公式サイトとホットペッパーで昼の終了時刻が食い違う。</div>
+<div class="sig"><b>一皿:</b>白えびのかき揚げ膳（有明海で水揚げされた白えびを佐賀県産の玉ねぎなどと揚げたかき揚げと、刺身の付く膳）／いか活造り御膳（いけすから揚げた活きイカ。あと造りは天ぷら・塩焼・バター焼きから選ぶ。7,000円）／活鯛のお造り（1尾。あとであら炊きか吸い物にする。9,500円〜20,000円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜14:30／17:00〜21:00（公式サイト）。※ホットペッパーグルメ（2026/10/16更新）は「月〜日・祝日・祝前日 11:00〜14:00／17:00〜21:00（料理L.O.20:30、ドリンクL.O.20:30）」としており食い違う</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市下田町1-15</td></tr>
+<tr><th>予約</th><td>可。電話 0952-23-5115、公式サイトまたはホットペッパーグルメのネット予約（即予約は来店前日11時まで、リクエスト予約は前日17時まで）。コース予約は当日0時以降のキャンセルで100%の料金が発生する — <a href="tel:0952235115">☎ 0952-23-5115</a> ／ <a href="https://xiangli-kaiko.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>有明海の白えびをかき揚げで出す店で、呼子まで行かなくても佐賀市内で活きイカといけす料理が食べられる。営業の根拠＝①店自身の日付つき情報：ホットペッパーグルメの店舗ページと料理ページに「2026/10/16 更新」の表示があり、店が出した営業時間・席数・御膳の価格が更新されている。公式サイト（xiangli-kaiko.com）も店舗情報と白えびのかき揚げ膳を掲載中。②閉店していないことの確認：「いけす海幸 佐賀 下田町 閉店」（空白あり）と「いけす海幸閉店」（詰めた形）、「いけす海幸 佐賀 移転 リニューアル」の3通りを2026-11-21に検索したが、閉店・移転・改装の情報は1件も無かった（WebSearch の回数上限40回の都合で、移転とリニューアルを1回にまとめた）。公式SNSのアカウントは公式サイトに記載が無く対象なし（これは閉店の証拠ではない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E3%81%84%E3%81%91%E3%81%99%E6%B5%B7%E5%B9%B8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B8%8B%E7%94%B0%E7%94%BA1-15">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（xiangli-kaiko.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://xiangli-kaiko.com/">公式サイト。店舗情報（住所・電話・営業時間・席数・駐車場）と白えびのかき揚げ膳の説明 2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004576374/">ホットペッパーグルメ 店舗ページ。営業時間・定休日・席数・決済・キャンセル規定（2026/10/16 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004576374/food/">ホットペッパーグルメ 料理ページ。いか活造り御膳7,000円・四季御膳3,000円・ペアセット7,500円（2026/10/16 更新）2026-11-21 取得</a></div>
+</div></div>
+<h2 id="s-men" class="c-brown">佐賀ラーメン・ちゃんぽん・うどん</h2>
+<div class="card" id="c-saga-men-ichirakudo-hyogo">
+<img class="hero" src="img/saga/saga-men-ichirakudo-hyogo.jpg" alt="博多ラーメン一楽堂 兵庫本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-men-ichirakudo-hyogo_exterior.jpg" alt="博多ラーメン一楽堂 兵庫本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">28</span>博多ラーメン一楽堂 兵庫本店<span class="yomi">はかたらーめんいちらくどう ひょうごほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">公式サイトが「創業三十年」と掲げる佐賀市兵庫南の豚骨ラーメン店。スープは豚骨をアク抜きしながら10時間、強い火力で余分な脂と臭みを飛ばして炊く。保存料は無添加で毎日店内で仕込むと公式サイトに明記がある。麺の硬さはカタ・バリカタ・ハリガネから選べ、替玉100円。鶏ガラ・野菜・飛び魚を煮出した醤油ラーメン、豚骨と醤油を合わせた一楽ちゃんぽんもある。営業時間は公式サイトが11:00〜22:00、ホットペッパーグルメの掲載（2020/01/07 更新）が11:00〜翌0:00で食い違うため、新しい公式サイトの11:00〜22:00を採った。同掲載によれば総席数50席・分煙・カードと電子マネーは利用不可・駐車場ありだが、いずれも2020年時点の情報。</div>
+<div class="sig"><b>一皿:</b>豚骨ラーメン（豚骨を10時間炊いたあっさりめのスープ、790円）／一楽ちゃんぽん（豚骨と醤油を合わせたスープに国産野菜と自家製中太麺、単品920円・大盛り1,010円・半分820円）／醤油ラーメン（鶏ガラと野菜・飛び魚を煮出したスープに自家製ちぢれ麺、890円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜22:00（公式サイト）</td></tr>
+<tr><th>定休日</th><td class="off">なし（ホットペッパーグルメの掲載。公式サイトに定休日の記載は無い）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市兵庫南2-14-1</td></tr>
+<tr><th>予約</th><td>予約についての記載は公式サイト・ホットペッパーグルメのいずれにも無く、ネット予約は受け付けていない。問い合わせは電話0952-27-9250 — <a href="tel:0952279250">☎ 0952-27-9250</a> ／ <a href="https://ichirakudo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市内でちゃんぽんも豚骨ラーメンも1軒で食べられる店で、章の入口に置ける。営業の根拠＝①店自身の情報: 公式サイト ichirakudo.com のお知らせ「2025.01.19 ホームページをリニューアルしました」（記事の恒久URLが /2025/01/19/… で、2026-11-21 に直読みして本文を確認）。トップページに現行の営業時間11:00〜22:00と電話番号が載っている。②閉店していないことの確認3通り: (a)「一楽堂 兵庫本店 閉店」（空白あり）と「一楽堂兵庫本店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21、Yahoo!検索）。(b) 公式SNSのアカウント名＝Instagram「hakata.ramen.ichirakudo」（公式サイトからリンク、2026-11-21 にアカウント名「博多らーめん一楽堂」を確認）。(c)「一楽堂 兵庫本店 移転」「一楽堂 兵庫本店 リニューアル」で各1回検索し、移転の告知は0件、リニューアルは公式サイトのホームページ改装の告知のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E4%B8%80%E6%A5%BD%E5%A0%82%20%E5%85%B5%E5%BA%AB%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E5%8D%972-14-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（ichirakudo.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://ichirakudo.com/">公式サイト。店舗情報（住所・電話・営業時間11:00〜22:00）とおしながき、お知らせ「2025.01.19」（2026-11-21）2026-11-21 取得</a> / <a href="https://ichirakudo.com/2025/01/19/%E3%83%9B%E3%83%BC%E3%83%A0%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E3%83%AA%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%A2%E3%83%AB%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F/">公式サイトのお知らせ記事「ホームページをリニューアルしました」（2025年1月19日）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000571152/">ホットペッパーグルメ 一楽堂 兵庫店。住所・総席数50席・駐車場・営業時間11:00〜翌0:00（2020/01/07 更新）2026-11-21 取得</a> / <a href="https://www.instagram.com/hakata.ramen.ichirakudo/">公式Instagram。アカウント名「博多らーめん一楽堂」（2026-11-21）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-men-ide-yamato">
+<img class="hero" src="img/saga/saga-men-ide-yamato.jpg" alt="井手ちゃんぽん 大和店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">29</span>井手ちゃんぽん 大和店<span class="yomi">いでちゃんぽん やまとてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1949（昭和24）年に武雄市北方で創業した井手ちゃんぽん（運営は株式会社ちどり）の佐賀市内の店。豚肉・キャベツ・タマネギ・青ネギ・カマボコ・ちくわ・もやしを炒めて載せた野菜の多いちゃんぽんが看板で、麺抜きにすると野菜が130％に増える。価格は2026年8月1日に改定された。公式サイトは店舗一覧に住所と電話を載せるだけで各店の営業時間・定休日を公開していないため、このガイドの「営業時間」「定休日」欄は空欄にした。参考までにホットペッパーグルメの掲載（2024/04/11 更新）は火〜日・祝 11:00〜21:00（L.O.20:30）、定休日は月曜、総席数107席、全席禁煙、カード・電子マネー・QRコード決済は利用不可。行く前に0952-62-8181で確かめたい。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（豚肉と7種の具を炒めて載せる、1,000円）／特製ちゃんぽん（キクラゲと卵をたっぷり足した一杯、1,200円）／カツ丼（初代から受け継いだ、1,000円）</div>
+<table class="info">
+<tr><th>営業時間</th><td></td></tr>
+<tr><th>定休日</th><td class="off"></td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大和町大字尼寺3650-1</td></tr>
+<tr><th>予約</th><td>予約の可否は公式サイトに記載が無い。ホットペッパーグルメの掲載はネット予約を受け付けていない。問い合わせは電話0952-62-8181 — <a href="tel:0952628181">☎ 0952-62-8181</a> ／ <a href="https://ide-chanpon.co.jp/shoplist/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀のちゃんぽんを代表する老舗チェーンの、佐賀市内で最も入りやすい店。営業の根拠＝①店自身の情報: 公式サイト ide-chanpon.co.jp の店舗一覧ページの最終更新が2026年2月12日、メニューページの最終更新が2026年8月4日で、掲載のメニュー表画像のファイル名が「メニュー（令和8年8月1日価格改定）」（いずれも 2026-11-21 に WordPress の更新日時と画像の掲載日で確認）。同一覧に大和店が現役の店として載り、閉店した名古屋店には「閉店しました」と明記されているので、一覧の記載は現況を反映している。②閉店していないことの確認3通り: (a)「井手ちゃんぽん 大和店 閉店」（空白あり）と「井手ちゃんぽん大和店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝Instagram「idechanpon.honten」「idechanpon_chikami」、YouTube「idechanpon」（いずれも公式サイトからリンク、2026-11-21 確認）。大和店単独の公式アカウントは対象なし。(c)「井手ちゃんぽん 大和店 移転」「井手ちゃんぽん 大和店 リニューアル」で各1回検索。移転は「佐賀市若宮1-10-37の若宮店が大和店として移転した」という過去の記録のみで、現住所はその移転後のもの。リニューアルの告知は0件。 【2026-11-21 追記】同じ本に入っていた同系列の「井手ちゃんぽん 兵庫店」（運営はどちらも株式会社ちどり）は、同系列2店を1冊に入れない規約により落とし、大和店を残した（大和店はホットペッパーグルメに掲載があり総席数107席・駐車場・アクセスまで公開値が取れるのに対し、兵庫店は掲載が無く席数も支払い方法も公表値が無い。条件①の根拠も大和店は公式サイトとホットペッパーの二重）。写真の追加: 料理写真をホットペッパーグルメ掲載の1枚（732×600・ちゃんぽん）で1本足して2本にした。外観は0本のまま＝公式サイト ide-chanpon.co.jp のギャラリー12枚は原寸が200×150px しかなく（WordPress の size-full が200×150）、ホットペッパーグルメの掲載写真は利用者投稿（images.miil.me）40枚だけで店側の外観写真が無い。佐賀県観光連盟・佐賀県「さがすたいる」にも該当ページが無く、公式Instagram は本実行環境から429で開けない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%95%E6%89%8B%E3%81%A1%E3%82%83%E3%82%93%E3%81%BD%E3%82%93%20%E5%A4%A7%E5%92%8C%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E5%A4%A7%E5%AD%97%E5%B0%BC%E5%AF%BA3650-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://ide-chanpon.co.jp/shoplist/">公式サイト 店舗一覧。大和店・兵庫店の住所と電話（ページの最終更新 2026-02-12、WordPress の更新日時で確認）2026-11-21 取得</a> / <a href="https://ide-chanpon.co.jp/menu/">公式サイト メニュー。ちゃんぽん1,000円ほか。ページの最終更新 2026-08-04、掲載のメニュー表画像は「令和8年8月1日価格改定」2026-11-21 取得</a> / <a href="https://ide-chanpon.co.jp/history/">公式サイト 井手ちゃんぽんの歴史。昭和24年創業・武雄市北方で初代が炭鉱夫のために作ったという成り立ち 2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001266722/">ホットペッパーグルメ 井手ちゃんぽん大和店。住所・アクセス・総席数107席・営業時間（2024/04/11 更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-men-jinrikiya-ozai">
+<img class="hero" src="img/saga/saga-men-jinrikiya-ozai.jpg" alt="人力屋 大財店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-men-jinrikiya-ozai_exterior.jpg" alt="人力屋 大財店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">30</span>人力屋 大財店<span class="yomi">じんりきや おおざいてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">鳥栖市に本社を置く株式会社福山（福山製麺所）が直営する手延べうどんの店。同社は手打ちの「人力うどん」、手延べの「人力屋」、ラーメンの「ふくの家」を佐賀・福岡で展開する。通し営業ではなく15:00〜17:00は準備休業で、火〜日・祝は11:00〜翌3:00、月曜だけ11:00〜20:00。定休日は無く、深夜まで開いているので飲んだあとの客も多い。総席数73席、全席禁煙、カード・電子マネー・QRコード決済はいずれも利用不可で現金のみ。駐車場28台。うどんは＋30円でそばに替えられ、持ち帰り用のうどんとスープも売る。住所は公式サイトが「大財町5丁目12-1」、ホットペッパーグルメが「大財5-12-1」と食い違い、ここでは後者を採った。</div>
+<div class="sig"><b>一皿:</b>ごぼう天うどん（揚げたてのごぼう天を載せる、600円）／肉うどん（甘辛く味つけした肉とつゆが絡む、670円）／ダブルえび天うどん（大きなえび天2本、890円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月曜 11:00〜20:00（料理L.O.19:30）／火〜日・祝日・祝前日 11:00〜翌3:00（料理L.O.翌2:30）※いずれも15:00〜17:00は準備休業</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大財5-12-1</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない。問い合わせは電話0952-28-6129（受付11:00〜翌3:00） — <a href="tel:0952286129">☎ 0952-28-6129</a> ／ <a href="https://www.jinrikiudon.co.jp/restaurant/ozai/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀駅から歩ける範囲で深夜まで開いている数少ない麺の店で、章に時間帯の幅を持たせられる。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2025/11/01 更新」（2026-11-21 に直読み）。公式サイト jinrikiudon.co.jp の大財店ページにも現行の営業時間と電話が載っている。②閉店していないことの確認3通り: (a)「人力屋 大財店 閉店」（空白あり）と「人力屋大財店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝運営会社の公式Facebookページ「人力うどん」（公式サイトのフッターからリンク、2026-11-21 確認）。大財店単独の公式アカウントは対象なし。(c)「人力屋 大財店 移転」「人力屋 大財店 リニューアル」で各1回検索し、移転・リニューアルの告知はいずれも0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BA%BA%E5%8A%9B%E5%B1%8B%20%E5%A4%A7%E8%B2%A1%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A15-12-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000630113/">ホットペッパーグルメ 人力屋 大財店。営業時間・定休日・総席数73席・駐車場28台・支払い方法・価格（2025/11/01 更新）2026-11-21 取得</a> / <a href="https://www.jinrikiudon.co.jp/restaurant/ozai/">公式サイト（福山製麺所）人力屋大財店ページ。住所・電話・営業時間・JR佐賀駅徒歩10分・駐車場あり 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-men-marufuku-hyogo">
+<img class="hero" src="img/saga/saga-men-marufuku-hyogo.jpg" alt="まるふくうどん 兵庫店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-men-marufuku-hyogo_exterior.jpg" alt="まるふくうどん 兵庫店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">31</span>まるふくうどん 兵庫店<span class="yomi">まるふくうどん ひょうごてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">株式会社福山（福山製麺所）が直営するうどん専門店。同じ場所にあった「人力うどん 兵庫店」から屋号が変わった店で、食べログでも旧店名が人力うどんと記録されている。注文は入口の券売機で食券を買う方式。ほぼ全品500円以下で、かけうどんは280円。自家製麺と自家製の出汁を合わせ、ねぎと天かすは自分で載せる。営業は11:00〜20:00（料理L.O.19:30）で15:00〜17:00は準備休業、定休日は水曜。総席数66席でテーブル席と座敷があり、ベビーチェアも置く。全席禁煙。クレジットカード・電子マネー・QRコード決済はいずれも利用不可で現金のみ。駐車場32台。うどん専門店で、そばは夏季のざるそばだけ。</div>
+<div class="sig"><b>一皿:</b>かけうどん（自家製麺と特製の出汁だけの一杯、280円）／ぶっかけうどん（花がつおと手作りの天かすに自家製つゆ、500円）／肉うどん（すき焼き風に味つけした肉、520円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜日・祝日・祝前日 11:00〜20:00（料理L.O.19:30）※15:00〜17:00は準備休業</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市兵庫町若宮219-2</td></tr>
+<tr><th>予約</th><td>券売機での食券制で予約は不要。ネット予約は受け付けていない。問い合わせは電話0952-24-6371（受付11:00〜20:00） — <a href="tel:0952246371">☎ 0952-24-6371</a> ／ <a href="https://www.jinrikiudon.co.jp/restaurant/marufuku-hyougo/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章のなかで最も安く、券売機で言葉がいらないので旅先でも入りやすい。佐賀の製麺所直営うどんの標準形を示せる。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2025/10/17 更新」（2026-11-21 に直読み）。公式サイト jinrikiudon.co.jp の兵庫店ページにも現行の営業時間・電話が載っている。②閉店していないことの確認3通り: (a)「まるふくうどん 兵庫店 閉店」（空白あり）と「まるふくうどん兵庫店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝運営会社の公式Facebookページ「人力うどん」（公式サイトのフッターからリンク、2026-11-21 確認）。兵庫店単独の公式アカウントは対象なし。(c)「まるふくうどん 兵庫店 移転」「まるふくうどん 兵庫店 リニューアル」で各1回検索。移転の告知は0件。リニューアルは「人力うどん」からの屋号変更に関する記述のみで、場所も電話番号も変わっていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%82%8B%E3%81%B5%E3%81%8F%E3%81%86%E3%81%A9%E3%82%93%20%E5%85%B5%E5%BA%AB%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E7%94%BA%E8%8B%A5%E5%AE%AE219-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000979377/">ホットペッパーグルメ まるふくうどん 兵庫店。営業時間・定休日・総席数66席・駐車場32台・支払い方法・価格（2025/10/17 更新）2026-11-21 取得</a> / <a href="https://www.jinrikiudon.co.jp/restaurant/marufuku-hyougo/">公式サイト（福山製麺所）まるふくうどん兵庫店ページ。住所・電話・営業時間・準備休業 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-men-komorebi">
+<img class="hero" src="img/saga/saga-men-komorebi.jpg" alt="そばの芽料理とそばの店 木漏れ陽 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-men-komorebi_exterior.jpg" alt="そばの芽料理とそばの店 木漏れ陽 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">32</span>そばの芽料理とそばの店 木漏れ陽<span class="yomi">そばのめりょうりとそばのみせ こもれび</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐賀市富士町の山あいで、友田家が自家農園の在来種「北山そば」とそばのスプラウト（そばの芽）を完全無農薬で育て、その実で打つそばとそばの芽料理を出す農家の店。建物は木造平屋。冷たい北山盛りそば900円、温かい北山釜揚げそば900円などの単品に加え、そばの芽ジュース・和え物・サラダ・そば豆腐・盛りそば・そば雑炊までを組む「木漏れ陽コース」が3段階（檜2,300円／杉1,800円／若葉1,350円）。そば粉のクレープ「ガレット」もある。営業は11:00〜17:00、定休日は水曜。公式サイトは https に対応しておらず http でしか開けないため、ここに載せたサイトと写真のURLは http で始まる。</div>
+<div class="sig"><b>一皿:</b>北山盛りそば（在来種の北山そばを使った冷たい盛りそば、900円）／木漏れ陽コース「若葉」（そばの芽ジュース・そばの芽サラダ・盛りそばの3品、1,350円）／ガレット「紅葉」（そば粉のクレープにベーコン・きのこ・そばの芽・たまご・チーズ、950円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市富士町大字上合瀬453-1</td></tr>
+<tr><th>予約</th><td>予約についての記載は公式サイトに無い。問い合わせは電話0952-57-2873 — <a href="tel:0952572873">☎ 0952-57-2873</a> ／ <a href="http://komorebi2002.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市域で唯一、在来種のそばを自分で育てて出す店で、ラーメン・ちゃんぽん・うどんに偏りがちなこの章に別の軸を与える。営業の根拠＝①店自身の情報: 公式サイト komorebi2002.com のメニューページの最終更新が2025年7月3日（2026-11-21 に WordPress の更新日時で確認）。掲載価格も現行のもの。②閉店していないことの確認3通り: (a)「木漏れ陽 そば 佐賀 閉店」（空白あり）と「木漏れ陽そば佐賀閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝Instagram「komorebi_soba」（公式サイトからリンク、表示名「そばの芽料理とそばの店 木漏れ陽」、2026-11-21 確認）。(c)「木漏れ陽 そば 佐賀 移転」「木漏れ陽 そば 佐賀 リニューアル」で各1回検索し、この店の移転・リニューアルの告知はいずれも0件（検索に出た移転の告知は別のそば店のもの）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E3%81%AE%E8%8A%BD%E6%96%99%E7%90%86%E3%81%A8%E3%81%9D%E3%81%B0%E3%81%AE%E5%BA%97%20%E6%9C%A8%E6%BC%8F%E3%82%8C%E9%99%BD%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%AF%8C%E5%A3%AB%E7%94%BA%E5%A4%A7%E5%AD%97%E4%B8%8A%E5%90%88%E7%80%AC453-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（komorebi2002.com）より引用 / 外観: 出典ページ / 参照元: <a href="http://komorebi2002.com/">公式サイト トップページ。在来種 北山そば・自家農園・木造平屋の紹介 2026-11-21 取得</a> / <a href="http://komorebi2002.com/%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC/">公式サイト メニュー。コース・そば・ガレットの価格。ページの最終更新 2025-07-03 2026-11-21 取得</a> / <a href="http://komorebi2002.com/%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9/">公式サイト アクセス。住所・営業時間11時〜17時・定休日水曜・電話 2026-11-21 取得</a> / <a href="https://www.instagram.com/komorebi_soba/">公式Instagram。アカウント名「そばの芽料理とそばの店 木漏れ陽」（komorebi_soba）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-men-ikkyuken-honten">
+<img class="hero" src="img/saga/saga-men-ikkyuken-honten.jpg" alt="一休軒 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-men-ikkyuken-honten_exterior.jpg" alt="一休軒 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">33</span>一休軒 本店<span class="yomi">いっきゅうけん ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐賀ラーメンの形をつくったとされる店。初代の大串進が戦後、佐賀市松原で屋台を始め、客だった久留米「三九」の元従業員に勧められてラーメンへ転じた。屋号は「三九より上を目指す」ことから。チャーシューと海苔だけという佐賀ラーメンの簡素な姿も、1958年の西鉄ライオンズ日本一を記念して生卵を落とした「特製ラーメン」も、この店から始まったと佐賀県の公式記事が伝える。松原の店は2011年8月14日で閉じ、三代目の大串高志が1985年に若楠へ開いた支店がいまの「一休軒 本店」。なお佐賀市呉服元町の「一休軒 呉服元町店」は2026年7月末で営業を終え、同じ場所で同年8月6日から「いっけんや」になったので、一休軒の名で訪ねるならこの若楠の店になる。定休日は県の2つの掲載で食い違うため、0952-33-1688で確かめたい。</div>
+<div class="sig"><b>一皿:</b>ラーメン（クリーミーでコクのある豚骨スープに中細ストレート麺、750円）／生卵入りラーメン（佐賀ラーメンの目印である生卵を落とす、800円）／特製ラーメン（チャーシューを花びらのように並べ中央に生卵を落とした、初代考案の一杯）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜・土曜・日曜（佐賀県「SAGAラーメン」店舗一覧）。同県の「後世に残したい店」の掲載は水曜・日曜で食い違うため要確認</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市若楠2-6-24</td></tr>
+<tr><th>予約</th><td>予約は受け付けていない（カウンター中心の店。佐賀県の掲載にも予約の記載は無い）。問い合わせは電話0952-33-1688 — <a href="tel:0952331688">☎ 0952-33-1688</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>この章にはもともと佐賀ラーメンの店が1軒も無く、その源流にあたる店を欠いていた。豚骨・やわらかめの麺・生卵という佐賀ラーメンの特徴がどこから来たのかを、この1軒で説明できる。営業の根拠＝①佐賀県の特例（公的機関が日付つきで取材・紹介した記事）: 佐賀県の飲食産業ブランド化事業「SAGAラーメン」の公式note「一杯の奥にある“始まりの物語”「一休軒本店」（佐賀市）」が2026年3月17日公開。現店主・大串高志への取材で、松原の店が2011年に閉じ、若楠の支店が現在の一休軒本店として営業していることを明記し、住所（佐賀市若楠2-6-24）と価格も載せている（2026-11-21 に記事本文を直読み）。同事業の公式サイト saga-ramen.jp の店舗一覧にも、一休軒本店として住所・営業時間11:00〜15:00・定休日が掲載されている。店自身のサイト・SNS・ホットペッパーグルメの日付つき情報はいずれも存在しないため、この特例によった。②閉店していないことの確認3通り: (a)「一休軒本店 佐賀 閉店」（空白あり）と「一休軒本店閉店」（詰めた形）の2通りで検索（2026-11-21）。閉店を伝えるページは複数あるが、いずれも2011年8月14日に閉じた松原の旧本店か、2026年7月末で終わった呉服元町店に関するもので、若楠のこの店の閉店を伝えるものは0件。(b) 公式SNSのアカウント名＝対象なし（この店の公式アカウントは見つからない。それは閉店の証拠ではない）。(c)「一休軒本店 佐賀 移転」「一休軒本店 佐賀 リニューアル」で各1回検索。若楠の店の移転・リニューアルの告知は0件。検索に出たリニューアルは呉服元町店が「いっけんや」へ屋号変更した件（佐賀新聞 2026年8月6日開店）で、別の店。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E4%BC%91%E8%BB%92%20%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E8%8B%A5%E6%A5%A02-6-24">Googleマップで開く</a>
+<div class="src">写真: 佐賀県「SAGAラーメン」公式note（佐賀県産業労働部産業政策課） / 外観: 出典ページ / 参照元: <a href="https://note.com/saga_ramen/n/n6f586a3f7251">佐賀県「SAGAラーメン」公式note「一杯の奥にある“始まりの物語”「一休軒本店」（佐賀市）」。沿革・現店主・住所・価格（2026年3月17日）2026-11-21 取得</a> / <a href="https://saga-ramen.jp/shop-list">佐賀県「SAGAラーメン」公式サイト 店舗一覧。住所・営業時間11:00〜15:00・定休 木土日 2026-11-21 取得</a> / <a href="https://saga-nokositaimise.com/wp-content/themes/sagakosei/pickup/pickup20.html">佐賀県（産業労働部産業政策課）「後世に残したい店」一休軒のページ。三代目の語り・住所・電話0952-33-1688・営業時間・駐車場あり 2026-11-21 取得</a> / <a href="https://www.city.saga.lg.jp/city-promotion/promotion/1/5589.html">佐賀市公式「佐賀ラーメンは生卵トッピング。毎日いけるマイルド豚骨。」。佐賀ラーメンの成り立ちと一休軒の流れ（更新日 2026年5月25日）2026-11-21 取得</a> / <a href="https://www.saga-s.co.jp/articles/-/1779728">佐賀新聞「【開店情報】佐賀市に『いっけんや』オープン 『一休軒 呉服元町店』が屋号を改めリニューアル」。呉服元町店が別店になった件 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-men-ekimae-bigone">
+<img class="hero" src="img/saga/saga-men-ekimae-bigone.jpg" alt="駅前ラーメン ビッグワン 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-men-ekimae-bigone_exterior.jpg" alt="駅前ラーメン ビッグワン 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">34</span>駅前ラーメン ビッグワン<span class="yomi">えきまえらーめん びっぐわん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1983（昭和58）年創業。創業者の野田晃が、はす向かいで営んでいたゲームセンターの隣に飲食店をと考え、佐賀市のちゃんぽん店「若柳」の大将に相談して豚骨ラーメン専門店として開いた。屋号は晃が王貞治の大ファンだったことによる。晃は翌年に病で亡くなり、母の鈴子がのれんを守り、いまは息子の光基・育豊兄弟が店に立つ。スープは骨と水だけで取る呼び戻し豚骨。たれは佐賀市材木の池田醤油醸造店、麺は佐賀市紺屋町の畑瀬食品。席はコの字カウンターで、羽釜で茹でて平網ですくう麺上げを目の前で見られる。卓上の辛子高菜・紅生姜・ゴマは無料だが替え玉は無い。駐車場は無い。</div>
+<div class="sig"><b>一皿:</b>ラーメン（骨と水だけで取る呼び戻し豚骨、680円）／玉子入ラーメン（佐賀ラーメンらしい生卵を落とした一杯、730円）／野菜ラーメン（中華鍋であおった炒め野菜入りのスープに麺を合わせる、830円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00／19:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜（月曜が祝日の場合は日曜に営業し、月曜が休み）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市駅前中央1-13-16</td></tr>
+<tr><th>予約</th><td>予約は受け付けていない（コの字カウンターのみの店）。問い合わせは電話0952-30-8212 — <a href="tel:0952308212">☎ 0952-30-8212</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀駅に着いてすぐ本格的な店炊き豚骨が食べられる立地で、この章にいちばん足りていなかった「佐賀駅から歩いて行ける佐賀ラーメン」を埋める。創業1983年で、一休軒から巣立った職人の系譜にも連なる。営業の根拠＝①佐賀県の特例（公的機関が日付つきで取材・紹介した記事）: 佐賀県の飲食産業ブランド化事業「SAGAラーメン」の公式note「佐賀にはこの兄弟がいる「駅前ラーメン ビッグワン」（佐賀市）」が2026年1月16日公開。現在店に立つ兄弟への取材記事で、住所・営業時間・定休日・価格まで載せている（2026-11-21 に記事本文を直読み）。同事業の公式サイト saga-ramen.jp の店舗一覧にも電話番号0952-30-8212つきで掲載されている。店自身のサイト・SNS・ホットペッパーグルメの日付つき情報はいずれも存在しないため、この特例によった。②閉店していないことの確認3通り: (a)「駅前ラーメン ビッグワン 閉店」（空白あり）と「駅前ラーメンビッグワン閉店」（詰めた形）の2通りで検索（2026-11-21）。閉店を伝えるページは「ビッグワン 中央本町店」という別の支店のもので、駅前の本店の閉店を伝えるものは0件。(b) 公式SNSのアカウント名＝対象なし（この店の公式アカウントは見つからない。それは閉店の証拠ではない）。(c)「駅前ラーメン ビッグワン 移転」「駅前ラーメン ビッグワン リニューアル」で各1回検索し、移転・リニューアルの告知はいずれも0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%A7%85%E5%89%8D%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E3%83%93%E3%83%83%E3%82%B0%E3%83%AF%E3%83%B3%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%89%8D%E4%B8%AD%E5%A4%AE1-13-16">Googleマップで開く</a>
+<div class="src">写真: 佐賀県「SAGAラーメン」公式note（佐賀県産業労働部産業政策課） / 外観: 出典ページ / 参照元: <a href="https://note.com/saga_ramen/n/n2ea016cf4b6c">佐賀県「SAGAラーメン」公式note「佐賀にはこの兄弟がいる「駅前ラーメン ビッグワン」（佐賀市）」。創業1983年・現在の兄弟・スープと麺・住所・営業時間・定休日・価格（2026年1月16日）2026-11-21 取得</a> / <a href="https://saga-ramen.jp/shop-list">佐賀県「SAGAラーメン」公式サイト 店舗一覧。住所・電話0952-30-8212・営業時間 2026-11-21 取得</a> / <a href="https://saga-nokositaimise.com/wp-content/themes/sagakosei/pickup/pickup30.html">佐賀県（産業労働部産業政策課）「後世に残したい店」駅前ラーメン ビッグワンのページ。住所・電話・駐車場なし 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-men-koyokaku">
+<img class="hero" src="img/saga/saga-men-koyokaku.jpg" alt="幸陽閣 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-men-koyokaku_exterior.jpg" alt="幸陽閣 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">35</span>幸陽閣<span class="yomi">こうようかく</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1974年に初代・川上悟さんが佐賀市神野で開いた「幸陽軒」が前身。大財町・愛敬町と移り、2008年に現在の下田町へ移って屋号を「幸陽閣」に改めた。このとき悟さんが腱鞘炎のため一度ラーメンをやめて焼肉専門店にしたので、ロースター用のテーブルを広く並べた造りがそのまま残っている（常連の要望でラーメンが復活し、現在はラーメン専門）。2016年に娘婿の吉田聖次さんが弟子入りし、現在は2代目として厨房に立つ。麺は佐賀市の福助食品の中太ストレート。支払いは現金のみで、入口を入ってすぐの券売機で食券を買う（コイン投入口の高さは約1.5m）。席は可動椅子のテーブル席と座敷席（座敷へは約10cmの段差）、子ども用の椅子と食器あり。出入口はスロープ、屋内はフラット。全席禁煙。混雑時は名前を書いて待つ方式。</div>
+<div class="sig"><b>一皿:</b>ラーメン（一休軒ゆずりの製法で豚骨を炊いた、佐賀では濃厚な部類のスープ。900円）／卵入りラーメン（佐賀流に生卵を落とし、スープと絡めて食べる。950円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 11:00〜15:00／土 11:00〜16:00（佐賀県「さがすたいる」店舗ページ。佐賀県「SAGAラーメン」店舗一覧と公式note の表記は11:00〜15:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日・第3月曜日（佐賀県「さがすたいる」店舗ページ。公式note と店舗一覧は「日曜」のみ記載）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市下田町3-31</td></tr>
+<tr><th>予約</th><td>予約についての記載は公的機関のページにも無い。券売機で食券を買う現金のみの店で、混雑時は名前を書いて待つ。問い合わせは電話0952-24-5084 — <a href="tel:0952245084">☎ 0952-24-5084</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀ラーメンを代表する店として真っ先に名前が挙がる一軒で、同じ章の一休軒 本店の系譜（初代が一休軒で4年修業して独立）を示す対になる。営業の根拠＝①店自身の情報の代用（佐賀県の特例）: 佐賀県産業労働部産業政策課の「SAGAラーメン」公式note「老舗を継ぐ2代目の覚悟『幸陽閣』（佐賀市）」が2026年10月20日公開の日付つき取材記事で、店主・吉田聖次さんと川上京子さんへの取材、住所・営業時間・定休日・価格まで本文に載る（2026-11-21 に note の API から本文と公開日時を直読み）。名簿ではなく記事。あわせて佐賀県の「SAGAラーメン」店舗一覧（saga-ramen.jp/shop-list）に現役店として掲載。②閉店していないことの確認3通り: (a)「幸陽閣 閉店」（空白あり）と「幸陽閣閉店」（詰めた形）の2通りを Yahoo! JAPAN の検索結果ページで直読みし、閉店を伝えるページは0件（2026-11-21）。2008年に閉じた前身「幸陽軒」の記事が混ざるが別の屋号・別の場所。(b) 公式SNSのアカウント名＝Instagram「kouyoukaku_saga」（佐賀県 県民環境部 県民協働課の「さがすたいる」店舗ページの Instagram 欄に記載。2026-11-21 直読み）。(c)「幸陽閣 移転」「幸陽閣 リニューアル」で各1回検索し、2008年の下田町への移転と過去の店内改装の記録のみで、現在地から動いた告知は0件。 写真について: 外観3本・料理と店内8本とも、佐賀県の媒体（県産業政策課のnote、県民協働課の「さがすたいる」）に載る写真。各ホストの代表画像の右下・左下を切り出して目視し、透かしは無いことを確認した（2026-11-21）。人物が大きく写る取材写真4枚は外した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B9%B8%E9%99%BD%E9%96%A3%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B8%8B%E7%94%B0%E7%94%BA3-31">Googleマップで開く</a>
+<div class="src">写真: 佐賀県「SAGAラーメン」公式note（佐賀県産業労働部産業政策課） / 外観: 出典ページ / 参照元: <a href="https://note.com/saga_ramen/n/n58a690759737">佐賀県産業労働部産業政策課「SAGAラーメン」公式note『老舗を継ぐ2代目の覚悟「幸陽閣」（佐賀市）』。2026年10月20日公開の取材記事。住所・営業時間・定休日・ラーメン900円・卵入り950円 2026-11-21 取得</a> / <a href="https://saga-ramen.jp/shop-list">佐賀県「SAGAラーメン」店舗一覧。幸陽閣が現役店として掲載（佐賀市下田町3-31／11:00〜15:00／定休 日曜）2026-11-21 取得</a> / <a href="https://saga-style.jp/shop/detail.php?id=2966">佐賀県 県民環境部 県民協働課「さがすたいる」店舗ページ。電話0952-24-5084・営業時間・定休日・駐車場10台・券売機・現金のみ・座敷・子ども用椅子・公式Instagram 2026-11-21 取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・郷土料理</h2>
+<div class="card" id="c-saga-izakaya-misao">
+<img class="hero" src="img/saga/saga-izakaya-misao.jpg" alt="炉端焼みさお 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">36</span>炉端焼みさお<span class="yomi">ろばたやきみさお</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">店内に生簀があり、活魚を見ながら食事ができる。魚は福岡の長浜市場と柳川市場から直接仕入れ、呼子のイカ活き造りを置く日がある。総席数35席（テーブル4名×2、カウンター7）で、ほかに掘りごたつ6名×3と座敷6名×2。個室はない。最大宴会収容40人、貸切は40人まで可。全席喫煙可で喫煙専用室はない。Wi-Fiあり、バリアフリーの設備はなく、車いすの客にはテーブル席を案内するとしている。支払いはVISA・マスター・アメックス・JCB、電子マネーは楽天Edy・Suica・PASMO・ICOCA・QUICPay、QRコード決済はPayPay・楽天ペイ・d払い・au PAY・メルペイ。飲み放題はコース利用者限定。予算の目安4,500円、来店ピークは21時まで、問い合わせは16時から。</div>
+<div class="sig"><b>一皿:</b>旬魚刺身盛り合わせ（長浜市場・柳川市場から直接仕入れた刺身の盛合せ。2人前2,500円／3人前3,500円）／干し海茸炭火炙り（有明海の干し海茸を炭火で炙ったもの。博多辛子明太子と並んで各550円）／有明海苔巻きおにぎり（有明海苔で巻いたおにぎり。塩300円・梅320円・昆布320円・鮭350円・明太子400円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 18:00〜翌2:00（料理L.O.翌1:00／ドリンクL.O.翌1:00）、日 18:00〜23:00（料理L.O.22:00／ドリンクL.O.22:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市白山2-1-4</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-24-3477（問い合わせ時間16:00〜ラストオーダー）。ホットペッパーグルメのネット予約は即予約が来店日の前日22時まで、リクエスト予約が来店日の3日前まで — <a href="tel:0952243477">☎ 0952-24-3477</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>有明海の干し海茸と有明海苔、呼子のイカという佐賀の海の産物を1軒でそろえる炉端で、生簀を持つ佐賀市内の居酒屋として章の軸になる。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/03/17 更新」、店舗詳細情報と料理メニューが「2025/06/10 更新」、コースページが「2025/10/24 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「炉端焼みさお 佐賀 閉店」（空白あり）と「炉端焼みさお閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（公式サイトが無く、ホットペッパーの店舗ページにもSNSへのリンクが無い。これは閉店の証拠ではない）。(c)「炉端焼みさお 佐賀 移転」「炉端焼みさお 佐賀 リニューアル」で各1回検索し、移転・リニューアルの告知は0件。 ext_urls が空の理由＝店がホットペッパーグルメに入れた写真19枚（利用者の投稿を除く）を1枚ずつ実物を開いて確認したが、建物の正面・入口・店構えを写したものが1枚も無い（座敷・カウンター・生簀・酒瓶棚などの店内のみ）。公式サイトが無く、佐賀県観光連盟「あそぼーさが」と佐賀市観光協会「サガバイ」にも掲載記事が無いため、代わりに使える公的機関の取材写真も見つからなかった。 【2026-11-21 追記】外観写真は0本のまま。今回新たに店の公式ページ（misao.gorp.jp）を見つけて画像を全部取得したが、店頭ののれんを写した外観写真は原寸が249×166pxしかなく（この媒体は s_ が最大サイズ）、長辺400px未満のため採れなかった。ホットペッパーグルメの掲載19枚は原寸で全部目視したが、appearance 分類の7枚を含めて全部が店内。佐賀県観光連盟「あそぼーさが」の掲載画像は238×178pxの1枚のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E7%84%BC%E3%81%BF%E3%81%95%E3%81%8A%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E7%99%BD%E5%B1%B12-1-4">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000570915/">ホットペッパーグルメ 店舗ページ。住所・電話・営業時間・定休日・席数・支払い方法・駐車場（2026/03/17 更新／店舗詳細は2025/06/10 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000570915/food/">ホットペッパーグルメ 料理メニュー。刺身盛り合わせ2,500円・干し海茸炭火炙り550円・有明海苔巻きおにぎり300円〜（2025/06/10 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000570915/course/">ホットペッパーグルメ コースページ（2025/10/24 更新）2026-11-21 取得</a> / <a href="https://misao.gorp.jp/">店の公式ページ（ぐるなびの店舗公式ページ）炉端焼 みさお。店名・ジャンル・営業時間（翌3時まで）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-izakaya-mogura">
+<img class="hero" src="img/saga/saga-izakaya-mogura.jpg" alt="土竜 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-izakaya-mogura_exterior.jpg" alt="土竜 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">37</span>土竜<span class="yomi"></span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">佐賀の地酒と焼酎を約30種類そろえる。鍋島・万齢・能古見の純米吟醸を各770円、鍋島特別純米の300mlボトルを1,500円で出す。総席数22席で座敷4名×3・6名×1とカウンター、個室と掘りごたつはない。最大宴会収容16人。健康増進法の改定に伴い20歳未満の入店を断っている。全席喫煙可。お通し小鉢330円。支払いはVISA・マスター・アメックス・DINERS・JCB、電子マネーはWAON・Suica・PASMO・nanaco・ICOCA、QRコード決済は利用不可。飲み放題は2時間4,400円コースから。予算の目安3,000円。料理・ドリンクのページは2021/04/23 更新のままで店舗情報だけが2026/09/15 更新なので、価格は来店前に電話で確かめるのが確実。</div>
+<div class="sig"><b>一皿:</b>佐賀の地酒（鍋島・万齢・能古見の純米吟醸を各770円。季節限定の地酒770円〜）／和牛もつ鍋（2人前からの注文で1人前1,380円。追加のキャベツ・ニラ、ちゃんぽん麺、雑炊あり）／佐賀和牛ハンバーグ（860円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・祝日 18:00〜翌0:00（料理L.O.23:30／ドリンクL.O.23:30）、金・土・祝前日 18:00〜翌2:00（料理L.O.翌1:00／ドリンクL.O.翌1:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大財1-3-15</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-22-4231（問い合わせ17:30〜24:00）。ホットペッパーグルメのネット予約は即予約が来店日の翌0時まで、リクエスト予約が来店日の3日前まで。コース予約は来店当日16時以降のキャンセルでコース料金の100%、人数変更は1名につき50% — <a href="tel:0952224231">☎ 0952-22-4231</a> ／ <a href="https://www.mogura3.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市中心部で佐賀の地酒を飲み比べられる居酒屋として章に入れる。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/09/15 更新」、コースページが「2026/11/10 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「土竜 佐賀 大財 居酒屋 閉店」（空白あり）と「土竜佐賀閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（公式サイトが無く、ホットペッパーの店舗ページにもSNSへのリンクが無い。これは閉店の証拠ではない）。(c)「土竜 佐賀 居酒屋 移転」「土竜 佐賀 居酒屋 リニューアル」で各1回検索し、移転・リニューアルの告知は0件。なお yomi は空にしてある＝「土竜」の読みを書いた一次資料に当たれなかったため（公式サイトが無く、ホットペッパーの店舗ページにも読み仮名の欄が無い。推測で埋めない）。 ext_urls が空の理由＝店がホットペッパーグルメに入れた写真39枚（利用者の投稿を除く）を1枚ずつ実物を開いて確認したが、建物の正面・入口・店構えを写したものが1枚も無い（座敷・カウンター・酒瓶棚などの店内のみ）。公式サイトが無く、「あそぼーさが」にも掲載が無いため、代わりに使える公的機関の取材写真も見つからなかった。 【2026-11-21 追記】公式サイト（mogura3.com）が見つかったので website 欄に入れ、同サイトの店舗情報ページから外観写真1枚（484×323・のぼりの並ぶ店構え）を足して外観0本から1本にした。トップページのスライド4枚は「食」「酒」「席」「店」の文字が焼き込まれているため使っていない。ホットペッパーグルメの掲載37枚は原寸で全部目視したが、appearance 分類の8枚を含めて全部が店内か料理だった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E7%AB%9C%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A11-3-15">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000978650/">ホットペッパーグルメ 店舗ページ。住所・電話・営業時間・定休日・席数・支払い方法・お通し代・20歳未満入店不可（2026/09/15 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000978650/drink/">ホットペッパーグルメ ドリンクメニュー。鍋島・万齢・能古見 各770円（2021/04/23 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000978650/food/">ホットペッパーグルメ 料理メニュー。和牛もつ鍋1人前1,380円・刺身盛り合わせ1,650円〜（2021/04/23 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000978650/course/">ホットペッパーグルメ コースページ（2026/11/10 更新）2026-11-21 取得</a> / <a href="https://www.mogura3.com/information/">公式サイト 土竜（もぐら）店舗情報ページ。店構えの写真・店内の写真 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-izakaya-kadoya">
+<img class="hero" src="img/saga/saga-izakaya-kadoya.jpg" alt="焼鳥 かど屋 佐賀駅北口店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-izakaya-kadoya_exterior.jpg" alt="焼鳥 かど屋 佐賀駅北口店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">38</span>焼鳥 かど屋 佐賀駅北口店<span class="yomi">やきとり かどや さがえききたぐちてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">焼鳥と日本酒の店で、佐賀の地酒（鍋島・古伊万里 前・東一・基峰鶴）に加えて福岡の三井の寿・田中六五、山口の獺祭などを一合単位で置く。利き酒セットは2種で、鍋島の特別純米・純米吟醸・純米大吟醸を飲み比べる「鍋島ん利き酒」2,000円と、佐賀または全国の銘酒3種の「気まぐれ」1,800円。総席数47席で個室とカウンター、テラス席がある。最大宴会収容12人、貸切は不可。全席禁煙でバリアフリー、英語メニューあり。Wi-Fiはない。支払いはVISA・マスター・アメックス・DINERS・JCB・Discover・銀聯、電子マネーは楽天Edy・WAON・Suica、QRコード決済はPayPay。モバイルオーダーで注文する。予算の目安3,500円、来店ピークは19時まで。</div>
+<div class="sig"><b>一皿:</b>鍋島ん利き酒（鍋島の特別純米・純米吟醸・純米大吟醸を飲み比べる3種セット、2,000円）／気まぐれ佐賀ん利き酒・気まぐれ全国の利き酒（佐嘉 特別純米・古伊万里 前 純米大吟醸・権右衛門 大吟醸、または田中六十五 純米生・墨廼江 純米吟醸・一白水成 純米吟醸生の3種、1,800円）／ぐつぐつだし巻玉子（出汁に玉子焼きを入れた一品。プレーン・明太子・チーズ・あおさ・イクラから選ぶ、各600円〜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜木・日・祝日 17:00〜翌0:00（料理L.O.23:00／ドリンクL.O.23:30）、金・土・祝前日 17:00〜翌1:00（料理L.O.翌0:00／ドリンクL.O.翌0:30）</td></tr>
+<tr><th>定休日</th><td class="off">ホットペッパーグルメの定休日欄は「-」で記載がない。休みの有無は電話で確認が必要</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市駅前中央1丁目13-23</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-37-1330。ホットペッパーグルメのネット予約は即予約が来店日の当日21時まで、リクエスト予約が前日17時まで — <a href="tel:0952371330">☎ 0952-37-1330</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀駅北口から徒歩1分という立地で、佐賀の地酒を利き酒セットで飲み比べられる焼鳥店。章の「駅前で短時間で済ませたい」枠に入る。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページ・料理メニュー・ドリンクメニューがいずれも「2026/10/21 更新」、コースページが「2026/07/27 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「焼鳥 かど屋 佐賀駅北口店 閉店」（空白あり）と「焼鳥かど屋佐賀駅北口店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（公式サイトが無く、ホットペッパーの店舗ページにもSNSへのリンクが無い。運営会社名で検索しても公式アカウントは見つからなかった。これは閉店の証拠ではない）。(c)「焼鳥 かど屋 佐賀 移転」「焼鳥 かど屋 佐賀 リニューアル」で各1回検索し、移転・リニューアルの告知は0件。 ext_urls が空の理由＝店がホットペッパーグルメに入れた写真73枚を確認したが、建物の正面・入口・店構えを写したものが無い。外にあるのはテラス席を写した1枚だけで、建物の外観は写っていない。「あそぼーさが」のグルメ掲載ページにも画像が1枚あるが238×123pxで、長辺400px未満のため使えない。 【2026-11-21 追記】外観写真2枚（各1280×960。ホットペッパーグルメの「外観写真1」「外観写真2」。夜の店構えを正面と斜めから）を足して外観0本から2本にした。どちらも URL 末尾の _480 を外した原寸で、右下・左下を切り出して目視し透かしの無いことを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%8B%E3%81%A9%E5%B1%8B%20%E4%BD%90%E8%B3%80%E9%A7%85%E5%8C%97%E5%8F%A3%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%89%8D%E4%B8%AD%E5%A4%AE1%E4%B8%81%E7%9B%AE13-23">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003498372/">ホットペッパーグルメ 店舗ページ。住所・営業時間・席数・支払い方法・駐車場・英語メニュー（2026/10/21 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003498372/drink/">ホットペッパーグルメ ドリンクメニュー。鍋島ん利き酒2,000円・気まぐれ利き酒1,800円・日本酒各種（2026/10/21 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003498372/food/">ホットペッパーグルメ 料理メニュー。とり皮各160円・もつ鍋1人前1,600円・だし巻玉子600円〜（2026/10/21 更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-izakaya-new-murahachi">
+<img class="hero" src="img/saga/saga-izakaya-new-murahachi.jpg" alt="大衆酒場ニュームラハチ 北部店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-izakaya-new-murahachi_exterior.jpg" alt="大衆酒場ニュームラハチ 北部店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">39</span>大衆酒場ニュームラハチ 北部店<span class="yomi">たいしゅうさかばにゅーむらはち ほくぶてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1998年創業の居酒屋で、2022年10月に「むらはち」から改装・改称して「ニュームラハチ」になった（いずれも店がホットペッパーグルメに入稿した写真の説明文に記載）。名物はもつ鍋といぶしもも焼きの2品で、どちらも1,320円。総席数90席、最大宴会収容90人で、個室（12名×1）と座敷（4名×3）がある。カウンターはなく、貸切は不可。全席禁煙で店外に喫煙スペース。Wi-Fiあり。支払いはVISA・マスター・アメックス・DINERS・JCB、電子マネーは楽天Edy・WAON・Suicaほか、QRコード決済はPayPay。予算の目安3,500円〜、来店ピークは21時まで。小城市に「小城店」がある。</div>
+<div class="sig"><b>一皿:</b>もつ鍋（1人前1,320円・2人前2,640円。チャンポン麺または雑炊セット各275円で〆る）／いぶしもも焼き（鶏もも肉を燻した名物、1,320円）／生フルーツサワー（生レモン594円、生パイナップル・生グレープフルーツ・生オレンジ各693円。おかわりサワー330円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜翌0:00（料理L.O.23:00／ドリンクL.O.23:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市鍋島町八戸溝157-1</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-20-4048。公式サイトとホットペッパーグルメからネット予約でき、即予約は来店日の当日17時まで、リクエスト予約は前日17時まで — <a href="tel:0952204048">☎ 0952-20-4048</a> ／ <a href="https://newhatimurahokubu.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1998年創業で2022年に改装・改称した経緯が店自身の入稿文で確認でき、佐賀市西部（鍋島）で駐車場20台を備える大箱として、駅前の店が並ぶ章に幅を与える。営業の根拠＝①店自身の情報: 公式サイト newhatimurahokubu.owst.jp が稼働（2026-11-21 直読み。フッターの表記は (C) 2025）。ホットペッパーグルメの店舗ページが「2026/07/08 更新」、料理メニューが「2025/12/22 更新」。②閉店確認3通り: (a)「大衆酒場ニュームラハチ 北部店 閉店」（空白あり）と「大衆酒場ニュームラハチ北部店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（公式サイトにあるのは共有ボタンだけで、店のアカウントへのリンクが無い。これは閉店の証拠ではない）。(c)「ニュームラハチ 佐賀 鍋島 移転」「ニュームラハチ むらはち 佐賀 リニューアル 2022」で各1回検索し、移転の告知は0件。リニューアルは2022年10月の改装・改称（店自身の入稿文）のみで、以後の閉店・移転の告知は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%E3%83%8B%E3%83%A5%E3%83%BC%E3%83%A0%E3%83%A9%E3%83%8F%E3%83%81%20%E5%8C%97%E9%83%A8%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%8D%8B%E5%B3%B6%E7%94%BA%E5%85%AB%E6%88%B8%E6%BA%9D157-1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://newhatimurahokubu.owst.jp/">公式サイト。住所・電話・営業時間・定休日・席数・支払い方法・駐車場20台・コース・料理の価格 2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003941763/">ホットペッパーグルメ 店舗ページ。席数90席・個室・専用P20台・支払い方法、および「創業1998年」「2022年10月リニューアルオープン（むらはち→ニュームラハチ）」と書かれた店の入稿写真の説明文（2026/07/08 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ003941763/food/">ホットペッパーグルメ 料理メニュー。もつ鍋1人前1,320円・いぶしもも焼き1,320円・串焼き198円〜（2025/12/22 更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-izakaya-kobanya">
+<img class="hero" src="img/saga/saga-izakaya-kobanya.jpg" alt="居酒屋 小判屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-izakaya-kobanya_exterior.jpg" alt="居酒屋 小判屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">40</span>居酒屋 小判屋<span class="yomi">いざかや こばんや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">公式サイトによれば、店主は以前この場所にあった居酒屋で働いており、先代の大将から店と味を受け継いで「小判屋」として営業している。約28席・テーブル8卓で個室・座敷・カウンターはない。分煙で屋外に喫煙スペース。お通し代（席料）330円。注文はスタッフへの口頭とスマホ（USEN）。テイクアウトあり、お子様連れは不可、予算の目安は約4,000円。支払い方法は出典が食い違う。公式サイトは現金のほかVisa・Mastercard・JCB・Amex・Diners・Discover、QRコード決済、電子マネーが使えるとするが、ホットペッパーグルメの掲載はカード・電子マネー・QRのいずれも「利用不可」とする。日曜の閉店時刻も公式が22:30、ホットペッパーが23:00で食い違う。</div>
+<div class="sig"><b>一皿:</b>店主おすすめ串8種盛り（店主が選んだ串8種の盛合せ、1,580円。おまかせ串5本盛り980円）／山芋鉄板（鉄板で焼いた山芋、750円。チーズ山芋鉄板850円）／和牛もつ鍋（2人前3,980円。ちゃんぽん麺250円で〆る）</div>
+<table class="info">
+<tr><th>営業時間</th><td>水〜土 18:00〜23:00、日 18:00〜22:30（公式サイト）。ホットペッパーグルメの掲載は水〜日 18:00〜23:00（料理L.O.22:00／ドリンクL.O.22:30、日曜のドリンクL.O.は要電話確認）</td></tr>
+<tr><th>定休日</th><td class="off">月曜・火曜</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大和町大字尼寺2861-5</td></tr>
+<tr><th>予約</th><td>予約可。電話080-3228-1932。公式サイトからホットペッパーグルメ・食べログ・ぐるなびのネット予約へ進める。ホットペッパーの即予約は来店日の当日18時まで、リクエスト予約は前日17時まで。宴会コース（8〜20名）や貸切の相談は電話 — <a href="tel:08032281932">☎ 080-3228-1932</a> ／ <a href="https://saga.kobanya.workers.dev/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>先代の店と味を受け継いだ成り立ちが店自身の言葉で書かれており、佐賀市大和町という中心部から離れた立地の1軒として章に幅を与える。地酒は鍋島・万齢を各980円で置く。営業の根拠＝①店自身の情報: 公式サイト saga.kobanya.workers.dev が稼働（2026-11-21 直読み）。ホットペッパーグルメの店舗ページ・料理・ドリンクが「2026/11/16 更新」で、メニュー備考に「2026年11月17日からの価格です」と明記。②閉店確認3通り: (a)「居酒屋 小判屋 佐賀市大和町 閉店」（空白あり）と「居酒屋小判屋佐賀閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝Instagram「kobanya_saga」（公式サイトのFIND USからリンク、2026-11-21 確認）。(c)「小判屋 佐賀 尼寺 移転」「小判屋 佐賀 大和町 リニューアル」で各1回検索し、移転・リニューアルの告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%B0%8F%E5%88%A4%E5%B1%8B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E5%A4%A7%E5%AD%97%E5%B0%BC%E5%AF%BA2861-5">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（saga.kobanya.workers.dev）より引用 / 外観: 出典ページ / 参照元: <a href="https://saga.kobanya.workers.dev/">公式サイト。住所・電話・営業時間・定休日・席数28席・駐車場約5台・お通し代330円・支払い方法・店の成り立ち・Instagram @kobanya_saga 2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004730002/">ホットペッパーグルメ 店舗ページ。住所・営業時間・定休日・席数・支払い方法（カード等いずれも利用不可と記載）（2026/11/16 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004730002/food/">ホットペッパーグルメ 料理メニュー。店主おすすめ串8種盛り1,580円・山芋鉄板750円・卵炒飯630円・和牛もつ鍋2人前3,980円、備考「2026年11月17日からの価格です」（2026/11/16 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004730002/drink/">ホットペッパーグルメ ドリンクメニュー。鍋島980円・万齢980円（2026/11/16 更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-izakaya-ashida-shoten">
+<img class="hero" src="img/saga/saga-izakaya-ashida-shoten.jpg" alt="芦田商店 佐賀駅前店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-izakaya-ashida-shoten_exterior.jpg" alt="芦田商店 佐賀駅前店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">41</span>芦田商店 佐賀駅前店<span class="yomi">あしだしょうてん さがえきまえてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">豚肉で野菜を巻いた「野菜巻き串」が看板で、レタス・白ネギ・トマト・オクラ・万能ネギ・ナス味噌・紫蘇・ピーマンチーズ・アボカド・えのき・アスパラ・山芋しそ・だし巻き玉子・牡蠣・麻婆豆腐など20種類以上を1本308〜572円で出す。カウンター席の正面に囲炉裏があり、大トロいわしや超特大海老串を原始焼きで焼く。総席数60席、最大宴会収容60人でカウンターあり、個室・座敷・掘りごたつはない。貸切は40〜66名で可。全席禁煙で喫煙スペースあり。車いすで入店でき、車いすでトイレも使える。支払いはVISA・マスター・アメックス・DINERS・JCB・Discover・銀聯とPayPayで、電子マネーは利用不可。単品飲み放題があり、全商品を通常の約2.8倍で出す「男気ジョッキ」は+500円。</div>
+<div class="sig"><b>一皿:</b>野菜巻き串（豚肉で野菜を巻いた串。不動の人気はレタス巻き352円、次が万能ネギ巻き363円。3本セット990円・5本セット1,650円）／大トロいわし（北海道直送のいわしを囲炉裏で焼く原始焼き。1人1本までの限定、946円）／超特大海老串（原始焼きの大ぶりの海老串、1,309円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜翌0:00（料理L.O.23:00／ドリンクL.O.23:00）</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市駅南本町5-5 サンシャインM 1階</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-25-1550。ホットペッパーグルメのネット予約（即予約）は来店日の当日20時まで — <a href="tel:0952251550">☎ 0952-25-1550</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀駅から徒歩5分で、野菜巻き串と囲炉裏の原始焼きという他の7軒と重ならない軸を持つ。章の「駅前で人数が多いとき」の受け皿にもなる（貸切66名まで）。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/10/26 更新」（店舗情報の一部は2026/08/30 更新）、料理メニューが「2026/06/26 更新」、ドリンクメニューが「2026/06/19 更新」、コースページが「2026/10/26 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「芦田商店 佐賀駅前店 閉店」（空白あり）と「芦田商店佐賀駅前店閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（公式サイトが無く、ホットペッパーの店舗ページにもSNSへのリンクが無い。これは閉店の証拠ではない）。(c)「芦田商店 佐賀 野菜巻き串 移転」「芦田商店 佐賀 リニューアル 公式」で各1回検索し、移転・リニューアルの告知は0件。なお店名はホットペッパーの掲載が「芦田商店」、ぐるなび・Rettyの掲載が「芦田商店 佐賀駅前店」で、住所（佐賀市駅南本町5-5 サンシャインM1F）と電話は一致する。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8A%A6%E7%94%B0%E5%95%86%E5%BA%97%20%E4%BD%90%E8%B3%80%E9%A7%85%E5%89%8D%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%8D%97%E6%9C%AC%E7%94%BA5-5%20%E3%82%B5%E3%83%B3%E3%82%B7%E3%83%A3%E3%82%A4%E3%83%B3M%201%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001266982/">ホットペッパーグルメ 店舗ページ。住所・営業時間・定休日なし・席数60席・支払い方法・バリアフリー（2026/10/26 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001266982/food/">ホットペッパーグルメ 料理メニュー。レタス巻き352円・盛り合わせ3本990円／5本1,650円・大トロいわし946円・超特大海老串1,309円（2026/06/26 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001266982/drink/">ホットペッパーグルメ ドリンクメニュー。生ビール330円・男気ジョッキ+500円（2026/06/19 更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-izakaya-hananagushi">
+<img class="hero" src="img/saga/saga-izakaya-hananagushi.jpg" alt="花菜ぐし食堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">42</span>花菜ぐし食堂<span class="yomi">はなぐししょくどう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">佐賀大学本庄キャンパスのそばにある食堂型の居酒屋。総席数80席、最大宴会収容100人で、個室と掘りごたつがある（座敷・カウンターはない）。貸切は80〜100名で可。全席喫煙可。Wi-Fiあり、タッチパネル式のオーダーシステムを入れている。メニューに英語を併記しており、刺身・寿司・焼き魚・天婦羅・鍋・鉄板焼・グラタン・ピザ・スパゲティまで品数が多い。支払いはクレジットカード・電子マネー・QRコード決済がいずれも利用不可で現金のみ。テーブルチャージ100円（食べ放題コースを除く）。予算の目安は通常時2,500円、客層は男女半々、来店ピークは21時まで。年末年始は12/30・12/31・1/1が休み。</div>
+<div class="sig"><b>一皿:</b>2時間食べ飲み放題コース（品数の多い食べ放題に2時間飲み放題が付く、4,200円。4名以上・要予約の至福のコースは5,200円）／旨いタコ刺し（活きたタコを店で〆て刺身にする、438円）／クリームチーズの天婦羅（450円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:30〜翌0:00（料理L.O.23:30／ドリンクL.O.23:50）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（年末年始は12/30・12/31・1/1が休み）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市本庄町本庄455-40</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-65-1989。ホットペッパーグルメのネット予約はリクエスト予約のみで来店日の3日前まで（即予約の扱いはない） — <a href="tel:0952651989">☎ 0952-65-1989</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀大学前という立地と、全席掘りごたつ個室・英語の品書き・現金のみという条件が揃った1軒で、章の中で「大学周辺で人数を集めるとき」の受け皿になる。現金のみという点は行く前に知らないと困る情報なので章に入れる価値がある。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページと料理メニューが「2026/05/11 更新」、コースページが「2026/04/21 更新」（2026-11-21 直読み）。②閉店確認3通り: (a)「花菜ぐし食堂 佐賀 閉店」（空白あり）と「花菜ぐし食堂閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNS＝対象なし（公式サイトが無く、ホットペッパーの店舗ページにもSNSへのリンクが無い。これは閉店の証拠ではない）。(c)「花菜ぐし食堂 佐賀大学 移転」「花菜ぐし食堂 佐賀 リニューアル」で各1回検索し、移転・リニューアルの告知は0件。 ext_urls が空の理由＝店がホットペッパーグルメに入れた写真19枚を1枚ずつ実物を開いて確認したが、建物の正面・入口・店構えを写したものが1枚も無い（掘りごたつ個室と料理のみ）。公式サイトが無く、「あそぼーさが」の掲載ページにも外観写真が無い。 【2026-11-21 追記】外観写真は0本のまま。ホットペッパーグルメの掲載19枚（料理9・appearance 5・その他5）を原寸で全部目視したが、appearance 分類の5枚を含めて全部が店内か料理（全席個室の店で、掲載写真も個室ばかり）。佐賀県観光連盟「あそぼーさが」の掲載画像は238×179pxの1枚のみで長辺400px未満。公式サイトは無く、Instagram「hanagushi_dining」は本実行環境から429で開けない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8A%B1%E8%8F%9C%E3%81%90%E3%81%97%E9%A3%9F%E5%A0%82%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%9C%AC%E5%BA%84%E7%94%BA%E6%9C%AC%E5%BA%84455-40">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001203095/">ホットペッパーグルメ 店舗ページ。住所・営業時間・定休日・席数80席・支払い方法（カード・電子マネー・QRいずれも利用不可）・テーブルチャージ100円・英語メニュー・駐車場4台（2026/05/11 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001203095/food/">ホットペッパーグルメ 料理メニュー。旨いタコ刺し438円・クリームチーズの天婦羅450円・サービスステーキ塩焼き450円（2026/05/11 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ001203095/course/">ホットペッパーグルメ コースページ。2時間食べ飲み放題4,200円・至福のコース5,200円（2026/04/21 更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-izakaya-nabeya-wagen">
+<img class="hero" src="img/saga/saga-izakaya-nabeya-wagen.jpg" alt="なべ家 和元 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-izakaya-nabeya-wagen_exterior.jpg" alt="なべ家 和元 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">43</span>なべ家 和元<span class="yomi">なべや わげん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">しゃぶしゃぶ・すきやき・薬膳鍋の3種類を出す鍋の専門店で、佐賀市愛敬町の「なべ家 きぶん」と同じ運営。全14部屋の個室と大宴会場があり全室が掘りごたつ。総席数60席。出典で食い違う点が多い。住所は公式サイトが「大和町尼寺3338-7」、ホットペッパーの掲載が「大和町尼寺一本杉3338-7」。定休日は公式が「毎週月曜のみ（月曜が祝日なら火曜）」、ホットペッパーが「月曜＋第1火曜日」。最大収容も公式サイト内で60名と70名の両方の記載がある。全席禁煙で喫煙専用室あり。支払いはVISA・マスター・アメックス・DINERS・JCBとPayPayで電子マネーは不可。飲み放題は男性+2,160円・女性+1,620円。2026年12月26日〜2027年1月3日はコース料理のみでネット予約不可。</div>
+<div class="sig"><b>一皿:</b>体にやさしい薬膳鍋コース（約20種類の天然の植物エキスを抽出したスープ。お通し・野菜盛合せ・鶏つくね・海老しんじょう・鹿児島黒豚ロース・麺またはごはん・デザート付き、1人前3,780円）／特選佐賀牛しゃぶコース（特選佐賀牛ロース・野菜盛合せ・麺またはごはん・デザート、1人前6,696円）／和牛すきやきAコース（甘めの割り下でさっと煮る関東風。卵・うどん麺またはごはん・デザート付き、1人前4,320円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼の部 11:30〜14:30（料理L.O.14:00／最終入店13:30）、夜の部 17:00〜22:00（料理L.O.21:00／最終入店20:30）。ホットペッパーグルメの掲載はドリンクL.O.21:30</td></tr>
+<tr><th>定休日</th><td class="off">月曜（月曜が祝日の場合は火曜）＝公式サイト。ホットペッパーグルメの掲載はこれに加えて第1火曜日</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大和町尼寺3338-7</td></tr>
+<tr><th>予約</th><td>予約可。電話0952-62-8171（問い合わせ10:30〜22:00）。公式サイトからネット予約（reserve.toretaasia.com）。ホットペッパーグルメの即予約は来店日の当日14時まで。コース予約は来店当日17時以降のキャンセルでコース料金の50% — <a href="tel:0952628171">☎ 0952-62-8171</a> ／ <a href="http://www.kibun-wagen.com/wagen/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市内で全室個室の鍋専門店という形は他に重ならず、昼は1,800円台から佐賀牛・金星佐賀豚・鹿児島黒豚を鍋で食べられる。章の「個室で落ち着いて食べたいとき」の受け皿になる。営業の根拠＝①店自身の情報: 公式サイト www.kibun-wagen.com/wagen/ が稼働し、営業時間・定休日・駐車場40台・全14部屋個室・ランチ価格を掲載（2026-11-21 直読み）。ホットペッパーグルメの店舗ページが「2026/10/22 更新」、コースページが「2026/07/14 更新」で、営業時間欄に「2026年12月26日〜2027年1月3日までコース料理のみの営業のため、ネット予約不可」という先の日付の告知が入っている。②閉店確認3通り: (a)「なべ家 和元 佐賀 閉店」（空白あり）と「なべ家和元閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21）。(b) 公式SNSのアカウント名＝Instagram「wagen_kakigori」（公式サイトから「和元かき氷専用Instagram」としてリンク、2026-11-21 確認）。(c)「なべ家 和元 佐賀 大和町 移転」「なべ家 和元 佐賀 リニューアル」で各1回検索し、移転・リニューアルの告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%81%B9%E5%AE%B6%20%E5%92%8C%E5%85%83%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E5%B0%BC%E5%AF%BA3338-7">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="http://www.kibun-wagen.com/wagen/">公式サイト 和元トップ。全席掘りごたつ個室・全14部屋・営業時間・定休日・住所 2026-11-21 取得</a> / <a href="http://www.kibun-wagen.com/wagen/access.html">公式サイト 店舗のご案内（アクセス）。佐賀駅より車13分・駐車場40台・全14部屋個室（最大60名様）・ランチ価格（佐賀牛ランチ3,800円ほか）2026-11-21 取得</a> / <a href="http://www.kibun-wagen.com/">きぶん・和元 総合トップ。なべ家きぶん（佐賀市愛敬町2-3）と和元の2店である旨・電話・FAX 2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000571799/">ホットペッパーグルメ 店舗ページ。住所（尼寺一本杉表記）・車で15分・駐車場60台・定休日（月＋第1火曜）・席数60席・支払い方法・年末年始の告知（2026/10/22 更新）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000571799/food/">ホットペッパーグルメ 料理メニュー。薬膳鍋コース3,780円・特選佐賀牛しゃぶコース6,696円・和牛すきやきAコース4,320円（2018/08/02 更新のため価格は要確認）2026-11-21 取得</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">カフェ・喫茶・丸ぼうろ</h2>
+<div class="card" id="c-saga-cafe-shalom">
+<img class="hero" src="img/saga/saga-cafe-shalom.jpg" alt="民藝茶屋 シャローム 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-cafe-shalom_exterior.jpg" alt="民藝茶屋 シャローム 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>民藝茶屋 シャローム<span class="yomi">みんげいちゃや しゃろーむ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1953年に「北京千両」として佐賀市中心部で開業した、佐賀で最初のラーメン店。1988年に旧店舗が立ち退きとなり現在地へ新築移転し、屋号を「民藝茶屋 シャローム」に改めた。建物の図面は2代目店主の江藤久人さん（1948年生まれ）が自分で引き、合板を一切使わず一枚板のテーブルを据えた。壁には店主が描いた油絵が掛かる。スープは豚骨のげんこつに野菜を加えて煮出し、炊いて出た脂はすべて取り除く。麺には塩を入れず、化学調味料も極力使わない。コーヒーは豆を臼で手挽きして一杯ずつ淹れる。ホットペッパーグルメの掲載（2020/01/07 更新）によれば総席数25席・分煙・クレジットカードと電子マネーとQRコード決済はいずれも利用不可・駐車場ありだが、いずれも2020年時点の情報。</div>
+<div class="sig"><b>一皿:</b>ラーメン（豚骨のげんこつに野菜を加えて煮出した白濁スープ。小石原焼の丼に自家製麺、チャーシュー、揚げたごぼう、にんじん、わかめ、もやし。670円）／清涼麺（チンリャンメン。創業翌年に考案した冷たい中華麺。のりを練り込んだ麺を冷水で締め、昆布とかつおの和だしにごま油を効かせたつけだれで食べる。670円。注文数はラーメンの約3倍）／コーヒー（豆を臼で手挽きして一杯ずつ淹れる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜20:30（19:30 オーダーストップ）</td></tr>
+<tr><th>定休日</th><td class="off">日曜、第1日曜に続く月曜</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市巨勢町牛島576-37</td></tr>
+<tr><th>予約</th><td>ネット予約は受け付けていない（ホットペッパーグルメ）。問い合わせは電話0952-22-2522（受付11:30〜21:00） — <a href="tel:0952222522">☎ 0952-22-2522</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市でいちばん古いラーメン店でありながら、名乗りは「民藝茶屋」で、手挽きのコーヒーを出す喫茶店でもある。カフェ・喫茶の章の入口に置ける一軒。営業の根拠＝①佐賀県（公的機関）の日付つき取材記事: 佐賀県公式note「SAGAラーメン」の記事「佐賀最古のラーメン店の本質とは『民藝茶屋 シャローム』（佐賀市）」（2026年3月27日公開・2026年7月15日更新。2026-11-21 に本文を直読みし、住所・価格・営業時間・定休日まで本文に記載があることを確認）。店自身のウェブサイトは無く、LINE公式アカウント以外に日付つきの発信を見つけられなかったため、佐賀県の特例に従い公的機関の記事を①の代用とした。②閉店していないことの確認3通り: (a)「民藝茶屋 シャローム 閉店」（空白あり）と「民藝茶屋シャローム閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21、Yahoo!検索）。(b) 公式SNSのアカウント名＝LINE公式アカウント「民芸茶屋シャローム」（page.line.me/743ylsax）。Instagram・Xの公式アカウントは見つからず。(c)「シャローム 佐賀 巨勢町 移転」「シャローム 佐賀 巨勢町 リニューアル」で各1回検索。移転の語は1988年の現在地への移転を伝える記事のみ、リニューアルは0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B0%91%E8%97%9D%E8%8C%B6%E5%B1%8B%20%E3%82%B7%E3%83%A3%E3%83%AD%E3%83%BC%E3%83%A0%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%B7%A8%E5%8B%A2%E7%94%BA%E7%89%9B%E5%B3%B6576-37">Googleマップで開く</a>
+<div class="src">写真: 佐賀県「SAGAラーメン」公式note（佐賀県産業労働部産業政策課） / 外観: 出典ページ / 参照元: <a href="https://note.com/saga_ramen/n/n1d327457e1fc">佐賀県公式note「SAGAラーメン」の取材記事。創業1953年・店主・清涼麺の由来・住所・価格670円・営業時間11:30〜20:30・定休日（2026年3月27日公開）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000570698/">ホットペッパーグルメ シャローム 佐賀。住所・総席数25席・分煙・駐車場・アクセス・営業時間（2020/01/07 更新）2026-11-21 取得</a> / <a href="https://www.asobo-saga.jp/gourmets/search/detail/ed08dcc2-3e73-427d-82c6-cfe4972fa3b4">佐賀県観光連盟「あそぼーさが」グルメ。住所・営業時間・定休日・駐車場 2026-11-21 取得</a> / <a href="https://page.line.me/743ylsax">LINE公式アカウント「民芸茶屋シャローム」。アカウント名を確認（2026-11-21）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-cafe-kogure">
+<img class="hero" src="img/saga/saga-cafe-kogure.jpg" alt="KOGURE COFFEE &amp; ROASTERY（珈暮） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-cafe-kogure_exterior.jpg" alt="KOGURE COFFEE &amp; ROASTERY（珈暮） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>KOGURE COFFEE &amp; ROASTERY（珈暮）<span class="yomi">こぐれこーひーあんどろーすたりー</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">もとは「二葉農園」という園芸資材店だった建物を改装し、2026年6月にプレオープン、7月28日にグランドオープンした自家焙煎珈琲店。店内に焙煎機を置き、焙煎豆は浅煎りから深煎りまで13種以上、生豆も4種を常時そろえて50gから量り売りする。喫茶ではその豆から好きなものを選び、ドリップかサイフォン、HOTかICEDを指定して一杯ずつ淹れてもらう。1階が喫茶スペース、2階はコワーキングスペースで、1階でドリンクを1杯注文すると営業時間内は2階のコモンズ（全20席、無料Wi-Fiと電源あり）を使える。和室と会議室は1時間から専用アプリで予約できる。同じ建物に和菓子店「えびすあんこ」とジム「OUTLAWER STRENGTH」が入る。支払いは現金・クレジットカード・PayPayなどの電子決済。</div>
+<div class="sig"><b>一皿:</b>ドリップ珈琲（13種以上の自家焙煎豆から1種を選び、注文ごとに淹れる。660円）／サイフォン珈琲（同じ豆をサイフォンで抽出。770円）／焙煎豆の量り売り（浅煎りから深煎りまで。50g 660円〜、100g 1,100円〜。600gまで100g単位）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水・金 11:00〜18:00／土日祝 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜・木曜（祝日に当たるときは営業）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市唐人1-1-12</td></tr>
+<tr><th>予約</th><td>1階の喫茶は予約不要。2階の和室・会議室は専用アプリで1時間から予約できる。問い合わせは公式LINEまたは電話090-4440-2584 — <a href="tel:09044402584">☎ 090-4440-2584</a> ／ <a href="https://kogure-coffee.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市中心部で焙煎から抽出までを1軒で見せる自家焙煎店で、豆・淹れ方・温度を客が選ぶ仕組みが章の『自家焙煎の珈琲店』にそのまま当てはまる。営業の根拠＝①店自身の情報: 公式サイト kogure-coffee.com の公式ブログに「2026.11.17『焙煎』の読み方は『ばいせん』…」「2026.11.11 コーヒー豆の保存方法」という日付つき記事があり、2026-11-21 に直読みして確認。同サイトの「お店について」には「2026年6月にプレオープンし、7月28日にグランドオープンしました」「Googleの評価 ★4.9（49件（2026年10月時点））」「掲載 佐賀新聞（2026年8月6日）、佐賀経済新聞（2026年8月20日）」と明記。②閉店していないことの確認3通り: (a)「KOGURE COFFEE 佐賀 閉店」（空白あり）と「KOGURECOFFEE佐賀閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21、Yahoo!検索）。(b) 公式SNSのアカウント名＝Instagram「kogure_coffee」（公式サイトからリンク。2026-11-21 にリンク先ハンドルを確認。Instagram本体は429で表示できず、アカウント名の表記そのものは未確認）。(c)「KOGURE COFFEE 佐賀 移転」「KOGURE COFFEE 佐賀 リニューアル」で各1回検索し、いずれも該当0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=KOGURE%20COFFEE%20%26%20ROASTERY%EF%BC%88%E7%8F%88%E6%9A%AE%EF%BC%89%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%94%90%E4%BA%BA1-1-12">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kogure-coffee.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://kogure-coffee.com/">公式サイト トップ。喫茶メニュー・豆の種類・営業時間・定休日 2026-11-21 取得</a> / <a href="https://kogure-coffee.com/about.php">公式サイト「お店について」。開業時期（2026年6月プレオープン・7月28日グランドオープン）・住所・電話・営業時間・支払い方法・公式ブログの日付（2026.11.17）2026-11-21 取得</a> / <a href="https://kogure-coffee.com/access.php">公式サイト「アクセス・駐車場」。提携駐車場の名称・料金・サービス券の条件 2026-11-21 取得</a> / <a href="https://kogure-coffee.com/menu.php">公式サイト「メニュー」。ドリップ660円・サイフォン770円・豆の量り売り価格 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-cafe-tsuitachi">
+<img class="hero" src="img/saga/saga-cafe-tsuitachi.jpg" alt="TSUITACHI COFFEE &amp; TEA 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-cafe-tsuitachi_exterior.jpg" alt="TSUITACHI COFFEE &amp; TEA 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>TSUITACHI COFFEE &amp; TEA<span class="yomi">ついたちこーひーあんどてぃー</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">築110年を超える古民家を改装したコーヒースタンド。珈琲と嬉野茶を注文すると、小城の老舗の小城羊羹がサービスで付く。珈琲は羊羹に合うよう配合したオリジナルブレンド。2020年から出している佐賀牛チーズバーガーと、佐賀県産の有明鶏を使った有明チキンバーガーがフードの柱で、どちらも持ち帰りができる。スイーツは小城の老舗と共同開発した「とろーり羊羹」をかけた羊羹オレオチーズケーキ、自家製バスクチーズケーキなど。席はカウンター席・テーブル席と屋根つきのテラス席で、テラスはペット同伴可・喫煙可。店内はワンドリンク制で、入ってすぐのカウンターで先に注文と会計をする。支払いは現金・カード・電子マネー・QRコード決済。自家焙煎店のKOGURE COFFEE &amp; ROASTERYは同じ運営の系列店。</div>
+<div class="sig"><b>一皿:</b>ドリップ珈琲（注文後に豆を挽いて一杯ずつ淹れる。小城羊羹つき。600円）／佐賀牛チーズバーガー（佐賀牛を使ったチーズバーガー。持ち帰り1,300円、店内はドリンクとのセットで1,700円〜）／羊羹オレオチーズケーキ（自家製のオレオチーズケーキに、小城の老舗と共同開発した「とろーり羊羹」をかけた一皿。追加注文680円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日 12:00〜18:00／土日祝 11:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜（不定休あり）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市唐人2-4-2 1F</td></tr>
+<tr><th>予約</th><td>席の予約は受け付けていない。入ってすぐのカウンターで先に注文・会計する。フードとドリンク（アルコールを除く）は持ち帰りができ、電話070-4111-7328またはLINE公式アカウントで事前に注文できる — <a href="tel:07041117328">☎ 070-4111-7328</a> ／ <a href="https://tsuitachi-coffee-and-tea.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀の銘菓・小城羊羹を珈琲の受け皿に据えた店で、章の『小城羊羹を出す店』をいちばん無理なく満たす。築110年の古民家という建物自体も載せる価値がある。営業の根拠＝①店自身の情報: 公式サイト tsuitachi-coffee-and-tea.com の公式ブログ「2026.11.16 佐賀市の喫茶店を探す方へ。ハンドドリップのコーヒーと羊羹」「2026.09.29 10月限定ドリンク【カフェモカ】」を2026-11-21 に直読みして確認。同サイトには「いつもと違う営業日 11/23（月）11:00〜18:00／11/27（金）12:00〜19:00／12/30（水）11:00〜18:00」という直近の告知と「Googleクチコミ170件（2026年11月時点）」の記載がある。②閉店していないことの確認3通り: (a)「TSUITACHI COFFEE 佐賀 閉店」（空白あり）と「TSUITACHICOFFEE佐賀閉店」（詰めた形）の2通りで検索（2026-11-21、Yahoo!検索）。Uber Eatsの配達店舗ページに「閉店日: 2023-03-17」とあるが、これは出前サービス側の掲載終了で、店自身は上記のとおり2026年11月も営業している。店舗の閉店を伝えるページは0件。(b) 公式SNSのアカウント名＝Instagram「tsuitachicoffee」とFacebook「Tsuitachi Coffee &amp; Tea」（いずれも公式サイトからリンク。2026-11-21 にリンク先ハンドルを確認。Instagram本体は429で表示できず、アカウント名の表記そのものは未確認）。(c)「TSUITACHI COFFEE 佐賀 移転」「TSUITACHI COFFEE 佐賀 リニューアル」で各1回検索し、移転・リニューアルの告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=TSUITACHI%20COFFEE%20%26%20TEA%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%94%90%E4%BA%BA2-4-2%201F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（tsuitachi-coffee-and-tea.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://tsuitachi-coffee-and-tea.com/">公式サイト トップ。小城羊羹つきの珈琲・席・営業時間・いつもと違う営業日（11/23・11/27・12/30）・Googleクチコミ170件（2026年11月時点）2026-11-21 取得</a> / <a href="https://tsuitachi-coffee-and-tea.com/index.php?menu">公式サイト「メニュー」。ドリップ珈琲600円・カフェラテ700円・佐賀牛チーズバーガー・羊羹オレオチーズケーキの価格 2026-11-21 取得</a> / <a href="https://tsuitachi-coffee-and-tea.com/index.php?information">公式サイト「アクセス・駐車場」。住所・徒歩10分・提携駐車場・営業時間・公式ブログ2026.11.16 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-cafe-ganso-yoshinoya">
+<img class="hero" src="img/saga/saga-cafe-ganso-yoshinoya.jpg" alt="白玉饅頭 元祖吉野屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-cafe-ganso-yoshinoya_exterior.jpg" alt="白玉饅頭 元祖吉野屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>白玉饅頭 元祖吉野屋<span class="yomi">しらたままんじゅう がんそよしのや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">明治15年（1882年）、材木業を営んでいた初代・吉村清兵衛が、避暑地としてにぎわっていた川上峡の名物として白玉饅頭を売り出したのが始まり。佐賀県産のうるち米、北海道産の小豆と砂糖、ほんの少しの塩だけで作り、添加物と保存料は使わない。現在は6代目の吉村正則さんが現場を切り盛りする。店の奥が和風喫茶「和・CAFE」で、川上峡を眺めながら白玉饅頭とコーヒーのセット、昭和30年代まで出されていた「あずまだご」のセット、北海道産あずきの白玉ぜんざい、抹茶パフェなどが食べられる。吹き抜けのある空間で、2階は貸しスペースにもなる。ホットペッパーグルメの掲載によれば総席数42席（1階の喫茶室がテーブル・ソファ12席、2階が座敷30席）、カードとQRコード決済が使え、電子マネーは使えない。</div>
+<div class="sig"><b>一皿:</b>白玉饅頭（佐賀県産うるち米の生地に北海道産小豆のあん。きな粉やすりごまをかけて食べる。店頭では出来たてが買える）／白玉ぜんざい（北海道産あずきのぜんざいに白玉饅頭。抹茶・抹茶アイス・ココナッツミルクのぜんざいもある）／Yパフェ（3種のちび白玉饅頭ときなこ、黒蜜を合わせた和風パフェ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜17:00（売り切れ次第終了。佐賀市観光協会 2026年7月6日更新）。ホットペッパーグルメの掲載は月〜土8:00〜17:00、日・祝8:00〜18:00（2026-11-21 取得）</td></tr>
+<tr><th>定休日</th><td class="off">第2・4・5水曜日、大晦日、元旦（公式サイト）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大和町大字梅野173</td></tr>
+<tr><th>予約</th><td>喫茶の予約についての記載は公式サイトに無い。2階の貸しスペースは要問い合わせ（平日9時〜17時3,000円＋税／土日祝1日5,000円＋税）。問い合わせは電話0952-62-0235 — <a href="tel:0952620235">☎ 0952-62-0235</a> ／ <a href="https://yoshinoya-net.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の『甘味処・和菓子』にあたる一軒。創業明治15年の白玉饅頭の元祖で、かつ座って食べられる和風喫茶を併設しており、物販だけの菓子店ではない。営業の根拠＝①店自身の情報: 公式サイト yoshinoya-net.com のお知らせ「26年09月11日 今年もお月見の白玉饅頭セットを販売します♪」（2026年9月11日。2026-11-21 に直読みして確認）。②閉店していないことの確認3通り: (a)「白玉饅頭 元祖吉野屋 閉店」（空白あり）と「白玉饅頭元祖吉野屋閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21、Yahoo!検索）。6代目から7代目への事業承継を紹介する記事が出ているが、閉店ではない。(b) 公式SNSのアカウント名＝Facebook「gansoyoshinoya」（公式サイトからリンク。2026-11-21 にリンク先ハンドルを確認）。(c)「元祖吉野屋 佐賀 川上峡 移転」「元祖吉野屋 佐賀 川上峡 リニューアル」で各1回検索し、いずれも該当0件。あわせて佐賀市観光協会（公的機関）の店舗ページが［更新日：2026年7月6日］で営業時間・定休日を掲載している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E7%8E%89%E9%A5%85%E9%A0%AD%20%E5%85%83%E7%A5%96%E5%90%89%E9%87%8E%E5%B1%8B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E5%A4%A7%E5%AD%97%E6%A2%85%E9%87%8E173">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.sagabai.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://yoshinoya-net.com/">公式サイト トップ。和・CAFEの紹介、お知らせ「26年09月11日」（2026年9月11日）2026-11-21 取得</a> / <a href="https://yoshinoya-net.com/access">公式サイト「店舗案内・アクセス」。創業明治15年・事業主・業務内容（白玉饅頭製造・販売・喫茶）・住所・電話・店休日 2026-11-21 取得</a> / <a href="https://yoshinoya-net.com/sum_cafe">公式サイト「和・CAFE」とメニューのご案内。白玉饅頭セット・ぜんざい・パフェ・ドリンクの品目、2階貸しスペースの料金 2026-11-21 取得</a> / <a href="https://www.sagabai.com/main/?cont=kanko&amp;fid=154">佐賀市観光協会「サガバイ」。営業時間8:00〜17:00・定休日・駐車場10台・喫茶スペースあり（更新日 2026年7月6日）2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000807733/">ホットペッパーグルメ 白玉饅頭 元祖 吉野屋。総席数42席（1階喫茶室12席・2階座敷30席）・支払い方法・駐車場・営業時間 2026-11-21 取得</a> / <a href="https://yoshinoya-net.com/online_shop/on_shiratama">公式オンラインショップ 白玉饅頭。冷凍3個入り373円ほかの価格 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-cafe-cinematheque">
+<img class="hero" src="img/saga/saga-cafe-cinematheque.jpg" alt="JAZZ&amp;COFFEE+BAR シネマテーク 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>JAZZ&amp;COFFEE+BAR シネマテーク<span class="yomi">じゃずあんどこーひーぷらすばー しねまてーく</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2006年7月に開いたジャズ喫茶。昔のジャズ喫茶のスタイルを継いで午後2時から店を開け、コーヒーを飲みながらレコードを聴ける。ブルーノートの1500番台と4000〜4150番までを完全に揃えたコレクションを含め、オリジナル盤・輸入盤・国内盤あわせて約2000枚のレコードと、1965年以降のジャズ雑誌「スイングジャーナル」約42年分が置かれている。月に1〜2回ジャズライブを開催し、日程は公式サイトの最新情報に載る。ホットペッパーグルメの掲載（2020/01/07 更新）によれば総席数30席・全席喫煙可・Wi-Fiあり・駐車場あり・カードはVISA、マスター、JCBが使え、電子マネーとQRコード決済は使えない。子ども連れは不可。貸切はカウンター席を含め40席まで。</div>
+<div class="sig"><b>一皿:</b>ブレンドコーヒー（500円）／ブルマンブレンド（800円）／ビーフカレー（700円。ドライカレー、スパゲティー、ピザ、トーストもある）</div>
+<table class="info">
+<tr><th>営業時間</th><td>14:00〜24:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜日・元旦（公式サイトのトップは「日曜日・不定休」とも記載）</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市大財1-5-60</td></tr>
+<tr><th>予約</th><td>通常の喫茶は予約不要。ライブは公式サイトの最新情報を確認のうえ電話0952-28-6708へ。二次会・パーティーの貸切は要相談（カウンター席を含め40席） — <a href="tel:0952286708">☎ 0952-28-6708</a> ／ <a href="https://cinema-theque.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市中心部に残るジャズ喫茶で、レコードと機材の蓄積が店の芯になっている。章の『喫茶』に、純喫茶とは別の筋で1軒置ける。営業の根拠＝①店自身の情報: 公式サイト cinema-theque.com のLIVE情報が【2026年10月14日】付で4本更新されており（2026年10月20日・10月30日・11月7日・12月5日の公演案内）、2026-11-21 に直読みして確認。②閉店していないことの確認3通り: (a)「シネマテーク 佐賀 閉店」（空白あり）と「シネマテーク佐賀閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21、Yahoo!検索）。(b) 公式SNSのアカウント名＝対象なし。公式サイトにSNSへのリンクは無く、店名義のアカウントを見つけられなかった（これは閉店の証拠ではない）。(c)「シネマテーク 佐賀市 大財 移転」「シネマテーク 佐賀市 大財 リニューアル」で各1回検索し、いずれも該当0件。 外観写真（ext_urls）は0本。公式サイトに載る5枚のうち4枚は店内（オーディオ・レコード・雑誌）で、残る1枚は店名の金文字看板だけを写したものでロゴに近いため外した。ホットペッパーグルメの掲載写真も店内のみだった。 【2026-11-21 追記】外観写真は0本のまま。公式サイト cinema-theque.com のトップ・アクセス・お知らせの各ページの画像5枚（各640×480）を全部目視したが、「CINEMA THEQUE」の金文字を写した1枚は店内の壁の文字（同じ文字が店内写真の奥の壁に写っている）で外観ではなく、残り4枚もカウンター・レコード棚・ターンテーブルの店内写真だった。佐賀県観光連盟「あそぼーさが」の掲載画像は179×238pxの1枚のみで長辺400px未満。ホットペッパーグルメの掲載にも外観は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=JAZZ%26COFFEE%2BBAR%20%E3%82%B7%E3%83%8D%E3%83%9E%E3%83%86%E3%83%BC%E3%82%AF%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A11-5-60">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（cinema-theque.com）より引用 / 外観: 写真なし / 参照元: <a href="https://cinema-theque.com/">公式サイト トップ。住所・電話・営業時間14:00〜24:00・定休日、LIVE情報【2026年10月14日】付の更新 2026-11-21 取得</a> / <a href="https://cinema-theque.com/info/">公式サイト「ごあんない」。2006年7月開店、レコードコレクション約2000枚、スイングジャーナル約42年分、貸切40席 2026-11-21 取得</a> / <a href="https://cinema-theque.com/drink-food/">公式サイト「ドリンク＆フード」。ブレンドコーヒー500円・ブルマンブレンド800円・ビーフカレー700円 2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ000791390/">ホットペッパーグルメ シネマテーク 佐賀。総席数30席・全席喫煙可・駐車場あり・Wi-Fi・支払い方法・徒歩15分（2020/01/07 更新）2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-cafe-muraoka-sohonpo">
+<img class="hero" src="img/saga/saga-cafe-muraoka-sohonpo.jpg" alt="村岡総本舗 羊羹資料館 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-cafe-muraoka-sohonpo_exterior.jpg" alt="村岡総本舗 羊羹資料館 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>村岡総本舗 羊羹資料館<span class="yomi">むらおかそうほんぽ ようかんしりょうかん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip rinsetsu">rinsetsu</span></div>
+<div class="desc">明治32年（1899年）創業の小城羊羹の老舗。本店の隣に立つ羊羹資料館は、昭和16年に建てられた煉瓦造りの洋館（もとは砂糖の保管庫）を昭和59年3月に改装して開いたもので、平成9年3月に国の登録有形文化財になった。1階が休憩室、2階が展示室で、2階には羊羹の製造道具、原料、製造工程、歴史、外国産羊羹のレッテルなどが並び、ビデオでの紹介もある。入館は無料で、「小城羊羹・特製切り羊羹」と抹茶の無料の試食がつく。係員がいないときは左隣の売店に声をかける。5名以上の場合は3日前までに予約が必要で、予約が無いときは抹茶ではなくほうじ茶になることがある。50名以上の団体には羊羹とほうじ茶を出し、5日前までの予約を求めている。伝統製法の切り羊羹は日持ちが短く、賞味期間は製造日から18〜25日間。</div>
+<div class="sig"><b>一皿:</b>小城羊羹・特製切り羊羹（江戸時代から続く伝統製法。外側に砂糖のシャリ感があり中はやわらかい。竹の皮と経木で包む。小倉・紅煉・本煉・抹茶の4種、1本1,100円）／抹茶（資料館の無料の試食でつく。団体予約が無い場合はほうじ茶になることがある）／丸ぼうろ（同社の焼菓子。ポルトガル伝来の佐賀銘菓）</div>
+<table class="info">
+<tr><th>営業時間</th><td>本店 9:00〜18:00／羊羹資料館 9:00〜17:00（1月1日は11:00〜18:00）</td></tr>
+<tr><th>定休日</th><td class="off">羊羹資料館は定休日なし（佐賀県観光連盟「あそぼーさが」）。小城本店の月ごとの店休日は公式サイト「店舗案内(店休日)」に掲載</td></tr>
+<tr><th>住所</th><td>佐賀県小城市小城町861</td></tr>
+<tr><th>予約</th><td>個人は予約不要。5名以上は3日前までに、50名以上の団体は5日前までに予約が必要（羊羹資料館 公式サイト）。連絡先は本店0952-72-2131、通販・問い合わせはフリーダイヤル0120-35-8057（午前8時〜午後5時） — <a href="tel:0952722131">☎ 0952-72-2131</a> ／ <a href="https://muraoka-sohonpo.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の『小城羊羹』を担う一軒で、座って羊羹と抹茶を口にできる場所として成立している（資料館の1階が休憩室であることは佐賀県観光連盟の公式ページに明記）。小城市は佐賀市の隣接市なので rinsetsu を付けた。営業の根拠＝①店自身の情報: 公式サイト muraoka-sohonpo.co.jp の「店舗案内(店休日)」に2026年11月の店休日が店舗別に掲載され、ページに「１１月8日更新」と明記（2026-11-21 に直読みして確認）。②閉店していないことの確認3通り: (a)「村岡総本舗 羊羹資料館 閉店」（空白あり）と「村岡総本舗羊羹資料館閉店」（詰めた形）の2通りで検索（2026-11-21、Yahoo!検索）。出てくるのは2018年7月31日の福岡店閉店の告知のみで、小城本店と資料館の閉店を伝えるページは0件。(b) 公式SNSのアカウント名＝Facebook「村岡総本舗」とInstagramのフィードが公式サイトに埋め込まれており、2026-11-21 に公式サイト上で確認（Instagram本体は表示できず、アカウント名の表記そのものは未確認）。(c)「村岡総本舗 小城本店 移転」「村岡総本舗 羊羹資料館 リニューアル」で各1回検索し、いずれも該当0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%91%E5%B2%A1%E7%B7%8F%E6%9C%AC%E8%88%97%20%E7%BE%8A%E7%BE%B9%E8%B3%87%E6%96%99%E9%A4%A8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%B0%8F%E5%9F%8E%E5%B8%82%E5%B0%8F%E5%9F%8E%E7%94%BA861">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.asobo-saga.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://muraoka-sohonpo.co.jp/tempo">村岡総本舗 公式サイト「店舗案内(店休日)」。本店の住所・電話・営業時間、2026年11月の店休日、ページ末の「１１月8日更新」2026-11-21 取得</a> / <a href="http://www.m-youkansiryoukan.jp/">村岡総本舗 羊羹資料館 公式サイト。開館9:00〜17:00・入館無料・羊羹と抹茶の無料試食・団体予約の条件・平成9年3月登録有形文化財 2026-11-21 取得</a> / <a href="https://www.asobo-saga.jp/spots/detail/4bb01fcc-b237-452d-8b83-749edb344cdd">佐賀県観光連盟「あそぼーさが」観光スポット。1階が休憩室・2階が展示室、営業時間9時〜17時、定休日なし、料金無料、アクセス 2026-11-21 取得</a> / <a href="https://muraoka-sohonpo.com/?pid=102179118">村岡総本舗 公式オンラインストア「小城羊羹・特製切り羊羹」。1本1,100円（小倉・紅煉・本煉・抹茶）、青えんどう1本1,200円、賞味期間 2026-11-21 取得</a> / <a href="https://muraoka-sohonpo.com/?pid=103276038">村岡総本舗 公式オンラインストア「極上羊羹 心・愛・和」。1本2,700円 2026-11-21 取得</a></div>
+</div></div>
+<div class="card" id="c-saga-cafe-konekuriya">
+<img class="hero" src="img/saga/saga-cafe-konekuriya.jpg" alt="ものづくりカフェ こねくり家 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/saga/saga-cafe-konekuriya_exterior.jpg" alt="ものづくりカフェ こねくり家 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>ものづくりカフェ こねくり家<span class="yomi">ものづくりかふぇ こねくりや</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">大正10年の履物問屋だった建物（旧久富家住宅）を改装した古民家カフェ。中庭まで見渡せる1フロアの造りで、テーブル席・ソファ席・畳席を合わせて36席。庭の見える畳席は子ども連れにも使いやすく、お子様プレートもある。ランチは11:30〜14:30ラストオーダーで、からあげ、煮込みハンバーグ、サラダプレート、ホットサンド、カレーセットなど。価格はドリンク付きの「ゆったりコース」が基準で、ミニデザート付きの「たっぷりコース」は＋300円、ランチのみの「さっくりコース」は−200円。コーヒー豆は佐賀市本庄町の「みちくさCOFFEE ROASTER」のものを使う。Wi-Fiと電源を無料で開放。全席禁煙で中庭の一角に喫煙スペース。17時〜21時は1日1組限定の貸切のみ。</div>
+<div class="sig"><b>一皿:</b>こねくり家のからあげ（佐賀の器で出すランチの看板。ドリンク付きで税込1,650円）／本日の自家製ケーキ（税込770円。本日のパフェ税込990円、本日の豆乳ワッフル税込770円）／嬉野緑茶ラテ（税込660円。黒蜜きなこ豆乳ラテ、黒ごまラテ、嬉野紅茶などもある）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00（14:30 ラストオーダー）。17:00〜21:00は1日1組限定の貸切のみ</td></tr>
+<tr><th>定休日</th><td class="off">毎週月曜日・毎月最終火曜日</td></tr>
+<tr><th>住所</th><td>佐賀県佐賀市柳町4-16（旧久富家住宅1階）</td></tr>
+<tr><th>予約</th><td>昼のカフェ・ランチは予約不要。貸切は8名以上・開催日の7日前までに公式サイトの問い合わせフォームで相談（1名4,000円から、飲食と貸切料金込み）。電話での問い合わせは10時〜16時 — <a href="tel:0952376905">☎ 0952-37-6905</a> ／ <a href="https://conekuriya.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐賀市柳町の歴史的建造物（旧久富家住宅）をそのまま使っているカフェで、佐賀市歴史民俗館の界隈を歩く人の休憩先になる。同じ界隈の浪漫座（洋食の章）とは別の建物・別の電話番号で、重複しない。営業の根拠＝①店自身の情報: 公式サイト conekuriya.com の新着記事「2026.11.6【2026年12月〜2027年2月】こねくり家の忘年会・新年会プラン！」「2026.10.26【11月開催】占いこねくり館」を2026-11-21 に直読みして確認。あわせてホットペッパーグルメの店舗ページが「2026/04/10 更新」の管理掲載になっている。②閉店していないことの確認3通り: (a)「ものづくりカフェ こねくり家 閉店」（空白あり）と「こねくり家閉店」（詰めた形）の2通りで検索し、閉店を伝えるページは0件（2026-11-21、Yahoo!検索。ヒットするのは「閉店後のスペースを学生の勉強用に開放」という自店の学習支援の案内）。(b) 公式SNSのアカウント名＝Instagram「conekuriya」、X「conekuriya」、Facebook「conekuriya」（いずれも公式サイトからリンク。2026-11-21 にリンク先ハンドルを確認）。(c)「こねくり家 佐賀 柳町 移転」「こねくり家 佐賀 リニューアル」で各1回検索し、移転・リニューアルの告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%81%AE%E3%81%A5%E3%81%8F%E3%82%8A%E3%82%AB%E3%83%95%E3%82%A7%20%E3%81%93%E3%81%AD%E3%81%8F%E3%82%8A%E5%AE%B6%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%9F%B3%E7%94%BA4-16%EF%BC%88%E6%97%A7%E4%B9%85%E5%AF%8C%E5%AE%B6%E4%BD%8F%E5%AE%851%E9%9A%8E%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（conekuriya.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://conekuriya.com/">公式サイト トップ。住所・電話・営業時間11:30〜15:00・定休日・駐車場、新着記事「2026.11.6」2026-11-21 取得</a> / <a href="https://conekuriya.com/cafe/">公式サイト「カフェ利用」。ランチ・デザート・ドリンクの価格、コース区分、コーヒー豆の仕入れ先、貸切の条件 2026-11-21 取得</a> / <a href="https://conekuriya.com/view/">公式サイト「店内の様子」。古民家の店内と中庭の写真 2026-11-21 取得</a> / <a href="https://www.hotpepper.jp/strJ004583002/">ホットペッパーグルメ ものづくりカフェ こねくり家。住所（旧久富家1階）・総席数36席・全席禁煙・支払い方法・大正10年の履物問屋をリノベーションという説明（2026/04/10 更新）2026-11-21 取得</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年11月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>

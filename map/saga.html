@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>佐賀 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>佐賀 の食べ歩き地図<span class="n">50店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="佐賀 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">佐賀 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/saga/saga.html"><span class="sn-e">📄</span>佐賀のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（113都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "佐賀牛レストラン 季楽 本店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.261608, "lng": 130.303604, "d": "佐賀牛ロースステーキランチ（小鉢・サラダ・野菜盛・ご飯・汁物・デザート・食後の飲物付き、5,800円）／佐賀牛ロースせいろ蒸し（赤身やロースを蒸し野菜と一緒にせいろで蒸す、9,800円・2名以上）／きらカレー（サラダと食後の飲物付きの昼の最安メニュー、1,300円）", "a": "佐賀県佐賀市大財3丁目9-16", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BD%90%E8%B3%80%E7%89%9B%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E5%AD%A3%E6%A5%BD%20%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A13%E4%B8%81%E7%9B%AE9-16", "u": "../japan/saga/saga.html#c-saga-gyu-kira-honten", "food": "../japan/saga/img/saga/saga-gyu-kira-honten.jpg", "ext": "../japan/saga/img/saga/saga-gyu-kira-honten_exterior.jpg"}, {"i": 1, "n": "焼肉レストラン 与羅ん館", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.219589, "lng": 130.242878, "d": "ハンバーグランチ（限定50食・1人1食限り、600円）／佐賀牛網焼定食（希少部位のミスジ・ウデミ・モモミを使用、2,880円）／佐賀牛レモンステーキ定食（2,880円）", "a": "佐賀県佐賀市久保田町大字久富3983-3", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E4%B8%8E%E7%BE%85%E3%82%93%E9%A4%A8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B9%85%E4%BF%9D%E7%94%B0%E7%94%BA%E5%A4%A7%E5%AD%97%E4%B9%85%E5%AF%8C3983-3", "u": "../japan/saga/saga.html#c-saga-gyu-yorankan", "food": "../japan/saga/img/saga/saga-gyu-yorankan.jpg", "ext": "../japan/saga/img/saga/saga-gyu-yorankan_exterior.jpg"}, {"i": 2, "n": "焼肉 龍王館 佐賀駅前店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.26207, "lng": 130.299622, "d": "「佐賀牛」特選5種盛り（上ロース・上カルビ・カルビ・上赤身・中落ちカルビと焼き野菜、2〜3人前で7,898円）／ドラゴンカルビ（先代から受け継いだ秘伝のタレに漬け込んだ下味付きカルビ、1,078円）／肉寿司（黒毛和牛をバーナーで炙る直火焼き寿司）", "a": "佐賀県佐賀市愛敬町11-10", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E9%BE%8D%E7%8E%8B%E9%A4%A8%20%E4%BD%90%E8%B3%80%E9%A7%85%E5%89%8D%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%84%9B%E6%95%AC%E7%94%BA11-10", "u": "../japan/saga/saga.html#c-saga-gyu-ryuokan-ekimae", "food": "../japan/saga/img/saga/saga-gyu-ryuokan-ekimae.jpg", "ext": "../japan/saga/img/saga/saga-gyu-ryuokan-ekimae_exterior.jpg"}, {"i": 3, "n": "焼肉 季咲楽", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.269592, "lng": 130.30603, "d": "季咲楽盛り（牛タン塩・和牛カルビ・佐賀牛赤身・鶏もも・豚カルビ・ハラミにサイドメニュー1品、2〜3人前で5,478円）／ファミリー盛り（上記に厳選赤身2種・ウインナー・三田川ホルモンを足した3〜4人前、8,778円）／特選赤身盛り（フリソデ・トンビ・クリミ・カワラ・ミスジの食べ比べ、5,060円）", "a": "佐賀県佐賀市兵庫北2-25-18", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%20%E5%AD%A3%E5%92%B2%E6%A5%BD%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E5%8C%972-25-18", "u": "../japan/saga/saga.html#c-saga-gyu-kisarara", "food": "../japan/saga/img/saga/saga-gyu-kisarara.jpg", "ext": "../japan/saga/img/saga/saga-gyu-kisarara_exterior.jpg"}, {"i": 4, "n": "焼肉椛", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.25914, "lng": 130.298859, "d": "椛盛合わせ（佐賀牛と宮崎牛を厳選した当店自慢の盛り合わせ、3,500円）／佐賀牛極上ヒレ150g（在庫がなくなり次第終了、5,500円）／石焼フレンチトースト（締めのデザート。ホットペッパー限定クーポンで2人前800円）", "a": "佐賀県佐賀市唐人1丁目5-37", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E6%A4%9B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%94%90%E4%BA%BA1%E4%B8%81%E7%9B%AE5-37", "u": "../japan/saga/saga.html#c-saga-gyu-momiji", "food": "../japan/saga/img/saga/saga-gyu-momiji.jpg", "ext": "../japan/saga/img/saga/saga-gyu-momiji_exterior.jpg"}, {"i": 5, "n": "炭火焼肉田中商店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.261608, "lng": 130.298248, "d": "炭火燻製ネギカルビ（炭の香りをまとわせた看板の一品、968円）／葱包みタン3個（薄切りのタンで味付けした白ネギを包む、1,254円）／超厚切り生牛タン（厚いのに柔らかく、両面をしっかり焼いて食べる、1,694円）", "a": "佐賀県佐賀市駅南本町3-8 草場ビル2階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E8%82%89%E7%94%B0%E4%B8%AD%E5%95%86%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%8D%97%E6%9C%AC%E7%94%BA3-8%20%E8%8D%89%E5%A0%B4%E3%83%93%E3%83%AB2%E9%9A%8E", "u": "../japan/saga/saga.html#c-saga-gyu-tanaka-shoten", "food": "../japan/saga/img/saga/saga-gyu-tanaka-shoten.jpg", "ext": "../japan/saga/img/saga/saga-gyu-tanaka-shoten_exterior.jpg"}, {"i": 6, "n": "大衆焼肉 肉まる", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.253601, "lng": 130.302567, "d": "肉まる盛り（牛タンや上ホルモンなど全8品の盛り合わせ、3,500円）／飲めるロース（薄切りの佐賀牛をさっと炙って濃厚な卵黄にくぐらせる1枚、1,078円）／タン刺し（九州産の甘めの醤油で食べる刺し物、880円）", "a": "佐賀県佐賀市中央本町7-8", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E7%84%BC%E8%82%89%20%E8%82%89%E3%81%BE%E3%82%8B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B8%AD%E5%A4%AE%E6%9C%AC%E7%94%BA7-8", "u": "../japan/saga/saga.html#c-saga-gyu-nikumaru", "food": "../japan/saga/img/saga/saga-gyu-nikumaru.jpg", "ext": ""}, {"i": 7, "n": "ステーキまる 兵庫店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.265045, "lng": 130.314407, "d": "がっぱいステーキ定食（低温調理のステーキに特製スパイス。サラダ・スープ・ご飯付きで人気No.1、シングル1,380円）／レモンステーキ定食（薄切り肉をすき焼き風に仕立てレモンでさっぱり食べる。残ったご飯にソースを絡める、1,480円）／唐りん唐揚げ定食（秘伝のタレに漬けて二度揚げ、3個640円）", "a": "佐賀県佐賀市兵庫南2丁目736-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD%E3%81%BE%E3%82%8B%20%E5%85%B5%E5%BA%AB%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E5%8D%972%E4%B8%81%E7%9B%AE736-1", "u": "../japan/saga/saga.html#c-saga-gyu-steak-maru-hyogo", "food": "../japan/saga/img/saga/saga-gyu-steak-maru-hyogo.jpg", "ext": ""}, {"i": 8, "n": "焼肉館 勝 佐賀兵庫店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.267082, "lng": 130.315765, "d": "スペシャルランチ（口コミで「ランチには少し高価だが値段以上の上質な肉」と書かれている昼の上位メニュー）／牛汁（肉の旨味を効かせた汁物でおかわりしたくなると評される）／デザートプレート（祝い事向け。店に事前確認）", "a": "佐賀県佐賀市兵庫南3-3-12", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E8%82%89%E9%A4%A8%20%E5%8B%9D%20%E4%BD%90%E8%B3%80%E5%85%B5%E5%BA%AB%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E5%8D%973-3-12", "u": "../japan/saga/saga.html#c-saga-gyu-yakinikukan-sho-hyogo", "food": "../japan/saga/img/saga/saga-gyu-yakinikukan-sho-hyogo.jpg", "ext": ""}, {"i": 9, "n": "Restaurant & Cafe 浪漫座", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.253994, "lng": 130.306473, "d": "浪漫座風シシリアンライス（温かいご飯にデミソースをかけた国産牛のローストビーフをのせ、10種類以上の野菜を盛ってイタリアン・バジル・コールスローの3種のドレッシングで仕上げる）／オリジナルコーヒー（厳選した豆で淹れる）", "a": "佐賀県佐賀市柳町2番9号 佐賀市歴史民俗館 旧古賀銀行内1階", "m": "https://www.google.com/maps/search/?api=1&query=Restaurant%20%26%20Cafe%20%E6%B5%AA%E6%BC%AB%E5%BA%A7%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%9F%B3%E7%94%BA2%E7%95%AA9%E5%8F%B7%20%E4%BD%90%E8%B3%80%E5%B8%82%E6%AD%B4%E5%8F%B2%E6%B0%91%E4%BF%97%E9%A4%A8%20%E6%97%A7%E5%8F%A4%E8%B3%80%E9%8A%80%E8%A1%8C%E5%86%851%E9%9A%8E", "u": "../japan/saga/saga.html#c-saga-sicilian-romanza", "food": "../japan/saga/img/saga/saga-sicilian-romanza.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-romanza_exterior.jpg"}, {"i": 10, "n": "グリル タケシタ", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.263355, "lng": 130.297928, "d": "シシリアンライス（ご飯の上にサラダと肉をのせマヨネーズをかけた佐賀のご当地料理）／こだわりのハンバーグ（焼き目を付けてから特製ソースで煮込み、鉄鍋で熱々のまま出す）／鉄鍋焼きご飯（有明鶏とごろごろ野菜のホワイトソース、佐賀の魚介のイカ墨の2種）", "a": "佐賀県佐賀市駅前中央1-164 アパホテル〈佐賀南口〉1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B0%E3%83%AA%E3%83%AB%20%E3%82%BF%E3%82%B1%E3%82%B7%E3%82%BF%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%89%8D%E4%B8%AD%E5%A4%AE1-164%20%E3%82%A2%E3%83%91%E3%83%9B%E3%83%86%E3%83%AB%E3%80%88%E4%BD%90%E8%B3%80%E5%8D%97%E5%8F%A3%E3%80%891%E9%9A%8E", "u": "../japan/saga/saga.html#c-saga-sicilian-grill-takeshita", "food": "../japan/saga/img/saga/saga-sicilian-grill-takeshita.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-grill-takeshita_exterior.jpg"}, {"i": 11, "n": "カフェ＆レストラン はなかご", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.260975, "lng": 130.295792, "d": "シシリアンライス（1,650円。17時まで）／佐賀県産和牛ローストビーフ丼（1,870円、数量限定）／ホテル特製ビーフシチュー（ランチバーセット付き1,540円）", "a": "佐賀県佐賀市天神2丁目1番36号 ホテルグランデはがくれ1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%EF%BC%86%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%AF%E3%81%AA%E3%81%8B%E3%81%94%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A9%E7%A5%9E2%E4%B8%81%E7%9B%AE1%E7%95%AA36%E5%8F%B7%20%E3%83%9B%E3%83%86%E3%83%AB%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%87%E3%81%AF%E3%81%8C%E3%81%8F%E3%82%8C1%E9%9A%8E", "u": "../japan/saga/saga.html#c-saga-sicilian-hanakago", "food": "../japan/saga/img/saga/saga-sicilian-hanakago.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-hanakago_exterior.jpg"}, {"i": 12, "n": "cafe TRES", "c": ["洋食・各国料理"], "v": "カフェ", "lat": 33.245632, "lng": 130.301163, "d": "日替わりランチ（肉と魚から選べ、デザートも手作り）／県産の野菜を中心に組み立てた食事メニュー／自家製のスイーツとパフェ", "a": "佐賀県佐賀市城内1丁目15-23 佐賀県立博物館1階", "m": "https://www.google.com/maps/search/?api=1&query=cafe%20TRES%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%9F%8E%E5%86%851%E4%B8%81%E7%9B%AE15-23%20%E4%BD%90%E8%B3%80%E7%9C%8C%E7%AB%8B%E5%8D%9A%E7%89%A9%E9%A4%A81%E9%9A%8E", "u": "../japan/saga/saga.html#c-saga-sicilian-cafe-tres", "food": "../japan/saga/img/saga/saga-sicilian-cafe-tres.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-cafe-tres_exterior.jpg"}, {"i": 13, "n": "創作厨房 更紗", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.271725, "lng": 130.301392, "d": "シシリアンライス（御膳仕立て、2,090円）／小町御膳（季節の料理・天婦羅・刺身・煮物・ご飯・味噌汁・香の物）／地産地消御膳「肥前」（お造り・桜ポークカツ・有明鶏の釜飯）", "a": "佐賀県佐賀市高木瀬町東高木216-1 四季彩ホテル千代田館内", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E5%8E%A8%E6%88%BF%20%E6%9B%B4%E7%B4%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%AB%98%E6%9C%A8%E7%80%AC%E7%94%BA%E6%9D%B1%E9%AB%98%E6%9C%A8216-1%20%E5%9B%9B%E5%AD%A3%E5%BD%A9%E3%83%9B%E3%83%86%E3%83%AB%E5%8D%83%E4%BB%A3%E7%94%B0%E9%A4%A8%E5%86%85", "u": "../japan/saga/saga.html#c-saga-sicilian-sarasa", "food": "../japan/saga/img/saga/saga-sicilian-sarasa.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-sarasa_exterior.jpg"}, {"i": 14, "n": "欧風カレー 白山文雅", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.255001, "lng": 130.29895, "d": "伝統のビーフカレー（開業以来つぎ足している専用の煮汁で煮込んだ牛肉の欧風カレー）／牛タンシチューカレー（6時間半煮込んだ厚切りの牛タン、3,600円）／文雅カレー（さっと焼いた黒毛和牛フィレ肉を欧風ソースと生クリームで、4,200円）", "a": "佐賀県佐賀市白山1-2-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%AC%A7%E9%A2%A8%E3%82%AB%E3%83%AC%E3%83%BC%20%E7%99%BD%E5%B1%B1%E6%96%87%E9%9B%85%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E7%99%BD%E5%B1%B11-2-1", "u": "../japan/saga/saga.html#c-saga-sicilian-shirayama-bunga", "food": "../japan/saga/img/saga/saga-sicilian-shirayama-bunga.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-shirayama-bunga_exterior.jpg"}, {"i": 15, "n": "手づくりオムライスレストラン たまごのたまご", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.252487, "lng": 130.31868, "d": "昔ながらのオムライス（ケチャップ味の定番、869円）／大人のお子様ランチ（デミオムライス・カニクリームコロッケ・ハンバーグ・エビフライ・フライドポテト・サラダ・ミニデザート、1,232円）／パフェ各種（ベリーチーズケーキ、スペシャルなど）", "a": "佐賀県佐賀市巨勢町牛島730番地115 モラージュ佐賀 北館1階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%89%8B%E3%81%A5%E3%81%8F%E3%82%8A%E3%82%AA%E3%83%A0%E3%83%A9%E3%82%A4%E3%82%B9%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%81%9F%E3%81%BE%E3%81%94%E3%81%AE%E3%81%9F%E3%81%BE%E3%81%94%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%B7%A8%E5%8B%A2%E7%94%BA%E7%89%9B%E5%B3%B6730%E7%95%AA%E5%9C%B0115%20%E3%83%A2%E3%83%A9%E3%83%BC%E3%82%B8%E3%83%A5%E4%BD%90%E8%B3%80%20%E5%8C%97%E9%A4%A81%E9%9A%8E", "u": "../japan/saga/saga.html#c-saga-sicilian-tamago-no-tamago", "food": "../japan/saga/img/saga/saga-sicilian-tamago-no-tamago.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-tamago-no-tamago_exterior.jpg"}, {"i": 16, "n": "シャトー文雅", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.316906, "lng": 130.277527, "d": "名物 黒毛和牛ハンバーグ（和風ソースまたはデミグラス。コースの主菜）／文雅自慢 森の茸のプチカレーライス（創業期からのビーフカレーの流れをくむ締めの一品）／小皿×フルコースのデギュスタシオンコース", "a": "佐賀県佐賀市大和町久池井2592-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%B7%E3%83%A3%E3%83%88%E3%83%BC%E6%96%87%E9%9B%85%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E4%B9%85%E6%B1%A0%E4%BA%952592-1", "u": "../japan/saga/saga.html#c-saga-sicilian-chateau-bunga", "food": "../japan/saga/img/saga/saga-sicilian-chateau-bunga.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-chateau-bunga_exterior.jpg"}, {"i": 17, "n": "Lampada（ランパーダ）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.257092, "lng": 130.299545, "d": "ランパーダ名物ラクレットチーズ（溶かしたラクレットを席で具材にかける、1,639円）／ピッツァ（店内のピザ窯で焼く。マルゲリータ1,254円、4種チーズのクワトロフロマッジ1,474円）／夜パフェ（21時から。モンブラン、ティラミスなど各1,100〜1,210円）", "a": "佐賀県佐賀市唐人2-2-14", "m": "https://www.google.com/maps/search/?api=1&query=Lampada%EF%BC%88%E3%83%A9%E3%83%B3%E3%83%91%E3%83%BC%E3%83%80%EF%BC%89%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%94%90%E4%BA%BA2-2-14", "u": "../japan/saga/saga.html#c-saga-sicilian-lampada", "food": "../japan/saga/img/saga/saga-sicilian-lampada.jpg", "ext": "../japan/saga/img/saga/saga-sicilian-lampada_exterior.jpg"}, {"i": 18, "n": "おとなの海鮮居酒屋 第一三吉丸", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.264721, "lng": 130.294998, "d": "むつごろう煮付け（有明海の干潟の魚ムツゴロウを甘辛く炊いたもの。1,078円）／〈有明海〉エイリアン!!唐揚げ（ワラスボの唐揚げ。見た目から「有明海のエイリアン」と呼ばれる魚。800円）／くちぞこ（有明海のシタビラメ。煮付けなどで出す）", "a": "佐賀県佐賀市神野東2丁目4-55", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%A8%E3%81%AA%E3%81%AE%E6%B5%B7%E9%AE%AE%E5%B1%85%E9%85%92%E5%B1%8B%20%E7%AC%AC%E4%B8%80%E4%B8%89%E5%90%89%E4%B8%B8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E7%A5%9E%E9%87%8E%E6%9D%B12%E4%B8%81%E7%9B%AE4-55", "u": "../japan/saga/saga.html#c-saga-ariake-daiichi-sankichimaru", "food": "../japan/saga/img/saga/saga-ariake-daiichi-sankichimaru.jpg", "ext": "../japan/saga/img/saga/saga-ariake-daiichi-sankichimaru_exterior.jpg"}, {"i": 19, "n": "産地直送 仲買人直営店 蔵 KURA", "c": ["寿司・海鮮"], "v": "食べ歩き", "lat": 33.257404, "lng": 130.301224, "d": "ワラスボの刺身（有明海の干潟の魚。佐賀市の一覧で当店は「刺身あり」と記載）／大箱刺盛（仲買人直営の仕入れを生かした木箱入りの刺身盛り。3,300円）／やりいか（いけすから揚げる活きのやりいか。2,200円〜）", "a": "佐賀県佐賀市大財1丁目3-19", "m": "https://www.google.com/maps/search/?api=1&query=%E7%94%A3%E5%9C%B0%E7%9B%B4%E9%80%81%20%E4%BB%B2%E8%B2%B7%E4%BA%BA%E7%9B%B4%E5%96%B6%E5%BA%97%20%E8%94%B5%20KURA%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A11%E4%B8%81%E7%9B%AE3-19", "u": "../japan/saga/saga.html#c-saga-ariake-kura", "food": "../japan/saga/img/saga/saga-ariake-kura.jpg", "ext": "../japan/saga/img/saga/saga-ariake-kura_exterior.jpg"}, {"i": 20, "n": "食想市場 元気じるし", "c": ["寿司・海鮮"], "v": "食材の店", "lat": 33.267483, "lng": 130.296646, "d": "ワラスボの刺身（有明海の干潟の魚。当店は刺身のみの提供）／イカの活造り（玄海直送の活きイカ。2,000円）／佐賀牛・佐賀さくらポークの蒸籠蒸し（1,980円〜）", "a": "佐賀県佐賀市神野東3丁目1-46", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A3%9F%E6%83%B3%E5%B8%82%E5%A0%B4%20%E5%85%83%E6%B0%97%E3%81%98%E3%82%8B%E3%81%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E7%A5%9E%E9%87%8E%E6%9D%B13%E4%B8%81%E7%9B%AE1-46", "u": "../japan/saga/saga.html#c-saga-ariake-genki-jirushi", "food": "../japan/saga/img/saga/saga-ariake-genki-jirushi.jpg", "ext": "../japan/saga/img/saga/saga-ariake-genki-jirushi_exterior.jpg"}, {"i": 21, "n": "嬉乃すし", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.273476, "lng": 130.289841, "d": "ワラスボ料理（有明海の干潟の魚。佐賀市公式のワラスボ料理提供店一覧に掲載。入荷は季節と海の状況による）／うみたけの一夜干し（有明海の二枚貝ウミタケを干したもの。1,500円）／雅ランチ（平日昼だけの11貫・茶碗蒸し・吸物・小鉢付き。3,500円）", "a": "佐賀県佐賀市若宮1-7-30", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AC%89%E4%B9%83%E3%81%99%E3%81%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E8%8B%A5%E5%AE%AE1-7-30", "u": "../japan/saga/saga.html#c-saga-ariake-ureshino-sushi", "food": "../japan/saga/img/saga/saga-ariake-ureshino-sushi.jpg", "ext": "../japan/saga/img/saga/saga-ariake-ureshino-sushi_exterior.jpg"}, {"i": 22, "n": "おさかな家 嬉乃", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.266251, "lng": 130.30632, "d": "ウミタケの粕漬（有明海の二枚貝ウミタケを酒粕に漬けた小鉢。500円）／鯛のあら炊き定食（開店当時からの名物。1,800円）／海鮮づけ丼定食（1,600円、得盛2,100円）", "a": "佐賀県佐賀市駅前中央3丁目2-21", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%95%E3%81%8B%E3%81%AA%E5%AE%B6%20%E5%AC%89%E4%B9%83%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%89%8D%E4%B8%AD%E5%A4%AE3%E4%B8%81%E7%9B%AE2-21", "u": "../japan/saga/saga.html#c-saga-ariake-osakanaya-ureshino", "food": "../japan/saga/img/saga/saga-ariake-osakanaya-ureshino.jpg", "ext": "../japan/saga/img/saga/saga-ariake-osakanaya-ureshino_exterior.jpg"}, {"i": 23, "n": "すし酒場うおみ", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.254486, "lng": 130.301422, "d": "本マグロ赤身（市場から朝市直送の生の本マグロ。308円）／串カツ盛り合わせ（大阪式に1本ずつ仕込み、注文後に揚げる。1本200円〜）／おすすめ寿司盛り（店内の黒板に日替わりで出る）", "a": "佐賀県佐賀市中央本町3-18 アルファ318ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%97%E9%85%92%E5%A0%B4%E3%81%86%E3%81%8A%E3%81%BF%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B8%AD%E5%A4%AE%E6%9C%AC%E7%94%BA3-18%20%E3%82%A2%E3%83%AB%E3%83%95%E3%82%A1318%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/saga/saga.html#c-saga-ariake-sushi-sakaba-uomi", "food": "../japan/saga/img/saga/saga-ariake-sushi-sakaba-uomi.jpg", "ext": "../japan/saga/img/saga/saga-ariake-sushi-sakaba-uomi_exterior.jpg"}, {"i": 24, "n": "酒菜 志波", "c": ["和食", "寿司・海鮮"], "v": "レストラン", "lat": 33.242859, "lng": 130.241486, "d": "夜の会席料理（先付・小鉢・前菜・お造り・吸物・焼き物・揚げ物・蒸し物など11〜12品。4,400円〜）／甘鯛の桜蒸し（コースの一品。季節で中身が変わる）／旬の魚の煮付け（玄界灘と有明海の魚を使う）", "a": "佐賀県佐賀市久保田町徳万499-1", "m": "https://www.google.com/maps/search/?api=1&query=%E9%85%92%E8%8F%9C%20%E5%BF%97%E6%B3%A2%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B9%85%E4%BF%9D%E7%94%B0%E7%94%BA%E5%BE%B3%E4%B8%87499-1", "u": "../japan/saga/saga.html#c-saga-ariake-sakana-shiwa", "food": "../japan/saga/img/saga/saga-ariake-sakana-shiwa.jpg", "ext": "../japan/saga/img/saga/saga-ariake-sakana-shiwa_exterior.jpg"}, {"i": 25, "n": "本庄うなぎ屋 本庄店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.261012, "lng": 130.319096, "d": "瀬田焼きの蒲焼（腹開きにした鰻に金串を打って焼く、先代が名付けた焼き方）／特せいろむし（蒲焼五切をのせたせいろ蒸し。5,400円）／佐賀ひつまぶし（薬味と出汁で食べ方を変える）", "a": "佐賀県佐賀市本庄町大字末次394-7", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9C%AC%E5%BA%84%E3%81%86%E3%81%AA%E3%81%8E%E5%B1%8B%20%E6%9C%AC%E5%BA%84%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%9C%AC%E5%BA%84%E7%94%BA%E5%A4%A7%E5%AD%97%E6%9C%AB%E6%AC%A1394-7", "u": "../japan/saga/saga.html#c-saga-ariake-honjo-unagiya", "food": "../japan/saga/img/saga/saga-ariake-honjo-unagiya.jpg", "ext": "../japan/saga/img/saga/saga-ariake-honjo-unagiya_exterior.jpg"}, {"i": 26, "n": "日本料理いけす海幸", "c": ["和食"], "v": "レストラン", "lat": 33.244896, "lng": 130.276413, "d": "白えびのかき揚げ膳（有明海で水揚げされた白えびを佐賀県産の玉ねぎなどと揚げたかき揚げと、刺身の付く膳）／いか活造り御膳（いけすから揚げた活きイカ。あと造りは天ぷら・塩焼・バター焼きから選ぶ。7,000円）／活鯛のお造り（1尾。あとであら炊きか吸い物にする。9,500円〜20,000円）", "a": "佐賀県佐賀市下田町1-15", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E3%81%84%E3%81%91%E3%81%99%E6%B5%B7%E5%B9%B8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B8%8B%E7%94%B0%E7%94%BA1-15", "u": "../japan/saga/saga.html#c-saga-ariake-ikesu-kaiko", "food": "../japan/saga/img/saga/saga-ariake-ikesu-kaiko.jpg", "ext": "../japan/saga/img/saga/saga-ariake-ikesu-kaiko_exterior.jpg"}, {"i": 27, "n": "博多ラーメン一楽堂 兵庫本店", "c": ["麺類"], "v": "レストラン", "lat": 33.263096, "lng": 130.314392, "d": "豚骨ラーメン（豚骨を10時間炊いたあっさりめのスープ、790円）／一楽ちゃんぽん（豚骨と醤油を合わせたスープに国産野菜と自家製中太麺、単品920円・大盛り1,010円・半分820円）／醤油ラーメン（鶏ガラと野菜・飛び魚を煮出したスープに自家製ちぢれ麺、890円）", "a": "佐賀県佐賀市兵庫南2-14-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8D%9A%E5%A4%9A%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E4%B8%80%E6%A5%BD%E5%A0%82%20%E5%85%B5%E5%BA%AB%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E5%8D%972-14-1", "u": "../japan/saga/saga.html#c-saga-men-ichirakudo-hyogo", "food": "../japan/saga/img/saga/saga-men-ichirakudo-hyogo.jpg", "ext": "../japan/saga/img/saga/saga-men-ichirakudo-hyogo_exterior.jpg"}, {"i": 28, "n": "井手ちゃんぽん 大和店", "c": ["麺類"], "v": "レストラン", "lat": 33.305538, "lng": 130.278473, "d": "ちゃんぽん（豚肉と7種の具を炒めて載せる、1,000円）／特製ちゃんぽん（キクラゲと卵をたっぷり足した一杯、1,200円）／カツ丼（初代から受け継いだ、1,000円）", "a": "佐賀県佐賀市大和町大字尼寺3650-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BA%95%E6%89%8B%E3%81%A1%E3%82%83%E3%82%93%E3%81%BD%E3%82%93%20%E5%A4%A7%E5%92%8C%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E5%A4%A7%E5%AD%97%E5%B0%BC%E5%AF%BA3650-1", "u": "../japan/saga/saga.html#c-saga-men-ide-yamato", "food": "../japan/saga/img/saga/saga-men-ide-yamato.jpg", "ext": ""}, {"i": 29, "n": "人力屋 大財店", "c": ["麺類"], "v": "レストラン", "lat": 33.262215, "lng": 130.30661, "d": "ごぼう天うどん（揚げたてのごぼう天を載せる、600円）／肉うどん（甘辛く味つけした肉とつゆが絡む、670円）／ダブルえび天うどん（大きなえび天2本、890円）", "a": "佐賀県佐賀市大財5-12-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BA%BA%E5%8A%9B%E5%B1%8B%20%E5%A4%A7%E8%B2%A1%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A15-12-1", "u": "../japan/saga/saga.html#c-saga-men-jinrikiya-ozai", "food": "../japan/saga/img/saga/saga-men-jinrikiya-ozai.jpg", "ext": "../japan/saga/img/saga/saga-men-jinrikiya-ozai_exterior.jpg"}, {"i": 30, "n": "まるふくうどん 兵庫店", "c": ["麺類"], "v": "レストラン", "lat": 33.273727, "lng": 130.330933, "d": "かけうどん（自家製麺と特製の出汁だけの一杯、280円）／ぶっかけうどん（花がつおと手作りの天かすに自家製つゆ、500円）／肉うどん（すき焼き風に味つけした肉、520円）", "a": "佐賀県佐賀市兵庫町若宮219-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%82%8B%E3%81%B5%E3%81%8F%E3%81%86%E3%81%A9%E3%82%93%20%E5%85%B5%E5%BA%AB%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%85%B5%E5%BA%AB%E7%94%BA%E8%8B%A5%E5%AE%AE219-2", "u": "../japan/saga/saga.html#c-saga-men-marufuku-hyogo", "food": "../japan/saga/img/saga/saga-men-marufuku-hyogo.jpg", "ext": "../japan/saga/img/saga/saga-men-marufuku-hyogo_exterior.jpg"}, {"i": 31, "n": "そばの芽料理とそばの店 木漏れ陽", "c": ["麺類"], "v": "レストラン", "lat": 33.470703, "lng": 130.265717, "d": "北山盛りそば（在来種の北山そばを使った冷たい盛りそば、900円）／木漏れ陽コース「若葉」（そばの芽ジュース・そばの芽サラダ・盛りそばの3品、1,350円）／ガレット「紅葉」（そば粉のクレープにベーコン・きのこ・そばの芽・たまご・チーズ、950円）", "a": "佐賀県佐賀市富士町大字上合瀬453-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%9D%E3%81%B0%E3%81%AE%E8%8A%BD%E6%96%99%E7%90%86%E3%81%A8%E3%81%9D%E3%81%B0%E3%81%AE%E5%BA%97%20%E6%9C%A8%E6%BC%8F%E3%82%8C%E9%99%BD%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%AF%8C%E5%A3%AB%E7%94%BA%E5%A4%A7%E5%AD%97%E4%B8%8A%E5%90%88%E7%80%AC453-1", "u": "../japan/saga/saga.html#c-saga-men-komorebi", "food": "../japan/saga/img/saga/saga-men-komorebi.jpg", "ext": "../japan/saga/img/saga/saga-men-komorebi_exterior.jpg"}, {"i": 32, "n": "一休軒 本店", "c": ["麺類"], "v": "レストラン", "lat": 33.280376, "lng": 130.285782, "d": "ラーメン（クリーミーでコクのある豚骨スープに中細ストレート麺、750円）／生卵入りラーメン（佐賀ラーメンの目印である生卵を落とす、800円）／特製ラーメン（チャーシューを花びらのように並べ中央に生卵を落とした、初代考案の一杯）", "a": "佐賀県佐賀市若楠2-6-24", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E4%BC%91%E8%BB%92%20%E6%9C%AC%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E8%8B%A5%E6%A5%A02-6-24", "u": "../japan/saga/saga.html#c-saga-men-ikkyuken-honten", "food": "../japan/saga/img/saga/saga-men-ikkyuken-honten.jpg", "ext": "../japan/saga/img/saga/saga-men-ikkyuken-honten_exterior.jpg"}, {"i": 33, "n": "駅前ラーメン ビッグワン", "c": ["麺類"], "v": "レストラン", "lat": 33.264519, "lng": 130.29808, "d": "ラーメン（骨と水だけで取る呼び戻し豚骨、680円）／玉子入ラーメン（佐賀ラーメンらしい生卵を落とした一杯、730円）／野菜ラーメン（中華鍋であおった炒め野菜入りのスープに麺を合わせる、830円）", "a": "佐賀県佐賀市駅前中央1-13-16", "m": "https://www.google.com/maps/search/?api=1&query=%E9%A7%85%E5%89%8D%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E3%83%93%E3%83%83%E3%82%B0%E3%83%AF%E3%83%B3%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%89%8D%E4%B8%AD%E5%A4%AE1-13-16", "u": "../japan/saga/saga.html#c-saga-men-ekimae-bigone", "food": "../japan/saga/img/saga/saga-men-ekimae-bigone.jpg", "ext": "../japan/saga/img/saga/saga-men-ekimae-bigone_exterior.jpg"}, {"i": 34, "n": "幸陽閣", "c": ["麺類"], "v": "レストラン", "lat": 33.243664, "lng": 130.276581, "d": "ラーメン（一休軒ゆずりの製法で豚骨を炊いた、佐賀では濃厚な部類のスープ。900円）／卵入りラーメン（佐賀流に生卵を落とし、スープと絡めて食べる。950円）", "a": "佐賀県佐賀市下田町3-31", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B9%B8%E9%99%BD%E9%96%A3%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E4%B8%8B%E7%94%B0%E7%94%BA3-31", "u": "../japan/saga/saga.html#c-saga-men-koyokaku", "food": "../japan/saga/img/saga/saga-men-koyokaku.jpg", "ext": "../japan/saga/img/saga/saga-men-koyokaku_exterior.jpg"}, {"i": 35, "n": "炉端焼みさお", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 33.254669, "lng": 130.301666, "d": "旬魚刺身盛り合わせ（長浜市場・柳川市場から直接仕入れた刺身の盛合せ。2人前2,500円／3人前3,500円）／干し海茸炭火炙り（有明海の干し海茸を炭火で炙ったもの。博多辛子明太子と並んで各550円）／有明海苔巻きおにぎり（有明海苔で巻いたおにぎり。塩300円・梅320円・昆布320円・鮭350円・明太子400円）", "a": "佐賀県佐賀市白山2-1-4", "m": "https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E7%84%BC%E3%81%BF%E3%81%95%E3%81%8A%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E7%99%BD%E5%B1%B12-1-4", "u": "../japan/saga/saga.html#c-saga-izakaya-misao", "food": "../japan/saga/img/saga/saga-izakaya-misao.jpg", "ext": ""}, {"i": 36, "n": "土竜", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.257774, "lng": 130.301193, "d": "佐賀の地酒（鍋島・万齢・能古見の純米吟醸を各770円。季節限定の地酒770円〜）／和牛もつ鍋（2人前からの注文で1人前1,380円。追加のキャベツ・ニラ、ちゃんぽん麺、雑炊あり）／佐賀和牛ハンバーグ（860円）", "a": "佐賀県佐賀市大財1-3-15", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%9F%E7%AB%9C%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A11-3-15", "u": "../japan/saga/saga.html#c-saga-izakaya-mogura", "food": "../japan/saga/img/saga/saga-izakaya-mogura.jpg", "ext": "../japan/saga/img/saga/saga-izakaya-mogura_exterior.jpg"}, {"i": 37, "n": "焼鳥 かど屋 佐賀駅北口店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.264725, "lng": 130.297546, "d": "鍋島ん利き酒（鍋島の特別純米・純米吟醸・純米大吟醸を飲み比べる3種セット、2,000円）／気まぐれ佐賀ん利き酒・気まぐれ全国の利き酒（佐嘉 特別純米・古伊万里 前 純米大吟醸・権右衛門 大吟醸、または田中六十五 純米生・墨廼江 純米吟醸・一白水成 純米吟醸生の3種、1,800円）／ぐつぐつだし巻玉子（出汁に玉子焼きを入れた一品。プレーン・明太子・チーズ・あおさ・イクラから選ぶ、各600円〜）", "a": "佐賀県佐賀市駅前中央1丁目13-23", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%20%E3%81%8B%E3%81%A9%E5%B1%8B%20%E4%BD%90%E8%B3%80%E9%A7%85%E5%8C%97%E5%8F%A3%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%89%8D%E4%B8%AD%E5%A4%AE1%E4%B8%81%E7%9B%AE13-23", "u": "../japan/saga/saga.html#c-saga-izakaya-kadoya", "food": "../japan/saga/img/saga/saga-izakaya-kadoya.jpg", "ext": "../japan/saga/img/saga/saga-izakaya-kadoya_exterior.jpg"}, {"i": 38, "n": "大衆酒場ニュームラハチ 北部店", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.273621, "lng": 130.273315, "d": "もつ鍋（1人前1,320円・2人前2,640円。チャンポン麺または雑炊セット各275円で〆る）／いぶしもも焼き（鶏もも肉を燻した名物、1,320円）／生フルーツサワー（生レモン594円、生パイナップル・生グレープフルーツ・生オレンジ各693円。おかわりサワー330円）", "a": "佐賀県佐賀市鍋島町八戸溝157-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E9%85%92%E5%A0%B4%E3%83%8B%E3%83%A5%E3%83%BC%E3%83%A0%E3%83%A9%E3%83%8F%E3%83%81%20%E5%8C%97%E9%83%A8%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%8D%8B%E5%B3%B6%E7%94%BA%E5%85%AB%E6%88%B8%E6%BA%9D157-1", "u": "../japan/saga/saga.html#c-saga-izakaya-new-murahachi", "food": "../japan/saga/img/saga/saga-izakaya-new-murahachi.jpg", "ext": "../japan/saga/img/saga/saga-izakaya-new-murahachi_exterior.jpg"}, {"i": 39, "n": "居酒屋 小判屋", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.301491, "lng": 130.289307, "d": "店主おすすめ串8種盛り（店主が選んだ串8種の盛合せ、1,580円。おまかせ串5本盛り980円）／山芋鉄板（鉄板で焼いた山芋、750円。チーズ山芋鉄板850円）／和牛もつ鍋（2人前3,980円。ちゃんぽん麺250円で〆る）", "a": "佐賀県佐賀市大和町大字尼寺2861-5", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%B0%8F%E5%88%A4%E5%B1%8B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E5%A4%A7%E5%AD%97%E5%B0%BC%E5%AF%BA2861-5", "u": "../japan/saga/saga.html#c-saga-izakaya-kobanya", "food": "../japan/saga/img/saga/saga-izakaya-kobanya.jpg", "ext": "../japan/saga/img/saga/saga-izakaya-kobanya_exterior.jpg"}, {"i": 40, "n": "芦田商店 佐賀駅前店", "c": ["居酒屋・焼肉"], "v": "食材の店", "lat": 33.26091, "lng": 130.298676, "d": "野菜巻き串（豚肉で野菜を巻いた串。不動の人気はレタス巻き352円、次が万能ネギ巻き363円。3本セット990円・5本セット1,650円）／大トロいわし（北海道直送のいわしを囲炉裏で焼く原始焼き。1人1本までの限定、946円）／超特大海老串（原始焼きの大ぶりの海老串、1,309円）", "a": "佐賀県佐賀市駅南本町5-5 サンシャインM 1階", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8A%A6%E7%94%B0%E5%95%86%E5%BA%97%20%E4%BD%90%E8%B3%80%E9%A7%85%E5%89%8D%E5%BA%97%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E9%A7%85%E5%8D%97%E6%9C%AC%E7%94%BA5-5%20%E3%82%B5%E3%83%B3%E3%82%B7%E3%83%A3%E3%82%A4%E3%83%B3M%201%E9%9A%8E", "u": "../japan/saga/saga.html#c-saga-izakaya-ashida-shoten", "food": "../japan/saga/img/saga/saga-izakaya-ashida-shoten.jpg", "ext": "../japan/saga/img/saga/saga-izakaya-ashida-shoten_exterior.jpg"}, {"i": 41, "n": "花菜ぐし食堂", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.243473, "lng": 130.291443, "d": "2時間食べ飲み放題コース（品数の多い食べ放題に2時間飲み放題が付く、4,200円。4名以上・要予約の至福のコースは5,200円）／旨いタコ刺し（活きたタコを店で〆て刺身にする、438円）／クリームチーズの天婦羅（450円）", "a": "佐賀県佐賀市本庄町本庄455-40", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8A%B1%E8%8F%9C%E3%81%90%E3%81%97%E9%A3%9F%E5%A0%82%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%9C%AC%E5%BA%84%E7%94%BA%E6%9C%AC%E5%BA%84455-40", "u": "../japan/saga/saga.html#c-saga-izakaya-hananagushi", "food": "../japan/saga/img/saga/saga-izakaya-hananagushi.jpg", "ext": ""}, {"i": 42, "n": "なべ家 和元", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.30357, "lng": 130.277573, "d": "体にやさしい薬膳鍋コース（約20種類の天然の植物エキスを抽出したスープ。お通し・野菜盛合せ・鶏つくね・海老しんじょう・鹿児島黒豚ロース・麺またはごはん・デザート付き、1人前3,780円）／特選佐賀牛しゃぶコース（特選佐賀牛ロース・野菜盛合せ・麺またはごはん・デザート、1人前6,696円）／和牛すきやきAコース（甘めの割り下でさっと煮る関東風。卵・うどん麺またはごはん・デザート付き、1人前4,320円）", "a": "佐賀県佐賀市大和町尼寺3338-7", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%AA%E3%81%B9%E5%AE%B6%20%E5%92%8C%E5%85%83%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E5%B0%BC%E5%AF%BA3338-7", "u": "../japan/saga/saga.html#c-saga-izakaya-nabeya-wagen", "food": "../japan/saga/img/saga/saga-izakaya-nabeya-wagen.jpg", "ext": "../japan/saga/img/saga/saga-izakaya-nabeya-wagen_exterior.jpg"}, {"i": 43, "n": "民藝茶屋 シャローム", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.24931, "lng": 130.320496, "d": "ラーメン（豚骨のげんこつに野菜を加えて煮出した白濁スープ。小石原焼の丼に自家製麺、チャーシュー、揚げたごぼう、にんじん、わかめ、もやし。670円）／清涼麺（チンリャンメン。創業翌年に考案した冷たい中華麺。のりを練り込んだ麺を冷水で締め、昆布とかつおの和だしにごま油を効かせたつけだれで食べる。670円。注文数はラーメンの約3倍）／コーヒー（豆を臼で手挽きして一杯ずつ淹れる）", "a": "佐賀県佐賀市巨勢町牛島576-37", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B0%91%E8%97%9D%E8%8C%B6%E5%B1%8B%20%E3%82%B7%E3%83%A3%E3%83%AD%E3%83%BC%E3%83%A0%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%B7%A8%E5%8B%A2%E7%94%BA%E7%89%9B%E5%B3%B6576-37", "u": "../japan/saga/saga.html#c-saga-cafe-shalom", "food": "../japan/saga/img/saga/saga-cafe-shalom.jpg", "ext": "../japan/saga/img/saga/saga-cafe-shalom_exterior.jpg"}, {"i": 44, "n": "KOGURE COFFEE & ROASTERY（珈暮）", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.256191, "lng": 130.29953, "d": "ドリップ珈琲（13種以上の自家焙煎豆から1種を選び、注文ごとに淹れる。660円）／サイフォン珈琲（同じ豆をサイフォンで抽出。770円）／焙煎豆の量り売り（浅煎りから深煎りまで。50g 660円〜、100g 1,100円〜。600gまで100g単位）", "a": "佐賀県佐賀市唐人1-1-12", "m": "https://www.google.com/maps/search/?api=1&query=KOGURE%20COFFEE%20%26%20ROASTERY%EF%BC%88%E7%8F%88%E6%9A%AE%EF%BC%89%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%94%90%E4%BA%BA1-1-12", "u": "../japan/saga/saga.html#c-saga-cafe-kogure", "food": "../japan/saga/img/saga/saga-cafe-kogure.jpg", "ext": "../japan/saga/img/saga/saga-cafe-kogure_exterior.jpg"}, {"i": 45, "n": "TSUITACHI COFFEE & TEA", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.257248, "lng": 130.299622, "d": "ドリップ珈琲（注文後に豆を挽いて一杯ずつ淹れる。小城羊羹つき。600円）／佐賀牛チーズバーガー（佐賀牛を使ったチーズバーガー。持ち帰り1,300円、店内はドリンクとのセットで1,700円〜）／羊羹オレオチーズケーキ（自家製のオレオチーズケーキに、小城の老舗と共同開発した「とろーり羊羹」をかけた一皿。追加注文680円）", "a": "佐賀県佐賀市唐人2-4-2 1F", "m": "https://www.google.com/maps/search/?api=1&query=TSUITACHI%20COFFEE%20%26%20TEA%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%94%90%E4%BA%BA2-4-2%201F", "u": "../japan/saga/saga.html#c-saga-cafe-tsuitachi", "food": "../japan/saga/img/saga/saga-cafe-tsuitachi.jpg", "ext": "../japan/saga/img/saga/saga-cafe-tsuitachi_exterior.jpg"}, {"i": 46, "n": "白玉饅頭 元祖吉野屋", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.326557, "lng": 130.270889, "d": "白玉饅頭（佐賀県産うるち米の生地に北海道産小豆のあん。きな粉やすりごまをかけて食べる。店頭では出来たてが買える）／白玉ぜんざい（北海道産あずきのぜんざいに白玉饅頭。抹茶・抹茶アイス・ココナッツミルクのぜんざいもある）／Yパフェ（3種のちび白玉饅頭ときなこ、黒蜜を合わせた和風パフェ）", "a": "佐賀県佐賀市大和町大字梅野173", "m": "https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E7%8E%89%E9%A5%85%E9%A0%AD%20%E5%85%83%E7%A5%96%E5%90%89%E9%87%8E%E5%B1%8B%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E5%92%8C%E7%94%BA%E5%A4%A7%E5%AD%97%E6%A2%85%E9%87%8E173", "u": "../japan/saga/saga.html#c-saga-cafe-ganso-yoshinoya", "food": "../japan/saga/img/saga/saga-cafe-ganso-yoshinoya.jpg", "ext": "../japan/saga/img/saga/saga-cafe-ganso-yoshinoya_exterior.jpg"}, {"i": 47, "n": "JAZZ&COFFEE+BAR シネマテーク", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.256344, "lng": 130.302628, "d": "ブレンドコーヒー（500円）／ブルマンブレンド（800円）／ビーフカレー（700円。ドライカレー、スパゲティー、ピザ、トーストもある）", "a": "佐賀県佐賀市大財1-5-60", "m": "https://www.google.com/maps/search/?api=1&query=JAZZ%26COFFEE%2BBAR%20%E3%82%B7%E3%83%8D%E3%83%9E%E3%83%86%E3%83%BC%E3%82%AF%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E5%A4%A7%E8%B2%A11-5-60", "u": "../japan/saga/saga.html#c-saga-cafe-cinematheque", "food": "../japan/saga/img/saga/saga-cafe-cinematheque.jpg", "ext": ""}, {"i": 48, "n": "村岡総本舗 羊羹資料館", "c": ["カフェ・パン・スイーツ"], "v": "食材の店", "lat": 33.299706, "lng": 130.202728, "d": "小城羊羹・特製切り羊羹（江戸時代から続く伝統製法。外側に砂糖のシャリ感があり中はやわらかい。竹の皮と経木で包む。小倉・紅煉・本煉・抹茶の4種、1本1,100円）／抹茶（資料館の無料の試食でつく。団体予約が無い場合はほうじ茶になることがある）／丸ぼうろ（同社の焼菓子。ポルトガル伝来の佐賀銘菓）", "a": "佐賀県小城市小城町861", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9D%91%E5%B2%A1%E7%B7%8F%E6%9C%AC%E8%88%97%20%E7%BE%8A%E7%BE%B9%E8%B3%87%E6%96%99%E9%A4%A8%20%E4%BD%90%E8%B3%80%E7%9C%8C%E5%B0%8F%E5%9F%8E%E5%B8%82%E5%B0%8F%E5%9F%8E%E7%94%BA861", "u": "../japan/saga/saga.html#c-saga-cafe-muraoka-sohonpo", "food": "../japan/saga/img/saga/saga-cafe-muraoka-sohonpo.jpg", "ext": "../japan/saga/img/saga/saga-cafe-muraoka-sohonpo_exterior.jpg"}, {"i": 49, "n": "ものづくりカフェ こねくり家", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.254166, "lng": 130.307999, "d": "こねくり家のからあげ（佐賀の器で出すランチの看板。ドリンク付きで税込1,650円）／本日の自家製ケーキ（税込770円。本日のパフェ税込990円、本日の豆乳ワッフル税込770円）／嬉野緑茶ラテ（税込660円。黒蜜きなこ豆乳ラテ、黒ごまラテ、嬉野紅茶などもある）", "a": "佐賀県佐賀市柳町4-16（旧久富家住宅1階）", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%82%E3%81%AE%E3%81%A5%E3%81%8F%E3%82%8A%E3%82%AB%E3%83%95%E3%82%A7%20%E3%81%93%E3%81%AD%E3%81%8F%E3%82%8A%E5%AE%B6%20%E4%BD%90%E8%B3%80%E7%9C%8C%E4%BD%90%E8%B3%80%E5%B8%82%E6%9F%B3%E7%94%BA4-16%EF%BC%88%E6%97%A7%E4%B9%85%E5%AF%8C%E5%AE%B6%E4%BD%8F%E5%AE%851%E9%9A%8E%EF%BC%89", "u": "../japan/saga/saga.html#c-saga-cafe-konekuriya", "food": "../japan/saga/img/saga/saga-cafe-konekuriya.jpg", "ext": "../japan/saga/img/saga/saga-cafe-konekuriya_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.269054,130.293961],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('saga', "佐賀");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
