@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>佐世保美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  /* 外観写真（2026-10-19・外観写真の欠落3度目）: 料理・店内の hero の下に、店構えを1枚添える。
+     地図のポップアップと Notion 記事は <sid>_exterior.jpg を別に拾うので、ここは PDF・ガイド本文で見せるための行。 */
+  .extfig{position:relative; margin:0;}
+  /* 【2026-11-16 ユーザー指示・恒久】外観写真は切り取らず、元の縦横比のまま貼る。
+     原文「外観写真は勝手にトリミングしないで元画像を元の縦横比のまま貼り付けてよ？」。
+     以前は height:40mm + object-fit:cover で、**縦長の写真は上下が、横長は左右が切れていた**。
+     height:auto にすると比率が保たれる。max-height は縦長の1枚でカードが伸びすぎるのを抑える
+     だけの上限で、**切り取りではない**（幅が比率どおりに縮み、object-fit:contain が念押し）。 */
+  .extfig img{display:block; width:100%; height:auto; max-height:88mm; object-fit:contain;
+    margin:0 auto; border-top:2px solid #fff;}
+  .extfig figcaption{position:absolute; left:2mm; bottom:1.5mm; background:rgba(0,0,0,.55); color:#fff; font-size:7pt; padding:.3mm 1.6mm; border-radius:1mm;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">佐世保美食ガイド<span class="sn-n">50店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/sasebo.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="佐世保ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">佐世保ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/sasebo.html"><span class="sn-e">🗺️</span>佐世保の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-burger"><span class="sn-e">・</span>佐世保バーガー</a><a href="#s-lemon"><span class="sn-e">・</span>レモンステーキ・ステーキ・洋食</a><a href="#s-sakana"><span class="sn-e">・</span>九十九島の魚・寿司・海鮮</a><a href="#s-kaigun"><span class="sn-e">・</span>海軍さんのビーフシチュー・和食</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・麺</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全115都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全115都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / SASEBO・長崎県佐世保市 🇯🇵</div>
+  <h1>佐世保美食ガイド</h1>
+  <div class="sub">九十九島を望む天然の良港。旧海軍の鎮守府が置かれ、戦後は米海軍の基地が来た。その二つの歴史がそのまま食になり、佐世保バーガー・レモンステーキ・海軍さんのビーフシチューが並ぶ。厳選50スポットに営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年11月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/sasebo/_map.jpg" alt="全域マップ">
+<a href="#c-sasebo-burger-hikari-yatake" style="left:35.47%;top:38.56%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-burger-hikari-gobangai" style="left:40.33%;top:42.49%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-burger-misarosso" style="left:36.17%;top:34.57%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-burger-luckys-kashimae" style="left:19.74%;top:43.12%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-burger-bellbeach-honten" style="left:22.07%;top:44.88%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-burger-bellbeach-pearlsea" style="left:21.07%;top:44.27%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-burger-museum" style="left:22.86%;top:49.68%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-burger-lorelei" style="left:72.64%;top:75.63%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-lemon-jidaiya" style="left:92.26%;top:42.62%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-lemon-hachinoya" style="left:38.14%;top:37.45%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-lemon-kaiyuu" style="left:19.74%;top:45.41%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-lemon-lemoned-raymond" style="left:39.5%;top:38.62%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-lemon-gyuemon-yonkacho" style="left:39.72%;top:39.17%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-lemon-lavandre" style="left:69.34%;top:78.5%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-lemon-bonsabur" style="left:42.19%;top:42.29%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-lemon-ss389" style="left:60.46%;top:49.06%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-fujinaga" style="left:42.33%;top:21.42%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-ginsushi" style="left:41.19%;top:39.32%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-kanaezushi" style="left:39.97%;top:39.67%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-kuranosuke" style="left:41.61%;top:40.9%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-hakataya" style="left:41.69%;top:41.51%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-mottainai" style="left:7.74%;top:32.6%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-yamataki" style="left:39.11%;top:42.16%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-ichigyoichie" style="left:58.5%;top:92.22%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-sakana-marumo" style="left:22.43%;top:51.54%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-kaigun-sakuragawa" style="left:42.19%;top:43.83%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-kaigun-shiki" style="left:39.72%;top:40.71%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-kaigun-sasaizumi" style="left:41.6%;top:40.48%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-kaigun-tama" style="left:42.23%;top:23.48%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-kaigun-shiosai" style="left:29.64%;top:36.85%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-kaigun-hananoren" style="left:41.69%;top:43.05%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-kaigun-yamanoren" style="left:63.12%;top:7.8%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-homura" style="left:40.44%;top:42.17%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-kaneda" style="left:38.56%;top:42.17%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-hizume" style="left:41.6%;top:42.1%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-kirin" style="left:39.97%;top:42.91%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-kame" style="left:38.35%;top:42.1%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-ants" style="left:40.93%;top:39.79%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-gravity" style="left:39.08%;top:38.86%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-shimezo" style="left:38.35%;top:40.48%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-izakaya-ooishi" style="left:37.39%;top:40.9%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-coffeeboueki" style="left:42.61%;top:38.28%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-mellow" style="left:76.03%;top:61.04%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-jamcoffee-sashikata" style="left:69.34%;top:68.03%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-kojika-no-sanpomichi" style="left:19.83%;top:42.29%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-botanen" style="left:36.02%;top:36.96%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-menya-shiokaze" style="left:40.25%;top:40.18%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-doppo" style="left:37.2%;top:38.86%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-ore-no-jinsei-fullswing" style="left:37.81%;top:39.32%;width:2.62%;height:2.26%;"></a>
+<a href="#c-sasebo-cafe-agoramen-honpo-pearlsea" style="left:18.41%;top:44.27%;width:2.62%;height:2.26%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（50店・番号はピンと同じ）</div>
+<div class="sec red">佐世保バーガー</div>
+<div class="links">
+<a href="#c-sasebo-burger-hikari-yatake"><span class="tn" style="background:#e34948;">1</span>昭和26年創業、基地前の最古参</a>
+<a href="#c-sasebo-burger-hikari-gobangai"><span class="tn" style="background:#e34948;">2</span>佐世保駅から徒歩2分の2号店</a>
+<a href="#c-sasebo-burger-misarosso"><span class="tn" style="background:#e34948;">3</span>市役所裏、三分割バンズの怪物</a>
+<a href="#c-sasebo-burger-luckys-kashimae"><span class="tn" style="background:#e34948;">4</span>パールシーの海を見て食べる</a>
+<a href="#c-sasebo-burger-bellbeach-honten"><span class="tn" style="background:#e34948;">5</span>自家製バンズと甘めの自家製マヨ</a>
+<a href="#c-sasebo-burger-bellbeach-pearlsea"><span class="tn" style="background:#e34948;">6</span>遊覧船乗り場の横で買える</a>
+<a href="#c-sasebo-burger-museum"><span class="tn" style="background:#e34948;">7</span>九十九島を見下ろす全部自家製</a>
+<a href="#c-sasebo-burger-lorelei"><span class="tn" style="background:#e34948;">8</span>ハウステンボス駅前、座って食べる</a>
+</div>
+<div class="sec aqua">レモンステーキ・ステーキ・洋食</div>
+<div class="links">
+<a href="#c-sasebo-lemon-jidaiya"><span class="tn" style="background:#1baf7a;">9</span>鉄板で自分で焼く名物レモンステーキ</a>
+<a href="#c-sasebo-lemon-hachinoya"><span class="tn" style="background:#1baf7a;">10</span>昭和26年創業、洋食とシュークリームの老舗</a>
+<a href="#c-sasebo-lemon-kaiyuu"><span class="tn" style="background:#1baf7a;">11</span>九十九島の観光拠点で食べるレモンステーキ</a>
+<a href="#c-sasebo-lemon-lemoned-raymond"><span class="tn" style="background:#1baf7a;">12</span>県内初のレモンステーキ専門店</a>
+<a href="#c-sasebo-lemon-gyuemon-yonkacho"><span class="tn" style="background:#1baf7a;">13</span>四ヶ町アーケードの老舗ステーキ・ハンバーグ店</a>
+<a href="#c-sasebo-lemon-lavandre"><span class="tn" style="background:#1baf7a;">14</span>ハウステンボス隣接ホテルの和洋ブッフェ</a>
+<a href="#c-sasebo-lemon-bonsabur"><span class="tn" style="background:#1baf7a;">15</span>佐世保駅前、朝からレモンステーキが出るホテルの食堂</a>
+<a href="#c-sasebo-lemon-ss389"><span class="tn" style="background:#1baf7a;">16</span>長崎和牛のゴロゴロハンバーグが看板</a>
+</div>
+<div class="sec blue">九十九島の魚・寿司・海鮮</div>
+<div class="links">
+<a href="#c-sasebo-sakana-fujinaga"><span class="tn" style="background:#2a78d6;">17</span>鮮魚店直営の和食と寿司</a>
+<a href="#c-sasebo-sakana-ginsushi"><span class="tn" style="background:#2a78d6;">18</span>創業70年、地魚の握り</a>
+<a href="#c-sasebo-sakana-kanaezushi"><span class="tn" style="background:#2a78d6;">19</span>天然物にこだわる老舗鮨</a>
+<a href="#c-sasebo-sakana-kuranosuke"><span class="tn" style="background:#2a78d6;">20</span>全室個室でイカの活造り</a>
+<a href="#c-sasebo-sakana-hakataya"><span class="tn" style="background:#2a78d6;">21</span>佐世保駅前、いけすを囲む</a>
+<a href="#c-sasebo-sakana-mottainai"><span class="tn" style="background:#2a78d6;">22</span>魚市場ビル3階の朝7時から</a>
+<a href="#c-sasebo-sakana-yamataki"><span class="tn" style="background:#2a78d6;">23</span>朝市仕入れの海鮮漬け丼</a>
+<a href="#c-sasebo-sakana-ichigyoichie"><span class="tn" style="background:#2a78d6;">24</span>活いか料理の専門店</a>
+<a href="#c-sasebo-sakana-marumo"><span class="tn" style="background:#2a78d6;">25</span>海に浮かぶかき焼き小屋</a>
+</div>
+<div class="sec brown">海軍さんのビーフシチュー・和食</div>
+<div class="links">
+<a href="#c-sasebo-kaigun-sakuragawa"><span class="tn" style="background:#8a5a2b;">26</span>海軍さんの味も出す駅前の日本料理</a>
+<a href="#c-sasebo-kaigun-shiki"><span class="tn" style="background:#8a5a2b;">27</span>海軍さんのビーフシチューを通年で出す</a>
+<a href="#c-sasebo-kaigun-sasaizumi"><span class="tn" style="background:#8a5a2b;">28</span>創業100年超、生簀の活造りが看板</a>
+<a href="#c-sasebo-kaigun-tama"><span class="tn" style="background:#8a5a2b;">29</span>1日1組、2日前までの完全予約制</a>
+<a href="#c-sasebo-kaigun-shiosai"><span class="tn" style="background:#8a5a2b;">30</span>九十九島を見下ろす4階の会席</a>
+<a href="#c-sasebo-kaigun-hananoren"><span class="tn" style="background:#8a5a2b;">31</span>駅前で味わうイカの活造りと懐石</a>
+<a href="#c-sasebo-kaigun-yamanoren"><span class="tn" style="background:#8a5a2b;">32</span>世知原の山あいで出す里山の和食</a>
+</div>
+<div class="sec beer">居酒屋</div>
+<div class="links">
+<a href="#c-sasebo-izakaya-homura"><span class="tn" style="background:#0d366b;">33</span>原始焼きと手焼き焼鳥のカウンター</a>
+<a href="#c-sasebo-izakaya-kaneda"><span class="tn" style="background:#0d366b;">34</span>活き造りと串焼きの隠れ家</a>
+<a href="#c-sasebo-izakaya-hizume"><span class="tn" style="background:#0d366b;">35</span>個室6室の創作肴と馬刺し</a>
+<a href="#c-sasebo-izakaya-kirin"><span class="tn" style="background:#0d366b;">36</span>全室個室の古民家風ろばた焼</a>
+<a href="#c-sasebo-izakaya-kame"><span class="tn" style="background:#0d366b;">37</span>深夜2時まで、七輪と備長炭</a>
+<a href="#c-sasebo-izakaya-ants"><span class="tn" style="background:#0d366b;">38</span>グランドピアノとダーツの酒場</a>
+<a href="#c-sasebo-izakaya-gravity"><span class="tn" style="background:#0d366b;">39</span>17席のメキシコ料理、現金のみ</a>
+<a href="#c-sasebo-izakaya-shimezo"><span class="tn" style="background:#0d366b;">40</span>九州の地酒40種の角打ち</a>
+<a href="#c-sasebo-izakaya-ooishi"><span class="tn" style="background:#0d366b;">41</span>朝市で仕入れる刺身、現金のみ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・麺</div>
+<div class="links">
+<a href="#c-sasebo-cafe-coffeeboueki"><span class="tn" style="background:#eda100;">42</span>ジャズが流れる創業45年の純喫茶</a>
+<a href="#c-sasebo-cafe-mellow"><span class="tn" style="background:#eda100;">43</span>屋根裏に本棚がある倉庫カフェ</a>
+<a href="#c-sasebo-cafe-jamcoffee-sashikata"><span class="tn" style="background:#eda100;">44</span>焼きチーズカレーが名物の郊外カフェ</a>
+<a href="#c-sasebo-cafe-kojika-no-sanpomichi"><span class="tn" style="background:#eda100;">45</span>九十九島の入江を望む一軒家カフェ</a>
+<a href="#c-sasebo-cafe-botanen"><span class="tn" style="background:#eda100;">46</span>弓張岳の登り口に立つ創業51年の町中華</a>
+<a href="#c-sasebo-cafe-menya-shiokaze"><span class="tn" style="background:#eda100;">47</span>平戸の天然塩で引く非豚骨の麺専門店</a>
+<a href="#c-sasebo-cafe-doppo"><span class="tn" style="background:#eda100;">48</span>佐世保で家系を出すカウンターだけの店</a>
+<a href="#c-sasebo-cafe-ore-no-jinsei-fullswing"><span class="tn" style="background:#eda100;">49</span>佐世保で最初の二郎系ラーメン</a>
+<a href="#c-sasebo-cafe-agoramen-honpo-pearlsea"><span class="tn" style="background:#eda100;">50</span>九十九島を見ながら食べるあごだし麺</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 四ヶ町・三ヶ町・京町・下京町（アーケードの商店街）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/sasebo/_map2.jpg" alt="中心部拡大1 四ヶ町・三ヶ町・京町・下京町（アーケードの商店街）">
+<a href="#c-sasebo-lemon-hachinoya" style="left:38.5%;top:26.93%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-lemon-lemoned-raymond" style="left:62.02%;top:66.46%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-lemon-gyuemon-yonkacho" style="left:57.95%;top:54.11%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-sakana-ginsushi" style="left:56.3%;top:62.91%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-sakana-kanaezushi" style="left:65.2%;top:87.1%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-sakana-kuranosuke" style="left:61.26%;top:67.41%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-sakana-yamataki" style="left:52.1%;top:97.92%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-kaigun-shiki" style="left:68.51%;top:54.69%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-kaigun-sasaizumi" style="left:70.79%;top:77.83%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-homura" style="left:63.04%;top:68.57%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-kaneda" style="left:57.19%;top:60.21%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-hizume" style="left:70.93%;top:77.0%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-kirin" style="left:62.78%;top:84.05%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-kame" style="left:68.76%;top:84.33%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-ants" style="left:85.42%;top:51.34%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-gravity" style="left:28.96%;top:24.5%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-shimezo" style="left:68.38%;top:79.76%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-izakaya-ooishi" style="left:57.32%;top:64.29%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-cafe-menya-shiokaze" style="left:72.83%;top:59.13%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-cafe-doppo" style="left:35.32%;top:17.31%;width:3.0%;height:2.88%;"></a>
+<a href="#c-sasebo-cafe-ore-no-jinsei-fullswing" style="left:57.19%;top:68.35%;width:3.0%;height:2.88%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（21店・番号はピンと同じ）</div>
+<div class="sec aqua">レモンステーキ・ステーキ・洋食</div>
+<div class="links">
+<a href="#c-sasebo-lemon-hachinoya"><span class="tn" style="background:#1baf7a;">10</span>昭和26年創業、洋食とシュークリームの老舗</a>
+<a href="#c-sasebo-lemon-lemoned-raymond"><span class="tn" style="background:#1baf7a;">12</span>県内初のレモンステーキ専門店</a>
+<a href="#c-sasebo-lemon-gyuemon-yonkacho"><span class="tn" style="background:#1baf7a;">13</span>四ヶ町アーケードの老舗ステーキ・ハンバーグ店</a>
+</div>
+<div class="sec blue">九十九島の魚・寿司・海鮮</div>
+<div class="links">
+<a href="#c-sasebo-sakana-ginsushi"><span class="tn" style="background:#2a78d6;">18</span>創業70年、地魚の握り</a>
+<a href="#c-sasebo-sakana-kanaezushi"><span class="tn" style="background:#2a78d6;">19</span>天然物にこだわる老舗鮨</a>
+<a href="#c-sasebo-sakana-kuranosuke"><span class="tn" style="background:#2a78d6;">20</span>全室個室でイカの活造り</a>
+<a href="#c-sasebo-sakana-yamataki"><span class="tn" style="background:#2a78d6;">23</span>朝市仕入れの海鮮漬け丼</a>
+</div>
+<div class="sec brown">海軍さんのビーフシチュー・和食</div>
+<div class="links">
+<a href="#c-sasebo-kaigun-shiki"><span class="tn" style="background:#8a5a2b;">27</span>海軍さんのビーフシチューを通年で出す</a>
+<a href="#c-sasebo-kaigun-sasaizumi"><span class="tn" style="background:#8a5a2b;">28</span>創業100年超、生簀の活造りが看板</a>
+</div>
+<div class="sec beer">居酒屋</div>
+<div class="links">
+<a href="#c-sasebo-izakaya-homura"><span class="tn" style="background:#0d366b;">33</span>原始焼きと手焼き焼鳥のカウンター</a>
+<a href="#c-sasebo-izakaya-kaneda"><span class="tn" style="background:#0d366b;">34</span>活き造りと串焼きの隠れ家</a>
+<a href="#c-sasebo-izakaya-hizume"><span class="tn" style="background:#0d366b;">35</span>個室6室の創作肴と馬刺し</a>
+<a href="#c-sasebo-izakaya-kirin"><span class="tn" style="background:#0d366b;">36</span>全室個室の古民家風ろばた焼</a>
+<a href="#c-sasebo-izakaya-kame"><span class="tn" style="background:#0d366b;">37</span>深夜2時まで、七輪と備長炭</a>
+<a href="#c-sasebo-izakaya-ants"><span class="tn" style="background:#0d366b;">38</span>グランドピアノとダーツの酒場</a>
+<a href="#c-sasebo-izakaya-gravity"><span class="tn" style="background:#0d366b;">39</span>17席のメキシコ料理、現金のみ</a>
+<a href="#c-sasebo-izakaya-shimezo"><span class="tn" style="background:#0d366b;">40</span>九州の地酒40種の角打ち</a>
+<a href="#c-sasebo-izakaya-ooishi"><span class="tn" style="background:#0d366b;">41</span>朝市で仕入れる刺身、現金のみ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・麺</div>
+<div class="links">
+<a href="#c-sasebo-cafe-menya-shiokaze"><span class="tn" style="background:#eda100;">47</span>平戸の天然塩で引く非豚骨の麺専門店</a>
+<a href="#c-sasebo-cafe-doppo"><span class="tn" style="background:#eda100;">48</span>佐世保で家系を出すカウンターだけの店</a>
+<a href="#c-sasebo-cafe-ore-no-jinsei-fullswing"><span class="tn" style="background:#eda100;">49</span>佐世保で最初の二郎系ラーメン</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 佐世保駅・三浦町・万津町・島地町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/sasebo/_map3.jpg" alt="中心部拡大2 佐世保駅・三浦町・万津町・島地町">
+<a href="#c-sasebo-burger-hikari-gobangai" style="left:49.36%;top:7.2%;width:3.0%;height:4.08%;"></a>
+<a href="#c-sasebo-lemon-bonsabur" style="left:79.24%;top:19.77%;width:3.0%;height:4.08%;"></a>
+<a href="#c-sasebo-sakana-hakataya" style="left:68.56%;top:2.96%;width:3.0%;height:4.08%;"></a>
+<a href="#c-sasebo-kaigun-sakuragawa" style="left:87.63%;top:27.66%;width:3.0%;height:4.08%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（4店・番号はピンと同じ）</div>
+<div class="sec red">佐世保バーガー</div>
+<div class="links">
+<a href="#c-sasebo-burger-hikari-gobangai"><span class="tn" style="background:#e34948;">2</span>佐世保駅から徒歩2分の2号店</a>
+</div>
+<div class="sec aqua">レモンステーキ・ステーキ・洋食</div>
+<div class="links">
+<a href="#c-sasebo-lemon-bonsabur"><span class="tn" style="background:#1baf7a;">15</span>佐世保駅前、朝からレモンステーキが出るホテルの食堂</a>
+</div>
+<div class="sec blue">九十九島の魚・寿司・海鮮</div>
+<div class="links">
+<a href="#c-sasebo-sakana-hakataya"><span class="tn" style="background:#2a78d6;">21</span>佐世保駅前、いけすを囲む</a>
+</div>
+<div class="sec brown">海軍さんのビーフシチュー・和食</div>
+<div class="links">
+<a href="#c-sasebo-kaigun-sakuragawa"><span class="tn" style="background:#8a5a2b;">26</span>海軍さんの味も出す駅前の日本料理</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 山県町・塩浜町・八幡町・常盤町（駅の北東）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap" style="width:93.7mm;">
+<img src="img/sasebo/_map4.jpg" alt="中心部拡大3 山県町・塩浜町・八幡町・常盤町（駅の北東）">
+<a href="#c-sasebo-kaigun-hananoren" style="left:9.75%;top:96.17%;width:6.0%;height:2.74%;"></a>
+<a href="#c-sasebo-cafe-coffeeboueki" style="left:32.13%;top:19.82%;width:6.0%;height:2.74%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（2店・番号はピンと同じ）</div>
+<div class="sec brown">海軍さんのビーフシチュー・和食</div>
+<div class="links">
+<a href="#c-sasebo-kaigun-hananoren"><span class="tn" style="background:#8a5a2b;">31</span>駅前で味わうイカの活造りと懐石</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・麺</div>
+<div class="links">
+<a href="#c-sasebo-cafe-coffeeboueki"><span class="tn" style="background:#eda100;">42</span>ジャズが流れる創業45年の純喫茶</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 矢岳町・平瀬町・大黒町（米海軍基地の周辺）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/sasebo/_map5.jpg" alt="中心部拡大4 矢岳町・平瀬町・大黒町（米海軍基地の周辺）">
+<a href="#c-sasebo-burger-hikari-yatake" style="left:82.86%;top:69.79%;width:2.26%;height:2.16%;"></a>
+<a href="#c-sasebo-burger-misarosso" style="left:92.49%;top:9.14%;width:2.26%;height:2.16%;"></a>
+<a href="#c-sasebo-kaigun-shiosai" style="left:2.74%;top:43.77%;width:2.26%;height:2.16%;"></a>
+<a href="#c-sasebo-cafe-botanen" style="left:90.39%;top:45.52%;width:2.26%;height:2.16%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（4店・番号はピンと同じ）</div>
+<div class="sec red">佐世保バーガー</div>
+<div class="links">
+<a href="#c-sasebo-burger-hikari-yatake"><span class="tn" style="background:#e34948;">1</span>昭和26年創業、基地前の最古参</a>
+<a href="#c-sasebo-burger-misarosso"><span class="tn" style="background:#e34948;">3</span>市役所裏、三分割バンズの怪物</a>
+</div>
+<div class="sec brown">海軍さんのビーフシチュー・和食</div>
+<div class="links">
+<a href="#c-sasebo-kaigun-shiosai"><span class="tn" style="background:#8a5a2b;">30</span>九十九島を見下ろす4階の会席</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・麺</div>
+<div class="links">
+<a href="#c-sasebo-cafe-botanen"><span class="tn" style="background:#eda100;">46</span>弓張岳の登り口に立つ創業51年の町中華</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大5 鹿子前・九十九島（パールシーリゾート）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/sasebo/_map6.jpg" alt="中心部拡大5 鹿子前・九十九島（パールシーリゾート）">
+<a href="#c-sasebo-burger-luckys-kashimae" style="left:27.11%;top:61.53%;width:3.6%;height:2.74%;"></a>
+<a href="#c-sasebo-burger-bellbeach-honten" style="left:78.23%;top:74.85%;width:3.6%;height:2.74%;"></a>
+<a href="#c-sasebo-burger-bellbeach-pearlsea" style="left:28.93%;top:62.92%;width:3.6%;height:2.74%;"></a>
+<a href="#c-sasebo-lemon-kaiyuu" style="left:27.11%;top:64.31%;width:3.6%;height:2.74%;"></a>
+<a href="#c-sasebo-cafe-kojika-no-sanpomichi" style="left:29.09%;top:24.59%;width:3.6%;height:2.74%;"></a>
+<a href="#c-sasebo-cafe-agoramen-honpo-pearlsea" style="left:25.29%;top:62.92%;width:3.6%;height:2.74%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（6店・番号はピンと同じ）</div>
+<div class="sec red">佐世保バーガー</div>
+<div class="links">
+<a href="#c-sasebo-burger-luckys-kashimae"><span class="tn" style="background:#e34948;">4</span>パールシーの海を見て食べる</a>
+<a href="#c-sasebo-burger-bellbeach-honten"><span class="tn" style="background:#e34948;">5</span>自家製バンズと甘めの自家製マヨ</a>
+<a href="#c-sasebo-burger-bellbeach-pearlsea"><span class="tn" style="background:#e34948;">6</span>遊覧船乗り場の横で買える</a>
+</div>
+<div class="sec aqua">レモンステーキ・ステーキ・洋食</div>
+<div class="links">
+<a href="#c-sasebo-lemon-kaiyuu"><span class="tn" style="background:#1baf7a;">11</span>九十九島の観光拠点で食べるレモンステーキ</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・麺</div>
+<div class="links">
+<a href="#c-sasebo-cafe-kojika-no-sanpomichi"><span class="tn" style="background:#eda100;">45</span>九十九島の入江を望む一軒家カフェ</a>
+<a href="#c-sasebo-cafe-agoramen-honpo-pearlsea"><span class="tn" style="background:#eda100;">50</span>九十九島を見ながら食べるあごだし麺</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大6 大和町・日宇・早岐・ハウステンボス方面（市街の南東）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/sasebo/_map7.jpg" alt="中心部拡大6 大和町・日宇・早岐・ハウステンボス方面（市街の南東）">
+<a href="#c-sasebo-burger-lorelei" style="left:75.78%;top:86.97%;width:3.14%;height:1.7%;"></a>
+<a href="#c-sasebo-lemon-lavandre" style="left:60.03%;top:95.58%;width:3.14%;height:1.7%;"></a>
+<a href="#c-sasebo-lemon-ss389" style="left:17.67%;top:7.23%;width:3.14%;height:1.7%;"></a>
+<a href="#c-sasebo-cafe-mellow" style="left:92.0%;top:43.17%;width:3.14%;height:1.7%;"></a>
+<a href="#c-sasebo-cafe-jamcoffee-sashikata" style="left:60.03%;top:64.15%;width:3.14%;height:1.7%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（5店・番号はピンと同じ）</div>
+<div class="sec red">佐世保バーガー</div>
+<div class="links">
+<a href="#c-sasebo-burger-lorelei"><span class="tn" style="background:#e34948;">8</span>ハウステンボス駅前、座って食べる</a>
+</div>
+<div class="sec aqua">レモンステーキ・ステーキ・洋食</div>
+<div class="links">
+<a href="#c-sasebo-lemon-lavandre"><span class="tn" style="background:#1baf7a;">14</span>ハウステンボス隣接ホテルの和洋ブッフェ</a>
+<a href="#c-sasebo-lemon-ss389"><span class="tn" style="background:#1baf7a;">16</span>長崎和牛のゴロゴロハンバーグが看板</a>
+</div>
+<div class="sec yellow">喫茶・カフェ・麺</div>
+<div class="links">
+<a href="#c-sasebo-cafe-mellow"><span class="tn" style="background:#eda100;">43</span>屋根裏に本棚がある倉庫カフェ</a>
+<a href="#c-sasebo-cafe-jamcoffee-sashikata"><span class="tn" style="background:#eda100;">44</span>焼きチーズカレーが名物の郊外カフェ</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>佐世保市の店は4つのかたまりに分かれる。①**四ヶ町・三ヶ町（本島町・島瀬町・下京町・上京町）**＝アーケードが約1kmまっすぐ続く商店街。日本一の長さを名乗る。昼の洋食も夜の居酒屋もここに集まる ②**佐世保駅・三浦町**＝駅ビル「えきマチ1丁目」とホテルが並ぶ。駅から四ヶ町までは徒歩10分 ③**米海軍基地の周辺（矢岳町・平瀬町）**＝佐世保バーガーの古い店が基地のゲート前にある ④**九十九島・鹿子前（かしまえ）**＝パールシーリゾートと水族館。市街から車で15分、バスで25分。海を見ながら食べる店はこちら。\n**佐世保市の名物**＝**佐世保バーガー**（1950年ごろ米海軍から直接レシピを聞いて作り始めたとされる。協会の記事が挙げる条件は「注文を受けてから作る」「本社が佐世保にある」「生野菜を使う」「オリジナルソースが入る」の4つ。**作り置きをしないので10〜20分待つ**）、**レモンステーキ**（薄切りの牛肉を熱した鉄板で焼き、レモン醤油のたれで食べる。残ったたれをご飯にかけるのが地元の食べ方）、**海軍さんのビーフシチュー**（旧海軍の「海軍割烹術参考書」のレシピを基に復元したもの）、**九十九島かき**（11〜3月が旬。海上のかき焼き小屋で炭火で焼く）、**九十九島とらふぐ・長崎ハーブ鯖**（市が売り出すブランド魚）、**佐世保ちゃんぽん**（長崎市のものより具が多く、あごだしを使う店がある）、**入港ぜんざい**（航海から帰った乗組員が食べたとされる甘味）。\n**基地の街なので外国の料理と酒場が多く、夜は英語の通じる店もある。**</div>
+
+<h2 id="s-burger" class="c-red">佐世保バーガー</h2>
+<div class="card" id="c-sasebo-burger-hikari-yatake">
+<img class="hero" src="img/sasebo/sasebo-burger-hikari-yatake.jpg" alt="ハンバーガーショップ ヒカリ（矢岳本店） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-burger-hikari-yatake_exterior.jpg" alt="ハンバーガーショップ ヒカリ（矢岳本店） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>ハンバーガーショップ ヒカリ（矢岳本店）<span class="yomi">はんばーがーしょっぷ ひかり やたけほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">米海軍佐世保基地のメインゲート近く、国際通り沿いで昭和26年から同じ場所で続くハンバーガー専門店。座席はカウンター7席のみで、持ち帰りの客が多い。注文を受けてから鉄板で焼き始めるため、休日や昼どきは待ち時間が出る。支払いは現金とクレジットカード。駐車場は店の前に数台分。公式サイトは2026年7月15日付で原材料費高騰による価格改定を告知しており、上記の価格は改定後のもの。営業時間は公式サイトと「佐世保バーガーマップ2025」がともに10:00〜16:00としており、佐世保観光コンベンション協会の店舗ページの17:00までという記載とは食い違う。来店前に電話で確かめたい。</div>
+<div class="sig"><b>一皿:</b>スペシャルバーガー（チーズ・ベーコン・エッグが全部入る看板商品）／ジャンボチキンバーガー（鶏もも肉の一枚揚げを挟んだ大判。学生向けに作ったのがジャンボバーガーの始まりとされる）／ホットドッグ（創業以来のソースを使う）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜16:00（公式サイト。佐世保観光コンベンション協会の店舗ページは10:00〜17:00と記載）</td></tr>
+<tr><th>定休日</th><td class="off">毎週水曜日、第2日曜日、第3木曜日（ほか年末年始・お盆休みあり）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市矢岳町1-1</td></tr>
+<tr><th>予約</th><td>予約不要・席の予約は不可（カウンター7席のみ）。注文を受けてから作るため待ち時間が出る。 — <a href="tel:0956256685">☎ 0956-25-6685</a> ／ <a href="https://hikari-burger.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保バーガーの章の起点になる店。1950年頃に米海軍基地からレシピが伝わったという佐世保バーガーの歴史のうち、昭和26年（1951年）開業で同じ場所で営業を続けている最古参にあたる（佐世保観光コンベンション協会の特集記事「佐世保バーガーまるわかり」も老舗として紹介）。営業の根拠＝【条件1】公式サイト hikari-burger.com のトップページに「2026年7月15日（水）より、原材料費の高騰などにより、商品の価格を改定させていただくこととなりました」という店主名義のお知らせが掲載されている（2026-11-22 取得）。【条件2-1】「ハンバーガーショップヒカリ 佐世保 閉店」（詰めた形）と「ハンバーガーショップ ヒカリ 佐世保 閉店」（空白を入れた形）の両方を Yahoo! 検索で実施（2026-11-22）。閉店の告知は無し。ヒットした2026年8月9日付の第三者投稿「ヒカリは閉店してた」は、2026年8月9日が日曜で当月の第2日曜＝公式サイトが明記する定休日に当たるため、その日が休みだったという意味であり閉店ではない。【条件2-2】公式SNSのアカウント名＝対象なし（公式サイトに公式SNSへのリンクが無い。これは閉店の証拠ではない）。【条件2-3】「ハンバーガーショップ ヒカリ 佐世保 移転」「ハンバーガーショップ ヒカリ 佐世保 リニューアル」でも検索（2026-11-22）。矢岳町1-1での営業継続のみで、移転・リニューアルの告知は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E3%83%92%E3%82%AB%E3%83%AA%EF%BC%88%E7%9F%A2%E5%B2%B3%E6%9C%AC%E5%BA%97%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E7%9F%A2%E5%B2%B3%E7%94%BA1-1">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://hikari-burger.com/">公式サイト（2026年7月15日付の価格改定のお知らせ・本店の所在地と営業時間）2026-11-22 取得</a> / <a href="https://hikari-burger.com/menu">公式サイト 本店メニュー（税込価格）2026-11-22 取得</a> / <a href="https://hikari-burger.com/kanko_message">公式サイト 観光のお客様へ（本店の営業10:00〜16:00・店休日・座席カウンター7席）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61668">佐世保観光コンベンション協会「海風の国」店舗ページ（住所・電話・支払い方法・座席）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/burger">佐世保観光コンベンション協会「佐世保バーガーまるわかり」特集（定義と店舗一覧）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-burger-hikari-gobangai">
+<img class="hero" src="img/sasebo/sasebo-burger-hikari-gobangai.jpg" alt="ハンバーガーショップ ヒカリ させぼ五番街店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-burger-hikari-gobangai_exterior.jpg" alt="ハンバーガーショップ ヒカリ させぼ五番街店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>ハンバーガーショップ ヒカリ させぼ五番街店<span class="yomi">はんばーがーしょっぷ ひかり させぼごばんがいてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">矢岳町の本店が平成25年にJR佐世保駅みなと口側の商業施設「させぼ五番街」へ出した2号店で、駅から徒歩2分。テラス棟1階にあり、席数は15席（佐世保観光コンベンション協会の店舗ページではテーブル2・カウンター11席、最大17名）。パティは本店より肉厚にした五番街店オリジナルで、ソースは創業以来のもの。夜21時まで開いているので、旅程の最後や列車待ちに使いやすい。支払いは現金・クレジットカード・させぼeコイン・PayPay。駐車場はさせぼ五番街の施設駐車場を利用する。持ち帰りも可で、最大17名分の注文まで受ける。</div>
+<div class="sig"><b>一皿:</b>スペシャルバーガー（チーズ・ベーコン・エッグ入り）／ジャンボチキンスペシャルバーガー（鶏の一枚揚げに具材を重ねた最も大きい一品）／ホットドッグ（チーズ入りも選べる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜21:00（公式サイト。佐世保観光コンベンション協会の店舗ページはラストオーダー20:50と記載）</td></tr>
+<tr><th>定休日</th><td class="off">年末年始のみ（公式サイト。佐世保観光コンベンション協会の店舗ページは1月1日・2日と記載。状況により変動あり）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市新港町3-1</td></tr>
+<tr><th>予約</th><td>席の予約は不可。持ち帰りは電話で注文できる（最大17名分まで）。 — <a href="tel:0956220321">☎ 0956-22-0321</a> ／ <a href="https://hikari-burger.com/menu-gobangai">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保駅から歩いて行ける佐世保バーガーとして章に入れる。老舗ヒカリの味を駅前で、しかも21時まで食べられる唯一の選択肢。営業の根拠＝【条件1】公式サイト hikari-burger.com のトップページに2026年7月15日付の価格改定のお知らせ（店主名義）があり、同サイト内の「させぼ五番街店メニュー」に改定後の税込価格が掲載されている（2026-11-22 取得）。【条件2-1】「ハンバーガーショップヒカリ させぼ五番街店 閉店」（詰めた形）と「ハンバーガーショップ ヒカリ させぼ五番街店 閉店」（空白を入れた形）を Yahoo! 検索で実施（2026-11-22）。閉店の告知は無し。【条件2-2】公式SNSのアカウント名＝対象なし（公式サイトに公式SNSへのリンクが無い。これは閉店の証拠ではない）。【条件2-3】「ヒカリ させぼ五番街店 移転」「ヒカリ させぼ五番街店 リニューアル」で検索（2026-11-22）。させぼ五番街自体が2025年秋に館内リニューアルを行い一部店舗が閉店・移転したという記事が出るが、させぼ五番街の公式ショップページ（shop610801）に「ハンバーガーショップ ヒカリ」がテラス棟1階・TEL 0956-22-0321・10:00〜21:00で現在も掲載されていることを直読みで確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E3%83%92%E3%82%AB%E3%83%AA%20%E3%81%95%E3%81%9B%E3%81%BC%E4%BA%94%E7%95%AA%E8%A1%97%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%96%B0%E6%B8%AF%E7%94%BA3-1">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://hikari-burger.com/">公式サイト（2026年7月15日付の価格改定のお知らせ・五番街店の所在地と営業時間）2026-11-22 取得</a> / <a href="https://hikari-burger.com/menu-gobangai">公式サイト させぼ五番街店メニュー（税込価格）2026-11-22 取得</a> / <a href="https://hikari-burger.com/kanko_message">公式サイト 観光のお客様へ（五番街店の営業時間・店休日・座席15席）2026-11-22 取得</a> / <a href="https://sasebo-5bangai.com/shop_search/shop610801/">させぼ五番街 公式ショップページ（現在も出店中・フロア・営業時間10:00〜21:00）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61669">佐世保観光コンベンション協会「海風の国」店舗ページ（住所・電話・支払い方法・座席・団体）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-burger-misarosso">
+<img class="hero" src="img/sasebo/sasebo-burger-misarosso.jpg" alt="ミサロッソ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-burger-misarosso_exterior.jpg" alt="ミサロッソ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>ミサロッソ<span class="yomi">みさろっそ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐世保市役所の裏通りにある1998年創業の店。自家製バンズと自家製パティ、サルサソースが看板で、1階が駐車場（4台）、2階が客席20席（テーブル4卓）という造り。店内は米国風の内装で、漫画棚やフィギュア棚があり、家族連れでも待ちやすい。支払いは現金・させぼeコイン・PayPay。公式サイトのお知らせによると令和8年（2026年）3月4日から新価格、同年3月から定休日が火曜日と第4月曜日になり、同時にピザのメニューは終了した。古い紹介記事にはピザが載っているが現在は扱っていないので注意。</div>
+<div class="sig"><b>一皿:</b>ミサモンスター（三分割した自家製バンズにダブルパティ・ベーコン・チーズを挟む看板。味の決め手はサルサソース）／ベーコン・エッグ・チーズバーガー（佐世保バーガーの定番構成）／ドックモンスター（ソーセージ2本入りのホットドッグ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜19:00（ラストオーダー19:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日・第4月曜日（祝日の場合は営業し翌日休み。2026年3月からこの形になった）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市万徳町2-15</td></tr>
+<tr><th>予約</th><td>予約不可。持ち帰りは店頭での注文のみ。 — <a href="tel:0956246737">☎ 0956-24-6737</a> ／ <a href="https://www.misarosso.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保市中心部（市役所裏・万徳町）で食べられる代表的な佐世保バーガーとして章に入れる。自家製バンズ・自家製パティ・オリジナルソースという佐世保バーガーの定義を満たし、九十九島側に集まりがちな章の中で中心市街地の枠を担う。営業の根拠＝【条件1】公式サイト misarosso.com の「最新のお知らせ」に2026年9月23日付「9月連休以降の店休日について」、2026年2月25日付「ピザと定休日と価格の変更」が掲載され、本文も直読みした（2026-11-22 取得）。【条件2-1】「ミサロッソ 佐世保 閉店」（空白を入れた形）と「ミサロッソ佐世保 閉店」（詰めた形）を Yahoo! 検索で実施（2026-11-22）。閉店の告知は無し。【条件2-2】公式SNSのアカウント名＝Instagram「佐世保バーガーミサロッソ（@misa.rosso）」を検索結果上で確認（2026-11-22。Instagram本体はHTTP 429で開けないためアカウント名のみ）。【条件2-3】「ミサロッソ 移転」「ミサロッソ リニューアル」でも検索（2026-11-22）。万徳町2-15での営業継続のみで、移転の告知は無し。「リニューアル」はテリヤキチキンバーガーの再発売の告知だった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9F%E3%82%B5%E3%83%AD%E3%83%83%E3%82%BD%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%87%E5%BE%B3%E7%94%BA2-15">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.misarosso.com/">公式サイト トップ（2026年9月23日・2026年2月25日のお知らせ、令和8年3月4日からの新価格、定休日）2026-11-22 取得</a> / <a href="https://www.misarosso.com/menu/">公式サイト メニュー（全品の税込価格）2026-11-22 取得</a> / <a href="https://www.misarosso.com/2026/02/25/post-666/">公式サイト お知らせ「ピザと定休日と価格の変更」（2026年2月25日。ピザ終了・定休日変更・3月4日新価格）2026-11-22 取得</a> / <a href="https://www.misarosso.com/about/">公式サイト お店紹介（店内・外観の写真）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61569">佐世保観光コンベンション協会「海風の国」店舗ページ（住所・電話・席数・支払い方法・駐車場）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-burger-luckys-kashimae">
+<img class="hero" src="img/sasebo/sasebo-burger-luckys-kashimae.jpg" alt="ラッキーズ 鹿子前店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-burger-luckys-kashimae_exterior.jpg" alt="ラッキーズ 鹿子前店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>ラッキーズ 鹿子前店<span class="yomi">らっきーず かしまえてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">九十九島パールシーリゾートの中にある1994年創業の手作りハンバーガー店。席数は23席と多くないが、窓の外がマリーナで、海を見ながら食べられる。注文を受けてから焼くので熱いまま出てくる代わりに時間がかかる。持ち帰りもでき、天気がよければ外のベンチで食べる客も多い。駐車場はパールシーの駐車場を使う。公式サイトは2026年7月31日付で価格改定を告知し、2026年8月1日から全メニューの価格が変わっている。営業時間は公式サイトが10:00開店とする一方、佐世保観光コンベンション協会の店舗ページと「佐世保バーガーマップ2025」は11:00開店としており食い違うので、朝いちで行くなら電話で確かめたい。</div>
+<div class="sig"><b>一皿:</b>ステーキバーガー（パンと一緒に噛み切れる柔らかい肉とスパイシーなジャポネソース。店の一番人気）／ベーコンエッグバーガー（レギュラーとジャンボの2サイズ）／トリプルバーガー（パティを重ねた食べごたえ重視の一品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00（ラストオーダー16:30）（公式サイト。佐世保観光コンベンション協会の店舗ページと佐世保バーガーマップ2025は11:00開店と記載）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市鹿子前町979 九十九島パールシーリゾート内</td></tr>
+<tr><th>予約</th><td>席の予約は不可。注文を受けてから作るため待ち時間あり。 — <a href="tel:0956284470">☎ 0956-28-4470</a> ／ <a href="https://luckys-sasebo-burger.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>九十九島・鹿子前エリアの枠。九十九島水族館海きららや遊覧船の発着する九十九島パールシーリゾート内にあり、観光の動線でそのまま寄れる。オーダーを受けてから作る・生野菜・オリジナルソースという佐世保バーガーの定義をすべて満たす1994年創業店。営業の根拠＝【条件1】公式サイト luckys-sasebo-burger.com の「おしらせ」に2026年07月31日付「価格改定のご案内」（令和8年8月1日よりメニュー全般の価格改定）が掲載されており、本文を直読みした（2026-11-22 取得）。【条件2-1】「ラッキーズ 鹿子前店 閉店」（空白を入れた形）と「ラッキーズ鹿子前店 閉店」（詰めた形）を Yahoo! 検索で実施（2026-11-22）。閉店の告知は無し。【条件2-2】公式SNSのアカウント名＝Instagram「ラッキーズ鹿子前（@luckys_kashimae）」を検索結果上で確認（2026-11-22。Instagram本体はHTTP 429で開けないためアカウント名のみ）。【条件2-3】「ラッキーズ 鹿子前 移転」「ラッキーズ 鹿子前 リニューアル」でも検索（2026-11-22）。鹿子前町979での営業継続のみで、ヒットした「リニューアル」は2023年のホームページ刷新の告知だった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BA%20%E9%B9%BF%E5%AD%90%E5%89%8D%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA979%20%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://luckys-sasebo-burger.com/">公式サイト トップ（店の沿革・営業時間・席数・駐車場・お知らせ一覧）2026-11-22 取得</a> / <a href="https://luckys-sasebo-burger.com/archives/notice/%e4%be%a1%e6%a0%bc%e6%94%b9%e5%ae%9a%e3%81%ae%e3%81%94%e6%a1%88%e5%86%85">公式サイト おしらせ「価格改定のご案内」（2026年07月31日付・令和8年8月1日より改定）2026-11-22 取得</a> / <a href="https://luckys-sasebo-burger.com/archives/genre/burger">公式サイト メニュー バーガー（改定後の価格）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61432">佐世保観光コンベンション協会「海風の国」店舗ページ（住所・電話・駐車場）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-burger-bellbeach-honten">
+<img class="hero" src="img/sasebo/sasebo-burger-bellbeach-honten.jpg" alt="バーガーショップ ベルビーチ 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-burger-bellbeach-honten_exterior.jpg" alt="バーガーショップ ベルビーチ 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>バーガーショップ ベルビーチ 本店<span class="yomi">ばーがーしょっぷ べるびーち ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">水産加工の増栄丸グループが営む佐世保バーガー認定店。自社のパン工房で焼くふかふかのバンズ、手作りパティ、甘めの自家製マヨネーズ「あまマヨ」が味の軸になる。注文は1階の窓口で、席は2階の広いイートインスペース（テーブル10卓・40名）で、天気がよければ外のデッキにも出られる。おむつ交換台と手すりのある多機能トイレを備えるので小さな子ども連れでも使いやすい。団体は50名まで。支払いは現金・クレジットカード・電子マネー・バーコード決済・させぼeコイン。電話での事前注文も受けている。向かいの九十九島パールシーリゾート第3・4駐車場が3時間無料。</div>
+<div class="sig"><b>一皿:</b>スペシャルバーガー（自家製バンズに手作りパティ・ベーコン・エッグ・チーズと生野菜を重ねた看板）／てりやきチキンカツバーガー（とりもも肉をカリッと揚げて甘辛く仕上げる）／フィッシュバーガー（松浦産のアジフライを使う）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜日（祝日は除く）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市鹿子前町942-3</td></tr>
+<tr><th>予約</th><td>席の予約は不可。持ち帰り・まとめ注文は電話で受け付ける（団体50名まで）。 — <a href="tel:0956287718">☎ 0956-28-7718</a> ／ <a href="https://bellbeach.masueimaru.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>九十九島・鹿子前エリアの枠。自家製バンズ・自家製ソース・生野菜という佐世保バーガーの定義を満たし、2階に40席のイートインと多機能トイレがあるため、家族連れや団体で座って食べられる数少ない佐世保バーガー店として章に入れる。営業の根拠＝【条件1】公式サイト bellbeach.masueimaru.jp の「お知らせ」に2026/11/05付「2026年11月の催事出店予定です!!」、2026/08/27付「お子様にうれしい『キッズセット』あります!!」、2026/04/30付「価格改定のお知らせ」が掲載され、本文も直読みした（2026-11-22 取得）。【条件2-1】「バーガーショップ ベルビーチ 佐世保 閉店」（空白を入れた形）と「バーガーショップベルビーチ 佐世保 閉店」（詰めた形）を Yahoo! 検索で実施（2026-11-22）。閉店の告知は無し。【条件2-2】公式SNSのアカウント名＝Instagram「佐世保バーガーベルビーチ（@bellbeach_official）」と X「@BellBeach0701」を確認（2026-11-22。Instagram本体はHTTP 429で開けないためアカウント名のみ）。【条件2-3】「ベルビーチ 鹿子前 移転」「ベルビーチ パールシー店 リニューアル」でも検索（2026-11-22）。過去に鹿子前町936-2／920-13から現在の942-3へ移転した履歴が第三者サイトに残るが、公式サイトの現住所は鹿子前町942-3で一致し、最近の移転・閉店の告知は無い。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E3%83%99%E3%83%AB%E3%83%93%E3%83%BC%E3%83%81%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA942-3">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://bellbeach.masueimaru.jp/">公式サイト トップ（店の説明・営業時間・定休日・住所・支払い方法）2026-11-22 取得</a> / <a href="https://bellbeach.masueimaru.jp/news/">公式サイト お知らせ（2026/11/05・2026/08/27・2026/04/30 の投稿）2026-11-22 取得</a> / <a href="https://bellbeach.masueimaru.jp/menu.html">公式サイト メニュー（全品の税込価格）2026-11-22 取得</a> / <a href="https://bellbeach.masueimaru.jp/shop.html">公式サイト 店舗紹介（2階イートインスペース・多機能トイレ・注文方法）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61473">佐世保観光コンベンション協会「海風の国」店舗ページ（住所・電話・席数・団体・支払い方法）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-burger-bellbeach-pearlsea">
+<img class="hero" src="img/sasebo/sasebo-burger-bellbeach-pearlsea.jpg" alt="バーガーショップ ベルビーチ パールシー店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-burger-bellbeach-pearlsea_exterior.jpg" alt="バーガーショップ ベルビーチ パールシー店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>バーガーショップ ベルビーチ パールシー店<span class="yomi">ばーがーしょっぷ べるびーち ぱーるしーてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">九十九島パールシーリゾートの敷地内、お食事処「九十九島海遊」に併設された売店型の店舗。本店と同じ自社パン工房のバンズ・手作りパティ・甘めの自家製マヨネーズを使う。基本は持ち帰りで、時間帯によっては店内で食べることもできる。遊覧船パールクィーンの乗船前後や水族館海きららの行き帰りに買いやすい立地で、本店より朝が1時間早い10時開店。子ども向けの揚げ物やソフトクリームも扱う。支払いは現金・クレジットカード・PayPay。簡単な英語対応ができる。駐車場はパールシーの駐車場を利用する。</div>
+<div class="sig"><b>一皿:</b>スペシャルバーガー（自家製バンズ・手作りパティ・ベーコン・エッグ・チーズ）／てりやきバーガー（甘めのたれと自家製マヨ）／フィッシュバーガー（松浦産のアジフライ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市鹿子前町1058-1 九十九島パールシーリゾート内</td></tr>
+<tr><th>予約</th><td>予約不可。基本は持ち帰りで、時間帯により店内飲食も可。 — <a href="tel:0956280655">☎ 0956-28-0655</a> ／ <a href="https://bellbeach.masueimaru.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>九十九島・鹿子前エリアの枠。遊覧船乗り場のすぐ横という位置と10時開店という点で、同じベルビーチでも使いどころが本店（11時開店・2階席でゆっくり）と明確に分かれるため、両方を章に入れた。住所（鹿子前町1058-1）と電話（0956-28-0655）が本店と異なる別店舗であることを確認済み。営業の根拠＝【条件1】運営元ベルビーチの公式サイト bellbeach.masueimaru.jp の「お知らせ」に2026/11/05付・2026/08/27付・2026/04/30付の投稿があり、2026/11/05の記事は当店を含む催事出店の予定を告知している（2026-11-22 取得）。【条件2-1】「バーガーショップ ベルビーチ 佐世保 閉店」（空白を入れた形）と「バーガーショップベルビーチ 佐世保 閉店」（詰めた形）を Yahoo! 検索で実施（2026-11-22）。閉店の告知は無し。【条件2-2】公式SNSのアカウント名＝Instagram「佐世保バーガーベルビーチ（@bellbeach_official）」と X「@BellBeach0701」を確認（2026-11-22）。【条件2-3】「ベルビーチ パールシー店 リニューアル」「ベルビーチ 鹿子前 移転」でも検索（2026-11-22）。当店の移転・閉店の告知は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E3%83%99%E3%83%AB%E3%83%93%E3%83%BC%E3%83%81%20%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA1058-1%20%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（bellbeach.masueimaru.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://bellbeach.masueimaru.jp/">公式サイト トップ（ベルビーチの説明・支払い方法）2026-11-22 取得</a> / <a href="https://bellbeach.masueimaru.jp/news/">公式サイト お知らせ（2026/11/05・2026/08/27・2026/04/30 の投稿）2026-11-22 取得</a> / <a href="https://bellbeach.masueimaru.jp/menu.html">公式サイト メニュー（全品の税込価格）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61469">佐世保観光コンベンション協会「海風の国」店舗ページ（住所・電話・営業時間・価格帯・支払い方法・外国語対応）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-burger-museum">
+<img class="hero" src="img/sasebo/sasebo-burger-museum.jpg" alt="佐世保バーガーミュージアム 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-burger-museum_exterior.jpg" alt="佐世保バーガーミュージアム 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>佐世保バーガーミュージアム<span class="yomi">させぼばーがーみゅーじあむ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">船越町の高台にあり、テラス席や屋外席から九十九島を見下ろせる店。佐世保観光コンベンション協会の特集では「佐世保バーガー 本店」として紹介されている。バンズを自家工房で焼き、トマトソースとマヨネーズも自家製という「全部自家製」が売り。席は店内50席・テラス8席・屋外30席（協会の店舗ページでは合計約100名）で、40名程度までの団体も受ける（団体はスペシャル佐世保バーガーのセット1,650円での注文を依頼している）。駐車場は無料で普通車約30台・大型バス3台。朝8時から開いているので、九十九島めぐりの前に寄れる。支払いは現金・クレジットカード・電子決済。公式サイトは営業時間・定休日を地図サービス側で確認するよう案内しているため、来店前の確認を勧める。</div>
+<div class="sig"><b>一皿:</b>スペシャルバーガー（自家製バンズに卵・ベーコン・チーズが全部入る看板。レギュラーとラージの2サイズ）／ABCバーガー（アボカド・ベーコン・チーズの創作バーガー）／海老かつバーガー（揚げたての海老かつを挟む）</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:00〜17:00（ただし9月は20:00まで、ラストオーダー19:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイトは営業時間・定休日を地図サービスで確認するよう案内。佐世保バーガーマップ2025は無休と記載）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市船越町190-1</td></tr>
+<tr><th>予約</th><td>個人の予約は不要。40名程度までの団体は事前連絡が必要（FAX 0956-28-5522 または公式サイトの問い合わせ）。 — <a href="tel:0956285533">☎ 0956-28-5533</a> ／ <a href="https://saseboburger-mus.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>九十九島の眺めとセットで佐世保バーガーを食べられる店として章に入れる。石岳展望台・九十九島動植物園森きららに近く、車で回る人の昼食に当たる位置。佐世保観光コンベンション協会の特集記事でも「全部自家製手作りバーガー」として挙げられている。営業の根拠＝【条件1】公式サイト saseboburger-mus.com の各ページを直読みし、WordPress の公開APIで更新日を確認したところ、アクセスのページが2026-08-05、会社案内が2026-08-07、こだわりが2026-02-12、店頭メニューが2026-08-05 に更新されている。あわせて外観写真が 2026/08 のアップロード（20260805gaikan.jpg）で配信されていることも確認した（2026-11-22 取得）。【条件2-1】「佐世保バーガーミュージアム 閉店」（詰めた形）と「佐世保バーガー ミュージアム 閉店」（空白を入れた形）を Yahoo! 検索で実施（2026-11-22）。閉店の告知は無く、ヒットしたのは2025年6月9日の「本日は大雨予報の為15時で閉店させていただきます」という当日の早仕舞いの投稿のみ。【条件2-2】公式SNSのアカウント名＝公式サイトにSNSへのリンクが無く対象なし（これは閉店の証拠ではない）。【条件2-3】「佐世保バーガーミュージアム 移転」「佐世保バーガーミュージアム リニューアル」でも検索（2026-11-22）。2021年5月に併設の宿の飲食スペースを改装して「佐世保バーガーミュージアム」に改称・リニューアルした経緯が出るだけで、以後の移転・閉店の告知は無い。なお電話番号は公式サイトの 0956-28-5533 を採った（協会の店舗ページも同じ。「佐世保バーガーマップ2025」のみ 0956-28-2771 と記載しており食い違う）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BD%90%E4%B8%96%E4%BF%9D%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E8%88%B9%E8%B6%8A%E7%94%BA190-1">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://saseboburger-mus.com/">公式サイト トップ（店の説明・席数・駐車場・団体の受入れ・電話番号）2026-11-22 取得</a> / <a href="https://saseboburger-mus.com/store-menu/">公式サイト 店頭メニュー（各バーガーの価格）2026-11-22 取得</a> / <a href="https://saseboburger-mus.com/wp-json/wp/v2/pages?per_page=20&amp;_fields=id,slug,modified,date,title">公式サイトの更新日（アクセス 2026-08-05／会社案内 2026-08-07／店頭メニュー 2026-08-05／こだわり 2026-02-12）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61474">佐世保観光コンベンション協会「海風の国」店舗ページ（住所・電話・営業時間・席数・駐車場・支払い方法）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/downloads/media/17485">佐世保観光コンベンション協会「佐世保バーガーマップ2025」（営業時間8:00〜17:00・席数・駐車場）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-burger-lorelei">
+<img class="hero" src="img/sasebo/sasebo-burger-lorelei.jpg" alt="レストラン ローレライ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-burger-lorelei_exterior.jpg" alt="レストラン ローレライ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>レストラン ローレライ<span class="yomi">れすとらん ろーれらい</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">JRハウステンボス駅前のホテルローレライに入るレストラン。2026年11月14日にホテルごとリニューアルオープンし、クラシカルなヨーロッパのレストランをモチーフにした内装に変わった。佐世保バーガー協会認定の佐世保バーガーのほか、長崎和牛のレモンステーキ、松浦直送の鯵フライ、長崎ちゃんぽん、護衛艦カレーといった佐世保・長崎の名物を一度に頼める。80席と広く、駐車場は250台。ハウステンボスの入場料なしで入れる点が、園内のバーガー店との大きな違い。朝食は7:00から和洋中73種類のビュッフェ。定休日は公式サイトに明記が無く、臨時休業は公式サイトのお知らせに出るので来店前に確認したい。</div>
+<div class="sig"><b>一皿:</b>佐世保バーガー（佐世保バーガー協会認定。特製ソースと半熟卵、牛肉100%のパティ）／長崎和牛のレモンステーキ（佐世保名物）／護衛艦カレー（基地の町ならではの一品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>朝食 7:00〜10:00（最終入店9:30）／ランチ 11:30〜15:00（ラストオーダー14:30）／ティータイム 15:00〜17:00／ディナー 平日17:00〜22:00（ラストオーダー21:00）・土日祝17:00〜22:00（ラストオーダー21:15）（2026年11月14日のリニューアル後。公式サイト）</td></tr>
+<tr><th>定休日</th><td class="off">公式サイトに定休日の記載が無い（臨時休業は公式サイトのお知らせで告知。直近では2026年11月24日のランチ＆ティータイムが貸切のため休業）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市南風崎町449</td></tr>
+<tr><th>予約</th><td>電話（0956-59-3939）で問い合わせ・予約ができる。団体の貸切が入る日はランチ等が休業になることがある。 — <a href="tel:0956593939">☎ 0956-59-3939</a> ／ <a href="https://lorelei.co.jp/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ハウステンボス方面の枠。園内のバーガー店はハウステンボスの入場料が別途必要になるのに対し、ここはJRハウステンボス駅前で入場料なしに座って食べられ、駐車場も250台ある。佐世保観光コンベンション協会の特集「佐世保バーガーまるわかり」のバーガーショップ一覧にも「レストランでいただくバーガー」として掲載されている。営業の根拠＝【条件1】公式サイト lorelei.co.jp のお知らせに2026/11/19付「【大浴場】11月26日大浴場設備メンテナンスのお知らせ」、2026/11/10付「【レストランローレライ】11月24日ランチ＆ティータイム休業のお知らせ」、2026/11/05付「11.14 GRAND OPEN｜ヨーロッパの世界観をイメージしたホテルへリニューアルいたします。」が掲載され、本文も直読みした（2026-11-22 取得）。レストラン名指しの日付つき告知があるため条件1を満たす。【条件2-1】「レストランローレライ 佐世保 閉店」（詰めた形）と「レストラン ローレライ 佐世保 閉店」（空白を入れた形）を Yahoo! 検索で実施（2026-11-22）。閉店の告知は無く、2026年11月14日のリニューアルオープンの記事が出た。【条件2-2】公式SNSのアカウント名＝公式サイトに公式SNSへのリンクが無く対象なし（これは閉店の証拠ではない）。【条件2-3】「ホテルローレライ 佐世保 移転」「レストランローレライ リニューアル」でも検索（2026-11-22）。南風崎町449のままで移転は無く、2026年11月14日グランドオープンの改装であることを公式お知らせで確認した。注意：この店はレモンステーキも看板にしているため、レモンステーキ・洋食の章と重複する可能性がある。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%AD%E3%83%BC%E3%83%AC%E3%83%A9%E3%82%A4%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%8D%97%E9%A2%A8%E5%B4%8E%E7%94%BA449">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://lorelei.co.jp/restaurant/">公式サイト レストランのページ（2026年11月リニューアル・佐世保バーガー協会認定の佐世保バーガー・営業時間・朝食料金）2026-11-22 取得</a> / <a href="https://lorelei.co.jp/news/">公式サイト お知らせ一覧（2026/11/19・2026/11/10・2026/11/05・2026/10/31・2026/10/14 の投稿）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61486">佐世保観光コンベンション協会「海風の国」店舗ページ（住所・電話・席数80席・駐車場250台）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/burger">佐世保観光コンベンション協会「佐世保バーガーまるわかり」特集（バーガーショップ一覧に掲載）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-lemon" class="c-aqua">レモンステーキ・ステーキ・洋食</h2>
+<div class="card" id="c-sasebo-lemon-jidaiya">
+<img class="hero" src="img/sasebo/sasebo-lemon-jidaiya.jpg" alt="下町の洋食　時代屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-lemon-jidaiya_exterior.jpg" alt="下町の洋食　時代屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">9</span>下町の洋食　時代屋<span class="yomi">したまちのようしょく　じだいや</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">昭和61年（1986年）創業。先代から十数年前に二代目の兄弟が引き継いだ洋食店で、2006年に三浦町から現在の吉福町へ移転した。席数は68席（テーブル8席・座敷4席）で団体は最大60名まで。英語メニューあり。看板のレモンステーキは熱した鉄板で客が自分で肉を裏返して焼き、残ったソースにご飯を入れて食べるのが店の流儀。公式サイトは「夜の営業時間を当面の間変更している」「問い合わせフォームからのメールが届かない状態」と告知しており、予約・価格・営業時間の確認は電話（0956-30-7040）で行う必要がある。2026年10月12日付のお知らせで、毎年作っていたおせち料理を原材料高騰のため本年は作らないと発表している。</div>
+<div class="sig"><b>一皿:</b>レモンステーキセット（薄切りの牛肉を熱々の鉄板にのせ、甘辛い醤油ベースのレモンソースで食べる。スープ・サラダ・ライス付き）／ビーフシチュー（大鍋で10時間煮込んだ牛バラ肉200gを赤ワイン入りの甘めのソースで。残りはガーリックトーストに付ける）／アメリカンステーキ・しょうが焼きステーキ（240gの厚切り牛ステーキ。塩こしょう味と、レモンソースを使ったしょうが風味の2種）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:00～14:00（OS）／ディナー 17:00～21:00（OS）（佐世保観光コンベンション協会 2026-11-22 取得）。※公式サイトが「夜の営業時間を当面の間変更しております」と告知しているため、夜は要電話確認。</td></tr>
+<tr><th>定休日</th><td class="off">月曜日（祝日の場合は翌日）（佐世保観光コンベンション協会 2026-11-22 取得）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市吉福町172-1</td></tr>
+<tr><th>予約</th><td>電話（0956-30-7040）。公式サイトは問い合わせフォームのメールが届かない状態と告知しており、電話での連絡を求めている。予約の可否そのものは出典に明記が無く未確認。 — <a href="tel:0956307040">☎ 0956-30-7040</a> ／ <a href="http://www.jidaiya.ne.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会の特集記事『佐世保名物「レモンステーキ」を心ゆくまで召し上がれ』で最初に紹介される店で、章の看板にあたる。営業確認①＝公式サイト www.jidaiya.ne.jp のお知らせに2026/10/12付の店主名義の告知（おせち料理を本年は作らない）があり、店自身が出した2026年の情報を確認した（2026-11-22 直読み）。営業確認②＝(1) Yahoo!検索で「下町の洋食 時代屋 閉店」と「下町の洋食時代屋閉店」の空白あり・なし両形を2026-11-22に実施。閉店情報は無く、上位は2006年の移転記事と公式サイトだった。(2) 公式SNSは対象なし（公式サイトにSNSへのリンクが一つも無い）。これは閉店の証拠ではない。(3)「下町の洋食 時代屋 移転」「下町の洋食 時代屋 リニューアル」を各1回実施。2006年7月13日に三浦町から吉福町へ移転した記事が出るのみで、それ以降の移転・閉店・業態変更は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E7%94%BA%E3%81%AE%E6%B4%8B%E9%A3%9F%E3%80%80%E6%99%82%E4%BB%A3%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%90%89%E7%A6%8F%E7%94%BA172-1">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/restaurant/61599">店名・住所・電話・営業時間・定休日・席数・駐車場・料金帯（掲載日の表示なし）2026-11-22 取得</a> / <a href="http://www.jidaiya.ne.jp/">公式サイトのお知らせ（2026/10/12 付・おせち料理を本年は作らない／HPの価格は十数年前のまま）2026-11-22 取得</a> / <a href="http://www.jidaiya.ne.jp/menu/menu.htm">公式サイトのメニュー表（価格は店の告知により十数年前のもの）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/lemonsteak">レモンステーキ特集記事での紹介（掲載日の表示なし）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-lemon-hachinoya">
+<img class="hero" src="img/sasebo/sasebo-lemon-hachinoya.jpg" alt="レストラン蜂の家 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">10</span>レストラン蜂の家<span class="yomi">れすとらんはちのや</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">昭和26年（1951年）創業。欧風カレーとジャンボサイズのシュークリームで知られる老舗で、2013年9月に本島町4-4から三ヶ町商店街の再開発ビル「サンクル2番館」1階へ移転した。席数は50席で全席禁煙、ソファー席とオープンテラス席がある。支払いは現金・クレジットカード（VISA・Master・JCB）・交通系電子マネー・楽天Edy・WAON・iD・QR決済に対応（公式サイト）。昼と夜の間の14:30～17:30は喫茶のみの営業で、月曜と水曜はランチタイムのみ、水曜はメニューを短縮して営業する。レモンステーキは長崎和牛を使い、すき焼き風の自家製ソースで出す。</div>
+<div class="sig"><b>一皿:</b>長崎和牛レモンステーキ（熱々の鉄板で焼きながら、蜂の家オリジナルのすき焼き風ソースで食べる佐世保名物）／海軍さんのビーフシチュー（濃厚でコクのある人気メニュー）／女王シュークリーム（創業当時からあるフルーツ入りのシュークリームにスカッチソースをかける）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30～14:30（OS）／14:30～17:30 は喫茶のみ／ディナー 17:30～19:45（OS）。※月曜日・水曜日はランチタイムのみの営業、水曜日はメニューを短縮して営業（公式サイト 2026-11-22 取得）。佐世保観光コンベンション協会の表記は「11:30～20:30（OS19:45）」で公式サイトと食い違うため、公式サイトの値を採った。</td></tr>
+<tr><th>定休日</th><td class="off">不定休（佐世保観光コンベンション協会 2026-11-22 取得）。公式サイトは定休日を明記せず、月曜日・水曜日はランチタイムのみと記載している。</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市栄町5-9　サンクル2番館1階</td></tr>
+<tr><th>予約</th><td>電話（0956-24-4522）。公式サイトが「ご予約・お問い合わせ TEL 0956-24-4522」と案内している。団体は要相談（佐世保観光コンベンション協会）。 — <a href="tel:0956244522">☎ 0956-24-4522</a> ／ <a href="https://hachinoya.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会のレモンステーキ特集で紹介される洋食の老舗。海軍さんのビーフシチューの提供店でもあるが、看板はカレーとシュークリームで、和食・郷土料理の章の担当が意図的に外してこの章へ回した店。営業確認①＝公式サイト hachinoya.net のお知らせ最新が2026.11.2付「11月催事スケジュール」で、店自身が出した2026年の情報を確認した（2026-11-22 直読み）。営業確認②＝(1) Yahoo!検索で「レストラン蜂の家 佐世保 閉店」と「レストラン蜂の家閉店」の両形を2026-11-22に実施。「9月16日で営業終了、再開発ビルに移転」という記事が出たが、本文を開くと2013.09.12付で、本島町から現在のサンクル2番館へ移った際の記事だった。現在の公式サイト（2026.11.2更新）は住所をサンクル2番館1Fとしている。(2) 公式SNS＝対象なし（公式サイトにSNSへのリンクが無く、オンラインショップ hachinoya.shop のみ）。これは閉店の証拠ではない。(3)「移転」「リニューアル」各1回。いずれも2013年の移転記事のみで、以降の移転・閉店は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E8%9C%82%E3%81%AE%E5%AE%B6%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%A0%84%E7%94%BA5-9%E3%80%80%E3%82%B5%E3%83%B3%E3%82%AF%E3%83%AB2%E7%95%AA%E9%A4%A81%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 写真なし / 参照元: <a href="https://www.sasebo99.com/restaurant/61550">店名・住所・電話・席数・支払い方法・料金帯（掲載日の表示なし）2026-11-22 取得</a> / <a href="https://hachinoya.net/news/">公式サイトのお知らせ（最新 2026.11.2「11月催事スケジュール」）2026-11-22 取得</a> / <a href="https://hachinoya.net/restaurant/">公式サイトのレストラン案内（住所・営業時間・席数・支払い方法）2026-11-22 取得</a> / <a href="https://hachinoya.net/menu/">公式サイトのメニュー（税込価格）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-lemon-kaiyuu">
+<img class="hero" src="img/sasebo/sasebo-lemon-kaiyuu.jpg" alt="お食事処　九十九島 海遊 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-lemon-kaiyuu_exterior.jpg" alt="お食事処　九十九島 海遊 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">11</span>お食事処　九十九島 海遊<span class="yomi">おしょくじどころ　くじゅうくしま　かいゆう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">水産会社・増栄丸が運営する食事処で、西海国立公園「九十九島」の遊覧船乗り場がある九十九島パールシーリゾート内にある。席数は80席（テーブル7席・座敷10席）で団体は80名まで受け入れる。支払いは現金・クレジットカード・PayPay（佐世保観光コンベンション協会）。レモンステーキは箸でも食べやすいように肉があらかじめカットされていて、自社製の「佐世保名物レモンステーキソース」は長崎県推奨商品に選ばれ、売店でも販売している。2026年7月には海上自衛隊の護衛艦はぐろから「護衛艦はぐろのカレーである」との認定を受けたバターチキンカレーを出している。遊覧船の時間に合わせて昼に混みやすい。</div>
+<div class="sig"><b>一皿:</b>佐世保名物レモンステーキ膳（熱々の鉄板で焼いた薄切り肉を自社オリジナルのレモンステーキソースで。肉はカット済み）／護衛艦はぐろカレー（2026年7月3日に認定証を交付された、優しい辛さのバターチキンカレー。サラダ付）／九十九島海鮮丼（直営漁場直送の魚介）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00～17:00（OS16:00）。ディナーの予約が入った場合は21:00まで（要予約）。売店は10:00～17:00（公式サイト 2026-11-22 取得）。※九十九島パールシーリゾートのテナント紹介は「平日11:00～15:30（OS）／土日祝11:00～17:00（OS）」としており食い違うため、店自身の公式サイトの値を採った。</td></tr>
+<tr><th>定休日</th><td class="off">不定休（佐世保観光コンベンション協会 2026-11-22 取得）。公式サイトは定休日を明記していない。</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市鹿子前町1058-1</td></tr>
+<tr><th>予約</th><td>電話（0956-28-0655）。ディナーは要予約で、予約が入った場合のみ21:00まで営業する（公式サイト）。団体は80名まで（佐世保観光コンベンション協会）。 — <a href="tel:0956280655">☎ 0956-28-0655</a> ／ <a href="https://kaiyuu.masueimaru.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会のレモンステーキ特集に掲載され、九十九島観光とあわせて寄れる唯一のレモンステーキの店。営業確認①＝公式サイト kaiyuu.masueimaru.jp のお知らせに2026/07/13付「『護衛艦はぐろカレー』認定!!」、2026/03/02付「佐世保・九十九島 99種のステッカーキャンペーンに参加しています!!」があり、店自身が出した2026年の情報を確認した（2026-11-22 直読み）。営業確認②＝(1) Yahoo!検索で「九十九島 海遊 佐世保 閉店」と「九十九島海遊閉店」の両形を2026-11-22に実施。閉店情報は無く、公式サイトと九十九島パールシーリゾートのテナント紹介が並んだ。(2) 公式SNS＝Instagram のアカウント名「九十九島海遊（@kaiyuu_official）」を、佐世保観光コンベンション協会の店舗ページと検索結果の見出しで確認した。Instagram 本体はHTTP 429で開けないため、投稿の中身は未確認。(3)「移転」「リニューアル」各1回。移転・閉店の情報は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%E3%80%80%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%20%E6%B5%B7%E9%81%8A%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA1058-1">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/restaurant/62538">店名・住所・電話・営業時間・席数・支払い方法・駐車場・料金帯（掲載日の表示なし）2026-11-22 取得</a> / <a href="https://kaiyuu.masueimaru.jp/news/">公式サイトのお知らせ（2026/07/13 護衛艦はぐろカレー認定・価格1,500円／2026/03/02 ステッカーキャンペーン）2026-11-22 取得</a> / <a href="https://kaiyuu.masueimaru.jp/">公式サイトの営業時間・アクセス・支払い方法 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-lemon-lemoned-raymond">
+<img class="hero" src="img/sasebo/sasebo-lemon-lemoned-raymond.jpg" alt="Lemoned Raymond本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-lemon-lemoned-raymond_exterior.jpg" alt="Lemoned Raymond本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">12</span>Lemoned Raymond本店<span class="yomi">れもんど　れいもんど　ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">長崎県で初めての本格ソースのレモンステーキ専門店として開いた1号店。もとは上京町にあり、2022年11月16日に旧店舗を閉めたあと近くの下京町へ移転・リニューアルして広くなり、個室も備えた。席数は28～30席。支払いは現金・クレジットカード・PayPay（佐世保観光コンベンション協会）。メニューは薄切り肉の「クラシック」と、脂の旨みが強い「カルビ」「特カルビ」、厚切りの「本格派ステーキ」に分かれ、本格派はタレをレモンソースか塩から選べて、岩塩・生レモン・梅干しが無料で付く。市内にはこのほか させぼセーラータウン店（常盤町7-7 エイコービル2F／0956-56-9270／定休日 月曜日）がある。</div>
+<div class="sig"><b>一皿:</b>クラシック レモンステーキ（佐世保の伝統的なレシピの薄切り肉／2,950円）／カルビ レモンステーキ（肉の脂の旨みを強く出したもの／1,850円）／本格派ステーキ（厚切り。タレはレモンソースか塩を選ぶ／100g 2,200円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30～14:30／17:30～22:00（公式サイトの店舗情報 2026-11-22 取得）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（公式サイトの店舗情報 2026-11-22 取得）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市下京町7-15　一休ビル1F</td></tr>
+<tr><th>予約</th><td>予約の可否・方法は公式サイトにも佐世保観光コンベンション協会の店舗ページにも記載が無く未確認。問い合わせ先の電話は 0956-59-8959。 — <a href="tel:0956598959">☎ 0956-59-8959</a> ／ <a href="https://lemoned-raymond.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保で唯一のレモンステーキ専門店で、章の中で「専門店の味」を担う。営業確認①＝公式サイト lemoned-raymond.com のサイトマップで、日本語メニューのページの最終更新が2026-05-23、サイト全体の最終更新が2026-11-09と確認でき、そのメニュー画像も wp-content/uploads/2026/05/ にアップロードされたもので、店自身が出した2026年の情報であることを確認した（2026-11-22 直読み）。営業確認②＝(1) Yahoo!検索で「Lemoned Raymond 佐世保 閉店」と「レモンドレイモンド閉店」の両形を2026-11-22に実施。出てきた「閉店」は2022年11月16日の旧・上京店のもので、同じ記事群が移転・リニューアル先として現在の下京町の店を示していた。(2) 公式SNS＝X のアカウント名「lemoned_raymond レモンドレイモンド 本店（@LemonedRaymond）」を x.com で直接読んで確認した（2026-11-22）。(3)「移転」「リニューアル」各1回。上京町から下京町への移転・リニューアルが確認でき、公式サイトのトップにも「第1号店、上京店が近くに移転、リニューアルしました」と掲載されている。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Lemoned%20Raymond%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA7-15%E3%80%80%E4%B8%80%E4%BC%91%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（sasebo2.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/restaurant/64429">店名・住所・電話・営業時間・定休日・席数・支払い方法（掲載日の表示なし）2026-11-22 取得</a> / <a href="https://lemoned-raymond.com/shopinfo/">公式サイトの店舗情報（本店・させぼセーラータウン店の住所と営業時間）2026-11-22 取得</a> / <a href="https://lemoned-raymond.com/%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC/">公式サイトの日本語メニュー（ページ最終更新 2026-05-23、メニュー画像は 2026/05 アップロード）2026-11-22 取得</a> / <a href="https://x.com/LemonedRaymond">公式Xのアカウント名（@LemonedRaymond／レモンドレイモンド 本店）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-lemon-gyuemon-yonkacho">
+<img class="hero" src="img/sasebo/sasebo-lemon-gyuemon-yonkacho.jpg" alt="牛右衛門　四ケ町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">13</span>牛右衛門　四ケ町店<span class="yomi">ぎゅうえもん　よんかちょうてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">佐世保市大塔町に本社を置く株式会社牛右衛門が長崎県内と九州北部で展開する店の、四ヶ町アーケードにある店舗。ビルの2階と3階を使い、客席88席・座敷40席の合計128席に加え、3階に宴会場（24席＋座敷40席）がある。ベビーベッド・ベビーシート・チャイルドチェア・ドリンクバーあり、車椅子用トイレとスロープは無し。支払いは現金・クレジットカード・交通系ほかの電子マネー・QRコード決済に対応。ハンバーグは創業以来40年変わらぬ製法で毎日店で手ごねし、レモンステーキ、長崎トルコライス、松浦アジフライ定食など長崎・佐世保のご当地メニューを一通り揃えている。年中無休で11時から通しで営業するので、アーケードの買い物の途中に入りやすい。</div>
+<div class="sig"><b>一皿:</b>レモンステーキ（薄切りの牛肉を鉄板で焼き、特製レモンソースをかける。残ったソースにご飯を入れるのがすすめ／120g 1,419円～）／牛肉100%ハンバーグ（創業以来40年変わらぬ製法で毎日店で手ごね。伝統のオニオンデミグラスソース／825円～）／テキサスステーキ（300gの厚切り。ジャポネソースかBBQソースで、添えられた焼き石で好みの焼き加減にできる／3,168円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00～21:30（料理・ドリンクとも L.O. 21:00）（ホットペッパーグルメの店舗ページ 2026/10/27 更新・2026-11-22 取得。公式サイトの店舗紹介も「開店11:00／OS21:00／閉店21:30」で一致）</td></tr>
+<tr><th>定休日</th><td class="off">なし（ホットペッパーグルメの店舗ページ 2026/10/27 更新・2026-11-22 取得）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市本島町3-5（2F・3F）</td></tr>
+<tr><th>予約</th><td>電話（0956-22-1600）のほか、ホットペッパーグルメのネット予約に対応（即予約は来店日当日19時まで受付）。12名～50名の貸切座敷個室、8名～24名のテーブル個室がある（ホットペッパーグルメの店舗ページ 2026/10/27 更新）。 — <a href="tel:0956221600">☎ 0956-22-1600</a> ／ <a href="https://gyuemon.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保に本社を置く地元のレストランで、レモンステーキ・ハンバーグ・トルコライス・佐世保バーガーといった長崎のご当地洋食をまとめて出す。四ヶ町アーケードにあり年中無休・通し営業なので、章の中で「時間を選ばず寄れる洋食」の枠を埋める。全国チェーンではなく長崎県と九州北部に限った地元の店。営業確認①＝ホットペッパーグルメの店舗ページが有料掲載で、料理欄・店舗情報欄とも「2026/10/27 更新」と表示されており、店自身が出した2026年の情報を確認した（2026-11-22 直読み）。あわせて公式サイト gyuemon.com の新着情報に2026年10月6日・2026年9月2日付の記事がある。営業確認②＝(1) Yahoo!検索で「牛右衛門 四ケ町店 閉店」と「牛右衛門四ヶ町店閉店」の両形を2026-11-22に実施。閉店情報は無く、公式サイトの店舗紹介（四ヶ町店 開店11:00／OS21:00／閉店21:30）が出た。(2) 公式SNS＝Instagram のアカウント名「株式会社牛右衛門【公式】（@gyuemon_official）」を検索結果の見出しで確認した。Instagram 本体はHTTP 429で開けないため投稿の中身は未確認。(3)「牛右衛門 佐世保 移転」「牛右衛門 佐世保 リニューアル」を各1回実施。四ヶ町店の移転・閉店は無く、出てきたのは系列の酛蔵庄屋岩見店の移転（2024年）と牛右衛門東長崎店の新装（2024年）だった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%89%9B%E5%8F%B3%E8%A1%9B%E9%96%80%E3%80%80%E5%9B%9B%E3%82%B1%E7%94%BA%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%9C%AC%E5%B3%B6%E7%94%BA3-5%EF%BC%882F%E3%83%BB3F%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004724184/">ホットペッパーグルメの店舗ページ（有料掲載／料理欄・店舗情報欄とも 2026/10/27 更新。価格・営業時間・定休日・アクセス・支払い方法）2026-11-22 取得</a> / <a href="https://gyuemon.com/gyuemon/shoplist/">公式サイトの店舗紹介（四ヶ町店の住所・電話・営業時間・客席数128席・駐車場なし）2026-11-22 取得</a> / <a href="https://gyuemon.com/news">公式サイトの新着情報（2026年10月6日・9月2日ほか）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-lemon-lavandre">
+<img class="hero" src="img/sasebo/sasebo-lemon-lavandre.jpg" alt="レストラン　ラヴァンドル（ホテル日航ハウステンボス） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-lemon-lavandre_exterior.jpg" alt="レストラン　ラヴァンドル（ホテル日航ハウステンボス） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">14</span>レストラン　ラヴァンドル（ホテル日航ハウステンボス）<span class="yomi">れすとらん　らゔぁんどる（ほてるにっこうはうすてんぼす）</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">ハウステンボスに隣接するホテル日航ハウステンボスの1階にあるメインダイニング。座席数100席で、22名まで入る個室「ソレイユ」も備える。朝食は長崎の郷土料理を含む和洋ブッフェ、ランチは毎月テーマが替わるブッフェ、ディナーはコースの日とハーフブッフェの日があり、ディナーカレンダーで営業の形が分かれる。支払いは現金・クレジットカード・交通系ICカード・電子決済に対応（nanaco・QUICPay・Apple Payは不可）。長崎県産黒毛和牛のレモンステーキコースがディナーセットの定番にある。なおホテルは設備点検のため2027年1月12日（火）チェックアウト後から1月15日（金）まで全館休館し、その間はレストランも営業を休止する。</div>
+<div class="sig"><b>一皿:</b>佐世保名物 長崎県産黒毛和牛のレモンステーキコース（薄切りの長崎和牛をレモンの酸味を活かした特製和風ソースで仕上げるディナーセット）／ランチブッフェ（毎月テーマが替わり40種以上。時間制限なし）／朝食ブッフェ（和洋に加え長崎の郷土料理を用意）</div>
+<table class="info">
+<tr><th>営業時間</th><td>朝食 6:45～10:00（最終入店9:30）／ランチ 11:30～14:30（最終入店14:00）／ディナー 17:30～21:00（ラストオーダー20:00）（ホテル公式サイトのレストランページ 2026-11-22 取得）。ディナーはコースの日とハーフブッフェの日があり、公式サイトのディナーカレンダーで確認が必要。</td></tr>
+<tr><th>定休日</th><td class="off">水曜日（ディナーのみ）（佐世保観光コンベンション協会 2026-11-22 取得）。ホテル公式サイトのラヴァンドルのページには定休日の記載が無い。※ホテルは2027年1月12日（火）チェックアウト後～1月15日（金）に全館休館する（公式サイト 2026/06/25 付）。</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市ハウステンボス町6番地</td></tr>
+<tr><th>予約</th><td>電話（レストラン予約 0956-58-0239・受付10:00～17:30）またはホテル公式サイトのレストラン予約。ディナーセットのプランは前日までの予約が必要（公式サイトのお知らせ 2026/11/04 付）。 — <a href="tel:0956580239">☎ 0956-58-0239</a> ／ <a href="https://www.nikko-htb.co.jp/restaurant/lavandre/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会のレモンステーキ特集に掲載され、ハウステンボス側に泊まる人がレモンステーキを食べられる数少ない店。営業確認①＝ホテル公式サイトのお知らせに2026/11/04付「JALクーポン・JAL Payギフト・JAL旅行券をつかっておトクなランチ＆ディナー」（実施店舗にレストラン ラヴァンドルを明記）があり、ほかにも2026/10/05・2026/09/29付の告知があるので、店自身が出した2026年の情報を確認した（2026-11-22 直読み）。営業確認②＝(1) Yahoo!検索で「ホテル日航ハウステンボス ラヴァンドル 閉店」を2026-11-22に実施。閉店情報は無し。(2) 公式SNS＝X のアカウント名「ホテル日航ハウステンボス【公式】（@nikkohtb）」を x.com で直接読んで確認した（2026-11-22）。(3)「移転」「リニューアル」を1回。2018年7月18日にバイキングレストランとしてリニューアルした記事が出るのみで、閉店・移転は無し。※2027年1月12日～15日の全館休館は公式サイトの2026/06/25付お知らせで確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%80%80%E3%83%A9%E3%83%B4%E3%82%A1%E3%83%B3%E3%83%89%E3%83%AB%EF%BC%88%E3%83%9B%E3%83%86%E3%83%AB%E6%97%A5%E8%88%AA%E3%83%8F%E3%82%A6%E3%82%B9%E3%83%86%E3%83%B3%E3%83%9C%E3%82%B9%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E3%83%8F%E3%82%A6%E3%82%B9%E3%83%86%E3%83%B3%E3%83%9C%E3%82%B9%E7%94%BA6%E7%95%AA%E5%9C%B0">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/restaurant/100157">店名・住所・電話・料金・席数・支払い方法・駐車場（掲載日の表示なし）2026-11-22 取得</a> / <a href="https://www.nikko-htb.co.jp/restaurant/lavandre/">ホテル公式サイトのラヴァンドルのページ（営業時間・座席数100席・個室）2026-11-22 取得</a> / <a href="https://www.nikko-htb.co.jp/information/">ホテル公式サイトのお知らせ一覧（最新 2026/11/04）2026-11-22 取得</a> / <a href="https://www.nikko-htb.co.jp/information/989/">ホテル公式サイトのお知らせ（2026/06/25 付・2027年1月12日～15日の全館休館）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-lemon-bonsabur">
+<img class="hero" src="img/sasebo/sasebo-lemon-bonsabur.jpg" alt="ボンサブール（ホテルリソル佐世保） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-lemon-bonsabur_exterior.jpg" alt="ボンサブール（ホテルリソル佐世保） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">15</span>ボンサブール（ホテルリソル佐世保）<span class="yomi">ぼんさぶーる（ほてるりそるさせぼ）</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">JR佐世保駅前のホテルリソル佐世保の2階にあるレストラン。特徴は朝食で、和食・洋食・こんごうカレー・佐世保風バーガーの4種類から主菜を選び、ビーフシチューやレモンステーキといった佐世保の名物を温かい状態で出し、カステラが食べ放題になる。朝食は6:30～9:30（最終入場9:00）で毎日営業、大人2,000円（税込）。ランチはホテル公式サイトが「団体専用・完全予約制」とするのに対し、佐世保観光コンベンション協会の店舗ページは「平日限定11:30～14:00、どなたでも利用可」としていて食い違う。ディナー営業は終了している。個人で昼に行く場合は必ず電話で確認してほしい。</div>
+<div class="sig"><b>一皿:</b>レモンステーキ（日本人に合うさっぱりしたステーキをという要望から生まれた佐世保の名物料理。朝食の主菜と団体ランチの定番）／こんごうカレー（イージス護衛艦こんごうで作られるカレー。鶏ガラと香味野菜を一晩煮込む）／朝食ブッフェ（カステラ食べ放題、豊富なコーヒーメニュー、スムージー付き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>朝食 6:30～9:30（最終入場9:00）毎日営業（ホテル公式サイトのレストランページ 2026-11-22 取得）。ランチはホテル公式サイトでは「団体専用・完全予約制」、佐世保観光コンベンション協会の店舗ページでは「11:30～14:00（OS13:30）」と食い違う。ディナー営業は終了している。</td></tr>
+<tr><th>定休日</th><td class="off">朝食は毎日営業（ホテル公式サイト 2026-11-22 取得）。ランチは土曜日・日曜日・祝日が休み（佐世保観光コンベンション協会 2026-11-22 取得）。</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市白南風町8-17（JR佐世保駅前）</td></tr>
+<tr><th>予約</th><td>ランチはホテル公式サイトによれば団体専用・完全予約制。電話（0956-24-9269）で確認・予約する。個人の昼の利用可否は出典が食い違うため要電話確認。 — <a href="tel:0956249269">☎ 0956-24-9269</a> ／ <a href="https://www.resol-hotel.jp/sasebo/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会のレモンステーキ提供店の一覧に載る駅前のホテルレストランで、朝からレモンステーキが食べられるという点でこの章の中でほかに代わりが無い。海軍さんのビーフシチューの提供店でもあるが、和食・郷土料理の章の担当が意図的に外してこの章へ回した店。営業確認①＝ホテル公式サイトのトピックスに2026.11.16付「小さな幸せを届けるクリスマス」、2026.10.23付・2026.10.19付・2026.09.28付の告知があり、店（運営するホテル）自身が出した2026年の情報を確認した（2026-11-22 直読み）。営業確認②＝(1) Yahoo!検索で「ホテルリソル佐世保 ボンサブール 閉店」を2026-11-22に実施。レストランの閉店情報は無く、「2階レストラン『ボンサブール』では9月末をもってディナー営業を終了」という宿泊予約サイト掲載のホテルからの告知が出た（ディナーのみの終了で、店の閉店ではない）。(2) 公式SNS＝Instagram のアカウント名「hotel_resol_sasebo」を検索結果で確認した。Instagram 本体はHTTP 429で開けないため投稿の中身は未確認。(3)「移転」「リニューアル」を1回。ホテルの全客室リニューアル（2017年～）の告知のみで、移転・閉店は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9C%E3%83%B3%E3%82%B5%E3%83%96%E3%83%BC%E3%83%AB%EF%BC%88%E3%83%9B%E3%83%86%E3%83%AB%E3%83%AA%E3%82%BD%E3%83%AB%E4%BD%90%E4%B8%96%E4%BF%9D%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E7%99%BD%E5%8D%97%E9%A2%A8%E7%94%BA8-17%EF%BC%88JR%E4%BD%90%E4%B8%96%E4%BF%9D%E9%A7%85%E5%89%8D%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.resol-hotel.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.resol-hotel.jp/sasebo/restaurant/">ホテル公式サイトのレストランページ（朝食の時間・料金2,000円・内容、ランチは団体専用・完全予約制）2026-11-22 取得</a> / <a href="https://www.resol-hotel.jp/sasebo/">ホテル公式サイトのトピックス（最新 2026.11.16／2026.10.23／2026.10.19／2026.09.28）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61406">店舗ページ（ランチ11:30～14:00・休み 土日祝・料金帯580円～3,000円程度。掲載日の表示なし）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/accommodation/61543">宿泊施設ページ（住所・電話・アクセス・提携駐車場。掲載日の表示なし）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-lemon-ss389">
+<img class="hero" src="img/sasebo/sasebo-lemon-ss389.jpg" alt="ハンバーグ家SS389 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-lemon-ss389_exterior.jpg" alt="ハンバーグ家SS389 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">16</span>ハンバーグ家SS389<span class="yomi">はんばーぐやえすえすさんはちきゅう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">2010年に開いたハンバーグ専門店。席はテーブル28席。ハンバーグはサイズとソースを選んで注文する形式で、ソースはデミグラス以外にも多種類を用意する。長崎和牛をサイコロ状にカットして中に包んだ「長崎和牛ゴロゴロハンバーグ」はご当地グルメ総選挙で2年連続の金賞を受けた。平日のランチタイムには25食限定の「センキューセット」があり、ハンバーグのサイズと12種のソースを選べて自家製デザートと飲み物が付く。長崎県産の蕎麦・チーズ・卵だけで作るガレットや長崎名物トルコライスも出す。英語メニューに対応。彼杵（そのぎ）店は閉店しており、現在は佐世保の卸本町のみ。</div>
+<div class="sig"><b>一皿:</b>長崎和牛ゴロゴロハンバーグ（ハンバーグの中にサイコロ状にカットした長崎和牛を包んだもの。ご当地グルメ総選挙2年連続金賞）／センキューセット（平日ランチ25食限定。ハンバーグのサイズと12種のソースを選べて自家製デザートと飲み物付き）／長崎・させぼガレット（長崎県内の蕎麦・チーズ・卵だけを使う。プレーン／ハンバーグ／和牛から選ぶ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:00～15:00（OS14:30）／ディナー 17:30～21:00（OS20:30）（佐世保観光コンベンション協会 2026-11-22 取得）。※材料がなくなった場合は早く終わることがある。</td></tr>
+<tr><th>定休日</th><td class="off">不定休。12月30日夜～1月3日は休み（佐世保観光コンベンション協会 2026-11-22 取得）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市卸本町21-334</td></tr>
+<tr><th>予約</th><td>予約の可否・方法は公式サイトにも佐世保観光コンベンション協会の店舗ページにも記載が無く未確認。問い合わせ先の電話は 0956-80-4165。 — <a href="tel:0956804165">☎ 0956-80-4165</a> ／ <a href="https://hamburgya-ss389.amebaownd.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>レモンステーキの店だけでは章が偏るため、佐世保観光コンベンション協会の「洋食」の一覧から、長崎和牛の鉄板ハンバーグを看板にする専門店として加えた。レモンステーキは出さないが、鉄板で供する牛肉料理と長崎トルコライスという点で章の守備範囲に収まり、ほかの章（佐世保バーガー／海軍さんのビーフシチュー・和食／九十九島の魚／居酒屋／喫茶・麺）とは重ならない。営業確認①＝公式サイト hamburgya-ss389.amebaownd.com のブログが日次で更新されており、RSSで確認した最新記事が2026年10月22日付。店自身が出した2026年の情報を確認した（2026-11-22 直読み）。営業確認②＝(1) Yahoo!検索で「ハンバーグ家SS389 閉店」と「ハンバーグ家SS389閉店」の両形を2026-11-22に実施。閉店とあるのは彼杵（そのぎ）店で、店自身のFacebookに「ハンバーグ家ss389 そのぎ店は無いよ 佐世保でお待ちしております」とあり、佐世保市卸本町の店は営業中。(2) 公式SNS＝Instagram のアカウント名「hamburgyass389」と Facebook の「hamburgyass389.sasebo」を、佐世保観光コンベンション協会の店舗ページの公式リンクで確認した。Instagram 本体はHTTP 429で開けないため投稿の中身は未確認。(3)「移転」「リニューアル」各1回。卸本町21-334からの移転・リニューアルの情報は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0%E5%AE%B6SS389%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%8D%B8%E6%9C%AC%E7%94%BA21-334">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/restaurant/61404">店名・住所・電話・営業時間・定休日・席数・駐車場・道順・料金帯・公式SNSのリンク（掲載日の表示なし）2026-11-22 取得</a> / <a href="https://hamburgya-ss389.amebaownd.com/">公式サイト（トップ。2025年4月で16周年、ふるさと納税・通販の案内）2026-11-22 取得</a> / <a href="https://hamburgya-ss389.amebaownd.com/rss.xml">公式サイトのブログRSS（最新記事 2026年10月22日付・日次更新）2026-11-22 取得</a> / <a href="https://hamburgya-ss389.amebaownd.com/pages/955488/menu">公式サイトのメニュー（品名と内容。価格の記載なし）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-sakana">九十九島の魚・寿司・海鮮</h2>
+<div class="card" id="c-sasebo-sakana-fujinaga">
+<img class="hero" src="img/sasebo/sasebo-sakana-fujinaga.jpg" alt="ふじ・なが本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-sakana-fujinaga_exterior.jpg" alt="ふじ・なが本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">17</span>ふじ・なが本店<span class="yomi">ふじなが　ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">創業昭和30年の鮮魚店・株式会社大野水産が営む和食店で、公式サイトは2026年に創業71周年とする。総裁賞を受けた料理長が九十九島とらふぐ、長崎ハーブ鯖、赤マテ貝、うちわ海老、九十九島ヒラマサなどの地元食材を扱う。席は最大48名のテーブル席でカウンターは無く、団体にも対応する。支払いは現金・クレジットカード・させぼeコイン・PayPay・Suicaなど。夜と土日祝は前日までの予約制で、1人3,000円以上かつ総額12,000円以上という条件がある。ふるさと納税の返礼品や通信販売も手がける。</div>
+<div class="sig"><b>一皿:</b>九十九島かから葉すし（刺身で食べられる長崎ハーブ鯖を塩と酢で締めたさば寿司。前日までの予約）／九十九島とらふぐ てっさ・てっちりコース（薄造り・ふぐ皮酢の物・唐揚げ・ちり鍋・ヒレ酒・雑炊）／九十九島海鮮丼（たい・ヒラマサ・マグロ・水イカなど7種のネタ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜14:00（オーダーストップ13:30）／ディナー 17:00〜21:00（オーダーストップ20:30）※夜および土・日・祝は前日までの予約制</td></tr>
+<tr><th>定休日</th><td class="off">月曜日・お盆・年末年始</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市大野町50-14</td></tr>
+<tr><th>予約</th><td>電話（0956-49-2487）。夜と土・日・祝は前日までの予約が必要で、1人3,000円以上かつ総額12,000円以上という条件がある。かから葉すしも前日までの予約 — <a href="tel:0956492487">☎ 0956-49-2487</a> ／ <a href="https://www.fujinaga.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>老舗鮮魚店の直営で、九十九島とらふぐと長崎ハーブ鯖をどちらも扱う数少ない和食店なのでこの章に入れた（海軍さんのビーフシチューの章の担当が、鮮魚店直営の寿司・和食店としてこちらへ譲った店）。営業確認①＝公式サイトの新着情報に2026年11月20日付の投稿「正月料理　予約受付中　和食　ふじなが本店」があり（記事のdatePublishedは2026-11-20T18:14:32+09:00、更新2026年11月21日）、店自身の2026年の情報を確認（2026-11-22 取得）。営業確認②＝(1)「ふじなが本店 佐世保 閉店」を空白ありと詰めた形の両方で検索し、本店の閉店情報は無し（2023年1月31日に閉店したのは姉妹店「ふじ若丸中里店」で、公式サイト自身がそう告知している） (2)公式Instagramのアカウント名が「ふじなが本店（@sasebo.sushi.fujinaga）」として存在 (3)「移転」「リニューアル」でも各2形で検索し、2026年のサイトリニューアルの記載のみで店舗の移転は無し。いずれも2026-11-22 実施。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%98%E3%83%BB%E3%81%AA%E3%81%8C%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%A4%A7%E9%87%8E%E7%94%BA50-14">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.fujinaga.com/news/3909/">公式サイト 新着情報「正月料理　予約受付中」（2026年11月20日投稿・11月21日更新）で営業中を確認 2026-11-22 取得</a> / <a href="https://www.fujinaga.com/lunch/">公式サイト「ランチ」ページ（メニュー名と価格）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/65068">佐世保・小値賀観光サイト「海風の国」飲食店検索（住所・電話・営業時間・定休日・席数・駐車場）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-sakana-ginsushi">
+<img class="hero" src="img/sasebo/sasebo-sakana-ginsushi.jpg" alt="銀寿司 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-sakana-ginsushi_exterior.jpg" alt="銀寿司 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">18</span>銀寿司<span class="yomi">ぎんずし</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">創業70年の寿司店。地元で水揚げされた旬の魚介に全国から取り寄せた種を合わせ、季節のおまかせコースを中心に握りを出す。鮮魚の刺し盛りや小鉢もあり、客のペースに合わせて一貫ずつ出す。席は27名で、テーブル14席・座敷6席・カウンター7席。支払いは現金・クレジットカード・させぼeコインに対応し、英語のメニュー表がある。九十九島とらふぐの料理は予約制。ネット予約はTableCheckを使い、15名以上の予約と子ども連れの予約は電話で受け付けている。</div>
+<div class="sig"><b>一皿:</b>季節のおまかせコース（その日の仕入れで内容が変わる握り中心のコース）／地魚の握り（佐世保の魚市場に揚がる旬の魚介）／九十九島とらふぐ料理（予約制）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水・木・金・土 ランチ11:30〜14:00（ラストオーダー13:30）／ディナー17:30〜22:00（ラストオーダー21:00）、日曜 ランチ11:30〜14:00（ラストオーダー13:30）／ディナー17:30〜21:00（ラストオーダー20:00）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（佐世保観光サイトの掲載では火曜日・魚市休市日・ほか不定休）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市上京町7-8</td></tr>
+<tr><th>予約</th><td>公式サイトからのネット予約（TableCheck）と電話（0956-22-6832）。当日の予約、15名以上の予約、子ども連れの予約は電話のみ。九十九島とらふぐ料理は予約制 — <a href="tel:0956226832">☎ 0956-22-6832</a> ／ <a href="https://gin-sushi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保でいちばん長く続く部類の寿司店で、寿司の枠として入れた。営業確認①＝公式サイト（https://gin-sushi.com/）が応答し、HTTPヘッダの Last-Modified が 2026年4月6日（Mon, 06 Apr 2026 02:04:28 GMT）で、店自身のサイトが2026年に更新されていることを確認（2026-11-22 取得）。あわせて店のネット予約ページ（TableCheck）も稼働している。営業確認②＝(1)「銀寿司 佐世保 閉店」を空白ありと詰めた形の両方で検索したが閉店の記載は無し (2)公式Instagramのアカウント名が「佐世保 銀寿司（@sasebo_ginsushi）」として存在 (3)「移転」「リニューアル」でも各2形で検索し、移転の記載は無し。いずれも2026-11-22 実施。住所は公式サイトと佐世保観光サイトがどちらも上京町7-8としており、ホットペッパーの7-9とは食い違うので公式の表記を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%8A%80%E5%AF%BF%E5%8F%B8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8A%E4%BA%AC%E7%94%BA7-8">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（gin-sushi.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://gin-sushi.com/">公式サイト（店舗情報・営業時間・定休日。HTTPヘッダの Last-Modified は 2026年4月6日）2026-11-22 取得</a> / <a href="https://www.tablecheck.com/shops/gin-sushi/reserve">公式のネット予約ページ（お店からのお知らせ・予約の条件）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61382">佐世保・小値賀観光サイト「海風の国」飲食店検索（住所・電話・料金の目安・席数・支払い方法）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-sakana-kanaezushi">
+<img class="hero" src="img/sasebo/sasebo-sakana-kanaezushi.jpg" alt="鼎鮨 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-sakana-kanaezushi_exterior.jpg" alt="鼎鮨 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">19</span>鼎鮨<span class="yomi">かなえずし</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐世保で60年ほど続く寿司店。天然物にこだわり、白身はヒラメ・石鯛・真鯛・イサキなど3〜4種、青魚は鯖・鯵・鰯を使う。鮪は豊洲市場から直送の本鮪、穴子は対馬海峡のものを使い、ナガスクジラの鮨という珍しい品もある。有明海の赤貝やタイラ貝、佐世保名産の赤マテ貝も扱う。席は26名でカウンター8席と座敷18席。座敷は最大20名の個室として使え、商談や会合にも向く。支払いは現金とクレジットカード。スタッフは英語、メニューは英語・中国語・韓国語に対応する。酒は地酒10種ほどのほか焼酎とワインがある。</div>
+<div class="sig"><b>一皿:</b>白身魚・青魚・イカの握り（ヒラメ・石鯛・真鯛・イサキ、秋から冬の鯖、ヤリイカ・アオリイカなど）／ナガスクジラの鮨（他店ではあまり出ない一品）／赤マテ貝・タイラ貝などの貝類（佐世保名産の赤マテ貝も扱う）</div>
+<table class="info">
+<tr><th>営業時間</th><td>17:00〜翌0:00（ぐるなびの店舗公式ページは月・水〜日 17:00〜24:00、ラストオーダー23:30と記載）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市塩浜町2-2</td></tr>
+<tr><th>予約</th><td>電話（0956-22-8308）。座敷は2名から16〜20名の個室として使え、商談・接待・会合の利用が多い — <a href="tel:0956228308">☎ 0956-22-8308</a> ／ <a href="https://f363400.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会の海鮮特集記事が最初に挙げる寿司店で、九十九島かきも扱う。章の寿司の枠として入れた。営業確認①＝ぐるなびの店舗公式ページ（https://f363400.gorp.jp/）に店自身の案内として「【年末年始のお休み】2026/12/31〜2027/01/01」が掲げられ、同ページの掲載写真の更新タイムスタンプが 1761122972＝2025年10月22日であることを確認（いずれも2026-11-22 取得）。店の独自ドメインのサイトは無く、公式SNSも見つからなかったため、この店自身が管理する公式ページの2026年を指す記載を①の根拠とした。営業確認②＝(1)「鼎鮨 佐世保 閉店」を空白ありと詰めた形の両方で検索したが閉店の記載は無し (2)公式SNSのアカウントは佐世保観光サイト・ぐるなび公式ページのいずれにも記載が無く対象なし。これは閉店の証拠ではない (3)「移転」「リニューアル」でも各2形で検索し、移転の記載は無し。いずれも2026-11-22 実施。席数は出典ごとに16席・26名・30席と食い違うので、観光協会の26名を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BC%8E%E9%AE%A8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%A1%A9%E6%B5%9C%E7%94%BA2-2">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://f363400.gorp.jp/">ぐるなび 店舗公式ページ（店自身の案内「【年末年始のお休み】2026/12/31〜2027/01/01」、営業時間・定休日・席数・アクセス）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61374">佐世保・小値賀観光サイト「海風の国」飲食店検索（住所・電話・営業時間・定休日・料金・席数・支払い方法・おすすめの品）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/kaisen_restaurant">同サイトの特集記事「佐世保のとっておき海の幸♪ 海鮮ファンを虜にするお店教えます！」（店の紹介・住所・電話・営業時間）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000573541/">ホットペッパーグルメ 店舗ページ（夜の予算帯・定休日）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-sakana-kuranosuke">
+<img class="hero" src="img/sasebo/sasebo-sakana-kuranosuke.jpg" alt="【全室個室】イカの活造りと海の幸 海鮮処 蔵之介 -KURANOSUKE- 佐世保下京町店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">20</span>【全室個室】イカの活造りと海の幸 海鮮処 蔵之介 -KURANOSUKE- 佐世保下京町店<span class="yomi">かいせんどころ　くらのすけ　させぼしもきょうまちてん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">佐世保・京町の全室個室の海鮮処。名物は呼子の活イカの姿造りで、食べたあとは後造りの天ぷらにしてくれる。刺身の盛り合わせや鮮魚のカルパッチョ、貝の酒蒸しのほか、鍋や串焼き、揚げ物もそろい、飲み放題の付いたコースが中心の店。席は100席で掘りごたつの個室と大広間があり、貸切もできる。定休日は無く、平日・祝前日は17時から、土日祝は15時から翌0時まで。全席喫煙可。支払いはクレジットカード、電子マネー、PayPayに対応。コース以外はお通し代があり、22時以降は深夜料10％が付く。</div>
+<div class="sig"><b>一皿:</b>呼子活イカの姿造り（透き通ったイカを姿のまま造りに。後造りで天ぷらにできる。要予約）／お造り三種盛り（料理長が選ぶその日の鮮魚）／鮮魚のカルパッチョ（採れたての魚を使う）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金・祝前日 17:00〜翌0:00／土・日・祝 15:00〜翌0:00</td></tr>
+<tr><th>定休日</th><td class="off">なし</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市下京町6-15</td></tr>
+<tr><th>予約</th><td>ホットペッパーグルメのネット予約（即予約は来店日当日22時まで、リクエスト予約は前日17時まで）と電話。公式に出ている番号は転送番号の050-5459-5457のみ。活イカの姿造りのコースは要予約。コース予約は来店2日前23時以降のキャンセルに100％のキャンセル料がかかる — <a href="tel:05054595457">☎ 050-5459-5457</a> ／ <a href="https://sasebo-kuranosuke.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店名が「イカの活造りと海の幸 海鮮処」で、呼子の活イカの姿造りと地魚の造りを看板にしているため、居酒屋の章の担当からこの章へ譲られた店。営業確認①＝ホットペッパーグルメの有料掲載ページに「2026/11/06 更新」（ほかに2026/11/05・2026/10/28 更新、コース欄は2026/11/01 更新）とあり、店が出した2026年の情報を確認（2026-11-22 取得）。あわせて店の公式サイト（sasebo-kuranosuke.owst.jp）も稼働しており、2026年12月の予約特典を掲げている。営業確認②＝(1)「蔵之介 佐世保下京町店 閉店」を空白ありと詰めた形の両方で検索したが閉店の記載は無し (2)公式Instagramのアカウント名が「蔵之介 佐世保店（@kuranosuke_sasebo）」として存在 (3)「移転」「リニューアル」でも各2形で検索し、移転の記載は無し。いずれも2026-11-22 実施。なお店自身の公式サイトは「佐世保京町の個室居酒屋」とも名乗っており、飲み放題付きコースが中心。魚の章に置くか居酒屋の章に戻すかは親の判断に委ねる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%80%90%E5%85%A8%E5%AE%A4%E5%80%8B%E5%AE%A4%E3%80%91%E3%82%A4%E3%82%AB%E3%81%AE%E6%B4%BB%E9%80%A0%E3%82%8A%E3%81%A8%E6%B5%B7%E3%81%AE%E5%B9%B8%20%E6%B5%B7%E9%AE%AE%E5%87%A6%20%E8%94%B5%E4%B9%8B%E4%BB%8B%20-KURANOSUKE-%20%E4%BD%90%E4%B8%96%E4%BF%9D%E4%B8%8B%E4%BA%AC%E7%94%BA%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA6-15">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004403748/">ホットペッパーグルメ 店舗ページ（2026/11/06 更新。住所・アクセス・営業時間・定休日・席数・支払い方法・キャンセル規定）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004403748/course/">ホットペッパーグルメ コース一覧（2026/11/01 更新。コース名と税込価格）2026-11-22 取得</a> / <a href="https://sasebo-kuranosuke.owst.jp/">蔵之介 KURANOSUKE 佐世保下京町店 公式サイト（店名・案内・2026年12月の予約特典）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-sakana-hakataya">
+<img class="hero" src="img/sasebo/sasebo-sakana-hakataya.jpg" alt="いけ洲博多屋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">21</span>いけ洲博多屋<span class="yomi">いけすはかたや</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐世保駅前のホテル1階にあり、店の敷地のほとんどを占める大きないけすを囲んでカウンターが並ぶ。九十九島とらふぐや長崎ハーブ鯖を、いけすから出してそのまま活き造りにする。鯉の泳ぐ日本庭園に面した個室（最大10名）と広間（最大50名）があり、料理は月替りの会席が中心。席はカウンター25席・座敷7席・テーブル2席で、団体は40名まで。支払いは現金・クレジットカード・させぼeコイン・PayPay。英語のメニューがある。ふぐ料理は予約制。宴会と法要の営業は休止中。営業日と時間は出典ごとに食い違うので、来店前に0956-25-6261へ電話で確かめてほしい。</div>
+<div class="sig"><b>一皿:</b>長崎ハーブ鯖の活き造り（北九十九島で育てたハーブ鯖。刺身でも焼いても）／九十九島とらふぐ（九十九島漁協から直送。刺身や鍋で。予約制）／月替りの会席料理（いき造り会席・あじわい会席・桜川会席など）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【ホテル公式サイト（2025年9月更新）】水〜土曜 17:30〜21:00（日〜火曜は休み）／【店の公式サイト】ランチ11:30〜14:00、ディナー17:00〜22:00（ラストオーダー21:00）。二つの出典が食い違うため、来店前に0956-25-6261へ電話で確認</td></tr>
+<tr><th>定休日</th><td class="off">【ホテル公式サイト】日・月・火曜日／【店の公式サイト】火・水曜日と年末年始。出典が食い違うため、来店前に電話で確認</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市三浦町4-1　サセボグリーンホテルpremier 1F</td></tr>
+<tr><th>予約</th><td>電話（0956-25-6261）。ふぐ料理は予約制。個室は最大10名、広間は最大50名、団体は最大40名。宴会・法要の営業は休止中 — <a href="tel:0956256261">☎ 0956-25-6261</a> ／ <a href="https://www.hotelsasebo.com/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保駅から歩いてすぐでいけすの活き造りが食べられる店で、長崎ハーブ鯖・九十九島とらふぐ・九十九島かき・イカのすべてを扱うためこの章に入れた。営業確認①＝運営する博多屋グループのホテル公式サイト内の店舗ページ（https://www.hotelsasebo.com/restaurant/）が応答し、HTTPヘッダの Last-Modified が 2025年9月3日（Wed, 03 Sep 2025 19:18:59 GMT）で、営業日・営業時間と「宴会・法要の営業は休止しております」という現況が書かれていることを確認（2026-11-22 取得）。営業確認②＝(1)「いけ洲博多屋 佐世保 閉店」を空白ありと詰めた形の両方で検索したが閉店の記載は無し (2)公式Instagramのアカウント名が「いけ洲博多屋 公式（@ikesu_hakataya）」、公式Xも同じ名前で存在 (3)「移転」「リニューアル」でも各2形で検索し、移転の記載は無し。いずれも2026-11-22 実施。【編集部への注意】営業日と営業時間が二つの公式で食い違う。ホテル公式（2025年9月更新）は「水〜土 17:30〜21:00、日〜火休」、店の公式サイト ikesuhakataya.foodre.jp は「火・水休、ランチ11:30〜14:00＋ディナー17:00〜22:00」。新しい方（ホテル公式）を本文に採り、両方を hours に併記して電話確認を促す形にした。また、ホテル公式サイトの料理・部屋のページは店を「日本料理 桜川」と名乗っており、会席の名にも桜川が使われている。写真は店の公式サイト（foodre.jp）にもあるが、画像の実体が利用者投稿サイト（ximg.retty.me）にあるため使わず、運営元のホテル公式サイトと佐世保観光コンベンション協会の掲載写真だけにした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%91%E6%B4%B2%E5%8D%9A%E5%A4%9A%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%89%E6%B5%A6%E7%94%BA4-1%E3%80%80%E3%82%B5%E3%82%BB%E3%83%9C%E3%82%B0%E3%83%AA%E3%83%BC%E3%83%B3%E3%83%9B%E3%83%86%E3%83%ABpremier%201F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.hotelsasebo.com）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotelsasebo.com/restaurant/">サセボグリーンホテルpremier（博多屋グループ）公式サイトの店舗ページ。営業日・営業時間・現況。HTTPヘッダの Last-Modified は 2025年9月3日 2026-11-22 取得</a> / <a href="https://www.hotelsasebo.com/restaurant/cuisine/index.html">同サイト「お食事」ページ（会席・御膳の名称と税込価格、料理写真）2026-11-22 取得</a> / <a href="https://www.hotelsasebo.com/restaurant/venue/index.html">同サイト「お部屋」ページ（個室・広間・ホールの名称と収容人数）2026-11-22 取得</a> / <a href="https://ikesuhakataya.foodre.jp/">いけ洲博多屋 公式サイト（営業時間・定休日・席数。ホテル公式と食い違う）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61372">佐世保・小値賀観光サイト「海風の国」飲食店検索（住所・電話・席数・駐車場・支払い方法・アクセス・写真）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-sakana-mottainai">
+<img class="hero" src="img/sasebo/sasebo-sakana-mottainai.jpg" alt="魚市場もったいない食堂 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">22</span>魚市場もったいない食堂<span class="yomi">うおいちばもったいないしょくどう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐世保魚市場のビル3階にある食堂で、朝7時から昼2時まで営業する。市場に揚がる長崎県産の天然地魚を主に使い、白米は北松浦半島産の無農薬米、玄米は佐々町の合鴨農法の無農薬米、味噌は西海市の雪の浦みそと国産無添加の合わせ味噌、塩は上五島の天日干し「とっぺん塩」と、調味料まで無添加のものをそろえる。窓からは九十九島が見える。さしみ定食は1日10食限定で午前10時から。定休日は月曜と魚市場の休市日（主に日曜・祝日）なので、行く前にサイトの「お知らせ」を見るとよい。</div>
+<div class="sig"><b>一皿:</b>日替わり定食（佐世保魚市場で水揚げされた魚を主に使い毎日替わる）／朝獲れ“ふわとろ”アジフライ定食（冷凍せず鮮魚のまま揚げたアジフライ）／魚市場さしみ定食（1日10食限定。4種ほどの刺身をワンプレートで）</div>
+<table class="info">
+<tr><th>営業時間</th><td>7:00〜14:00（ラストオーダー13:30）</td></tr>
+<tr><th>定休日</th><td class="off">毎週月曜日、佐世保魚市場の休市日（主に日曜・祝日）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市相浦町1563　佐世保魚市場ビル3F</td></tr>
+<tr><th>予約</th><td>公式サイトに予約の案内は無く、基本は予約なしの来店。問い合わせは電話（0956-48-8455） — <a href="tel:0956488455">☎ 0956-48-8455</a> ／ <a href="https://mottainaishokudo.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保魚市場そのものの食堂で、九十九島の地魚をいちばん安く食べられる枠としてこの章に入れた。営業確認①＝公式サイトの「お知らせ」に2025年6月30日付「7月10日（木）臨時休業のお知らせ」、2025年2月28日付「ご飯おかわりサービスの停止について」があり、店自身の2025年の情報を確認（2026-11-22 取得）。営業確認②＝(1)「魚市場もったいない食堂 佐世保 閉店」を空白ありと詰めた形の両方で検索したが閉店の記載は無し (2)公式Facebookのアカウント名が「魚市場もったいない食堂（@mottainaisyokudo）」として存在（公式Instagramも公式サイトから張られている） (3)「移転」「リニューアル」でも各2形で検索し、移転の記載は無し。いずれも2026-11-22 実施。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E5%B8%82%E5%A0%B4%E3%82%82%E3%81%A3%E3%81%9F%E3%81%84%E3%81%AA%E3%81%84%E9%A3%9F%E5%A0%82%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E7%9B%B8%E6%B5%A6%E7%94%BA1563%E3%80%80%E4%BD%90%E4%B8%96%E4%BF%9D%E9%AD%9A%E5%B8%82%E5%A0%B4%E3%83%93%E3%83%AB3F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（mottainaishokudo.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://mottainaishokudo.jp/">公式サイト（お知らせ 2025年6月30日・2025年2月28日、営業時間・定休日・住所・アクセス・メニューと価格）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001066621/">ホットペッパーグルメ 店舗ページ（掲載が残っていることの確認）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-sakana-yamataki">
+<img class="hero" src="img/sasebo/sasebo-sakana-yamataki.jpg" alt="やま瀧 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-sakana-yamataki_exterior.jpg" alt="やま瀧 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">23</span>やま瀧<span class="yomi">やまたき</span></div>
+<div class="desc">佐世保港そばで毎朝3時から開かれる佐世保朝市で仕入れた魚を出す店。店に入るとすぐ生け簀があり、席は掘りごたつになっている。名物はサイコロ状に切った鮮魚をのせた「海鮮漬けの替り丼」で、半分ほど食べたところに専用の出汁をかけてお茶漬け風にして食べる。海鮮丼や刺身定食のほか、当日入荷のアジを使ったアジフライ定食、唐揚げ定食や生姜焼き定食もある。ランチは材料がなくなり次第終了なので早めがよい。最大収容人数は26名。夜は昼に出していない品が増える。</div>
+<div class="sig"><b>一皿:</b>海鮮漬けの替り丼（ごま油と生姜醤油で味を付けた漬け丼。途中で出汁をかけてお茶漬け風に）／アジフライ定食（当日入荷したアジを使う。入荷の無い日もある）／さしみ定食（刺身6品程度）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:45〜14:30（ラストオーダー13:45）／ディナー 17:00〜21:30（ラストオーダー21:00）※ランチは材料がなくなり次第終了</td></tr>
+<tr><th>定休日</th><td class="off">日曜日・祝日の月曜日・お盆・正月、ほか不定休（月曜が祝日の場合は日曜営業。月曜祝日以外の祝日および月曜は夜のみ営業）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市万津町1-1</td></tr>
+<tr><th>予約</th><td>電話（0956-23-3686）。最大収容人数26名 — <a href="tel:0956233686">☎ 0956-23-3686</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保朝市で毎朝仕入れる店で、昼に手ごろな値段で地魚を食べられる枠としてこの章に入れた。営業確認①＝店自身のサイトが無く、公式Instagram（@yamataki_official）はこの環境から開けなかったため、長崎県の特例にしたがって公的機関の日付つき取材記事で代用した。佐世保観光コンベンション協会の公式観光サイト「海風の国」の海風旅ブログ「JR佐世保駅から徒歩6分！駅チカで食べられる絶品海鮮漬け丼」に掲載日2025.02.19 と明記があり、編集部が実際に店を訪ねて撮った写真と、営業時間・定休日が載っている（名簿ではなく日付つきの記事）。営業確認②＝(1)「やま瀧 佐世保 閉店」を空白ありと詰めた形の両方で検索したが閉店の記載は無し (2)公式Instagramのアカウント名が「やま瀧（@yamataki_official）」として存在 (3)「移転」「リニューアル」でも各2形で検索し、移転の記載は無し。いずれも2026-11-22 実施。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%BE%E7%80%A7%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%87%E6%B4%A5%E7%94%BA1-1">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/blog/staff-167">佐世保観光コンベンション協会 公式観光サイト「海風の国」海風旅ブログ（掲載日 2025.02.19。取材記事・メニュー表の写真・営業時間・定休日）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/kaisen_restaurant">同サイトの特集記事「佐世保のとっておき海の幸♪ 海鮮ファンを虜にするお店教えます！」（住所・電話・営業時間）2026-11-22 取得</a> / <a href="https://www.naradewa.com/shop/sakana-yamataki">佐世保のフリーペーパー「ならでわ！」店舗ページ（営業時間・定休日・住所・最大収容人数）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-sakana-ichigyoichie">
+<img class="hero" src="img/sasebo/sasebo-sakana-ichigyoichie.jpg" alt="一魚一会 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-sakana-ichigyoichie_exterior.jpg" alt="一魚一会 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">24</span>一魚一会<span class="yomi">いちぎょいちえ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">西海橋のたもとに建つ西海橋物産館の中にある活いか料理の専門店。全国から活きたイカを直送し、活きたまま料理する。瓦屋根の建物に中庭があり、座敷と小上がり、カウンターがそろう。席はイステーブル52名、小上がり42名、小部屋62名、小宴会場44名、カウンター22名と大きく、法事や宴会、団体の昼食にも使われる。営業は昼と夜に分かれ、15時から17時は準備中で入れない。21時オーダーストップ、21時30分閉店。同じ館内に土産物の魚魚市場と宿の魚魚の宿がある。</div>
+<div class="sig"><b>一皿:</b>活いかの活造り（全国から活きたまま直送したイカを造りに。後造りにも対応）／あらかぶ御膳（あらかぶの造り・唐揚げ・味噌汁をそろえた御膳）／西海寿司御膳（握り8貫に肉か魚の料理、天ぷら、茶碗蒸しなどが付く）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30（15:00〜17:00は準備中）／17:00〜20:30（21:00オーダーストップ、21:30閉店）</td></tr>
+<tr><th>定休日</th><td class="off">12月30日〜1月1日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市針尾東町2371-1　西海橋物産館内</td></tr>
+<tr><th>予約</th><td>電話（0956-20-2525）。団体は10〜50名まで受け入れ、マイクロバスでの送迎も相談できる — <a href="tel:0956202525">☎ 0956-20-2525</a> ／ <a href="https://saikaibashi-toto.com/restaurant">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>イカの活造りを看板にする専門店で、章の中にイカの枠として入れた。佐世保市針尾東町なので市内（隣接市町ではないため rinsetsu は付けない）。営業確認①＝運営する西海橋物産館の公式サイトの「お知らせ」に2025年1月26日付「一魚一会　日替り弁当・日替り幕の内弁当　販売/配達終了のお知らせ」、2025年1月12日付「恵方巻予約承り中！」があり、店自身の2025年の情報を確認（2026-11-22 取得）。サイトのフッタは Copyright 2026 で、2026年10月アップロードの「年末年始すき焼き2026」の案内も載っている。営業確認②＝(1)「一魚一会 西海橋 佐世保 閉店」を空白ありと詰めた形の両方で検索したが閉店の記載は無し (2)館の公式Instagramのアカウント名が「魚魚市場（@totoichiba_saikai）」として存在し、一魚一会の日替りランチを投稿している (3)「移転」「リニューアル」でも各2形で検索し、移転の記載は無し。いずれも2026-11-22 実施。営業時間と住所は公式サイトの値を採った（佐世保観光サイトの 11:00〜14:30／針尾東町2371-1 とは時間が食い違う）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E9%AD%9A%E4%B8%80%E4%BC%9A%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%87%9D%E5%B0%BE%E6%9D%B1%E7%94%BA2371-1%E3%80%80%E8%A5%BF%E6%B5%B7%E6%A9%8B%E7%89%A9%E7%94%A3%E9%A4%A8%E5%86%85">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://saikaibashi-toto.com/restaurant">西海橋物産館 公式サイト「一魚一会」（お知らせ 2025.01.26・2025.01.12、営業時間・住所・電話・席数）2026-11-22 取得</a> / <a href="https://saikaibashi-toto.com/restaurant/menu">同サイト「お料理」おすすめ御膳のメニューPDF（御膳名と価格）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61380">佐世保・小値賀観光サイト「海風の国」飲食店検索（席数170席・駐車場30台・定休日）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-sakana-marumo">
+<img class="hero" src="img/sasebo/sasebo-sakana-marumo.jpg" alt="マルモ水産　九十九島海上かき小屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-sakana-marumo_exterior.jpg" alt="マルモ水産　九十九島海上かき小屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">25</span>マルモ水産　九十九島海上かき小屋<span class="yomi">まるもすいさん　くじゅうくしまかいじょうかきごや</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">九十九島の海に浮かぶイカダの上に建つかき焼き小屋で、海面がすぐそこにある。殻付きのかきを自分で焼いて食べる形で、軍手・ナイフ・木炭・調味料は無料で貸してくれる。屋内の席もあるので雨の日や寒い日でも食べられる。貝は真牡蠣が10月から5月、岩牡蠣が5月から8月で、ヒオウギ貝やサザエ、かきしゅうまい、牡蠣チャウダーなどの一品もある。営業は朝9時から夕方5時まで（オーダーストップ16時）で定休日は不定休。支払いはカード不可との掲載があるので現金を用意したい。</div>
+<div class="sig"><b>一皿:</b>九十九島殻付きかき（1kg単位で買って自分で焼く。軍手・ナイフ・木炭・調味料は無料レンタル）／九十九島セット（焼きかきに各種の牡蠣料理を合わせた詰め合わせ）／牡蠣チャウダー（牡蠣の旨みを溶かしたスープ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜17:00（オーダーストップ16:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（ホットペッパーグルメの掲載では盆・年末年始）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市船越町944</td></tr>
+<tr><th>予約</th><td>予約の案内は公式の掲載に無く、基本は予約なしの来店。団体で行くときは電話（0956-28-0602）で確認したい。支払いはカード不可の掲載があるので現金を用意する — <a href="tel:0956280602">☎ 0956-28-0602</a> ／ <a href="https://marumo99.jp/kaijoukakigoya/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の指定にある「九十九島かきを焼いて食べられる店（かき焼き小屋）」の枠。海上のイカダに建つ小屋という点で佐世保でも代表的な一軒。営業確認①＝店を営む有限会社マルモ水産（長崎県佐世保市船越町944。かき小屋と同じ住所）の公式オンラインショップのトップに、お知らせ「販売スタート！九十九島産・殻付き生牡蠣『真牡蠣』」が掲げられ、本文末尾が「2026.11.16 九十九島からのおくりもの（マルモ水産）」と日付入りで署名されている。店自身が出した2026年の情報として確認（2026-11-22 取得）。かき小屋の公式サイト https://marumo99.jp/kaijoukakigoya/ は当方の環境から curl でも WebFetch でも HTTP 403 が返って読めなかったが、別経路としてこの公式オンラインショップ（marumo99.theshop.jp）が読めたので①を満たせた。営業確認②＝(1)「マルモ水産 海上かき小屋 佐世保 閉店」を空白ありと詰めた形の両方で検索したが閉店の記載は無し (2)公式Instagramのアカウント名が「マルモ水産公式アカウント（@99marumo）」として存在 (3)「移転」「リニューアル」でも各2形で検索し、移転の記載は無し。いずれも2026-11-22 実施。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%83%AB%E3%83%A2%E6%B0%B4%E7%94%A3%E3%80%80%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%E6%B5%B7%E4%B8%8A%E3%81%8B%E3%81%8D%E5%B0%8F%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E8%88%B9%E8%B6%8A%E7%94%BA944">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/restaurant/61379">佐世保・小値賀観光サイト「海風の国」飲食店検索（住所・電話・営業時間・メニューと価格・真牡蠣と岩牡蠣の時期）2026-11-22 取得</a> / <a href="https://marumo99.theshop.jp/">有限会社マルモ水産 公式オンラインショップ（お知らせの署名「2026.11.16 九十九島からのおくりもの（マルモ水産）」・販売元の住所）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000693237/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・予算・支払い方法・駐車場）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-kaigun" class="c-brown">海軍さんのビーフシチュー・和食</h2>
+<div class="card" id="c-sasebo-kaigun-sakuragawa">
+<img class="hero" src="img/sasebo/sasebo-kaigun-sakuragawa.jpg" alt="日本料理　桜川（佐世保ワシントンホテル） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-kaigun-sakuragawa_exterior.jpg" alt="日本料理　桜川（佐世保ワシントンホテル） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">26</span>日本料理　桜川（佐世保ワシントンホテル）<span class="yomi">にほんりょうり　さくらがわ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐世保ワシントンホテル1階の日本料理店。館内に山水庭園があり、鯉の泳ぐ池に朱塗りの太鼓橋が架かる。客席は1名から70名まで入る個室で構成され、佐世保観光コンベンション協会の掲載では総席数220席。個室のため前日までの予約が要る。献立は月替わりで、昼はミニ会席、夜は季節の会席料理が中心。季節の会席料理の刺身は、5名に1尾・前日までの予約で鯛姿造りに替えられる。海軍さんのビーフシチューと海軍さんの入港ぜんざいは、同協会の掲載では予約制の扱い。公式サイトには2026年11月1日から11月30日までの期間を切った会席プランが並ぶ。法要・宴会の対応もある。</div>
+<div class="sig"><b>一皿:</b>季節の会席料理（月替わりの献立。前日までの予約で刺身を鯛姿造りに変更可）／海軍さんのビーフシチュー（旧日本海軍の「海軍割烹術参考書」のシチュードビーフを下敷きにした佐世保の港まちグルメ。要予約）／海軍さんの入港ぜんざい（母港へ無事に帰る前夜にぜんざいを振る舞った習わしが由来。要予約）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00～22:00（L.O.21:00）。ランチタイムは11:00～14:00</td></tr>
+<tr><th>定休日</th><td class="off">12月31日・1月1日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市潮見町12-7　佐世保ワシントンホテル1階</td></tr>
+<tr><th>予約</th><td>個室のため前日までに電話（0956-32-8011）で予約が要る。海軍さんのビーフシチューと入港ぜんざいも要予約。 — <a href="tel:0956328011">☎ 0956-32-8011</a> ／ <a href="https://washington-hotels.jp/sasebo/restaurant/1275/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会のグルメ特集「海軍さんが愛した味を佐世保流にアレンジした『港まちグルメ』に舌鼓」で、海軍さんのビーフシチューが食べられる7店の1つとして本文に載る。レモンステーキの提供店一覧には入っておらず、和食の店としてこの章に収まる。営業の根拠＝条件①: 佐世保ワシントンホテル公式サイトの桜川のページに「2026年11月01日(日)～2026年11月30日(月)」の期間を明記したレストランプラン（個室de焼きしゃぶ会席・いき造り会席・あじわい会席）が掲載されており、同ページの構造化データの dateModified は 2026-09-30（2026-11-22 取得）。条件②: ①『日本料理桜川 佐世保ワシントンホテル 閉店』と『日本料理桜川佐世保閉店』の2通りでYahoo! JAPAN検索（2026-11-22）→閉店の記載なし。②公式SNSのアカウント名＝Instagram「佐世保ワシントン 日本料理 桜川」（@washington_sakurakawa）が存在。③『日本料理桜川 佐世保 移転』『日本料理桜川 佐世保 リニューアル』でも検索（2026-11-22）→いずれも該当なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E3%80%80%E6%A1%9C%E5%B7%9D%EF%BC%88%E4%BD%90%E4%B8%96%E4%BF%9D%E3%83%AF%E3%82%B7%E3%83%B3%E3%83%88%E3%83%B3%E3%83%9B%E3%83%86%E3%83%AB%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%BD%AE%E8%A6%8B%E7%94%BA12-7%E3%80%80%E4%BD%90%E4%B8%96%E4%BF%9D%E3%83%AF%E3%82%B7%E3%83%B3%E3%83%88%E3%83%B3%E3%83%9B%E3%83%86%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://washington-hotels.jp/sasebo/restaurant/1275/">佐世保ワシントンホテル公式サイトの桜川のページ。営業時間・店休日・座席・予約の要否と、2026年11月1日～11月30日のレストランプラン（2026-09-30 更新）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61386">佐世保観光コンベンション協会「海風の国」店舗情報。住所・電話・営業時間・席数220席・駐車場と、備考欄の「海軍さんのビーフシチュー・入港ぜんざい・レモンステーキ・長崎和牛　※要予約」2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/minatomachi">同協会のグルメ特集「港まちグルメ」。海軍さんのビーフシチューが食べられる店の一覧に掲載 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-kaigun-shiki">
+<img class="hero" src="img/sasebo/sasebo-kaigun-shiki.jpg" alt="SHIKI（アートホテル佐世保セントラル） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-kaigun-shiki_exterior.jpg" alt="SHIKI（アートホテル佐世保セントラル） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">27</span>SHIKI（アートホテル佐世保セントラル）<span class="yomi">しき</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">アートホテル佐世保セントラルの2階にあるレストラン。2026年6月1日に「セントラルホテル佐世保」が「アートホテル佐世保セントラル」へ名前を変え、客室・ロビー・レストランを改装したのに合わせ、レストランも「四季」から「SHIKI」になった。総席数60席、全席禁煙、個室・座敷・カウンターはなし。支払いは現金とクレジットカード（VISA・マスター・アメックス・JCB）で、電子マネーとQRコード決済は使えない。朝食は6:30から。海軍さんのビーフシチュー、レモンステーキ、長崎ちゃんぽん、長崎皿うどんといった地元の品に加え、系列ホテルの看板料理である宮崎辛麺や別府担々麺も出す。電話は営業時間中つながりにくいとの断りがある。</div>
+<div class="sig"><b>一皿:</b>海軍さんのビーフシチュー（旧日本海軍のレシピをルーツに、牛肉をじっくり煮込んだ特製ソースの一皿）／まるごと佐世保定食（名物の肉料理と松浦アジフライを主役にした御膳）／長崎皿うどん（揚げ麺に魚介の餡をかけた長崎の郷土料理）</div>
+<table class="info">
+<tr><th>営業時間</th><td>モーニング6:30～10:00（L.O.9:30）／ランチ11:30～15:00（L.O.14:30）／ディナー17:00～22:00（L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（ホットペッパーグルメの掲載。佐世保観光コンベンション協会の掲載は「年中無休」）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市上京町3-2　アートホテル佐世保セントラル2階</td></tr>
+<tr><th>予約</th><td>電話（0956-25-0001、ホテル代表）かホットペッパーグルメのネット予約。即時予約は来店日の前日21時まで、リクエスト予約は3日前まで。 — <a href="tel:0956250001">☎ 0956-25-0001</a> ／ <a href="https://restaurant-shiki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会のグルメ特集「港まちグルメ」で、海軍さんのビーフシチューが食べられる7店の1つとして本文に載る。和洋の御膳が主力で、SHIKI御膳・佐世保燦々御膳といった和食が人気上位。営業の根拠＝条件①: ホットペッパーグルメの店舗ページの料理欄が「2026/10/16 更新」、こだわり欄が「2026/10/06 更新」、クーポン欄が「2026/09/24 更新」（2026-11-22 取得）。あわせて店自身の公式サイト restaurant-shiki.com に2026年1月1日からの朝食料金改定の告知がある。条件②: ①『アートホテル佐世保セントラル SHIKI 閉店』と『アートホテル佐世保セントラル閉店』の2通りでYahoo! JAPAN検索（2026-11-22）→閉店の記載なし。②公式SNSのアカウント名＝Instagram「アートホテル佐世保セントラル」が存在。③『アートホテル佐世保セントラル 移転』『同 リニューアル』でも検索（2026-11-22）→移転はなし、2026年6月1日のリブランドと改装のみ。**注記: 外観写真は佐世保観光コンベンション協会掲載のもので、2026年6月のリブランド前の「セントラルホテル」の看板が写っている。新しい看板の外観写真は、店・ホテルのドメインでは見つからなかった。**</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=SHIKI%EF%BC%88%E3%82%A2%E3%83%BC%E3%83%88%E3%83%9B%E3%83%86%E3%83%AB%E4%BD%90%E4%B8%96%E4%BF%9D%E3%82%BB%E3%83%B3%E3%83%88%E3%83%A9%E3%83%AB%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8A%E4%BA%AC%E7%94%BA3-2%E3%80%80%E3%82%A2%E3%83%BC%E3%83%88%E3%83%9B%E3%83%86%E3%83%AB%E4%BD%90%E4%B8%96%E4%BF%9D%E3%82%BB%E3%83%B3%E3%83%88%E3%83%A9%E3%83%AB2%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（restaurant-shiki.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://restaurant-shiki.com/">レストランSHIKI 公式サイト。住所・アクセス・朝食／昼／夜の営業時間と、2026年1月1日からの朝食料金改定の告知 2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004698504/">ホットペッパーグルメ店舗ページ。海軍さんのビーフシチュー1,680円ほかの価格（料理欄 2026/10/16 更新）、席数60席、支払い方法、アクセス 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/62947">佐世保観光コンベンション協会「海風の国」店舗情報（SHIKI）。おすすめメニューと店の説明 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/minatomachi">同協会のグルメ特集「港まちグルメ」。海軍さんのビーフシチュー提供店の一覧に掲載 2026-11-22 取得</a> / <a href="https://iconia.co.jp/feature/renewal/ah-sasebo-central">アイコニア・ホスピタリティ公式サイトのリニューアル案内。2026年6月1日リブランドオープンと改装後のレストラン写真 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-kaigun-sasaizumi">
+<img class="hero" src="img/sasebo/sasebo-kaigun-sasaizumi.jpg" alt="庶民の料亭　ささいずみ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-kaigun-sasaizumi_exterior.jpg" alt="庶民の料亭　ささいずみ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">28</span>庶民の料亭　ささいずみ<span class="yomi">しょみんのりょうてい　ささいずみ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">大正7年に酒屋として創業し、100年を超える。店内に魚種ごとの生簀が8つあり、毎朝、活魚車で漁師から直に仕入れた魚を運び込む。大きな生簀を囲むカウンター20席のほか、個室14室、最大80名の大広間がある。支払いは現金、クレジットカード、各種電子決済、交通系ICカード、WAON、nanaco、Edy、QUICPay。英語の対応ができる。公式サイトの2026年3月31日付のお知らせで、水曜は昼の営業を休み夜17時から、夜の寿司の提供はなしと案内。2026年8月31日付のお知らせで、活造り・刺身のラストオーダーを22時に戻した。茶碗蒸しは店頭の冷凍自動販売機でも売っている。</div>
+<div class="sig"><b>一皿:</b>長崎ハーブ鯖の活造り（ナツメグ・オレガノ・シナモン・ジンジャーを加えた餌で育てた佐世保のブランド鯖）／イカの活造り（生簀から引き上げて造る。後造りは天ぷらか塩焼きか下足刺しを無料で付ける）／すり身揚げ（佐世保の居酒屋に欠かせない揚げたてのすり身）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30～23:00（料理L.O.22:00）。水曜日は昼の営業を休み17:00から</td></tr>
+<tr><th>定休日</th><td class="off">12月31日・1月1日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市下京町4-4</td></tr>
+<tr><th>予約</th><td>電話（0956-23-3933、ささいずみグループ総合予約）。個室14室、大広間は最大80名まで。 — <a href="tel:0956233933">☎ 0956-23-3933</a> ／ <a href="https://sasaizumi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保の郷土の味を和食の形でまとめて出す老舗。長崎ハーブ鯖・イカの活造り・すり身揚げ・茶碗蒸しと、章の「佐世保の郷土料理・和食」にそのまま当たる。営業の根拠＝条件①: 公式サイト sasaizumi.com のお知らせに「2026年8月31日」付（9月1日から活造り・刺身のラストオーダーを22:00に戻す）と「2026年3月31日」付（4月からの営業内容の一部変更）の2本が掲載（2026-11-22 取得）。条件②: ①『庶民の料亭ささいずみ 閉店』と『ささいずみ佐世保閉店』の2通りでYahoo! JAPAN検索（2026-11-22）→閉店の記載なし。②公式SNSのアカウント名＝Instagram「@sasaizumi_sasebo」とFacebook「佐世保 庶民の料亭 ささいずみ」が存在。③『ささいずみ 佐世保 移転』『ささいずみ 佐世保 リニューアル』でも検索（2026-11-22）→移転は上京町から現在地へ移った過去の記載のみで現住所と一致、リニューアルは2021年の別館（ささの離）の案内のみ。なお佐世保観光コンベンション協会の掲載ではレモンステーキの提供店にも名を連ねるが、看板は生簀の活造りなので和食の章に置いた。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%B6%E6%B0%91%E3%81%AE%E6%96%99%E4%BA%AD%E3%80%80%E3%81%95%E3%81%95%E3%81%84%E3%81%9A%E3%81%BF%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA4-4">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://sasaizumi.com/">ささいずみ公式サイト。お知らせ 2026年8月31日・2026年3月31日、住所・電話・営業時間・店休日 2026-11-22 取得</a> / <a href="https://cdn.quolim.co.jp/img/sasaizumi/menu/sasa-lunch.pdf">ささいずみ公式サイトからリンクされた「お昼のメニュー」PDF。あら煮御膳2,190円ほかの価格 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/64306">佐世保観光コンベンション協会「海風の国」店舗情報。席数・支払い方法・駐車場・店の由来 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-kaigun-tama">
+<img class="hero" src="img/sasebo/sasebo-kaigun-tama.jpg" alt="日本料理たま 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-kaigun-tama_exterior.jpg" alt="日本料理たま 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">29</span>日本料理たま<span class="yomi">にほんりょうりたま</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">寿司店を営んでいた父から店を継ぎ、和食の店として出し直した。2日前までの完全予約制で、受けるのは1日1組・2名から6名まで。出汁は利尻昆布と枕崎の鰹節でひき、調味料も手づくり。仕入れは佐世保魚市場と平戸が中心。器は陶芸家を訪ねて集めたもので、カウンターからは近くで見られる。席はカウンターと掘りごたつの座敷。支払いは現金とクレジットカード。料理の提供に時間がかかる旨の断りがある。公式サイトに、12月1日から1月4日頃までは仕入れ価格の変動で一部の料理の提供価格を変える旨の告知がある。</div>
+<div class="sig"><b>一皿:</b>おまかせコース（昼3,300円／夜5,500円・7,700円・11,000円～。献立はその都度変わり、11,000円のコースは2名で提供に3時間かかる）／出汁（利尻昆布と枕崎の鰹節）／地の鮮魚（佐世保魚市場と平戸からの仕入れ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30～21:00（ランチ11:30～14:00／ディナー16:30～21:00）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市瀬戸越3-293-8</td></tr>
+<tr><th>予約</th><td>2日前までの完全予約制。電話（0956-40-8141）か公式サイトのWEB予約。1組2名から6名まで。 — <a href="tel:0956408141">☎ 0956-40-8141</a> ／ <a href="https://www.nihonryouri-tama.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会の飲食店検索で「和食・居酒屋」に分類される、市内では数少ない完全予約制の日本料理店。レモンステーキ・佐世保バーガー・寿司のいずれの章とも重ならない。営業の根拠＝条件①: 公式サイトのブログ（nihonryouri-tama.com/fcblog/）に2026-09-29付の記事2本（「ジャパニーズウィスキー山崎ノンエイジ入荷しました。」「お刺身のお持ち帰りについて」）、2026-07-21付、2026-05-25付、2026-05-15付の記事が並ぶ（2026-11-22 取得）。条件②: ①『日本料理たま 佐世保 閉店』と『日本料理たま佐世保閉店』の2通りでYahoo! JAPAN検索（2026-11-22）→閉店の記載なし。②公式SNSのアカウント名＝Instagram「@nihonryouri_tama」とFacebook「日本料理たま（@tamazushisasebo）」が存在。③『日本料理たま 佐世保 移転』『同 リニューアル』でも検索（2026-11-22）→該当なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E3%81%9F%E3%81%BE%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E7%80%AC%E6%88%B8%E8%B6%8A3-293-8">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.nihonryouri-tama.com/">日本料理たま公式サイト。店の成り立ち、予約の決まり、年末年始の価格に関する告知 2026-11-22 取得</a> / <a href="https://www.nihonryouri-tama.com/fcblog/">同公式ブログ。2026-09-29／2026-07-21／2026-05-25／2026-05-15 付の記事 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/100327">佐世保観光コンベンション協会「海風の国」店舗情報。住所・電話・営業時間・定休日・コース価格・席数・駐車場・アクセス 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-kaigun-shiosai">
+<img class="hero" src="img/sasebo/sasebo-kaigun-shiosai.jpg" alt="汐彩（弓張の丘ホテル） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-kaigun-shiosai_exterior.jpg" alt="汐彩（弓張の丘ホテル） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">30</span>汐彩（弓張の丘ホテル）<span class="yomi">しおさい</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">弓張岳の中腹に建つ弓張の丘ホテルの4階にある和食店。テーブル38席で、窓際の席からは佐世保の市街地と港、九十九島が見える。昼は点心や御膳、夜は会席が中心で、献立は月替わり。宿泊客専用の御膳（お造り膳・ステーキ膳・握りずし膳・松風膳）も別に用意する。贅沢会席は2日前までの予約制で2名から。支払いは現金・クレジットカード・させぼeコイン。直通電話は10時30分から21時まで。ホテルは2025年3月に全客室を改装し、2026年の開業30周年を迎えている。結納や顔合わせ、法要にも使われる。</div>
+<div class="sig"><b>一皿:</b>九十九島平政と海鮮づくし丼（平日限定 2,200円。九十九島産のヒラマサを使う）／しらさぎ会席（昼の会席 4,400円）／つぐみ会席（夜の会席 6,600円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ11:30～15:00（L.O.14:30）／ディナー17:30～22:00（L.O.21:30）</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市鵜渡越町510　弓張の丘ホテル4階</td></tr>
+<tr><th>予約</th><td>直通電話（0956-26-0802、受付10:30～21:00）。贅沢会席は2日前までの予約制で2名から。 — <a href="tel:0956260802">☎ 0956-26-0802</a> ／ <a href="https://www.yumihari.com/restaurant/shiosai/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会の飲食店検索で「和食・居酒屋」に分類される会席の店で、地元食材を使った本格和食という章の枠に収まる。九十九島の眺めとあわせて紹介できる。営業の根拠＝条件①: 弓張の丘ホテル公式サイトのトピックスに2026/11/15付（「艦これ」公式コラボ宿泊プランの再開）、2026/11/06付（アフタヌーンティーセットの再登場）、2026/08/06付の記事が掲載（2026-11-22 取得）。条件②: ①『汐彩 弓張の丘ホテル 閉店』と『汐彩弓張の丘ホテル閉店』の2通りでYahoo! JAPAN検索（2026-11-22）→閉店・閉館の事実はなく、通常営業との記載。②公式SNSのアカウント名＝Instagram「@bridal_yumiharinookahotel」とFacebook「弓張の丘ホテル」が存在。③『汐彩 弓張の丘ホテル 移転』『同 リニューアル』でも検索（2026-11-22）→移転はなし、2025年3月の全客室リニューアルの告知のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B1%90%E5%BD%A9%EF%BC%88%E5%BC%93%E5%BC%B5%E3%81%AE%E4%B8%98%E3%83%9B%E3%83%86%E3%83%AB%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B5%9C%E6%B8%A1%E8%B6%8A%E7%94%BA510%E3%80%80%E5%BC%93%E5%BC%B5%E3%81%AE%E4%B8%98%E3%83%9B%E3%83%86%E3%83%AB4%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.yumihari.com/restaurant/shiosai/">弓張の丘ホテル公式サイトの汐彩のページ。営業時間・席数・場所・昼夜のメニューと価格 2026-11-22 取得</a> / <a href="https://www.yumihari.com/topics/">同ホテル公式サイトのトピックス。2026/11/15・2026/11/06・2026/08/06 付の記事 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/64419">佐世保観光コンベンション協会「海風の国」店舗情報。住所・電話・駐車場・支払い方法・店の説明 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/accommodation/61574">同協会の宿泊施設情報（弓張の丘ホテル）。建物の外観写真 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-kaigun-hananoren">
+<img class="hero" src="img/sasebo/sasebo-kaigun-hananoren.jpg" alt="ガーデンテラス　花のれん 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-kaigun-hananoren_exterior.jpg" alt="ガーデンテラス　花のれん 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">31</span>ガーデンテラス　花のれん<span class="yomi">がーでんてらす　はなのれん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">佐世保駅から歩いて行ける三浦町の和食店。店内にいけすがあり、地元で獲れたイカを職人が活造りにする。席はテーブル40席とカウンター8席で、団体は20名まで。全席禁煙だが喫煙専用室がある。支払いは現金とクレジットカード（VISA・マスター・アメックス・JCB）で、電子マネーとQRコード決済は使えない。結納などの慶事、接待、法事にも使われる。以前は佐世保中央駅側で「花のれん」として営業しており、現在地へ移って「ガーデンテラス花のれん」になった。公式サイトの案内では昼の営業は現在休止中で、夜のみ。2026年11月11日からInstagramでの発信を再開している。</div>
+<div class="sig"><b>一皿:</b>イカの活造り（いけすから引き上げて職人が手早く造る。透き通った身の歯ごたえが身上）／伊勢海老＆お刺身盛り（地元の魚介を盛り合わせた大皿）／懐石コース（百合・山茶花の2本立てに、料理長おまかせを加えた4種類）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ディナー17:00～23:00（L.O.22:00）。昼の営業は公式サイトの案内では現在休止中。ホットペッパーグルメの掲載は17:00～22:00（料理L.O.21:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日、第1・第3月曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市三浦町5-7-15</td></tr>
+<tr><th>予約</th><td>電話（0956-37-6556）。ホットペッパーグルメのリクエスト予約は来店日の前日17時まで。 — <a href="tel:0956376556">☎ 0956-37-6556</a> ／ <a href="https://www.s-sasebo.com/gardenterrace/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保観光コンベンション協会の飲食店検索で「和食・居酒屋」に分類され、いけすの活造りと懐石という章の枠にそのまま当たる。寿司の専門店ではなく、レモンステーキの提供店一覧にも入っていない。営業の根拠＝条件①: ホットペッパーグルメの店舗ページが「2026/09/20 更新」（お店の特長欄）、「2026/06/22 更新」（クーポン欄・コース欄）（2026-11-22 取得）。あわせて公式Instagramに2026年11月11日付の投稿（発信の再開を告知）がある。条件②: ①『ガーデンテラス花のれん 佐世保 閉店』と『ガーデンテラス花のれん佐世保閉店』の2通りでYahoo! JAPAN検索（2026-11-22）→現店舗の閉店の記載なし。食べログで【閉店】と出るのは移転前の旧「花のれん」（佐世保中央駅）のページ。②公式SNSのアカウント名＝Instagram「ガーデンテラス 花のれん」が存在。③『ガーデンテラス花のれん 佐世保 移転』『同 リニューアル』でも検索（2026-11-22）→移転は現在地へ移った過去の話で、現住所（三浦町5-7-15）は公式サイト・ホットペッパーグルメ・観光協会の3者で一致。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AC%E3%83%BC%E3%83%87%E3%83%B3%E3%83%86%E3%83%A9%E3%82%B9%E3%80%80%E8%8A%B1%E3%81%AE%E3%82%8C%E3%82%93%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%89%E6%B5%A6%E7%94%BA5-7-15">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.s-sasebo.com/gardenterrace/">ガーデンテラス花のれん公式サイト。営業時間・定休日・座席数・住所・駐車場・アクセス 2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004633380/">ホットペッパーグルメ店舗ページ（2026/09/20 更新・2026/06/22 更新）。席数40席・支払い方法・駐車場5台・アクセス 2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004633380/course/">同店のコース一覧（2026/06/22 更新）。百合8,800円・山茶花11,000円・料理長おまかせ13,200円／16,500円 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/62963">佐世保観光コンベンション協会「海風の国」店舗情報。住所・電話・席数・駐車場・おすすめメニュー 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-kaigun-yamanoren">
+<img class="hero" src="img/sasebo/sasebo-kaigun-yamanoren.jpg" alt="天空の宿　山暖簾（レストラン国見） 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-kaigun-yamanoren_exterior.jpg" alt="天空の宿　山暖簾（レストラン国見） 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">32</span>天空の宿　山暖簾（レストラン国見）<span class="yomi">てんくうのやど　やまのれん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">建築家の黒川紀章が総合プロデュースした公共の宿で、泊まらなくても昼食だけの利用ができる。館内のレストラン国見は11時30分から14時30分（14時ラストオーダー）で、国見御膳や定食を出す。毎週火曜はコーヒーのサービスデー（祝日を除く）。金・土・日・祝のみ開く湯上がり茶屋では、うどんや丼を11時30分から17時まで（料理のラストオーダーは15時）。昼の会食プランは予約制で、特別会席9,350円、山暖簾会席7,700円、くにみコース5,500円、なごみコース4,400円（平日限定）。会場は大広間（10～30名）か小上がりの個室（4～8名）を選べる。させぼ世知原温泉くにみの湯の日帰り入浴もできる。世知原は玉緑茶「世知原茶」の産地。</div>
+<div class="sig"><b>一皿:</b>国見御膳（2,500円。レストラン国見の看板）／鯛のあらだき定食（2,000円）／くにみコース（5,500円の昼の会食プラン。予約制）</div>
+<table class="info">
+<tr><th>営業時間</th><td>レストラン国見 11:30～14:30（14:00 L.O.）／湯上がり茶屋 11:30～17:00（料理L.O.15:00。金・土・日・祝のみ営業）</td></tr>
+<tr><th>定休日</th><td class="off">館内メンテナンスのため全館休館する日がある（公式サイトの案内では11月11日・12月9日・1月13日の各水曜）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市世知原町上野原316</td></tr>
+<tr><th>予約</th><td>レストラン国見の単品メニューは予約なしでも利用できる。昼の会食プラン（特別会席・山暖簾会席・くにみコース・なごみコース）は予約制。電話は0956-76-2900。 — <a href="tel:0956762900">☎ 0956-76-2900</a> ／ <a href="https://www.yamanoren.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保市世知原町にあり、地元の山の幸・海の幸を使った里山の和食を昼から出す。市内中心部の店に偏りがちな章に、郷土料理の面から佐世保市北部を1軒入れるために採った。日帰りのランチと温泉の案内を公式サイトが明記しており、宿泊者以外でも使える。営業の根拠＝条件①: 公式サイトの新着情報に2026.10.29付（11月のイベントカレンダー）、2026.09.29付（10月のイベントカレンダー）、2026.08.28付、2026.08.22付（なごみ会席・くにみ会席・山暖簾会席の秋のお献立）、2026.02.05付の記事が並び、季刊誌「山暖簾だより」も2026年AUTUMN（9～11月）号が最新（2026-11-22 取得）。条件②: ①『山暖簾 世知原 閉店』と『山暖簾佐世保閉店』の2通りでYahoo! JAPAN検索（2026-11-22）→閉店の記載はなく、月1回の館内メンテナンス休館日の案内のみ。②公式SNSのアカウント名＝Instagram「天空の宿 山暖簾（@yamanoren）」とFacebook「山暖簾」が存在。③『山暖簾 世知原 移転』『同 リニューアル』でも検索（2026-11-22）→移転はなし、2023年12月の公式ホームページのリニューアルのみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E7%A9%BA%E3%81%AE%E5%AE%BF%E3%80%80%E5%B1%B1%E6%9A%96%E7%B0%BE%EF%BC%88%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E5%9B%BD%E8%A6%8B%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%96%E7%9F%A5%E5%8E%9F%E7%94%BA%E4%B8%8A%E9%87%8E%E5%8E%9F316">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.yamanoren.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.yamanoren.co.jp/">山暖簾公式サイト。新着情報 2026.10.29／2026.09.29／2026.08.28／2026.08.22、住所・電話 2026-11-22 取得</a> / <a href="https://www.yamanoren.co.jp/daytrip/">同公式サイトの日帰りのページ。レストラン国見と湯上がり茶屋の営業時間とメニュー価格、昼の会食プランの価格、送迎バス 2026-11-22 取得</a> / <a href="https://www.yamanoren.co.jp/facilities/">同公式サイトの館内設備のページ。レストラン・湯上がり茶屋・大広間・エントランスの写真 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/accommodation/663">佐世保観光コンベンション協会「海風の国」宿泊施設情報 2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋</h2>
+<div class="card" id="c-sasebo-izakaya-homura">
+<img class="hero" src="img/sasebo/sasebo-izakaya-homura.jpg" alt="焼鳥炉端　ほむら 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>焼鳥炉端　ほむら<span class="yomi">やきとりろばた　ほむら</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2026年7月23日に下京町で開いた新しい店。魚介を串に刺して炉のまわりに立てて焼く「原始焼き」と、一本ずつ手で焼く焼鳥が柱。総席数25席で個室・座敷・掘りごたつはなく、貸切は不可。宴会の最大収容も25人まで。支払いは現金のほかクレジットカード（VISA・マスター・アメックス・DINERS）が使え、電子マネーとQRコード決済は使えない。全席喫煙可だが加熱式たばこに限る。20歳未満は入店できず、同伴も不可とホットペッパーの店舗ページに明記がある。来店のピークは19時ごろまでで、1組あたり6人までの利用が中心。ネット予約は来店日当日21時まで受け付ける。</div>
+<div class="sig"><b>一皿:</b>原始焼の大エビ（殻つきの大海老を炉端で立てて焼く）／ほむら名物 大トロいわし 980円（税込・脂ののったいわしの原始焼き）／胡麻ヒラス（ヒラスの刺身に胡麻だれと薬味をからめる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 17:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市下京町7-12 田中店舗1階</td></tr>
+<tr><th>予約</th><td>予約可。電話（080-2625-2199）のほか、ホットペッパーグルメのネット予約が来店日当日21時まで受け付ける。公式サイトは無い。 — <a href="tel:08026252199">☎ 080-2625-2199</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>焼鳥と炉端という、佐世保の夜の定番を一軒で引き受ける店で、カウンター中心の酒の店なので居酒屋の章に入れた。営業確認①＝ホットペッパーグルメの店舗ページが店舗情報2026/11/05更新・料理2026/10/06更新・コース2026/11/10更新（2026-11-22 取得）。②＝(1)「焼鳥炉端 ほむら 閉店」を空白ありと詰めた形の両方でYahoo!検索したが、当店の閉店情報は無く、代わりに2026年7月16日付の「佐世保市に新規オープン！焼鳥炉端ほむら（下京町に7月23日オープン）」が出た。(2)公式SNSのアカウント名＝Instagram等の当店名義のアカウントは検索結果に見当たらず対象なし（閉店の証拠ではない）。(3)「移転」「リニューアル」でも各1回検索したが当店に関する報告は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E7%82%89%E7%AB%AF%E3%80%80%E3%81%BB%E3%82%80%E3%82%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA7-12%20%E7%94%B0%E4%B8%AD%E5%BA%97%E8%88%971%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004660976/">店舗情報・営業時間・定休日・席数・支払い方法（2026/11/05 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004660976/food/">料理メニューと価格（2026/10/06 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004660976/photo/">掲載写真一覧（2026-11-22 取得）</a></div>
+</div></div>
+<div class="card" id="c-sasebo-izakaya-kaneda">
+<img class="hero" src="img/sasebo/sasebo-izakaya-kaneda.jpg" alt="居酒屋　金田 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>居酒屋　金田<span class="yomi">いざかや　かねだ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2025年3月に上京町6-11へ移ってリブランドした店。それ以前は「創作料理カネダ」という名前で別の場所にあった。総席数24席でカウンターがあり、個室・座敷・掘りごたつは無く貸切も受けていない。生け簀から引く活き造りと串焼きの二本立てで、ヒラスカマは小500円・中780円・大980円と大きさで値が分かれる。支払いは現金のほかクレジットカード（VISA・マスター・アメックス・JCB）が使え、電子マネーとQRコード決済は不可。全席喫煙可だが加熱式たばこに限る。昼は「金田ランチ」としておにぎりの専門店になり12:00〜15:00に営業する（日曜日は昼の営業が休み）。飲み放題あり。</div>
+<div class="sig"><b>一皿:</b>アジ活き造り（生け簀から引いたアジをその場でさばく）／ごまヒラス 990円（税込・ヒラスの刺身に胡麻だれ）／エビマヨ 1,080円（税込・大ぶりの海老に特製ソース）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土・祝日・祝前日 12:00〜15:00（料理・ドリンクL.O. 14:30）／18:00〜翌1:00（料理・ドリンクL.O. 翌0:30）、日曜日 18:00〜翌1:00（料理・ドリンクL.O. 翌0:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休（ただし昼の営業は日曜日が休み）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市上京町6-11</td></tr>
+<tr><th>予約</th><td>予約可。電話（090-9348-0701）のほか、ホットペッパーグルメのネット予約が来店日翌0時まで（リクエスト予約は前日17時まで）。公式サイトは無い。 — <a href="tel:09093480701">☎ 090-9348-0701</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>活き造りも出すが柱は焼き鳥と一品で、カウンター24席の酒の店なので居酒屋の章に入れた。営業確認①＝ホットペッパーグルメの店舗ページが2026/10/26更新、コースが2026/03/25更新（2026-11-22 取得）。②＝(1)「居酒屋 金田 閉店」を空白ありと詰めた形の両方でYahoo!検索。当店の閉店情報は無し。(2)公式SNSのアカウント名＝Instagram「居酒屋 金田（@0821kaneda）」が実在し、プロフィールに「佐世保・上京町／佐世保市上京町6-11／090-9348-0701」と現住所が載る。(3)「移転」「リニューアル」でも各1回検索。出てきたのは2025年3月の移転リブランド（創作料理カネダ→居酒屋金田）と、2025年7月のおにぎりランチ開始の記事で、いずれも現住所での営業を裏づける。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%E3%80%80%E9%87%91%E7%94%B0%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8A%E4%BA%AC%E7%94%BA6-11">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004577167/">店舗情報・営業時間・席数・支払い方法（2026/10/26 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004577167/food/">料理メニューと価格（2026-11-22 取得）</a> / <a href="https://www.hotpepper.jp/strJ004577167/photo/">掲載写真一覧（2026-11-22 取得）</a></div>
+</div></div>
+<div class="card" id="c-sasebo-izakaya-hizume">
+<img class="hero" src="img/sasebo/sasebo-izakaya-hizume.jpg" alt="創作ダイニング　ひづめ 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">35</span>創作ダイニング　ひづめ<span class="yomi">そうさくだいにんぐ　ひづめ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">座敷36人ぶん・カウンター11席の計47席で、個室が6室ある。宴会は着席50人・立食60人まで、貸切も50名まで受ける。馬刺しは産地から直送、刺身は対馬産の純白アナゴのように他店で見ない品が入る。飲み放題は90分2,000円で一人3オーダー制。支払いはクレジットカード（VISA・マスター・アメックス・DINERS・JCB・銀聯）とQRコード決済（PayPay・楽天ペイ・au PAY）が使えるが、電子マネーは不可。別途お通し代がかかり、席は2時間制。全席喫煙可。英語メニューを置いている。定休日は無く、17:00から翌1:00まで通しで開いている。</div>
+<div class="sig"><b>一皿:</b>対島産純白アナゴの刺身（真っ白な身のアナゴを生で。佐世保ではこの店だけと公式に掲載）／数の子の天ぷら（外は衣、中は半生の数の子）／和牛丸腸鉄板 1,000円（税込・和牛の丸腸を鉄板で焼く）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜翌1:00（料理L.O. 翌0:00／ドリンクL.O. 翌0:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市下京町4-3</td></tr>
+<tr><th>予約</th><td>予約可。電話（0956-25-9788、問い合わせは12:00から）のほか、ホットペッパーグルメのネット予約が来店日当日21時まで（リクエスト予約は前日17時まで）。公式サイトは無い。 — <a href="tel:0956259788">☎ 0956-25-9788</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>個室と座敷を備えた宴会向けの創作居酒屋で、肴と酒が柱なので居酒屋の章に入れた。営業確認①＝ホットペッパーグルメの店舗ページが2026/10/22更新、コースが2026/09/09更新（2026-11-22 取得）。②＝(1)「創作ダイニング ひづめ 閉店」を空白ありと詰めた形の両方でYahoo!検索。閉店情報は1件も無し。(2)公式SNSのアカウント名＝当店名義のアカウントは検索結果に見当たらず対象なし（閉店の証拠ではない）。(3)「移転」「リニューアル」でも各1回検索。該当する報告は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%E3%80%80%E3%81%B2%E3%81%A5%E3%82%81%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA4-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001231621/">店舗情報・営業時間・席数・支払い方法（2026/10/22 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001231621/food/">料理メニューと価格（2026-11-22 取得）</a> / <a href="https://www.hotpepper.jp/strJ001231621/photo/">掲載写真一覧（2026-11-22 取得）</a></div>
+</div></div>
+<div class="card" id="c-sasebo-izakaya-kirin">
+<img class="hero" src="img/sasebo/sasebo-izakaya-kirin.jpg" alt="佐世保ろばた焼　麒麟 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">36</span>佐世保ろばた焼　麒麟<span class="yomi">させぼろばたやき　きりん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span><span class="chip official">official</span></div>
+<div class="desc">総席数50席がすべてお座敷の個室で、4名席2室・6名席2室・8名席4室に分かれる。掘りごたつではないので足を下ろす形にはならない。貸切は30〜50名まで（要予約）。平戸から直送の魚と朝締めの鶏を使うと公式サイトに書いている。お通し代は600円（税抜）。支払いはクレジットカード（VISA・マスター・アメックス・DINERS・JCB・Discover・銀聯）、電子マネーiD、QRコード決済PayPayが使える。Wi-Fiあり。店内に客がいないときは早めに閉めることがあるため、遅い時間は電話で確かめてから向かうのがよい。定休日は不定休で、電話での問い合わせは15:00〜22:00。</div>
+<div class="sig"><b>一皿:</b>串焼き5種セット 930円（焼き手が選ぶ5本を組にして出す）／お刺身の盛り合わせ 1,780円（税込・日替わりで4〜5点盛り）／天麩羅盛り合わせ（海老と野菜を揚げたて）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:30）。公式サイトの店舗案内は16:00〜23:30（オーダーストップ）24:00閉店と記載。</td></tr>
+<tr><th>定休日</th><td class="off">不定休（電話で確認）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市塩浜町2-16 2階</td></tr>
+<tr><th>予約</th><td>予約可。電話（0956-37-8894、問い合わせは15:00〜22:00）のほか、ホットペッパーグルメのネット予約が来店日当日22時まで（リクエスト予約は前日17時まで）。コース予約は当日16時以降のキャンセルでコース料金の60％がかかる。 — <a href="tel:0956378894">☎ 0956-37-8894</a> ／ <a href="http://moon2019.com">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ろばた焼きを看板にした個室の酒の店で、コースと飲み放題が中心なので居酒屋の章に入れた。営業確認①＝ホットペッパーグルメの店舗ページが2026/07/25更新（2026-11-22 取得）。②＝(1)「佐世保ろばた焼 麒麟 閉店」を空白ありと詰めた形の両方でYahoo!検索。当店の閉店情報は無く、検索に出た「閉店」は別の店（させぼ村）のものと、公式サイトの営業時間表記「24:00閉店」だった。(2)公式SNSのアカウント名＝Instagram「佐世保ろばた焼 麒麟（@sasebo_kirin）」が実在する。(3)「移転」「リニューアル」でも各1回検索。該当する報告は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BD%90%E4%B8%96%E4%BF%9D%E3%82%8D%E3%81%B0%E3%81%9F%E7%84%BC%E3%80%80%E9%BA%92%E9%BA%9F%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%A1%A9%E6%B5%9C%E7%94%BA2-16%202%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001244938/">店舗情報・営業時間・席数・支払い方法・公式サイトの記載（2026/07/25 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001244938/food/">料理メニューと価格（2026-11-22 取得）</a> / <a href="https://www.moon2019.com/info">公式サイト 店舗案内（所在地・電話・席数・営業時間）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-izakaya-kame">
+<img class="hero" src="img/sasebo/sasebo-izakaya-kame.jpg" alt="海鮮と焼き鳥味わる居酒屋 -亀- 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-izakaya-kame_exterior.jpg" alt="海鮮と焼き鳥味わる居酒屋 -亀- 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">37</span>海鮮と焼き鳥味わる居酒屋 -亀-<span class="yomi">かいせんとやきとりあじわるいざかや　かめ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">総席数45席でカウンターがあり、宴会は40人まで。店内で仕込んだ焼き鳥を備長炭で焼くほか、卓上のミニ七輪を使って自分で焼ける品（牛タン・ほたてなど）を置いている。店主は平戸の出身で、すり身揚げは平戸のすり身を使う。18:00から翌2:00まで開いていて定休日は無いので、二軒目・三軒目に向く。お通し代600円。支払いはクレジットカード7種（VISA・マスター・アメックス・DINERS・JCB・Discover・銀聯）とQRコード決済（PayPay・d払い）が使える。分煙で喫煙専用室があり、Wi-Fiも通っている。適格請求書（インボイス）に対応した領収書を出す。</div>
+<div class="sig"><b>一皿:</b>備長炭の焼き鳥串（3種・5種・7種・10種の盛りから選べる）／極上すり身揚げ 700円（税込・平戸のすり身を揚げたてで出す）／七輪焼き ほたて 400円（税込・卓上の七輪で自分で焼く）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 18:00〜翌2:00（料理L.O. 翌1:30／ドリンクL.O. 翌1:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市塩浜町1-1 グランパレビルB1</td></tr>
+<tr><th>予約</th><td>予約可。電話（0956-36-9075）のほか、ホットペッパーグルメのネット予約が来店日当日23時まで（リクエスト予約は前日17時まで）。公式サイトは無い。 — <a href="tel:0956369075">☎ 0956-36-9075</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>海鮮も出すが柱は備長炭の焼き鳥と七輪焼きで、深夜まで開く酒の店なので居酒屋の章に入れた。営業確認①＝ホットペッパーグルメの店舗ページが2026/01/16更新、コースが2025/09/11更新（2026-11-22 取得）。②＝(1)「居酒屋 亀 塩浜町 閉店」を空白ありと詰めた形の両方でYahoo!検索。当店の閉店情報は無く、出てきた「閉店」はいずれも口コミサイトの定型の案内文だった。(2)公式SNSのアカウント名＝当店名義のアカウントは検索結果に見当たらず対象なし（閉店の証拠ではない）。(3)「移転」「リニューアル」でも各1回検索。該当する報告は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E3%81%A8%E7%84%BC%E3%81%8D%E9%B3%A5%E5%91%B3%E3%82%8F%E3%82%8B%E5%B1%85%E9%85%92%E5%B1%8B%20-%E4%BA%80-%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%A1%A9%E6%B5%9C%E7%94%BA1-1%20%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%91%E3%83%AC%E3%83%93%E3%83%ABB1">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003763741/">店舗情報・営業時間・席数・支払い方法（2026/01/16 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003763741/food/">料理メニューと価格（2026-11-22 取得）</a> / <a href="https://www.hotpepper.jp/strJ003763741/photo/">掲載写真一覧（2026-11-22 取得）</a></div>
+</div></div>
+<div class="card" id="c-sasebo-izakaya-ants">
+<img class="hero" src="img/sasebo/sasebo-izakaya-ants.jpg" alt="JAZZ &amp;darts ants 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">38</span>JAZZ &amp;darts ants<span class="yomi">じゃず あんど だーつ あんつ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2025年7月1日に開いた、ジャズとダーツの店。グランドピアノが置いてあり演奏ができる。総席数30席で全席禁煙、宴会は30人まで。20名以上なら貸し切りにでき、その場合は季節の食材を使ったおまかせコース（4,000円〜）を頼める。料理はパスタとカレーが軸で、どちらも日替わりを含め各4種を900円〜で出す。支払いはクレジットカードがVISAのみ、電子マネーはSuicaのみで、QRコード決済は使えない。電話番号はホットペッパーの店舗ページで非公開とされているため、連絡はネット予約から行う。水曜・日曜・祝日が休み。</div>
+<div class="sig"><b>一皿:</b>あたりめチキン（鶏を裂いてほぐした一品）／日替わりのパスタ（内容は店に尋ねる）／本日のカレー（日替わり）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木〜土・祝前日 17:00〜翌2:00（料理L.O. 翌1:30／ドリンクL.O. 翌1:30）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日・日曜日・祝日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市京坪町6-7 松美屋ビル1F 102</td></tr>
+<tr><th>予約</th><td>予約可。ただし電話番号はホットペッパーグルメの店舗ページで非公開とされているため、ホットペッパーグルメのネット予約（来店日当日22時まで）を使う。公式サイトは無い。</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ジャズの生演奏とダーツを置いた酒場で、米海軍基地の街である佐世保の夜の多様さを示す一軒として居酒屋の章に入れた。営業確認①＝ホットペッパーグルメの店舗ページが2026/11/03更新、コースが2026/10/28更新（2026-11-22 取得）。②＝(1)「JAZZ darts ants 閉店」を空白ありと詰めた形の両方でYahoo!検索。当店の閉店情報は無し。(2)公式SNSのアカウント名＝Instagram「JAZZ&amp;darts ants（@jazzdarts.ants）」が実在し、プロフィールに「2025.07.01〜NEW OPEN」とある。(3)「移転」「リニューアル」でも各1回検索。該当する報告は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=JAZZ%20%26darts%20ants%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%BA%AC%E5%9D%AA%E7%94%BA6-7%20%E6%9D%BE%E7%BE%8E%E5%B1%8B%E3%83%93%E3%83%AB1F%20102">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004723640/">店舗情報・営業時間・席数・支払い方法・電話非公開の記載（2026/11/03 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004723640/food/">料理メニューと価格（2026-11-22 取得）</a> / <a href="https://www.hotpepper.jp/strJ004723640/photo/">掲載写真一覧（2026-11-22 取得）</a></div>
+</div></div>
+<div class="card" id="c-sasebo-izakaya-gravity">
+<img class="hero" src="img/sasebo/sasebo-izakaya-gravity.jpg" alt="メキシコ料理　GRAVITY 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">39</span>メキシコ料理　GRAVITY<span class="yomi">めきしこりょうり　ぐらびてぃ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">常盤町のビルの3階にある17席の店。コーントルティーヤやフラワートルティーヤを使ったタコス・ケサディアが中心で、メキシコで日常的に食べられるサボテンを肉と一緒に挟んだタコスも置いている。全席禁煙で、個室・座敷・カウンターは無く貸切も受けていない。支払いは現金のみで、クレジットカード・電子マネー・QRコード決済はいずれも使えない。子ども連れは不可とホットペッパーの店舗ページに明記がある。火・土・日は昼の11:00から通しで営業し、水〜金は17:00から。月曜日が定休日。夜の予算は1,501〜2,000円、昼は501〜1,000円の帯。</div>
+<div class="sig"><b>一皿:</b>ステーキタコス（漬け込んだビーフを焼いてコーントルティーヤに挟む）／サボテンタコス（メキシコで日常的に食べるサボテンを肉と合わせる）／フライケサディア（チーズとビーフまたはマッシュルームを包んで揚げ、野菜を挟む）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・土・日 11:00〜22:00／水〜金 17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市常盤町9-19 3階</td></tr>
+<tr><th>予約</th><td>予約可。電話（0956-55-5094）のほか、ホットペッパーグルメのネット予約が来店日当日20時まで。公式サイトは無い。 — <a href="tel:0956555094">☎ 0956-55-5094</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>米海軍の基地がある佐世保らしい外国の料理の店で、酒とつまむ少人数向けの造りなので居酒屋の章に入れた。営業確認①＝ホットペッパーグルメの店舗ページが2026/03/04更新（2026-11-22 取得）。②＝(1)「メキシコ料理 GRAVITY 閉店」を空白ありと詰めた形の両方でYahoo!検索。当店の閉店情報は無し。(2)公式SNSのアカウント名＝当店名義のアカウントは検索結果に見当たらず対象なし（閉店の証拠ではない）。(3)「移転」「リニューアル」でも各1回検索。該当する報告は無し。写真はホットペッパーグルメの掲載分が料理3枚のみで、外観の写真は掲載が無いため ext_urls は空にした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%A1%E3%82%AD%E3%82%B7%E3%82%B3%E6%96%99%E7%90%86%E3%80%80GRAVITY%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E7%94%BA9-19%203%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ001260914/">店舗情報・営業時間・席数・支払い方法（2026/03/04 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001260914/food/">料理メニューと価格（2026-11-22 取得）</a></div>
+</div></div>
+<div class="card" id="c-sasebo-izakaya-shimezo">
+<img class="hero" src="img/sasebo/sasebo-izakaya-shimezo.jpg" alt="注連蔵 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-izakaya-shimezo_exterior.jpg" alt="注連蔵 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">40</span>注連蔵<span class="yomi">しめぞう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">大正5年に酒見注連蔵が始めた酒屋「酒見屋商店」の角打ちを、2009年8月8日に再現して開いた店。1階は立ち飲み、2階はテーブル席で、九州各県の日本酒を常時40種類以上そろえる。500円玉を入れると1合が出るコイン式の日本酒サーバーと生ビールサーバーを置いていて、これは酒屋時代の「銘酒コーナーささ」の形をそのまま写したもの。つまみは創業者の娘の代から続く長崎おでん（溜まり醤油で甘みのある出汁）とぜんざいが看板で、女将がつくる日替わりの小鉢が10種ほど並ぶ。支払いは現金のみ。持ち帰りでは佐世保あごだし餃子やおでんの盛り合わせを売っている。公式サイトに定休日の記載が無いため、休みは電話で確かめてほしい。</div>
+<div class="sig"><b>一皿:</b>長崎おでん（あご出汁と溜まり醤油の甘い出汁で、ネタは佐世保産が中心）／佐世保あごだし餃子（トビウオの出汁と生姜を利かせた餃子。持ち帰りもできる）／ぜんざい（創業者の娘・酒見正子のレシピを今も使う）</div>
+<table class="info">
+<tr><th>営業時間</th><td>1階 16:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:30）／2階 16:00〜21:00（料理・ドリンクL.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">公式サイトに記載が無い（電話で確認）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市下京町4-13</td></tr>
+<tr><th>予約</th><td>コース（注連蔵2,000円コース）は予約を受ける。電話0956-23-3933はささいずみグループの代表番号なので、かけるときは「注連蔵」と店名を伝える。予約はすべて本予約の扱いで仮予約は受けない。人数の変更は昼（〜16:00）の予約なら前日21:00まで、夜（16:00〜）の予約なら当日12:00まで。 — <a href="tel:0956233933">☎ 0956-23-3933</a> ／ <a href="https://sasaizumi.com/shimezo.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>立ち飲みの角打ちで、九州の日本酒を軸にした酒そのものの店なので居酒屋の章に入れた。営業確認①＝運営する「ささいずみ」の公式サイト sasaizumi.com（注連蔵の店舗ページ shimezo.html を同じドメインに置く）のお知らせに2026年8月31日付と2026年3月31日付の掲示がある（2026-11-22 取得）。②＝(1)「注連蔵 閉店」を空白ありと詰めた形の両方でYahoo!検索。下京店の閉店情報は無く、出てきたのは2016年1月2日に「注連蔵上京店」を下京店2階へ吸収移転した運営会社の沿革の記述だった。(2)公式SNSのアカウント名＝Instagram「注連蔵（@shimezoshimokyo）」が実在する。(3)「移転」「リニューアル」でも各1回検索。上記の上京店の吸収移転（2016年）以外に該当は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B3%A8%E9%80%A3%E8%94%B5%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA4-13">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sasaizumi.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://sasaizumi.com/shimezo.html">公式サイト 注連蔵の店舗情報（住所・電話・営業時間・駐車場・支払い方法・沿革・コース）2026-11-22 取得</a> / <a href="https://sasaizumi.com/">公式サイト トップのお知らせ（2026年8月31日付・2026年3月31日付）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/nomisaruku">佐世保観光コンベンション協会「飲み歩き革命？SASEBOのみさるくマップで素敵な一杯の出会いを！」注連蔵の紹介（日付の記載なし）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-izakaya-ooishi">
+<img class="hero" src="img/sasebo/sasebo-izakaya-ooishi.jpg" alt="おおいし 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-izakaya-ooishi_exterior.jpg" alt="おおいし 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">41</span>おおいし<span class="yomi">おおいし</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">上京町の赤い看板と藍の暖簾が目印の居酒屋。毎朝の朝市で長崎県産の魚を仕入れ、その日に揚がったものを刺身で出す。盛り合わせにはイサキ・天然カンパチ・ブリ・ヒラス・真鯵・マグロ・真鯛・カツオ・サワラ・ヤリイカ・キビナゴ・タコ・太刀魚・金目鯛・カワハギ・うちわ海老などが季節で入れ替わる。総席数45席で掘りごたつと個室がある。支払いは現金のみで、クレジットカード・電子マネー・QRコード決済はいずれも使えない。全席喫煙可。夜のみの営業で日曜日が休み。ネット予約は来店日当日21時まで受け付け、コース予約は前日10時以降のキャンセルでコース料金の全額、席のみの予約は当日12時以降のキャンセルで1人1,000円がかかる。特定の魚を食べたいときは電話で相談できる。</div>
+<div class="sig"><b>一皿:</b>お刺身の盛り合わせ（朝市で仕入れた長崎県産の魚を捌きたてで。内容はその日の仕入れ次第）／里芋の唐揚げ（薄味で炊いた里芋を揚げる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 18:00〜翌0:00（料理L.O. 23:30／ドリンクL.O. 23:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市上京町7-6</td></tr>
+<tr><th>予約</th><td>予約可。電話（0956-22-6030）のほか、ホットペッパーグルメのネット予約が来店日当日21時まで（リクエスト予約は前日17時まで）。公式サイトは無い。 — <a href="tel:0956226030">☎ 0956-22-6030</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>朝市の魚も出すが、夜だけ開く45席の酒の店で掘りごたつと個室を備えた町の居酒屋なので居酒屋の章に入れた。営業確認①＝ホットペッパーグルメの店舗ページが2025/09/02更新、コースが2025/09/09更新（2026-11-22 取得）。②＝(1)「居酒屋 おおいし 閉店」を空白ありと詰めた形の両方でYahoo!検索。当店の閉店情報は無し。(2)公式SNSのアカウント名＝Instagram「佐世保居酒屋 おおいし（@sasebo_izakaya_ooishi）」が実在し、プロフィールに「長崎県佐世保市上京町7-6／18:00〜24:00／0956-22-6030／定休日☞日曜日」と現住所と電話が載る。(3)「移転」「リニューアル」でも各1回検索。該当する報告は無し。写真はホットペッパーグルメの掲載が3枚しかなく、うち1枚が外観なので、料理・店内の写真は2本で下限の3本に届かない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%8A%E3%81%84%E3%81%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8A%E4%BA%AC%E7%94%BA7-6">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ004433003/">店舗情報・営業時間・席数・支払い方法・キャンセル規定（2025/09/02 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004433003/food/">料理メニューと価格（2026-11-22 取得）</a> / <a href="https://www.hotpepper.jp/strJ004433003/course/">コース（2025/09/09 更新）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-cafe" class="c-yellow">喫茶・カフェ・麺</h2>
+<div class="card" id="c-sasebo-cafe-coffeeboueki">
+<img class="hero" src="img/sasebo/sasebo-cafe-coffeeboueki.jpg" alt="珈琲貿易 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-cafe-coffeeboueki_exterior.jpg" alt="珈琲貿易 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">42</span>珈琲貿易<span class="yomi">こーひーぼうえき</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">勝富町の住宅街にある喫茶店で、佐世保観光コンベンション協会の取材記事（2026年5月20日）は「創業から45年」と書いている。コンクリート壁に手書き文字で店名を入れた外観が目印で、店内はアンティーク調の家具と照明を落とした照明、常時ジャズがかかる。昼は食事メニューがあり、カレーはターメリックライスで、トッピングを野菜・シーフード・チーズから選ぶ。サラダとコーヒーまたは紅茶が付くセットもある。夜の時間帯はドリンクのみの提供になるので、カレーやチーズケーキを目当てに行くなら昼が確実。紅茶の種類が多く、手書きのメニュー帳から選ぶ。店主は夜は系列のバーに入ることがある。支払い方法・席数は出典にないため未確認。</div>
+<div class="sig"><b>一皿:</b>カレー（ターメリックライスに少しピリ辛のルー。野菜・シーフード・チーズから具を選ぶ）／チーズケーキ（しっとり系。ホイップを添えてコーヒーに落とすとウィンナコーヒー風になる）／紅茶各種（レモンティ・ウィンナティなど8種類ほどを手書きメニューから選ぶ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜19:00（夜はドリンクメニューのみの提供。るるぶ&amp;more. の店舗情報は『12〜19時』、ホットペッパーグルメの無料掲載欄は『11:00〜22:00』と食い違うため、来店前に電話確認が確実）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日・第1月曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市勝富町5-21</td></tr>
+<tr><th>予約</th><td>予約の可否は出典に記載がなく未確認。席数が少ないので電話で確認してから行くのが確実 — <a href="tel:0956235141">☎ 0956-23-5141</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保市街地に残る昔ながらの純喫茶で、章の『昔からの喫茶店』の枠にあたる。営業確認①＝佐世保観光コンベンション協会（公的機関）の公式サイト『海風の国』の海風旅ブログ 2026年5月20日掲載の取材記事（店名・店内・料理の写真つき。名簿ではなく記事）。店自身のサイトが無く公式Instagramがこの環境から開けないため、長崎県の特例に従い公的機関の日付つき記事を①の代用とした。営業確認②＝(1)『珈琲貿易 佐世保 閉店』と『珈琲貿易佐世保閉店』の両方をYahoo!検索で実行（2026-11-22）。閉店を伝える情報は0件で、第三者の紹介投稿が2026年10月23日・2026年7月14日付で出てくる。(2)公式SNSのアカウント名を確認＝Instagram『珈琲貿易（@coffeeboueki）』が存在し、プロフィール文に『長崎県佐世保市勝富町5ー21 （0956）23-5141 定休日:第一月曜、毎週火曜』とある。(3)『珈琲貿易 佐世保 移転』『珈琲貿易 佐世保 リニューアル』を各1回検索（2026-11-22）＝移転・リニューアルの情報なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E8%B2%BF%E6%98%93%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%8B%9D%E5%AF%8C%E7%94%BA5-21">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/blog/staff-210">佐世保観光コンベンション協会 公式サイト『海風の国』海風旅ブログ 取材記事（掲載日 2026.05.20）。創業45年・店内・カレー・チーズケーキ・夜はドリンクのみ 2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000573619/">ホットペッパーグルメ 店舗ページ（住所 勝富町5-21・駐車場有を確認。無料掲載のため更新日表示なし）2026-11-22 取得</a> / <a href="https://rurubu.jp/andmore/spot/80018558">るるぶ&amp;more. 店舗情報（住所・電話・営業時間12〜19時・定休日 火曜/第1月曜）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-cafe-mellow">
+<img class="hero" src="img/sasebo/sasebo-cafe-mellow.jpg" alt="cafe mellow 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-cafe-mellow_exterior.jpg" alt="cafe mellow 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>cafe mellow<span class="yomi">かふぇめろう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">外観は倉庫そのもので、入口を入ってすぐ左がカフェ。1階のカウンターで注文し、階段を上がった屋根裏席で待つ構造になっている。屋根裏はミッドセンチュリーの家具と本棚が並び、「屋根裏文庫」と名づけた貸本の仕組みがある（本を1冊持参すると好きな本を1冊持ち帰れる）。コーヒーはやや深煎りで、注文を受けてから淹れるため少し時間がかかる。ランチは11時30分から14時ラストオーダーで、ローズマリーの煮込みハンバーグなど3種類からの選択制。ランチ営業日は不定期で、店の公式インスタグラムの営業日カレンダーに掲載される。カフェタイムは12時から18時。支払い方法と席数は出典にないため未確認。</div>
+<div class="sig"><b>一皿:</b>抹茶のテリーヌ（抹茶のほろ苦さと甘さ。重たすぎず濃厚）／ベイクドチーズケーキ（焼き菓子はすべて自家製）／ローズマリーの煮込みハンバーグ（ランチ3種のうちの1品。ドリンク付き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜14:00（L.O.）／カフェ 12:00〜18:00（L.O.17:30）</td></tr>
+<tr><th>定休日</th><td class="off">木曜日（ランチ営業日は不定期。月ごとの営業日・店休日は公式インスタグラムで告知）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市広田1丁目36-37</td></tr>
+<tr><th>予約</th><td>予約の可否は出典に記載がなく未確認。ランチ営業日が不定期なので、来店前に電話するか公式インスタグラムの営業日カレンダーを見る — <a href="tel:0956887186">☎ 0956-88-7186</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>早岐側の郊外カフェで、佐世保市街地の喫茶店とは性格が違う一軒として章に入れた。営業確認①＝公式Instagram『cafe mellow（@cafe_mellow_sasebo）』の2026年10月31日付投稿「11月の営業予定です 6日と12日が店休、7日は16:30〜の営業です」（店自身が出した2026年の情報。Instagram本体はこの環境から開けないため、Yahoo!検索の結果ページに出る投稿本文と日付で確認した）。あわせて佐世保観光コンベンション協会の海風旅ブログ 2025年6月18日掲載の取材記事がある。営業確認②＝(1)『cafe mellow 佐世保 閉店』と『cafemellow佐世保閉店』の両方をYahoo!検索（2026-11-22）＝閉店情報0件。(2)公式SNSのアカウント名を確認＝Instagram『@cafe_mellow_sasebo』が存在。(3)『cafe mellow 佐世保 移転』『cafe mellow 佐世保 リニューアル』を各1回検索＝現住所からの移転情報なし。『2026年6月21日リニューアルオープン』の記事はピンク基調・アサイーボウルの別店「mellow cafe」のもので本店とは別。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=cafe%20mellow%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%BA%83%E7%94%B01%E4%B8%81%E7%9B%AE36-37">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/blog/staff-189">佐世保観光コンベンション協会 公式サイト『海風の国』海風旅ブログ 取材記事（掲載日 2025.06.18）。屋根裏席・屋根裏文庫・コーヒー・抹茶テリーヌ・店内メニューボードの写真 2026-11-22 取得</a> / <a href="https://www.naradewa.com/shop/cafe-mellow">月刊ならでわ!（佐世保市で毎月発行のフリーペーパー）店舗データ。住所・電話・営業時間・定休日・駐車場 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-cafe-jamcoffee-sashikata">
+<img class="hero" src="img/sasebo/sasebo-cafe-jamcoffee-sashikata.jpg" alt="JAM COFFEE 指方本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-cafe-jamcoffee-sashikata_exterior.jpg" alt="JAM COFFEE 指方本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>JAM COFFEE 指方本店<span class="yomi">じゃむこーひーさしかたほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">2018年2月に指方町で開業したコーヒー店で、のちに佐世保市中心部のアルカスSASEBOにも店を出している。本店は切妻屋根の一軒家で、屋外にテラス席があり、注意事項を守れば犬を連れて利用できる。看板はチーズをのせてスキレットごと焼く「焼きチーズカレー」で、テレビ番組で紹介されたこともある。ほかにカレー数種、バーガー、クレープ、フレンチトースト、アサイーボウルなどがあり、英語併記のメニューを置いていて外国人客も多い。ドリンクのテイクアウトもできる。支払い方法と席数は出典にないため未確認。テラス席を使う場合は注意事項の確認が必要。</div>
+<div class="sig"><b>一皿:</b>焼きチーズカレー（スキレットでチーズごと焼き上げるカレー）／アサイーボウル（キウイ・バナナ・グラノーラをのせた一皿）／カフェラテ（テイクアウト用のカップあり）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜18:00（L.O.17:30）。月刊ならでわ!の店舗データは『10:00〜20:00（OS19:30）』だが、2026年の取材記事と公式インスタグラムのプロフィールはいずれも18:00までとしているので後者を採った</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市指方町2097-5</td></tr>
+<tr><th>予約</th><td>予約の可否は出典に記載がなく未確認。テラス席を犬連れで使う場合は注意事項があるため事前に電話で確認する — <a href="tel:0956887495">☎ 0956-88-7495</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>焙煎と抽出を看板にする佐世保のコーヒー店の一軒で、郊外のロケーションと犬連れ可のテラスという性格が市街地の喫茶店と重ならない。佐世保バーガー専門店ではないので burger の章とも重ならないと判断した。営業確認①＝佐世保観光コンベンション協会（公的機関）の公式サイト『海風の国』海風旅ブログ 2026年6月17日掲載の取材記事（住所・定休日・営業時間つき。名簿ではなく記事）。あわせて店自身のInstagram『@jamcoffee_hario』のプロフィールに「JAM COFFEE 指方本店 営業時間 10:00〜18:00 電話番号 0956-88-7495」とある（日付の表示はないため①は公的機関の記事を採った）。営業確認②＝(1)『JAM COFFEE 指方 佐世保 閉店』と『JAMCOFFEE指方本店閉店』の両方をYahoo!検索（2026-11-22）＝閉店情報0件。(2)公式SNSのアカウント名を確認＝Instagram『本格コーヒードリンクのカフェ（@jamcoffee_hario）』が存在。(3)『JAM COFFEE 指方本店 移転』『JAM COFFEE 指方本店 リニューアル』を各1回検索＝移転・リニューアルの情報なし（検索に出る「2026年9月15日 本社を移転」は東京の別会社・株式会社JAMの告知で無関係）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=JAM%20COFFEE%20%E6%8C%87%E6%96%B9%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%8C%87%E6%96%B9%E7%94%BA2097-5">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/blog/staff-213">佐世保観光コンベンション協会 公式サイト『海風の国』海風旅ブログ 取材記事（掲載日 2026.06.17）。住所・定休日・営業時間・店内メニューの写真 2026-11-22 取得</a> / <a href="https://www.naradewa.com/shop/jam-coffee">月刊ならでわ!（佐世保市のフリーペーパー）店舗データ。住所・電話・駐車場 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-cafe-kojika-no-sanpomichi">
+<img class="hero" src="img/sasebo/sasebo-cafe-kojika-no-sanpomichi.jpg" alt="coffee &amp; tea 仔鹿の散歩道 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-cafe-kojika-no-sanpomichi_exterior.jpg" alt="coffee &amp; tea 仔鹿の散歩道 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>coffee &amp; tea 仔鹿の散歩道<span class="yomi">こーひーあんどてぃー こじかのさんぽみち</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">築20年ほどの一般住宅の2階部分を使った小さなカフェで、2024年9月26日に開業した。コンセプトは「コーヒーとあんことビンテージ」。入口のタブレットで受付したあと階段を上がる。2階はテーブル席3つとソファー席2つで、いずれも2人掛け。アンティーク家具と本・写真集・レコードが置かれ、大きな窓から九十九島の入江が見える。店主がひとりで切り盛りするワンオペの店で、席数が少ないため満席になることが多い。ドリンクはハンドドリップのフィルターコーヒーとエスプレッソ系、紅茶、ほうじ茶ラテなど。菓子は小倉あんのモナカが中心で、干し柿（市田柿）を使った品もある。支払い方法は出典にないため未確認。</div>
+<div class="sig"><b>一皿:</b>仔鹿モナカ（小倉あん、クリームチーズ、ハイカカオチョコレートなどを皮にのせて食べるアレンジモナカ）／丹波大納言ぜんざい（焼き餅入り。京都のすまし風でとろみの少ない仕立て）／市田柿のクリームチーズサンド（南信州の干し柿にクリームチーズを挟んだ一品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜19:00</td></tr>
+<tr><th>定休日</th><td class="off">火曜日・水曜日（月によって営業日が変則になるため、公式インスタグラムの告知を見る）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市鹿子前町1177-2</td></tr>
+<tr><th>予約</th><td>予約の可否は出典に記載がなく未確認。全10席ほどのワンオペの店で満席になりやすい</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>九十九島の景色を見ながらコーヒーを飲める店で、佐世保市街地の喫茶店とは別の章の軸になる。営業確認①＝店自身の公式Instagram『coffee &amp; tea 仔鹿の散歩道（@kojikacafe_sasebo）』の2026年10月31日付投稿「11月は営業日が変則的になっていますので、ご来店の際はご注意ください」（店が出した2026年の情報。Instagram本体はこの環境から開けないため、Yahoo!検索の結果ページに出る投稿本文と日付で確認した）。あわせて佐世保観光コンベンション協会の海風旅ブログ 2025年3月26日掲載の取材記事（住所・営業時間・定休日・駐車場つき）がある。営業確認②＝(1)『仔鹿の散歩道 佐世保 閉店』と『仔鹿の散歩道閉店』の両方をYahoo!検索（2026-11-22）＝閉店情報0件、2026年9月16日付の来店投稿あり。(2)公式SNSのアカウント名を確認＝Instagram『@kojikacafe_sasebo』が存在し、プロフィールに「九十九島の入江の小さな一軒家カフェ・OPEN 12:00〜19:00・CLOSE 火曜、水曜・駐車場 2台・佐世保市鹿子前町1177-2」とある。(3)『仔鹿の散歩道 移転』『仔鹿の散歩道 リニューアル』を各1回検索＝移転・リニューアルの情報なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=coffee%20%26%20tea%20%E4%BB%94%E9%B9%BF%E3%81%AE%E6%95%A3%E6%AD%A9%E9%81%93%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA1177-2">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/blog/staff-173">佐世保観光コンベンション協会 公式サイト『海風の国』海風旅ブログ 取材記事（掲載日 2025.03.26）。住所・営業時間・定休日・駐車場・店内・メニューの写真 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-cafe-botanen">
+<img class="hero" src="img/sasebo/sasebo-cafe-botanen.jpg" alt="中華料理 牡丹園 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-cafe-botanen_exterior.jpg" alt="中華料理 牡丹園 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>中華料理 牡丹園<span class="yomi">ちゅうかりょうり ぼたんえん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">弓張岳の登り口にある赤い屋根と赤い外壁の中華料理店。公式サイトは「創業51年」、佐世保観光コンベンション協会の店舗情報は「創業50年」と書いており、公式Instagramは昭和51年創業としている。1階はテーブル6卓とカウンター5席、2階は座敷の個室4部屋とテーブル1卓で、宴会時は最大40〜45名の大部屋にできる。全体で70席。11時から14時のランチタイムはちゃんぽん・皿うどん・野菜炒め・焼飯・味噌ラーメン・ラーメンの6種のセットがいずれも940円。キャッシュレス決済が使える（PiTaPaは不可、出前のキャッシュレスは不可）。手作りの冷凍餃子・焼売の持ち帰りもある。英語メニューの対応あり。</div>
+<div class="sig"><b>一皿:</b>特製ちゃんぽん（肉・海鮮・野菜の旨みが出たあっさりしたスープにもちもちの太麺。自家製の肉団子入り）／特製皿うどん（太麺タイプ。スープを吸わせた麺に大きめに切った具をのせる）／カツあんかけ炒飯（焼飯にサクサクのカツをのせ、カレー風味の餡をかけた同店オリジナル。もとは賄い料理）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（L.O.14:30）／17:00〜21:00（L.O.20:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日（年末年始は公式サイトのお知らせで告知）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市比良町1-1</td></tr>
+<tr><th>予約</th><td>予約可。電話 0956-25-3535 で受け付ける。2階の座敷を使う宴会コース（120分飲み放題付き）は要予約で最大45名まで — <a href="tel:0956253535">☎ 0956-25-3535</a> ／ <a href="https://www.sasebo-botanen.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保のちゃんぽんと皿うどんを両方きちんと出す町中華で、章の『麺』の枠の中心に置いた。営業確認①＝店の公式サイトのお知らせ欄に2026年3月13日（金）「歓送迎会プラン登場!」、2026年3月4日（水）「価格改定のお知らせ」という日付つきの記事がある（店自身が出した2026年の情報）。さらに公式Facebookページ『牡丹園』に2026年11月12日付の「忘年会のご予約受け付けております」という投稿がある。営業確認②＝(1)『中華料理 牡丹園 佐世保 閉店』と『牡丹園佐世保閉店』の両方をYahoo!検索（2026-11-22）＝閉店情報0件。公式サイトの「5月1日より営業時間変更のお知らせ」が出るのみ。(2)公式SNSのアカウント名を確認＝Instagram『中華料理 牡丹園（@botanen.sasebo）』とFacebookページ『牡丹園‐ぼたんえん』が存在。(3)『中華料理 牡丹園 佐世保 移転』『中華料理 牡丹園 佐世保 リニューアル』を各1回検索＝移転・リニューアルの情報なし。なお電話番号は公式サイト・公式Instagram・月刊ならでわ!がそろって 0956-25-3535 で、佐世保観光コンベンション協会の掲載（0956-25-1717）とは食い違うため、店自身が出している番号を採った。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E7%89%A1%E4%B8%B9%E5%9C%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%AF%94%E8%89%AF%E7%94%BA1-1">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo-botanen.jp/info">中華料理 牡丹園 公式サイト お知らせ欄（2026年3月13日・2026年3月4日・2025年11月20日の記事。営業時間・定休日・電話）2026-11-22 取得</a> / <a href="https://www.sasebo-botanen.jp/">中華料理 牡丹園 公式サイト トップ（創業51年、ちゃんぽん890円・特製皿うどん1,150円・焼飯900円・餃子6個490円・ランチ940円）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/restaurant/61646">佐世保観光コンベンション協会 公式サイト『海風の国』飲食店情報（席数70・駐車7台・交通アクセス・料理と店内の写真）2026-11-22 取得</a> / <a href="https://www.naradewa.com/shop/botanen">月刊ならでわ!（佐世保市のフリーペーパー）店舗データ。電話 0956-25-3535・最大収容45名 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-cafe-menya-shiokaze">
+<img class="hero" src="img/sasebo/sasebo-cafe-menya-shiokaze.jpg" alt="麺や 潮風 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>麺や 潮風<span class="yomi">めんや しおかぜ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">2014年ごろの創業で、2017年9月に浜田町から現在の下京町へ移った麺類専門店。九州では珍しい非豚骨の店で、鶏をベースにしたスープを、長崎県平戸の海でとれる天然塩、真昆布、有機醤油などで仕立てる。看板は魚介醤油つけ麺「富士」で、つけ麺は「湯はり」「あつ盛り」が選べる。トマトつけ麺「敷島」のような季節の品も出る。長崎ちゃんぽんも通年で出し、九十九島ひらまさの魚ダシを使った「九十九島ちゃんぽん」は令和6年度の長崎県特産品新作展で優秀賞を受けている。店内は木のテーブルと木の椅子。冷凍の宅配商品を公式オンラインショップで売っており、店頭でも贈答用に扱う。出張による臨時休業があるため、公式XとInstagramで当日の営業時間が毎朝告知される。席数と支払い方法は出典にないため未確認。</div>
+<div class="sig"><b>一皿:</b>魚介醤油つけ麺『富士』（店の看板。極太麺を魚介と醤油のつけダレで食べる）／九十九島ちゃんぽん（九十九島ひらまさの魚ダシを使ったちゃんぽん。長崎県特産品新作展 優秀賞）／天然塩ちゃんぽん（平戸の天然塩と真昆布で引いたすっきりしたスープ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00／18:00〜21:00（L.O.）。出張などで昼のみの日があり、当日の営業時間は公式Xで毎朝告知される</td></tr>
+<tr><th>定休日</th><td class="off">不定休（臨時休業あり）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市下京町10-11</td></tr>
+<tr><th>予約</th><td>店内の予約の可否は未確認。冷凍商品は公式オンラインショップで注文でき、冷凍メニューの問い合わせは 090-9050-7556 — <a href="tel:0956804379">☎ 0956-80-4379</a> ／ <a href="https://shiokaze3.base.shop/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保の麺の店のうち、豚骨でない系統とちゃんぽんの両方を1軒で見せられる店として選んだ。営業確認①＝店の公式X『麺や潮風（@irnAEMeyB6DIRmA）』が2026年10月30日に「2026.11月の営業予定です。今月も出張の予定があり、その日は臨時休業となります」と投稿し、さらに2026年11月22日（取得当日）に「本日11月22日（日）営業時間 11時30分〜15時迄、夜はお休みです」、2026年11月21日・20日・18日にも営業時間の投稿がある（店自身が出した2026年の情報）。公式オンラインショップにも2026.10.25付の新着情報がある。営業確認②＝(1)『麺や潮風 佐世保 閉店』と『麺や潮風佐世保閉店』の両方をYahoo!検索（2026-11-22）＝閉店情報0件。(2)公式SNSのアカウント名を確認＝X『麺や潮風（@irnAEMeyB6DIRmA）』とInstagram『@menyasiokaze』が存在し、Xのプロフィールに「創業11年」「長崎県佐世保市下京町10-11」「不定休、臨時休業有り」とある。(3)『麺や潮風 佐世保 移転』『麺や潮風 佐世保 リニューアル』を各1回検索＝2017年9月に浜田町から下京町10-11へ移転済みで、現住所はその移転先。以後の移転・リニューアルの情報はない。 外観の写真について＝ext_urls を空にした。店の公式オンラインショップ・公式X・月刊ならでわ!のいずれにも建物の正面や入口を写した画像が無く、使ってよい出どころから外観写真を1枚も取れなかったため。なお公式オンラインショップの画像のうち『令和6年度 長崎県特産品新作展 優秀賞受賞』の帯が焼き込まれた3枚は、帯つきのため除外した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%82%84%20%E6%BD%AE%E9%A2%A8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA10-11">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（baseec-img-mng.akamaized.net）より引用 / 外観: 写真なし / 参照元: <a href="https://x.com/irnAEMeyB6DIRmA">麺や潮風 公式X（@irnAEMeyB6DIRmA）。2026年10月30日の11月営業予定の投稿、2026年11月18日・20日・21日・22日の営業時間の投稿、プロフィールの住所・不定休 2026-11-22 取得</a> / <a href="https://shiokaze3.base.shop/">麺や潮風 公式オンラインショップ（2026.10.25付の新着情報、冷凍ちゃんぽんの価格、店の写真）2026-11-22 取得</a> / <a href="https://www.naradewa.com/shop/menyasiokaze">月刊ならでわ!（佐世保市のフリーペーパー）店舗データ。営業時間・住所・電話・店内写真 2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/umikaze">佐世保観光コンベンション協会 公式サイト『海風の国』海風グルメ賛同店の掲載（住所・電話・魚介醤油つけ麺『富士』）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-cafe-doppo">
+<img class="hero" src="img/sasebo/sasebo-cafe-doppo.jpg" alt="横浜醤油豚骨ラーメン 独歩 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-cafe-doppo_exterior.jpg" alt="横浜醤油豚骨ラーメン 独歩 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>横浜醤油豚骨ラーメン 独歩<span class="yomi">よこはましょうゆとんこつらーめん どっぽ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">常盤町にある家系ラーメンの店。佐世保観光コンベンション協会の取材記事（2026年11月6日）は「知る人ぞ知る佐世保では名の知れた家系ラーメン」と紹介している。食券を買って席に着く方式で、席はカウンターのみ。麺の硬さ・味の濃さ・脂の量を「お好み」で指定でき、初めてなら全部ふつうが勧められている。濃いめ・多めにするなら白ごはんを一緒に頼むとよい、と記事は書く。麺は鶴見製麺所の特製麺。卓上のにんにくと豆板醤で途中から味を変えるのが定番。提供は早いが、カウンターだけなので満席だと外で待つ。夜の部は18時50分で終わるため、夜に行くなら早い時間に入る。水曜定休で、火曜は昼のみ。価格は現行の価格表が店側にも公的機関にも見つからず空欄にした。席数と支払い方法も未確認。</div>
+<div class="sig"><b>一皿:</b>ラーメン（濃厚な豚骨醤油スープに中太麺、ほうれん草と海苔。麺の硬さ・味の濃さ・脂の量を選べる）／白ごはん（濃いめ・多めにしたときの定番の組み合わせ。残ったスープにかけて海苔で巻く食べ方）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・木・金・土・日 11:00〜14:50／16:00〜18:50、火曜 11:00〜14:50（昼のみ）</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市常盤町4-3</td></tr>
+<tr><th>予約</th><td>予約不可。カウンターのみのため満席時は待つ — <a href="tel:0956257008">☎ 0956-25-7008</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保の麺の章に、豚骨でも貝でもない家系という軸を1軒入れるために採った。営業確認①＝佐世保観光コンベンション協会（公的機関）の公式サイト『海風の国』海風旅ブログ 2026年11月6日掲載の取材記事。住所・曜日ごとの営業時間・定休日・アクセス・店内と料理の写真がそろった記事で、名簿ではない。店自身のサイトが無く、公式Instagram・Facebookに日付つきの情報が確認できないため、長崎県の特例に従い公的機関の日付つき記事を①の代用とした。営業確認②＝(1)『ラーメン独歩 佐世保 閉店』と『ラーメン独歩佐世保閉店』の両方をYahoo!検索（2026-11-22）＝この店の閉店情報は0件（検索に出る「既に閉店していますが」は別の佐世保の老舗ラーメン店に触れた口コミ本文）。(2)公式SNSのアカウント名を確認＝Facebookページ『ラーメン独歩』が存在する。※同名のX『【公式】麺や独歩・店主井原（@doppo_ramen）』は東京都昭島市の別の店なので、この店のものではない。(3)『ラーメン独歩 佐世保 移転』『ラーメン独歩 佐世保 リニューアル』を各1回検索＝この店の移転・リニューアルの情報なし。 写真について＝この店の写真は、上記の取材記事に載る3枚しか使ってよい出どころが見つからなかった（店の公式サイト・公式SNSに読める写真がなく、食べログ・Rettyは使用不可）。そのため料理・店内は2枚、外観は1枚にとどまり、下限の3枚に届いていない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A8%AA%E6%B5%9C%E9%86%A4%E6%B2%B9%E8%B1%9A%E9%AA%A8%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E7%8B%AC%E6%AD%A9%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E7%94%BA4-3">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/blog/staff-222">佐世保観光コンベンション協会 公式サイト『海風の国』海風旅ブログ 取材記事（掲載日 2026.11.06）。住所・曜日別の営業時間・定休日・アクセス・店内と料理の写真 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-cafe-ore-no-jinsei-fullswing">
+<img class="hero" src="img/sasebo/sasebo-cafe-ore-no-jinsei-fullswing.jpg" alt="俺の人生ふるすいんぐ 佐世保店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/sasebo/sasebo-cafe-ore-no-jinsei-fullswing_exterior.jpg" alt="俺の人生ふるすいんぐ 佐世保店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>俺の人生ふるすいんぐ 佐世保店<span class="yomi">おれのじんせいふるすいんぐ させぼてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">2024年11月15日に島地町で開業した、佐世保で最初の二郎系ラーメンの店。麺の量を小盛100g・中盛180g・大盛360gから選び、注文時ににんにく・やさい・あぶらを「無・少・普・マシ」から指定する。汁なし（まぜ麺）を選ぶと卵黄が付き、マヨネーズの有無だけ伝える方式。黄色い大きなのぼりと赤い壁が目印で、店内の壁に「ラーメンのお好みをお選びください」の表が貼ってある。電話を置いていない店で、問い合わせは公式Instagram（@ore_fullswing）のダイレクトメッセージに限られる。月曜定休だが祝日の場合は営業する。麺が無くなり次第終了。席数と支払い方法は出典にないため未確認。</div>
+<div class="sig"><b>一皿:</b>ふるすいんぐ（豚骨スープに野菜とにんにく、厚切りのチャーシューをのせた二郎系。小盛・中盛・大盛から選ぶ）／汁なしふるすいんぐ（スープなしのまぜ麺。卵黄が付き、無料でマヨネーズを足せる）／麺なしふるすいんぐ（麺を抜いた一杯）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火・水曜日 11:00〜15:00／18:00〜23:00、木〜日曜日 11:00〜15:00／18:00〜翌1:00 ※麺が無くなり次第終了</td></tr>
+<tr><th>定休日</th><td class="off">月曜日（祝日の場合は営業）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市島地町1-1</td></tr>
+<tr><th>予約</th><td>予約不可。電話を設置しておらず、問い合わせは公式Instagram（@ore_fullswing）のダイレクトメッセージのみ</td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保の麺の章に、近年この街に新しく入ってきた系統を1軒入れるために採った。市内で唯一の二郎系として佐世保観光コンベンション協会が記事にしている。営業確認①＝佐世保観光コンベンション協会（公的機関）の公式サイト『海風の国』海風旅ブログ 2025年11月5日掲載の取材記事。住所・曜日別の営業時間・定休日・アクセス・店内のメニュー掲示と料理の写真がそろった記事で、名簿ではない。店自身のサイトが無く公式Instagramがこの環境から開けないため、長崎県の特例に従い公的機関の日付つき記事を①の代用とした。営業確認②＝(1)『俺の人生ふるすいんぐ 佐世保 閉店』と『俺の人生ふるすいんぐ佐世保閉店』の両方をYahoo!検索（2026-11-22）＝閉店情報0件。2026年8月30日付の来店投稿に「長崎県佐世保市島地町1−1」と現住所が出る。(2)公式SNSのアカウント名を確認＝Instagram『俺の人生ふるすいんぐ（@ore_fullswing）』が存在し、プロフィールに「二郎系ラーメン【あなたの胃袋にフルスイング】…昼/11:00〜PM15:00」とある。(3)『俺の人生ふるすいんぐ 佐世保 移転』『俺の人生ふるすいんぐ 佐世保 リニューアル』を各1回検索＝移転・リニューアルの情報なし（2024年11月15日に島地町で開業）。なお検索に出る2026年10月31日の「11月の営業スケジュール更新」の投稿は大分末広店のもので、佐世保店の告知ではない。 写真について＝使ってよい出どころが、上記の取材記事と月刊ならでわ!の計2件しかなく、料理・店内は2枚（汁なしふるすいんぐと店内のお好み掲示）にとどまり、下限の3枚に届いていない。店の公式Instagramはこの環境から開けない（HTTP 429）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%BF%BA%E3%81%AE%E4%BA%BA%E7%94%9F%E3%81%B5%E3%82%8B%E3%81%99%E3%81%84%E3%82%93%E3%81%90%20%E4%BD%90%E4%B8%96%E4%BF%9D%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%B3%B6%E5%9C%B0%E7%94%BA1-1">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sasebo99.com/blog/staff-198">佐世保観光コンベンション協会 公式サイト『海風の国』海風旅ブログ 取材記事（掲載日 2025.11.05）。住所・曜日別の営業時間・定休日・アクセス・店内のメニュー掲示と料理の写真 2026-11-22 取得</a> / <a href="https://www.naradewa.com/shop/orenojinseifullswing">月刊ならでわ!（佐世保市のフリーペーパー）店舗データ。住所・営業時間・定休日・電話を置いていないこと・外観写真 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-sasebo-cafe-agoramen-honpo-pearlsea">
+<img class="hero" src="img/sasebo/sasebo-cafe-agoramen-honpo-pearlsea.jpg" alt="あごら～めん本舗 パールシー店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>あごら～めん本舗 パールシー店<span class="yomi">あごらーめんほんぽ ぱーるしーてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">佐世保の市街地で長く続いてきた「あごら～めん本舗」が九十九島パールシーリゾートの中に出している店。あご（トビウオ）の出汁を使うあごだしらーめんが看板で、ほかに豚骨、イタリアン風など味の種類が多い。店内13席のほかに海に向いたテラス席があり、6人掛けテーブル3卓と2人掛け1卓。テラス席はペット同伴でも使える。支払いは現金・クレジットカード・電子決済。英語対応あり。不定休で、営業日と営業時間の変更は店の公式インスタグラムのハイライトで告知される。2025年7月には一度メニューから消えていた豚骨らーめんを、細麺に替えて復活させている。遊覧船ターミナルや水族館と同じ敷地なので、九十九島の観光と組み合わせやすい。</div>
+<div class="sig"><b>一皿:</b>あごらーめん（トビウオの焼き干しで引いたあごだしのスープ。店の原点にあたる一杯）／とんこつらーめん（2025年7月に細麺で復活させた品）／こんがりチーズのイタリアンラーメン（チーズを焼きのせた変わり種）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜17:00（L.O.16:30）※店の公式Instagramのプロフィールの表示。佐世保観光コンベンション協会の飲食店情報は『11:00〜19:00（OS18:30）』で食い違うため、来店前に公式インスタグラムか電話で確認する</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式インスタグラムのハイライトで告知）</td></tr>
+<tr><th>住所</th><td>長崎県佐世保市鹿子前町979番地 2階（九十九島パールシーリゾート内）</td></tr>
+<tr><th>予約</th><td>予約の可否は出典に記載がなく未確認。店内13席とテラス席のみで、遊覧船の発着時間帯は混む — <a href="tel:0956287775">☎ 0956-28-7775</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>佐世保の麺の章に、豚骨・家系・二郎系・町中華のどれとも違う『あごだし』という長崎らしい系統を入れるために採った。九十九島の眺めという場所の価値もある。営業確認①＝店自身の公式Instagram『あごらーめん本舗パールシー店（@agoramenhonpo）』の2025年7月9日付投稿「とんこつらーめんが新しくなって帰ってきました。メニューから消えて数年が経ちましたが…今回から麺もリニューアルしとんこつらーめんだけ細麺を使用しています」（店が出した2025年の情報）。同じ account は2025年12月21日に「店内改装のため、2026年1月全休となります」、2026年10月26日に「11月後半の営業予定をお知らせいたします」と投稿しており、2026年も更新が続いている。Instagram本体はこの環境から開けない（HTTP 429）ため、Yahoo!検索の結果ページに出る投稿本文と日付で確認した。営業確認②＝(1)『あごらーめん本舗 パールシー店 閉店』と『あごらーめん本舗パールシー店閉店』の両方をYahoo!検索（2026-11-22）＝閉店情報0件。(2)公式SNSのアカウント名を確認＝Instagram『あごらーめん本舗パールシー店（@agoramenhonpo）』が存在し、プロフィールに「佐世保で長年愛されてきた元祖あごだしラーメンのお店 Open 11:00-17:00(OS 16:30) 電話番号 0956-28-7775 不定休/ハイライトでお知らせ」とある。(3)『あごらーめん本舗 パールシー 移転』『あごらーめん本舗 パールシー リニューアル』を各1回検索＝店舗の移転情報なし（ヒットする2025年7月9日の『リニューアル』は豚骨らーめんの麺を替えた話）。現住所は佐世保観光コンベンション協会の掲載と公式Instagramの記載が一致する。 外観の写真について＝ext_urls を空にした。店が九十九島パールシーリゾートの建物2階に入っており、使ってよい出どころ（佐世保観光コンベンション協会）には料理2枚とテラス席1枚しかなく、建物正面や入口を写した画像が無いため。パールシーリゾート側のサイトは商業施設の公式サイトなので写真には使わなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%94%E3%82%89%EF%BD%9E%E3%82%81%E3%82%93%E6%9C%AC%E8%88%97%20%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA979%E7%95%AA%E5%9C%B0%202%E9%9A%8E%EF%BC%88%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%E5%86%85%EF%BC%89">Googleマップで開く</a>
+<div class="src">写真: 佐世保観光コンベンション協会「海風の国」（www.sasebo99.com）より引用 / 外観: 写真なし / 参照元: <a href="https://www.sasebo99.com/restaurant/100319">佐世保観光コンベンション協会 公式サイト『海風の国』飲食店情報（住所・電話・営業時間・休日・料金・支払い方法・席数・駐車場・料理とテラス席の写真）2026-11-22 取得</a> / <a href="https://www.sasebo99.com/gourmet/umikaze">佐世保観光コンベンション協会 公式サイト『海風の国』海風グルメ特集ページ（元祖あごだしらーめんの店としての紹介）2026-11-22 取得</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年11月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および佐世保観光コンベンション協会・地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>

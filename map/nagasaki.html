@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>長崎 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>長崎 の食べ歩き地図<span class="n">50店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="長崎 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">長崎 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/nagasaki/nagasaki.html"><span class="sn-e">📄</span>長崎のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（115都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "長崎卓袱浜勝 長崎総本店", "c": ["郷土料理"], "v": "レストラン", "lat": 32.743282, "lng": 129.881302, "d": "卓袱ビードロコース（お鰭・豆の蜜煮・前菜五品盛・刺身・湯引き・揚げ物・豚の角煮・大鉢・御飯・煮物・香物・水菓子・梅椀の13品で1人7,800円）／ハトシ（海老のすり身を食パンで挟んで揚げた長崎の揚げ物。ランチに200円で追加できる）／天然クエ鍋（長崎県産の天然クエを使った鍋。雑炊付きで1人10,000円）", "a": "長崎県長崎市鍛冶屋町6-50", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E5%8D%93%E8%A2%B1%E6%B5%9C%E5%8B%9D%20%E9%95%B7%E5%B4%8E%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8D%9B%E5%86%B6%E5%B1%8B%E7%94%BA6-50", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-shippoku-hamakatsu", "food": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-hamakatsu.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-hamakatsu_exterior.jpg"}, {"i": 1, "n": "史跡料亭 花月", "c": ["郷土料理"], "v": "レストラン", "lat": 32.740772, "lng": 129.879852, "d": "卓袱料理（御鰭・造り・湯引き・三品盛・取肴・大鉢・中鉢・御飯・煮物・梅椀など15品の献立。パイ生地の「パスティ」は南蛮料理、角煮は中国料理の流れを汲む）／季節の卓袱晩酌膳（花月の卓袱を晩酌セットに仕立てた持ち帰り品。5,400円税込）／角煮（5個入り4,678円税込の取り寄せ品）", "a": "長崎県長崎市丸山町2-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%8F%B2%E8%B7%A1%E6%96%99%E4%BA%AD%20%E8%8A%B1%E6%9C%88%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%B8%B8%E5%B1%B1%E7%94%BA2-1", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-shippoku-kagetsu", "food": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-kagetsu.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-kagetsu_exterior.jpg"}, {"i": 2, "n": "料亭御宿 坂本屋", "c": ["郷土料理"], "v": "レストラン", "lat": 32.748138, "lng": 129.874405, "d": "東坡煮（長崎の卓袱に欠かせない豚の角煮。皮付き三枚バラ肉を長時間茹でて脂を抜き、特製のたれで数時間煮込んで一晩寝かせる）／角煮めし（東坡煮の煮汁と長崎県産米・もち米・にんじん・ごぼう・椎茸を竹皮に包んで炊いたもの）／卓袱料理（御鰭に始まり、小菜・中鉢の東坡煮・大鉢の蒸し物盛り合わせ・沢煮・梅椀まで続く献立）", "a": "長崎県長崎市金屋町2-13", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%E5%BE%A1%E5%AE%BF%20%E5%9D%82%E6%9C%AC%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%87%91%E5%B1%8B%E7%94%BA2-13", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-shippoku-sakamotoya", "food": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-sakamotoya.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-sakamotoya_exterior.jpg"}, {"i": 3, "n": "元祖茶碗むし 吉宗 本店", "c": ["郷土料理"], "v": "レストラン", "lat": 32.744514, "lng": 129.878799, "d": "茶碗むし・蒸寿し（穴子・海老・鶏肉・しいたけ・きくらげ・銀杏・たけのこ・蒲鉾・麩などを入れた茶碗むしに、蒸した酢飯の蒸寿しを添えた「夫婦蒸し」。一子相伝で伝わる名物）／ミニ卓袱 8品（円卓の卓袱を1人前の膳に仕立てたもの。4,510円）／角煮（豚の角煮。単品1,540円、角煮定食2,750円）", "a": "長崎県長崎市浜町8-9", "m": "https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%E8%8C%B6%E7%A2%97%E3%82%80%E3%81%97%20%E5%90%89%E5%AE%97%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA8-9", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-shippoku-yossou", "food": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-yossou.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-yossou_exterior.jpg"}, {"i": 4, "n": "料亭一力", "c": ["郷土料理"], "v": "レストラン", "lat": 32.746758, "lng": 129.882736, "d": "卓袱料理（日本料理に中国・オランダ・西欧の味を取り込んだ長崎の宴会料理。一卓2〜7名、昼13,200円から）／姫重しっぽく（昼限定の重箱仕立ての卓袱。刺身と汁粉が付いて6,050円）／会席料理（長崎の山海の幸を使った四季の会席。昼13,200円から）", "a": "長崎県長崎市諏訪町8-20", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%E4%B8%80%E5%8A%9B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%AB%8F%E8%A8%AA%E7%94%BA8-20", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-shippoku-ichiriki", "food": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-ichiriki.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-ichiriki_exterior.jpg"}, {"i": 5, "n": "料亭 橋本", "c": ["郷土料理"], "v": "レストラン", "lat": 32.75161, "lng": 129.891693, "d": "卓袱料理（御鰭椀に始まり、刺身・湯引き・三品盛・ばら煮・揚物・取肴の小菜、中鉢の角煮、大鉢の炊合せ、御飯、丼の煮物、梅椀まで13品前後の献立。1人18,480円〜）／中鉢の角煮（卓袱の中心になる豚の角煮）／会席料理（先付から果物まで四季の食材で組む献立。昼席限定11,880円〜）", "a": "長崎県長崎市中川1丁目4番5号", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%20%E6%A9%8B%E6%9C%AC%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%B8%AD%E5%B7%9D1%E4%B8%81%E7%9B%AE4%E7%95%AA5%E5%8F%B7", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-shippoku-hashimoto", "food": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-hashimoto.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-hashimoto_exterior.jpg"}, {"i": 6, "n": "割烹とし", "c": ["郷土料理"], "v": "レストラン", "lat": 32.752201, "lng": 129.873718, "d": "料亭仕込みの長崎ハトシ（蝦多士。海老のすり身を食パンで挟んで揚げた長崎の揚げ物）／料亭仕込みの長崎角煮 琥珀（東坡煮とも呼ばれる豚の角煮）／長崎卓袱炊合せ（卓袱の大鉢にあたる5品盛り合わせの炊合せ）", "a": "長崎県長崎市中町5-22", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%E3%81%A8%E3%81%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%B8%AD%E7%94%BA5-22", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-shippoku-kappoutoshi", "food": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-kappoutoshi.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-kappoutoshi_exterior.jpg"}, {"i": 7, "n": "大衆割烹 樋口 築町店", "c": ["郷土料理"], "v": "レストラン", "lat": 32.744724, "lng": 129.8759, "d": "長崎 角煮御膳（本日の大鉢5種、長崎角煮と季節野菜、特製茶わん蒸し、ご飯、味噌汁で1,880円。昼限定）／長崎名物 鯨カツ（830円）とくじら盛り合わせ（3種1,980円／5種2,980円）／生からすみ大根（580円）・生からすみ（出汁付き・一人前680円）", "a": "長崎県長崎市築町5-11 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E5%89%B2%E7%83%B9%20%E6%A8%8B%E5%8F%A3%20%E7%AF%89%E7%94%BA%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E7%AF%89%E7%94%BA5-11%202F", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-shippoku-higuchi", "food": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-higuchi.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-shippoku-higuchi_exterior.jpg"}, {"i": 8, "n": "中華料理 四海樓", "c": ["麺類"], "v": "レストラン", "lat": 32.736549, "lng": 129.869995, "d": "ちゃんぽん（鶏ガラに豚骨を少しブレンドしたスープ、唐灰汁入りの太麺、錦糸玉子をのせた9種の具）／皿うどん・細麺（揚げた極細麺にとろみのある甘めのあん）／東坡扣肉（やわらかく煮た角煮を饅頭にはさんだもの）", "a": "長崎県長崎市松が枝町4-5", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E5%9B%9B%E6%B5%B7%E6%A8%93%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%9D%BE%E3%81%8C%E6%9E%9D%E7%94%BA4-5", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-shikairou", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-shikairou.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-champon-shikairou_exterior.jpg"}, {"i": 9, "n": "ちゃんぽん皿うどん専門 江戸びし", "c": ["麺類"], "v": "レストラン", "lat": 32.745461, "lng": 129.872681, "d": "ちゃんぽん（豚コツ多めの濃厚なスープに唐灰汁入り麺、750円）／長崎特製ちゃんぽん（いくら・ほたて・大えびなど15種類の具を使う看板品、1,100円）／皿うどん・細めん（750円、太めんは50円増）", "a": "長崎県長崎市江戸町1-6", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%A1%E3%82%83%E3%82%93%E3%81%BD%E3%82%93%E7%9A%BF%E3%81%86%E3%81%A9%E3%82%93%E5%B0%82%E9%96%80%20%E6%B1%9F%E6%88%B8%E3%81%B3%E3%81%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B1%9F%E6%88%B8%E7%94%BA1-6", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-edobishi", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-edobishi.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-champon-edobishi_exterior.jpg"}, {"i": 10, "n": "めがね橋 共楽園", "c": ["麺類"], "v": "レストラン", "lat": 32.746494, "lng": 129.879211, "d": "ちゃんぽん（鶏ガラ100％を3〜4時間煮出したスープに野菜と豚肉、850円。店のメニュー板に「不動の人気No.1」とある）／皿うどん・細麺（パリパリの極細麺に甘めのあん、900円。地元では途中からソースで味を変える）／そぼろ皿うどん（もちもちの太麺に具材の旨みを吸わせた焼きそば風であんかけではない、900円）", "a": "長崎県長崎市古川町5-4 kyoビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%81%E3%81%8C%E3%81%AD%E6%A9%8B%20%E5%85%B1%E6%A5%BD%E5%9C%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%8F%A4%E5%B7%9D%E7%94%BA5-4%20kyo%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-kyorakuen", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-kyorakuen.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-champon-kyorakuen_exterior.jpg"}, {"i": 11, "n": "寶來軒", "c": ["麺類"], "v": "レストラン", "lat": 32.77206, "lng": 129.86377, "d": "ちゃんぽん（1,300円）／皿うどん太麺（もっちりした太麺に具だくさんのあん、1,500円。鶏皿うどん太麺は1,600円）／ハトシ〈4個入〉（長崎名物のエビのすり身を食パンではさんで揚げたもの、1,200円）", "a": "長崎県長崎市平野町5番23号", "m": "https://www.google.com/maps/search/?api=1&query=%E5%AF%B6%E4%BE%86%E8%BB%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%B9%B3%E9%87%8E%E7%94%BA5%E7%95%AA23%E5%8F%B7", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-houraiken", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-houraiken.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-champon-houraiken_exterior.jpg"}, {"i": 12, "n": "中華軽食 三八 銅座店", "c": ["麺類"], "v": "レストラン", "lat": 32.742752, "lng": 129.878403, "d": "ちゃんぽん（創業当時から牡蠣を使い、野菜とイカ、牡蠣で風味を出す。840円）／皿うどん（細麺は揚げ麺にさらっとした甘めのあん、太麺は歯ごたえ重視。890円）／ラーメン（三枚肉を2種類に味付けし、メンマ・ネギ・胡麻をのせる。660円）", "a": "長崎県長崎市銅座町14-11", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E8%BB%BD%E9%A3%9F%20%E4%B8%89%E5%85%AB%20%E9%8A%85%E5%BA%A7%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8A%85%E5%BA%A7%E7%94%BA14-11", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-sanpachi-dozamachi", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-sanpachi-dozamachi.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-champon-sanpachi-dozamachi_exterior.jpg"}, {"i": 13, "n": "平和楼", "c": ["麺類"], "v": "レストラン", "lat": 32.745277, "lng": 129.878326, "d": "ちゃんぽん（鶏ガラを毎朝5時間煮込んだスープに野菜と海鮮、1,100円）／担々麺（12種類の香辛料と自家製ラー油、ごまの風味、900円）／皿うどん（長崎市公式観光サイトでちゃんぽん・皿うどんの店として分類されている。価格は未確認）", "a": "長崎県長崎市万屋町4-3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B9%B3%E5%92%8C%E6%A5%BC%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%B8%87%E5%B1%8B%E7%94%BA4-3", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-heiwarou", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-heiwarou.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-champon-heiwarou_exterior.jpg"}, {"i": 14, "n": "中国名菜 京華園", "c": ["麺類"], "v": "レストラン", "lat": 32.741905, "lng": 129.875595, "d": "ちゃんぽん（鶏ガラと豚コツがほぼ同割の少し透き通ったスープに、はんぺん・もやしなどの具、1,200円）／皿うどん（細麺・太麺を選べる。太麺にはあんがかかっていない、1,200円）／東坡扣肉（豚角煮まんじゅう、1,700円）", "a": "長崎県長崎市新地町9番7号", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E5%90%8D%E8%8F%9C%20%E4%BA%AC%E8%8F%AF%E5%9C%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA9%E7%95%AA7%E5%8F%B7", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-kyokaen", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-kyokaen.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-champon-kyokaen_exterior.jpg"}, {"i": 15, "n": "中国料理館 会楽園", "c": ["麺類"], "v": "レストラン", "lat": 32.741982, "lng": 129.875717, "d": "ちゃんぽん（鶏ガラ7・豚コツ3のブレンドスープを強火で仕上げる、1,200円）／皿うどん（細麺・太麺とも1,200円）／東坡肉（豚バラをやわらかく煮た角煮を蒸し饅頭にはさむ、1個650円）", "a": "長崎県長崎市新地町10-16", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%E9%A4%A8%20%E4%BC%9A%E6%A5%BD%E5%9C%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA10-16", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-kairakuen", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-kairakuen.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-champon-kairakuen_exterior.jpg"}, {"i": 16, "n": "中国菜館 江山楼 長崎中華街新館", "c": ["麺類"], "v": "レストラン", "lat": 32.741222, "lng": 129.87587, "d": "ちゃんぽん（鶏ガラと豚コツを合わせた濃厚なスープ、1,760円）／皿うどん（細麺・太麺とも1,760円）／特上ちゃんぽん・特上皿うどん（繁忙期はレストラン席でこの特上だけの提供になる期間がある、2,750円）", "a": "長崎県長崎市新地町13-13", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E8%8F%9C%E9%A4%A8%20%E6%B1%9F%E5%B1%B1%E6%A5%BC%20%E9%95%B7%E5%B4%8E%E4%B8%AD%E8%8F%AF%E8%A1%97%E6%96%B0%E9%A4%A8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA13-13", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-champon-kouzanrou-shinkan", "food": "../japan/nagasaki/img/nagasaki/nagasaki-champon-kouzanrou-shinkan.jpg", "ext": ""}, {"i": 17, "n": "蘇州林 新地中華街長崎唐菓子店", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 32.741367, "lng": 129.875519, "d": "麻花兒（小麦粉の生地を編んで揚げた硬い中華菓子。よりよりの名で知られる）／金銭餅（丸く焼いた甘さ控えめの焼き菓子）／角煮割包（蒸しパンに豚角煮をはさんだ長崎名物）", "a": "長崎県長崎市新地町13-17", "m": "https://www.google.com/maps/search/?api=1&query=%E8%98%87%E5%B7%9E%E6%9E%97%20%E6%96%B0%E5%9C%B0%E4%B8%AD%E8%8F%AF%E8%A1%97%E9%95%B7%E5%B4%8E%E5%94%90%E8%8F%93%E5%AD%90%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA13-17", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-chuka-sosyuurin", "food": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-sosyuurin.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-sosyuurin_exterior.jpg"}, {"i": 18, "n": "龍勝楼", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 32.74176, "lng": 129.875488, "d": "特製皿うどん（パリパリ麺に野菜・団子・豚の角煮をのせた一皿）／おこげの海鮮あんかけ（揚げたおこげに海鮮あんをかける上海の味）／かにみあんかけチャーハン（蟹身入りのあんをかけた炒飯）", "a": "長崎県長崎市新地町9-9", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BE%8D%E5%8B%9D%E6%A5%BC%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA9-9", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-chuka-ryushorou", "food": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-ryushorou.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-ryushorou_exterior.jpg"}, {"i": 19, "n": "中国料理 桃苑 ホテルJALシティ長崎", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 32.741402, "lng": 129.876114, "d": "長崎雲仙ポークの角煮饅頭（卓袱料理の流れをくむ角煮まん。ディナー帯のみ、2個から）／坦々麺（煎りゴマから仕込むゴマペーストに自家製ラー油2種）／フカヒレの姿煮込み（白龍コースの主菜）", "a": "長崎県長崎市新地町13-10 ホテルＪＡＬシティ長崎 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E6%A1%83%E8%8B%91%20%E3%83%9B%E3%83%86%E3%83%ABJAL%E3%82%B7%E3%83%86%E3%82%A3%E9%95%B7%E5%B4%8E%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA13-10%20%E3%83%9B%E3%83%86%E3%83%AB%EF%BC%AA%EF%BC%A1%EF%BC%AC%E3%82%B7%E3%83%86%E3%82%A3%E9%95%B7%E5%B4%8E%202F", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-chuka-toen", "food": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-toen.jpg", "ext": ""}, {"i": 20, "n": "老李 長崎中華街 総本店", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 32.741016, "lng": 129.875427, "d": "水餃子（一晩寝かせたもちもちの皮で肉汁を包んだ看板料理）／海老のマヨネーズ和え（台湾発祥とされる元祖海老マヨ）／台湾香腸（店主が子どもの頃からの味を再現した自家製ソーセージ）", "a": "長崎県長崎市新地町12-7 2F", "m": "https://www.google.com/maps/search/?api=1&query=%E8%80%81%E6%9D%8E%20%E9%95%B7%E5%B4%8E%E4%B8%AD%E8%8F%AF%E8%A1%97%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA12-7%202F", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-chuka-laolee", "food": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-laolee.jpg", "ext": ""}, {"i": 21, "n": "熱烈厨房", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 32.742588, "lng": 129.877655, "d": "四川風麻辣水煮牛肉（牛肉を辣油のスープで煮た代表格、1,580円）／渡り蟹の香港揚げ（店の「魔法の粉」をまとわせたにんにく風味の揚げ物）／辣子鶏（鶏の唐辛子炒め、1,080円）", "a": "長崎県長崎市銅座町13-12 谷口ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%86%B1%E7%83%88%E5%8E%A8%E6%88%BF%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8A%85%E5%BA%A7%E7%94%BA13-12%20%E8%B0%B7%E5%8F%A3%E3%83%93%E3%83%AB1F", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-chuka-netsuretsuchubo", "food": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-netsuretsuchubo.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-netsuretsuchubo_exterior.jpg"}, {"i": 22, "n": "圓山", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 32.743088, "lng": 129.880615, "d": "石焼四川麻婆豆腐（石鍋で供し、辛さを1倍から20倍まで選べる）／自慢の点心（小籠包・焼売・大根もち・豚まんなど、蒸したてを3個715円から）／フカヒレ姿煮（気仙沼産、4,620円）", "a": "長崎県長崎市油屋町1-7", "m": "https://www.google.com/maps/search/?api=1&query=%E5%9C%93%E5%B1%B1%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B2%B9%E5%B1%8B%E7%94%BA1-7", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-chuka-enzan", "food": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-enzan.jpg", "ext": ""}, {"i": 23, "n": "長崎ぶたまん 桃太呂 浜町店", "c": ["アジア・エスニック"], "v": "食材の店", "lat": 32.742985, "lng": 129.879822, "d": "長崎ぶたまん（直径数センチの小ぶりな豚まん。1人前は10個とされる）／お土産パック（冷蔵・10個入。当日朝に製造して粗熱をとり包装）／酢醤油のタレ（九州の豚まんに付ける酢醤油。希望すれば付く）", "a": "長崎県長崎市浜町10-19", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E3%81%B6%E3%81%9F%E3%81%BE%E3%82%93%20%E6%A1%83%E5%A4%AA%E5%91%82%20%E6%B5%9C%E7%94%BA%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA10-19", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-chuka-momotaro", "food": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-momotaro.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-momotaro_exterior.jpg"}, {"i": 24, "n": "長崎中華点心 チャイデリカ 長崎駅店", "c": ["アジア・エスニック"], "v": "レストラン", "lat": 32.752949, "lng": 129.868576, "d": "長崎焼小籠包（雲仙山麓の豚肉に野菜・鶏の旨味を合わせたスープ入り）／長崎成功胡椒餅（長崎県産ブランド豚と6種のスパイス、皮はサクサク）／ナガサキムーンケーキ（5色の渦巻き模様の折パイに自家製餡と塩漬け卵黄）", "a": "長崎県長崎市尾上町1-67 長崎街道かもめ市場", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E4%B8%AD%E8%8F%AF%E7%82%B9%E5%BF%83%20%E3%83%81%E3%83%A3%E3%82%A4%E3%83%87%E3%83%AA%E3%82%AB%20%E9%95%B7%E5%B4%8E%E9%A7%85%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%B0%BE%E4%B8%8A%E7%94%BA1-67%20%E9%95%B7%E5%B4%8E%E8%A1%97%E9%81%93%E3%81%8B%E3%82%82%E3%82%81%E5%B8%82%E5%A0%B4", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-chuka-chaidelica", "food": "../japan/nagasaki/img/nagasaki/nagasaki-chuka-chaidelica.jpg", "ext": ""}, {"i": 25, "n": "いけす居酒屋 川正", "c": ["居酒屋・焼肉", "寿司・海鮮"], "v": "バー・居酒屋・パブ", "lat": 32.74268, "lng": 129.878983, "d": "イカの活き造り（生け簀で泳ぐイカをその場でさばく。頭とゲソは後造りにもできる）／川正大漁盛 5,500円（4〜5名向けの大皿の刺身盛り）／本日の活魚（縞鯵・野母ん鯵・アカハタなど、その日の生け簀の魚を1尾単位で）", "a": "長崎県長崎市本石灰町3-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%91%E3%81%99%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%B7%9D%E6%AD%A3%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%9C%AC%E7%9F%B3%E7%81%B0%E7%94%BA3-3", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-kawasho", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-kawasho.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-kawasho_exterior.jpg"}, {"i": 26, "n": "長崎炉ばた はち舎", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 32.742596, "lng": 129.879639, "d": "長崎刺身盛合わせ 2,680円（毎日入荷する長崎の魚の盛り合わせ。内容は相談できる）／イカの姿造り 1,980円（産地直送のイカ。頭とゲソは炭火焼・天ぷら・唐揚げで後造り）／炉ばた焼き（カウンター越しに炭で焼く魚と野菜）", "a": "長崎県長崎市本石灰町5-3", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E7%82%89%E3%81%B0%E3%81%9F%20%E3%81%AF%E3%81%A1%E8%88%8E%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%9C%AC%E7%9F%B3%E7%81%B0%E7%94%BA5-3", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-hachiya", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-hachiya.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-hachiya_exterior.jpg"}, {"i": 27, "n": "長崎炉端 侘助", "c": ["居酒屋・焼肉", "寿司・海鮮"], "v": "レストラン", "lat": 32.742657, "lng": 129.87796, "d": "刺身盛合せ（長崎の地魚の盛り合わせ。一人前1,280円／二〜三人前2,180円／五〜六人前4,180円）／おまかせ串焼き盛り（ねぎま・豚バラ・にら豚巻きなど。5串890円／10串1,690円）／もつ鍋コース（〆にちゃんぽん麺が付く2時間飲み放題付きコース）", "a": "長崎県長崎市銅座町12-14", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E7%82%89%E7%AB%AF%20%E4%BE%98%E5%8A%A9%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8A%85%E5%BA%A7%E7%94%BA12-14", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-wabisuke", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-wabisuke.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-wabisuke_exterior.jpg"}, {"i": 28, "n": "長崎市の和食 御飯", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 32.742214, "lng": 129.881851, "d": "鯛めし（長崎のマダイを使った名物。全コースに付く）／刺身（店主が仕入れた長崎の地魚。献立は仕入れ次第で変わる）／鯖しゃぶ（先代が長崎で最初に出したとされる、もう一つの名物）", "a": "長崎県長崎市油屋町2-32", "m": "https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E5%B8%82%E3%81%AE%E5%92%8C%E9%A3%9F%20%E5%BE%A1%E9%A3%AF%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B2%B9%E5%B1%8B%E7%94%BA2-32", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-gohan", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-gohan.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-gohan_exterior.jpg"}, {"i": 29, "n": "銀鍋", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 32.74255, "lng": 129.877075, "d": "あら煮（高級魚あら＝クエのあら煮。店の顔とされる一品で、小説『火宅の人』にも出てくる）／あら刺し 3,300円（1人前。要予約で大皿にもできる）／おまかせ旬魚盛合せ 1,800円（1〜2名分。長崎県産の旬魚の盛り合わせ）", "a": "長崎県長崎市銅座町7-11", "m": "https://www.google.com/maps/search/?api=1&query=%E9%8A%80%E9%8D%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8A%85%E5%BA%A7%E7%94%BA7-11", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-ginnabe", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-ginnabe.jpg", "ext": ""}, {"i": 30, "n": "海鮮問屋 天ぷら かとう", "c": ["寿司・海鮮", "居酒屋・焼肉"], "v": "レストラン", "lat": 32.746159, "lng": 129.871353, "d": "本日の刺し盛り（長崎直送の地魚。3点880円／5点1,280円）／天ぷらおまかせ5種 980円（えび1・魚2・野菜2）／長崎県松浦産アジフライ 2枚580円（県内松浦産のアジを使ったフライ）", "a": "長崎県長崎市元船町11-10 丸重ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E5%95%8F%E5%B1%8B%20%E5%A4%A9%E3%81%B7%E3%82%89%20%E3%81%8B%E3%81%A8%E3%81%86%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%85%83%E8%88%B9%E7%94%BA11-10%20%E4%B8%B8%E9%87%8D%E3%83%93%E3%83%AB1F", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-tenpurakato", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-tenpurakato.jpg", "ext": ""}, {"i": 31, "n": "まつうら屋", "c": ["寿司・海鮮", "居酒屋・焼肉"], "v": "レストラン", "lat": 32.746243, "lng": 129.87352, "d": "刺身盛り 1,980円（長崎の地魚の盛り合わせ）／鯨盛り合わせ 2,000円（長崎の鯨食文化にそった一皿。ベーコン・うねすは各1,000円）／手毬寿司 三点盛り1,000円・五点盛り1,500円", "a": "長崎県長崎市樺島町8-2", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%81%A4%E3%81%86%E3%82%89%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%A8%BA%E5%B3%B6%E7%94%BA8-2", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-matsuuraya", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-matsuuraya.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-matsuuraya_exterior.jpg"}, {"i": 32, "n": "海鮮料理 ふぐ料理 しま", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 32.76783, "lng": 129.865158, "d": "ふぐ刺し（県産のふぐ。小2,200円／中3,300円／大6,600円）／ふぐ焼き 1,980円（店の焼酎に合わせる一品として出している）／クエあら煮 1,980円（ふぐ以外の地の魚。ウツボタタキ1,320円、はも湯引き880円もある）", "a": "長崎県長崎市岩川町5-12", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E6%96%99%E7%90%86%20%E3%81%B5%E3%81%90%E6%96%99%E7%90%86%20%E3%81%97%E3%81%BE%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%B2%A9%E5%B7%9D%E7%94%BA5-12", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-shima", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-shima.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-shima_exterior.jpg"}, {"i": 33, "n": "あかりの寿司", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 32.792297, "lng": 129.860413, "d": "おまかせ「ひととおり」4,400円（おつまみ・寿司・汁物を大将が季節と仕入れで組む）／おまかせ八貫 2,400円（にぎり8貫のおまかせ。五貫1,600円もある）／白鉄火巻 600円（マグロの赤い鉄火巻ではなく、長崎流に白身を使う鉄火巻）", "a": "長崎県長崎市住吉町11-20 福地ビル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%8B%E3%82%8A%E3%81%AE%E5%AF%BF%E5%8F%B8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%BD%8F%E5%90%89%E7%94%BA11-20%20%E7%A6%8F%E5%9C%B0%E3%83%93%E3%83%AB1%E9%9A%8E", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-izakaya-akarinosushi", "food": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-akarinosushi.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-izakaya-akarinosushi_exterior.jpg"}, {"i": 34, "n": "珈琲冨士男", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 32.744141, "lng": 129.880905, "d": "エッグサンド（厚焼き玉子をはさんだ看板のサンドイッチ。マスタード有・無を選ぶ）／ミックスサンド（エッグ・ハム・野菜から2種を選ぶ）／ウインナー珈琲（泡立てた生クリームを浮かべた珈琲）", "a": "長崎県長崎市鍛冶屋町2-12", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E5%86%A8%E5%A3%AB%E7%94%B7%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8D%9B%E5%86%B6%E5%B1%8B%E7%94%BA2-12", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-cafe-coffeefujio", "food": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-coffeefujio.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-coffeefujio_exterior.jpg"}, {"i": 35, "n": "珈琲人町", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 32.74538, "lng": 129.880508, "d": "サイフォンで淹れる自家焙煎珈琲（生産国と精製プロセスを示した豆から選ぶ）／人町ブレンド（店の看板にあたる中煎りのブレンド。豆の量り売りもある）／アダコーヒー（沖縄・国頭村安田産。入荷期間限定）", "a": "長崎県長崎市東古川町4-25 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E4%BA%BA%E7%94%BA%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%9D%B1%E5%8F%A4%E5%B7%9D%E7%94%BA4-25%201F", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-cafe-coffeehitomachi", "food": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-coffeehitomachi.jpg", "ext": ""}, {"i": 36, "n": "喫茶ウミノ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 32.762981, "lng": 129.864777, "d": "フルーツサンド（旬の果物をはさむ看板商品）／オリジナルブレンド珈琲（サイフォンで一杯ずつ抽出）／ミルクセーキ（長崎の喫茶店に伝わる凍らせて食べる形のもの）", "a": "長崎県長崎市茂里町1-55 みらい長崎ココウォーク3階", "m": "https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%A6%E3%83%9F%E3%83%8E%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%8C%82%E9%87%8C%E7%94%BA1-55%20%E3%81%BF%E3%82%89%E3%81%84%E9%95%B7%E5%B4%8E%E3%82%B3%E3%82%B3%E3%82%A6%E3%82%A9%E3%83%BC%E3%82%AF3%E9%9A%8E", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-cafe-kissaumino", "food": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-kissaumino.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-kissaumino_exterior.jpg"}, {"i": 37, "n": "Attic coffee and dining", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 32.744823, "lng": 129.870468, "d": "Attic デリシャストルコライス（長崎名物のトルコライスを自家製ソースで仕立てたもの）／フレンチプレスコーヒー（出島珈琲焙煎所で自家焙煎した豆を使う）／Attic デリシャスピッツァ（自家製生地のナポリピッツァ）", "a": "長崎県長崎市出島町1-1 長崎出島ワーフ1F 美術館側", "m": "https://www.google.com/maps/search/?api=1&query=Attic%20coffee%20and%20dining%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%87%BA%E5%B3%B6%E7%94%BA1-1%20%E9%95%B7%E5%B4%8E%E5%87%BA%E5%B3%B6%E3%83%AF%E3%83%BC%E3%83%951F%20%E7%BE%8E%E8%A1%93%E9%A4%A8%E5%81%B4", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-cafe-atticcoffee", "food": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-atticcoffee.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-atticcoffee_exterior.jpg"}, {"i": 38, "n": "ビストロボルドー", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 32.74361, "lng": 129.879547, "d": "トルコ風ライス「昔ながらの」（白ワインでフランベしたドライカレー、ナポリタン、カツレツを一皿に盛る伝統の組み合わせ）／ドリアトルコライス（エビフライとハンバーグをのせて焼いたもの）／牛ハヤシライス（洋食の定番を単品で）", "a": "長崎県長崎市浜町8-28 浜町インポートビル2・3階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%E3%83%9C%E3%83%AB%E3%83%89%E3%83%BC%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA8-28%20%E6%B5%9C%E7%94%BA%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%BC%E3%83%88%E3%83%93%E3%83%AB2%E3%83%BB3%E9%9A%8E", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-cafe-bistrobordeaux", "food": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-bistrobordeaux.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-bistrobordeaux_exterior.jpg"}, {"i": 39, "n": "カフェ オリンピック", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 32.744297, "lng": 129.87915, "d": "長崎トルコライス（スパイスで煮込んだ角煮をのせた店独自のトルコライス）／ガクランの友（ぶどうゼリー・ティラミスアイス・コーヒーゼリーを土台にした8層の30cm級パフェ）／閻魔大王のパフェ（看板の大型パフェのひとつ）", "a": "長崎県長崎市浜町8-13 仲見世ビル2F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%20%E3%82%AA%E3%83%AA%E3%83%B3%E3%83%94%E3%83%83%E3%82%AF%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA8-13%20%E4%BB%B2%E8%A6%8B%E4%B8%96%E3%83%93%E3%83%AB2F", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-cafe-cafeolympic", "food": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-cafeolympic.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-cafeolympic_exterior.jpg"}, {"i": 40, "n": "primrose", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 32.746803, "lng": 129.879852, "d": "トルコライス（サラダ・パスタ・カツ・カレーが一皿に載る店の一番人気）／ダブルトルコライス（カツとコロッケなど揚げ物を2種組み合わせる）／レディーストルコライス（ハーフカツ・エビフライ1本・パスタ・ごはん少なめ・日替わりデザート付き）", "a": "長崎県長崎市古川町3-3 若喜屋ビル2F", "m": "https://www.google.com/maps/search/?api=1&query=primrose%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%8F%A4%E5%B7%9D%E7%94%BA3-3%20%E8%8B%A5%E5%96%9C%E5%B1%8B%E3%83%93%E3%83%AB2F", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-cafe-primrose", "food": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-primrose.jpg", "ext": ""}, {"i": 41, "n": "洋食屋 向日葵亭", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 32.821644, "lng": 129.772659, "d": "ヒレカツトルコライス（柔らかいヒレカツ・和風ダレのピラフ・玉ねぎのカレーソース。店の一番人気）／トルコハヤシライス（ヒレカツやハンバーグをのせ、ハヤシソースをかけたもの）／ヒレカツトルコライスグラタン（トルコライスにホワイトソースとチーズをかけて焼いたもの）", "a": "長崎県長崎市京泊2丁目9-34", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E5%90%91%E6%97%A5%E8%91%B5%E4%BA%AD%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%BA%AC%E6%B3%8A2%E4%B8%81%E7%9B%AE9-34", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-cafe-himawaritei", "food": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-himawaritei.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-cafe-himawaritei_exterior.jpg"}, {"i": 42, "n": "カステラ本家 福砂屋 長崎本店", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 32.74165, "lng": 129.87944, "d": "カステラ 小切れ0.6号（底にザラメ糖が残る長崎カステラ。1本10切れ入り）／フクサヤキューブ（2切れ入りの小箱。1人分の土産向き）／オランダケーキ（くるみ入りのカステラ）", "a": "長崎県長崎市船大工町3-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%82%B9%E3%83%86%E3%83%A9%E6%9C%AC%E5%AE%B6%20%E7%A6%8F%E7%A0%82%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%88%B9%E5%A4%A7%E5%B7%A5%E7%94%BA3-1", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-kashi-fukusaya", "food": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-fukusaya.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-fukusaya_exterior.jpg"}, {"i": 43, "n": "松翁軒 本店／2F 喫茶セヴィリヤ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 32.748806, "lng": 129.880035, "d": "五三焼カステラ（卵黄の配合を増やした濃厚なカステラ。セットは1,375円）／チョコラーテ（明治時代から作るチョコレート入りカステラ）／ミルクセーキ（長崎式。注文を受けてから1つずつ手作りするため時間がかかる）", "a": "長崎県長崎市魚の町3-19", "m": "https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E7%BF%81%E8%BB%92%20%E6%9C%AC%E5%BA%97%EF%BC%8F2F%20%E5%96%AB%E8%8C%B6%E3%82%BB%E3%83%B4%E3%82%A3%E3%83%AA%E3%83%A4%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%AD%9A%E3%81%AE%E7%94%BA3-19", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-kashi-shooken", "food": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-shooken.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-shooken_exterior.jpg"}, {"i": 44, "n": "文明堂総本店 本店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 32.745655, "lng": 129.872437, "d": "特撰カステラ文明堂（木箱入りの上級品）／三笠山（小豆の選別から炊き上げまで自社で行う自家製餡のどら焼き）／桃カステラ（長崎の縁起菓子。季節商品）", "a": "長崎県長崎市江戸町1-1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%96%87%E6%98%8E%E5%A0%82%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B1%9F%E6%88%B8%E7%94%BA1-1", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-kashi-bunmeido-sohonten", "food": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-bunmeido-sohonten.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-bunmeido-sohonten_exterior.jpg"}, {"i": 45, "n": "岩永梅寿軒", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 32.746674, "lng": 129.880951, "d": "もしほ草（求肥に昆布を混ぜ、表面に砂糖をまぶした看板菓子。賞味期限20日）／長崎カステラ（予約が中心で、店頭は日により少量）／桃カステラ（2月末〜3月初旬の季節限定。バラ864円）", "a": "長崎県長崎市諏訪町7-1", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B2%A9%E6%B0%B8%E6%A2%85%E5%AF%BF%E8%BB%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%AB%8F%E8%A8%AA%E7%94%BA7-1", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-kashi-iwanaga-baijyuken", "food": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-iwanaga-baijyuken.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-iwanaga-baijyuken_exterior.jpg"}, {"i": 46, "n": "白水堂 思案橋本店／和風喫茶 志らみず", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 32.743088, "lng": 129.880295, "d": "ミルクセーキ（長崎式。スプーンで食べる氷菓。880円）／田舎ぜんざい（焼きたての餅入り。825円）／こもも（手のひらサイズの桃かすてら）", "a": "長崎県長崎市油屋町1-3", "m": "https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E6%B0%B4%E5%A0%82%20%E6%80%9D%E6%A1%88%E6%A9%8B%E6%9C%AC%E5%BA%97%EF%BC%8F%E5%92%8C%E9%A2%A8%E5%96%AB%E8%8C%B6%20%E5%BF%97%E3%82%89%E3%81%BF%E3%81%9A%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B2%B9%E5%B1%8B%E7%94%BA1-3", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-kashi-hakusuido-shiramizu", "food": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-hakusuido-shiramizu.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-hakusuido-shiramizu_exterior.jpg"}, {"i": 47, "n": "梅月堂 本店／サロン・ド・フィーヌ", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 32.743813, "lng": 129.878098, "d": "シースクリーム（スポンジ・カスタード・生クリームに黄桃とパイナップル。1個490円）／南蛮おるごおる（葉巻型に巻いたラングドシャ。10本入870円）／シースパフェ（喫茶限定。シースクリームをパフェにしたもの）", "a": "長崎県長崎市浜町7-3", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E6%9C%88%E5%A0%82%20%E6%9C%AC%E5%BA%97%EF%BC%8F%E3%82%B5%E3%83%AD%E3%83%B3%E3%83%BB%E3%83%89%E3%83%BB%E3%83%95%E3%82%A3%E3%83%BC%E3%83%8C%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA7-3", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-kashi-baigetsudo", "food": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-baigetsudo.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-baigetsudo_exterior.jpg"}, {"i": 48, "n": "茂木一まる香本家 本店", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 32.70377, "lng": 129.910416, "d": "一〇香（中が空洞の焼菓子。一口食べると香ばしいことから名が付いた。15個箱入2,430円）／茂木ビワゼリー（茂木びわを丸ごと1個包んだゼリー）／黄金の雫（びわの実を底に敷いて焼いた丸いびわカステラ）", "a": "長崎県長崎市茂木町1805", "m": "https://www.google.com/maps/search/?api=1&query=%E8%8C%82%E6%9C%A8%E4%B8%80%E3%81%BE%E3%82%8B%E9%A6%99%E6%9C%AC%E5%AE%B6%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%8C%82%E6%9C%A8%E7%94%BA1805", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-kashi-mogi-ichimarukou", "food": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-mogi-ichimarukou.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-mogi-ichimarukou_exterior.jpg"}, {"i": 49, "n": "ニューヨーク堂", "c": ["カフェ・パン・スイーツ"], "v": "ベーカリー・パティスリー", "lat": 32.746464, "lng": 129.880615, "d": "長崎カステラアイス（自家製カステラでアイスを挟んだ看板商品。バニラ・抹茶・チョコ・苺・びわなど7種）／長崎アイスモナカ／長崎カステラ", "a": "長崎県長崎市古川町3-17", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%8B%E3%83%A5%E3%83%BC%E3%83%A8%E3%83%BC%E3%82%AF%E5%A0%82%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%8F%A4%E5%B7%9D%E7%94%BA3-17", "u": "../japan/nagasaki/nagasaki.html#c-nagasaki-kashi-newyorkdo", "food": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-newyorkdo.jpg", "ext": "../japan/nagasaki/img/nagasaki/nagasaki-kashi-newyorkdo_exterior.jpg"}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([32.747434,129.875066],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('nagasaki', "長崎");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
