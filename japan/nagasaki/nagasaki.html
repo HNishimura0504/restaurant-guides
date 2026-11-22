@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>長崎美食ガイド(スマホ版)</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --ink3:#8a8880;
+    --blue:#2a78d6; --blue-d:#1c5cab; --blue-ll:#eaf3fd;
+    --aqua:#1baf7a; --aqua-d:#0d6647; --aqua-ll:#e9f7f1;
+    --yellow:#eda100; --yellow-d:#8a5d00; --yellow-ll:#fdf6e7;
+    --violet:#4a3aa7; --violet-ll:#efedfa;
+    --beer:#0d366b; --red:#e34948; --line:#e4e2dc;
+    /* 2026-10-10 追加: 政令指定都市は章が6つに収まらない（岡山市=8章）。
+       既存6色と彩度・明度の系統をそろえた2色を足す。既存の冊には影響しない。 */
+    --brown:#8a5a2b; --green:#3f7d20;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  @page{size:120mm 240mm; margin:7mm 7mm 8mm;}
+  html,body{background:var(--surface); color:var(--ink);
+    font-family:"IPAPGothic","IPAGothic",sans-serif; font-size:10.5pt; line-height:1.55;}
+  h1{font-size:17pt; line-height:1.4;}
+  /* break-after だけだと「見出しの中で」改ページされる。カテゴリ名が長くて2行に
+     なった見出しがページ境界に当たると、1行目とベタ塗りの背景だけが前ページに残り、
+     2行目が次ページに落ちて丸1ページが色板になる（2026-08-25 富山で発生）。
+     見出し自体を分割禁止にして、収まらなければ丸ごと次ページへ送る。 */
+  h2{font-size:13.5pt; margin:6mm 0 3mm; padding:1.6mm 3mm; border-radius:2mm; color:#fff;
+     background:var(--blue); break-after:avoid; break-inside:avoid;}
+  h2.c-aqua{background:var(--aqua);}
+  h2.c-yellow{background:var(--yellow);}
+  h2.c-violet{background:var(--violet);}
+  h2.c-beer{background:var(--beer);}
+  h2.c-red{background:var(--red);}
+  h2.c-brown{background:var(--brown);}
+  h2.c-green{background:var(--green);}
+  p{margin-bottom:2mm;}
+  .small{font-size:8.5pt; color:var(--ink2);}
+  .tiny{font-size:7.5pt; color:var(--ink3);}
+  .cover{background:linear-gradient(150deg,#0d366b,#2a78d6); color:#fff;
+    border-radius:4mm; padding:7mm 6mm; margin-bottom:4mm;}
+  .cover .sub{font-size:9.5pt; opacity:.92; margin-top:2.5mm; line-height:1.6;}
+  .cover .meta{margin-top:3.5mm; font-size:8.5pt; opacity:.85;}
+  .card{border:1px solid var(--line); border-radius:3mm; background:#fff;
+    overflow:hidden; margin-bottom:3.5mm; break-inside:avoid;}
+  .hero{display:block; width:100%; height:68mm; object-fit:cover;}
+  /* 外観写真（2026-10-19・外観写真の欠落3度目）: 料理・店内の hero の下に、店構えを1枚添える。
+     地図のポップアップと Notion 記事は <sid>_exterior.jpg を別に拾うので、ここは PDF・ガイド本文で見せるための行。 */
+  .extfig{position:relative; margin:0;}
+  /* 【2026-11-16 ユーザー指示・恒久】外観写真は切り取らず、元の縦横比のまま貼る。
+     原文「外観写真は勝手にトリミングしないで元画像を元の縦横比のまま貼り付けてよ？」。
+     以前は height:40mm + object-fit:cover で、**縦長の写真は上下が、横長は左右が切れていた**。
+     height:auto にすると比率が保たれる。max-height は縦長の1枚でカードが伸びすぎるのを抑える
+     だけの上限で、**切り取りではない**（幅が比率どおりに縮み、object-fit:contain が念押し）。 */
+  .extfig img{display:block; width:100%; height:auto; max-height:88mm; object-fit:contain;
+    margin:0 auto; border-top:2px solid #fff;}
+  .extfig figcaption{position:absolute; left:2mm; bottom:1.5mm; background:rgba(0,0,0,.55); color:#fff; font-size:7pt; padding:.3mm 1.6mm; border-radius:1mm;}
+  .hero-pending{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:40mm; background:repeating-linear-gradient(45deg,#f2f1ec,#f2f1ec 6px,#eceae3 6px,#eceae3 12px); color:var(--ink3); font-size:9pt; text-align:center; padding:2mm;}
+  .hero-pending span{font-size:7.3pt; margin-top:1mm; max-width:78%;}
+  .body{padding:3mm 4mm 3.5mm;}
+  .nm{font-size:12pt; font-weight:bold; line-height:1.35;}
+  .yomi{font-size:8pt; color:var(--ink3); margin-left:1mm; font-weight:normal;}
+  .chips{margin:1.2mm 0 1.5mm;}
+  .chip{display:inline-block; font-size:7.5pt; border-radius:99px; padding:.3mm 2.6mm; margin:0 1mm .8mm 0; color:#fff; background:var(--ink3);}
+  .chip.blog{background:var(--blue);}
+  .chip.pop{background:var(--red);}
+  .chip.hist{background:var(--violet);}
+  .chip.local{background:var(--aqua);}
+  .chip.neighbor{background:var(--ink3);}
+  .chip.kids{background:#d06aa0;}
+  .desc{font-size:9.5pt; margin:1mm 0 2mm;}
+  .info{width:100%; border-collapse:collapse; margin:1mm 0 2mm; font-size:8.7pt;}
+  .info th{background:var(--blue-ll); color:var(--ink2); text-align:left; white-space:nowrap;
+    width:20mm; padding:1mm 2mm; border:1px solid var(--line); font-weight:bold; vertical-align:top;}
+  .info td{padding:1mm 2mm; border:1px solid var(--line); vertical-align:top;}
+  .info .off{color:var(--red);}
+  .reason{font-size:9pt; background:var(--yellow-ll); border-radius:2mm; padding:1.8mm 2.5mm; margin-bottom:2mm;}
+  .reason b{color:var(--yellow-d);}
+  .sig{font-size:8.6pt; color:var(--aqua-d); margin-bottom:2mm;}
+  /* 味の証拠（2026-09-24 追加・B-573「星や件数は味の証拠ではない」）: 第三者が味そのものに
+     言及した引用を1件、出典つきで置く。選定理由の直後。 */
+  .taste{font-size:8.4pt; color:var(--ink2); border-left:2.5px solid var(--aqua); padding:1mm 2.5mm; margin-bottom:2mm; background:var(--aqua-ll);}
+  .taste b{color:var(--aqua-d);}
+  .chip.warn{background:#d97706;}
+  .note.screen{border-left-color:#d97706; background:#fff4e5;}
+  .sig b{color:var(--aqua-d);}
+  /* 2026-09-24 追加（ベルギー2冊・B-573 の「味の証拠」）: 料理名つきで味を述べた第三者の引用を1つ添える行。 */
+  .taste{font-size:8.4pt; color:var(--ink2); background:var(--aqua-ll); border-radius:2mm; padding:1.6mm 2.5mm; margin-bottom:2mm;}
+  .taste b{color:var(--aqua-d);}
+  .taste a{color:var(--ink3);}
+  a.map{display:block; text-align:center; background:var(--blue); color:#fff;
+    text-decoration:none; font-size:10pt; padding:2.2mm 0; border-radius:2mm; font-weight:bold;}
+  a.map::before{content:"📍 ";}
+  .src{font-size:7.5pt; color:var(--ink3); margin-top:1.5mm; word-break:break-all;}
+  .src a{color:var(--ink3);}
+  .legend{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3mm 4mm; margin-bottom:3mm; font-size:8.5pt; color:var(--ink2);}
+  .legend .chip{vertical-align:1px;}
+  .toc{border:1px solid var(--line); border-radius:3mm; background:#fff; padding:3.5mm 4mm 2.5mm; margin-bottom:3mm;}
+  .toc .th{font-size:11pt; font-weight:bold; margin-bottom:1.5mm;}
+  .toc .sec{font-size:8.6pt; font-weight:bold; margin:1.8mm 0 .8mm; padding-left:2mm; border-left:3px solid var(--ink3);}
+  .toc .sec.blue{border-color:var(--blue); color:var(--blue-d);}
+  .toc .sec.aqua{border-color:var(--aqua); color:var(--aqua-d);}
+  .toc .sec.yellow{border-color:var(--yellow); color:var(--yellow-d);}
+  .toc .sec.violet{border-color:var(--violet); color:var(--violet);}
+  .toc .sec.beer{border-color:var(--beer); color:var(--beer);}
+  .toc .sec.red{border-color:var(--red); color:var(--red);}
+  .toc .links{display:grid; grid-template-columns:1fr 1fr; gap:.6mm 3mm;}
+  .toc a{display:block; font-size:9pt; color:var(--ink); text-decoration:none;
+    padding:1.1mm 1mm 1.1mm 2mm; border-bottom:1px dotted var(--line);}
+  .toc a::after{content:" ›"; color:var(--ink3);}
+  .toc a .tn{display:inline-block; min-width:4.6mm; text-align:center; color:#fff;
+    border-radius:99px; font-size:7.2pt; padding:.1mm 1mm; margin-right:1.2mm;
+    vertical-align:1px; font-weight:bold;}
+  .note{border-left:3.5px solid var(--red); background:#fdeeee; padding:2.2mm 3mm;
+    border-radius:0 2mm 2mm 0; margin:2mm 0 3mm; font-size:8.8pt; break-inside:avoid;}
+  .mapsec{break-inside:avoid; margin-bottom:3mm;}
+  .mapttl{font-size:10.5pt; font-weight:bold; margin:1mm 0 1.5mm;}
+  /* overflow:hidden にすると地図の縁に立つピンのタップ範囲が切られて 3mm を割るため、
+     画像側を角丸にして wrapper は overflow:visible のままにする。 */
+  /* 地図が1ページに収まらないと、ページ境界をまたいだピンのタップ範囲が
+     縦に切られて 3mm を割る（2026-08-25 白山で発生。縦長の合併市で顕在化）。
+     地図は必ず1ページに収める＝分割禁止にし、幅は下の map_w_mm 側で縮める。 */
+  .mapwrap{position:relative; border:1px solid var(--line); border-radius:2mm;
+           break-inside:avoid; margin-left:auto; margin-right:auto;}
+  .mapwrap img{display:block; width:100%; border-radius:2mm;}
+  .mapwrap a{position:absolute; display:block; transform:translate(-50%,-50%);
+    min-width:4.6mm; min-height:4.6mm;}
+  .mapnote{font-size:7.5pt; color:var(--ink3); margin-top:1mm;}
+  .pinno{display:inline-block; min-width:5.5mm; text-align:center; color:#fff; border-radius:99px;
+    font-size:8pt; padding:.2mm 1.4mm; margin-right:1.5mm; vertical-align:1.5px; font-weight:bold;}
+</style>
+<style id="rwd">
+@media screen and (max-width:640px){
+
+html:not(.vm-pc) body{font-size:11.5pt}
+html:not(.vm-pc) .cover{padding:5mm 4.5mm}
+html:not(.vm-pc) .cover h1{font-size:15pt}
+html:not(.vm-pc) .legend{font-size:10pt;padding:3mm}
+html:not(.vm-pc) .toc .links{grid-template-columns:1fr}
+html:not(.vm-pc) .toc .sec{font-size:10pt}
+html:not(.vm-pc) .toc .links > *{font-size:10pt;padding:.8mm 0}
+html:not(.vm-pc) .desc{font-size:11pt}
+html:not(.vm-pc) .reason,html:not(.vm-pc) .src{font-size:9.5pt}
+html:not(.vm-pc) .chip{font-size:9pt;padding:.6mm 3mm}
+html:not(.vm-pc) .info th{width:auto;white-space:normal}
+html:not(.vm-pc) .snav{font-size:12.5px}
+html:not(.vm-pc) .snav .sn-t{min-width:0}
+
+}
+@media screen{
+
+html.vm-phone body{font-size:11.5pt}
+html.vm-phone .cover{padding:5mm 4.5mm}
+html.vm-phone .cover h1{font-size:15pt}
+html.vm-phone .legend{font-size:10pt;padding:3mm}
+html.vm-phone .toc .links{grid-template-columns:1fr}
+html.vm-phone .toc .sec{font-size:10pt}
+html.vm-phone .toc .links > *{font-size:10pt;padding:.8mm 0}
+html.vm-phone .desc{font-size:11pt}
+html.vm-phone .reason,html.vm-phone .src{font-size:9.5pt}
+html.vm-phone .chip{font-size:9pt;padding:.6mm 3mm}
+html.vm-phone .info th{width:auto;white-space:normal}
+html.vm-phone .snav{font-size:12.5px}
+html.vm-phone .snav .sn-t{min-width:0}
+
+}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+</head>
+<body>
+<style>
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+</style>
+<div class="snav"><button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button><span class="sn-t">長崎美食ガイド<span class="sn-n">50店</span></span><span class="sn-r"><a class="sn-btn" href="../../map/nagasaki.html">🗺️ 地図</a><a class="sn-btn" href="../../index.html">📖 一覧</a></span></div><div class="snavm" role="dialog" aria-label="長崎ガイド メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">長崎ガイド メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この記事</div><a href="../../map/nagasaki.html"><span class="sn-e">🗺️</span>長崎の地図で見る</a><a href="#"><span class="sn-e">⬆</span>記事の先頭へ</a><div class="sn-s">章へ移動</div><a href="#s-shippoku"><span class="sn-e">・</span>卓袱料理・長崎の郷土料理</a><a href="#s-champon"><span class="sn-e">・</span>ちゃんぽん・皿うどん</a><a href="#s-chuka"><span class="sn-e">・</span>新地中華街・長崎の中華</a><a href="#s-izakaya"><span class="sn-e">・</span>居酒屋・長崎港の魚</a><a href="#s-cafe"><span class="sn-e">・</span>喫茶・カフェ・トルコライス</a><a href="#s-kashi"><span class="sn-e">・</span>カステラ・和洋菓子・甘味</a><div class="sn-s">ほかの都市</div><a href="../../index.html"><span class="sn-e">📖</span>全115都市の一覧</a><a href="../../map/index.html"><span class="sn-e">🗺️</span>全115都市の地図</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<script>
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+
+
+<div class="cover">
+  <div style="font-size:8.5pt; opacity:.85;">JAPAN / NAGASAKI・長崎県長崎市 🇯🇵</div>
+  <h1>長崎美食ガイド</h1>
+  <div class="sub">三方を山に囲まれた細長い湾の奥に開けた港町。斜面に家が貼りつき、坂と石段が市街を刻む。出島と唐人屋敷を通して入った食が土地の味になり、卓袱（しっぽく）・ちゃんぽん・カステラ・トルコライスが並ぶ。厳選50スポットに営業時間・定休日・予約情報・選定理由・参照元・Googleマップリンク付き。写真は料理・店内の実写(公式サイト・公式SNS等からの引用。出典は各カードに明記)。</div>
+  <div class="meta">2026年11月調査 / 営業時間は変動あり・訪問前にマップで最終確認を</div>
+</div>
+
+<div class="legend">
+  <b>タグの意味:</b><br>
+  <span class="chip blog">ブログ推薦</span>在住者・個人ブログやローカルメディアで名店として言及<br>
+  <span class="chip pop">口コミ突出</span>同カテゴリで口コミ・行列・百名店選出が突出<br>
+  <span class="chip hist">老舗・歴史</span>地元に根ざした歴史ある店<br>
+  <span class="chip local">地元密着</span>観光客より地元客に愛される店<br>
+  <span class="chip neighbor">隣接市</span>市外(隣接市)の店 — 本文に市名を明記<br>
+  <span class="chip kids">子連れ歓迎</span>ハイチェア・ベビーカー可などが出典に明記された店<br>
+  
+  <span style="display:inline-block;margin-top:1.5mm;">📷 写真は各店の<b>料理・店内の実写</b>(公式サイト・公式SNS・地域情報サイト等からの引用。出典は各カードに明記)です。<b>予約</b>は各カードの「予約」欄(電話/公式サイト)から。定休日・営業時間は必ずGoogleマップで最終確認を。</span>
+</div>
+
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 全域マップ（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/nagasaki/_map.jpg" alt="全域マップ">
+<a href="#c-nagasaki-shippoku-hamakatsu" style="left:73.91%;top:61.68%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-shippoku-kagetsu" style="left:73.09%;top:63.96%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-shippoku-sakamotoya" style="left:69.91%;top:60.25%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-shippoku-yossou" style="left:72.57%;top:60.88%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-shippoku-ichiriki" style="left:74.96%;top:61.22%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-shippoku-hashimoto" style="left:80.39%;top:57.81%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-shippoku-kappoutoshi" style="left:69.5%;top:57.4%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-shippoku-higuchi" style="left:70.82%;top:62.65%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-shikairou" style="left:67.24%;top:68.39%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-edobishi" style="left:68.99%;top:60.5%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-kyorakuen" style="left:73.24%;top:59.94%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-houraiken" style="left:63.47%;top:43.45%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-sanpachi-dozamachi" style="left:72.27%;top:61.68%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-heiwarou" style="left:74.59%;top:62.31%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-kyokaen" style="left:70.68%;top:62.1%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-kairakuen" style="left:72.93%;top:63.15%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-champon-kouzanrou-shinkan" style="left:73.49%;top:65.52%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-chuka-sosyuurin" style="left:71.93%;top:67.42%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-chuka-ryushorou" style="left:69.44%;top:67.42%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-chuka-toen" style="left:67.88%;top:65.52%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-chuka-laolee" style="left:68.43%;top:63.15%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-chuka-netsuretsuchubo" style="left:74.43%;top:62.9%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-chuka-enzan" style="left:75.93%;top:63.11%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-chuka-momotaro" style="left:73.2%;top:63.87%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-chuka-chaidelica" style="left:66.38%;top:56.87%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-kawasho" style="left:74.43%;top:65.33%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-hachiya" style="left:72.27%;top:66.55%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-wabisuke" style="left:70.1%;top:65.33%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-gohan" style="left:75.16%;top:65.42%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-ginnabe" style="left:70.1%;top:62.9%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-tenpurakato" style="left:68.07%;top:61.64%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-matsuuraya" style="left:70.24%;top:62.61%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-shima" style="left:64.31%;top:46.42%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-izakaya-akarinosushi" style="left:61.44%;top:29.23%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-cafe-coffeefujio" style="left:72.66%;top:65.42%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-cafe-coffeehitomachi" style="left:73.61%;top:62.19%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-cafe-kissaumino" style="left:64.08%;top:49.83%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-cafe-atticcoffee" style="left:67.53%;top:62.58%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-cafe-bistrobordeaux" style="left:73.82%;top:64.62%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-cafe-cafeolympic" style="left:71.32%;top:64.62%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-cafe-primrose" style="left:74.49%;top:62.04%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-cafe-himawaritei" style="left:8.27%;top:8.61%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-kashi-fukusaya" style="left:73.09%;top:66.27%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-kashi-shooken" style="left:73.33%;top:59.78%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-kashi-bunmeido-sohonten" style="left:67.74%;top:62.61%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-kashi-iwanaga-baijyuken" style="left:73.88%;top:61.28%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-kashi-hakusuido-shiramizu" style="left:71.89%;top:63.11%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-kashi-baigetsudo" style="left:70.55%;top:62.31%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-kashi-mogi-ichimarukou" style="left:91.73%;top:91.4%;width:3.5%;height:3.4%;"></a>
+<a href="#c-nagasaki-kashi-newyorkdo" style="left:71.99%;top:62.04%;width:3.5%;height:3.4%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（50店・番号はピンと同じ）</div>
+<div class="sec red">卓袱料理・長崎の郷土料理</div>
+<div class="links">
+<a href="#c-nagasaki-shippoku-hamakatsu"><span class="tn" style="background:#e34948;">1</span>朱塗りの円卓で卓袱を通年出す専門店</a>
+<a href="#c-nagasaki-shippoku-kagetsu"><span class="tn" style="background:#e34948;">2</span>寛永19年創業・県指定史跡の料亭</a>
+<a href="#c-nagasaki-shippoku-sakamotoya"><span class="tn" style="background:#e34948;">3</span>明治27年創業、東坡煮で知られる料亭旅館</a>
+<a href="#c-nagasaki-shippoku-yossou"><span class="tn" style="background:#e34948;">4</span>慶応2年創業、茶碗むしとミニ卓袱の店</a>
+<a href="#c-nagasaki-shippoku-ichiriki"><span class="tn" style="background:#e34948;">5</span>文化10年創業、寺町通りの最古の料亭</a>
+<a href="#c-nagasaki-shippoku-hashimoto"><span class="tn" style="background:#e34948;">6</span>カルルス跡地に建つ純日本建築の料亭</a>
+<a href="#c-nagasaki-shippoku-kappoutoshi"><span class="tn" style="background:#e34948;">7</span>長崎駅近くで卓袱とハトシを出す割烹</a>
+<a href="#c-nagasaki-shippoku-higuchi"><span class="tn" style="background:#e34948;">8</span>築町商店街の上で長崎角煮と鯨を出す割烹</a>
+</div>
+<div class="sec brown">ちゃんぽん・皿うどん</div>
+<div class="links">
+<a href="#c-nagasaki-champon-shikairou"><span class="tn" style="background:#8a5a2b;">9</span>ちゃんぽん発祥、1899年創業の老舗</a>
+<a href="#c-nagasaki-champon-edobishi"><span class="tn" style="background:#8a5a2b;">10</span>出島のそば、豚コツ多めの町中華</a>
+<a href="#c-nagasaki-champon-kyorakuen"><span class="tn" style="background:#8a5a2b;">11</span>眼鏡橋のたもと、鶏ガラ100％の一杯</a>
+<a href="#c-nagasaki-champon-houraiken"><span class="tn" style="background:#8a5a2b;">12</span>原爆資料館のそば、創業80年の皿うどん</a>
+<a href="#c-nagasaki-champon-sanpachi-dozamachi"><span class="tn" style="background:#8a5a2b;">13</span>深夜2時まで、飲んだ後の牡蠣ちゃんぽん</a>
+<a href="#c-nagasaki-champon-heiwarou"><span class="tn" style="background:#8a5a2b;">14</span>浜町の路地、創業昭和28年の16席</a>
+<a href="#c-nagasaki-champon-kyokaen"><span class="tn" style="background:#8a5a2b;">15</span>中華街北門の前、1944年創業の大型店</a>
+<a href="#c-nagasaki-champon-kairakuen"><span class="tn" style="background:#8a5a2b;">16</span>昭和2年創業、鶏ガラ7対豚コツ3</a>
+<a href="#c-nagasaki-champon-kouzanrou-shinkan"><span class="tn" style="background:#8a5a2b;">17</span>東門横、王さんのちゃんぽんの400席</a>
+</div>
+<div class="sec aqua">新地中華街・長崎の中華</div>
+<div class="links">
+<a href="#c-nagasaki-chuka-sosyuurin"><span class="tn" style="background:#1baf7a;">18</span>中華街の唐菓子店、元祖よりより</a>
+<a href="#c-nagasaki-chuka-ryushorou"><span class="tn" style="background:#1baf7a;">19</span>中華街北門の大箱、変面ショーも</a>
+<a href="#c-nagasaki-chuka-toen"><span class="tn" style="background:#1baf7a;">20</span>中華街のホテル2階、広東料理</a>
+<a href="#c-nagasaki-chuka-laolee"><span class="tn" style="background:#1baf7a;">21</span>中華街の台湾料理、名物は水餃子</a>
+<a href="#c-nagasaki-chuka-netsuretsuchubo"><span class="tn" style="background:#1baf7a;">22</span>銅座の深夜まで開く辛旨中華</a>
+<a href="#c-nagasaki-chuka-enzan"><span class="tn" style="background:#1baf7a;">23</span>思案橋の台湾厨房、個室で点心</a>
+<a href="#c-nagasaki-chuka-momotaro"><span class="tn" style="background:#1baf7a;">24</span>一口サイズの長崎ぶたまん専門店</a>
+<a href="#c-nagasaki-chuka-chaidelica"><span class="tn" style="background:#1baf7a;">25</span>長崎駅で焼小籠包と胡椒餅</a>
+</div>
+<div class="sec beer">居酒屋・長崎港の魚</div>
+<div class="links">
+<a href="#c-nagasaki-izakaya-kawasho"><span class="tn" style="background:#0d366b;">26</span>思案橋の生け簀でイカを活き造り</a>
+<a href="#c-nagasaki-izakaya-hachiya"><span class="tn" style="background:#0d366b;">27</span>思案橋横丁の炉ばたで長崎の魚</a>
+<a href="#c-nagasaki-izakaya-wabisuke"><span class="tn" style="background:#0d366b;">28</span>銅座で深夜1時までの個室炉端</a>
+<a href="#c-nagasaki-izakaya-gohan"><span class="tn" style="background:#0d366b;">29</span>名物の鯛めしを軸にした完全予約制</a>
+<a href="#c-nagasaki-izakaya-ginnabe"><span class="tn" style="background:#0d366b;">30</span>昭和28年創業、あら（クエ）の老舗</a>
+<a href="#c-nagasaki-izakaya-tenpurakato"><span class="tn" style="background:#0d366b;">31</span>大波止の魚屋直営、刺身と天ぷら</a>
+<a href="#c-nagasaki-izakaya-matsuuraya"><span class="tn" style="background:#0d366b;">32</span>旧県庁そば、個室の海鮮居酒屋</a>
+<a href="#c-nagasaki-izakaya-shima"><span class="tn" style="background:#0d366b;">33</span>浜口の15席、ふぐと地魚の店</a>
+<a href="#c-nagasaki-izakaya-akarinosushi"><span class="tn" style="background:#0d366b;">34</span>住吉の14席、おまかせの寿司</a>
+</div>
+<div class="sec blue">喫茶・カフェ・トルコライス</div>
+<div class="links">
+<a href="#c-nagasaki-cafe-coffeefujio"><span class="tn" style="background:#2a78d6;">35</span>1946年創業、長崎の純喫茶の原点</a>
+<a href="#c-nagasaki-cafe-coffeehitomachi"><span class="tn" style="background:#2a78d6;">36</span>ししとき川沿いの自家焙煎スタンド</a>
+<a href="#c-nagasaki-cafe-kissaumino"><span class="tn" style="background:#2a78d6;">37</span>1955年創業の純喫茶の新店</a>
+<a href="#c-nagasaki-cafe-atticcoffee"><span class="tn" style="background:#2a78d6;">38</span>長崎港を望むスペシャルティ珈琲店</a>
+<a href="#c-nagasaki-cafe-bistrobordeaux"><span class="tn" style="background:#2a78d6;">39</span>「トルコ風ライス」発祥の味を継ぐ</a>
+<a href="#c-nagasaki-cafe-cafeolympic"><span class="tn" style="background:#2a78d6;">40</span>巨大パフェとトルコライスの洋食喫茶</a>
+<a href="#c-nagasaki-cafe-primrose"><span class="tn" style="background:#2a78d6;">41</span>眼鏡橋を見下ろす2階の洋食</a>
+<a href="#c-nagasaki-cafe-himawaritei"><span class="tn" style="background:#2a78d6;">42</span>トルコライスを選び尽くせる洋食屋</a>
+</div>
+<div class="sec yellow">カステラ・和洋菓子・甘味</div>
+<div class="links">
+<a href="#c-nagasaki-kashi-fukusaya"><span class="tn" style="background:#eda100;">43</span>寛永元年創業、カステラの元祖</a>
+<a href="#c-nagasaki-kashi-shooken"><span class="tn" style="background:#eda100;">44</span>天和元年創業、2階で切りたてを食べる</a>
+<a href="#c-nagasaki-kashi-bunmeido-sohonten"><span class="tn" style="background:#eda100;">45</span>明治33年創業、江戸町の本店</a>
+<a href="#c-nagasaki-kashi-iwanaga-baijyuken"><span class="tn" style="background:#eda100;">46</span>天保元年創業、眼鏡橋そばの和菓子屋</a>
+<a href="#c-nagasaki-kashi-hakusuido-shiramizu"><span class="tn" style="background:#eda100;">47</span>明治20年創業、食べるミルクセーキ</a>
+<a href="#c-nagasaki-kashi-baigetsudo"><span class="tn" style="background:#eda100;">48</span>シースクリームを生んだ洋菓子店</a>
+<a href="#c-nagasaki-kashi-mogi-ichimarukou"><span class="tn" style="background:#eda100;">49</span>弘化元年創業、一〇香とびわゼリー</a>
+<a href="#c-nagasaki-kashi-newyorkdo"><span class="tn" style="background:#eda100;">50</span>自家製カステラで挟む長崎カステラアイス</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大1 浜町・観光通・築町・新地中華街（商店街と中華街）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/nagasaki/_map2.jpg" alt="中心部拡大1 浜町・観光通・築町・新地中華街（商店街と中華街）">
+<a href="#c-nagasaki-shippoku-hamakatsu" style="left:81.13%;top:70.3%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-shippoku-yossou" style="left:53.32%;top:49.77%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-shippoku-ichiriki" style="left:97.07%;top:12.37%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-shippoku-higuchi" style="left:21.11%;top:46.27%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-champon-kyorakuen" style="left:57.9%;top:16.77%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-champon-sanpachi-dozamachi" style="left:48.92%;top:79.13%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-champon-heiwarou" style="left:48.07%;top:37.05%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-champon-kyokaen" style="left:17.72%;top:93.25%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-champon-kairakuen" style="left:19.08%;top:91.97%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-chuka-ryushorou" style="left:16.53%;top:95.67%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-chuka-netsuretsuchubo" style="left:40.61%;top:81.87%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-chuka-enzan" style="left:73.5%;top:73.53%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-chuka-momotaro" style="left:64.69%;top:75.25%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-izakaya-kawasho" style="left:55.37%;top:80.33%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-izakaya-hachiya" style="left:62.66%;top:81.73%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-izakaya-wabisuke" style="left:44.0%;top:80.72%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-izakaya-gohan" style="left:87.23%;top:88.1%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-izakaya-ginnabe" style="left:34.17%;top:82.5%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-cafe-coffeefujio" style="left:76.72%;top:55.98%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-cafe-coffeehitomachi" style="left:72.31%;top:35.33%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-cafe-bistrobordeaux" style="left:61.63%;top:64.83%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-cafe-cafeolympic" style="left:57.22%;top:53.38%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-cafe-primrose" style="left:65.02%;top:11.62%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-kashi-fukusaya" style="left:60.44%;top:97.25%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-kashi-iwanaga-baijyuken" style="left:77.23%;top:13.77%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-kashi-hakusuido-shiramizu" style="left:69.94%;top:73.53%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-kashi-baigetsudo" style="left:45.53%;top:61.45%;width:2.0%;height:2.52%;"></a>
+<a href="#c-nagasaki-kashi-newyorkdo" style="left:73.5%;top:17.27%;width:2.0%;height:2.52%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（28店・番号はピンと同じ）</div>
+<div class="sec red">卓袱料理・長崎の郷土料理</div>
+<div class="links">
+<a href="#c-nagasaki-shippoku-hamakatsu"><span class="tn" style="background:#e34948;">1</span>朱塗りの円卓で卓袱を通年出す専門店</a>
+<a href="#c-nagasaki-shippoku-yossou"><span class="tn" style="background:#e34948;">4</span>慶応2年創業、茶碗むしとミニ卓袱の店</a>
+<a href="#c-nagasaki-shippoku-ichiriki"><span class="tn" style="background:#e34948;">5</span>文化10年創業、寺町通りの最古の料亭</a>
+<a href="#c-nagasaki-shippoku-higuchi"><span class="tn" style="background:#e34948;">8</span>築町商店街の上で長崎角煮と鯨を出す割烹</a>
+</div>
+<div class="sec brown">ちゃんぽん・皿うどん</div>
+<div class="links">
+<a href="#c-nagasaki-champon-kyorakuen"><span class="tn" style="background:#8a5a2b;">11</span>眼鏡橋のたもと、鶏ガラ100％の一杯</a>
+<a href="#c-nagasaki-champon-sanpachi-dozamachi"><span class="tn" style="background:#8a5a2b;">13</span>深夜2時まで、飲んだ後の牡蠣ちゃんぽん</a>
+<a href="#c-nagasaki-champon-heiwarou"><span class="tn" style="background:#8a5a2b;">14</span>浜町の路地、創業昭和28年の16席</a>
+<a href="#c-nagasaki-champon-kyokaen"><span class="tn" style="background:#8a5a2b;">15</span>中華街北門の前、1944年創業の大型店</a>
+<a href="#c-nagasaki-champon-kairakuen"><span class="tn" style="background:#8a5a2b;">16</span>昭和2年創業、鶏ガラ7対豚コツ3</a>
+</div>
+<div class="sec aqua">新地中華街・長崎の中華</div>
+<div class="links">
+<a href="#c-nagasaki-chuka-ryushorou"><span class="tn" style="background:#1baf7a;">19</span>中華街北門の大箱、変面ショーも</a>
+<a href="#c-nagasaki-chuka-netsuretsuchubo"><span class="tn" style="background:#1baf7a;">22</span>銅座の深夜まで開く辛旨中華</a>
+<a href="#c-nagasaki-chuka-enzan"><span class="tn" style="background:#1baf7a;">23</span>思案橋の台湾厨房、個室で点心</a>
+<a href="#c-nagasaki-chuka-momotaro"><span class="tn" style="background:#1baf7a;">24</span>一口サイズの長崎ぶたまん専門店</a>
+</div>
+<div class="sec beer">居酒屋・長崎港の魚</div>
+<div class="links">
+<a href="#c-nagasaki-izakaya-kawasho"><span class="tn" style="background:#0d366b;">26</span>思案橋の生け簀でイカを活き造り</a>
+<a href="#c-nagasaki-izakaya-hachiya"><span class="tn" style="background:#0d366b;">27</span>思案橋横丁の炉ばたで長崎の魚</a>
+<a href="#c-nagasaki-izakaya-wabisuke"><span class="tn" style="background:#0d366b;">28</span>銅座で深夜1時までの個室炉端</a>
+<a href="#c-nagasaki-izakaya-gohan"><span class="tn" style="background:#0d366b;">29</span>名物の鯛めしを軸にした完全予約制</a>
+<a href="#c-nagasaki-izakaya-ginnabe"><span class="tn" style="background:#0d366b;">30</span>昭和28年創業、あら（クエ）の老舗</a>
+</div>
+<div class="sec blue">喫茶・カフェ・トルコライス</div>
+<div class="links">
+<a href="#c-nagasaki-cafe-coffeefujio"><span class="tn" style="background:#2a78d6;">35</span>1946年創業、長崎の純喫茶の原点</a>
+<a href="#c-nagasaki-cafe-coffeehitomachi"><span class="tn" style="background:#2a78d6;">36</span>ししとき川沿いの自家焙煎スタンド</a>
+<a href="#c-nagasaki-cafe-bistrobordeaux"><span class="tn" style="background:#2a78d6;">39</span>「トルコ風ライス」発祥の味を継ぐ</a>
+<a href="#c-nagasaki-cafe-cafeolympic"><span class="tn" style="background:#2a78d6;">40</span>巨大パフェとトルコライスの洋食喫茶</a>
+<a href="#c-nagasaki-cafe-primrose"><span class="tn" style="background:#2a78d6;">41</span>眼鏡橋を見下ろす2階の洋食</a>
+</div>
+<div class="sec yellow">カステラ・和洋菓子・甘味</div>
+<div class="links">
+<a href="#c-nagasaki-kashi-fukusaya"><span class="tn" style="background:#eda100;">43</span>寛永元年創業、カステラの元祖</a>
+<a href="#c-nagasaki-kashi-iwanaga-baijyuken"><span class="tn" style="background:#eda100;">46</span>天保元年創業、眼鏡橋そばの和菓子屋</a>
+<a href="#c-nagasaki-kashi-hakusuido-shiramizu"><span class="tn" style="background:#eda100;">47</span>明治20年創業、食べるミルクセーキ</a>
+<a href="#c-nagasaki-kashi-baigetsudo"><span class="tn" style="background:#eda100;">48</span>シースクリームを生んだ洋菓子店</a>
+<a href="#c-nagasaki-kashi-newyorkdo"><span class="tn" style="background:#eda100;">50</span>自家製カステラで挟む長崎カステラアイス</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大2 銅座町・本石灰町・油屋町（思案橋の夜の繁華街）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/nagasaki/_map3.jpg" alt="中心部拡大2 銅座町・本石灰町・油屋町（思案橋の夜の繁華街）">
+<a href="#c-nagasaki-shippoku-kagetsu" style="left:73.15%;top:23.91%;width:2.26%;height:3.52%;"></a>
+<a href="#c-nagasaki-champon-kouzanrou-shinkan" style="left:23.37%;top:13.44%;width:2.26%;height:3.52%;"></a>
+<a href="#c-nagasaki-chuka-sosyuurin" style="left:18.99%;top:10.07%;width:2.26%;height:3.52%;"></a>
+<a href="#c-nagasaki-chuka-ryushorou" style="left:18.6%;top:3.41%;width:2.26%;height:3.52%;"></a>
+<a href="#c-nagasaki-chuka-toen" style="left:26.43%;top:9.26%;width:2.26%;height:3.52%;"></a>
+<a href="#c-nagasaki-chuka-laolee" style="left:17.84%;top:18.23%;width:2.26%;height:3.52%;"></a>
+<a href="#c-nagasaki-kashi-fukusaya" style="left:68.0%;top:3.49%;width:2.26%;height:3.52%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（7店・番号はピンと同じ）</div>
+<div class="sec red">卓袱料理・長崎の郷土料理</div>
+<div class="links">
+<a href="#c-nagasaki-shippoku-kagetsu"><span class="tn" style="background:#e34948;">2</span>寛永19年創業・県指定史跡の料亭</a>
+</div>
+<div class="sec brown">ちゃんぽん・皿うどん</div>
+<div class="links">
+<a href="#c-nagasaki-champon-kouzanrou-shinkan"><span class="tn" style="background:#8a5a2b;">17</span>東門横、王さんのちゃんぽんの400席</a>
+</div>
+<div class="sec aqua">新地中華街・長崎の中華</div>
+<div class="links">
+<a href="#c-nagasaki-chuka-sosyuurin"><span class="tn" style="background:#1baf7a;">18</span>中華街の唐菓子店、元祖よりより</a>
+<a href="#c-nagasaki-chuka-ryushorou"><span class="tn" style="background:#1baf7a;">19</span>中華街北門の大箱、変面ショーも</a>
+<a href="#c-nagasaki-chuka-toen"><span class="tn" style="background:#1baf7a;">20</span>中華街のホテル2階、広東料理</a>
+<a href="#c-nagasaki-chuka-laolee"><span class="tn" style="background:#1baf7a;">21</span>中華街の台湾料理、名物は水餃子</a>
+</div>
+<div class="sec yellow">カステラ・和洋菓子・甘味</div>
+<div class="links">
+<a href="#c-nagasaki-kashi-fukusaya"><span class="tn" style="background:#eda100;">43</span>寛永元年創業、カステラの元祖</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大3 江戸町・大波止・出島・万屋町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/nagasaki/_map4.jpg" alt="中心部拡大3 江戸町・大波止・出島・万屋町">
+<a href="#c-nagasaki-champon-edobishi" style="left:75.5%;top:64.84%;width:2.9%;height:2.16%;"></a>
+<a href="#c-nagasaki-izakaya-tenpurakato" style="left:54.08%;top:54.87%;width:2.9%;height:2.16%;"></a>
+<a href="#c-nagasaki-izakaya-matsuuraya" style="left:89.03%;top:53.67%;width:2.9%;height:2.16%;"></a>
+<a href="#c-nagasaki-cafe-atticcoffee" style="left:39.81%;top:73.96%;width:2.9%;height:2.16%;"></a>
+<a href="#c-nagasaki-kashi-bunmeido-sohonten" style="left:71.56%;top:62.07%;width:2.9%;height:2.16%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（5店・番号はピンと同じ）</div>
+<div class="sec brown">ちゃんぽん・皿うどん</div>
+<div class="links">
+<a href="#c-nagasaki-champon-edobishi"><span class="tn" style="background:#8a5a2b;">10</span>出島のそば、豚コツ多めの町中華</a>
+</div>
+<div class="sec beer">居酒屋・長崎港の魚</div>
+<div class="links">
+<a href="#c-nagasaki-izakaya-tenpurakato"><span class="tn" style="background:#0d366b;">31</span>大波止の魚屋直営、刺身と天ぷら</a>
+<a href="#c-nagasaki-izakaya-matsuuraya"><span class="tn" style="background:#0d366b;">32</span>旧県庁そば、個室の海鮮居酒屋</a>
+</div>
+<div class="sec blue">喫茶・カフェ・トルコライス</div>
+<div class="links">
+<a href="#c-nagasaki-cafe-atticcoffee"><span class="tn" style="background:#2a78d6;">38</span>長崎港を望むスペシャルティ珈琲店</a>
+</div>
+<div class="sec yellow">カステラ・和洋菓子・甘味</div>
+<div class="links">
+<a href="#c-nagasaki-kashi-bunmeido-sohonten"><span class="tn" style="background:#eda100;">45</span>明治33年創業、江戸町の本店</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大4 長崎駅・尾上町・八千代町（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/nagasaki/_map5.jpg" alt="中心部拡大4 長崎駅・尾上町・八千代町">
+<a href="#c-nagasaki-shippoku-kappoutoshi" style="left:82.45%;top:59.99%;width:2.78%;height:3.78%;"></a>
+<a href="#c-nagasaki-chuka-chaidelica" style="left:42.89%;top:50.64%;width:2.78%;height:3.78%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（2店・番号はピンと同じ）</div>
+<div class="sec red">卓袱料理・長崎の郷土料理</div>
+<div class="links">
+<a href="#c-nagasaki-shippoku-kappoutoshi"><span class="tn" style="background:#e34948;">7</span>長崎駅近くで卓袱とハトシを出す割烹</a>
+</div>
+<div class="sec aqua">新地中華街・長崎の中華</div>
+<div class="links">
+<a href="#c-nagasaki-chuka-chaidelica"><span class="tn" style="background:#1baf7a;">25</span>長崎駅で焼小籠包と胡椒餅</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大5 南山手・大浦（グラバー園のふもと）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap">
+<img src="img/nagasaki/_map6.jpg" alt="中心部拡大5 南山手・大浦（グラバー園のふもと）">
+<a href="#c-nagasaki-champon-shikairou" style="left:45.41%;top:43.14%;width:3.28%;height:3.78%;"></a>
+</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（1店・番号はピンと同じ）</div>
+<div class="sec brown">ちゃんぽん・皿うどん</div>
+<div class="links">
+<a href="#c-nagasaki-champon-shikairou"><span class="tn" style="background:#8a5a2b;">9</span>ちゃんぽん発祥、1899年創業の老舗</a>
+</div>
+</div>
+<div class="mapsec">
+<div class="mapttl">🗾 店舗マップ — 中心部拡大6 浦上・住吉・平野町・中園町（市街の北）（ピンをタップで各店のページへ）</div>
+<div class="mapwrap" style="width:57.4mm;">
+<img src="img/nagasaki/_map7.jpg" alt="中心部拡大6 浦上・住吉・平野町・中園町（市街の北）">
+<a href="#c-nagasaki-champon-houraiken" style="left:48.08%;top:66.5%;width:6.02%;height:1.68%;"></a>
+<a href="#c-nagasaki-izakaya-shima" style="left:59.65%;top:78.25%;width:6.02%;height:1.68%;"></a>
+<a href="#c-nagasaki-izakaya-akarinosushi" style="left:20.11%;top:10.29%;width:6.02%;height:1.68%;"></a>
+<a href="#c-nagasaki-cafe-kissaumino" style="left:56.47%;top:91.72%;width:6.02%;height:1.68%;"></a>
+</div>
+<div class="mapnote">ピンの色はカテゴリ見出しの色に対応。番号は掲載順(各カードの番号バッジと一致)。地図: © OpenStreetMap contributors</div>
+</div>
+<div class="toc">
+<div class="th">この地図の店（4店・番号はピンと同じ）</div>
+<div class="sec brown">ちゃんぽん・皿うどん</div>
+<div class="links">
+<a href="#c-nagasaki-champon-houraiken"><span class="tn" style="background:#8a5a2b;">12</span>原爆資料館のそば、創業80年の皿うどん</a>
+</div>
+<div class="sec beer">居酒屋・長崎港の魚</div>
+<div class="links">
+<a href="#c-nagasaki-izakaya-shima"><span class="tn" style="background:#0d366b;">33</span>浜口の15席、ふぐと地魚の店</a>
+<a href="#c-nagasaki-izakaya-akarinosushi"><span class="tn" style="background:#0d366b;">34</span>住吉の14席、おまかせの寿司</a>
+</div>
+<div class="sec blue">喫茶・カフェ・トルコライス</div>
+<div class="links">
+<a href="#c-nagasaki-cafe-kissaumino"><span class="tn" style="background:#2a78d6;">37</span>1955年創業の純喫茶の新店</a>
+</div>
+</div>
+
+
+
+<div class="note"><b>回り方のコツ:</b>長崎市の店は5つのかたまりに分かれる。①**長崎駅・尾上町**＝2022年の新幹線開業で建て替わった一帯。駅ビル「長崎街道かもめ市場」に土産と食事が集まる ②**浜んまち（浜町・観光通・築町）**＝市内最大の商店街。アーケードの中と周辺に老舗が多い。路面電車の「観光通」「思案橋」が最寄り ③**思案橋・銅座**＝**夜の繁華街**。浜んまちの南に接し、居酒屋と小料理屋が密集する。深夜まで開く店が多い ④**新地中華街**＝浜んまちから徒歩5分。十字に走る250mの石畳に中華料理と中華菓子が並ぶ ⑤**南山手・東山手（グラバー園・大浦天主堂）**＝観光地で、坂の途中に眺めのよい喫茶が点在する。**市内の移動は路面電車（長崎電気軌道）が速くて安い**（1乗車150円・1日乗車券600円）。**坂が急なので、地図の直線距離をあてにしない。**\n**長崎市の名物**＝**卓袱（しっぽく）料理**（和・華・蘭が混ざった円卓の宴会料理。「お鰭をどうぞ」の挨拶で始まり、鯛の吸物・東坡煮・ハトシなどが大皿で出る。**多くの店が2〜3日前までの予約制**）、**ちゃんぽん・皿うどん**（明治期に中華料理店が中国人留学生のために作ったとされる。皿うどんは細麺のパリパリと太麺の2通りがある）、**トルコライス**（ピラフ・スパゲティ・とんかつを1皿に盛った洋食。店ごとに中身が違う）、**ハトシ**（海老のすり身を食パンで挟んで揚げたもの）、**東坡煮（とうばに）**（豚の角煮。坂本屋の登録商標）、**カステラ**（南蛮菓子由来。福砂屋・松翁軒・文明堂が三大老舗）、**桃カステラ**（桃をかたどった砂糖がけのカステラ。桃の節句の菓子）、**ミルクセーキ**（長崎では**かき氷状に凍らせて匙で食べる**）、**九州の魚**（長崎港の水揚げは種類の多さで全国有数）。\n**中華街と浜んまちの店は昼休みを取る店が多く、15時〜17時は閉まっている。**</div>
+
+<h2 id="s-shippoku" class="c-red">卓袱料理・長崎の郷土料理</h2>
+<div class="card" id="c-nagasaki-shippoku-hamakatsu">
+<img class="hero" src="img/nagasaki/nagasaki-shippoku-hamakatsu.jpg" alt="長崎卓袱浜勝 長崎総本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-shippoku-hamakatsu_exterior.jpg" alt="長崎卓袱浜勝 長崎総本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">1</span>長崎卓袱浜勝 長崎総本店<span class="yomi">ながさきしっぽく はまかつ ながさきそうほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1階がレストランフロア45席、2階は30名の個室1室と8名の個室1室で、総席数は2フロア合計88席。個室を使う場合は1人6,500円（税込）以上の料理の注文と、飲食代合計の10%の個室料がかかる。卓袱は2名からのコースのほかに1名から頼める「卓袱ビードロコース」「卓袱ランチ いろどり」「秋のぶらぶら卓袱」があり、1人客でも卓袱の形式で食べられる。卓袱奉行コースだけは前日までの予約が必要で、当日の変更・キャンセルはできない。支払いは現金・クレジットカード・交通系を含む電子マネー・各種QRコード決済が使える。全席禁煙でバリアフリー対応だがエレベーターはない。運営はリンガーハット。昼の予算は5,500円、夜は8,000円が目安。</div>
+<div class="sig"><b>一皿:</b>卓袱ビードロコース（お鰭・豆の蜜煮・前菜五品盛・刺身・湯引き・揚げ物・豚の角煮・大鉢・御飯・煮物・香物・水菓子・梅椀の13品で1人7,800円）／ハトシ（海老のすり身を食パンで挟んで揚げた長崎の揚げ物。ランチに200円で追加できる）／天然クエ鍋（長崎県産の天然クエを使った鍋。雑炊付きで1人10,000円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:30（料理ラストオーダー20:00／ホットペッパー表記では 11:00〜15:00 と 17:00〜21:30 で、14:30〜17:00 の予約は店に要確認）。クエ鍋コース・単品クエ鍋は19:30でオーダーストップ</td></tr>
+<tr><th>定休日</th><td class="off">大晦日と元日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市鍛冶屋町6-50</td></tr>
+<tr><th>予約</th><td>予約可。電話 095-826-8321 または公式サイトの予約フォーム、ホットペッパーグルメのネット予約。卓袱奉行コースは前日までの予約が必要。個室利用は1人6,500円（税込）以上の料理から。 — <a href="tel:0958268321">☎ 095-826-8321</a> ／ <a href="https://www.sippoku.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎の卓袱料理だけを看板にした専門店で、1名から頼める卓袱コースと1,550円の角煮重御膳まで幅を持つため、この章の入口になる。営業の根拠＝①店自身の日付つき情報：公式サイト（www.sippoku.jp）の「お知らせ」最新が 2026.11.13「旅行会社関係様へのご案内を更新しました」、続いて 2026.09.10「年末年始の営業について」、2026.09.04「長崎くんち期間の営業について」。ホットペッパーグルメの店舗ページにも「2025/12/09 更新」。②閉店していないことの確認（2026-11-22 実施）：「長崎卓袱浜勝 閉店」（空白あり）と「長崎卓袱浜勝閉店」（詰めた形）を Yahoo! JAPAN 検索で引いたところ、出てきた閉店情報は 2020年10月10日に閉じた「長崎しっぽく浜勝 銀座本店」（東京）と 2023年7月の「濵かつ」本店のみで、長崎総本店の閉店情報は無かった。「長崎卓袱浜勝 移転」「長崎卓袱浜勝 リニューアル」でも移転・改装の情報は出ず、公式サイトのお知らせが 2026.11.13 まで更新されていることを確認した。公式SNSはアカウント名そのものを読み、X が「長崎卓袱浜勝（@sippoku_jp）」であることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E5%8D%93%E8%A2%B1%E6%B5%9C%E5%8B%9D%20%E9%95%B7%E5%B4%8E%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8D%9B%E5%86%B6%E5%B1%8B%E7%94%BA6-50">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.sippoku.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sippoku.jp/">公式サイト トップ。お知らせ 2026.11.13／2026.09.10／2026.09.04 の日付を確認（2026-11-13）2026-11-22 取得</a> / <a href="https://www.sippoku.jp/nagasaki/">公式サイト 長崎総本店 店舗情報。住所・営業時間・支払い方法・アクセス 2026-11-22 取得</a> / <a href="https://www.sippoku.jp/nagasaki/menu/">公式サイト おしながき。卓袱コース・卓袱ランチ・クエ料理の価格 2026-11-22 取得</a> / <a href="https://www.sippoku.jp/information/">公式サイト 旅行会社関係様へのご案内。1F45席・2F個室2室などの施設概要 2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000033910/">ホットペッパーグルメ 店舗ページ。総席数88席・定休日・駐車場なし（2025/12/09 更新）2026-11-22 取得</a> / <a href="https://x.com/sippoku_jp">公式X。アカウント名「長崎卓袱浜勝（@sippoku_jp）」を確認（2026-11-22）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-shippoku-kagetsu">
+<img class="hero" src="img/nagasaki/nagasaki-shippoku-kagetsu.jpg" alt="史跡料亭 花月 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-shippoku-kagetsu_exterior.jpg" alt="史跡料亭 花月 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">2</span>史跡料亭 花月<span class="yomi">しせきりょうてい かげつ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">寛永19年（1642年）に開かれた丸山遊郭の太夫屋「引田屋」の楼号を継ぐ料亭で、引田屋本家の建物と庭園をそのまま受け継いでいる。長崎県指定の史跡。席数は300席、個室は13部屋あり、日本初といわれる西洋間から45畳の大広間まで9つの部屋を持つ。800坪の日本庭園は元禄時代から続く。完全予約制で大人2名から、前日までに電話で予約する。個人客の予約は2か月前から受ける。月曜と水曜はメンテナンスの都合で予約の変更を頼まれることがある。支払いはVISA・JCB・AMEX・DINERS・MASTERが使える。卓袱は女将の「御鰭をどうぞ」の一言で始まり、取り皿は1人2枚までが正式とされる。仕出し・持ち帰りの予約は10:00〜18:00に電話で受ける。</div>
+<div class="sig"><b>一皿:</b>卓袱料理（御鰭・造り・湯引き・三品盛・取肴・大鉢・中鉢・御飯・煮物・梅椀など15品の献立。パイ生地の「パスティ」は南蛮料理、角煮は中国料理の流れを汲む）／季節の卓袱晩酌膳（花月の卓袱を晩酌セットに仕立てた持ち帰り品。5,400円税込）／角煮（5個入り4,678円税込の取り寄せ品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 12:00〜15:00（ラストオーダー13:00）／夜 18:00〜22:00（ラストオーダー19:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（主に火曜日）。別にメンテナンス休業日あり（公式サイトのカレンダーに表示）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市丸山町2-1</td></tr>
+<tr><th>予約</th><td>完全予約制。大人2名から、前日までに電話 095-822-0191 で予約する。個人客は2か月前から受付。仕出し・持ち帰りの予約は10:00〜18:00に電話で。 — <a href="tel:0958220191">☎ 095-822-0191</a> ／ <a href="https://www.ryoutei-kagetsu.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1642年創業で県指定史跡という、長崎の卓袱料理を語るうえで外せない料亭。章の看板として入れる。営業の根拠＝①店自身の日付つき情報：公式サイトの「イベント・ニュース」に 2026.11.10「霜月（11月）会席料理のお品書き」、2026.11.01「雑誌【Japan Brand Collection2027】掲載」、2026.10.24「2027年【花月特製おせち】販売のお知らせ」が並び、トップページには2026年11月〜2027年1月の定休日カレンダーが載っている。②閉店していないことの確認（2026-11-22 実施）：「史跡料亭花月 閉店」（空白あり）と「史跡料亭花月閉店」（詰めた形）をYahoo! JAPAN検索で引いたが、閉店を伝える情報は無く、出てきたのは公式サイトの「年末年始 休業のお知らせ」（2025/11/22）と長崎市公式観光サイトのスポット紹介だけだった。「史跡料亭花月 移転」「史跡料亭花月 リニューアル」でも、出たのは長崎県の文化財データベースにある文政年間の移転の記述だけで、現在の移転・改装の情報は無かった。公式SNSはアカウント名そのものを読み、Instagram が「史跡料亭 花月（@shisekiryoutei_kagetsu）」であることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B2%E8%B7%A1%E6%96%99%E4%BA%AD%20%E8%8A%B1%E6%9C%88%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%B8%B8%E5%B1%B1%E7%94%BA2-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.ryoutei-kagetsu.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.ryoutei-kagetsu.co.jp/">公式サイト トップ。創業・席数300席／個室13部屋・営業時間・定休日・カード・アクセス、ニュース 2026.11.10／2026.11.01／2026.10.24 2026-11-22 取得</a> / <a href="https://www.ryoutei-kagetsu.co.jp/cuisine/">公式サイト お料理。卓袱料理・昼食卓袱・会席・持ち帰りの価格と献立 2026-11-22 取得</a> / <a href="https://www.ryoutei-kagetsu.co.jp/room/">公式サイト お部屋と庭園。9つの部屋と800坪の日本庭園 2026-11-22 取得</a> / <a href="https://www.ryoutei-kagetsu.co.jp/about/">公式サイト 花月について。引田屋から続く来歴 2026-11-22 取得</a> / <a href="https://www.ryoutei-kagetsu.co.jp/news/">公式サイト お知らせ一覧。年末年始 休業のお知らせ（2025/11/22）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-shippoku-sakamotoya">
+<img class="hero" src="img/nagasaki/nagasaki-shippoku-sakamotoya.jpg" alt="料亭御宿 坂本屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-shippoku-sakamotoya_exterior.jpg" alt="料亭御宿 坂本屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">3</span>料亭御宿 坂本屋<span class="yomi">りょうていおんやど さかもとや</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">明治27年（1894年）、初代の坂本寅一が金屋町に旅館を建てたのが始まり。長崎市内で唯一残る本格料亭旅館で、現在は四代目の坂本卓也と女将の悦子が営む。二代目サダが長崎の宿として初めて卓袱料理に取り組み、なかでも豚の角煮が評判になって、鍋を持った地元客が買いに来たと店が伝えている。三代目ヒサ子が3年かけて角煮の真空包装を商品化し、昭和50年に「東坡煮」として登録商標にした。平成9年には煮汁で炊いた「角煮めし」を商品化している。料亭の入店時間は昼が11:30〜13:30、夜が17:30〜19:30。70名収容の大広間から小部屋まであり、基本は個室の椅子席。料理は2名から受ける。店内は全面禁煙。支払いは現金と各種クレジットカード。</div>
+<div class="sig"><b>一皿:</b>東坡煮（長崎の卓袱に欠かせない豚の角煮。皮付き三枚バラ肉を長時間茹でて脂を抜き、特製のたれで数時間煮込んで一晩寝かせる）／角煮めし（東坡煮の煮汁と長崎県産米・もち米・にんじん・ごぼう・椎茸を竹皮に包んで炊いたもの）／卓袱料理（御鰭に始まり、小菜・中鉢の東坡煮・大鉢の蒸し物盛り合わせ・沢煮・梅椀まで続く献立）</div>
+<table class="info">
+<tr><th>営業時間</th><td>料亭 11:30〜21:30（入店時間は昼 11:30〜13:30／夜 17:30〜19:30）。本店販売コーナー 10:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市金屋町2-13</td></tr>
+<tr><th>予約</th><td>要予約。電話 095-826-8211 またはフリーダイヤル 0120-26-8210。料理は2名から。お昼のおまかせ膳は平日昼限定1日30食で要予約。 — <a href="tel:0958268211">☎ 095-826-8211</a> ／ <a href="https://www.sakamotoya.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>卓袱の中鉢である豚の角煮を「東坡煮」として商品化した店で、章の中で角煮・角煮めしを担う。料亭旅館として泊まれる点も他店と重ならない。営業の根拠＝①店自身の日付つき情報：公式サイトの「歳時記」に 2026.11.01「『坂本屋のおせち料理』ご予約承ります」、2026.05.17「お昼の女子会にお薦め『お昼のおまかせ膳』ご予約承ります」、2026.04.20「お客様駐車場のご案内」が日付つきで載っている。②閉店していないことの確認（2026-11-22 実施）：「料亭御宿坂本屋 閉店」（空白あり）と「料亭御宿坂本屋閉店」（詰めた形）をYahoo! JAPAN検索で引いたが、長崎市金屋町の坂本屋の閉店情報は無く、出てきたのは同名の別店（カツ丼の坂本屋）の2023年の閉店記事と、坂本屋の別館が3月31日で閉じたという食べログの投稿だけで、本店の営業は公式サイトと別ドメインの公式サイト（sakamotoya-nagasaki.com）の双方で確認できた。「坂本屋 長崎 金屋町 移転」「坂本屋 長崎 金屋町 リニューアル」でも移転・改装の情報は出なかった。公式SNSはアカウント名そのものを読み、Instagram が「料亭 坂本屋【長崎/卓袱•東坡煮•角煮めし】（@nagasaki_sakamotoya）」であることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%E5%BE%A1%E5%AE%BF%20%E5%9D%82%E6%9C%AC%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%87%91%E5%B1%8B%E7%94%BA2-13">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.sakamotoya.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.sakamotoya.co.jp/">公式サイト トップ。歳時記 2026.11.01／2026.05.17／2026.04.20 の日付、住所・電話 2026-11-22 取得</a> / <a href="https://www.sakamotoya.co.jp/cuisine.html">公式サイト お料理のご案内。昼夜の卓袱と会席の価格、入店時間、献立 2026-11-22 取得</a> / <a href="https://www.sakamotoya.co.jp/about.html">公式サイト 坂本屋のご案内。明治27年創業と東坡煮・角煮めしの来歴 2026-11-22 取得</a> / <a href="https://www.sakamotoya.co.jp/news.php">公式サイト 歳時記一覧。おせち予約（2026.11.01）・おまかせ膳（2026.05.17）・駐車場案内（2026.04.20）2026-11-22 取得</a> / <a href="https://www.sakamotoya-nagasaki.com/about">公式サイト（別ドメイン）店舗案内。営業時間 11:30〜21:30・休業日 不定休・駐車場有・アクセス 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-shippoku-yossou">
+<img class="hero" src="img/nagasaki/nagasaki-shippoku-yossou.jpg" alt="元祖茶碗むし 吉宗 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-shippoku-yossou_exterior.jpg" alt="元祖茶碗むし 吉宗 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">4</span>元祖茶碗むし 吉宗 本店<span class="yomi">がんそちゃわんむし よっそう ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">慶応2年（1866年）、吉田宗吉信武が長崎市万屋町で茶碗むし・蒸寿し専門の店として開いたのが始まりで、令和8年に創業160周年を迎える。現在の浜町本店の建物は昭和2年に建てられ、平成24年7月の大改修を経て昭和初期の風情を残している。木札を鳴らして来客を知らせる出迎えが続く。フロアは1階と2階に分かれ、平日の1階は11:00〜17:00（夜は2階のみ）、2階は11:00〜15:30と17:00〜20:30。土日は1階も20:30まで開く。土日祝の予約は1か月前で受付を締め切る。卓袱料理とミニ卓袱は年末年始・ゴールデンウィーク・お盆・ランタンフェスティバルなどの繁忙期は提供を休む。卓袱料理（13品）は前日までの予約が要る。支払いは主要クレジットカードと電子マネーが使える。</div>
+<div class="sig"><b>一皿:</b>茶碗むし・蒸寿し（穴子・海老・鶏肉・しいたけ・きくらげ・銀杏・たけのこ・蒲鉾・麩などを入れた茶碗むしに、蒸した酢飯の蒸寿しを添えた「夫婦蒸し」。一子相伝で伝わる名物）／ミニ卓袱 8品（円卓の卓袱を1人前の膳に仕立てたもの。4,510円）／角煮（豚の角煮。単品1,540円、角煮定食2,750円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜19:30ラストオーダー。平日は1階 11:00〜17:00（L.O.16:00）・2階 11:00〜15:30（L.O.14:30）と 17:00〜20:30（L.O.19:30）。土日は1階 11:00〜20:30（L.O.19:30）・2階は平日と同じ区切り。14:30〜17:00は1階のみの営業</td></tr>
+<tr><th>定休日</th><td class="off">毎週火曜（祝日・繁忙期を除く）、1月1日、8月15日、12月31日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市浜町8-9</td></tr>
+<tr><th>予約</th><td>予約可。電話 095-821-0001。卓袱料理（13品・2人前から）は前日までの予約が必要。土日祝の予約は1か月前で受付終了。 — <a href="tel:0958210001">☎ 095-821-0001</a> ／ <a href="https://yossou.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業160年の茶碗むし・蒸寿しの老舗でありながら、卓袱料理とミニ卓袱を通年のメニューに持つため、料亭の価格帯では卓袱に手が届かない読み手の受け皿になる。茶碗むしと蒸寿しは長崎の郷土の食べ物そのものでもある。営業の根拠＝①店自身の日付つき情報：公式サイトの新着情報に 2026年11月19日「2026年冬ギフト・お歳暮送料キャンペーン」、2026年11月6日「【物産展】2026年11月18日(水)〜24日(火) 『バナナマンのせっかくグルメ！！博覧会』」が載り、トップに「11月27日(金)の営業時間について」の告知が出ている。②閉店していないことの確認（2026-11-22 実施）：「吉宗 長崎 浜町 閉店」（空白あり）と「吉宗長崎浜町閉店」（詰めた形）をYahoo! JAPAN検索で引いたところ、出てきた閉店情報は 2023年8月28日で閉じた浜屋地階の惣菜コーナーと、閉店済みの大橋出前部だけで、浜町本店の閉店情報は無かった。「吉宗 長崎 移転」「吉宗 長崎 リニューアル」で出たのは、銀座店の移転オープン（2022年11月）と浜町本店の平成24年（2012年）の大改修の記事で、現在の移転・改装の予定は無かった。公式SNSはアカウント名そのものを読み、X が「茶碗むし 吉宗（@yossou_nagasaki）」であることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%85%83%E7%A5%96%E8%8C%B6%E7%A2%97%E3%82%80%E3%81%97%20%E5%90%89%E5%AE%97%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA8-9">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（yossou.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://yossou.co.jp/">公式サイト トップ。新着情報 2026年11月19日・2026年11月6日、創業160周年のあいさつ 2026-11-22 取得</a> / <a href="https://yossou.co.jp/store/restaurant/">公式サイト お食事処。営業時間・定休日・支払い方法・駐車場・アクセス 2026-11-22 取得</a> / <a href="https://yossou.co.jp/store/restaurant/menu/">公式サイト お食事処メニュー。茶碗むし・蒸寿し・ミニ卓袱・卓袱料理・角煮の価格 2026-11-22 取得</a> / <a href="https://x.com/yossou_nagasaki">公式X。アカウント名「茶碗むし 吉宗（@yossou_nagasaki）」を確認（2026-11-22）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-shippoku-ichiriki">
+<img class="hero" src="img/nagasaki/nagasaki-shippoku-ichiriki.jpg" alt="料亭一力 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-shippoku-ichiriki_exterior.jpg" alt="料亭一力 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">5</span>料亭一力<span class="yomi">りょうてい いちりき</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">文化10年（1813年）創業で、長崎の料亭のなかで最も古い。2社14寺が並ぶ寺町通りの石畳沿いにある。高杉晋作・井上馨・坂本龍馬ら幕末の志士が円卓を囲んだと店が伝え、創業165周年を記念して造られた「小唄辰己」の碑が入口の傍らに建つ。卓袱は一卓2名から7名まで。昼夜とも2名からの予約制で、入店時間は昼が11:30〜13:30、夜が17:00〜19:30。支払いは昼が現金のみ、夜は現金とクレジットカードが使える。素足での入店は断られるので靴下などを履いて行く。子ども向けの料理も相談できる。アレルギーは予約のときに伝える決まりで、当日の申し出には対応しない。昼限定の「姫重しっぽく」6,050円は刺身と汁粉が付く重箱仕立てで、料亭の卓袱を手軽な価格で試せる。</div>
+<div class="sig"><b>一皿:</b>卓袱料理（日本料理に中国・オランダ・西欧の味を取り込んだ長崎の宴会料理。一卓2〜7名、昼13,200円から）／姫重しっぽく（昼限定の重箱仕立ての卓袱。刺身と汁粉が付いて6,050円）／会席料理（長崎の山海の幸を使った四季の会席。昼13,200円から）</div>
+<table class="info">
+<tr><th>営業時間</th><td>入店時間 昼 11:30〜13:30／夜 17:00〜19:30</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市諏訪町8-20</td></tr>
+<tr><th>予約</th><td>要予約。電話 095-824-0226（FAX 095-826-3583、メール ryotei@ichiriki.jp）。卓袱・会席とも2名から。アレルギーは予約時に申し出る。キャンセル料の規定が公式サイトにある。 — <a href="tel:0958240226">☎ 095-824-0226</a> ／ <a href="https://www.ichiriki.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1813年創業で長崎最古の料亭という来歴そのものが、卓袱の章の歴史的な軸になる。昼限定6,050円の姫重しっぽくがあり、料亭の卓袱の入口としても紹介できる。営業の根拠＝①公式サイト（www.ichiriki.jp）には日付の入った更新が見当たらないため、長崎県の特例に従い公的機関の日付つきの取材記事で代える。一般社団法人 長崎国際観光コンベンション協会が運営する長崎市公式観光サイトのお知らせ「【2夜限定】和と華が織りなす、長崎でしか味わえない特別な餐宴」（2026/10/31 付）が、2026年12月4日（金）に料亭一力（長崎市諏訪町）を会場として中国料理Red Lanternとの共催コースを出すことを本文と添付PDFで伝えている。同協会の「長崎さるく20周年特設サイト」のイベントページにも、2027年1月22日の対になる回の案内として料亭一力の名が出ている。いずれも会員名簿ではなく日付つきの記事。②閉店していないことの確認（2026-11-22 実施）：「料亭一力 長崎 閉店」（空白あり）と「料亭一力長崎閉店」（詰めた形）をYahoo! JAPAN検索で引いたが、一力の閉店情報は1件も無く、出てきたのは公式サイトと、他店の閉店を惜しむ旅行サイトの感想だけだった。「料亭一力 長崎 移転」「料亭一力 長崎 リニューアル」でも、出たのは上記の2026年12月・2027年1月の催しの告知で、移転・改装の情報は無かった。公式SNSはアカウント名そのものを読み、Instagram が「料亭一力（@ryoutei_ichiriki）」であることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%E4%B8%80%E5%8A%9B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%AB%8F%E8%A8%AA%E7%94%BA8-20">Googleマップで開く</a>
+<div class="src">写真: 店舗公式サイト（static.wixstatic.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.ichiriki.jp/">公式サイト トップ。入店時間・不定休・素足での入店不可・交通アクセス 2026-11-22 取得</a> / <a href="https://www.ichiriki.jp/menu">公式サイト 料理のご紹介。卓袱・会席・姫重しっぽくの価格と支払い方法 2026-11-22 取得</a> / <a href="https://www.ichiriki.jp/history">公式サイト 一力の歴史。文化十年（1813年）創業、創業165周年の碑 2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/news/1448">長崎市公式観光サイト（一般社団法人 長崎国際観光コンベンション協会）お知らせ。2026年12月4日に料亭一力で開く共催の宴を伝える記事（2026/10/31）2026-11-22 取得</a> / <a href="https://saruku.nagasaki-visit.or.jp/20th/event/00028/">長崎さるく20周年特設サイト（同協会）イベントページ。2027年1月22日の対になる回の案内に料亭一力の名がある 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-shippoku-hashimoto">
+<img class="hero" src="img/nagasaki/nagasaki-shippoku-hashimoto.jpg" alt="料亭 橋本 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-shippoku-hashimoto_exterior.jpg" alt="料亭 橋本 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">6</span>料亭 橋本<span class="yomi">りょうてい はしもと</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">彦山を背に、かつて桜の名所だったカルルス跡地に建つ純日本建築の料亭。庭園には明治時代の面影を残す大きな「カルルス桜」があり、春は夜桜のライトアップ、夏は緑の庭園、秋は紅葉、冬は雪景色を座敷から眺められる。全館8室で、150名収容の大広間、40名の中広間、中小客室6室があり、椅子席にも対応する。完全予約制で、夜席は2名から、昼席限定の料金は4名から受ける。支払いは現金のみでクレジットカードは使えない。ホームページを見た旨を電話で伝える決まりがある。橋本の料理は、長崎料理の草分けとされる初代料理長の酒井智が作り上げた献立を受け継いだもの。披露宴・結納・賀寿・法要の席にも使われる。会費制の場合は15名から飲み物代込みの料金設定も相談できる。</div>
+<div class="sig"><b>一皿:</b>卓袱料理（御鰭椀に始まり、刺身・湯引き・三品盛・ばら煮・揚物・取肴の小菜、中鉢の角煮、大鉢の炊合せ、御飯、丼の煮物、梅椀まで13品前後の献立。1人18,480円〜）／中鉢の角煮（卓袱の中心になる豚の角煮）／会席料理（先付から果物まで四季の食材で組む献立。昼席限定11,880円〜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>12:00〜14:30／17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休（完全予約制）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市中川1丁目4番5号</td></tr>
+<tr><th>予約</th><td>完全予約制。電話 095-825-2001（FAX 095-824-3366）。夜席は2名から、昼席限定の料金は4名から。予約のときに「ホームページを見た」と伝える。駐車場も要予約。支払いは現金のみ。 — <a href="tel:0958252001">☎ 095-825-2001</a> ／ <a href="https://ryoutei-hashimoto.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>卓袱を昼席10,560円から出す料亭で、庭園と純日本建築を併せて味わえる点が花月・一力と重ならない。市街地中心部ではなく新中川町にあるので、章の中での地理も散る。営業の根拠＝①店自身の日付つき情報：公式サイトのトップに「令和8年3月30日　ここ数日の暖かさにより橋本の桜も一気に開花が進み、見頃を迎えつつあります」という書き込みがあり、「令和8年のカルルス桜だより」のページを案内している（令和8年＝2026年）。②閉店していないことの確認（2026-11-22 実施）：「料亭橋本 長崎 閉店」（空白あり）と「料亭橋本長崎閉店」（詰めた形）をYahoo! JAPAN検索で引いたが、閉店を伝える情報は1件も無く、公式サイトの営業時間・定休日と、長崎県観光連盟「ながさき旅ネット」の店舗ページ（『至福の一皿 ながさきグルメセレクション』認定店）が出た。「料亭橋本 長崎 移転」「料亭橋本 長崎 リニューアル」でも移転・改装の情報は無かった。公式SNSはアカウント名そのものを読もうとしたが、公式サイトにSNSへのリンクが無く、検索でも店自身のアカウントは見つからなかったので対象なし（これは閉店の証拠ではない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%99%E4%BA%AD%20%E6%A9%8B%E6%9C%AC%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%B8%AD%E5%B7%9D1%E4%B8%81%E7%9B%AE4%E7%95%AA5%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（ryoutei-hashimoto.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://ryoutei-hashimoto.com/">公式サイト トップ。令和8年3月30日のカルルス桜だより、営業時間・定休日・駐車場・所在地 2026-11-22 取得</a> / <a href="https://ryoutei-hashimoto.com/sippoku.html">公式サイト お料理。卓袱料理の献立と料金表、現金のみの注記 2026-11-22 取得</a> / <a href="https://ryoutei-hashimoto.com/annai.html">公式サイト ご案内。全館8室・大広間150名・中広間40名・アクセス 2026-11-22 取得</a> / <a href="https://ryoutei-hashimoto.com/2026sakura.htm">公式サイト 令和8年（2026年）カルルス桜だより。令和8年3月19日〜3月30日の開花情報 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-shippoku-kappoutoshi">
+<img class="hero" src="img/nagasaki/nagasaki-shippoku-kappoutoshi.jpg" alt="割烹とし 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-shippoku-kappoutoshi_exterior.jpg" alt="割烹とし 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">7</span>割烹とし<span class="yomi">かっぽう とし</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">創業およそ50年の割烹で、2023年3月に店内をすべて改装している。総席数53席、最大25名の宴会に対応し、完全個室が2室（8〜25名用と2〜8名用）あるほかカウンター席もある。個室を使うと飲食代とは別に15%のサービス料がかかる。卓袱コースは2名から25名まで受けるが、カウンター限定で1名でも同じ【松】【竹】【梅】を頼める。昼は3,300円の長崎御膳と2,200円のおまかせ御膳があり、料亭より手前の価格で長崎の皿が並ぶ。支払いはクレジットカード各種、交通系を含む電子マネー、PayPay・楽天ペイ・d払い・au PAY・Alipay・WeChat Payに対応。全席禁煙で喫煙専用室は無い。バリアフリーは1階のみ。コース予約は来店2日前14時以降からキャンセル料が発生する。</div>
+<div class="sig"><b>一皿:</b>料亭仕込みの長崎ハトシ（蝦多士。海老のすり身を食パンで挟んで揚げた長崎の揚げ物）／料亭仕込みの長崎角煮 琥珀（東坡煮とも呼ばれる豚の角煮）／長崎卓袱炊合せ（卓袱の大鉢にあたる5品盛り合わせの炊合せ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・火・木・金 11:30〜13:30（料理ラストオーダー12:30／ドリンク13:00）と 18:00〜22:00（料理21:00／ドリンク22:00）／水・土・祝前日 18:00〜22:00（料理21:00／ドリンク22:00）</td></tr>
+<tr><th>定休日</th><td class="off">日曜・祝日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市中町5-22</td></tr>
+<tr><th>予約</th><td>予約可。電話 095-825-4452（受付は日曜・祝日を除く10:00〜22:00）、公式サイトとホットペッパーグルメのネット予約。卓袱コースは2名から25名、カウンター限定で1名も可。コースは来店2日前14時以降のキャンセルに50%（前日75%、当日100%）のキャンセル料。 — <a href="tel:0958254452">☎ 095-825-4452</a> ／ <a href="https://kappoutoshi.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ハトシ・角煮・卓袱の炊合せを単品でも出す割烹で、8,000円からの卓袱コースと3,300円の昼の御膳があるため、料亭に偏りがちなこの章の中間の価格帯を埋める。カウンターで1人でも卓袱コースを頼める点は他の7店に無い。営業の根拠＝①店自身の日付つき情報：公式サイト（kappoutoshi.owst.jp・店名表記は「割烹とし【公式】」）のお知らせに 2026/08/20「ネット予約に関して」、2026/05/08「知られざる長崎（西海市）名物『すっぽん』。会席仕立てでお召し上がりませんか？」が日付つきで載っている。②閉店していないことの確認（2026-11-22 実施）：「割烹とし 長崎 閉店」（空白あり）と「割烹とし長崎閉店」（詰めた形）をYahoo! JAPAN検索で引いたが、閉店情報は1件も無かった。「割烹とし 長崎 移転」「割烹とし 長崎 リニューアル」で出たのは、2026年9月5〜6日付のNCC長崎文化放送の紹介記事（創業およそ50年、昼限定の定食）と、2023年3月に店内をフルリニューアルしたという記述で、移転・閉店ではなく内装の改装だった。公式SNSはアカウント名そのものを読もうとしたが、公式サイトにSNSへのリンクが無く、検索でも店名義のアカウントは確認できなかったので対象なし（これは閉店の証拠ではない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%89%B2%E7%83%B9%E3%81%A8%E3%81%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%B8%AD%E7%94%BA5-22">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://kappoutoshi.owst.jp/">公式サイト トップ。お知らせ 2026/08/20・2026/05/08、営業時間・定休日・席数53席・支払い方法 2026-11-22 取得</a> / <a href="https://kappoutoshi.owst.jp/menu/">公式サイト お品書き（コース）。長崎卓袱コース松竹梅とランチ御膳の価格 2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000113109/">ホットペッパーグルメ 店舗ページ。掲載写真（料理・店内・外観）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000113109/photo/">ホットペッパーグルメ 写真ページ。長崎ハトシ・長崎角煮 琥珀・長崎卓袱炊合せなどの品名 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-shippoku-higuchi">
+<img class="hero" src="img/nagasaki/nagasaki-shippoku-higuchi.jpg" alt="大衆割烹 樋口 築町店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-shippoku-higuchi_exterior.jpg" alt="大衆割烹 樋口 築町店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#e34948;">8</span>大衆割烹 樋口 築町店<span class="yomi">たいしゅうかっぽう ひぐち つきまちてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">創業は昭和30年。一度は店を閉じたが、2019年12月6日に築町の地へ戻ってグランドオープンした。総席数117席で、カウンター席・個室席・小上がり席があり、長崎の街を見下ろす個室もある。最大117名の貸切に対応。個室利用は1人330円。席の利用は2時間まで。支払いはクレジットカード各種、交通系を含む電子マネー、PayPay・楽天ペイ・au PAYに対応。全席禁煙で喫煙専用室がある。コース予約は来店2日前17時以降のキャンセルに100%のキャンセル料がかかる。15:00〜17:00はテイクアウトのみ。昼は1,280円の週替わり定食から2,980円のステーキ御膳まであり、長崎の角煮・鯨・からすみ・五島うどんなどを単品でも頼める。同じ建物にホテルH2が入る。</div>
+<div class="sig"><b>一皿:</b>長崎 角煮御膳（本日の大鉢5種、長崎角煮と季節野菜、特製茶わん蒸し、ご飯、味噌汁で1,880円。昼限定）／長崎名物 鯨カツ（830円）とくじら盛り合わせ（3種1,980円／5種2,980円）／生からすみ大根（580円）・生からすみ（出汁付き・一人前680円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:00〜15:00（ラストオーダー14:30）／夜 17:00〜22:00（ラストオーダー21:30）。15:00〜17:00はテイクアウトのみ</td></tr>
+<tr><th>定休日</th><td class="off">第一・第三月曜日（祝日の場合は火曜日）。大晦日・元旦</td></tr>
+<tr><th>住所</th><td>長崎県長崎市築町5-11 2F</td></tr>
+<tr><th>予約</th><td>予約可。電話 095-801-1112（予約の電話は9:00〜11:30と14:00〜18:00）、公式サイトのネット予約、ホットペッパーグルメ。コースは来店2日前17時以降のキャンセルに100%のキャンセル料。席の利用は2時間まで。 — <a href="tel:0958011112">☎ 095-801-1112</a> ／ <a href="https://taishuukappou-higuchi.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎の角煮・鯨・からすみ・五島うどんを単品の値段で出す大衆割烹で、コース予約が要る料亭が並ぶこの章に、1,880円の角煮御膳という日常の入口を加える。創業昭和30年で、築町商店街の真上という立地も長崎らしい。営業の根拠＝①店自身の日付つき情報：公式サイト（taishuukappou-higuchi.com）の記事に 2026-11-21「長崎おせち｜全商品完売のお知らせ」、2026-11-04「【催事出店のお知らせ】東武百貨店 池袋店『大長崎展』へ初出店（11/5〜11/10）」、2026-10-23「【11月26日(木)開催】長崎推し魚・本マグロを食べ尽くす！」が日付つきで並ぶ（サイトの公開データで確認）。ホットペッパーグルメの店舗ページにも「2026/09/12 更新」。②閉店していないことの確認（2026-11-22 実施）：「大衆割烹樋口 築町 閉店」（空白あり）と「大衆割烹樋口築町閉店」（詰めた形）をYahoo! JAPAN検索で引いたが、築町店の閉店情報は無く、出てきたのは2019年11月20日のグランドオープンの告知（以前の店を閉じて6年ぶりに築町へ戻ったという文脈）と、同じグループの別店舗の閉店案内だった。「大衆割烹樋口 築町 移転」「大衆割烹樋口 築町 リニューアル」でも移転情報は無く、2023年12月のメニュー刷新の記事が出ただけだった。公式SNSはアカウント名そのものを読み、Instagram が「大衆割烹樋口 築町店（@tsukimachi_higuchi）」であることを確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E8%A1%86%E5%89%B2%E7%83%B9%20%E6%A8%8B%E5%8F%A3%20%E7%AF%89%E7%94%BA%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E7%AF%89%E7%94%BA5-11%202F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（taishuukappou-higuchi.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://taishuukappou-higuchi.com/">公式サイト トップ。住所・電話・営業時間・店休日 2026-11-22 取得</a> / <a href="https://taishuukappou-higuchi.com/lunch/">公式サイト お昼のメニュー。長崎角煮御膳1,880円ほかの価格（ページ更新 2026-10-06）2026-11-22 取得</a> / <a href="https://taishuukappou-higuchi.com/dinner/">公式サイト 夜のメニュー。特製長崎角煮880円・鯨カツ830円・くじら盛り合わせ・生からすみ（ページ更新 2026-09-09）2026-11-22 取得</a> / <a href="https://taishuukappou-higuchi.com/2026/11/21/4230/">公式サイト 新着記事。長崎おせち全商品完売のお知らせ（2026-11-21）2026-11-22 取得</a> / <a href="https://taishuukappou-higuchi.com/2026/11/04/4254/">公式サイト 新着記事。東武百貨店池袋店「大長崎展」初出店（2026-11-04）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001257677/">ホットペッパーグルメ 店舗ページ。総席数117席・定休日・駐車場・支払い方法（2026/09/12 更新）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-champon" class="c-brown">ちゃんぽん・皿うどん</h2>
+<div class="card" id="c-nagasaki-champon-shikairou">
+<img class="hero" src="img/nagasaki/nagasaki-champon-shikairou.jpg" alt="中華料理 四海樓 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-champon-shikairou_exterior.jpg" alt="中華料理 四海樓 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">9</span>中華料理 四海樓<span class="yomi">ちゅうかりょうり しかいろう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1899（明治32）年に唐人屋敷跡の広馬場町で創業し、1973（昭和48）年に現在の松が枝町へ移った長崎最古の中華料理店。創業者の陳平順が中国人留学生や華僑のために考案した麺料理が「ちゃんぽん」の始まりで、その派生として「皿うどん」も生まれたと公式サイトが案内している。建物は5階が長崎港を見下ろす展望レストラン、2階がちゃんぽんミュージアム、1階が売店という構成。全80席。支払いは現金・カード・交通系電子マネーに対応（長崎市公式観光サイト 店舗情報）。レストランの席は予約を受け付けておらず、昼夜とも最終入店時刻が決まっているうえ混雑時には早まる。昼の部の最終入店は14時なので、観光の動線に組み込むなら早めに向かうのが確実。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（鶏ガラに豚骨を少しブレンドしたスープ、唐灰汁入りの太麺、錦糸玉子をのせた9種の具）／皿うどん・細麺（揚げた極細麺にとろみのある甘めのあん）／東坡扣肉（やわらかく煮た角煮を饅頭にはさんだもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>レストラン 昼の部 11:30〜15:00（最終入店14:00、混雑時には早まる）／夜の部 17:00〜20:00（最終入店19:00、混雑時には早まる）。1階売店 10:00〜17:30（公式サイト「営業のご案内」2026.10.25）</td></tr>
+<tr><th>定休日</th><td class="off">不定休。公式サイトが月ごとに休業日を告知しており、2026年は10/28（水）、11/11（水）・11/25（水）、12/2（水）・12/16（水）・12/30（水）・12/31（木）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市松が枝町4-5</td></tr>
+<tr><th>予約</th><td>レストラン席の予約は受け付けていない。個室のみ、2営業日前までに4名以上・コース料理の注文で受け付ける。受付は電話095-822-1296またはFAX095-826-7353で、問い合わせ時間は10時〜17時。ネット・アプリ・予約代行サービスからの予約は一切不可（公式サイト 2026.10.25） — <a href="tel:0958221296">☎ 095-822-1296</a> ／ <a href="https://shikairou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ちゃんぽん・皿うどんの発祥店で、この章の起点に置く必要がある。新地中華街の外（松が枝町）にあるため中華街の章とも重ならない。営業の根拠＝①店自身の情報: 公式サイト shikairou.com の「ご案内」カテゴリに掲載された記事「営業のご案内」（2026.10.25）を 2026-11-22 に直読みし、現行の営業時間（昼11:30〜15:00／夜17:00〜20:00）と2026年10〜12月の休業日、予約の取り扱いを確認した。同サイトには「2026年 長崎華僑の祭事」（2026.01.01）もある。②閉店していないことの確認3通り: (a)「四海樓 長崎 閉店」（空白あり）と「四海樓長崎閉店」（詰めた形）の2通りで検索（2026-11-22、Yahoo!検索）。閉店として出てくるのは佐世保店・熊本の中華飯店四海楼・大阪のパチンコ店などの同名店で、長崎市松が枝町の四海樓の閉店を伝えるページは0件。(b) 公式SNS＝公式サイトにSNSへのリンクが無く、Yahoo!検索でも公式アカウントを確認できなかったため「対象なし」。(c)「四海樓 長崎 移転」「四海樓長崎移転」「四海樓 長崎 リニューアル」で検索し、出てくるのは1973年の松が枝町への移転と1999年の店舗改築という公式サイト記載の沿革のみで、近年の移転・閉店の告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E5%9B%9B%E6%B5%B7%E6%A8%93%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%9D%BE%E3%81%8C%E6%9E%9D%E7%94%BA4-5">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（shikairou.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://shikairou.com/information/info/">公式サイト「営業のご案内」。営業時間・2026年10〜12月の休業日・予約の取り扱い（2026.10.25）2026-11-22 取得</a> / <a href="https://shikairou.com/history/">公式サイト「四海樓の歴史」。1899年創業・1973年の松が枝町への移転（2026-11-22 時点）2026-11-22 取得</a> / <a href="https://shikairou.com/champon/">公式サイト「ちゃんぽんの由来」。創業者 陳平順による考案の経緯 2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/732/">長崎市公式観光サイト 店舗情報「中華料理 四海樓」。住所・電話・全80席・支払い方法・駐車場なし（2022.09.05）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/feature/natsu_champon">長崎市公式観光サイト 観光特集「毎日食べたい、ちゃんぽんの名店“5選”」。四海樓の調理と電停からの行き方（構造化データの記事更新日 2026-03-06）2026-11-22 取得</a> / <a href="https://rurubu.jp/andmore/article/24457">るるぶ&amp;more.「【長崎】ちゃんぽんの名店6選」。ちゃんぽん1430円・皿うどん（細麺）1430円（2026.03.05）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-champon-edobishi">
+<img class="hero" src="img/nagasaki/nagasaki-champon-edobishi.jpg" alt="ちゃんぽん皿うどん専門 江戸びし 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-champon-edobishi_exterior.jpg" alt="ちゃんぽん皿うどん専門 江戸びし 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">10</span>ちゃんぽん皿うどん専門 江戸びし<span class="yomi">ちゃんぽんさらうどんせんもん えどびし</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1970（昭和45）年に先代が脱サラして開いたちゃんぽん・皿うどんの専門店。長崎市公式観光サイトの特集によれば、スープは豚コツの割合が多く濃厚だが、豚コツの臭みが苦手だった先代が部位を選び抜いた結果、後口はすっきりしている。麺は長崎県内だけで製造が許されている唐灰汁入り。席は1階がテーブル9席、2階がテーブル20席と座敷10席で、宴会の予約も受ける。支払いは現金のみ。昼は11時から、夜は17時30分からの二部制で、昼の部は13時30分がラストオーダーと短い。平日の昼だけワンプレートランチ650円やちゃんぽんセット950円などの割安なセットが出る。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（豚コツ多めの濃厚なスープに唐灰汁入り麺、750円）／長崎特製ちゃんぽん（いくら・ほたて・大えびなど15種類の具を使う看板品、1,100円）／皿うどん・細めん（750円、太めんは50円増）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜ラストオーダー13:30／17:30〜ラストオーダー20:30（長崎市公式観光サイトの観光特集、記事更新日2026-03-06）。長崎市公式観光サイトの店舗情報（2022.09.09）は11:00〜14:00／17:30〜20:30と記載</td></tr>
+<tr><th>定休日</th><td class="off">不定休（長崎市公式観光サイト）。2022年の長崎市の冊子『長崎ちゃんぽんぼん』は日曜休と記載しており食い違うため、訪問前に電話で確認したい</td></tr>
+<tr><th>住所</th><td>長崎県長崎市江戸町1-6</td></tr>
+<tr><th>予約</th><td>宴会の予約は受け付けると長崎市公式観光サイトの店舗情報にある。ネット予約の窓口は無く、問い合わせは電話095-826-2903 — <a href="tel:0958262903">☎ 095-826-2903</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>店名に「ちゃんぽん皿うどん専門」と掲げる町中華で、観光地（出島・大波止）のすぐ横にありながら市民が普段使いする価格帯という点でこの章に必要。新地中華街の外にあり、中華の章とも重ならない。営業の根拠＝①店自身の日付つき情報は公式サイト・公式SNSとも見つからず、ホットペッパーグルメの掲載ページ（strJ000576331）は「掲載情報が正確でない可能性があります。本ページの情報は、Alikeなどが提供する情報、ユーザーの投稿、および外部から収集した情報を元に作成しています」と明記された非契約ページで、日付も利用者の来店日しか無かった。そのため長崎県の特例により公的機関の日付つき記事で代用した＝長崎市公式観光サイト（長崎国際観光コンベンション協会）の観光特集「毎日食べたい、ちゃんぽんの名店“5選”」で、店主への取材に基づく紹介記事。構造化データの dateModified が 2026-03-06T14:59:47+09:00 で、2026-11-22 に本文と店内メニュー写真を直読みして確認した。②閉店していないことの確認3通り: (a)「江戸びし 長崎 閉店」（空白あり）と「江戸びし長崎閉店」（詰めた形）の2通りで検索（2026-11-22、Yahoo!検索）。江戸びしの閉店を伝えるページは0件（検索に出る閉店告知は別店舗のもの）。(b) 公式SNSのアカウントはYahoo!検索でも確認できず「対象なし」。(c)「江戸びし 長崎 移転」「江戸びし 長崎 リニューアル」で各1回検索し、移転・改装の告知は0件（旧県庁舎の移転に触れた記事が混じるのみ）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%A1%E3%82%83%E3%82%93%E3%81%BD%E3%82%93%E7%9A%BF%E3%81%86%E3%81%A9%E3%82%93%E5%B0%82%E9%96%80%20%E6%B1%9F%E6%88%B8%E3%81%B3%E3%81%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B1%9F%E6%88%B8%E7%94%BA1-6">Googleマップで開く</a>
+<div class="src">写真: 長崎市公式観光サイト「travel nagasaki」（長崎国際観光コンベンション協会）（www.at-nagasaki.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.at-nagasaki.jp/feature/natsu_champon">長崎市公式観光サイト 観光特集「毎日食べたい、ちゃんぽんの名店“5選”」。スープ・唐灰汁入り麺・住所・電話・営業時間（構造化データの記事更新日 2026-03-06）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/1076/">長崎市公式観光サイト 店舗情報「ちゃんぽん皿うどん専門 江戸びし」。創業昭和45年・席数・支払い方法・宴会予約（2022.09.09）2026-11-22 取得</a> / <a href="https://play.nagasaki-visit.or.jp/news/1145.html">長崎市 冊子『長崎ちゃんぽんぼん VOL.1』（PLAY NAGASAKI 2022.09.13 公開）。江戸びしの掲載ページ 2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000576331/">ホットペッパーグルメ 江戸びし。住所・最寄駅（非契約の掲載ページ。営業確認の根拠には使っていない）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-champon-kyorakuen">
+<img class="hero" src="img/nagasaki/nagasaki-champon-kyorakuen.jpg" alt="めがね橋 共楽園 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-champon-kyorakuen_exterior.jpg" alt="めがね橋 共楽園 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">11</span>めがね橋 共楽園<span class="yomi">めがねばし きょうらくえん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">主なメニューがちゃんぽんと皿うどんだけという専門店で、長崎市公式観光サイトの特集は「平日でもお昼時には行列ができる人気店」と紹介している。スープは鶏ガラ100％を3〜4時間だけ煮出したもので、最初はあっさり、食べ進むほど野菜や豚肉の甘みが出てくる。長崎県観光連盟のながさき旅ネットは創業から70年以上と記載。ホットペッパーグルメの掲載（2020/01/07 更新）によれば総席数26席でカウンターとテーブル、クレジットカード・電子マネー・QRコード決済はいずれも利用不可、駐車場なし、土日祝は全面禁煙。昼の部は14時30分、夜の部は19時30分がラストオーダーで、通し営業ではない点に注意。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（鶏ガラ100％を3〜4時間煮出したスープに野菜と豚肉、850円。店のメニュー板に「不動の人気No.1」とある）／皿うどん・細麺（パリパリの極細麺に甘めのあん、900円。地元では途中からソースで味を変える）／そぼろ皿うどん（もちもちの太麺に具材の旨みを吸わせた焼きそば風であんかけではない、900円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜ラストオーダー14:30／17:00〜ラストオーダー19:30（長崎市公式観光サイトの観光特集、記事更新日2026-03-06）。ホットペッパーグルメの掲載（2020/01/07 更新）は11:00〜15:00（料理L.O.14:30）／17:00〜20:00（料理L.O.19:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市古川町5-4 kyoビル1階</td></tr>
+<tr><th>予約</th><td>ネット予約の窓口は無く、ホットペッパーグルメの掲載にも予約可否の記載が無い。問い合わせは電話095-822-8257 — <a href="tel:0958228257">☎ 095-822-8257</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>ちゃんぽんと皿うどんだけで勝負する市民の日常店で、眼鏡橋という観光動線の上にある。新地中華街の外なので中華の章と重ならない。営業の根拠＝①店自身の日付つき情報は公式サイト・公式SNSとも見つからず、ホットペッパーグルメの掲載ページ（strJ000113220）の更新日は2020/01/07で2025〜2026年ではなかった。そのため長崎県の特例により公的機関の日付つき記事で代用した＝長崎市公式観光サイト（長崎国際観光コンベンション協会）の観光特集「毎日食べたい、ちゃんぽんの名店“5選”」で、構造化データの dateModified が 2026-03-06T14:59:47+09:00。2026-11-22 に本文・店内メニュー板の写真・外観写真を直読みして確認した。②閉店していないことの確認3通り: (a)「共楽園 長崎 閉店」（空白あり）と「共楽園長崎閉店」（詰めた形）の2通りで検索（2026-11-22、Yahoo!検索）。共楽園の閉店を伝えるページは0件（検索に出る閉店は松が枝町の「北京」など別店舗）。(b) 公式SNSのアカウントはYahoo!検索でも確認できず「対象なし」。(c)「共楽園 長崎 移転」「共楽園 長崎 リニューアル」で各1回検索し、出てくるのは約20年前に袋橋から現在地へ移ったという過去の経緯のみで、近年の移転・改装の告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%81%E3%81%8C%E3%81%AD%E6%A9%8B%20%E5%85%B1%E6%A5%BD%E5%9C%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%8F%A4%E5%B7%9D%E7%94%BA5-4%20kyo%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: 長崎市公式観光サイト「travel nagasaki」（長崎国際観光コンベンション協会）（www.at-nagasaki.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.at-nagasaki.jp/feature/natsu_champon">長崎市公式観光サイト 観光特集「毎日食べたい、ちゃんぽんの名店“5選”」。鶏ガラ100％スープ・住所・電話・営業時間・火曜休、店内メニュー板と外観の写真（構造化データの記事更新日 2026-03-06）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000113220/">ホットペッパーグルメ 共楽園。住所（kyoビル1階）・賑橋電停から徒歩1分内・総席数26席・カード/電子マネー/QR不可・駐車場なし（2020/01/07 更新）2026-11-22 取得</a> / <a href="https://www.nagasaki-tabinet.com/eat/64963">ながさき旅ネット（長崎県観光連盟）共楽園。創業から70年以上、昔ながらの製法で鶏ガラのあっさりしたスープ 2026-11-22 取得</a> / <a href="https://play.nagasaki-visit.or.jp/news/1145.html">長崎市 冊子『長崎ちゃんぽんぼん VOL.1』（PLAY NAGASAKI 2022.09.13 公開）。共楽園の掲載ページ 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-champon-houraiken">
+<img class="hero" src="img/nagasaki/nagasaki-champon-houraiken.jpg" alt="寶來軒 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-champon-houraiken_exterior.jpg" alt="寶來軒 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">12</span>寶來軒<span class="yomi">ほうらいけん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">公式サイトが「創業80年」と掲げる長崎の中華料理店。もとは新地中華街の宝来軒の別館にあたり、令和元年5月1日に「寶來軒別館」から「寶來軒」へ屋号を変更した（公式サイト 寶來軒の歴史）。1階はバリアフリー対応のレストラン席で、当日来店した客を順に案内する方式。予約を受けるのは2階以上の個室でコース料理を頼む場合だけで、1階のレストラン席は予約不可と公式サイトが明記している。コースは平日5,500円〜、土日祝7,500円〜で4名から、個室の利用は2時間以内。3階に120名まで入る大宴会場、4階に法要会場がある。アラカルトは麺・飯類が1,200円台から。公式サイトは2026/11/20に「コースを秋冬メニューに更新いたしました」と告知している。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（1,300円）／皿うどん太麺（もっちりした太麺に具だくさんのあん、1,500円。鶏皿うどん太麺は1,600円）／ハトシ〈4個入〉（長崎名物のエビのすり身を食パンではさんで揚げたもの、1,200円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼の部 11:30〜15:00（ラストオーダー14:30）／夜の部 17:00〜20:30（ラストオーダー20:00）（公式サイト 2026-11-22 取得）</td></tr>
+<tr><th>定休日</th><td class="off">不定休。公式Instagramの店休日カレンダーで月ごとに告知（公式サイトに定休日の固定曜日の記載は無い）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市平野町5番23号</td></tr>
+<tr><th>予約</th><td>1階レストラン席は予約不可（当日来店のみ）。予約は2階以上の個室でコース料理を注文する場合のみで、4名から、電話095-846-2277で確定。キャンセル料は2日前まで0％、前日50％、当日100％（公式サイト） — <a href="tel:0958462277">☎ 095-846-2277</a> ／ <a href="https://www.houraiken-nagasaki.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎市の冊子『長崎ちゃんぽんぼん VOL.1』で掲載店14軒の筆頭（A）に挙げられた店で、るるぶ&amp;more.の皿うどん特集でも太麺タイプの代表に挙がる。原爆資料館・平和公園の見学とあわせて寄れる立地で、新地中華街の外にあるため中華の章と重ならない。1階は予約不可のアラカルト席が中心で、コース主体の店ではない。営業の根拠＝①店自身の情報: 公式サイト houraiken-nagasaki.com のトップページに「2026/11/20 コースを秋冬メニューに更新いたしました。」の告知があり、2026-11-22 に直読みして確認した。②閉店していないことの確認3通り: (a)「寶來軒 長崎 閉店」（空白あり）と「寶來軒長崎閉店」（詰めた形）の2通り、さらに「宝来軒 長崎 平野町 閉店」でも検索（2026-11-22、Yahoo!検索）。閉店が出てくるのは新地中華街にあった旧「宝来軒」（平成27年閉店）と、別館に統合された「新地宝来軒」で、いずれも公式サイトの沿革に記載のある別店舗。平野町の寶來軒の閉店を伝えるページは0件。(b) 公式SNSのアカウント名＝Instagram「houraiken」（表示名「寶來軒〜ほうらいけん〜」、プロフィールに「長崎の感動する中華料理店 平和公園・原爆資料館そば（旧店名 宝来軒別館）」）と Facebook「寶來軒- 旧宝来軒別館」を 2026-11-22 に確認。(c)「寶來軒 長崎 移転」「寶來軒 長崎 リニューアル」で各1回検索し、出てくるのは2018年5月の1階バリアフリー化と2026年秋冬コースの更新で、移転・閉店の告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%AF%B6%E4%BE%86%E8%BB%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%B9%B3%E9%87%8E%E7%94%BA5%E7%95%AA23%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 店舗公式サイト（static.wixstatic.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.houraiken-nagasaki.com/">公式サイト トップページ。「2026/11/20 コースを秋冬メニューに更新いたしました。」、営業時間、予約の取り扱い、会場の構成 2026-11-22 取得</a> / <a href="https://www.houraiken-nagasaki.com/アラカルトメニュー">公式サイト アラカルトメニュー。ちゃんぽん1,300円・皿うどん細麺1,400円・皿うどん太麺1,500円・ハトシ1,200円ほか（いずれも税込）2026-11-22 取得</a> / <a href="https://www.houraiken-nagasaki.com/寶來軒の歴史">公式サイト 寶來軒の歴史。令和元年5月1日に寶來軒別館から寶來軒へ屋号変更、新地宝来軒は別館と統合し閉店 2026-11-22 取得</a> / <a href="https://www.instagram.com/houraiken/">公式Instagram。アカウント名「houraiken」表示名「寶來軒〜ほうらいけん〜」2026-11-22 取得</a> / <a href="https://rurubu.jp/andmore/article/24464">るるぶ&amp;more.「【長崎】皿うどんの名店7選」。太麺タイプの代表として寶來軒、鶏皿うどん（太麺）1600円（2026.03.04）2026-11-22 取得</a> / <a href="https://play.nagasaki-visit.or.jp/news/1145.html">長崎市 冊子『長崎ちゃんぽんぼん VOL.1』（PLAY NAGASAKI 2022.09.13 公開）。掲載店Aとして寶來軒、駐車場あり 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-champon-sanpachi-dozamachi">
+<img class="hero" src="img/nagasaki/nagasaki-champon-sanpachi-dozamachi.jpg" alt="中華軽食 三八 銅座店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-champon-sanpachi-dozamachi_exterior.jpg" alt="中華軽食 三八 銅座店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">13</span>中華軽食 三八 銅座店<span class="yomi">ちゅうかけいしょく さんぱち どうざてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1963（昭和38）年10月3日、長崎くんちの庭見せの日に開業した中華軽食店。公式サイトは「長崎独自のラーメンの味を作りたい」という初代の味を各店舗で受け継いでいると書く。ちゃんぽんには創業当時から牡蠣を使い、野菜とイカ、牡蠣の風味と麺の香りを大切にしているという。銅座店は1階18席、2階30〜40席。ホットペッパーグルメの掲載（2021/03/26 更新）では総席数30席、全席禁煙、クレジットカード・電子マネー・QRコード決済はいずれも利用不可。同じ屋号で浜町店（浜町9-18／095-821-7001）と住吉店（住吉町11-20 1F／095-847-3838）があり、浜町店だけ平日ランチ限定のセットを出す。銅座店は夜が深く、飲んだ後の締めに使う客が多い。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（創業当時から牡蠣を使い、野菜とイカ、牡蠣で風味を出す。840円）／皿うどん（細麺は揚げ麺にさらっとした甘めのあん、太麺は歯ごたえ重視。890円）／ラーメン（三枚肉を2種類に味付けし、メンマ・ネギ・胡麻をのせる。660円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火曜〜金曜 18:00〜翌2:00／土・日 11:00〜14:30、18:00〜翌2:00（公式サイト 2026年11月13日更新）。ホットペッパーグルメの掲載（2021/03/26 更新）は火〜木・日・祝 11:30〜14:30／18:00〜翌1:00、金・土・祝前日は18:00〜翌2:00となっており食い違うため、新しい公式サイトの時間を採った</td></tr>
+<tr><th>定休日</th><td class="off">月曜日（祝日の場合は振替）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市銅座町14-11</td></tr>
+<tr><th>予約</th><td>ネット予約の窓口は無く、ホットペッパーグルメの掲載にも予約可否の記載が無い。問い合わせは電話095-821-3838 — <a href="tel:0958213838">☎ 095-821-3838</a> ／ <a href="https://sanpachi38.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1963年創業の長崎の中華軽食で、市民が日常で行く側の代表。深夜まで営業しており飲んだ後のちゃんぽん・皿うどんという長崎の食べ方を章に入れられる。新地中華街の外（銅座町）。営業の根拠＝①店自身の情報: 公式サイト sanpachi38.com のトップページに「★トップページ/三八の最新情報を更新しました！（2026年11月13日）」「★長崎歴史文化博物館のイベント！（2026年11月13日）」の告知があり、2026-11-22 に直読みして確認した（ページはShift_JISのため cp932 でデコードして読んだ）。同ページに銅座店の住所・電話・営業時間・席数・定休日も載っている。②閉店していないことの確認3通り: (a)「中華軽食 三八 銅座店 閉店」（空白あり）と「三八銅座店閉店」（詰めた形）の2通りで検索（2026-11-22、Yahoo!検索）。2024年11月に閉店したと複数の投稿が伝えるのは「三八ラーメン銅座本店」＝電話095-823-5530の【本店】で、公式サイトの店舗一覧からも本店は消えている。電話095-821-3838の銅座店は公式サイトに現役の店として掲載されており、閉店を伝えるページは0件。(b) 公式SNSのアカウントは公式サイトからYouTubeの動画1本へのリンクがあるだけでアカウントの提示が無く、Yahoo!検索でも公式アカウントを確認できなかったため「対象なし」。(c)「中華軽食 三八 長崎 移転」「中華軽食 三八 長崎 リニューアル」で各1回検索し、銅座店の移転・改装の告知は0件（本店閉店の話題と、浜町店が以前改装したという記述のみ）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E8%BB%BD%E9%A3%9F%20%E4%B8%89%E5%85%AB%20%E9%8A%85%E5%BA%A7%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8A%85%E5%BA%A7%E7%94%BA14-11">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://sanpachi38.com/">公式サイト トップページ。「三八の最新情報を更新しました！（2026年11月13日）」、銅座店・浜町店・住吉店の住所/電話/営業時間/席数/定休日、2025年の価格改定の告知 2026-11-22 取得</a> / <a href="https://sanpachi38.com/sanpachi_menyu2/index.html">公式サイト 料理メニュー弐。ちゃんぽん・特製ちゃんぽん・皿うどんの説明（牡蠣を使う、太麺と細麺の違い）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000113222/">ホットペッパーグルメ 三八 銅座店。住所・総席数30席・全席禁煙・カード/電子マネー/QR不可・駐車場なし・定休日月（2021/03/26 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000113222/food/">ホットペッパーグルメ 三八 銅座店 メニュー。ちゃんぽん840円・皿うどん890円・ラーメン660円・焼き飯690円（いずれも税込、2021/03/26 更新のページ）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/566/">長崎市公式観光サイト 店舗情報「中華軽食 三八 銅座店」。創業昭和38年、とんこつスープの昔懐かしいちゃんぽん、3店舗の役割（2022.09.09）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-champon-heiwarou">
+<img class="hero" src="img/nagasaki/nagasaki-champon-heiwarou.jpg" alt="平和楼 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-champon-heiwarou_exterior.jpg" alt="平和楼 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">14</span>平和楼<span class="yomi">へいわろう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">公式Facebookが「創業昭和28年。一つ一つ手作りにこだわり皆様に愛される店作りを目指しています」と掲げる町中華。長崎市公式観光サイトは担々麺の名店として紹介し、12種類の香辛料と自家製ラー油、ごまの風味を特徴に挙げている。長崎市の冊子『長崎ちゃんぽんぼん VOL.1』では鶏ガラ100％のスープで5時間じっくり煮込むちゃんぽんが取り上げられ、17時からの限定メニューがあると書かれている。席は16席と小さく、支払いは現金のみ。昼の部は14時30分、夜の部は20時で終わる二部制。公式Facebookは2026年11月12日・11月5日にも投稿しており、地元テレビの取材を受けた様子などを伝えている。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（鶏ガラを毎朝5時間煮込んだスープに野菜と海鮮、1,100円）／担々麺（12種類の香辛料と自家製ラー油、ごまの風味、900円）／皿うどん（長崎市公式観光サイトでちゃんぽん・皿うどんの店として分類されている。価格は未確認）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30／17:00〜20:00（長崎市公式観光サイト 店舗情報 2024.02.19）</td></tr>
+<tr><th>定休日</th><td class="off">木曜日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市万屋町4-3</td></tr>
+<tr><th>予約</th><td>予約についての記載は長崎市公式観光サイトの店舗情報にも公式SNSにも無く、ネット予約の窓口も無い。問い合わせは電話095-822-0931 — <a href="tel:0958220931">☎ 095-822-0931</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>創業70年を超える浜町の町中華で、ちゃんぽんのほかに担々麺という長崎では珍しい看板を持つ。16席の小さな店で、観光地ではなく市民の日常の側を章に入れられる。新地中華街の外（万屋町）。営業の根拠＝①店自身の情報: 公式Facebookページ（@HEIWAROU）の投稿で、2026年11月12日「V・ファーレン長崎で大活躍した飯尾竜太朗さんがランチにご来店」、2026年11月5日「先日 NCCスーパーJチャンネル長崎で放送された後継ぎグルメの『平和楼』のコーナーがYouTubeにアップされました」を 2026-11-22 に確認した（Facebook本体はログイン壁のため、Yahoo!検索の結果ページ上で投稿のURL・日付・本文を読んだ）。②閉店していないことの確認3通り: (a)「平和楼 長崎 万屋町 閉店」（空白あり）と「平和楼長崎閉店」（詰めた形）の2通りで検索（2026-11-22、Yahoo!検索）。閉店が出てくるのは福岡市天神に本店を置く同名の別会社「平和楼」が2022年3月に閉店した件で、長崎市万屋町の平和楼の閉店を伝えるページは0件。(b) 公式SNSのアカウント名＝Facebook「平和楼」（@HEIWAROU）と Instagram「heiwarou_nagasaki」。後者は長崎市公式観光サイトの店舗情報がHP欄に掲載している。(c)「平和楼 長崎 移転」「平和楼 長崎 リニューアル」で各1回検索し、近年の移転・改装の告知は0件（先代の時代に移ったという過去の経緯の記述のみ）。 【写真について】この店は公式サイトが無く、公式Facebook・Instagramは画像の直URLが取れない（Instagramはログイン壁、Facebookも同様）。ホットペッパーグルメの掲載ページ（strJ000575978）は非契約で店の写真が1枚も無い。使えるのは長崎市公式観光サイトの店舗情報に載る3枚だけで、うち2枚は同じ担々麺の別サイズのため、料理・店内の写真は2本しか置けなかった（必要本数3〜10に1本足りない）。長崎新地中華街商店街振興組合のサイトは写真の転載を禁じているため使っていない。差し替え候補の「中華菜館 福壽」も調べたが、公式サイトが無く、ホットペッパーグルメの掲載写真は座敷とテーブル席の2枚＋ロゴの図案＋外観1枚で、料理・店内はやはり2本しか取れなかったため（写真の本数は改善しない）、新地中華街の外にあり外観写真もある当店を残した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B9%B3%E5%92%8C%E6%A5%BC%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%B8%87%E5%B1%8B%E7%94%BA4-3">Googleマップで開く</a>
+<div class="src">写真: 長崎市公式観光サイト「travel nagasaki」（長崎国際観光コンベンション協会）（www.at-nagasaki.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.at-nagasaki.jp/gourmet/shop/5972/">長崎市公式観光サイト 店舗情報「平和楼」。住所・電話・営業時間・木曜休・16席・現金のみ・駐車場なし・公式Instagram @heiwarou_nagasaki（2024.02.19）2026-11-22 取得</a> / <a href="https://www.facebook.com/HEIWAROU">公式Facebookページ「平和楼」（@HEIWAROU）。創業昭和28年の紹介文、2026年11月12日・11月5日の投稿 2026-11-22 取得</a> / <a href="https://play.nagasaki-visit.or.jp/news/1145.html">長崎市 冊子『長崎ちゃんぽんぼん VOL.1』（PLAY NAGASAKI 2022.09.13 公開）。掲載店Iとして平和楼、ちゃんぽん1,100円・鶏ガラ100％・毎朝5時間煮込む 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-champon-kyokaen">
+<img class="hero" src="img/nagasaki/nagasaki-champon-kyokaen.jpg" alt="中国名菜 京華園 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-champon-kyokaen_exterior.jpg" alt="中国名菜 京華園 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">15</span>中国名菜 京華園<span class="yomi">ちゅうごくめいさい きょうかえん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1944（昭和19）年に長崎市大浦の小さな食堂「京華」として始まり、1949年に新地町（現在の中華街）へ移って「中華料理京華園」と改名した店。増改築を重ねて現在は鉄筋コンクリート6階建てで、1階がレストラン、上階が宴会場と婚礼用の洋室という構成。従業員60名の大型店で団体客も受けられる。ちゃんぽんは器にはんぺんやもやしがどっさり盛られ、鶏ガラと豚コツがほぼ同じ割合の少し透き通ったスープが特徴で、魚介の旨みと甘みが出る。1階レストランはクレジットカードと電子マネーが使えるが、予約は受け付けておらず当日並ぶ方式。昼は14時30分、夜は19時30分が最終入店。テイクアウトもできる。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（鶏ガラと豚コツがほぼ同割の少し透き通ったスープに、はんぺん・もやしなどの具、1,200円）／皿うどん（細麺・太麺を選べる。太麺にはあんがかかっていない、1,200円）／東坡扣肉（豚角煮まんじゅう、1,700円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼の部 11:00〜15:00（最終入店14:30）／夜の部 17:00〜20:30（最終入店19:30）。混雑時は最終入店時間が異なる場合がある（公式サイト 2026-11-22 取得）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイト 会社概要）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市新地町9番7号</td></tr>
+<tr><th>予約</th><td>1階レストラン席の予約は受け付けていない（公式サイトのレストランメニューのページに「＊レストランの御予約はお受けできません。」と明記）。宴会・コース料理は電話095-821-1507で受け付け、キャンセル規定が公式サイトに掲示されている — <a href="tel:0958211507">☎ 095-821-1507</a> ／ <a href="http://www.kyokaen.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎新地中華街の北門前という分かりやすい場所にあり、ちゃんぽん・皿うどんを看板に掲げる1944年創業の大型店。長崎市公式観光サイトの観光特集「毎日食べたい、ちゃんぽんの名店“5選”」にも選ばれている。中華の章の担当がこの4店（江山楼・京華園・会楽園・中華菜館 福壽）をちゃんぽんの章の領分として外したため、親の指示でこの章に入れた。営業の根拠＝①店自身の情報: 公式サイト kyokaen.co.jp の NEW TOPICS に「2025.05.9 旅行会社各位様（6月1日より清算の方法…）」と「2025.04.15 ５月店休日のお知らせ」の記事があり、2026-11-22 に直読みして確認した。同サイトに現行の営業時間・会社概要・レストランメニューの価格も載っている。②閉店していないことの確認3通り: (a)「京華園 長崎 閉店」（空白あり）と「京華園長崎閉店」（詰めた形）の2通りで検索（2026-11-22、Yahoo!検索）。京華園の閉店を伝えるページは0件で、検索に出る閉店は同じ中華街の別店「慶華園」（2022年5月25日閉店）と、中華街全体の閉店時刻が早いという一般的な記述。(b) 公式SNSのアカウントは公式サイトからのリンクが無く、Yahoo!検索でも確認できなかったため「対象なし」。(c)「京華園 長崎 移転」「京華園 長崎 リニューアル」で各1回検索し、出てくるのは1949年の新地町への移転と1995年の全面改装という公式サイトの沿革のみで、近年の移転・閉店の告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E5%90%8D%E8%8F%9C%20%E4%BA%AC%E8%8F%AF%E5%9C%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA9%E7%95%AA7%E5%8F%B7">Googleマップで開く</a>
+<div class="src">写真: 長崎市公式観光サイト「travel nagasaki」（長崎国際観光コンベンション協会）（www.at-nagasaki.jp）より引用 / 外観: 出典ページ / 参照元: <a href="http://www.kyokaen.co.jp/">公式サイト トップページ。NEW TOPICS「2025.05.9 旅行会社各位様」「2025.04.15 ５月店休日のお知らせ」、営業時間、レストランの予約不可 2026-11-22 取得</a> / <a href="http://www.kyokaen.co.jp/restaurant">公式サイト レストランメニュー。ちゃんぽん1,200円・皿うどん（細麺・太麺）1,200円・韮菜拌麺1,100円・東坡扣肉1,700円（表示価格は税込）、カード/電子マネー利用可 2026-11-22 取得</a> / <a href="http://www.kyokaen.co.jp/info">公式サイト 京華園について（会社概要・社長挨拶・会社沿革）。1944年創業、1949年に新地町へ移転、従業員60名、店休日は不定休 2026-11-22 取得</a> / <a href="http://www.kyokaen.co.jp/parking-lot">公式サイト 駐車場について。「当店には駐車場がございません。提携している駐車場もございません」2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/feature/natsu_champon">長崎市公式観光サイト 観光特集「毎日食べたい、ちゃんぽんの名店“5選”」。京華園のスープの配合と具、北門前という立地（構造化データの記事更新日 2026-03-06）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/702/">長崎市公式観光サイト 店舗情報「中国名菜 京華園」（2022.09.05）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-champon-kairakuen">
+<img class="hero" src="img/nagasaki/nagasaki-champon-kairakuen.jpg" alt="中国料理館 会楽園 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-champon-kairakuen_exterior.jpg" alt="中国料理館 会楽園 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">16</span>中国料理館 会楽園<span class="yomi">ちゅうごくりょうりかん かいらくえん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">中国福建省出身の先代が昭和2（1927）年に創業した中国料理店。公式サイトは和風個室や大広間を備え、中国雑貨を飾った店内と案内している。長崎市公式観光サイトの観光特集によれば、ちゃんぽんのスープは鶏ガラ7に対して豚コツ3の配合で、素材の風味を閉じ込めるため強火で一気に仕上げる。鶏ガラ多めのためクリーミーな味わいで、夜のラストオーダーは19時50分と中華街のなかでは遅い部類。2024年11月には特製ちゃんぽんと特製皿うどんにホタテやアワビなどの海鮮を加えてグレードアップしたと公式Instagramが告知している。皿うどんは細麺・太麺とも1,200円。豚角煮を蒸し饅頭ではさむ東坡肉は1個から頼める。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（鶏ガラ7・豚コツ3のブレンドスープを強火で仕上げる、1,200円）／皿うどん（細麺・太麺とも1,200円）／東坡肉（豚バラをやわらかく煮た角煮を蒸し饅頭にはさむ、1個650円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:00〜15:15（ラストオーダー14:30）／ディナー 17:00〜21:00（ラストオーダー19:50）。お座敷の入店は19:00まで（公式サイト 会社概要 2026-11-22 取得）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイト 会社概要）。長崎ランタンフェスティバルの期間中は火曜が店休日と公式Instagramが告知</td></tr>
+<tr><th>住所</th><td>長崎県長崎市新地町10-16</td></tr>
+<tr><th>予約</th><td>公式サイトに予約フォームは無く、問い合わせは電話095-822-4261（FAX095-824-2483）。コース料理・ご宴会・ご法事のプランを公式サイトが案内している — <a href="tel:0958224261">☎ 095-822-4261</a> ／ <a href="https://www.kairakuen.tv/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>昭和2年創業の長崎新地中華街の老舗で、ちゃんぽん・皿うどんを単品の看板に据えている。中華の章の担当がこの4店（江山楼・京華園・会楽園・中華菜館 福壽）をちゃんぽんの章の領分として外したため、親の指示でこの章に入れた。営業の根拠＝①店自身の情報: 公式Instagram「会楽園」（@kairakuen_nagasaki）の投稿。プロフィール欄に出ている最新の投稿が「2026ランタンフェスティバル開幕しました。2月6日〜2月23日までの18日間…ランタン期間中の火曜日は店休日となります」で、ほかに2026年7月29日付の動画投稿があることを 2026-11-22 に確認した（Instagram本体はログイン壁のため、Yahoo!検索の結果ページ上でアカウント名・投稿日・本文を読んだ）。公式サイト kairakuen.tv のブログは2020年7月31日で更新が止まっているため、①の根拠には使っていない（営業時間・住所・価格の出典としては使った）。②閉店していないことの確認3通り: (a)「会楽園 長崎 閉店」（空白あり）と「会楽園長崎閉店」（詰めた形）の2通りで検索（2026-11-22、Yahoo!検索）。店そのものの閉店を伝えるページは0件で、検索に出るのは出前館（宅配サービス）での取り扱いを10月末で終えるという公式Facebookの告知と、中華街全体の閉店時刻が早いという一般的な記述。(b) 公式SNSのアカウント名＝Instagram「会楽園」（@kairakuen_nagasaki）とFacebook「会楽園」（facebook.com/kairakuen）。(c)「会楽園 長崎 移転」「会楽園 長崎 リニューアル」で各1回検索し、出てくるのは2024年11月の特製ちゃんぽん・特製皿うどんの内容刷新と2019年6月のホームページ刷新のみで、店舗の移転・閉店の告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%E9%A4%A8%20%E4%BC%9A%E6%A5%BD%E5%9C%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA10-16">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.kairakuen.tv）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.kairakuen.tv/company/">公式サイト 会社概要。住所・電話・FAX・営業時間・不定休・昭和2年創業・アクセス 2026-11-22 取得</a> / <a href="https://www.kairakuen.tv/menu/">公式サイト お品書き。ちゃんぽん1,200円・皿うどん（細麺/太麺）1,200円・特製ちゃんぽん2,000円・東坡肉1個650円（いずれも税込）2026-11-22 取得</a> / <a href="https://www.instagram.com/kairakuen_nagasaki/">公式Instagram。アカウント名「会楽園」（@kairakuen_nagasaki）。2026年ランタンフェスティバルの投稿、2026年7月29日の動画 2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/feature/natsu_champon">長崎市公式観光サイト 観光特集「毎日食べたい、ちゃんぽんの名店“5選”」。会楽園は掲載5店には入らないが、同特集の中華街の記述を参照（構造化データの記事更新日 2026-03-06）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/706/">長崎市公式観光サイト 店舗情報「中国料理館 会楽園」。創業90年を越える、営業時間、不定休月3回（2022.09.05）2026-11-22 取得</a> / <a href="https://rurubu.jp/andmore/article/24457">るるぶ&amp;more.「【長崎】ちゃんぽんの名店6選」。会楽園のスープは鶏ガラ7・豚コツ3の黄金比（2026.03.05）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-champon-kouzanrou-shinkan">
+<img class="hero" src="img/nagasaki/nagasaki-champon-kouzanrou-shinkan.jpg" alt="中国菜館 江山楼 長崎中華街新館 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#8a5a2b;">17</span>中国菜館 江山楼 長崎中華街新館<span class="yomi">ちゅうごくさいかん こうざんろう ながさきちゅうかがいしんかん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1946（昭和21）年9月に王玉官・王梅瑛が創業した中国料理店で、現在の店主は王国雄。さだまさしが作詞作曲したイメージソングがある。長らく本店（新地町12-2）と新館の2店体制だったが、本店は2022年に閉店し、いまは東門横の新館に集約されている。ホットペッパーグルメの掲載（2020/01/07 更新）では総席数400席、最大宴会収容150人、カードはVISA・マスターが使え、分煙。個室・宴会場はコース料理での利用に限られ、前日までの予約・大人4名以上から。飲み放題プランは2023年10月1日で取りやめた。15時から17時は準備中で食事が出ないので、昼を外すと夕方まで待つことになる。通信販売は2026年9月30日で終わり、持ち帰りは店頭カウンターでの販売になった。</div>
+<div class="sig"><b>一皿:</b>ちゃんぽん（鶏ガラと豚コツを合わせた濃厚なスープ、1,760円）／皿うどん（細麺・太麺とも1,760円）／特上ちゃんぽん・特上皿うどん（繁忙期はレストラン席でこの特上だけの提供になる期間がある、2,750円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>開店11:00（平日は11:30）／15:00〜17:00は準備中で食事の提供なし／受付終了20:00（状況により早まる）／閉店20:30（公式サイト「営業案内」2026年11月2日更新 2026-11-22 取得）</td></tr>
+<tr><th>定休日</th><td class="off">毎週月曜・火曜（祝日に当たる場合は別日に振替）、お盆・年末年始。2026年は11/2〜3を11/4（水）へ、11/17（火）を11/19（木）へ、11/23を11/25（水）へ振替、12/15と12/29は店休日を返上、12/31〜1/1は休み（公式サイト）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市新地町13-13</td></tr>
+<tr><th>予約</th><td>レストラン席は予約不可（当日来店）。個室・宴会場はコース料理での利用に限られ、前日までの予約・大人4名以上から。当日の予約は受け付けない。コースは1名6,000・8,000・10,000・12,000・15,000円（税・サービス料別）。問い合わせは電話095-820-3735（代） — <a href="tel:0958203735">☎ 095-820-3735</a> ／ <a href="http://www.kouzanrou.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>1946年創業で「王さんのちゃんぽん」として知られる長崎新地中華街の老舗。中華の章の担当がこの4店（江山楼・京華園・会楽園・中華菜館 福壽）をちゃんぽんの章の領分として外したため、親の指示でこの章に入れた。中華街本店ではなく新館を採ったのは、条件②の調査で本店の閉店が確認できたため（下記）。営業の根拠＝①店自身の情報: 公式サイト kouzanrou.com のトップページに「【営業案内：2026年11月2日（月）更新】」として現行の開店・準備中・受付終了・閉店の各時刻と11〜12月の店休日カレンダー、「＜AIによるハッキング＆情報流失について：2026/10/22現在＞」、「通信販売の終了のお知らせ（2026年9月30日午後2時まで）」が掲示されており、2026-11-22 に直読みして確認した。②閉店していないことの確認3通り: (a)「江山楼 長崎 閉店」（空白あり）と「江山楼長崎閉店」（詰めた形）、さらに「江山楼 中華街本店 閉店」でも検索（2026-11-22、Yahoo!検索）。「江山楼中華街本店を閉店いたします」という店の挨拶文が2022年に出ており、本店（新地町12-2）は閉店していた。 新館（新地町13-13）は公式サイトの店舗紹介に現役の店として載っており、公式サイトの営業案内も2026年11月2日更新なので営業中。長崎市公式観光サイトの店舗情報（2022.09.09）は本店のまま更新されていないため、住所・電話は公式サイトと長崎新地中華街商店街振興組合の店舗ページで取り直した。(b) 公式SNSのアカウントは公式サイトからのリンクが無く、Yahoo!検索でも確認できなかったため「対象なし」。(c)「江山楼 長崎 移転」「江山楼 長崎 リニューアル」で各1回検索し、出てくるのは本店の閉店に伴う新館への集約と、過去の長崎駅店・諫早店の閉店の記録のみで、新館の移転・閉店の告知は0件。 【写真について】公式サイトの画像は本文・店舗紹介とも長辺275pxで、手引きの下限400pxに届かないため使えなかった。使えたのはホットペッパーグルメの掲載写真3枚（店内）のみで、料理の写真と建物正面の外観写真はこの店に紐づくものが許可された出どころのどこにも無かった（長崎市公式観光サイトの写真は閉店した本店のもの、長崎新地中華街商店街振興組合のサイトは写真の転載を禁止）。そのため ext_urls は0本とした。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E8%8F%9C%E9%A4%A8%20%E6%B1%9F%E5%B1%B1%E6%A5%BC%20%E9%95%B7%E5%B4%8E%E4%B8%AD%E8%8F%AF%E8%A1%97%E6%96%B0%E9%A4%A8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA13-13">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="http://www.kouzanrou.com/">公式サイト トップページ。「営業案内：2026年11月2日（月）更新」の営業時間・店休日カレンダー・振替、通信販売終了（2026年9月30日）、2026/10/22現在の告知 2026-11-22 取得</a> / <a href="http://www.kouzanrou.com/shop.html">公式サイト お店のご案内。長崎中華街新館の住所（新地町13-13）・電話（095-820-3735）・個室/宴会場はコース料理限定・専用駐車場なし 2026-11-22 取得</a> / <a href="http://www.kouzanrou.com/cuisine.html">公式サイト 菜譜（お料理のご案内）。特上ちゃんぽん・特上皿うどん（細・太）・東坡肉などの一品料理、コースは前日までの予約で大人4名以上、2023年10月1日より飲み放題プランなし 2026-11-22 取得</a> / <a href="http://www.kouzanrou.com/about.html">公式サイト 会社概要。株式会社江山楼、1946年9月創業、創業者 王玉官・王梅瑛、代表 王国雄 2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000603089/">ホットペッパーグルメ 江山楼 中華街新館。住所・築町電停から徒歩2分・総席数400席・最大宴会150人・カード（VISA/マスター）利用可・分煙（2020/01/07 更新）2026-11-22 取得</a> / <a href="https://www.nagasaki-chinatown.com/shop/576/">長崎新地中華街商店街振興組合 店舗ページ「江山楼」。所在地 長崎市新地町13-13、電話095-820-3735（写真は転載禁止のため使用していない）2026-11-22 取得</a> / <a href="https://konomachi-note.jp/guides/eat-champon-nagasaki/">この街手帖「長崎市のちゃんぽん・皿うどん8店」（2026年11月11日更新、情報確認日2026年10月19日）。ちゃんぽん・皿うどん1,760円、特上2,750円（店内の菜譜を写した写真による）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-chuka" class="c-aqua">新地中華街・長崎の中華</h2>
+<div class="card" id="c-nagasaki-chuka-sosyuurin">
+<img class="hero" src="img/nagasaki/nagasaki-chuka-sosyuurin.jpg" alt="蘇州林 新地中華街長崎唐菓子店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-chuka-sosyuurin_exterior.jpg" alt="蘇州林 新地中華街長崎唐菓子店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">18</span>蘇州林 新地中華街長崎唐菓子店<span class="yomi">そしゅうりん しんちちゅうかがいながさきとうかしてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">時津町に本社工場を置く蘇州林が長崎市内と時津町で展開する5店のうち、新地中華街の唐菓子店。麻花兒（マファール、通称よりより）、金銭餅、華林糖、月餅などの中華菓子を自社で製造し、ここで量り売り・箱詰めの両方を扱う。角煮まん・肉包子・粽子・中華ハトシといった点心、家庭用の冷凍ちゃんぽん・皿うどんも並び、全国発送も受け付ける。年中無休で10時から20時まで開いているので、中華街の飲食店が昼休みに入る15時前後でも立ち寄れる。席はなく、食べ歩きと土産の購入が中心。価格は公式WEBショップの表示で、店頭価格は確認していない。2026年4月24日には同社のちゃんぽん店（新地町8-13）が建て替えを終えてリニューアルオープンしている。</div>
+<div class="sig"><b>一皿:</b>麻花兒（小麦粉の生地を編んで揚げた硬い中華菓子。よりよりの名で知られる）／金銭餅（丸く焼いた甘さ控えめの焼き菓子）／角煮割包（蒸しパンに豚角煮をはさんだ長崎名物）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市新地町13-17</td></tr>
+<tr><th>予約</th><td>物販のため予約不要。贈答・地方発送は店頭か公式WEBショップで受付 — <a href="tel:0958256781">☎ 095-825-6781</a> ／ <a href="https://sosyuurin.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新地中華街で中華菓子を自社製造している老舗で、よりより・角煮まんといった章のテーマを正面から扱う店のため。営業確認①＝公式サイト sosyuurin.com の新着情報に2026年11月10日付「個人情報保護に関して」、2026年10月17日付「蘇州林の御歳暮」が掲載されている（2026-11-22 確認）。同サイトの店舗紹介にも「令和8年4月に新地中華街・湊公園前に中華レストランの新店舗をリニューアルオープン」との記述あり。営業確認②＝(1)「長崎 新地中華街 蘇州林 長崎唐菓子店 閉店」を空白入り・詰めた形の両方でYahoo!検索（2026-11-22）。閉店情報は出ず、公式サイトの営業中の店舗紹介と、2026年2月14日付の営業案内投稿が上位に出た。(2)公式SNSのアカウント名を確認＝Instagram「蘇州林｜長崎新地中華街・かもめ市場（@sosyuurin_nagasaki）」。(3)「移転」「リニューアル」でも各1回検索。該当したのは同じ中華街内のちゃんぽん店の建て替え（2026年4月24日オープン）のみで、唐菓子店の移転・閉店は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%98%87%E5%B7%9E%E6%9E%97%20%E6%96%B0%E5%9C%B0%E4%B8%AD%E8%8F%AF%E8%A1%97%E9%95%B7%E5%B4%8E%E5%94%90%E8%8F%93%E5%AD%90%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA13-17">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sosyuurin.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://sosyuurin.com/">公式サイト 新着情報（2026年11月10日／2026年10月17日の掲載で営業を確認）2026-11-22 取得</a> / <a href="https://sosyuurin.com/shops/">公式サイト 店舗紹介（新地中華街長崎唐菓子店の住所・電話・営業時間・定休日）2026-11-22 取得</a> / <a href="https://sosyuurin.raku-uru.jp/item-list">公式WEBショップ 商品一覧（麻花兒・角煮割包・金銭餅の税込価格）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-chuka-ryushorou">
+<img class="hero" src="img/nagasaki/nagasaki-chuka-ryushorou.jpg" alt="龍勝楼 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-chuka-ryushorou_exterior.jpg" alt="龍勝楼 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">19</span>龍勝楼<span class="yomi">りゅうしょうろう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">2023年1月17日に中華街の桃華園跡へ開いた店で、長崎市内で〈上海台所〉を営む勝呂行秀さんが手がける。1階と2階で総席数120席、最大120人の貸切に対応し、2階は宴会場として使える。全席禁煙、支払いは現金のみでクレジットカード・電子マネー・QRコード決済はいずれも不可。ネット予約は前日23時まで受け付ける。別料金・事前依頼で変面ショーを頼めるほか、舞台の貸し出しもある。真っ赤な外観と黄金色の天井で、観光だけでなく地元の宴会にも使われる。ちゃんぽんや皿うどんはコースの一品としても出る。来店のピークは17時まで。</div>
+<div class="sig"><b>一皿:</b>特製皿うどん（パリパリ麺に野菜・団子・豚の角煮をのせた一皿）／おこげの海鮮あんかけ（揚げたおこげに海鮮あんをかける上海の味）／かにみあんかけチャーハン（蟹身入りのあんをかけた炒飯）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜15:00（料理・ドリンクL.O. 14:30）／17:00〜21:00（料理・ドリンクL.O. 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市新地町9-9</td></tr>
+<tr><th>予約</th><td>電話またはホットペッパーグルメのネット予約。即時予約は前日23時まで、リクエスト予約は前日17時まで — <a href="tel:0958245333">☎ 095-824-5333</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新地中華街の北門正面にある大箱の中華料理店で、宴会や大人数の食事という中華街のもう一つの顔を代表するため。営業確認①＝ホットペッパーグルメの店舗ページが「2026/10/09 更新」、料理ページが「2026/10/07 更新」、コースページが「2026/10/30 更新」（いずれも2026-11-22 確認）。営業確認②＝(1)「長崎 中華街 龍勝楼 閉店」を空白入り・詰めた形の両方でYahoo!検索（2026-11-22）。閉店情報は無く、2026年10月9日・9月26日・9月15日来店の口コミが出た。(2)公式SNSのアカウント名を確認＝Instagram「中国菜 龍勝楼（@ryushourou_nagasaki）」。(3)「移転」「リニューアル」でも各1回検索。出てきたのは2023年1月の開店記事のみで、移転・閉店の情報は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%BE%8D%E5%8B%9D%E6%A5%BC%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA9-9">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003762115/">ホットペッパーグルメ 店舗ページ（住所・営業時間・席数・支払方法。2026/10/09 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003762115/food/">ホットペッパーグルメ 料理メニュー（価格。2026/10/07 更新）2026-11-22 取得</a> / <a href="https://www.nagasaki-chinatown.com/shop/597/">長崎新地中華街商店街振興組合 店舗ページ（所在地・電話番号）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-chuka-toen">
+<img class="hero" src="img/nagasaki/nagasaki-chuka-toen.jpg" alt="中国料理 桃苑 ホテルJALシティ長崎 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">20</span>中国料理 桃苑 ホテルJALシティ長崎<span class="yomi">ちゅうごくりょうり とうえん ほてるじゃるしてぃながさき</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1996年9月開業のホテルＪＡＬシティ長崎の2階にある中国料理店で、ホテルは2026年9月に開業30年を迎えた。広東料理をベースにした、脂の重さを抑えた味つけで、朝食ビュッフェ（6:30〜9:30）の会場も当店。総席数104席、全席禁煙で、最大6名と最大12名の個室が1室ずつある（個室料は3,300円から）。クレジットカード（VISA・マスター・ダイナース・JCB）とPayPayが使える。コース料理は前日までの予約制で2名から。日曜が定休のように見えるが、月曜が祝日の三連休の場合は日曜に営業し月曜を休むという入れ替えがある。宿泊客でなくても利用できる。</div>
+<div class="sig"><b>一皿:</b>長崎雲仙ポークの角煮饅頭（卓袱料理の流れをくむ角煮まん。ディナー帯のみ、2個から）／坦々麺（煎りゴマから仕込むゴマペーストに自家製ラー油2種）／フカヒレの姿煮込み（白龍コースの主菜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>【昼】11:30〜14:00／【夜】17:30〜21:00（ラストオーダー 20:30）。朝食ビュッフェ 6:30〜9:30</td></tr>
+<tr><th>定休日</th><td class="off">なし（日曜は休みとなる週があり、月曜が祝日の三連休のときは日曜営業・月曜休みに入れ替わる）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市新地町13-10 ホテルＪＡＬシティ長崎 2F</td></tr>
+<tr><th>予約</th><td>電話またはホットペッパーグルメのネット予約。コース料理は前日までの予約で2名から — <a href="tel:0958252580">☎ 095-825-2580</a> ／ <a href="https://www.nagasaki.jalcity.co.jp/restaurant/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新地中華街の入口に建つホテルの中国料理店で、街場の店とは別の、落ち着いて広東料理を食べられる選択肢として章に必要なため。営業確認①＝ホテル公式サイトのブログに2026年11月4日付「中国料理 桃苑 2026年11月定休日のお知らせ」が掲載されている（2026-11-22 確認）。ホットペッパーグルメの店舗ページも「2026/05/27 更新」。営業確認②＝(1)「長崎 桃苑 ホテルJALシティ長崎 閉店」を空白入り・詰めた形の両方でYahoo!検索（2026-11-22）。公式ブログの「カフェ&amp;レストラン 閉店のご案内」が当たるが、これはホテル内の別業態の案内で、桃苑は同じブログで2026年11月・10月の定休日を告知し営業中。2026年11月14日投稿の来店口コミもある。(2)公式SNS＝桃苑単独のアカウントは見当たらず「対象なし」。情報発信はホテル公式サイトのブログで行われている。(3)「移転」「リニューアル」でも各1回検索。2024年2月の客室改装完了の記事が出るのみで、桃苑の移転・閉店は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9B%BD%E6%96%99%E7%90%86%20%E6%A1%83%E8%8B%91%20%E3%83%9B%E3%83%86%E3%83%ABJAL%E3%82%B7%E3%83%86%E3%82%A3%E9%95%B7%E5%B4%8E%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA13-10%20%E3%83%9B%E3%83%86%E3%83%AB%EF%BC%AA%EF%BC%A1%EF%BC%AC%E3%82%B7%E3%83%86%E3%82%A3%E9%95%B7%E5%B4%8E%202F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.nagasaki.jalcity.co.jp/restaurant/">ホテルＪＡＬシティ長崎 公式サイト レストラン（営業時間・コース・単品価格・個室）2026-11-22 取得</a> / <a href="https://www.nagasaki.jalcity.co.jp/blog/">ホテルＪＡＬシティ長崎 公式ブログ（2026年11月4日「中国料理 桃苑 2026年11月定休日のお知らせ」）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004612475/">ホットペッパーグルメ 店舗ページ（席数・支払方法・アクセス。2026/05/27 更新）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-chuka-laolee">
+<img class="hero" src="img/nagasaki/nagasaki-chuka-laolee.jpg" alt="老李 長崎中華街 総本店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">21</span>老李 長崎中華街 総本店<span class="yomi">らおりー ながさきちゅうかがい そうほんてん</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">1995年創業の老李グループの旗艦店で、2026年5月に31周年の祝宴を開いた。同グループは長崎新地中華街・長崎街道かもめ市場・長崎スタジアムシティなど県内7店に加え、東京の日本橋本店と中目黒店も構える。総席数60席のテーブル席で全席禁煙。クレジットカード（VISA・マスター・アメックス・ダイナース・JCB）、楽天Edy・WAON・iD、PayPayが使える。一晩寝かせた皮で包む水餃子が看板で、台湾の小菜や点心が1品400円台から並ぶ。長崎の卓袱料理を台湾料理で組み立てた「極上卓袱コース」もある。中華街の多くの店が20時台に閉まるなか22時まで開けており、夜遅い食事に使える。</div>
+<div class="sig"><b>一皿:</b>水餃子（一晩寝かせたもちもちの皮で肉汁を包んだ看板料理）／海老のマヨネーズ和え（台湾発祥とされる元祖海老マヨ）／台湾香腸（店主が子どもの頃からの味を再現した自家製ソーセージ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜15:00（料理・ドリンクL.O. 14:30）／17:00〜22:00（料理・ドリンクL.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">12月31日・1月1日のみ</td></tr>
+<tr><th>住所</th><td>長崎県長崎市新地町12-7 2F</td></tr>
+<tr><th>予約</th><td>電話またはホットペッパーグルメのネット予約。即時予約は前日15時まで — <a href="tel:0958203717">☎ 095-820-3717</a> ／ <a href="https://www.laolee.jp/shop/souhonnten/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新地中華街にあって広東・福建系の長崎中華とは系統の違う台湾料理を出す店で、章に幅を与えるため。ちゃんぽんは単品ではなくコースの一品として出る。営業確認①＝公式サイト laolee.jp のNEWSに2025年12月22日付「年末年始の営業についてお知らせ」、2026年8月5日付「8月6日（木）RENEWAL OPEN！！」が掲載されている（2026-11-22 確認）。ホットペッパーグルメの店舗ページも「2026/10/30 更新」。営業確認②＝(1)「長崎 老李 長崎中華街 総本店 閉店」を空白入り・詰めた形の両方でYahoo!検索（2026-11-22）。閉店情報は無く、2026年5月30日の31周年祝宴の告知と、2026年11月14日・11月12日来店の口コミが出た。(2)公式SNSのアカウント名を確認＝X「台湾料理 老李（@laolee_g）」、Instagram「老李 長崎中華街 総本店（ラオリー）（@laoleegroup）」。(3)「移転」「リニューアル」でも各1回検索。2026年8月のリニューアルは同グループの思案橋の立ち飲み業態で、総本店の移転・閉店は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%80%81%E6%9D%8E%20%E9%95%B7%E5%B4%8E%E4%B8%AD%E8%8F%AF%E8%A1%97%20%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%96%B0%E5%9C%B0%E7%94%BA12-7%202F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.laolee.jp/shop/souhonnten/">老李グループ・ジャパン 公式サイト 長崎中華街 総本店（電話・住所・営業時間・定休日・収容人数）2026-11-22 取得</a> / <a href="https://www.laolee.jp/news/">老李グループ・ジャパン 公式サイト NEWS（2025年12月22日・2026年8月5日の告知で営業を確認）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000064639/food/">ホットペッパーグルメ 料理メニュー（価格。2025/11/26 更新）／店舗ページ（2026/10/30 更新）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-chuka-netsuretsuchubo">
+<img class="hero" src="img/nagasaki/nagasaki-chuka-netsuretsuchubo.jpg" alt="熱烈厨房 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-chuka-netsuretsuchubo_exterior.jpg" alt="熱烈厨房 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">22</span>熱烈厨房<span class="yomi">ねつれつちゅうぼう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">新地中華街の東、銅座の飲み屋街にある中華料理店で、2026年に16周年を迎えた。本場中国で修業した料理人が1品ずつ調理する。総席数36席で座敷と掘りごたつを備え、最大42人の宴会に対応。深夜2時まで（料理ラストオーダー翌1:00）開いているので、飲んだあとの食事にも使える。全席喫煙可で、20歳未満は禁煙席のみ入店可。Wi-Fiあり。支払いは現金のみで、クレジットカード・電子マネー・QRコード決済はいずれも不可。お通し代はなし。2時間飲み放題付きコースは4,500円から。金・土・祝前日は11時からランチを開ける。辛さは全メニューで調節できる。</div>
+<div class="sig"><b>一皿:</b>四川風麻辣水煮牛肉（牛肉を辣油のスープで煮た代表格、1,580円）／渡り蟹の香港揚げ（店の「魔法の粉」をまとわせたにんにく風味の揚げ物）／辣子鶏（鶏の唐辛子炒め、1,080円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜14:30／17:30〜翌2:00（料理・ドリンクL.O. 翌1:00）。金・土・祝前日はランチも11時から</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市銅座町13-12 谷口ビル1F</td></tr>
+<tr><th>予約</th><td>電話またはホットペッパーグルメのネット予約。即時予約は来店日当日22時まで、リクエスト予約は前日17時まで。ランチは予約のみ受付 — <a href="tel:0958292556">☎ 095-829-2556</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>中華街の外にある長崎の中華として、深夜まで開く辛い四川系の店を章に入れるため。営業確認①＝ホットペッパーグルメの店舗ページが「2026/11/05 更新」、料理ページが「2026/07/29 更新」、コースページが「2026/06/18 更新」（いずれも2026-11-22 確認）。営業確認②＝(1)「長崎 銅座 熱烈厨房 閉店」を空白入り・詰めた形の両方でYahoo!検索（2026-11-22）。閉店情報は無く、2026年10月26日付のランチ紹介投稿が出た。(2)公式SNSのアカウント名を確認＝Instagram「熱烈厨房（@netsuretsuchubo）」。プロフィールに「16周年を迎えました」「長崎市銅座町13-12 谷口ビル1階 095-829-2556」と記載。(3)「移転」「リニューアル」でも各1回検索。当店の移転・閉店の情報は無し（検索結果に出た移転は別店舗の群来軒のもの）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%86%B1%E7%83%88%E5%8E%A8%E6%88%BF%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8A%85%E5%BA%A7%E7%94%BA13-12%20%E8%B0%B7%E5%8F%A3%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000740465/">ホットペッパーグルメ 店舗ページ（住所・営業時間・席数・支払方法。2026/11/05 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000740465/food/">ホットペッパーグルメ 料理メニュー（価格。2026/07/29 更新）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-chuka-enzan">
+<img class="hero" src="img/nagasaki/nagasaki-chuka-enzan.jpg" alt="圓山 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">23</span>圓山<span class="yomi">えんざん</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">思案橋電停のすぐそばにある台湾料理の店で、「台湾厨房 圓山」の名でも呼ばれる。総席数43席、最大30人まで。掘りごたつの個室が複数あり、4名席から使える。全席禁煙で、喫煙は玄関横。2024年1月1日から支払いは現金のみとなり、クレジットカード・電子マネー・QRコード決済はいずれも使えない。蒸したての点心を1品550円から出し、石焼きの四川麻婆豆腐は辛さを1倍から20倍まで選べる。飲み放題はコースに2時間1,650円で付けられる。祝日はランチメニューの提供がない。来店のピークは21時まで。</div>
+<div class="sig"><b>一皿:</b>石焼四川麻婆豆腐（石鍋で供し、辛さを1倍から20倍まで選べる）／自慢の点心（小籠包・焼売・大根もち・豚まんなど、蒸したてを3個715円から）／フカヒレ姿煮（気仙沼産、4,620円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>火〜土 11:30〜14:00（料理・ドリンクL.O. 13:30）／17:00〜22:00（料理・ドリンクL.O. 21:30）。日 11:30〜14:00／17:00〜21:30（料理・ドリンクL.O. 21:00）。祝日はランチメニューの提供なし</td></tr>
+<tr><th>定休日</th><td class="off">月曜</td></tr>
+<tr><th>住所</th><td>長崎県長崎市油屋町1-7</td></tr>
+<tr><th>予約</th><td>電話またはホットペッパーグルメのネット予約。即時予約は来店日当日12時まで、リクエスト予約は前日17時まで。貸切は不可 — <a href="tel:0958297440">☎ 095-829-7440</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>思案橋という繁華街の入口にあり、個室で落ち着いて台湾・中華の点心を食べられる店として章に入れるため。営業確認①＝ホットペッパーグルメの店舗ページ・料理ページがともに「2026/09/16 更新」（2026-11-22 確認）。営業確認②＝(1)「長崎 油屋町 台湾料理 圓山 閉店」を空白入り・詰めた形の両方でYahoo!検索（2026-11-22）。閉店情報は無く、2026年11月11日付の来店投稿が最上位に出た。ホットペッパーグルメにも2026年11月13日来店の口コミがある。(2)公式SNS＝店自身のアカウントは見当たらず「対象なし」（Instagramにあるのは利用者投稿が集まる場所ページのみ）。これは閉店の証拠ではない。(3)「移転」「リニューアル」でも各1回検索。移転・閉店の情報は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%9C%93%E5%B1%B1%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B2%B9%E5%B1%8B%E7%94%BA1-7">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ000957496/">ホットペッパーグルメ 店舗ページ（住所・営業時間・定休日・席数・支払方法。2026/09/16 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000957496/food/">ホットペッパーグルメ 料理メニュー（価格。2026/09/16 更新）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-chuka-momotaro">
+<img class="hero" src="img/nagasaki/nagasaki-chuka-momotaro.jpg" alt="長崎ぶたまん 桃太呂 浜町店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-chuka-momotaro_exterior.jpg" alt="長崎ぶたまん 桃太呂 浜町店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">24</span>長崎ぶたまん 桃太呂 浜町店<span class="yomi">ながさきぶたまん ももたろ はままちてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1960年（昭和35年）に銅座で創業した豚まん専門店で、2003年に開いた浜町店は商店街の通り沿いにある。具は九州産豚肉のブツ切りと国産の玉ねぎだけ、皮は国産小麦の独自配合で、着色料・保存料を使わない。小ぶりなので1個から買え、蒸したては紙包み、食べ歩きならバーガー袋で渡される。希望すれば酢醤油のタレが付く。冷蔵のお土産パックは店内の冷蔵庫にあり、声をかければ出してもらえる。席はなく持ち帰り専門。長崎では「飲んだあとに桃太呂を買って帰る」という習慣があり、浜町店は平日23時まで開いている。市内6店舗のうちの1つ。</div>
+<div class="sig"><b>一皿:</b>長崎ぶたまん（直径数センチの小ぶりな豚まん。1人前は10個とされる）／お土産パック（冷蔵・10個入。当日朝に製造して粗熱をとり包装）／酢醤油のタレ（九州の豚まんに付ける酢醤油。希望すれば付く）</div>
+<table class="info">
+<tr><th>営業時間</th><td>平日10時〜23時（日曜 10時〜18時）。売り切れ次第終了</td></tr>
+<tr><th>定休日</th><td class="off">無休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市浜町10-19</td></tr>
+<tr><th>予約</th><td>持ち帰り専門のため予約不要。全国発送は公式オンラインショップで受付 — <a href="tel:0958237542">☎ 095-823-7542</a> ／ <a href="https://www.butaman.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>中華街の外にある長崎の中華まんの代表格で、章のテーマである中華まん・持ち帰りの点心を担うため。営業確認①＝公式サイト butaman.co.jp の店舗一覧に「2025年10月7日 長崎くんちの初日に合わせてオープン」（アミュプラザ長崎店）という同社自身の日付つき記述がある。あわせて公式X「長崎ぶたまん桃太呂®︎（@butaman_co_jp）」が9月16日付で「本日から9/22まで『大丸福岡天神店』B2食品フロアにて、桃太呂の期間限定販売が行われます」と投稿（年表記のない投稿＝当年2026年）。いずれも2026-11-22 確認。営業確認②＝(1)「長崎 ぶたまん 桃太呂 浜町店 閉店」を空白入り・詰めた形の両方でYahoo!検索（2026-11-22）。浜町店の閉店情報は無く、公式サイトの店舗一覧が上位に出た。(2)公式SNSのアカウント名を確認＝X「長崎ぶたまん桃太呂®︎（@butaman_co_jp）」、Instagram「「長崎ぶたまん」桃太呂®︎（@butaman_co_jp）」。(3)「移転」「リニューアル」でも各1回検索。該当したのは2021年3月の銅座本店の立ち退き移転（現・思案橋横丁店）のみで、浜町店の移転・閉店は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E3%81%B6%E3%81%9F%E3%81%BE%E3%82%93%20%E6%A1%83%E5%A4%AA%E5%91%82%20%E6%B5%9C%E7%94%BA%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA10-19">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.butaman.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.butaman.co.jp/shop/">桃太呂 公式サイト 店舗一覧（浜町店の住所・電話・営業時間、2025年10月7日のアミュプラザ長崎店開店）2026-11-22 取得</a> / <a href="https://www.butaman.co.jp/shop/provide/">桃太呂 公式サイト 店舗でのぶたまんの買い方（1個100円・お土産パック10個入1,000円）2026-11-22 取得</a> / <a href="https://x.com/butaman_co_jp">桃太呂 公式X（@butaman_co_jp・9月16日の催事告知で営業を確認）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-chuka-chaidelica">
+<img class="hero" src="img/nagasaki/nagasaki-chuka-chaidelica.jpg" alt="長崎中華点心 チャイデリカ 長崎駅店 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#1baf7a;">25</span>長崎中華点心 チャイデリカ 長崎駅店<span class="yomi">ながさきちゅうかてんしん ちゃいでりか ながさきえきてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">中国出身のオーナー「マーマ・ルイ」が立ち上げた中華点心の店で、2024年3月1日に社名を「長崎中華点心 チャイデリカ」へ変更した。スープがあふれる焼小籠包と、雲仙うまか豚紅葉を100％使った胡椒餅が看板。ほかに広東式の中華粥、ルーローハン、杏仁エッグタルト、5色の折パイ生地で包んだナガサキムーンケーキを扱う。長崎駅店は8時30分から20時まで年中無休で、朝の時間帯には中華粥や鹹豆漿といった台湾式の朝食も出る。持ち帰り・地方発送に対応。価格は公式オンラインストアの表示。同社は2025年9月22日に銅座店を移転準備のため臨時休業とし、2026年1月22日に新地中華街店（新地町11-14、朝8時開店）を開いている。</div>
+<div class="sig"><b>一皿:</b>長崎焼小籠包（雲仙山麓の豚肉に野菜・鶏の旨味を合わせたスープ入り）／長崎成功胡椒餅（長崎県産ブランド豚と6種のスパイス、皮はサクサク）／ナガサキムーンケーキ（5色の渦巻き模様の折パイに自家製餡と塩漬け卵黄）</div>
+<table class="info">
+<tr><th>営業時間</th><td>8:30〜20:00</td></tr>
+<tr><th>定休日</th><td class="off">年中無休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市尾上町1-67 長崎街道かもめ市場</td></tr>
+<tr><th>予約</th><td>持ち帰り中心のため予約不要。贈答・地方発送は公式オンラインストアで受付 — <a href="tel:0958959908">☎ 095-895-9908</a> ／ <a href="https://chaeon.co.jp/pages/nagasakieki">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>新地中華街の外で長崎の中華点心を担う店で、朝から開く点心という章の切り口を埋めるため。営業確認①＝公式サイト chaeon.co.jp のお知らせに2025年9月22日付「銅座店 臨時休業のお知らせ」が掲載され、本文で「長崎中華点心チャイデリカ 長崎駅店 営業時間 8:30〜20:00 長崎県長崎市尾上町1−67 TEL：095-895-9908」と当店が通常営業中であることを明記している（2026-11-22 確認）。営業確認②＝(1)「長崎 中華点心 チャイデリカ 長崎駅店 閉店」を空白入り・詰めた形の両方でYahoo!検索（2026-11-22）。長崎駅店の閉店情報は無く、公式サイトの長崎駅店ページと2025年9月21日付の営業案内が出た。(2)公式SNSのアカウント名を確認＝Instagram「【公式】長崎中華点心チャイデリカ長崎 新地中華街店（@chaidelica_nagasaki）」。(3)「移転」「リニューアル」でも各1回検索。該当したのは銅座店の移転準備（2025年9月22日から臨時休業）と、2024年3月1日の社名変更、2026年1月22日の新地中華街店の開店で、長崎駅店の移転・閉店は無し。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E4%B8%AD%E8%8F%AF%E7%82%B9%E5%BF%83%20%E3%83%81%E3%83%A3%E3%82%A4%E3%83%87%E3%83%AA%E3%82%AB%20%E9%95%B7%E5%B4%8E%E9%A7%85%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%B0%BE%E4%B8%8A%E7%94%BA1-67%20%E9%95%B7%E5%B4%8E%E8%A1%97%E9%81%93%E3%81%8B%E3%82%82%E3%82%81%E5%B8%82%E5%A0%B4">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（chaeon.co.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://chaeon.co.jp/blogs/news">チャイデリカ 公式サイト お知らせ（2025年9月22日「銅座店 臨時休業のお知らせ」。長崎駅店の営業時間・住所・電話を明記）2026-11-22 取得</a> / <a href="https://chaeon.co.jp/pages/nagasakieki">チャイデリカ 公式サイト 長崎駅店（営業時間8:30-20:00・年中無休・住所）2026-11-22 取得</a> / <a href="https://chaeon.co.jp/collections/all">チャイデリカ 公式オンラインストア 商品一覧（焼小籠包・胡椒餅・杏仁エッグタルトの税込価格）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-izakaya" class="c-beer">居酒屋・長崎港の魚</h2>
+<div class="card" id="c-nagasaki-izakaya-kawasho">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-kawasho.jpg" alt="いけす居酒屋 川正 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-izakaya-kawasho_exterior.jpg" alt="いけす居酒屋 川正 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">26</span>いけす居酒屋 川正<span class="yomi">いけすいざかや かわしょう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">店の中央に大きな生け簀を置く活魚の店で、泳いでいるイカをその場で活き造りにする。ホットペッパーグルメの店舗紹介文では48年の歴史を持つ老舗としたうえで、近年リニューアルしてメニューを一新したと書かれている。総席数130席で、1階は掘りごたつ席（仕切りで半個室にもできる）、2階のお座敷は最大110名まで。最大宴会収容人数は80人。カウンター席もあり、日本酒を並べた棚が目印。支払いはクレジットカード・電子マネーとも利用不可で、現金かホットペッパーのスマート支払いのみ。分煙（仕切りなし）で別に喫煙スペースがある。20歳未満は同伴者を含めて入店できない。問い合わせは12時以降、来店ピークは19時まで。</div>
+<div class="sig"><b>一皿:</b>イカの活き造り（生け簀で泳ぐイカをその場でさばく。頭とゲソは後造りにもできる）／川正大漁盛 5,500円（4〜5名向けの大皿の刺身盛り）／本日の活魚（縞鯵・野母ん鯵・アカハタなど、その日の生け簀の魚を1尾単位で）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:30〜翌1:00（料理L.O. 翌0:00／ドリンクL.O. 翌0:30）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市本石灰町3-3</td></tr>
+<tr><th>予約</th><td>予約可。電話095-807-5027（問い合わせは12時以降）。ホットペッパーグルメのネット予約は即予約が来店日の当日21時まで、リクエスト予約が前日17時まで。コース予約は来店14日前0時以降のキャンセルでコース料金の全額が発生する — <a href="tel:0958075027">☎ 095-807-5027</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>生け簀を持ち、活魚のイカを目の前でさばく思案橋の老舗で、長崎港の魚を食べる章の軸になる。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2025/12/23 更新」、コースページが「2026/11/16 更新」（2026-11-22 直読み）。あわせて公式Instagram「いけす居酒屋 川正」の投稿が 2026/2/9・2026/3/11・2026/5/7 に確認できる。②閉店確認3通り: (a)「いけす居酒屋 川正 閉店」（空白あり）と「いけす居酒屋川正閉店」（詰めた形）の2通りをYahoo!検索で引き、閉店を伝えるページは0件（2026-11-22）。(b) 公式SNS＝Instagram「いけす居酒屋 川正」が実在し、アカウント名に閉店・休業の語はない。(c)「いけす居酒屋 川正 移転」「いけす居酒屋 川正 リニューアル」で各1回引き、移転の告知は0件（同名の別店「鮨 川正」が2026年10月に船大工町で新規開業した記事は出るが、本店の移転ではない。長崎市茂木町の「いけす料理 川正」も住所・電話が異なる別店）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%91%E3%81%99%E5%B1%85%E9%85%92%E5%B1%8B%20%E5%B7%9D%E6%AD%A3%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%9C%AC%E7%9F%B3%E7%81%B0%E7%94%BA3-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ001178425/">ホットペッパーグルメ 店舗ページ。住所・営業時間・定休日・席数・支払い方法・駐車場・入店条件（2025/12/23 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001178425/food/">ホットペッパーグルメ 料理メニュー。本日の活魚・刺身盛り合わせ・川正大漁盛の価格（2023/08/25 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001178425/course/">ホットペッパーグルメ コースページ（2026/11/16 更新）2026-11-22 取得</a> / <a href="https://shiannbashi-yokocho.com/store-introduction/">思案橋横丁会 店舗紹介。店名・業態・営業時間・定休日・住所・電話095-807-5027・席数130席 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-izakaya-hachiya">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-hachiya.jpg" alt="長崎炉ばた はち舎 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-izakaya-hachiya_exterior.jpg" alt="長崎炉ばた はち舎 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">27</span>長崎炉ばた はち舎<span class="yomi">ながさきろばた はちや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">毎日入荷する長崎の魚を炭火の炉ばたで焼く店で、16時から開けているので0次会にも使える。イカの姿造りは身を食べたあと頭とゲソを炭火焼・天ぷら・唐揚げのいずれかで後造りにしてもらえる。総席数85席、2階は2〜30名で使える完全個室、1階に掘りごたつとカウンターがある。最大宴会収容人数は30人。全席禁煙で喫煙専用室はない。支払いはVISA・マスター・アメックス・DINERS・JCBが使える。飲み放題はコース料理を頼んだときに追加できる。問い合わせは15:00〜23:00。同じ会社が浜町の「酒菜処 のさ庵」も営む。</div>
+<div class="sig"><b>一皿:</b>長崎刺身盛合わせ 2,680円（毎日入荷する長崎の魚の盛り合わせ。内容は相談できる）／イカの姿造り 1,980円（産地直送のイカ。頭とゲソは炭火焼・天ぷら・唐揚げで後造り）／炉ばた焼き（カウンター越しに炭で焼く魚と野菜）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 16:00〜23:00（料理L.O. 22:30／ドリンクL.O. 22:30）</td></tr>
+<tr><th>定休日</th><td class="off">年末年始</td></tr>
+<tr><th>住所</th><td>長崎県長崎市本石灰町5-3</td></tr>
+<tr><th>予約</th><td>予約可。電話095-828-6888（問い合わせ15:00〜23:00）。ホットペッパーグルメのネット予約は即予約が来店日の当日21時まで、リクエスト予約が前日17時まで — <a href="tel:0958286888">☎ 095-828-6888</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>思案橋横丁の入口にある炉ばたで、16時開店と完全個室があり、長崎の魚を炭で食べる章の受け皿になる。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/10/28 更新」、ネット予約の空席情報が「2026/11/20 更新」、コースページが「2026/11/09 更新」（2026-11-22 直読み）。公式Instagram「長崎炉ばた はち舎」（@robata_hachiya）の投稿が 2026/4/13・2026/5/24 に確認できる。②閉店確認3通り: (a)「長崎炉ばた はち舎 閉店」（空白あり）と「長崎炉ばたはち舎閉店」（詰めた形）の2通りをYahoo!検索で引き、閉店を伝えるページは0件（2026-11-22。ヒットしたのはホットペッパーの『当面の間は閉店時間が前後する場合があります』という営業時間の注記のみ）。(b) 公式SNS＝Instagram「長崎炉ばた はち舎」（@robata_hachiya、フォロワー669・投稿451件）が実在し、プロフィールに思案橋電停徒歩1分・TEL0958286888 とある。(c)「長崎炉ばた はち舎 移転」「長崎炉ばた はち舎 リニューアル」で各1回引き、移転・リニューアルの告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E7%82%89%E3%81%B0%E3%81%9F%20%E3%81%AF%E3%81%A1%E8%88%8E%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%9C%AC%E7%9F%B3%E7%81%B0%E7%94%BA5-3">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000037159/">ホットペッパーグルメ 店舗ページ。住所・電話・営業時間・定休日・席数85席・個室・支払い方法・駐車場（2026/10/28 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000037159/food/">ホットペッパーグルメ 料理メニュー。長崎刺身盛合わせ2,680円・イカの姿造り1,980円・おつまみ各種（2025/10/13 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000037159/course/">ホットペッパーグルメ コースページ（2026/11/09 更新）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-izakaya-wabisuke">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-wabisuke.jpg" alt="長崎炉端 侘助 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-izakaya-wabisuke_exterior.jpg" alt="長崎炉端 侘助 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">28</span>長崎炉端 侘助<span class="yomi">ながさきろばた わびすけ</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">長崎の地魚と串焼きを炭で出す炉端で、年中無休・深夜1時まで営業する。総席数36席で、個室と掘りごたつ、カウンターがある。最大宴会収容人数は40人。全席喫煙可で喫煙専用室はない。支払いはVISA・マスター・アメックスが使える。六十余州・杵の川といった長崎の地酒と、黒霧島・壱岐ゴールドなどの焼酎を置く。コースは2時間飲み放題付きで、海鮮のほか、もつ鍋（〆はちゃんぽん麺）や馬刺しユッケのコースがある。もとは昭和町通の近くにあり、現在の銅座町へ移転している。</div>
+<div class="sig"><b>一皿:</b>刺身盛合せ（長崎の地魚の盛り合わせ。一人前1,280円／二〜三人前2,180円／五〜六人前4,180円）／おまかせ串焼き盛り（ねぎま・豚バラ・にら豚巻きなど。5串890円／10串1,690円）／もつ鍋コース（〆にちゃんぽん麺が付く2時間飲み放題付きコース）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 17:00〜翌1:00（料理L.O. 翌0:00／ドリンクL.O. 翌0:30）</td></tr>
+<tr><th>定休日</th><td class="off">なし（年中無休）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市銅座町12-14</td></tr>
+<tr><th>予約</th><td>予約可。電話095-827-6111。ホットペッパーグルメのネット予約は即予約が来店日の当日23時まで、リクエスト予約が前日17時まで。コース予約は来店6日前0時以降のキャンセルでコース料金の全額が発生する — <a href="tel:0958276111">☎ 095-827-6111</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>銅座・観光通の夜に深夜1時まで開いている炉端で、刺身と串焼きを一軒で済ませられる。章のなかでは2軒目・遅い時間の受け皿になる。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/01/19 更新」、料理メニューが「2025/12/08 更新」、コースページが「2026/11/05 更新」（2026-11-22 直読み）。②閉店確認3通り: (a)「長崎炉端 侘助 閉店」（空白あり）と「長崎炉端侘助閉店」（詰めた形）の2通りをYahoo!検索で引き、閉店を伝えるページは0件（2026-11-22）。(b) 公式SNS＝Instagram「長崎炉端 侘助」（@robadawabisuke）が実在し、アカウント名に閉店の語はない。(c)「長崎炉端 侘助 移転」「長崎炉端 侘助 リニューアル」で各1回引いたところ、移転【済み】であることが分かった＝第三者サイトに『移転前の店舗情報』として昭和町通の旧店舗ページが残り、現店舗は観光通（銅座町12-14）。本データは移転後の現住所・現電話で統一している。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E7%82%89%E7%AB%AF%20%E4%BE%98%E5%8A%A9%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8A%85%E5%BA%A7%E7%94%BA12-14">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003672470/">ホットペッパーグルメ 店舗ページ。住所・電話・営業時間・定休日・席数36席・喫煙・駐車場（2026/01/19 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003672470/food/">ホットペッパーグルメ 料理メニュー。刺身盛合せ1,280円〜・串焼き各種（2025/12/08 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003672470/course/">ホットペッパーグルメ コースページ。侘助コース5,000円・もつ鍋コース6,000円（2026/11/05 更新）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-izakaya-gohan">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-gohan.jpg" alt="長崎市の和食 御飯 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-izakaya-gohan_exterior.jpg" alt="長崎市の和食 御飯 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">29</span>長崎市の和食 御飯<span class="yomi">ながさきしのわしょく ごはん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">先代から続く和食の店で、コース料理のみを出す完全予約制。献立は決めず、生産者から直接仕入れた旬の食材で毎回組み立てるが、看板の鯛めしは通年出る。長崎はマダイの漁獲量が多く、その魅力を引き出す料理として先代が香川の郷土料理をもとに仕立てたもの。総席数32席で、店主が目の前で調理するカウンター8席と、座敷24席。貸切可。支払いはVISA・マスター・アメックス・JCB・ダイナース・銀聯・ディスカバーのクレジットカードと、PayPay・LINE Pay・QUICPay・iD・交通系ICカードなど電子マネーが使える。苦手なものやアレルギーにも対応する。姉妹店に万屋町の蕎麦店「蕎家 長崎」がある。</div>
+<div class="sig"><b>一皿:</b>鯛めし（長崎のマダイを使った名物。全コースに付く）／刺身（店主が仕入れた長崎の地魚。献立は仕入れ次第で変わる）／鯖しゃぶ（先代が長崎で最初に出したとされる、もう一つの名物）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 12:00〜14:00（完全予約制）／夜 18:00〜24:00（L.O. 21:30）。祝日は17:00〜22:00</td></tr>
+<tr><th>定休日</th><td class="off">日曜日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市油屋町2-32</td></tr>
+<tr><th>予約</th><td>完全予約制。電話095-825-3600、または公式サイトのWEB予約。夜も事前予約をすすめている。席の希望・苦手な食材・アレルギーは予約時に相談できる — <a href="tel:0958253600">☎ 095-825-3600</a> ／ <a href="https://www.nagasaki-gohan.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎はマダイの漁獲量が全国有数で、その鯛を主役に据えた名物料理を通年出す店。刺身の盛り合わせを並べる居酒屋とは違う形で長崎の魚を見せられるので、章に1軒入れる。営業の根拠＝①店自身の情報: 公式Instagram「長崎 御飯」（@gohan_nagasaki）の投稿が 2026/10/25 に確認できる。公式サイトのお知らせ欄にも「2026年も変わらぬご愛顧のほど」で結ぶ年末年始の営業案内が出ている（2026-11-22 直読み）。②閉店確認3通り: (a)「和食 御飯 長崎 閉店」（空白あり）と「長崎市和食御飯閉店」（詰めた形）の2通りをYahoo!検索で引き、この店の閉店を伝えるページは0件（2026-11-22）。(b) 公式SNS＝Instagram「長崎 御飯」（@gohan_nagasaki）が実在し、プロフィールに油屋町2-32・TEL095-825-3600 とある。(c)「和食 御飯 長崎 移転」「和食 御飯 長崎 リニューアル」で各1回引き、移転・リニューアルの告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E5%B4%8E%E5%B8%82%E3%81%AE%E5%92%8C%E9%A3%9F%20%E5%BE%A1%E9%A3%AF%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B2%B9%E5%B1%8B%E7%94%BA2-32">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.nagasaki-gohan.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.nagasaki-gohan.com/">公式サイト トップ。住所・電話・営業時間・定休日・席数32席（カウンター8・座敷24）・支払い方法・完全予約制 2026-11-22 取得</a> / <a href="https://www.nagasaki-gohan.com/course/">公式サイト コース。6,600円／8,800円／11,000円〜の構成と違い 2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/feature/sakana_gourmet">長崎市公式観光サイト travel nagasaki「長崎の海鮮・魚グルメ5選！」。鯛めしと鯖しゃぶの由来、マダイ漁獲量の説明 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-izakaya-ginnabe">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-ginnabe.jpg" alt="銀鍋 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">30</span>銀鍋<span class="yomi">ぎんなべ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">昭和28年創業の老舗で、看板は高級魚のあら（クエ）。檀一雄の小説『火宅の人』に「銀鍋で『あら』のあら煮か何かをつつきながら」と出てくる店である。あら煮のほか、あら刺し・あら湯引き・あらわた・あらにぎりを単品で頼め、入荷したときだけ出る「あら（クエ）尽くしコース」14,300円（要予約）もある。県産の旬魚の刺身を軸にした会席に、鯨の盛合せ・豚の角煮・長崎ハトシといった郷土の一品が並ぶ。建物は4階まであり、1階は10卓（2〜20名）、2階は2〜15名の個室、3階は20名以上、4階は掘りごたつの宴会場。長崎市公式観光サイトの掲載は座席数100席・最大宴会50名。コースを頼めば部屋料は不要だが、席のみの利用は1部屋2時間2,000円、超過は1人30分500円。昼はコーヒーが付く。</div>
+<div class="sig"><b>一皿:</b>あら煮（高級魚あら＝クエのあら煮。店の顔とされる一品で、小説『火宅の人』にも出てくる）／あら刺し 3,300円（1人前。要予約で大皿にもできる）／おまかせ旬魚盛合せ 1,800円（1〜2名分。長崎県産の旬魚の盛り合わせ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>昼 11:30〜14:30（オーダーストップ 14:00）／夜 17:30〜21:30（ラストオーダー 20:30）</td></tr>
+<tr><th>定休日</th><td class="off">毎週月曜日、12月31日・1月1日・1月2日・8月15日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市銅座町7-11</td></tr>
+<tr><th>予約</th><td>予約可。電話095-821-8213（FAX 095-823-6652）。「あら（クエ）尽くしコース」は要予約で、あらの入荷がないときは出せない。個室はコース利用が優先で、席のみの予約は平日の空きがある場合に限る（土日に席のみで部屋を使うと1部屋2時間2,000円の部屋料） — <a href="tel:0958218213">☎ 095-821-8213</a> ／ <a href="https://www.ginnabe.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎港に揚がる高級魚あら（クエ）を、刺身・湯引き・にぎり・あら煮と単品で食べ分けられる店は市内でもここぐらいで、長崎の魚の章の看板になる。卓袱料理のコースは出さず、旬魚の刺身と一品が主なので、郷土料理の章ではなくこの章に置く。営業の根拠＝①店自身の情報: 公式サイト www.ginnabe.com のお知らせ欄が「2026/11/16 おせち『祝肴菜』ご予約受付を開始しました」を筆頭に、2026/4/3 価格改定、2026/3/3 団体旅行者様受入れ、2026/3/1 会席コースおよび宴会プランの価格改定、2025/12/22 年末年始営業日と並ぶ（2026-11-22 直読み）。公式Instagram「銀鍋【公式】」（@douza_ginnabe、フォロワー1.6K・投稿308件）の投稿も 2026/10/27・2026/11/10 に確認できる。②閉店確認3通り: (a)「銀鍋 長崎 銅座 閉店」（空白あり）と「銀鍋長崎閉店」（詰めた形）の2通りをYahoo!検索で引き、この店の閉店を伝えるページは0件（2026-11-22。詰めた形で出る『無量菴 伊良林 銀鍋』は伊良林にあった別店で、この銅座町7-11の店ではない）。(b) 公式SNS＝Instagram「銀鍋【公式】」（@douza_ginnabe）が実在し、プロフィールに営業時間と電話095-821-8213が載っている。アカウント名に閉店の語はない。(c)「銀鍋 長崎 銅座 移転」「銀鍋 長崎 銅座 リニューアル」で各1回引き、移転・リニューアルの告知は0件（2024/10/16 の『価格変更および夜営業時間変更のご案内』は同じ住所での営業時間の変更）。 ext_urls が空の理由＝公式サイトの画像129本をすべて洗い出し、写真とみられる73本を原寸で取得して目視したが、建物の正面・入口・店構えを写したものが1枚もない（店舗紹介ページの `tenpo.jpg` は店名ロゴに『店舗紹介』の文字を重ねたバナー、`slide32.jpg` は店内の壁に掛かった銀鍋の扁額で、いずれも外観ではない）。長崎市公式観光サイトの店舗ページに載っている画像は『travel nagasaki』のロゴ画像（実写ではない）だった。ホットペッパーグルメには掲載がなく、ほかに使える外観写真が見つからなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E9%8A%80%E9%8D%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8A%85%E5%BA%A7%E7%94%BA7-11">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.ginnabe.com）より引用 / 外観: 写真なし / 参照元: <a href="https://www.ginnabe.com/">公式サイト トップ（お知らせ一覧）。2026/11/16 おせち予約受付開始・2026/4/3 価格改定・2026/3/1 会席コース価格改定ほか 2026-11-22 取得</a> / <a href="https://www.ginnabe.com/tenpo.html">公式サイト 店舗案内。会社名・代表者・住所・電話・FAX・営業時間・店休日・最寄電停と道順 2026-11-22 取得</a> / <a href="https://www.ginnabe.com/ara_ryouri.html">公式サイト 銀鍋のあら料理。あら刺し3,300円・あら湯引き2,160円・あらにぎり860円・あらわた1,080円・あら尽くしコース14,300円、『火宅の人』の引用 2026-11-22 取得</a> / <a href="https://www.ginnabe.com/ryouri.html">公式サイト グランドメニュー。おまかせ旬魚盛合せ1,800円・鯨盛合せ3,000円・豚の角煮990円ほか 2026-11-22 取得</a> / <a href="https://www.ginnabe.com/ryouri_lunch.html">公式サイト ランチメニュー。あら煮膳1,500円・刺身膳1,800円・天刺膳2,200円ほか 2026-11-22 取得</a> / <a href="https://www.ginnabe.com/heya.html">公式サイト お部屋の紹介。1階10卓（2〜20名）・2階個室・3階20名〜・4階掘りごたつ、部屋料と延長料 2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/6262/index.html">長崎市公式観光サイト travel nagasaki 店舗紹介「銀鍋」。住所・観光通駅より徒歩約2分・電話・座席数100席（最大宴会50名）・創業以来70年余り（2025.10.14）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-izakaya-tenpurakato">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-tenpurakato.jpg" alt="海鮮問屋 天ぷら かとう 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">31</span>海鮮問屋 天ぷら かとう<span class="yomi">かいせんどんや てんぷら かとう</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">海鮮問屋が営む店で、長崎直送の地魚の刺身と、揚げたての天ぷらを同じ卓で出す。刺し盛りは3点880円・5点1,280円と小さい単位から頼め、昼は定食、夜は居酒屋として使える。総席数30席、最大宴会収容人数30人。個室・座敷・掘りごたつ・カウンターはいずれもなく、テーブル席のみ。全席禁煙で喫煙専用室はない。英語メニューがある。支払いはVISA・マスター・アメックス・DINERS・JCB・ディスカバー・銀聯。飲み放題あり。昼は11:00〜13:30と短いので、昼に行くなら時間に注意。</div>
+<div class="sig"><b>一皿:</b>本日の刺し盛り（長崎直送の地魚。3点880円／5点1,280円）／天ぷらおまかせ5種 980円（えび1・魚2・野菜2）／長崎県松浦産アジフライ 2枚580円（県内松浦産のアジを使ったフライ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月・水〜日・祝日・祝前日 11:00〜13:30（料理L.O. 13:00／ドリンクL.O. 13:00）／17:00〜22:00（料理L.O. 21:30／ドリンクL.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">火曜日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市元船町11-10 丸重ビル1F</td></tr>
+<tr><th>予約</th><td>予約可。電話095-823-8807。ホットペッパーグルメのネット予約は即予約が来店日の当日21時まで — <a href="tel:0958238807">☎ 095-823-8807</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎港の目の前の大波止で、問屋直営の安い刺身と天ぷらを同時に出す店。章のなかで最も手頃な価格帯を受け持つ。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/09/25 更新」、料理メニューとコースページが「2026/09/18 更新」（2026-11-22 直読み）。公式Instagram（@tenpurakato）の投稿が 2026/5/26 に確認できる。あわせて長崎市公式観光サイト travel nagasaki の店舗紹介記事が 2025.10.14 付で出ている。②閉店確認3通り: (a)「海鮮問屋 天ぷら かとう 閉店」（空白あり）と「海鮮問屋天ぷらかとう長崎閉店」（詰めた形）の2通りをYahoo!検索で引き、この店の閉店を伝えるページは0件（2026-11-22。公式Instagramの『早くに閉店となってしまい』は売り切れ仕舞いの告知）。(b) 公式SNS＝Instagram（@tenpurakato）が実在し、アカウント名に閉店の語はない。(c)「海鮮問屋 天ぷら かとう 移転」「同 リニューアル」で各1回引き、この店の移転・リニューアルの告知は0件（ヒットするのは東京・築地の同名店と、大分県別府の同名店の話）。 ext_urls が空の理由＝ホットペッパーグルメの掲載写真17枚を1枚ずつ原寸で開いて確認したが、建物の正面・入口・店構えを写したものが1枚もない（appearance 分類の3枚のうち2枚はカウンター前の通路、1枚は煮魚の皿だった）。公式サイトはなく、長崎市公式観光サイトの店舗ページに載っている画像は『travel nagasaki』のロゴ画像（実写ではない）だったため、代わりに使える外観写真が見つからなかった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E5%95%8F%E5%B1%8B%20%E5%A4%A9%E3%81%B7%E3%82%89%20%E3%81%8B%E3%81%A8%E3%81%86%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%85%83%E8%88%B9%E7%94%BA11-10%20%E4%B8%B8%E9%87%8D%E3%83%93%E3%83%AB1F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.hotpepper.jp/strJ004698837/">ホットペッパーグルメ 店舗ページ。住所・電話・営業時間・定休日・席数30席・支払い方法・英語メニュー（2026/09/25 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ004698837/food/">ホットペッパーグルメ 料理メニュー。刺し盛り880円／1,280円・天ぷらおまかせ5種980円・松浦産アジフライ580円（2026/09/18 更新）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/6309/index.html">長崎市公式観光サイト travel nagasaki 店舗紹介「海鮮問屋 天ぷらかとう」。住所（元船町11-10丸重ビル1F）・大波止駅より徒歩約2分・電話（2025.10.14）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-izakaya-matsuuraya">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-matsuuraya.jpg" alt="まつうら屋 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-izakaya-matsuuraya_exterior.jpg" alt="まつうら屋 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">32</span>まつうら屋<span class="yomi">まつうらや</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">樺島町の坂の途中にある海鮮居酒屋で、1階が掘りごたつ、2・3階が座敷になっている。総席数120席、1階は最大30名、2・3階は最大45名まで。10名用の個室や、6〜8名の座敷個室、40名まで入る完全個室の座敷がある。刺身は盛り合わせのほか、ヒラス・鯛・ホタテ・鯵・イカなどを1皿600〜800円で単品でも頼め、手毬寿司や鯨の盛り合わせも置く。分煙（仕切りあり）で喫煙専用室がある。支払いはVISA・マスター・JCB。お通し代500円（コース利用時は不要）。昼も11:00から営業し、昼の宴会も受ける。日曜・祝日は要予約。</div>
+<div class="sig"><b>一皿:</b>刺身盛り 1,980円（長崎の地魚の盛り合わせ）／鯨盛り合わせ 2,000円（長崎の鯨食文化にそった一皿。ベーコン・うねすは各1,000円）／手毬寿司 三点盛り1,000円・五点盛り1,500円</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 11:00〜14:00（料理L.O. 14:00／ドリンクL.O. 14:00）／17:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（日曜・祝祭日は要予約）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市樺島町8-2</td></tr>
+<tr><th>予約</th><td>予約可。電話095-821-4661。ホットペッパーグルメのネット予約は即予約が来店日の当日19時まで、リクエスト予約が前日17時まで。日曜・祝祭日は要予約 — <a href="tel:0958214661">☎ 095-821-4661</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>旧県庁・大波止に近い坂の上で、1階の掘りごたつから3階の座敷まで人数に合わせて使える海鮮居酒屋。刺身を1皿ずつ頼める点が、盛り合わせしかない店と違う。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/09/21 更新」、コースページが「2026/08/28 更新」、料理メニューが「2025/12/24 更新」（2026-11-22 直読み）。②閉店確認3通り: (a)「まつうら屋 閉店」相当の検索を空白あり・詰めた形の2通りで行い、閉店を伝えるページは0件（2026-11-22）。(b) 公式SNS＝対象なし（公式サイトがなく、ホットペッパーの店舗ページにもSNSへのリンクがない。これは閉店の証拠ではない）。(c)「まつうら屋 移転」「まつうら屋 リニューアル」で各1回引き、移転・リニューアルの告知は0件。 ext_urls について＝採ったのは店の正面の壁に『JAPANESE CUISINE MATSUURAYA／まつうら屋』の文字と花火の意匠が入った写真で、ホットペッパーの店舗ページで「旧県庁そば。この外観が目印です。」という説明が付いている1枚。建物全景の写真は掲載19枚のなかに無かった。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%BE%E3%81%A4%E3%81%86%E3%82%89%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%A8%BA%E5%B3%B6%E7%94%BA8-2">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ000032578/">ホットペッパーグルメ 店舗ページ。住所・電話・営業時間・定休日・席数120席・個室・喫煙・支払い方法・お通し代（2026/09/21 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000032578/food/">ホットペッパーグルメ 料理メニュー。刺身盛り1,980円・鯨盛り合わせ2,000円・手毬寿司（2025/12/24 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ000032578/course/">ホットペッパーグルメ コースページ（2026/08/28 更新）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-izakaya-shima">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-shima.jpg" alt="海鮮料理 ふぐ料理 しま 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-izakaya-shima_exterior.jpg" alt="海鮮料理 ふぐ料理 しま 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">33</span>海鮮料理 ふぐ料理 しま<span class="yomi">かいせんりょうり ふぐりょうり しま</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">長崎県は養殖トラフグの生産量が多く、その県産のふぐを刺身・焼き・鍋で出す小さな店。総席数15席でカウンターがあり、最大宴会収容人数は10人。個室・座敷・掘りごたつはない。ふぐ刺しは小2,200円から頼めるので、一人でもふぐに手が届く。ふぐ以外にもウツボのタタキ1,320円、クエのあら煮1,980円、はもの湯引き880円といった地の魚が並ぶ。全席禁煙で喫煙専用室はない。支払いはVISA・マスター・アメックス・DINERS・JCB・ディスカバー。ふぐコースは現在コースのみの受付としている。昼の営業はなく、17時から22時まで。</div>
+<div class="sig"><b>一皿:</b>ふぐ刺し（県産のふぐ。小2,200円／中3,300円／大6,600円）／ふぐ焼き 1,980円（店の焼酎に合わせる一品として出している）／クエあら煮 1,980円（ふぐ以外の地の魚。ウツボタタキ1,320円、はも湯引き880円もある）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜土 17:00〜22:00（料理L.O. 21:00／ドリンクL.O. 21:30）</td></tr>
+<tr><th>定休日</th><td class="off">日曜日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市岩川町5-12</td></tr>
+<tr><th>予約</th><td>予約可。電話095-843-1818。ホットペッパーグルメのネット予約は即予約が来店日の当日14時まで。ふぐはコースでの受付 — <a href="tel:0958431818">☎ 095-843-1818</a> ／ <a href="https://fuguryourishima.owst.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎のトラフグを刺身の小皿から頼める浜口の小店で、繁華街の大箱が並ぶ章のなかで、カウンター15席の対極を受け持つ。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページが「2026/07/15 更新」、コースページが「2026/11/20 更新」、料理メニューが「2025/12/09 更新」（2026-11-22 直読み）。②閉店確認3通り: (a)「海鮮料理 ふぐ料理 しま 長崎 閉店」（空白あり）と「海鮮料理ふぐ料理しま長崎閉店」（詰めた形）の2通りをYahoo!検索で引き、この店の閉店を伝えるページは0件（2026-11-22。ヒットしたのは別店『割烹こじま本店』の閉店記事）。(b) 公式SNS＝対象なし（店名義のInstagram・Xのアカウントは見つからなかった。ヒットするのは第三者の紹介投稿のみ。これは閉店の証拠ではない）。(c)「海鮮料理 ふぐ料理 しま 長崎 移転」「同 リニューアル」で各1回引き、移転・リニューアルの告知は0件。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E6%96%99%E7%90%86%20%E3%81%B5%E3%81%90%E6%96%99%E7%90%86%20%E3%81%97%E3%81%BE%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%B2%A9%E5%B7%9D%E7%94%BA5-12">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003451083/">ホットペッパーグルメ 店舗ページ。住所・電話・営業時間・定休日・席数15席・支払い方法・駐車場（2026/07/15 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003451083/food/">ホットペッパーグルメ 料理メニュー。ふぐ刺し2,200円〜・ふぐ焼き1,980円・クエあら煮1,980円（2025/12/09 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003451083/course/">ホットペッパーグルメ コースページ。季節のふぐコース6,600円〜（2026/11/20 更新）2026-11-22 取得</a> / <a href="https://fuguryourishima.owst.jp/">店の公式ページ（ホットペッパー系の店舗公式ページ）。住所・アクセス・電話・営業時間 2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-izakaya-akarinosushi">
+<img class="hero" src="img/nagasaki/nagasaki-izakaya-akarinosushi.jpg" alt="あかりの寿司 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-izakaya-akarinosushi_exterior.jpg" alt="あかりの寿司 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#0d366b;">34</span>あかりの寿司<span class="yomi">あかりのすし</span></div>
+<div class="chips"><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">住吉の商店街に近い14席の寿司店で、おまかせの「ひととおり」はおつまみ・寿司・汁物を季節と仕入れに応じて大将が組む。好みを伝えれば合わせてもらえる。単品のにぎりや巻物も頼め、長崎ならではの「白鉄火巻」（マグロではなくヒラスなどの白身を使う鉄火巻）が600円である。ネタ切れ・シャリ切れで閉店が早まることがある。全席禁煙で喫煙専用室はない。支払いはVISA・マスター・アメックス・DINERS・JCB・ディスカバー。18時開店で、日曜以外は深夜0時まで。問い合わせは営業時間内が確実で、休みの日や営業時間外は電話に出られないことがある。</div>
+<div class="sig"><b>一皿:</b>おまかせ「ひととおり」4,400円（おつまみ・寿司・汁物を大将が季節と仕入れで組む）／おまかせ八貫 2,400円（にぎり8貫のおまかせ。五貫1,600円もある）／白鉄火巻 600円（マグロの赤い鉄火巻ではなく、長崎流に白身を使う鉄火巻）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜水・金・土・祝日・祝前日 18:00〜翌0:00（料理L.O. 23:00／ドリンクL.O. 23:00）／日 18:00〜22:00（料理L.O. 21:30／ドリンクL.O. 21:30）。ネタ切れ・シャリ切れで早く閉めることがある</td></tr>
+<tr><th>定休日</th><td class="off">木曜日（木曜以外に休みがある場合がある）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市住吉町11-20 福地ビル1階</td></tr>
+<tr><th>予約</th><td>予約可。電話090-4352-9333（営業時間内にかけるのが確実）。ホットペッパーグルメのネット予約は即予約が来店日の当日22時まで — <a href="tel:09043529333">☎ 090-4352-9333</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎の寿司をおまかせの形で出す小店で、白鉄火巻という長崎固有の品を置く。繁華街から外れた住吉という場所も章の幅になる。営業の根拠＝①店自身の情報: ホットペッパーグルメの店舗ページと料理メニューが「2025/10/30 更新」、コースページが「2025/12/08 更新」（2026-11-22 直読み）。あわせて長崎市公式観光サイト travel nagasaki の店舗紹介記事が 2025/10/14 付で出ている。②閉店確認3通り: (a)「あかりの寿司 長崎 閉店」（空白あり）と「あかりの寿司長崎閉店」（詰めた形）の2通りをYahoo!検索で引き、閉店を伝えるページは0件（2026-11-22）。(b) 公式SNS＝Instagram（@daigokusano）が実在し、長崎くんちや仕入れの話を投稿している。アカウント名に閉店の語はない。(c)「あかりの寿司 長崎 移転」「同 リニューアル」で各1回引き、移転・リニューアルの告知は0件（ホットペッパー上の『2026年1月29日のリニューアル以降の口コミ』はホットペッパー側の口コミ制度の変更を指す表記で、店のリニューアルではない）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%8B%E3%82%8A%E3%81%AE%E5%AF%BF%E5%8F%B8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%BD%8F%E5%90%89%E7%94%BA11-20%20%E7%A6%8F%E5%9C%B0%E3%83%93%E3%83%AB1%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.hotpepper.jp/strJ003916698/">ホットペッパーグルメ 店舗ページ。住所・営業時間・定休日・席数14席・支払い方法・駐車場（2025/10/30 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003916698/food/">ホットペッパーグルメ 料理メニュー。ひととおり4,400円・おまかせ八貫2,400円・白鉄火巻600円（2025/10/30 更新）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ003916698/course/">ホットペッパーグルメ コースページ（2025/12/08 更新）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/6329/index.html">長崎市公式観光サイト travel nagasaki 店舗紹介「あかりの寿司」。住所（住吉町11-20 福地ビル1階）・住吉駅より徒歩約2分・店の紹介文・おまかせコース「ひととおり」・白鉄火巻（ヒラス）（2025.10.14）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-cafe">喫茶・カフェ・トルコライス</h2>
+<div class="card" id="c-nagasaki-cafe-coffeefujio">
+<img class="hero" src="img/nagasaki/nagasaki-cafe-coffeefujio.jpg" alt="珈琲冨士男 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-cafe-coffeefujio_exterior.jpg" alt="珈琲冨士男 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">35</span>珈琲冨士男<span class="yomi">こーひーふじお</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1946年（昭和21年）に鍛冶屋町で創業した純喫茶。公式サイトの店舗概要によると席数20席、駐車場なし、クレジットカード不可の現金払い。店舗は昭和40年代に建てられたもので、内装はほぼ当時のまま。モーニング（珈琲または紅茶・トースト・ゆで玉子）は9:30〜11:00の提供。サンドイッチと珈琲豆（冨士男ミックス珈琲豆100g 850円）はテイクアウトでき、フルーツサンドのテイクアウトは夏季休止。遠藤周作『砂の城』に店名が登場する。2026年1月にニューヨーク・タイムズ「2026年に行くべき52カ所」で長崎が取り上げられて以降、観光客の来店が増えている。</div>
+<div class="sig"><b>一皿:</b>エッグサンド（厚焼き玉子をはさんだ看板のサンドイッチ。マスタード有・無を選ぶ）／ミックスサンド（エッグ・ハム・野菜から2種を選ぶ）／ウインナー珈琲（泡立てた生クリームを浮かべた珈琲）</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:30〜17:00（L.O.16:30）／モーニング 9:30〜11:00</td></tr>
+<tr><th>定休日</th><td class="off">木曜日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市鍛冶屋町2-12</td></tr>
+<tr><th>予約</th><td>公式サイトに予約の案内はなく、20席のため来店順 — <a href="tel:0958221625">☎ 095-822-1625</a> ／ <a href="https://www.coffee-fujio.net/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>章の中核になる長崎最古級の純喫茶で、珈琲豆の焙煎・販売も行う。営業確認①＝公式サイト（https://www.coffee-fujio.net/）の「お知らせ」に『2025.07.29 7月29日より原材料などの高騰により価格改定いたします。』という店自身の2025年の告知があり、フッターの著作権表示も ©2026（2026-11-22 取得）。営業確認②＝(1)『珈琲冨士男 閉店』と『珈琲冨士男閉店』の両形でYahoo!検索（2026-11-22）。閉店に触れる結果は新大工町の別店「珈琲 冨士」（2025年6月30日閉店）と2020年の時短営業の投稿で、当店の閉店情報はなし。2026-11-13付の訪問記（個人ブログ）で営業中。(2)公式SNSのアカウント名＝Instagram『珈琲冨士男（@coffee_fujio）』。(3)『珈琲冨士男 移転』『珈琲冨士男 リニューアル』でも移転・閉店の情報なし。住所は鍛冶屋町2-12のまま一致（2026-11-22 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E5%86%A8%E5%A3%AB%E7%94%B7%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%8D%9B%E5%86%B6%E5%B1%8B%E7%94%BA2-12">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.coffee-fujio.net）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.coffee-fujio.net/">公式サイト トップ（お知らせ 2025.07.29 価格改定／©2026）2026-11-22 取得</a> / <a href="https://www.coffee-fujio.net/about.php">公式サイト 店舗紹介（住所・電話・営業時間・定休日・席数20・駐車場無・カード不可）2026-11-22 取得</a> / <a href="https://www.coffee-fujio.net/menu.php">公式サイト メニュー（珈琲550円・ミックスサンドセット980円・モーニング750円）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-cafe-coffeehitomachi">
+<img class="hero" src="img/nagasaki/nagasaki-cafe-coffeehitomachi.jpg" alt="珈琲人町 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">36</span>珈琲人町<span class="yomi">こーひーひとまち</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">2008年開業、沖縄・国頭村安田のアダコーヒーやブラジルの小農園との付き合いから店主が焙煎を手がける自家焙煎のコーヒースタンド。抽出はサイフォン。公式サイトの「珈琲人町について」には『焙煎は少し強めですが、フレッシュな酸味は大切にしています』とある。2020年3月に同じ住所で改装（新装オープン）。土日は姉妹店の coffee&amp;clayworks 笠 も営業し、珈琲豆は両店と公式オンラインショップで販売する。毎季「朝の珈琲教室」を開催しており、申し込みは店頭またはメール。店頭のドリンク価格は公式サイト・公式オンラインショップのいずれにも掲載がないため本欄には載せていない。</div>
+<div class="sig"><b>一皿:</b>サイフォンで淹れる自家焙煎珈琲（生産国と精製プロセスを示した豆から選ぶ）／人町ブレンド（店の看板にあたる中煎りのブレンド。豆の量り売りもある）／アダコーヒー（沖縄・国頭村安田産。入荷期間限定）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">月曜日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市東古川町4-25 1F</td></tr>
+<tr><th>予約</th><td>公式サイトに席の予約の案内はない（コーヒースタンド）。珈琲教室のみ店頭またはメールで申し込む — <a href="tel:09072910467">☎ 090-7291-0467</a> ／ <a href="https://kasa-hitomachi.com/hitomachi/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「焙煎をする珈琲店」の枠として採用。眼鏡橋・浜町から歩ける中心部にあり、豆の販売もしている。営業確認①＝公式サイト（https://kasa-hitomachi.com/hitomachi/）の「お知らせ」に店自身の投稿が『2026.09.28 ADACOFFEE 2026 席のご予約承ります！』『2026.09.20 今季の朝の珈琲教室のご案内』『2026.07.20』と並ぶ（2026-11-22 取得）。営業確認②＝(1)『珈琲人町 長崎 閉店』と『珈琲人町長崎閉店』の両形でYahoo!検索（2026-11-22）。当店の閉店情報はなし（『立ち退きの為5月30日閉店』の投稿は店名の記載がない別件）。2026-04-23付の投稿で住所・営業時間が現行どおり紹介されている。(2)公式SNSのアカウント名＝Instagram『珈琲人町 COFFEE HITOMACHI（@coffee_hitomachi）』、Facebook『珈琲人町（coffee.hitomachi）』。(3)『珈琲人町 長崎 移転』『珈琲人町 長崎 リニューアル』＝2020年3月17日に同じ東古川町4-25-1Fで新装オープンした記録のみで、その後の移転はなし。公式サイトのアクセス欄も東古川町4-25-1Fのまま（2026-11-22 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E4%BA%BA%E7%94%BA%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%9D%B1%E5%8F%A4%E5%B7%9D%E7%94%BA4-25%201F">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（kasa-hitomachi.com）より引用 / 外観: 写真なし / 参照元: <a href="https://kasa-hitomachi.com/hitomachi/news">公式サイト お知らせ（2026.09.28／2026.09.20／2026.07.20 の店自身の投稿）2026-11-22 取得</a> / <a href="https://kasa-hitomachi.com/hitomachi/access">公式サイト アクセス（住所・定休日・営業時間・電話番号）2026-11-22 取得</a> / <a href="https://kasa-hitomachi.com/hitomachi/about">公式サイト 珈琲人町について（焙煎の方針・店主のことば）2026-11-22 取得</a> / <a href="http://coffeehitomachi.shop-pro.jp/">公式オンラインショップ（珈琲豆・ドリップバッグの価格）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-cafe-kissaumino">
+<img class="hero" src="img/nagasaki/nagasaki-cafe-kissaumino.jpg" alt="喫茶ウミノ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-cafe-kissaumino_exterior.jpg" alt="喫茶ウミノ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">37</span>喫茶ウミノ<span class="yomi">きっさうみの</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1955年に長崎初のトリスバーとして創業し、端島（軍艦島）出身の創業者から三代続く喫茶店。2025年10月23日にみらい長崎ココウォーク3階へ新店を出した。運営はニップンウミノ株式会社で、同社はアミュプラザ長崎本館5階の「Cafe &amp; Bar ウミノ」、長崎街道かもめ市場の「サン・ウミノ」も営む。珈琲は一杯ずつサイフォンで抽出する。店内は純喫茶をコンセプトにした設えで、入口には店名をかたどった床のモザイクがある。季節のフェアがあり、2026年3月〜5月末はイチゴフェア、夏はフルーツソーダ（1,000円）などの限定メニューが出る。定休日は施設に準じるため、ココウォークの営業カレンダーを確認して出かけたい。</div>
+<div class="sig"><b>一皿:</b>フルーツサンド（旬の果物をはさむ看板商品）／オリジナルブレンド珈琲（サイフォンで一杯ずつ抽出）／ミルクセーキ（長崎の喫茶店に伝わる凍らせて食べる形のもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜20:00（ラストオーダー19:30）</td></tr>
+<tr><th>定休日</th><td class="off">店独自の定休日の記載はなく、みらい長崎ココウォークの休館日に準じる</td></tr>
+<tr><th>住所</th><td>長崎県長崎市茂里町1-55 みらい長崎ココウォーク3階</td></tr>
+<tr><th>予約</th><td>公式サイト・施設サイトに予約の案内はない（来店順） — <a href="tel:0958015887">☎ 095-801-5887</a> ／ <a href="https://npd-ky.co.jp/business_umino.html">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎の喫茶文化を代表する老舗で、2025年に中心部の商業施設へ出した新店。長崎駅・浦上方面からの立ち寄りに向く。営業確認①＝運営会社ニップンウミノ株式会社の公式サイト「事業内容 ウミノ」に『喫茶ウミノ 2025年10月23日オープン。』と店側の記載があり、住所・電話・営業時間も掲載（2026-11-22 取得）。あわせて、みらい長崎ココウォークのショップブログに店名義の『イチゴフェア開催中！【COCO Press 3月号掲載】2026/03/02』がある。営業確認②＝(1)『喫茶ウミノ ココウォーク 閉店』と『喫茶ウミノココウォーク閉店』の両形でYahoo!検索（2026-11-22）。閉店情報はなく、2025年10月のオープン報道が並ぶ。(2)公式SNSのアカウント名＝系列の『Cafe &amp; Bar ウミノ（@cafebar_umino）』は確認できたが、喫茶ウミノ（ココウォーク店）単独のアカウント名は確認できず＝対象なし（閉店の証拠ではない）。(3)『喫茶ウミノ ココウォーク 移転』『同 リニューアル』＝移転・閉店の情報なし。ココウォーク公式のショップ詳細が現在も掲載・更新されている（2026-11-22 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%96%AB%E8%8C%B6%E3%82%A6%E3%83%9F%E3%83%8E%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%8C%82%E9%87%8C%E7%94%BA1-55%20%E3%81%BF%E3%82%89%E3%81%84%E9%95%B7%E5%B4%8E%E3%82%B3%E3%82%B3%E3%82%A6%E3%82%A9%E3%83%BC%E3%82%AF3%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: みらい長崎ココウォーク（商業施設の公式サイト）（cocowalk.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://npd-ky.co.jp/business_umino.html">ニップンウミノ株式会社 公式サイト 事業内容ウミノ（喫茶ウミノ 2025年10月23日オープン・住所・電話・営業時間）2026-11-22 取得</a> / <a href="https://cocowalk.jp/shop/umino/">みらい長崎ココウォーク 公式 ショップ詳細（営業時間・電話・マップNo.306・ショップブログ 2026/3/2）2026-11-22 取得</a> / <a href="https://cocowalk.jp/press202511/">みらい長崎ココウォーク COCO Press 2025年11月号（珈琲600円・フルーツサンド1,280円・ミルクセーキ780円）2026-11-22 取得</a> / <a href="https://cocowalk.jp/press202607/">みらい長崎ココウォーク COCO Press 2026年7月号（フルーツソーダ1,000円）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-cafe-atticcoffee">
+<img class="hero" src="img/nagasaki/nagasaki-cafe-atticcoffee.jpg" alt="Attic coffee and dining 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-cafe-atticcoffee_exterior.jpg" alt="Attic coffee and dining 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">38</span>Attic coffee and dining<span class="yomi">あてぃっくこーひーあんどだいにんぐ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">長崎出島ワーフの1階にある、スペシャルティコーヒー専門店とイタリアンを合わせた店。同じ会社が出島珈琲焙煎所を持ち、代表が買い付けた生豆を自社で焙煎している。長崎港と対岸の稲佐山を正面に見るテラス席があり、ランチ・カフェ・ハッピーアワー・ディナーと通しで営業する。日替わりランチは850円から、ランチパスタは880円から。長崎名物のトルコライスのほか、自家製のナポリピッツァ、パスタ、アラカルトも置く。平日15:00〜19:00は本店限定のハッピーアワー。30名からのパーティープランもあり、各種予約を受ける。公式サイトの「TOPICS」で2026年8月にランチ価格の改定を告知している。</div>
+<div class="sig"><b>一皿:</b>Attic デリシャストルコライス（長崎名物のトルコライスを自家製ソースで仕立てたもの）／フレンチプレスコーヒー（出島珈琲焙煎所で自家焙煎した豆を使う）／Attic デリシャスピッツァ（自家製生地のナポリピッツァ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:30〜22:00（ランチメニューは11:30〜15:00）</td></tr>
+<tr><th>定休日</th><td class="off">毎週水曜日・年末年始</td></tr>
+<tr><th>住所</th><td>長崎県長崎市出島町1-1 長崎出島ワーフ1F 美術館側</td></tr>
+<tr><th>予約</th><td>予約可。電話（095-820-2366）で受け付け、パーティープランは30名から — <a href="tel:0958202366">☎ 095-820-2366</a> ／ <a href="https://attic-coffee.com/attic">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>「焙煎をする珈琲店」と「眺めのよいカフェ」を兼ねる枠として採用。グラバー園内の自由亭喫茶室が建物の保存修理で2025年9月から休業中のため、港の眺めが入る席として代替になる。営業確認①＝公式サイト（https://attic-coffee.com/）の「TOPICS」に『2026.08.08 ランチ価格の値上げにつきまして』『2025.06.14 ホームページをリニューアルしました。』、オーナーブログに『2026.09.03 平日限定！本店と限定の「時間たっぷりハッピーアワー」』『2026.08.31 「龍馬カプチーノ」が「第67期王位戦」長崎対局の勝負メシ候補に』と店自身の日付つき投稿がある（2026-11-22 取得）。営業確認②＝(1)『アティックコーヒー 長崎 出島ワーフ 閉店』と詰めた形の両方でYahoo!検索（2026-11-22）。閉店情報はなし。(2)公式SNSのアカウント名＝Instagram『Attic coffee and dining（@atticcoffeeanddining）』、Facebook『ATTIC Coffee -second- Nagasaki』。(3)『〜 移転』『〜 リニューアル』＝2021年のsecond店改装、2025年6月のホームページ更新が出るのみで、本店の移転・閉店はなし。住所は出島町1-1 長崎出島ワーフのまま一致（2026-11-22 取得）。 【親の判断 2026-11-22】写真は店自身のドメイン（attic-coffee.com）のものだけにした。出島ワーフ（dejimawharf.com）にしか無い2本は、商業施設の公式サイトが手引きの可否表に無いため外した。同じ画像が店のドメインでも配信されている2本（20110829-DSC_0555・20140126-IMG_6237）は店のドメインの URL へ付け替えた（両方で HTTP 200 を実測）。 【担当の補いと 2026-11-22】上の親の判断を受けて、料理・店内の写真を attic-coffee.com 以外の使ってよい出どころから3本足し、計5本にした。内訳＝長崎県観光連盟「ながさき旅ネット」のブログ記事（2024-02-26）からマルゲリータと港に面したテラス席の2本、長崎市公式観光サイト「travel nagasaki」の店舗情報ページ（店舗ID 1351）からカフェラテ1本。ホットペッパーグルメは『Attic』『アティック』『アティックコーヒーアンドダイニング』『出島ワーフ』『出島町 カフェ』の5語で長崎エリア（SA93）を検索したが掲載自体がなく、使えなかった。ながさき旅ネットの3本目（テラスで客が正面を向いている写真）は顔が写っているため採らなかった。採った3本はいずれも長辺1,713px・567pxで、隅を切り出して透かしが無いことを目で確認した。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=Attic%20coffee%20and%20dining%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%87%BA%E5%B3%B6%E7%94%BA1-1%20%E9%95%B7%E5%B4%8E%E5%87%BA%E5%B3%B6%E3%83%AF%E3%83%BC%E3%83%951F%20%E7%BE%8E%E8%A1%93%E9%A4%A8%E5%81%B4">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（attic-coffee.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://attic-coffee.com/">公式サイト トップ（TOPICS 2026.08.08 ランチ価格改定／オーナーブログ 2026.09.03）2026-11-22 取得</a> / <a href="https://attic-coffee.com/attic">公式サイト Attic本店（住所・電話・アクセス・営業時間・定休日・長崎港を眺める席）2026-11-22 取得</a> / <a href="https://attic-coffee.com/attic/menu">公式サイト Attic本店メニュー（トルコライス1,450円・コーヒー500円・ピッツァ1,680円）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/1351/index.html">長崎市公式観光サイト travel nagasaki 店舗情報「Delicious Restaurant Attic」（2022-09-12 掲載。住所・アクセス・駐車場割引・支払い方法・掲載写真）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/course/night">長崎市公式観光サイト travel nagasaki モデルコース「大切な人と世界新三大夜景を楽しむ！夜の長崎さるくモデルコース」（Attic coffee and dining をディナーに掲載。住所・電話・営業時間 11:30〜22:00）2026-11-22 取得</a> / <a href="https://www.nagasaki-tabinet.com/blog/tabibu/38_bu/202402/">長崎県観光連盟「ながさき旅ネット」ブログ記事（2024-02-26。出島ワーフ Attic のマルゲリータと港に面したテラス席の掲載写真）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-cafe-bistrobordeaux">
+<img class="hero" src="img/nagasaki/nagasaki-cafe-bistrobordeaux.jpg" alt="ビストロボルドー 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-cafe-bistrobordeaux_exterior.jpg" alt="ビストロボルドー 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">39</span>ビストロボルドー<span class="yomi">びすとろぼるどー</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">現在の料理長の父が昭和33年に考案したとされる「トルコ風ライス」の味を受け継ぐ店。1987年に万屋町で開業し、2019年に浜町インポートビルへ移った。席数は2階・3階あわせて60席で、3階奥に10名程度の完全個室、2階・3階ともカウンター席がある。全席禁煙、Wi-Fiなし、バリアフリー設備なし。昼11時から夜まで休みなく営業し、クレジットカード・交通系電子マネー・各種QRコード決済が使える。トルコライスは昔ながらのもののほか、ステーキ、ドリア、激辛など十種類以上を揃える。ワインの品揃えを看板にしており、2時間飲み放題付きのコース（5,000円〜）も用意する。長崎スタジアムシティに姉妹店「ビストロボルドー luxe」がある。</div>
+<div class="sig"><b>一皿:</b>トルコ風ライス「昔ながらの」（白ワインでフランベしたドライカレー、ナポリタン、カツレツを一皿に盛る伝統の組み合わせ）／ドリアトルコライス（エビフライとハンバーグをのせて焼いたもの）／牛ハヤシライス（洋食の定番を単品で）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜日・祝日・祝前日 11:00〜22:00（料理L.O.21:00／ドリンクL.O.21:00）。昼のランチは11:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">不定休（店に確認）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市浜町8-28 浜町インポートビル2・3階</td></tr>
+<tr><th>予約</th><td>予約可。電話（095-825-9378）またはホットペッパーグルメのネット予約。18時以降の予約は店から確認の電話が入る場合がある — <a href="tel:0958259378">☎ 095-825-9378</a> ／ <a href="https://bistro-bordeaux.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>トルコライスの由来を語るうえで外せない店。長崎市中心部の浜町アーケードから近い。営業確認①＝ホットペッパーグルメの店舗ページ（strJ001219197）で、店舗基本情報の欄に『2026/05/19 更新』、クーポン欄に『2026/08/25 更新』、料理メニュー欄に『2025/07/11 更新』と店側の更新日が表示される（2026-11-22 取得）。営業確認②＝(1)『ビストロボルドー 長崎 閉店』と『ビストロボルドー長崎閉店』の両形でYahoo!検索（2026-11-22）。閉店情報はなし。2026-10-29付の投稿で『ビストロボルドー 長崎県長崎市浜町8−28 インポートビル 2〜3F』と現住所で紹介されている。(2)公式SNSのアカウント名＝Instagram『bistrobordeaux』（公式サイトに埋め込まれたアカウント名）。(3)『〜 移転』『〜 リニューアル』＝2019年に万屋町から現在地へ移転した記録のみ。2024年10月14日に長崎スタジアムシティへ姉妹店が開いているが、本店の閉店・移転はなし（2026-11-22 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%93%E3%82%B9%E3%83%88%E3%83%AD%E3%83%9C%E3%83%AB%E3%83%89%E3%83%BC%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA8-28%20%E6%B5%9C%E7%94%BA%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%BC%E3%83%88%E3%83%93%E3%83%AB2%E3%83%BB3%E9%9A%8E">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://bistro-bordeaux.com/">公式サイト トップ（店の沿革・電話番号・インスタグラムのアカウント名）2026-11-22 取得</a> / <a href="https://bistro-bordeaux.com/menu">公式サイト メニュー（トルコ風ライス1,480円・トルコライス1,280円・牛ハヤシライス1,100円）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001219197/">ホットペッパーグルメ 店舗ページ（2026/05/19 更新・2026/08/25 更新。住所・アクセス・営業時間・席数60・支払い方法・掲載写真）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-cafe-cafeolympic">
+<img class="hero" src="img/nagasaki/nagasaki-cafe-cafeolympic.jpg" alt="カフェ オリンピック 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-cafe-cafeolympic_exterior.jpg" alt="カフェ オリンピック 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">40</span>カフェ オリンピック<span class="yomi">かふぇおりんぴっく</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">浜町アーケードの仲見世ビル2階にある洋食喫茶。総席数52席でソファー席があり、扉と壁のあるテーブル個室が2室（4名用・6名用）。貸切は10〜30名、着席の宴会は30名まで。店内は全面禁煙で、車いすでの入店ができる。現金のほかクレジットカード・iD・QUICPay・PayPayなど各種決済に対応。名物は高さのあるパフェで、1.2mの「長崎夢タワー」から30cm級の「ガクランの友」まで約50種類が並び、「夢みたい」など開店当初から変わらない名前が残る。角煮をのせた「長崎トルコライス」などトルコライスも揃う。長崎市公式観光サイトの取材記事（2025年5月15日公開）に店長と厨房の様子が載っている。電話は公式ページの転送番号 050-5487-8151 でもつながる。</div>
+<div class="sig"><b>一皿:</b>長崎トルコライス（スパイスで煮込んだ角煮をのせた店独自のトルコライス）／ガクランの友（ぶどうゼリー・ティラミスアイス・コーヒーゼリーを土台にした8層の30cm級パフェ）／閻魔大王のパフェ（看板の大型パフェのひとつ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>月〜金 11:00〜20:00（L.O.19:30）／土・日・祝 11:00〜21:00（L.O.20:30）</td></tr>
+<tr><th>定休日</th><td class="off">長崎市公式観光サイトの店舗情報は「なし」。公式ページには「月曜定休日（祝日は営業、翌火曜定休日）」の記載もあるため来店前に要確認</td></tr>
+<tr><th>住所</th><td>長崎県長崎市浜町8-13 仲見世ビル2F</td></tr>
+<tr><th>予約</th><td>予約可。公式ページ掲載の電話は 050-5487-8151。個室あり、貸切は10〜30名 — <a href="tel:0958243912">☎ 095-824-3912</a> ／ <a href="https://fbk7200.gorp.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎のトルコライスとパフェを同時に見せられる店で、浜町アーケードの中心にあって立ち寄りやすい。営業確認①＝店自身の日付つき情報が読めなかったため、長崎県の特例により公的機関の取材記事を代用した。長崎市公式観光サイト「travel nagasaki」（一般社団法人長崎国際観光コンベンション協会）の特集記事『長崎のふつうは世間の不思議「店」カフェ オリンピック』は、ページの構造化データで公開日 2025-05-15、更新日 2026-03-06（2026-11-22 取得）。店長・安部さんへの取材と厨房・店内の撮影を伴う記事であり、会員一覧や加盟店一覧ではない。あわせて公式ページ（https://fbk7200.gorp.jp/）の写真欄には更新日時 2026-10-17 19:13 が記録されている。営業確認②＝(1)『カフェオリンピック 長崎 閉店』と『カフェオリンピック長崎閉店』の両形でYahoo!検索（2026-11-22）。2018年11月の火災による休業と2019年4月の復活までの記事が出るのみで、現在の閉店情報はなし。(2)公式SNSのアカウント名＝Instagram『カフェ オリンピック（@cafe_olympic4）』。(3)『〜 移転』『〜 リニューアル』＝2019年4月に浜町8-33から仲見世ビル2階へ移った記録のみ。現住所の浜町8-13 仲見世ビル2Fは公式ページ・長崎市公式観光サイトの双方で一致（2026-11-22 取得）。※定休日は出典が割れており、長崎市公式観光サイトの店舗情報と特集記事はいずれも「なし／無し」、公式ページ（gorp）は「月曜定休日（祝日は営業、翌火曜定休日）」と記す。来店前の確認を勧める。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%83%95%E3%82%A7%20%E3%82%AA%E3%83%AA%E3%83%B3%E3%83%94%E3%83%83%E3%82%AF%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA8-13%20%E4%BB%B2%E8%A6%8B%E4%B8%96%E3%83%93%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: ぐるなび（rimage.gnst.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.at-nagasaki.jp/feature/autumn_cafeolympic">長崎市公式観光サイト travel nagasaki 特集記事（公開2025-05-15／更新2026-03-06。取材記事・住所・電話・営業時間・定休日・写真）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/6143/index.html">長崎市公式観光サイト travel nagasaki 店舗情報（住所・アクセス・営業時間・支払い方法・公式リンク）2026-11-22 取得</a> / <a href="https://fbk7200.gorp.jp/">公式サイト（トルコライス1,430円・ケーキセット1,210円・閻魔大王のパフェ1,320円・席数52・個室・掲載写真）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-cafe-primrose">
+<img class="hero" src="img/nagasaki/nagasaki-cafe-primrose.jpg" alt="primrose 料理・店内写真">
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">41</span>primrose<span class="yomi">ぷりむろーず</span></div>
+<div class="chips"><span class="chip official">official</span><span class="chip hotpepper">hotpepper</span></div>
+<div class="desc">中島川沿いのビル2階にあり、窓際の席から眼鏡橋を見ながら食事ができる店。昼は長崎名物のトルコライスが一番人気で、カツ・コロッケ・ハンバーグ・エビフライを二つ組み合わせる「ダブルトルコライス」、三つ組み合わせる「トリプルトルコライス」、量を控えた女性限定の「レディーストルコライス」と選択肢が広い。ライス大盛りは＋250円、パスタ大盛りは＋220円。子ども椅子と絵本を置いており、子ども連れでも使える。貸切の予約は12名から。トルコライスやハンバーグ、コロッケはテイクアウトもでき、受付は11:30〜15:00と18:00〜20:30。定休日は不定休で、公式サイトの「お知らせ」に月ごとの店休日が出る。</div>
+<div class="sig"><b>一皿:</b>トルコライス（サラダ・パスタ・カツ・カレーが一皿に載る店の一番人気）／ダブルトルコライス（カツとコロッケなど揚げ物を2種組み合わせる）／レディーストルコライス（ハーフカツ・エビフライ1本・パスタ・ごはん少なめ・日替わりデザート付き）</div>
+<table class="info">
+<tr><th>営業時間</th><td>ランチ 11:30〜15:30（料理L.O.15:00／ドリンクL.O.15:00）／ディナー 18:00〜21:30（料理L.O.20:30／ドリンクL.O.21:00）。最終入店はオーダーストップの15分前</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイトの「お知らせ」で月ごとに告知）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市古川町3-3 若喜屋ビル2F</td></tr>
+<tr><th>予約</th><td>予約可。電話（095-829-2115）またはホットペッパーグルメのネット予約。貸切は12名から — <a href="tel:0958292115">☎ 095-829-2115</a> ／ <a href="https://www.restaurant-primrose.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>眼鏡橋という長崎の名所を窓から眺められる洋食の店で、観光の動線上にある。営業確認①＝公式サイト（https://www.restaurant-primrose.com/）の「お知らせ」に『2026/11/02 11月の店休日』『2026/10/19 本日10/19ディナーお休み』『2026/10/05 10月のお休みなど』と店自身の告知が並ぶ（2026-11-22 取得）。あわせてホットペッパーグルメの店舗ページ（strJ001010706）に『2026/05/27 更新』『2026/03/13 更新』『2025/12/08 更新』の表示がある。営業確認②＝(1)『primrose 長崎 眼鏡橋 閉店』と詰めた形の両方でYahoo!検索（2026-11-22）。閉店情報はなし。(2)公式SNSのアカウント名＝Instagram『プリムローズ（@restaurant_primrose_）』。(3)『〜 移転』『〜 リニューアル』＝移転・閉店の情報なし（検索結果に出る「2026年1月29日のリニューアル」はホットペッパーグルメ側の口コミ機能の改修を指す記載）。住所は古川町3-3 若喜屋ビル2Fのまま一致（2026-11-22 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=primrose%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%8F%A4%E5%B7%9D%E7%94%BA3-3%20%E8%8B%A5%E5%96%9C%E5%B1%8B%E3%83%93%E3%83%AB2F">Googleマップで開く</a>
+<div class="src">写真: ホットペッパーグルメ（imgfp.hotp.jp）より引用 / 外観: 写真なし / 参照元: <a href="https://www.restaurant-primrose.com/">公式サイト トップ（お知らせ 2026/11/02 ほか・住所・アクセス・営業時間・定休日）2026-11-22 取得</a> / <a href="https://www.restaurant-primrose.com/lunch/">公式サイト ランチ（トルコライス1,200円・ハンバーグトルコライス1,320円・パスタランチ980円）2026-11-22 取得</a> / <a href="https://www.hotpepper.jp/strJ001010706/">ホットペッパーグルメ 店舗ページ（2026/05/27 更新・2026/03/13 更新。掲載写真）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-cafe-himawaritei">
+<img class="hero" src="img/nagasaki/nagasaki-cafe-himawaritei.jpg" alt="洋食屋 向日葵亭 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-cafe-himawaritei_exterior.jpg" alt="洋食屋 向日葵亭 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#2a78d6;">42</span>洋食屋 向日葵亭<span class="yomi">ようしょくやひまわりてい</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">長崎市北部の京泊にある洋食屋で、看板はトルコライス。ピラフは特製の和風ダレを使い、玉ねぎをじっくり炒めたカレーソースをかけ、ヒレカツ・ハンバーグ・海老などを選んで組み合わせる。スパゲティのソースもミート・トマト・カルボナーラから選べ、サイズも選択できる。トルコライスのほかに、ハヤシソースをかけたトルコハヤシライス、ホワイトソースとチーズをかけて焼くトルコライスグラタンがある。日替わりのA〜Sランチは15:00までの数量限定。自家製のロールパン（6個入り420円）とイギリス食パン（420円）をレジ横で売る。予約は受け付けておらず来店順。テイクアウトは受け取りの30分前までに電話で注文する（受け取り11:15〜21:00）。2026年11月21日に、調理師の怪我により当面のあいだ土日祝のオムレツを使った料理とピザを休止する告知が出ている。</div>
+<div class="sig"><b>一皿:</b>ヒレカツトルコライス（柔らかいヒレカツ・和風ダレのピラフ・玉ねぎのカレーソース。店の一番人気）／トルコハヤシライス（ヒレカツやハンバーグをのせ、ハヤシソースをかけたもの）／ヒレカツトルコライスグラタン（トルコライスにホワイトソースとチーズをかけて焼いたもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜21:30（オーダーストップ21:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイトのカレンダーと「新着情報」で告知）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市京泊2丁目9-34</td></tr>
+<tr><th>予約</th><td>予約不可（公式サイトに「ご予約は承っておりません」と明記）。テイクアウトのみ電話で受け付ける — <a href="tel:0958401860">☎ 095-840-1860</a> ／ <a href="https://www.himawaritei.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>トルコライスのほかオムレツ料理・ハヤシ・ハンバーグと洋食の幅が広く、章の「オムライス・ハヤシなどの洋食」を担う。営業確認①＝公式サイト（https://www.himawaritei.jp/）の「向日葵亭からのお知らせ」に『2026.11.21 調理師の怪我で調理師不足の為、暫くの間、土日祝日のオムレツを使った料理、ピザを休止させていただきます。』『2026.11.15 11月の店休日のお知らせ』『2026.11.15 12,1月の店休日のお知らせ』と店自身の告知が並び、取得日の前日まで更新されている（2026-11-22 取得）。営業確認②＝(1)『洋食屋向日葵亭 閉店』と詰めた形の両方でYahoo!検索（2026-11-22）。当店の閉店情報はなし（2024年の閉店投稿は別店のもの）。公式サイトの新着情報が6日前の更新として検索結果に出る。(2)公式SNSのアカウント名＝Instagram『向日葵亭（@himawaritei）』、Facebook『洋食屋 向日葵亭』。(3)『〜 移転』『〜 リニューアル』＝当店の移転・閉店の情報はなし。元料理長が独立して別店（昭和レトロのおもちゃ箱 華山）を開いた記録が出るのみ。住所は京泊2丁目9-34のまま一致（2026-11-22 取得）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%B4%8B%E9%A3%9F%E5%B1%8B%20%E5%90%91%E6%97%A5%E8%91%B5%E4%BA%AD%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E4%BA%AC%E6%B3%8A2%E4%B8%81%E7%9B%AE9-34">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.himawaritei.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.himawaritei.jp/">公式サイト トップ（お知らせ 2026.11.21／2026.11.15・営業時間・定休日・日替わりランチの価格）2026-11-22 取得</a> / <a href="https://www.himawaritei.jp/info/">公式サイト 向日葵亭について（住所・電話・営業時間・アクセス・営業元会社・店の由来）2026-11-22 取得</a> / <a href="https://www.himawaritei.jp/turkishrice/">公式サイト トルコライス（ヒレカツトルコライス1,680円・ヒレカツハヤシライス1,780円ほか）2026-11-22 取得</a></div>
+</div></div>
+<h2 id="s-kashi" class="c-yellow">カステラ・和洋菓子・甘味</h2>
+<div class="card" id="c-nagasaki-kashi-fukusaya">
+<img class="hero" src="img/nagasaki/nagasaki-kashi-fukusaya.jpg" alt="カステラ本家 福砂屋 長崎本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-kashi-fukusaya_exterior.jpg" alt="カステラ本家 福砂屋 長崎本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">43</span>カステラ本家 福砂屋 長崎本店<span class="yomi">かすてらほんけ ふくさや ながさきほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1624年（寛永元年）創業。長崎本店は売場だけで、店内に飲食の席はない（店内で食べられない・販売のみ）。営業は9:30〜17:00で、電話での受付は10:00〜16:30。2025年10月24日付の公式のお知らせで、2025年11月から毎週水曜の定休日を廃止した。カステラは食べやすいよう10切れに切った状態で売られ、蜂蜜を使わず水飴（米飴）を使う。通信販売の注文は本店ではなく浦上流通センター（095-845-2938）が受け、浦上店・松が枝店など市内に別店舗がある。</div>
+<div class="sig"><b>一皿:</b>カステラ 小切れ0.6号（底にザラメ糖が残る長崎カステラ。1本10切れ入り）／フクサヤキューブ（2切れ入りの小箱。1人分の土産向き）／オランダケーキ（くるみ入りのカステラ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:30〜17:00（電話での受付は10:00〜16:30）</td></tr>
+<tr><th>定休日</th><td class="off">無休（2025年11月より毎週水曜の定休日を廃止）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市船大工町3-1</td></tr>
+<tr><th>予約</th><td>予約不要（店頭販売のみ）。電話注文・通信販売は浦上流通センター 095-845-2938 が受付（10:00〜16:30） — <a href="tel:0958212938">☎ 095-821-2938</a> ／ <a href="https://www.fukusaya.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>カステラの章の筆頭として入れる。営業確認①＝公式サイト「カステラな日々（新着情報）」の2026/11/14付お知らせ、および2025/10/24付「長崎本店の定休日廃止のご案内」（いずれも2026-11-22 に本文を直読み）。営業確認②＝(1)「福砂屋 閉店」「福砂屋閉店」の両形で検索（2026-11-22）→長崎本店の閉店情報なし。上位は公式の定休日廃止のお知らせ。(2)公式SNSのアカウント名＝Instagram「fukusaya_castella1624」（公式サイトのフッターからリンク）。(3)「福砂屋 長崎本店 移転」→2025/10/24の公式お知らせで長崎市船大工町3番1号の所在を確認、移転情報なし。「福砂屋 長崎本店 リニューアル」→長崎本店の改装・閉店情報なし（東京工場の移転の話題のみ）。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%82%AB%E3%82%B9%E3%83%86%E3%83%A9%E6%9C%AC%E5%AE%B6%20%E7%A6%8F%E7%A0%82%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%88%B9%E5%A4%A7%E5%B7%A5%E7%94%BA3-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.fukusaya.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.fukusaya.co.jp/news/">公式サイト 新着情報「カステラな日々」（2026/11/14 付の記事あり）2026-11-22 取得</a> / <a href="https://www.fukusaya.co.jp/store/kyushu.html">公式サイト 店舗のご案内・九州エリア（長崎本店の住所・電話・営業時間）2026-11-22 取得</a> / <a href="https://www.fukusaya.co.jp/news/2025/10/24/">公式サイト お知らせ「長崎本店の定休日廃止のご案内」（2025/10/24）2026-11-22 取得</a> / <a href="https://www.fukusaya.jp/">福砂屋オンラインストア（商品価格）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-kashi-shooken">
+<img class="hero" src="img/nagasaki/nagasaki-kashi-shooken.jpg" alt="松翁軒 本店／2F 喫茶セヴィリヤ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-kashi-shooken_exterior.jpg" alt="松翁軒 本店／2F 喫茶セヴィリヤ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">44</span>松翁軒 本店／2F 喫茶セヴィリヤ<span class="yomi">しょうおうけん ほんてん きっさせゔぃりや</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1681年（天和元年）創業。1階が売場（9:00〜18:00）、2階が喫茶セヴィリヤ（10:00〜17:00）で、カステラを皿で食べられる数少ない店。店名は日本二十六聖人記念館の初代館長だった結城了悟神父の故郷スペイン・セヴィリヤにちなみ、1980年の本店ビル新築時に名付けられた。2023年1月に本店1〜2階を改装。喫茶は公式サイトが前日までの予約を勧めており、週末と混雑時間帯は待ちが出る。2026年6月18日付のお知らせで、それまで毎週火曜としていた喫茶の定休日を廃止した。電話受付は9:30〜17:00。</div>
+<div class="sig"><b>一皿:</b>五三焼カステラ（卵黄の配合を増やした濃厚なカステラ。セットは1,375円）／チョコラーテ（明治時代から作るチョコレート入りカステラ）／ミルクセーキ（長崎式。注文を受けてから1つずつ手作りするため時間がかかる）</div>
+<table class="info">
+<tr><th>営業時間</th><td>本店（売場）9:00〜18:00／2F 喫茶セヴィリヤ 10:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">公式サイトの本店紹介に定休日の記載なし（喫茶セヴィリヤは2026年6月18日付のお知らせで毎週火曜の定休日を廃止）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市魚の町3-19</td></tr>
+<tr><th>予約</th><td>喫茶セヴィリヤは前日までの席の予約を公式サイトが推奨（公式の予約ページ、または 095-822-0410／電話受付9:30〜17:00）。1階の売場は予約不要 — <a href="tel:0958220410">☎ 095-822-0410</a> ／ <a href="https://shooken.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>カステラを買うだけでなく店内で食べられる店として入れる。営業確認①＝公式サイトのお知らせ欄に2026年11月21日付「オンラインショップ限定『御歳暮 送料キャンペーン』のご案内（11/18〜）」、2026年11月3日付「『冬の桃日和』お歳暮早期承り会と特別品販売のご案内」（2026-11-22 に本文を直読み）。喫茶セヴィリヤの特設サイトにも2026年10月25日付のお知らせ。営業確認②＝(1)「松翁軒 閉店」「松翁軒閉店」の両形で検索（2026-11-22）→本店の閉店情報なし（2024年の和菓子調進所の併設移転の記事のみ）。(2)公式SNSのアカウント名＝Instagram「shooken_castella」（公式サイトからリンク）。(3)「松翁軒 本店 移転」→本店の移転情報なし。「松翁軒 本店 リニューアル」→2023年1月28日の本店改装オープンの公式告知のみで、閉店ではない。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%9D%BE%E7%BF%81%E8%BB%92%20%E6%9C%AC%E5%BA%97%EF%BC%8F2F%20%E5%96%AB%E8%8C%B6%E3%82%BB%E3%83%B4%E3%82%A3%E3%83%AA%E3%83%A4%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E9%AD%9A%E3%81%AE%E7%94%BA3-19">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（sevilla.shooken.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://shooken.com/">公式サイト トップ お知らせ（2026年11月21日・2026年11月3日の記事）2026-11-22 取得</a> / <a href="https://shooken.com/sevilla/">公式サイト 松翁軒本店／喫茶セヴィリヤ（住所・電話・営業時間・駐車場）2026-11-22 取得</a> / <a href="https://sevilla.shooken.com/">喫茶セヴィリヤ 特設サイト（メニューと価格、2026年10月25日付お知らせ）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-kashi-bunmeido-sohonten">
+<img class="hero" src="img/nagasaki/nagasaki-kashi-bunmeido-sohonten.jpg" alt="文明堂総本店 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-kashi-bunmeido-sohonten_exterior.jpg" alt="文明堂総本店 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">45</span>文明堂総本店 本店<span class="yomi">ぶんめいどうそうほんてん ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1900年（明治33年）に中川安五郎が長崎市丸山町で「文明堂」として開業。本店は江戸町にあり、営業は9:00〜18:00、定休日は元日のみ。支払いは現金とカード。店内に喫茶はなく、買って帰るだけの店（店内で食べられない・販売のみ）。契約農場と共同開発した「南蛮卵」、もち米水飴、国内産小麦粉を使う。市内には浜町店・観光通店・駅前店など9店があり、浜町店の店内には世界的ガーデナーの石原和幸氏が毎月手掛ける坪庭が置かれている。</div>
+<div class="sig"><b>一皿:</b>特撰カステラ文明堂（木箱入りの上級品）／三笠山（小豆の選別から炊き上げまで自社で行う自家製餡のどら焼き）／桃カステラ（長崎の縁起菓子。季節商品）</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜18:00</td></tr>
+<tr><th>定休日</th><td class="off">元日のみ</td></tr>
+<tr><th>住所</th><td>長崎県長崎市江戸町1-1</td></tr>
+<tr><th>予約</th><td>予約不要（店頭販売のみ）。焼印カステラなどの名入れ品は1箱から注文可 — <a href="tel:0958240002">☎ 095-824-0002</a> ／ <a href="https://bunmeido.ne.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>カステラの三大老舗の一つとして入れる。営業確認①＝公式サイトのお知らせに2026/11/17「長崎が舞台のYouTubeドラマ『超電導♥恋する旅ロケ』とのコラボカステラ販売開始のお知らせ」、2026/11/12「チョコレートカステラ巻が販売開始！」（2026-11-22 に本文を直読み）。営業確認②＝(1)「文明堂総本店 閉店」「文明堂総本店閉店」の両形で検索（2026-11-22）→本店の閉店情報なし（2018年の広島・舟入店の移転閉店のみ）。(2)公式SNSのアカウント名＝Instagram「bunmeido_nagasakicastella」（公式サイトからリンク）。(3)「文明堂総本店 本店 移転」→本店の移転情報なし。「文明堂総本店 本店 リニューアル」→2019年7月12日の江戸町本店リニューアルオープンの公式告知のみ。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%96%87%E6%98%8E%E5%A0%82%E7%B7%8F%E6%9C%AC%E5%BA%97%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B1%9F%E6%88%B8%E7%94%BA1-1">Googleマップで開く</a>
+<div class="src">写真: 長崎市公式観光サイト「travel nagasaki」（長崎国際観光コンベンション協会）（www.at-nagasaki.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://bunmeido.ne.jp/">公式サイト お知らせ（2026/11/17・2026/11/12 の記事）2026-11-22 取得</a> / <a href="https://bunmeido.ne.jp/shops/">公式サイト 店舗情報（本店の住所・電話・営業時間）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/1272/index.html">長崎市公式観光サイト 店舗情報「文明堂総本店」（定休日・支払い方法・アクセス。2022.09.12 掲載）2026-11-22 取得</a> / <a href="https://www.castella.website/">文明堂総本店 公式オンラインショップ（商品価格）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-kashi-iwanaga-baijyuken">
+<img class="hero" src="img/nagasaki/nagasaki-kashi-iwanaga-baijyuken.jpg" alt="岩永梅寿軒 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-kashi-iwanaga-baijyuken_exterior.jpg" alt="岩永梅寿軒 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">46</span>岩永梅寿軒<span class="yomi">いわながばいじゅけん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">天保元年（1830年）創業。営業は月・水・金・土の10:00〜16:00で、火・木・日は店休（催事などで変則営業あり。最新の営業日は公式サイトの「ニュース」に出る）。店内に飲食の席はない（店内で食べられない・販売のみ）。長崎カステラは店頭販売の有無と数量が日によって変わり、公式サイトのトップページで前日の夕方ごろに翌日の販売予定を告知する。少量の日は開店前（9:15〜9:45頃）に引換券を配り、なくなり次第終了。カステラの予約は店頭で随時受け付けているが、受け取りまで6〜12か月が目安。電話とオンラインショップでの予約は休止中。桃カステラは2月末〜3月初旬の季節限定。</div>
+<div class="sig"><b>一皿:</b>もしほ草（求肥に昆布を混ぜ、表面に砂糖をまぶした看板菓子。賞味期限20日）／長崎カステラ（予約が中心で、店頭は日により少量）／桃カステラ（2月末〜3月初旬の季節限定。バラ864円）</div>
+<table class="info">
+<tr><th>営業時間</th><td>10:00〜16:00（短縮・延長の場合あり）</td></tr>
+<tr><th>定休日</th><td class="off">火・木・日曜日（催事などで変則営業あり）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市諏訪町7-1</td></tr>
+<tr><th>予約</th><td>長崎カステラは店頭で随時予約を受付（受け取りまで6〜12か月が目安）。電話・FAX・オンラインショップでの予約は休止中 — <a href="tel:0958220977">☎ 095-822-0977</a> ／ <a href="https://www.baijyuken.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>カステラだけでなく、長崎の和菓子と桃カステラを置く老舗として入れる。営業確認①＝公式サイトの「梅寿軒時報」に2026年11月03日付「11月の営業日について」、トップページのカステラ店頭販売欄に2026年11月20日付「2026/11/21の予定」（2026-11-22 に本文を直読み）。営業確認②＝(1)「岩永梅寿軒 閉店」「岩永梅寿軒閉店」の両形で検索（2026-11-22）→閉店情報なし。上位は公式の営業予定のお知らせ。(2)公式SNSのアカウント名＝X「@baijyuken」（公式サイトからリンク）。(3)「岩永梅寿軒 移転」「岩永梅寿軒 リニューアル」→移転・改装による閉店の情報なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E5%B2%A9%E6%B0%B8%E6%A2%85%E5%AF%BF%E8%BB%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%AB%8F%E8%A8%AA%E7%94%BA7-1">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.baijyuken.com）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.baijyuken.com/">公式サイト トップ「梅寿軒時報」（2026年11月03日）とカステラ店頭販売の予定（2026年11月20日）2026-11-22 取得</a> / <a href="https://www.baijyuken.com/access.html">公式サイト アクセス（住所・電話・営業時間・店休日・道順）2026-11-22 取得</a> / <a href="https://www.baijyuken.com/itemlist.html">公式サイト 取扱商品一覧（もしほ草・桃カステラの価格）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/4528/index.html">長崎市公式観光サイト 店舗情報「岩永梅壽軒」（アクセス・駐車場。2023.01.30 掲載）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-kashi-hakusuido-shiramizu">
+<img class="hero" src="img/nagasaki/nagasaki-kashi-hakusuido-shiramizu.jpg" alt="白水堂 思案橋本店／和風喫茶 志らみず 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-kashi-hakusuido-shiramizu_exterior.jpg" alt="白水堂 思案橋本店／和風喫茶 志らみず 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">47</span>白水堂 思案橋本店／和風喫茶 志らみず<span class="yomi">はくすいどう しあんばしほんてん わふうきっさ しらみず</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1887年（明治20年）に初代・白水喜八が創業。菓子の売場の奥に暖簾を掛けた和風喫茶「志らみず」があり、二代目の時代から続く。長崎のミルクセーキは飲み物ではなくスプーンで食べる氷菓で、この店のものは古くから知られる。自家製の団子や餅を使った甘味も注文を受けてから作る。全42席。支払いは現金とカードだが、喫茶はカード不可。桃かすてらを手のひらサイズにした「こもも」が看板で、売場だけの利用もできる。</div>
+<div class="sig"><b>一皿:</b>ミルクセーキ（長崎式。スプーンで食べる氷菓。880円）／田舎ぜんざい（焼きたての餅入り。825円）／こもも（手のひらサイズの桃かすてら）</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:30〜18:00（和風喫茶 志らみずは11:00〜17:30、季節により変動）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市油屋町1-3</td></tr>
+<tr><th>予約</th><td>公式サイトに席の予約の案内はない（先着順） — <a href="tel:0958260145">☎ 095-826-0145</a> ／ <a href="https://hakusuido.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>甘味・ミルクセーキの枠として入れる。長崎のミルクセーキを通年で出し、桃かすてらも置く。営業確認①＝公式サイトの新着情報に2026.10.23「【オンラインショップ会員様…】」、2026.09.10「【重要】オンラインショップ…」（2026-11-22 にトップページの本文を直読み）。志らみずのお品書きPDFも2026年6月版。営業確認②＝(1)「白水堂 思案橋本店 閉店」「白水堂思案橋本店閉店」の両形で検索（2026-11-22）→長崎の白水堂の閉店情報なし（会津若松の同名の音楽専門店の閉店記事が混じるが別会社）。(2)公式SNSのアカウント名＝Instagram「hakusuido_nagasaki」（公式サイトからリンク）。(3)「白水堂 長崎 移転」→2022年のアミュプラザ長崎店の閉店告知のみで、思案橋本店は継続。「白水堂 長崎 リニューアル」→本店の改装・閉店情報なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E6%B0%B4%E5%A0%82%20%E6%80%9D%E6%A1%88%E6%A9%8B%E6%9C%AC%E5%BA%97%EF%BC%8F%E5%92%8C%E9%A2%A8%E5%96%AB%E8%8C%B6%20%E5%BF%97%E3%82%89%E3%81%BF%E3%81%9A%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B2%B9%E5%B1%8B%E7%94%BA1-3">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（hakusuido.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://hakusuido.jp/">公式サイト トップ 新着情報（2026.10.23・2026.09.10 の記事）2026-11-22 取得</a> / <a href="https://hakusuido.jp/company">公式サイト 会社概要（創業年・所在地・電話）2026-11-22 取得</a> / <a href="https://hakusuido.jp/bd/pdf/shiramizu_202606_menu.pdf">和風喫茶 志らみず お品書き（2026年6月版PDF。ミルクセーキ・ぜんざい・セットの価格）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/1698/index.html">長崎市公式観光サイト 店舗情報「白水堂」（営業時間・定休日・支払い方法・席数・アクセス。2022.09.13 掲載）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-kashi-baigetsudo">
+<img class="hero" src="img/nagasaki/nagasaki-kashi-baigetsudo.jpg" alt="梅月堂 本店／サロン・ド・フィーヌ 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-kashi-baigetsudo_exterior.jpg" alt="梅月堂 本店／サロン・ド・フィーヌ 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">48</span>梅月堂 本店／サロン・ド・フィーヌ<span class="yomi">ばいげつどう ほんてん さろん・ど・ふぃーぬ</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">1894年（明治27年）に和菓子店として創業し、昭和30年ごろに本格的な洋菓子店へ。長崎でケーキといえば名の挙がる「シースクリーム」はこの店が生んだもので、スポンジにカスタードを挟み、生クリームと黄桃・パイナップルをのせる。本店は1階が売場（10:00〜19:00）、2階が直営喫茶「サロン・ド・フィーヌ」（11:00〜17:30、L.O.17:00）でテーブル席30席。支払いは現金・カード・電子マネー。喫茶でしか食べられない焼きたてアップルパイやシースパフェがある。桃カステラは10月から5月下旬までの期間限定。2026年1月に江川店が閉店したが、本店は営業を続けており、2026年10月に本店の100周年リニューアルを公式SNSで告知している。</div>
+<div class="sig"><b>一皿:</b>シースクリーム（スポンジ・カスタード・生クリームに黄桃とパイナップル。1個490円）／南蛮おるごおる（葉巻型に巻いたラングドシャ。10本入870円）／シースパフェ（喫茶限定。シースクリームをパフェにしたもの）</div>
+<table class="info">
+<tr><th>営業時間</th><td>1F 売場 10:00〜19:00／2F サロン・ド・フィーヌ 11:00〜17:30（L.O. 17:00）</td></tr>
+<tr><th>定休日</th><td class="off">不定休</td></tr>
+<tr><th>住所</th><td>長崎県長崎市浜町7-3</td></tr>
+<tr><th>予約</th><td>公式サイトに席の予約の案内はない（先着順） — <a href="tel:0958253228">☎ 095-825-3228</a> ／ <a href="https://baigetsudo.com/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>洋菓子の枠として入れる。長崎の定番ケーキ「シースクリーム」の発祥店で、2階の喫茶で食べられる。営業確認①＝公式サイトのお知らせに2026.01.05「閉店のお知らせ　梅月堂江川店」（江川店のみの閉店で本店は継続）、2025.08.15「【8月15日】精霊流しに伴う営業時間変更のお知らせ」で本店の18時閉店を告知（2026-11-22 に本文を直読み）。営業確認②＝(1)「梅月堂 長崎 本店 閉店」「梅月堂長崎本店閉店」の両形で検索（2026-11-22）→本店の閉店情報なし。上位は公式の営業時間変更のお知らせ。(2)公式SNSのアカウント名＝X「@baigetsudo」・Instagram「baigetsudo_nagasaki」（いずれも公式サイトからリンク）。(3)「梅月堂 長崎 本店 移転」→昭和2年に浜町へ移ったという沿革の記述のみで、近年の移転情報なし。「梅月堂 長崎 本店 リニューアル」→2026/10/16 付で「梅月堂本店100周年リニューアルしました」の公式SNS投稿があり、営業中であることの裏づけになる。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E6%A2%85%E6%9C%88%E5%A0%82%20%E6%9C%AC%E5%BA%97%EF%BC%8F%E3%82%B5%E3%83%AD%E3%83%B3%E3%83%BB%E3%83%89%E3%83%BB%E3%83%95%E3%82%A3%E3%83%BC%E3%83%8C%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E6%B5%9C%E7%94%BA7-3">Googleマップで開く</a>
+<div class="src">写真: 長崎市公式観光サイト「travel nagasaki」（長崎国際観光コンベンション協会）（www.at-nagasaki.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://baigetsudo.com/">公式サイト お知らせ（2026.01.05・2025.08.15 の記事）2026-11-22 取得</a> / <a href="https://baigetsudo.com/shop/">公式サイト 店舗紹介（本店の住所・電話・売場とカフェの営業時間）2026-11-22 取得</a> / <a href="https://baigetsudo.com/sweets/">公式サイト 梅月堂のお菓子（シースクリーム・南蛮おるごおる・マドレーヌの価格）2026-11-22 取得</a> / <a href="https://www.at-nagasaki.jp/gourmet/shop/1178/index.html">長崎市公式観光サイト 店舗情報「梅月堂本店 サロン・ド・フィーヌ」（定休日・席数・支払い方法・アクセス。2022.09.12 掲載）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-kashi-mogi-ichimarukou">
+<img class="hero" src="img/nagasaki/nagasaki-kashi-mogi-ichimarukou.jpg" alt="茂木一まる香本家 本店 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-kashi-mogi-ichimarukou_exterior.jpg" alt="茂木一まる香本家 本店 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">49</span>茂木一まる香本家 本店<span class="yomi">もぎいちまるこうほんけ ほんてん</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">弘化元年（1844年）に初代・榎市右衛門が茂木で創業。看板は中国から伝わった焼菓子「一〇香（いっこっこう）」で、焼く前は餡を入れるのに焼き上がると中が空洞になる。昭和59年に六代目・榎巍が「元祖茂木ビワゼリー」を考案し、茂木びわを種を取って丸ごと1個ゼリーで包む。本店は9:00〜17:00、水曜定休。店内に喫茶はなく、買って帰るだけの店（店内で食べられない・販売のみ）。市街地まで戻らずに買えるが、長崎空港・長崎浜屋・長崎街道かもめ市場内のすみや・夢彩都などでも扱いがある（いずれも直営店ではなく、在庫は店により異なる）。</div>
+<div class="sig"><b>一皿:</b>一〇香（中が空洞の焼菓子。一口食べると香ばしいことから名が付いた。15個箱入2,430円）／茂木ビワゼリー（茂木びわを丸ごと1個包んだゼリー）／黄金の雫（びわの実を底に敷いて焼いた丸いびわカステラ）</div>
+<table class="info">
+<tr><th>営業時間</th><td>9:00〜17:00</td></tr>
+<tr><th>定休日</th><td class="off">水曜日</td></tr>
+<tr><th>住所</th><td>長崎県長崎市茂木町1805</td></tr>
+<tr><th>予約</th><td>予約不要（店頭販売のみ）。発送の注文は受注センター 0120-49-1052 またはネットショップ — <a href="tel:0958361919">☎ 095-836-1919</a> ／ <a href="https://biwajelly.co.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>長崎の一口香（一〇香）の元祖として入れる。カステラ以外の長崎の銘菓を章に入れるため。営業確認①＝公式サイト（法人サイト）の「催事のご案内」が2025年12月12日更新で、2026/01/07〜01/13 の船橋東武・長崎物産展への出展を告知している（2026-11-22 に本文を直読み）。同欄には2025年11月6〜11日の池袋東武、2025年12月4〜9日の大分トキハも載る。営業確認②＝(1)「茂木一まる香本家 閉店」「茂木一まる香本家閉店」の両形で検索（2026-11-22）→閉店情報なし。上位は2025/12/30 付の年末年始休業の告知。(2)公式SNS＝公式サイトからSNSへのリンクがないため対象なし（検索では同名のInstagram・Facebookの投稿が見つかるが、公式サイトから辿れないので採用しない）。(3)「茂木一まる香本家 移転」→昭和の沿革上の移転記述のみ。「茂木一まる香本家 リニューアル」→ネットショップのリニューアル告知のみで、店舗の閉店情報なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E8%8C%82%E6%9C%A8%E4%B8%80%E3%81%BE%E3%82%8B%E9%A6%99%E6%9C%AC%E5%AE%B6%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E8%8C%82%E6%9C%A8%E7%94%BA1805">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（biwajelly.co.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://biwajelly.co.jp/event-info-2.html">公式サイト 催事のご案内（2025年12月12日更新・2026年1月の物産展出展を告知）2026-11-22 取得</a> / <a href="https://biwajelly.co.jp/company.html">公式サイト 会社情報（創業年・所在地・電話、本店の営業時間と定休日）2026-11-22 取得</a> / <a href="https://biwajelly.co.jp/access.html">公式サイト アクセス（JR長崎駅からバス30分ほか）2026-11-22 取得</a> / <a href="https://mogi105.com/">茂木一まる香本家 ネットショップ（商品価格）2026-11-22 取得</a></div>
+</div></div>
+<div class="card" id="c-nagasaki-kashi-newyorkdo">
+<img class="hero" src="img/nagasaki/nagasaki-kashi-newyorkdo.jpg" alt="ニューヨーク堂 料理・店内写真">
+<figure class="extfig"><img class="ext" src="img/nagasaki/nagasaki-kashi-newyorkdo_exterior.jpg" alt="ニューヨーク堂 外観写真"><figcaption>外観</figcaption></figure>
+<div class="body">
+<div class="nm"><span class="pinno" style="background:#eda100;">50</span>ニューヨーク堂<span class="yomi">にゅーよーくどう</span></div>
+<div class="chips"><span class="chip official">official</span></div>
+<div class="desc">昭和12年（1937年）開業で創業89年目の洋菓子店。自家製のカステラでアイスを挟んだ「長崎カステラアイス」が看板で、バニラのほか抹茶・チョコ・苺・びわなど7種がある。店舗の営業は11:00〜16:00と短く、店頭でのアイス宅配の注文受付は15:30まで。店休日は決まった曜日ではなく、公式サイトのトップに月ごとの日付が掲載される（2026年11月は10日・17日・18日・19日・20日）。店内に飲食の席はなく、買って帰るだけの店（店内で食べられない・販売のみ）。通販は10個入りの箱単位で、店頭では1個から買えるが、1個あたりの価格は公式サイトに載っていない。</div>
+<div class="sig"><b>一皿:</b>長崎カステラアイス（自家製カステラでアイスを挟んだ看板商品。バニラ・抹茶・チョコ・苺・びわなど7種）／長崎アイスモナカ／長崎カステラ</div>
+<table class="info">
+<tr><th>営業時間</th><td>11:00〜16:00（店頭でのアイス宅配の注文受付は15:30まで）</td></tr>
+<tr><th>定休日</th><td class="off">不定休（公式サイトのトップに月ごとの店休日を掲載。2026年11月は10日・17日・18日・19日・20日）</td></tr>
+<tr><th>住所</th><td>長崎県長崎市古川町3-17</td></tr>
+<tr><th>予約</th><td>予約不要（店頭販売）。発送は公式サイトの通販で受付 — <a href="tel:0958224875">☎ 095-822-4875</a> ／ <a href="https://www.nyu-yo-ku-do.jp/">公式サイト</a></td></tr>
+</table>
+<div class="reason"><b>選定理由:</b>カステラを使った現代の菓子として、甘味・洋菓子の枠に入れる。眼鏡橋の散策の途中に寄れる位置。営業確認①＝公式サイトの新着情報に2026年06月30日「実演『長崎カステラ生ソフト』＠東京ミッドタウン日比谷」、2026年04月25日「『あいぱく Premium TOKYO 2026』」。トップに掲げた【１１月店休日】の日付一覧も当月のもの（2026-11-22 に本文を直読み）。営業確認②＝(1)「ニューヨーク堂 長崎 閉店」「ニューヨーク堂長崎閉店」の両形で検索（2026-11-22）→閉店情報なし（2021年の店頭販売再開の公式告知が上位）。(2)公式SNS＝公式サイトからSNSへのリンクがないため対象なし。(3)「ニューヨーク堂 長崎 移転」「ニューヨーク堂 長崎 リニューアル」→移転・改装による閉店の情報なし。</div>
+<a class="map" href="https://www.google.com/maps/search/?api=1&query=%E3%83%8B%E3%83%A5%E3%83%BC%E3%83%A8%E3%83%BC%E3%82%AF%E5%A0%82%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E9%95%B7%E5%B4%8E%E5%B8%82%E5%8F%A4%E5%B7%9D%E7%94%BA3-17">Googleマップで開く</a>
+<div class="src">写真: 公式サイト（www.nyu-yo-ku-do.jp）より引用 / 外観: 出典ページ / 参照元: <a href="https://www.nyu-yo-ku-do.jp/">公式サイト トップ（新着情報 2026年06月30日・2026年04月25日、11月の店休日、長崎店舗の営業時間、商品価格）2026-11-22 取得</a> / <a href="https://www.nyu-yo-ku-do.jp/info">公式サイト 会社情報（所在地・電話番号）2026-11-22 取得</a> / <a href="https://www.nyu-yo-ku-do.jp/product-list">公式サイト 全商品一覧（セット商品の価格）2026-11-22 取得</a></div>
+</div></div>
+
+<p class="tiny" style="margin-top:4mm;">本ガイドは個人利用目的で作成。掲載情報は2026年11月時点の調査に基づく。写真出典: 各店の公式サイト・公式SNS、および観光協会・地域情報サイト等の掲載写真（著作権は各サイト・各撮影者に帰属）。引用元は店ごとにカード内へ明記。</p>
+<script>
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+</script>
+</body>
+</html>

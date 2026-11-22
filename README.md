@@ -112,8 +112,10 @@
 | 福岡県 | 北九州市 | 73 | [japan/fukuoka/](japan/fukuoka/) |
 | 佐賀県 | 佐賀市 | 50 | [japan/saga/](japan/saga/) |
 | 佐賀県 | 唐津市 | 45 | [japan/saga/](japan/saga/) |
+| 長崎県 | 長崎市 | 50 | [japan/nagasaki/](japan/nagasaki/) |
+| 長崎県 | 佐世保市 | 50 | [japan/nagasaki/](japan/nagasaki/) |
 
-小計 84冊 / 4691店
+小計 86冊 / 4791店
 
 ## 欧州
 
