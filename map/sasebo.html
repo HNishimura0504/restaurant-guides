@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>佐世保 の食べ歩き地図</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+  :root { color-scheme: light; --ink:#16150f; --ink2:#52514e; --line:#dcdbd4; --bg:#fcfcfb; --acc:#8a2b16; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--acc)}
+  .bar{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .bar h1{font-size:15px;margin:0;font-weight:600}
+  .bar .n{font-weight:400;color:var(--ink2);font-size:12px;margin-left:6px}
+  .bar nav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:inherit}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:#fff}
+  /* `touch-action:manipulation` ＝ **ダブルタップでページが拡大するのを止める**。
+     付けないと、2回目のタップがブラウザの拡大に食われて絞り込みが働かない端末がある。 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;
+        border:1px solid var(--line);background:#fff;cursor:pointer;touch-action:manipulation}
+  .chip[aria-pressed="false"]{opacity:.35}
+  .chip b{font-weight:400;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  .vleg{margin:0;padding:5px 12px;font-size:12px;color:#52514e;display:flex;flex-wrap:wrap;gap:3px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .vleg b{font-weight:600;margin-left:2px}
+  #map,#list{position:absolute;inset:0}
+  #list{overflow:auto;display:none;background:var(--bg)}
+  .pin{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+       box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35);font-size:14px}
+  .leaflet-popup-content{margin:10px 12px;width:250px!important}
+  .pop h3{margin:0 0 2px;font-size:15px}
+  .pop .cat{font-size:12px;color:var(--ink2);margin:0 0 6px}
+  .pop .dish{margin:0 0 8px}
+  .pop figure{margin:0}
+  .pop .imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .pop img{width:100%;height:132px;object-fit:cover;border-radius:8px;display:block;background:#eee}
+  .pop figcaption{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pop .links{margin:0}
+  .pop .links a{margin-right:10px;font-size:12px}
+  .lhead{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;z-index:2}
+  .lhead input{font:inherit;width:100%;max-width:420px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:12px}
+  .toc a{color:var(--ink2);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  .toc b{font-weight:400;color:#8b8a85;font-variant-numeric:tabular-nums}
+  .grp{padding:0 12px}
+  .grp h2{font-size:13px;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--line);
+          display:flex;align-items:center;gap:6px;scroll-margin-top:64px}
+  .grp h2 b{font-weight:400;color:var(--ink2);font-size:12px}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+  td.nm{font-weight:600;white-space:nowrap}
+  td.ac{white-space:nowrap;text-align:right}
+  td.ac a,td.ac button{font-size:12px;margin-left:8px}
+  .empty{padding:24px 12px;color:var(--ink2)}
+  .wrap{max-width:900px;margin:0 auto;padding:16px 16px 48px}
+  .wrap h2{font-size:15px;margin:26px 0 2px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:56px}
+  .wrap h3{font-size:13px;color:var(--ink2);margin:14px 0 2px;font-weight:600}
+  .lead{color:var(--ink2);margin:6px 0 0}
+  .foot{color:var(--ink2);font-size:12px;margin-top:32px}
+  ul.cities{list-style:none;margin:2px 0 0;padding:0}
+  ul.cities li{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+  ul.cities .cn{font-weight:600;min-width:9em}
+  ul.cities .cc{color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;min-width:5em}
+  ul.cities .cl{margin-left:auto;white-space:nowrap;font-size:12px}
+  ul.cities .cl a{margin-left:10px}
+
+.vmsw{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;
+      border:1px solid #dcdbd4;background:#fff;color:#52514e;border-radius:999px;
+      padding:2px 10px;cursor:pointer;line-height:1.6;white-space:nowrap}
+.vmsw:hover{border-color:#8a8880}
+@media print{.vmsw{display:none}}
+
+.snav{position:sticky;top:0;z-index:1100;display:flex;align-items:center;gap:8px;
+      padding:6px 10px;background:rgba(255,253,248,.96);backdrop-filter:blur(6px);
+      border-bottom:1px solid #e4e2dc;color:#52514e;
+      font:13px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snav .sn-t{font-weight:600;color:#2f2e2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .sn-n{color:#8a8880;font-weight:400;font-size:12px;margin-left:6px;font-variant-numeric:tabular-nums}
+.snav .sn-r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.sn-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:12.5px;
+        border:1px solid #dcdbd4;background:#fff;color:#8a2b16;border-radius:999px;
+        padding:4px 12px;min-height:30px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sn-btn:hover{border-color:#8a2b16}
+.sn-bg{display:inline-flex;flex-direction:column;justify-content:center;gap:3.5px;
+       width:36px;height:30px;padding:0 9px;flex:0 0 auto;
+       border:1px solid #dcdbd4;background:#fff;border-radius:8px;cursor:pointer}
+.sn-bg i{display:block;height:2px;background:#52514e;border-radius:1px}
+.sn-bg:hover{border-color:#8a8880}
+/* Leaflet の操作部品（ズームの＋−）は z-index 800、吹き出しは 700。
+   メニューを 70 に置くと**地図ページで＋−が引き出しの上に描かれる**（実測）ので、
+   バーと引き出しは Leaflet より上の段に置く。 */
+.snavm{position:fixed;inset:0;z-index:1200;display:none}
+.snavm.on{display:block}
+.snavm .sn-ov{position:absolute;inset:0;background:rgba(20,18,14,.3)}
+.snavm .sn-p{position:absolute;top:0;left:0;width:min(80vw,310px);height:100%;overflow:auto;
+             background:#fffdf8;box-shadow:2px 0 18px rgba(0,0,0,.2);
+             padding:8px 0 24px;
+             font:14px/1.6 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+.snavm .sn-h{display:flex;align-items:center;padding:6px 14px 10px;border-bottom:1px solid #e4e2dc;
+             color:#8a8880;font-size:12px}
+.snavm .sn-x{margin-left:auto;border:0;background:none;font:inherit;font-size:20px;
+             line-height:1;color:#8a8880;cursor:pointer;padding:0 4px}
+.snavm a,.snavm .sn-i{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+             padding:12px 16px;border:0;background:none;text-align:left;font:inherit;
+             color:#2f2e2b;text-decoration:none;cursor:pointer}
+.snavm a:hover,.snavm .sn-i:hover{background:#f3efe6}
+.snavm .sn-e{width:1.4em;text-align:center;flex:0 0 auto}
+.snavm .sn-s{padding:14px 16px 4px;color:#8a8880;font-size:11.5px;letter-spacing:.04em}
+/* 表示切替は「行」ではなく**ボタンそのもの**を押させる。行側に pointer-events:none を
+   置くと、`TOGGLE_JS` の `e.target.closest('.vmsw')` が null になり**押しても何も
+   起きない**（ヘッドレスの実機テストで踏んだ）。行の代わりにボタンを幅いっぱいにする。 */
+.snavm .sn-i{padding:8px 16px}
+.snavm .sn-i .vmsw{width:100%;justify-content:center;padding:9px 12px;border-radius:8px}
+/* 見出しや店カードへ飛んだとき、**貼りつくバーの下に隠れない**ようにする。
+   `scroll-margin-top` は錨（#…）へ飛ぶときだけ効くので、他の見た目には触らない。
+   バーの高さは実測 43px なので、少し余らせて 54px にする。 */
+[id]{scroll-margin-top:54px}
+@media print{.snav,.snavm{display:none!important}}
+
+  .bar{align-items:center}
+@media screen and (max-width:640px){
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html:not(.vm-pc) .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html:not(.vm-pc) .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html:not(.vm-pc) .bar .n{margin-left:4px}
+  html:not(.vm-pc) .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html:not(.vm-pc) .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html:not(.vm-pc) .chip{flex:0 0 auto}
+  html:not(.vm-pc) .leaflet-popup-content{width:min(74vw,250px)!important}
+  html:not(.vm-pc) .pop img{height:104px}
+  html:not(.vm-pc) .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html:not(.vm-pc) .grp table,html:not(.vm-pc) .grp tbody,html:not(.vm-pc) .grp tr,html:not(.vm-pc) .grp td{display:block;width:auto}
+  html:not(.vm-pc) .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html:not(.vm-pc) .grp td{border:0;padding:2px 0}
+  html:not(.vm-pc) .grp td.nm{white-space:normal;font-size:14px}
+  html:not(.vm-pc) .grp td.ac{text-align:left;margin-top:4px}
+  html:not(.vm-pc) .grp td.ac a,html:not(.vm-pc) .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html:not(.vm-pc) ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html:not(.vm-pc) ul.cities .cn{min-width:0}
+  html:not(.vm-pc) ul.cities .cl{margin-left:auto}
+  html:not(.vm-pc) .wrap{padding:12px 12px 40px}
+
+}
+@media screen{
+
+  /* --- スマホ（画面幅 640px 以下、または「スマホ表示」に固定したとき） --------------
+     狙いは3つ。①ヘッダと絞り込みが画面を食いすぎないようにする
+     （実測＝390x844 の端末でヘッダ105px＋チップ134px＝239px＝画面の28%を占めていた）
+     ②吹き出しの決め打ちの幅 250px を画面幅に追従させる
+     ③一覧の4列の表を、1店1枚のカードに積み替える（列が窮屈で、指でも押しにくいため） */
+  html.vm-phone .bar{padding:6px 10px;gap:6px;flex-wrap:nowrap}
+  /* ☰ と見出しと（地図/一覧）を**1行に収める**。2026-09-19 の版は
+     `h1{width:100%}` + `nav{width:100%}` で3行になり、ヘッダだけで画面の2割を食っていた
+     （390x844 の実測）。見出しは足りなければ省略記号で詰める。 */
+  html.vm-phone .bar h1{font-size:14px;width:auto;flex:1 1 auto;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.vm-phone .bar .n{margin-left:4px}
+  html.vm-phone .bar nav{margin-left:auto;width:auto;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+  html.vm-phone .chips{padding:6px 10px;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.vm-phone .chip{flex:0 0 auto}
+  html.vm-phone .leaflet-popup-content{width:min(74vw,250px)!important}
+  html.vm-phone .pop img{height:104px}
+  html.vm-phone .lhead input{max-width:none}
+
+  /* 表 → カード。td を横に並べるのをやめ、1行ぶんを1枚の箱にする。 */
+  html.vm-phone .grp table,html.vm-phone .grp tbody,html.vm-phone .grp tr,html.vm-phone .grp td{display:block;width:auto}
+  html.vm-phone .grp tr{border:1px solid var(--line);border-radius:10px;background:#fff;
+             padding:8px 10px;margin:0 0 8px}
+  html.vm-phone .grp td{border:0;padding:2px 0}
+  html.vm-phone .grp td.nm{white-space:normal;font-size:14px}
+  html.vm-phone .grp td.ac{text-align:left;margin-top:4px}
+  html.vm-phone .grp td.ac a,html.vm-phone .grp td.ac button{margin:0 12px 0 0}
+
+  /* 都市一覧は、都市名・店数・リンクが折り返せるように積む。 */
+  html.vm-phone ul.cities li{flex-wrap:wrap;gap:2px 10px}
+  html.vm-phone ul.cities .cn{min-width:0}
+  html.vm-phone ul.cities .cl{margin-left:auto}
+  html.vm-phone .wrap{padding:12px 12px 40px}
+
+}
+</style>
+<body style="display:flex;flex-direction:column">
+<header class="bar">
+  <button type="button" class="sn-bg" aria-label="メニュー" aria-expanded="false"><i></i><i></i><i></i></button>
+  <h1>佐世保 の食べ歩き地図<span class="n">50店</span></h1>
+  <nav>
+    <button id="b-map" class="on">地図</button>
+    <button id="b-list">一覧</button>
+  </nav>
+</header>
+<div class="snavm" role="dialog" aria-label="佐世保 の地図 メニュー"><div class="sn-ov"></div><nav class="sn-p"><div class="sn-h">佐世保 の地図 メニュー<button type="button" class="sn-x" aria-label="閉じる">&times;</button></div><div class="sn-s">この都市</div><a href="../japan/nagasaki/sasebo.html"><span class="sn-e">📄</span>佐世保のガイド記事</a><div class="sn-s">ほかの都市</div><a href="index.html"><span class="sn-e">📖</span>都市の一覧（115都市）</a><div class="sn-s">表示</div><div class="sn-i"><button type="button" class="vmsw">表示: 自動</button></div></nav></div>
+<div class="chips" id="chips"></div>
+<p id="vleg" class="vleg"></p>
+<main>
+  <div id="map"></div>
+  <div id="list"></div>
+</main>
+<script src="vendor/leaflet.js"></script>
+<script>
+const COLOR={"麺類": "#2a78d6", "和食": "#eb6834", "洋食・アジア": "#1baf7a", "カフェ・酒場": "#4a3aa7"}, CAT={"麺類": ["麺類"], "郷土料理": ["和食"], "和食": ["和食"], "寿司・海鮮": ["和食"], "ご当地名物": ["和食"], "洋食・各国料理": ["洋食・アジア"], "アジア・エスニック": ["洋食・アジア"], "カフェ・パン・スイーツ": ["カフェ・酒場"], "居酒屋・焼肉": ["カフェ・酒場"], "ビール・バー": ["カフェ・酒場"], "屋台・食べ歩き": ["カフェ・酒場"], "市場・食材店": ["カフェ・酒場"]}, VENUE={"レストラン": "🍴", "カフェ": "☕", "バー・居酒屋・パブ": "🍺", "食材の店": "🥩", "ベーカリー・パティスリー": "🥐", "食べ歩き": "🍢"}, DATA=[{"i": 0, "n": "ハンバーガーショップ ヒカリ（矢岳本店）", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.173229, "lng": 129.713257, "d": "スペシャルバーガー（チーズ・ベーコン・エッグが全部入る看板商品）／ジャンボチキンバーガー（鶏もも肉の一枚揚げを挟んだ大判。学生向けに作ったのがジャンボバーガーの始まりとされる）／ホットドッグ（創業以来のソースを使う）", "a": "長崎県佐世保市矢岳町1-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E3%83%92%E3%82%AB%E3%83%AA%EF%BC%88%E7%9F%A2%E5%B2%B3%E6%9C%AC%E5%BA%97%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E7%9F%A2%E5%B2%B3%E7%94%BA1-1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-burger-hikari-yatake", "food": "../japan/nagasaki/img/sasebo/sasebo-burger-hikari-yatake.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-burger-hikari-yatake_exterior.jpg"}, {"i": 1, "n": "ハンバーガーショップ ヒカリ させぼ五番街店", "c": ["ビール・バー"], "v": "食材の店", "lat": 33.164867, "lng": 129.723923, "d": "スペシャルバーガー（チーズ・ベーコン・エッグ入り）／ジャンボチキンスペシャルバーガー（鶏の一枚揚げに具材を重ねた最も大きい一品）／ホットドッグ（チーズ入りも選べる）", "a": "長崎県佐世保市新港町3-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E3%83%92%E3%82%AB%E3%83%AA%20%E3%81%95%E3%81%9B%E3%81%BC%E4%BA%94%E7%95%AA%E8%A1%97%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%96%B0%E6%B8%AF%E7%94%BA3-1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-burger-hikari-gobangai", "food": "../japan/nagasaki/img/sasebo/sasebo-burger-hikari-gobangai.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-burger-hikari-gobangai_exterior.jpg"}, {"i": 2, "n": "ミサロッソ", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.181721, "lng": 129.714798, "d": "ミサモンスター（三分割した自家製バンズにダブルパティ・ベーコン・チーズを挟む看板。味の決め手はサルサソース）／ベーコン・エッグ・チーズバーガー（佐世保バーガーの定番構成）／ドックモンスター（ソーセージ2本入りのホットドッグ）", "a": "長崎県佐世保市万徳町2-15", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9F%E3%82%B5%E3%83%AD%E3%83%83%E3%82%BD%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%87%E5%BE%B3%E7%94%BA2-15", "u": "../japan/nagasaki/sasebo.html#c-sasebo-burger-misarosso", "food": "../japan/nagasaki/img/sasebo/sasebo-burger-misarosso.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-burger-misarosso_exterior.jpg"}, {"i": 3, "n": "ラッキーズ 鹿子前店", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.161079, "lng": 129.678711, "d": "ステーキバーガー（パンと一緒に噛み切れる柔らかい肉とスパイシーなジャポネソース。店の一番人気）／ベーコンエッグバーガー（レギュラーとジャンボの2サイズ）／トリプルバーガー（パティを重ねた食べごたえ重視の一品）", "a": "長崎県佐世保市鹿子前町979 九十九島パールシーリゾート内", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BA%20%E9%B9%BF%E5%AD%90%E5%89%8D%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA979%20%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%E5%86%85", "u": "../japan/nagasaki/sasebo.html#c-sasebo-burger-luckys-kashimae", "food": "../japan/nagasaki/img/sasebo/sasebo-burger-luckys-kashimae.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-burger-luckys-kashimae_exterior.jpg"}, {"i": 4, "n": "バーガーショップ ベルビーチ 本店", "c": ["ビール・バー"], "v": "食材の店", "lat": 33.159767, "lng": 129.683823, "d": "スペシャルバーガー（自家製バンズに手作りパティ・ベーコン・エッグ・チーズと生野菜を重ねた看板）／てりやきチキンカツバーガー（とりもも肉をカリッと揚げて甘辛く仕上げる）／フィッシュバーガー（松浦産のアジフライを使う）", "a": "長崎県佐世保市鹿子前町942-3", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E3%83%99%E3%83%AB%E3%83%93%E3%83%BC%E3%83%81%20%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA942-3", "u": "../japan/nagasaki/sasebo.html#c-sasebo-burger-bellbeach-honten", "food": "../japan/nagasaki/img/sasebo/sasebo-burger-bellbeach-honten.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-burger-bellbeach-honten_exterior.jpg"}, {"i": 5, "n": "バーガーショップ ベルビーチ パールシー店", "c": ["ビール・バー"], "v": "食材の店", "lat": 33.161079, "lng": 129.678711, "d": "スペシャルバーガー（自家製バンズ・手作りパティ・ベーコン・エッグ・チーズ）／てりやきバーガー（甘めのたれと自家製マヨ）／フィッシュバーガー（松浦産のアジフライ）", "a": "長崎県佐世保市鹿子前町1058-1 九十九島パールシーリゾート内", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%20%E3%83%99%E3%83%AB%E3%83%93%E3%83%BC%E3%83%81%20%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA1058-1%20%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%E5%86%85", "u": "../japan/nagasaki/sasebo.html#c-sasebo-burger-bellbeach-pearlsea", "food": "../japan/nagasaki/img/sasebo/sasebo-burger-bellbeach-pearlsea.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-burger-bellbeach-pearlsea_exterior.jpg"}, {"i": 6, "n": "佐世保バーガーミュージアム", "c": ["ビール・バー"], "v": "食材の店", "lat": 33.149544, "lng": 129.685562, "d": "スペシャルバーガー（自家製バンズに卵・ベーコン・チーズが全部入る看板。レギュラーとラージの2サイズ）／ABCバーガー（アボカド・ベーコン・チーズの創作バーガー）／海老かつバーガー（揚げたての海老かつを挟む）", "a": "長崎県佐世保市船越町190-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BD%90%E4%B8%96%E4%BF%9D%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC%E3%83%9F%E3%83%A5%E3%83%BC%E3%82%B8%E3%82%A2%E3%83%A0%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E8%88%B9%E8%B6%8A%E7%94%BA190-1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-burger-museum", "food": "../japan/nagasaki/img/sasebo/sasebo-burger-museum.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-burger-museum_exterior.jpg"}, {"i": 7, "n": "レストラン ローレライ", "c": ["ビール・バー"], "v": "レストラン", "lat": 33.094257, "lng": 129.794861, "d": "佐世保バーガー（佐世保バーガー協会認定。特製ソースと半熟卵、牛肉100%のパティ）／長崎和牛のレモンステーキ（佐世保名物）／護衛艦カレー（基地の町ならではの一品）", "a": "長崎県佐世保市南風崎町449", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%20%E3%83%AD%E3%83%BC%E3%83%AC%E3%83%A9%E3%82%A4%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%8D%97%E9%A2%A8%E5%B4%8E%E7%94%BA449", "u": "../japan/nagasaki/sasebo.html#c-sasebo-burger-lorelei", "food": "../japan/nagasaki/img/sasebo/sasebo-burger-lorelei.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-burger-lorelei_exterior.jpg"}, {"i": 8, "n": "下町の洋食　時代屋", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.164581, "lng": 129.837952, "d": "レモンステーキセット（薄切りの牛肉を熱々の鉄板にのせ、甘辛い醤油ベースのレモンソースで食べる。スープ・サラダ・ライス付き）／ビーフシチュー（大鍋で10時間煮込んだ牛バラ肉200gを赤ワイン入りの甘めのソースで。残りはガーリックトーストに付ける）／アメリカンステーキ・しょうが焼きステーキ（240gの厚切り牛ステーキ。塩こしょう味と、レモンソースを使ったしょうが風味の2種）", "a": "長崎県佐世保市吉福町172-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E7%94%BA%E3%81%AE%E6%B4%8B%E9%A3%9F%E3%80%80%E6%99%82%E4%BB%A3%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%90%89%E7%A6%8F%E7%94%BA172-1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-lemon-jidaiya", "food": "../japan/nagasaki/img/sasebo/sasebo-lemon-jidaiya.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-lemon-jidaiya_exterior.jpg"}, {"i": 9, "n": "レストラン蜂の家", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.173172, "lng": 129.71962, "d": "長崎和牛レモンステーキ（熱々の鉄板で焼きながら、蜂の家オリジナルのすき焼き風ソースで食べる佐世保名物）／海軍さんのビーフシチュー（濃厚でコクのある人気メニュー）／女王シュークリーム（創業当時からあるフルーツ入りのシュークリームにスカッチソースをかける）", "a": "長崎県佐世保市栄町5-9　サンクル2番館1階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E8%9C%82%E3%81%AE%E5%AE%B6%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%A0%84%E7%94%BA5-9%E3%80%80%E3%82%B5%E3%83%B3%E3%82%AF%E3%83%AB2%E7%95%AA%E9%A4%A81%E9%9A%8E", "u": "../japan/nagasaki/sasebo.html#c-sasebo-lemon-hachinoya", "food": "../japan/nagasaki/img/sasebo/sasebo-lemon-hachinoya.jpg", "ext": ""}, {"i": 10, "n": "お食事処　九十九島 海遊", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.161079, "lng": 129.678711, "d": "佐世保名物レモンステーキ膳（熱々の鉄板で焼いた薄切り肉を自社オリジナルのレモンステーキソースで。肉はカット済み）／護衛艦はぐろカレー（2026年7月3日に認定証を交付された、優しい辛さのバターチキンカレー。サラダ付）／九十九島海鮮丼（直営漁場直送の魚介）", "a": "長崎県佐世保市鹿子前町1058-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%E3%80%80%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%20%E6%B5%B7%E9%81%8A%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA1058-1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-lemon-kaiyuu", "food": "../japan/nagasaki/img/sasebo/sasebo-lemon-kaiyuu.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-lemon-kaiyuu_exterior.jpg"}, {"i": 11, "n": "Lemoned Raymond本店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.169022, "lng": 129.722443, "d": "クラシック レモンステーキ（佐世保の伝統的なレシピの薄切り肉／2,950円）／カルビ レモンステーキ（肉の脂の旨みを強く出したもの／1,850円）／本格派ステーキ（厚切り。タレはレモンソースか塩を選ぶ／100g 2,200円）", "a": "長崎県佐世保市下京町7-15　一休ビル1F", "m": "https://www.google.com/maps/search/?api=1&query=Lemoned%20Raymond%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA7-15%E3%80%80%E4%B8%80%E4%BC%91%E3%83%93%E3%83%AB1F", "u": "../japan/nagasaki/sasebo.html#c-sasebo-lemon-lemoned-raymond", "food": "../japan/nagasaki/img/sasebo/sasebo-lemon-lemoned-raymond.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-lemon-lemoned-raymond_exterior.jpg"}, {"i": 12, "n": "牛右衛門　四ケ町店", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.170319, "lng": 129.721954, "d": "レモンステーキ（薄切りの牛肉を鉄板で焼き、特製レモンソースをかける。残ったソースにご飯を入れるのがすすめ／120g 1,419円～）／牛肉100%ハンバーグ（創業以来40年変わらぬ製法で毎日店で手ごね。伝統のオニオンデミグラスソース／825円～）／テキサスステーキ（300gの厚切り。ジャポネソースかBBQソースで、添えられた焼き石で好みの焼き加減にできる／3,168円）", "a": "長崎県佐世保市本島町3-5（2F・3F）", "m": "https://www.google.com/maps/search/?api=1&query=%E7%89%9B%E5%8F%B3%E8%A1%9B%E9%96%80%E3%80%80%E5%9B%9B%E3%82%B1%E7%94%BA%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%9C%AC%E5%B3%B6%E7%94%BA3-5%EF%BC%882F%E3%83%BB3F%EF%BC%89", "u": "../japan/nagasaki/sasebo.html#c-sasebo-lemon-gyuemon-yonkacho", "food": "../japan/nagasaki/img/sasebo/sasebo-lemon-gyuemon-yonkacho.jpg", "ext": ""}, {"i": 13, "n": "レストラン　ラヴァンドル（ホテル日航ハウステンボス）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.088142, "lng": 129.787613, "d": "佐世保名物 長崎県産黒毛和牛のレモンステーキコース（薄切りの長崎和牛をレモンの酸味を活かした特製和風ソースで仕上げるディナーセット）／ランチブッフェ（毎月テーマが替わり40種以上。時間制限なし）／朝食ブッフェ（和洋に加え長崎の郷土料理を用意）", "a": "長崎県佐世保市ハウステンボス町6番地", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E3%80%80%E3%83%A9%E3%83%B4%E3%82%A1%E3%83%B3%E3%83%89%E3%83%AB%EF%BC%88%E3%83%9B%E3%83%86%E3%83%AB%E6%97%A5%E8%88%AA%E3%83%8F%E3%82%A6%E3%82%B9%E3%83%86%E3%83%B3%E3%83%9C%E3%82%B9%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E3%83%8F%E3%82%A6%E3%82%B9%E3%83%86%E3%83%B3%E3%83%9C%E3%82%B9%E7%94%BA6%E7%95%AA%E5%9C%B0", "u": "../japan/nagasaki/sasebo.html#c-sasebo-lemon-lavandre", "food": "../japan/nagasaki/img/sasebo/sasebo-lemon-lavandre.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-lemon-lavandre_exterior.jpg"}, {"i": 14, "n": "ボンサブール（ホテルリソル佐世保）", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.163937, "lng": 129.727509, "d": "レモンステーキ（日本人に合うさっぱりしたステーキをという要望から生まれた佐世保の名物料理。朝食の主菜と団体ランチの定番）／こんごうカレー（イージス護衛艦こんごうで作られるカレー。鶏ガラと香味野菜を一晩煮込む）／朝食ブッフェ（カステラ食べ放題、豊富なコーヒーメニュー、スムージー付き）", "a": "長崎県佐世保市白南風町8-17（JR佐世保駅前）", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9C%E3%83%B3%E3%82%B5%E3%83%96%E3%83%BC%E3%83%AB%EF%BC%88%E3%83%9B%E3%83%86%E3%83%AB%E3%83%AA%E3%82%BD%E3%83%AB%E4%BD%90%E4%B8%96%E4%BF%9D%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E7%99%BD%E5%8D%97%E9%A2%A8%E7%94%BA8-17%EF%BC%88JR%E4%BD%90%E4%B8%96%E4%BF%9D%E9%A7%85%E5%89%8D%EF%BC%89", "u": "../japan/nagasaki/sasebo.html#c-sasebo-lemon-bonsabur", "food": "../japan/nagasaki/img/sasebo/sasebo-lemon-bonsabur.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-lemon-bonsabur_exterior.jpg"}, {"i": 15, "n": "ハンバーグ家SS389", "c": ["洋食・各国料理"], "v": "レストラン", "lat": 33.150871, "lng": 129.768127, "d": "長崎和牛ゴロゴロハンバーグ（ハンバーグの中にサイコロ状にカットした長崎和牛を包んだもの。ご当地グルメ総選挙2年連続金賞）／センキューセット（平日ランチ25食限定。ハンバーグのサイズと12種のソースを選べて自家製デザートと飲み物付き）／長崎・させぼガレット（長崎県内の蕎麦・チーズ・卵だけを使う。プレーン／ハンバーグ／和牛から選ぶ）", "a": "長崎県佐世保市卸本町21-334", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0%E5%AE%B6SS389%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%8D%B8%E6%9C%AC%E7%94%BA21-334", "u": "../japan/nagasaki/sasebo.html#c-sasebo-lemon-ss389", "food": "../japan/nagasaki/img/sasebo/sasebo-lemon-ss389.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-lemon-ss389_exterior.jpg"}, {"i": 16, "n": "ふじ・なが本店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.209728, "lng": 129.728317, "d": "九十九島かから葉すし（刺身で食べられる長崎ハーブ鯖を塩と酢で締めたさば寿司。前日までの予約）／九十九島とらふぐ てっさ・てっちりコース（薄造り・ふぐ皮酢の物・唐揚げ・ちり鍋・ヒレ酒・雑炊）／九十九島海鮮丼（たい・ヒラマサ・マグロ・水イカなど7種のネタ）", "a": "長崎県佐世保市大野町50-14", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%B5%E3%81%98%E3%83%BB%E3%81%AA%E3%81%8C%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%A4%A7%E9%87%8E%E7%94%BA50-14", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-fujinaga", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-fujinaga.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-sakana-fujinaga_exterior.jpg"}, {"i": 17, "n": "銀寿司", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.169395, "lng": 129.721756, "d": "季節のおまかせコース（その日の仕入れで内容が変わる握り中心のコース）／地魚の握り（佐世保の魚市場に揚がる旬の魚介）／九十九島とらふぐ料理（予約制）", "a": "長崎県佐世保市上京町7-8", "m": "https://www.google.com/maps/search/?api=1&query=%E9%8A%80%E5%AF%BF%E5%8F%B8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8A%E4%BA%AC%E7%94%BA7-8", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-ginsushi", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-ginsushi.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-sakana-ginsushi_exterior.jpg"}, {"i": 18, "n": "鼎鮨", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.166855, "lng": 129.722824, "d": "白身魚・青魚・イカの握り（ヒラメ・石鯛・真鯛・イサキ、秋から冬の鯖、ヤリイカ・アオリイカなど）／ナガスクジラの鮨（他店ではあまり出ない一品）／赤マテ貝・タイラ貝などの貝類（佐世保名産の赤マテ貝も扱う）", "a": "長崎県佐世保市塩浜町2-2", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BC%8E%E9%AE%A8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%A1%A9%E6%B5%9C%E7%94%BA2-2", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-kanaezushi", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-kanaezushi.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-sakana-kanaezushi_exterior.jpg"}, {"i": 19, "n": "【全室個室】イカの活造りと海の幸 海鮮処 蔵之介 -KURANOSUKE- 佐世保下京町店", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.168922, "lng": 129.722351, "d": "呼子活イカの姿造り（透き通ったイカを姿のまま造りに。後造りで天ぷらにできる。要予約）／お造り三種盛り（料理長が選ぶその日の鮮魚）／鮮魚のカルパッチョ（採れたての魚を使う）", "a": "長崎県佐世保市下京町6-15", "m": "https://www.google.com/maps/search/?api=1&query=%E3%80%90%E5%85%A8%E5%AE%A4%E5%80%8B%E5%AE%A4%E3%80%91%E3%82%A4%E3%82%AB%E3%81%AE%E6%B4%BB%E9%80%A0%E3%82%8A%E3%81%A8%E6%B5%B7%E3%81%AE%E5%B9%B8%20%E6%B5%B7%E9%AE%AE%E5%87%A6%20%E8%94%B5%E4%B9%8B%E4%BB%8B%20-KURANOSUKE-%20%E4%BD%90%E4%B8%96%E4%BF%9D%E4%B8%8B%E4%BA%AC%E7%94%BA%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA6-15", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-kuranosuke", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-kuranosuke.jpg", "ext": ""}, {"i": 20, "n": "いけ洲博多屋", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.165188, "lng": 129.726227, "d": "長崎ハーブ鯖の活き造り（北九十九島で育てたハーブ鯖。刺身でも焼いても）／九十九島とらふぐ（九十九島漁協から直送。刺身や鍋で。予約制）／月替りの会席料理（いき造り会席・あじわい会席・桜川会席など）", "a": "長崎県佐世保市三浦町4-1　サセボグリーンホテルpremier 1F", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%84%E3%81%91%E6%B4%B2%E5%8D%9A%E5%A4%9A%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%89%E6%B5%A6%E7%94%BA4-1%E3%80%80%E3%82%B5%E3%82%BB%E3%83%9C%E3%82%B0%E3%83%AA%E3%83%BC%E3%83%B3%E3%83%9B%E3%83%86%E3%83%ABpremier%201F", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-hakataya", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-hakataya.jpg", "ext": ""}, {"i": 21, "n": "魚市場もったいない食堂", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.185928, "lng": 129.652359, "d": "日替わり定食（佐世保魚市場で水揚げされた魚を主に使い毎日替わる）／朝獲れ“ふわとろ”アジフライ定食（冷凍せず鮮魚のまま揚げたアジフライ）／魚市場さしみ定食（1日10食限定。4種ほどの刺身をワンプレートで）", "a": "長崎県佐世保市相浦町1563　佐世保魚市場ビル3F", "m": "https://www.google.com/maps/search/?api=1&query=%E9%AD%9A%E5%B8%82%E5%A0%B4%E3%82%82%E3%81%A3%E3%81%9F%E3%81%84%E3%81%AA%E3%81%84%E9%A3%9F%E5%A0%82%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E7%9B%B8%E6%B5%A6%E7%94%BA1563%E3%80%80%E4%BD%90%E4%B8%96%E4%BF%9D%E9%AD%9A%E5%B8%82%E5%A0%B4%E3%83%93%E3%83%AB3F", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-mottainai", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-mottainai.jpg", "ext": ""}, {"i": 22, "n": "やま瀧", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.165558, "lng": 129.721252, "d": "海鮮漬けの替り丼（ごま油と生姜醤油で味を付けた漬け丼。途中で出汁をかけてお茶漬け風に）／アジフライ定食（当日入荷したアジを使う。入荷の無い日もある）／さしみ定食（刺身6品程度）", "a": "長崎県佐世保市万津町1-1", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%BE%E7%80%A7%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%87%E6%B4%A5%E7%94%BA1-1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-yamataki", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-yamataki.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-sakana-yamataki_exterior.jpg"}, {"i": 23, "n": "一魚一会", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.058895, "lng": 129.763824, "d": "活いかの活造り（全国から活きたまま直送したイカを造りに。後造りにも対応）／あらかぶ御膳（あらかぶの造り・唐揚げ・味噌汁をそろえた御膳）／西海寿司御膳（握り8貫に肉か魚の料理、天ぷら、茶碗蒸しなどが付く）", "a": "長崎県佐世保市針尾東町2371-1　西海橋物産館内", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%80%E9%AD%9A%E4%B8%80%E4%BC%9A%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%87%9D%E5%B0%BE%E6%9D%B1%E7%94%BA2371-1%E3%80%80%E8%A5%BF%E6%B5%B7%E6%A9%8B%E7%89%A9%E7%94%A3%E9%A4%A8%E5%86%85", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-ichigyoichie", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-ichigyoichie.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-sakana-ichigyoichie_exterior.jpg"}, {"i": 24, "n": "マルモ水産　九十九島海上かき小屋", "c": ["寿司・海鮮"], "v": "レストラン", "lat": 33.145592, "lng": 129.684616, "d": "九十九島殻付きかき（1kg単位で買って自分で焼く。軍手・ナイフ・木炭・調味料は無料レンタル）／九十九島セット（焼きかきに各種の牡蠣料理を合わせた詰め合わせ）／牡蠣チャウダー（牡蠣の旨みを溶かしたスープ）", "a": "長崎県佐世保市船越町944", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%83%AB%E3%83%A2%E6%B0%B4%E7%94%A3%E3%80%80%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%E6%B5%B7%E4%B8%8A%E3%81%8B%E3%81%8D%E5%B0%8F%E5%B1%8B%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E8%88%B9%E8%B6%8A%E7%94%BA944", "u": "../japan/nagasaki/sasebo.html#c-sasebo-sakana-marumo", "food": "../japan/nagasaki/img/sasebo/sasebo-sakana-marumo.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-sakana-marumo_exterior.jpg"}, {"i": 25, "n": "日本料理　桜川（佐世保ワシントンホテル）", "c": ["和食"], "v": "レストラン", "lat": 33.163353, "lng": 129.728516, "d": "季節の会席料理（月替わりの献立。前日までの予約で刺身を鯛姿造りに変更可）／海軍さんのビーフシチュー（旧日本海軍の「海軍割烹術参考書」のシチュードビーフを下敷きにした佐世保の港まちグルメ。要予約）／海軍さんの入港ぜんざい（母港へ無事に帰る前夜にぜんざいを振る舞った習わしが由来。要予約）", "a": "長崎県佐世保市潮見町12-7　佐世保ワシントンホテル1階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E3%80%80%E6%A1%9C%E5%B7%9D%EF%BC%88%E4%BD%90%E4%B8%96%E4%BF%9D%E3%83%AF%E3%82%B7%E3%83%B3%E3%83%88%E3%83%B3%E3%83%9B%E3%83%86%E3%83%AB%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%BD%AE%E8%A6%8B%E7%94%BA12-7%E3%80%80%E4%BD%90%E4%B8%96%E4%BF%9D%E3%83%AF%E3%82%B7%E3%83%B3%E3%83%88%E3%83%B3%E3%83%9B%E3%83%86%E3%83%AB1%E9%9A%8E", "u": "../japan/nagasaki/sasebo.html#c-sasebo-kaigun-sakuragawa", "food": "../japan/nagasaki/img/sasebo/sasebo-kaigun-sakuragawa.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-kaigun-sakuragawa_exterior.jpg"}, {"i": 26, "n": "SHIKI（アートホテル佐世保セントラル）", "c": ["和食"], "v": "レストラン", "lat": 33.170258, "lng": 129.723221, "d": "海軍さんのビーフシチュー（旧日本海軍のレシピをルーツに、牛肉をじっくり煮込んだ特製ソースの一皿）／まるごと佐世保定食（名物の肉料理と松浦アジフライを主役にした御膳）／長崎皿うどん（揚げ麺に魚介の餡をかけた長崎の郷土料理）", "a": "長崎県佐世保市上京町3-2　アートホテル佐世保セントラル2階", "m": "https://www.google.com/maps/search/?api=1&query=SHIKI%EF%BC%88%E3%82%A2%E3%83%BC%E3%83%88%E3%83%9B%E3%83%86%E3%83%AB%E4%BD%90%E4%B8%96%E4%BF%9D%E3%82%BB%E3%83%B3%E3%83%88%E3%83%A9%E3%83%AB%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8A%E4%BA%AC%E7%94%BA3-2%E3%80%80%E3%82%A2%E3%83%BC%E3%83%88%E3%83%9B%E3%83%86%E3%83%AB%E4%BD%90%E4%B8%96%E4%BF%9D%E3%82%BB%E3%83%B3%E3%83%88%E3%83%A9%E3%83%AB2%E9%9A%8E", "u": "../japan/nagasaki/sasebo.html#c-sasebo-kaigun-shiki", "food": "../japan/nagasaki/img/sasebo/sasebo-kaigun-shiki.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-kaigun-shiki_exterior.jpg"}, {"i": 27, "n": "庶民の料亭　ささいずみ", "c": ["和食"], "v": "レストラン", "lat": 33.167828, "lng": 129.723495, "d": "長崎ハーブ鯖の活造り（ナツメグ・オレガノ・シナモン・ジンジャーを加えた餌で育てた佐世保のブランド鯖）／イカの活造り（生簀から引き上げて造る。後造りは天ぷらか塩焼きか下足刺しを無料で付ける）／すり身揚げ（佐世保の居酒屋に欠かせない揚げたてのすり身）", "a": "長崎県佐世保市下京町4-4", "m": "https://www.google.com/maps/search/?api=1&query=%E5%BA%B6%E6%B0%91%E3%81%AE%E6%96%99%E4%BA%AD%E3%80%80%E3%81%95%E3%81%95%E3%81%84%E3%81%9A%E3%81%BF%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA4-4", "u": "../japan/nagasaki/sasebo.html#c-sasebo-kaigun-sasaizumi", "food": "../japan/nagasaki/img/sasebo/sasebo-kaigun-sasaizumi.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-kaigun-sasaizumi_exterior.jpg"}, {"i": 28, "n": "日本料理たま", "c": ["和食"], "v": "レストラン", "lat": 33.205334, "lng": 129.728088, "d": "おまかせコース（昼3,300円／夜5,500円・7,700円・11,000円～。献立はその都度変わり、11,000円のコースは2名で提供に3時間かかる）／出汁（利尻昆布と枕崎の鰹節）／地の鮮魚（佐世保魚市場と平戸からの仕入れ）", "a": "長崎県佐世保市瀬戸越3-293-8", "m": "https://www.google.com/maps/search/?api=1&query=%E6%97%A5%E6%9C%AC%E6%96%99%E7%90%86%E3%81%9F%E3%81%BE%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E7%80%AC%E6%88%B8%E8%B6%8A3-293-8", "u": "../japan/nagasaki/sasebo.html#c-sasebo-kaigun-tama", "food": "../japan/nagasaki/img/sasebo/sasebo-kaigun-tama.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-kaigun-tama_exterior.jpg"}, {"i": 29, "n": "汐彩（弓張の丘ホテル）", "c": ["和食"], "v": "レストラン", "lat": 33.176872, "lng": 129.700439, "d": "九十九島平政と海鮮づくし丼（平日限定 2,200円。九十九島産のヒラマサを使う）／しらさぎ会席（昼の会席 4,400円）／つぐみ会席（夜の会席 6,600円）", "a": "長崎県佐世保市鵜渡越町510　弓張の丘ホテル4階", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B1%90%E5%BD%A9%EF%BC%88%E5%BC%93%E5%BC%B5%E3%81%AE%E4%B8%98%E3%83%9B%E3%83%86%E3%83%AB%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B5%9C%E6%B8%A1%E8%B6%8A%E7%94%BA510%E3%80%80%E5%BC%93%E5%BC%B5%E3%81%AE%E4%B8%98%E3%83%9B%E3%83%86%E3%83%AB4%E9%9A%8E", "u": "../japan/nagasaki/sasebo.html#c-sasebo-kaigun-shiosai", "food": "../japan/nagasaki/img/sasebo/sasebo-kaigun-shiosai.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-kaigun-shiosai_exterior.jpg"}, {"i": 30, "n": "ガーデンテラス　花のれん", "c": ["和食"], "v": "レストラン", "lat": 33.165421, "lng": 129.727585, "d": "イカの活造り（いけすから引き上げて職人が手早く造る。透き通った身の歯ごたえが身上）／伊勢海老＆お刺身盛り（地元の魚介を盛り合わせた大皿）／懐石コース（百合・山茶花の2本立てに、料理長おまかせを加えた4種類）", "a": "長崎県佐世保市三浦町5-7-15", "m": "https://www.google.com/maps/search/?api=1&query=%E3%82%AC%E3%83%BC%E3%83%87%E3%83%B3%E3%83%86%E3%83%A9%E3%82%B9%E3%80%80%E8%8A%B1%E3%81%AE%E3%82%8C%E3%82%93%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%89%E6%B5%A6%E7%94%BA5-7-15", "u": "../japan/nagasaki/sasebo.html#c-sasebo-kaigun-hananoren", "food": "../japan/nagasaki/img/sasebo/sasebo-kaigun-hananoren.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-kaigun-hananoren_exterior.jpg"}, {"i": 31, "n": "天空の宿　山暖簾（レストラン国見）", "c": ["和食"], "v": "レストラン", "lat": 33.238712660246904, "lng": 129.77395347659086, "d": "国見御膳（2,500円。レストラン国見の看板）／鯛のあらだき定食（2,000円）／くにみコース（5,500円の昼の会食プラン。予約制）", "a": "長崎県佐世保市世知原町上野原316", "m": "https://www.google.com/maps/search/?api=1&query=%E5%A4%A9%E7%A9%BA%E3%81%AE%E5%AE%BF%E3%80%80%E5%B1%B1%E6%9A%96%E7%B0%BE%EF%BC%88%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3%E5%9B%BD%E8%A6%8B%EF%BC%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%96%E7%9F%A5%E5%8E%9F%E7%94%BA%E4%B8%8A%E9%87%8E%E5%8E%9F316", "u": "../japan/nagasaki/sasebo.html#c-sasebo-kaigun-yamanoren", "food": "../japan/nagasaki/img/sasebo/sasebo-kaigun-yamanoren.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-kaigun-yamanoren_exterior.jpg"}, {"i": 32, "n": "焼鳥炉端　ほむら", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.1688, "lng": 129.722565, "d": "原始焼の大エビ（殻つきの大海老を炉端で立てて焼く）／ほむら名物 大トロいわし 980円（税込・脂ののったいわしの原始焼き）／胡麻ヒラス（ヒラスの刺身に胡麻だれと薬味をからめる）", "a": "長崎県佐世保市下京町7-12 田中店舗1階", "m": "https://www.google.com/maps/search/?api=1&query=%E7%84%BC%E9%B3%A5%E7%82%89%E7%AB%AF%E3%80%80%E3%81%BB%E3%82%80%E3%82%89%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA7-12%20%E7%94%B0%E4%B8%AD%E5%BA%97%E8%88%971%E9%9A%8E", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-homura", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-homura.jpg", "ext": ""}, {"i": 33, "n": "居酒屋　金田", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.169678, "lng": 129.721863, "d": "アジ活き造り（生け簀から引いたアジをその場でさばく）／ごまヒラス 990円（税込・ヒラスの刺身に胡麻だれ）／エビマヨ 1,080円（税込・大ぶりの海老に特製ソース）", "a": "長崎県佐世保市上京町6-11", "m": "https://www.google.com/maps/search/?api=1&query=%E5%B1%85%E9%85%92%E5%B1%8B%E3%80%80%E9%87%91%E7%94%B0%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8A%E4%BA%AC%E7%94%BA6-11", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-kaneda", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-kaneda.jpg", "ext": ""}, {"i": 34, "n": "創作ダイニング　ひづめ", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.167915, "lng": 129.723511, "d": "対島産純白アナゴの刺身（真っ白な身のアナゴを生で。佐世保ではこの店だけと公式に掲載）／数の子の天ぷら（外は衣、中は半生の数の子）／和牛丸腸鉄板 1,000円（税込・和牛の丸腸を鉄板で焼く）", "a": "長崎県佐世保市下京町4-3", "m": "https://www.google.com/maps/search/?api=1&query=%E5%89%B5%E4%BD%9C%E3%83%80%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0%E3%80%80%E3%81%B2%E3%81%A5%E3%82%81%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA4-3", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-hizume", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-hizume.jpg", "ext": ""}, {"i": 35, "n": "佐世保ろばた焼　麒麟", "c": ["居酒屋・焼肉"], "v": "食べ歩き", "lat": 33.167175, "lng": 129.722534, "d": "串焼き5種セット 930円（焼き手が選ぶ5本を組にして出す）／お刺身の盛り合わせ 1,780円（税込・日替わりで4〜5点盛り）／天麩羅盛り合わせ（海老と野菜を揚げたて）", "a": "長崎県佐世保市塩浜町2-16 2階", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BD%90%E4%B8%96%E4%BF%9D%E3%82%8D%E3%81%B0%E3%81%9F%E7%84%BC%E3%80%80%E9%BA%92%E9%BA%9F%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%A1%A9%E6%B5%9C%E7%94%BA2-16%202%E9%9A%8E", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-kirin", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-kirin.jpg", "ext": ""}, {"i": 36, "n": "海鮮と焼き鳥味わる居酒屋 -亀-", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.167145, "lng": 129.723251, "d": "備長炭の焼き鳥串（3種・5種・7種・10種の盛りから選べる）／極上すり身揚げ 700円（税込・平戸のすり身を揚げたてで出す）／七輪焼き ほたて 400円（税込・卓上の七輪で自分で焼く）", "a": "長崎県佐世保市塩浜町1-1 グランパレビルB1", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E9%AE%AE%E3%81%A8%E7%84%BC%E3%81%8D%E9%B3%A5%E5%91%B3%E3%82%8F%E3%82%8B%E5%B1%85%E9%85%92%E5%B1%8B%20-%E4%BA%80-%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%A1%A9%E6%B5%9C%E7%94%BA1-1%20%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%91%E3%83%AC%E3%83%93%E3%83%ABB1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-kame", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-kame.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-izakaya-kame_exterior.jpg"}, {"i": 37, "n": "JAZZ &darts ants", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.170609, "lng": 129.72525, "d": "あたりめチキン（鶏を裂いてほぐした一品）／日替わりのパスタ（内容は店に尋ねる）／本日のカレー（日替わり）", "a": "長崎県佐世保市京坪町6-7 松美屋ビル1F 102", "m": "https://www.google.com/maps/search/?api=1&query=JAZZ%20%26darts%20ants%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%BA%AC%E5%9D%AA%E7%94%BA6-7%20%E6%9D%BE%E7%BE%8E%E5%B1%8B%E3%83%93%E3%83%AB1F%20102", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-ants", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-ants.jpg", "ext": ""}, {"i": 38, "n": "メキシコ料理　GRAVITY", "c": ["居酒屋・焼肉"], "v": "レストラン", "lat": 33.173428, "lng": 129.718475, "d": "ステーキタコス（漬け込んだビーフを焼いてコーントルティーヤに挟む）／サボテンタコス（メキシコで日常的に食べるサボテンを肉と合わせる）／フライケサディア（チーズとビーフまたはマッシュルームを包んで揚げ、野菜を挟む）", "a": "長崎県佐世保市常盤町9-19 3階", "m": "https://www.google.com/maps/search/?api=1&query=%E3%83%A1%E3%82%AD%E3%82%B7%E3%82%B3%E6%96%99%E7%90%86%E3%80%80GRAVITY%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E7%94%BA9-19%203%E9%9A%8E", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-gravity", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-gravity.jpg", "ext": ""}, {"i": 39, "n": "注連蔵", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.167625, "lng": 129.723206, "d": "長崎おでん（あご出汁と溜まり醤油の甘い出汁で、ネタは佐世保産が中心）／佐世保あごだし餃子（トビウオの出汁と生姜を利かせた餃子。持ち帰りもできる）／ぜんざい（創業者の娘・酒見正子のレシピを今も使う）", "a": "長崎県佐世保市下京町4-13", "m": "https://www.google.com/maps/search/?api=1&query=%E6%B3%A8%E9%80%A3%E8%94%B5%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA4-13", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-shimezo", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-shimezo.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-izakaya-shimezo_exterior.jpg"}, {"i": 40, "n": "おおいし", "c": ["居酒屋・焼肉"], "v": "バー・居酒屋・パブ", "lat": 33.16925, "lng": 129.721878, "d": "お刺身の盛り合わせ（朝市で仕入れた長崎県産の魚を捌きたてで。内容はその日の仕入れ次第）／里芋の唐揚げ（薄味で炊いた里芋を揚げる）", "a": "長崎県佐世保市上京町7-6", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%8A%E3%81%84%E3%81%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8A%E4%BA%AC%E7%94%BA7-6", "u": "../japan/nagasaki/sasebo.html#c-sasebo-izakaya-ooishi", "food": "../japan/nagasaki/img/sasebo/sasebo-izakaya-ooishi.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-izakaya-ooishi_exterior.jpg"}, {"i": 41, "n": "珈琲貿易", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.17382, "lng": 129.728928, "d": "カレー（ターメリックライスに少しピリ辛のルー。野菜・シーフード・チーズから具を選ぶ）／チーズケーキ（しっとり系。ホイップを添えてコーヒーに落とすとウィンナコーヒー風になる）／紅茶各種（レモンティ・ウィンナティなど8種類ほどを手書きメニューから選ぶ）", "a": "長崎県佐世保市勝富町5-21", "m": "https://www.google.com/maps/search/?api=1&query=%E7%8F%88%E7%90%B2%E8%B2%BF%E6%98%93%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%8B%9D%E5%AF%8C%E7%94%BA5-21", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-coffeeboueki", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-coffeeboueki.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-cafe-coffeeboueki_exterior.jpg"}, {"i": 42, "n": "cafe mellow", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.125355, "lng": 129.802322, "d": "抹茶のテリーヌ（抹茶のほろ苦さと甘さ。重たすぎず濃厚）／ベイクドチーズケーキ（焼き菓子はすべて自家製）／ローズマリーの煮込みハンバーグ（ランチ3種のうちの1品。ドリンク付き）", "a": "長崎県佐世保市広田1丁目36-37", "m": "https://www.google.com/maps/search/?api=1&query=cafe%20mellow%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%BA%83%E7%94%B01%E4%B8%81%E7%9B%AE36-37", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-mellow", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-mellow.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-cafe-mellow_exterior.jpg"}, {"i": 43, "n": "JAM COFFEE 指方本店", "c": ["カフェ・パン・スイーツ"], "v": "レストラン", "lat": 33.110458, "lng": 129.787613, "d": "焼きチーズカレー（スキレットでチーズごと焼き上げるカレー）／アサイーボウル（キウイ・バナナ・グラノーラをのせた一皿）／カフェラテ（テイクアウト用のカップあり）", "a": "長崎県佐世保市指方町2097-5", "m": "https://www.google.com/maps/search/?api=1&query=JAM%20COFFEE%20%E6%8C%87%E6%96%B9%E6%9C%AC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%8C%87%E6%96%B9%E7%94%BA2097-5", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-jamcoffee-sashikata", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-jamcoffee-sashikata.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-cafe-jamcoffee-sashikata_exterior.jpg"}, {"i": 44, "n": "coffee & tea 仔鹿の散歩道", "c": ["カフェ・パン・スイーツ"], "v": "カフェ", "lat": 33.165295, "lng": 129.678909, "d": "仔鹿モナカ（小倉あん、クリームチーズ、ハイカカオチョコレートなどを皮にのせて食べるアレンジモナカ）／丹波大納言ぜんざい（焼き餅入り。京都のすまし風でとろみの少ない仕立て）／市田柿のクリームチーズサンド（南信州の干し柿にクリームチーズを挟んだ一品）", "a": "長崎県佐世保市鹿子前町1177-2", "m": "https://www.google.com/maps/search/?api=1&query=coffee%20%26%20tea%20%E4%BB%94%E9%B9%BF%E3%81%AE%E6%95%A3%E6%AD%A9%E9%81%93%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA1177-2", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-kojika-no-sanpomichi", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-kojika-no-sanpomichi.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-cafe-kojika-no-sanpomichi_exterior.jpg"}, {"i": 45, "n": "中華料理 牡丹園", "c": ["麺類"], "v": "レストラン", "lat": 33.176628, "lng": 129.714462, "d": "特製ちゃんぽん（肉・海鮮・野菜の旨みが出たあっさりしたスープにもちもちの太麺。自家製の肉団子入り）／特製皿うどん（太麺タイプ。スープを吸わせた麺に大きめに切った具をのせる）／カツあんかけ炒飯（焼飯にサクサクのカツをのせ、カレー風味の餡をかけた同店オリジナル。もとは賄い料理）", "a": "長崎県佐世保市比良町1-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E8%8F%AF%E6%96%99%E7%90%86%20%E7%89%A1%E4%B8%B9%E5%9C%92%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E6%AF%94%E8%89%AF%E7%94%BA1-1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-botanen", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-botanen.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-cafe-botanen_exterior.jpg"}, {"i": 46, "n": "麺や 潮風", "c": ["麺類"], "v": "食材の店", "lat": 33.169792, "lng": 129.72374, "d": "魚介醤油つけ麺『富士』（店の看板。極太麺を魚介と醤油のつけダレで食べる）／九十九島ちゃんぽん（九十九島ひらまさの魚ダシを使ったちゃんぽん。長崎県特産品新作展 優秀賞）／天然塩ちゃんぽん（平戸の天然塩と真昆布で引いたすっきりしたスープ）", "a": "長崎県佐世保市下京町10-11", "m": "https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E3%82%84%20%E6%BD%AE%E9%A2%A8%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E4%B8%8B%E4%BA%AC%E7%94%BA10-11", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-menya-shiokaze", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-menya-shiokaze.jpg", "ext": ""}, {"i": 47, "n": "横浜醤油豚骨ラーメン 独歩", "c": ["麺類"], "v": "レストラン", "lat": 33.174183, "lng": 129.719238, "d": "ラーメン（濃厚な豚骨醤油スープに中太麺、ほうれん草と海苔。麺の硬さ・味の濃さ・脂の量を選べる）／白ごはん（濃いめ・多めにしたときの定番の組み合わせ。残ったスープにかけて海苔で巻く食べ方）", "a": "長崎県佐世保市常盤町4-3", "m": "https://www.google.com/maps/search/?api=1&query=%E6%A8%AA%E6%B5%9C%E9%86%A4%E6%B2%B9%E8%B1%9A%E9%AA%A8%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%20%E7%8B%AC%E6%AD%A9%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%B8%B8%E7%9B%A4%E7%94%BA4-3", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-doppo", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-doppo.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-cafe-doppo_exterior.jpg"}, {"i": 48, "n": "俺の人生ふるすいんぐ 佐世保店", "c": ["麺類"], "v": "レストラン", "lat": 33.168823, "lng": 129.721863, "d": "ふるすいんぐ（豚骨スープに野菜とにんにく、厚切りのチャーシューをのせた二郎系。小盛・中盛・大盛から選ぶ）／汁なしふるすいんぐ（スープなしのまぜ麺。卵黄が付き、無料でマヨネーズを足せる）／麺なしふるすいんぐ（麺を抜いた一杯）", "a": "長崎県佐世保市島地町1-1", "m": "https://www.google.com/maps/search/?api=1&query=%E4%BF%BA%E3%81%AE%E4%BA%BA%E7%94%9F%E3%81%B5%E3%82%8B%E3%81%99%E3%81%84%E3%82%93%E3%81%90%20%E4%BD%90%E4%B8%96%E4%BF%9D%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E5%B3%B6%E5%9C%B0%E7%94%BA1-1", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-ore-no-jinsei-fullswing", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-ore-no-jinsei-fullswing.jpg", "ext": "../japan/nagasaki/img/sasebo/sasebo-cafe-ore-no-jinsei-fullswing_exterior.jpg"}, {"i": 49, "n": "あごら～めん本舗 パールシー店", "c": ["麺類"], "v": "レストラン", "lat": 33.161079, "lng": 129.678711, "d": "あごらーめん（トビウオの焼き干しで引いたあごだしのスープ。店の原点にあたる一杯）／とんこつらーめん（2025年7月に細麺で復活させた品）／こんがりチーズのイタリアンラーメン（チーズを焼きのせた変わり種）", "a": "長崎県佐世保市鹿子前町979番地 2階（九十九島パールシーリゾート内）", "m": "https://www.google.com/maps/search/?api=1&query=%E3%81%82%E3%81%94%E3%82%89%EF%BD%9E%E3%82%81%E3%82%93%E6%9C%AC%E8%88%97%20%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E5%BA%97%20%E9%95%B7%E5%B4%8E%E7%9C%8C%E4%BD%90%E4%B8%96%E4%BF%9D%E5%B8%82%E9%B9%BF%E5%AD%90%E5%89%8D%E7%94%BA979%E7%95%AA%E5%9C%B0%202%E9%9A%8E%EF%BC%88%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%B3%B6%E3%83%91%E3%83%BC%E3%83%AB%E3%82%B7%E3%83%BC%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%E5%86%85%EF%BC%89", "u": "../japan/nagasaki/sasebo.html#c-sasebo-cafe-agoramen-honpo-pearlsea", "food": "../japan/nagasaki/img/sasebo/sasebo-cafe-agoramen-honpo-pearlsea.jpg", "ext": ""}];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- カテゴリの絞り込み（既定は全部オン） ---------------------------------
+   1店が複数カテゴリを持つ（例: ご当地名物かつビール・バー）。
+   **どちらのカテゴリで絞っても出る**ように、積ではなく和で判定する。 */
+const CATS=[];
+for(const k in CAT){ if(DATA.some(r=>r.c.includes(k))) CATS.push(k); }
+const on=new Set(CATS);
+const chips=document.getElementById('chips');
+chips.innerHTML=CATS.map(k=>{
+  const n=DATA.filter(r=>r.c.includes(k)).length;
+  return `<button class="chip" data-cat="${esc(k)}" aria-pressed="true" `+
+         `title="1回で切り替え / 2回続けて押すとこのカテゴリだけ">`+
+         `<span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>${esc(k)} <b>${n}</b></button>`;
+}).join('')+'<button class="chip" id="c-all" aria-pressed="true">すべて</button>';
+/* ---- 業態の凡例（ピンの絵文字。2026-09-26 ユーザー指示の6種・強い順） ---- */
+const vleg=document.getElementById('vleg');
+if(vleg) vleg.innerHTML=Object.keys(VENUE).map(v=>`<span>${VENUE[v]} ${esc(v)} <b>${DATA.filter(r=>r.v===v).length}</b></span>`).join('');
+
+/* ---- 地図 ---------------------------------------------------------------- */
+const pts=DATA.filter(r=>r.lat!=null);
+const map=L.map('map',{zoomControl:true}).setView([33.163151,129.724894],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const marks={};
+for(const r of pts){
+  const fam=CAT[r.c[0]]?CAT[r.c[0]][0]:'カフェ・酒場', gly=VENUE[r.v]||'🍴';
+  const icon=L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],
+    html:`<div class="pin" style="background:${COLOR[fam]}">${gly}</div>`});
+  let h=`<div class="pop"><h3>${esc(r.n)}</h3><p class="cat">${gly} ${esc(r.v||'')} ・ ${esc(r.c.join(' / '))}</p>`;
+  if(r.d) h+=`<p class="dish">${esc(r.d)}</p>`;
+  if(r.food||r.ext){
+    h+='<div class="imgs">';
+    if(r.food) h+=`<figure><img loading="lazy" src="${esc(r.food)}" alt="${esc(r.n)}の料理"><figcaption>料理</figcaption></figure>`;
+    if(r.ext) h+=`<figure><img loading="lazy" src="${esc(r.ext)}" alt="${esc(r.n)}の外観"><figcaption>外観</figcaption></figure>`;
+    h+='</div>';
+  }
+  h+=`<p class="links"><a href="${esc(r.u)}">記事で読む</a>`+
+     (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">Googleマップ</a>`:'')+'</p></div>';
+  const mk=L.marker([r.lat,r.lng],{icon:icon,title:r.n}).bindPopup(h);
+  marks[r.i]=mk;
+}
+if(pts.length) map.fitBounds(L.featureGroup(Object.values(marks)).getBounds().pad(0.05));
+
+/* ---- 一覧（カテゴリごと・目次つき・検索つき） ------------------------------- */
+const list=document.getElementById('list');
+list.innerHTML='<div class="lhead"><input id="q" type="search" placeholder="店名・一皿・住所で探す" '+
+  'autocomplete="off"><div class="toc" id="toc"></div></div><div id="grps"></div>';
+const q=document.getElementById('q'), toc=document.getElementById('toc'), grps=document.getElementById('grps');
+
+function shown(){
+  const t=q.value.trim().toLowerCase();
+  return DATA.filter(r=>{
+    if(!r.c.some(c=>on.has(c))) return false;
+    if(!t) return true;
+    return (r.n+' '+r.d+' '+r.a+' '+r.c.join(' ')).toLowerCase().includes(t);
+  });
+}
+function render(){
+  const rs=shown();
+  /* 複数カテゴリの店は**そのすべての見出しに出す**（利用者はどちらからも探すため） */
+  const parts=[], tocp=[];
+  for(const k of CATS){
+    if(!on.has(k)) continue;
+    const rows=rs.filter(r=>r.c.includes(k));
+    if(!rows.length) continue;
+    const id='g-'+CATS.indexOf(k);
+    tocp.push(`<a href="#${id}">${esc(k)} <b>${rows.length}</b></a>`);
+    parts.push(`<section class="grp"><h2 id="${id}"><span class="sw" style="background:${COLOR[CAT[k][0]]}"></span>`+
+      `${esc(k)} <b>${rows.length}店</b></h2><table><tbody>`+
+      rows.map(r=>`<tr><td class="nm">${VENUE[r.v]||''} ${esc(r.n)}</td><td>${esc(r.d)}</td><td class="ac">`+
+        (r.lat!=null?`<button data-go="${r.i}">地図</button>`:'<span style="color:#9a9995;font-size:12px">座標なし</span>')+
+        `<a href="${esc(r.u)}">記事</a>`+
+        (r.m?`<a href="${esc(r.m)}" target="_blank" rel="noopener">MAP</a>`:'')+
+        `</td></tr>`).join('')+'</tbody></table></section>');
+  }
+  toc.innerHTML=tocp.join('');
+  grps.innerHTML=parts.length?parts.join(''):'<p class="empty">条件に合う店がありません。</p>';
+}
+
+/* ---- 表示の切り替えと配線 -------------------------------------------------- */
+const bMap=document.getElementById('b-map'), bList=document.getElementById('b-list');
+function view(v){
+  const m=v==='map';
+  document.getElementById('map').style.display=m?'block':'none';
+  list.style.display=m?'none':'block';
+  bMap.classList.toggle('on',m); bList.classList.toggle('on',!m);
+  if(m) map.invalidateSize();
+}
+bMap.onclick=()=>view('map'); bList.onclick=()=>view('list');
+
+function refresh(){
+  for(const r of pts){
+    const has=r.c.some(c=>on.has(c)), mk=marks[r.i];
+    if(has && !map.hasLayer(mk)) mk.addTo(map);
+    if(!has && map.hasLayer(mk)) map.removeLayer(mk);
+  }
+  render();
+}
+/* ---- 絞り込みチップの操作 --------------------------------------------------
+   1回＝そのカテゴリを足す/外す。**2回続けて押す＝そのカテゴリだけにする**
+   （ユーザー依頼 2026-09-20「地図ページのフィルタダブルタップでそれだけ選択
+   他選択解除できるようにしてくれ」）。すでにそれ1つだけなら、もう一度の
+   ダブルタップで全部に戻す（単独にした人が元へ戻る道を持てるように）。
+
+   **1回目の切り替えを打ち消してから単独にする**のが要点。打ち消さずに足し引きで
+   組み立てると、「1回目で消える → 2回目で自分だけ」の順になり、
+   **指の速さで結果が変わる**（押した順は同じなのに、間隔が空くと単に消える）。
+   `on.clear()` から組み直せば、2回目の時点の状態は間隔によらず1つに定まる。
+
+   `dblclick` を使わない理由: スマホの Safari は要素によって `dblclick` を出さず、
+   出しても `click` 2回の**後**に来るので、上の「打ち消し」が1手遅れる。
+   時刻の差（400ms）で自前に判定するほうが、PCでも端末でも同じ道を通る。 */
+let lastK=null, lastT=0, before=null;
+chips.onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const k=b.dataset.cat, t=Date.now();
+  const dbl=(k && k===lastK && t-lastT<400);
+  /* **2回で1組として数え直す**。`lastT=t` のままにすると3回目・4回目が前の組と鎖に
+     なり、同じ押し方でも間隔しだいで結果が変わる（実測＝3回目が「単独→全部戻す」を
+     引き継いで1種になった）。組が成立したら時計を捨てる。 */
+  lastK=k||null; lastT=dbl?0:t;
+  if(!dbl) before=new Set(on);   /* 組が始まる前の状態を控える（下で使う） */
+  if(dbl){
+    /* 「すでにこれ1つだけか」は、**組が始まる前**の状態で判定する。
+       いまの `on` は1回目のタップで既に動いており（単独状態なら空になっている）、
+       それを見ると「1つだけ」を取り逃す（実測＝戻す操作が効かなかった）。 */
+    const solo=(before.size===1 && before.has(k));
+    on.clear();
+    if(solo) CATS.forEach(c=>on.add(c)); else on.add(k);
+  }else if(b.id==='c-all'){
+    const all=on.size===CATS.length;
+    on.clear(); if(!all) CATS.forEach(c=>on.add(c));
+  }else{
+    on.has(k)?on.delete(k):on.add(k);
+  }
+  for(const el of chips.querySelectorAll('.chip[data-cat]'))
+    el.setAttribute('aria-pressed', on.has(el.dataset.cat)?'true':'false');
+  document.getElementById('c-all').setAttribute('aria-pressed', on.size?'true':'false');
+  refresh();
+};
+q.oninput=render;
+grps.onclick=e=>{
+  const b=e.target.closest('button[data-go]'); if(!b) return;
+  const mk=marks[b.dataset.go]; if(!mk) return;
+  view('map'); map.setView(mk.getLatLng(),17); mk.openPopup();
+};
+refresh(); view('map');
+
+(function(){
+  var K='rg-last-map';
+  window.__snRemember=function(slug,city){
+    try{ localStorage.setItem(K, JSON.stringify({s:slug,c:city})); }catch(e){}
+  };
+  window.__snLast=function(){
+    try{ var v=JSON.parse(localStorage.getItem(K)||'null');
+         return (v&&v.s)?v:null; }catch(e){ return null; }
+  };
+  function menu(){ return document.querySelector('.snavm'); }
+  function open(v){
+    var m=menu(); if(!m) return;
+    m.classList.toggle('on', v);
+    document.body.style.overflow = v ? 'hidden' : '';
+    var b=document.querySelector('.sn-bg');
+    if(b) b.setAttribute('aria-expanded', v?'true':'false');
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target;
+    if(!t.closest) return;
+    if(t.closest('.sn-bg')){ e.preventDefault(); open(!menu().classList.contains('on')); return; }
+    if(t.closest('.sn-ov')||t.closest('.sn-x')){ open(false); return; }
+    /* 表示切替は menu を開いたまま（切替結果をその場で見せる）。他の項目は閉じる。 */
+    if(t.closest('.snavm') && !t.closest('.vmsw')) open(false);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') open(false); });
+})();
+
+/* この都市を「直前に見た地図」として覚える（都市一覧の先頭ボタンがここへ戻る）。 */
+window.__snRemember('sasebo', "佐世保");
+
+(function(){
+  var K='rg-view-mode', order=['auto','phone','pc'];
+  var label={auto:'\u8868\u793a: \u81ea\u52d5', phone:'\u8868\u793a: \u30b9\u30de\u30db', pc:'\u8868\u793a: PC'};
+  function get(){ try{ var v=localStorage.getItem(K); return order.indexOf(v)>=0?v:'auto'; }catch(e){ return 'auto'; } }
+  function set(v){ try{ localStorage.setItem(K,v); }catch(e){} }
+  function vp(){
+    var m=document.querySelector('meta[name=viewport]');
+    if(!m){ m=document.createElement('meta'); m.name='viewport'; document.head.appendChild(m); }
+    return m;
+  }
+  function apply(v){
+    var h=document.documentElement;
+    h.classList.remove('vm-phone','vm-pc');
+    if(v==='phone') h.classList.add('vm-phone');
+    if(v==='pc') h.classList.add('vm-pc');
+    vp().setAttribute('content', v==='pc' ? 'width=1100' : 'width=device-width, initial-scale=1');
+    var b=document.querySelector('.vmsw');
+    if(b){ b.textContent=label[v]; b.setAttribute('aria-label', label[v]+'\uff08\u62bc\u3059\u3068\u5207\u308a\u66ff\u308f\u308a\u307e\u3059\uff09'); }
+  }
+  window.__rgApply=apply;
+  apply(get());
+  document.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.vmsw') : null;
+    if(!b) return;
+    var v=order[(order.indexOf(get())+1)%order.length];
+    set(v); apply(v);
+  });
+})();
+
+</script>
