@@ -1,6 +1,63 @@
+### 21. Au Marquis de Tombelaine（オー・マルキ・ド・トンブレーヌ）
+
+@@IMG:europe/france/img/montsaintmichel/le-marquis-de-tombelaine.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-marquis-de-tombelaine_exterior.jpg@@
+
+`隣接市` `地元密着`
+
+グランヴィルとアヴランシュの中間、シャンポーの崖の上に建ちモン・サン＝ミシェルを正面に望むレストラン。ノルマンディー沿岸で獲れた魚介や牡蠣、地元の仔羊を、季節で変わる自家製料理として供する。家庭的な雰囲気で絶景と郷土の味を楽しめる。
+
+- **一皿**: フリュイ・ド・メール／アニョー・ド・ペイ（ノルマンディーの魚介と地元仔羊）
+- **営業時間**: 昼・夜（要予約）
+- **定休日**: 不定（要確認）
+- **住所**: 25 Route des Falaises, 50530 Champeaux
+- **予約**: 可
+- **選定理由**: 公式サイト(hotel-les-hermelles.com)が現行のメニューと連絡先を掲載し、湾を望む立地と自家製料理を明記していた。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Au%20Marquis%20de%20Tombelaine%2025%20Route%20des%20Falaises%2C%2050530%20Champeaux)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト（hotel-les-hermelles.com） / 参照元: [公式サイト](https://www.hotel-les-hermelles.com/restaurant-baie-mont-saint-michel)
+
+### 22. La Tour Brette（ラ・トゥール・ブレット）
+
+@@IMG:europe/france/img/montsaintmichel/la-tour-brette.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/la-tour-brette_exterior.jpg@@
+
+`隣接市` `地元密着`
+
+モン・サン＝ミシェルの玄関口ポントルソンにあるロジ系ホテルのレストラン。潮に浸る草地で育つプレサレの仔羊を看板に、フランスの伝統料理を昼夜で供する。街道沿いの家庭的な宿で、島観光の拠点として使いやすい一軒。
+
+- **一皿**: アニョー・デ・プレサレ（塩性湿地育ちの仔羊）
+- **営業時間**: 昼・夜（要確認）
+- **定休日**: 不定（要確認）
+- **住所**: 8 Rue Couesnon, 50170 Pontorson
+- **予約**: 可
+- **選定理由**: ロジ系の宿として稼働し、複数の現行ガイドがプレサレ仔羊を出す昼夜営業のレストランと確認、所在地も一致した。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Tour%20Brette%208%20Rue%20Couesnon%2C%2050170%20Pontorson)
+- **参照元**: 外観写真: Logis Hotels 公式の施設ページ / 写真: マンシュ県観光局 Attitude Manche / 参照元: [公式観光局(Petit Futé)](https://www.petitfute.co.uk/v5614-pontorson-50170/c1165-restaurants/)
+
+### 23. Le Tripot（ル・トリポ）
+
+@@IMG:europe/france/img/montsaintmichel/le-tripot.jpg@@
+
+`隣接市` `ブログ推薦`
+
+モン・サン＝ミシェル湾の町アヴランシュにあるレストラン。シェフが世界各地の風味を取り入れたフランス料理を出し、タンドリーソースの豚フィレやチョリソークリームの帆立串など創作的な一皿が並ぶ。Guide du RoutardやPetit Futéにも掲載される一軒。
+
+- **一皿**: 創作フランス料理（世界各地の風味を効かせた季節料理）
+- **営業時間**: 昼・夜（要確認）
+- **定休日**: 不定（要確認）
+- **住所**: 11 rue du Tripot, 50300 Avranches
+- **予約**: 可
+- **選定理由**: 複数の現行ガイド(Petit Futé, Guide du Routard等)が営業中と掲載し、公式Facebookも更新されメニュー傾向が確認できた。
+- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Tripot%2011%20rue%20du%20Tripot%2C%2050300%20Avranches)
+- **参照元**: [公式Facebook](https://www.facebook.com/RestaurantLeTripotAvranches/)
+
 ### 24. Le Bretagne（ル・ブルターニュ）
 
 @@IMG:europe/france/img/montsaintmichel/le-bretagne-vivier.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-bretagne-vivier_exterior.jpg@@
 
 `隣接市` `地元密着`
 
@@ -13,13 +70,15 @@
 - **予約**: 可 — [予約サイト](https://www.hotel-restaurant-lebretagne.fr/)
 - **選定理由**: 公式サイトが期間別営業（11-3月と4-10月の曜日）とブショ式ムールAOP（7〜12月）を明記、公式観光局にも掲載。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Bretagne%206%20Rond-Point%20du%20Centre%2C%2035960%20Le%20Vivier-sur-Mer)
-- **参照元**: [公式サイト](https://www.hotel-restaurant-lebretagne.fr/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/restaurant-le-bretagne-le-vivier-sur-mer-en-4461694/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.hotel-restaurant-lebretagne.fr/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/restaurant-le-bretagne-le-vivier-sur-mer-en-4461694/)
 
 ## ガストロノミー・星付き
 
 ### 25. Le Coquillage（ル・コキヤージュ）
 
 @@IMG:europe/france/img/montsaintmichel/le-coquillage.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-coquillage_exterior.jpg@@
 
 `隣接市` `老舗・歴史`
 
@@ -32,7 +91,7 @@
 - **予約**: 可 — [予約サイト](https://www.maisons-de-bricourt.com/fr/page/le-coquillage)
 - **選定理由**: 運営元マゾン・ド・ブリクールの公式サイトが三ツ星(2025)・グリーンスターと火〜土営業を明記、ミシュランガイドにも掲載。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Coquillage%20Le%20Ch%C3%A2teau%20Richeux%2C%2035350%20Saint-M%C3%A9loir-des-Ondes)
-- **参照元**: [公式サイト](https://www.maisons-de-bricourt.com/fr/page/le-coquillage) / [ミシュランガイド](https://guide.michelin.com/us/en/bretagne/saint-mloir-des-ondes/restaurant/le-coquillage)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.maisons-de-bricourt.com/fr/page/le-coquillage) / [ミシュランガイド](https://guide.michelin.com/us/en/bretagne/saint-mloir-des-ondes/restaurant/le-coquillage)
 
 ### 26. Le Saint Placide（ル・サン・プラシド）
 
@@ -123,6 +182,8 @@
 
 @@IMG:europe/france/img/montsaintmichel/le-troquet.jpg@@
 
+@@IMG:europe/france/img/montsaintmichel/le-troquet_exterior.jpg@@
+
 `隣接市` `地元密着`
 
 カンカルのラ・ウル港、湾を望むガストロノミー。シェフ・ロラン・エルーがアワビや魚、プレサレの仔羊、ブルターニュのオマール、生・平牡蠣など季節と入荷で変わる洗練された料理を出す。ゴ・エ・ミヨなどに評価され、選び抜いたワインも揃える。
@@ -134,13 +195,15 @@
 - **予約**: 可
 - **選定理由**: 公式観光局(saint-malo-tourisme)が2026年2月13日〜11月13日の営業期間と冬季休業・閑散期の休日を明記、料理写真も掲載。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Troquet%2019%20quai%20Gambetta%2C%20Port%20de%20la%20Houle%2C%2035260%20Cancale)
-- **参照元**: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/restaurant-le-troquet-cancale-en-3645611/)
+- **参照元**: 外観写真: Destination Saint-Malo / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/restaurant-le-troquet-cancale-en-3645611/)
 
 ## クレープリー・ガレット
 
 ### 32. Crêperie La Sirène（クレープリー・ラ・シレーヌ）
 
 @@IMG:europe/france/img/montsaintmichel/creperie-la-sirene.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/creperie-la-sirene_exterior.jpg@@
 
 `口コミ突出`
 
@@ -153,7 +216,7 @@
 - **予約**: 可
 - **選定理由**: 公式観光局が2026年2月2日〜11月30日の季節営業と11:45〜16:00の時間を掲載、店の実写も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Cr%C3%AAperie%20La%20Sir%C3%A8ne%20Grande%20Rue%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/creperie-la-sirene/)
+- **参照元**: 外観写真: Wikimedia Commons / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/creperie-la-sirene/)
 
 ### 33. Crêperie la Cloche（クレープリー・ラ・クロッシュ）
 
@@ -193,6 +256,8 @@
 
 @@IMG:europe/france/img/montsaintmichel/le-corps-de-garde.jpg@@
 
+@@IMG:europe/france/img/montsaintmichel/le-corps-de-garde_exterior.jpg@@
+
 `隣接市` `口コミ突出`
 
 サン＝マロ旧市街の城壁上、17世紀の市民衛兵詰所を使うクレープリー。ビドゥアーヌ塔とオランド稜堡の間の遊歩道に位置し、海を望む絶景のなかで職人的なガレットとクレープを味わえる。年中無休で9時から22時まで通し営業する使い勝手のよい一軒。
@@ -204,11 +269,13 @@
 - **予約**: 可
 - **選定理由**: 公式観光局(saint-malo-tourisme)が年中無休・9〜22時の通し営業と城壁上の立地を掲載、料理・店内の実写も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Corps%20de%20Garde%203%20mont%C3%A9e%20Notre-Dame%2C%20Intra-Muros%2C%2035400%20Saint-Malo)
-- **参照元**: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/le-corps-de-garde-saint-malo-en-3645980/)
+- **参照元**: 外観写真: Destination Saint-Malo / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/le-corps-de-garde-saint-malo-en-3645980/)
 
 ### 36. Crêperie Chantal 1955（クレープリー・シャンタル 1955）
 
 @@IMG:europe/france/img/montsaintmichel/creperie-chantal-1955.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/creperie-chantal-1955_exterior.jpg@@
 
 `隣接市` `老舗・歴史`
 
@@ -221,11 +288,13 @@
 - **予約**: 可
 - **選定理由**: 公式観光局(saint-malo-tourisme)が年中無休・昼夜の営業時間を掲載、料理・店内の実写も多数確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Cr%C3%AAperie%20Chantal%201955%202%20place%20aux%20Herbes%2C%20Intra-Muros%2C%2035400%20Saint-Malo)
-- **参照元**: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/creperie-chantal-1955-saint-malo-en-3645725/)
+- **参照元**: 外観写真: Destination Saint-Malo / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/creperie-chantal-1955-saint-malo-en-3645725/)
 
 ### 37. Le Biniou（ル・ビニュー）
 
 @@IMG:europe/france/img/montsaintmichel/le-biniou.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-biniou_exterior.jpg@@
 
 `隣接市` `子連れ歓迎`
 
@@ -238,11 +307,13 @@
 - **予約**: 可
 - **選定理由**: 公式観光局(saint-malo-tourisme)が年中・通し営業と自家製ガレットを明記、料理・店内の実写も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Biniou%203%20place%20de%20la%20Croix%20du%20Fief%2C%20Intra-Muros%2C%2035400%20Saint-Malo)
-- **参照元**: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/le-biniou-saint-malo-en-3645687/)
+- **参照元**: 外観写真: Destination Saint-Malo / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/le-biniou-saint-malo-en-3645687/)
 
 ### 38. Crêperie Le Ty Skorn（クレープリー・ル・ティ・スコルン）
 
 @@IMG:europe/france/img/montsaintmichel/creperie-le-ty-skorn.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/creperie-le-ty-skorn_exterior.jpg@@
 
 `隣接市` `地元密着` `子連れ歓迎`
 
@@ -255,13 +326,15 @@
 - **予約**: 可
 - **選定理由**: 公式観光局(saint-malo-tourisme)が2026年通年・通し営業と有機そば粉の使用を明記、料理・店の実写も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Cr%C3%AAperie%20Le%20Ty%20Skorn%204%20place%20de%20la%20Chapelle%2C%20Port%20de%20la%20Houle%2C%2035260%20Cancale)
-- **参照元**: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/creperie-le-ty-skorn-cancale-en-4564916/)
+- **参照元**: 外観写真: Destination Saint-Malo / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/creperie-le-ty-skorn-cancale-en-4564916/)
 
 ## パン・菓子・カフェ
 
 ### 39. Grain de Vanille（グラン・ド・ヴァニーユ）
 
 @@IMG:europe/france/img/montsaintmichel/grain-de-vanille.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/grain-de-vanille_exterior.jpg@@
 
 `隣接市` `地元密着`
 
@@ -274,11 +347,13 @@
 - **予約**: 不要
 - **選定理由**: 公式サイトと運営元マゾン・ド・ブリクール、公式観光局がいずれも現行掲載、9〜19時（火休）と菓子・店内の実写を確認。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Grain%20de%20Vanille%2012%20place%20de%20la%20Victoire%2C%2035260%20Cancale)
-- **参照元**: [公式サイト](https://grain-de-vanille.com/) / [運営元](https://www.maisons-de-bricourt.com/fr/page/grain-de-vanille)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://grain-de-vanille.com/) / [運営元](https://www.maisons-de-bricourt.com/fr/page/grain-de-vanille)
 
 ### 40. La Maison du Beurre Bordier（ラ・メゾン・デュ・ブール・ボルディエ）
 
 @@IMG:europe/france/img/montsaintmichel/maison-du-beurre-bordier.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/maison-du-beurre-bordier_exterior.jpg@@
 
 `隣接市` `老舗・歴史`
 
@@ -291,11 +366,13 @@
 - **予約**: 不要
 - **選定理由**: 公式サイトと公式観光局(saint-malo-tourisme)が現行掲載し所在地・沿革が一致、商品・店内の実写も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Maison%20du%20Beurre%20Bordier%209%20rue%20de%20l%27Orme%2C%20Intra-Muros%2C%2035400%20Saint-Malo)
-- **参照元**: [公式サイト](https://www.maisonbordier.com/fr/le-bistro-autour-du-beurre/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/offers/la-maison-du-beurre-bordier-saint-malo-en-3646526/)
+- **参照元**: 外観写真: Destination Saint-Malo / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.maisonbordier.com/fr/le-bistro-autour-du-beurre/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/offers/la-maison-du-beurre-bordier-saint-malo-en-3646526/)
 
 ### 41. Le Bistro Autour du Beurre（ル・ビストロ・オトゥール・デュ・ブール）
 
 @@IMG:europe/france/img/montsaintmichel/bistro-autour-du-beurre.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/bistro-autour-du-beurre_exterior.jpg@@
 
 `隣接市` `ブログ推薦`
 
@@ -308,7 +385,7 @@
 - **予約**: 可
 - **選定理由**: 公式サイトが年3回の休業時期と季節営業を明記、公式観光局(saint-malo-tourisme)も現行掲載し料理写真を確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Bistro%20Autour%20du%20Beurre%207%20rue%20de%20l%27Orme%2C%20Intra-Muros%2C%2035400%20Saint-Malo)
-- **参照元**: [公式サイト](https://www.maisonbordier.com/fr/le-bistro-autour-du-beurre/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/bistro-autour-du-beurre-saint-malo-en-3646125/)
+- **参照元**: 外観写真: Destination Saint-Malo / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.maisonbordier.com/fr/le-bistro-autour-du-beurre/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/bistro-autour-du-beurre-saint-malo-en-3646125/)
 
 ### 42. Le Café du Musée（ル・カフェ・デュ・ミュゼ）
 
@@ -326,41 +403,3 @@
 - **選定理由**: 公式観光局が2026年通年・毎日10〜18時の営業を掲載、店内の実写も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Caf%C3%A9%20du%20Mus%C3%A9e%204%20Venelle%20du%20Tripot%2C%2050170%20Le%20Mont-Saint-Michel)
 - **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/le-cafe-du-musee/)
-
-### 43. Le Petit Breton（ル・プティ・ブルトン）
-
-@@IMG:europe/france/img/montsaintmichel/le-petit-breton.jpg@@
-
-`口コミ突出` `子連れ歓迎`
-
-モン・サン＝ミシェル島内グランド・リュにある、アイス好き向けの持ち帰り専門店。豊富なフレーバーを揃え、夏の暑い日の散策途中に立ち寄りやすい。4〜9月の季節営業で、島歩きの合間に手軽なひんやりスイーツを楽しめる。
-
-- **一皿**: グラス（多彩なフレーバーのアイスクリーム）
-- **営業時間**: 毎日 12:30〜19:00（4/1〜9/30）
-- **定休日**: 冬季（10〜3月）休業
-- **住所**: 15 Grande Rue, 50170 Le Mont-Saint-Michel
-- **予約**: 不要
-- **選定理由**: 公式観光局が2026年4月1日〜9月30日の季節営業と12:30〜19:00の時間を掲載、店の実写も確認できた。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Petit%20Breton%2015%20Grande%20Rue%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/le-petit-breton/)
-
-### 44. La Belle Normande（ラ・ベル・ノルマンド）
-
-@@IMG:europe/france/img/montsaintmichel/la-belle-normande.jpg@@
-
-`口コミ突出`
-
-モン・サン＝ミシェル島内グランド・リュにある、店内飲食と持ち帰りのできる軽食店。手頃な価格でサンドイッチや惣菜を提供し、朝8時から19時まで通年営業する。島観光の合間にさっと食事を済ませたいときに便利な一軒。
-
-- **一皿**: サンドイッチ・軽食（島歩きの手軽な食事に）
-- **営業時間**: 毎日 8:00〜19:00
-- **定休日**: 無休（通年営業）
-- **住所**: Grande Rue, BP 18, 50170 Le Mont-Saint-Michel
-- **予約**: 不要
-- **選定理由**: 公式観光局が2026年通年・毎日8〜19時の営業を掲載、店内・商品の実写も複数確認できた。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Belle%20Normande%20Grande%20Rue%2C%20BP%2018%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/la-belle-normande/)
-
----
-
-> 本ガイドは個人利用目的で作成。掲載情報は2026年9月時点の調査に基づく。写真出典: Google Maps投稿写真(©各投稿者/Google)。

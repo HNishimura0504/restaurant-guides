@@ -35,6 +35,8 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 
 @@IMG:europe/france/img/montsaintmichel/la-mere-poulard.jpg@@
 
+@@IMG:europe/france/img/montsaintmichel/la-mere-poulard_exterior.jpg@@
+
 `老舗・歴史` `口コミ突出`
 
 1888年創業、島内グランド・リュの老舗宿。アネット・プラールが編み出した薪火で焼く泡立てオムレツが看板で、プレサレの仔羊や魚介、昔ながらの菓子も供する。石造りの中世都市の中心に位置し、朝から夜まで通し営業する観光の象徴的な一軒。
@@ -46,11 +48,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可 — [予約サイト](https://www.aubergelamerepoulard.com/)
 - **選定理由**: 公式サイトと公式観光局(ot-montsaintmichel.com)がともに2026年の通年営業と営業時間を掲載、公式の料理・店内写真も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20M%C3%A8re%20Poulard%20Grande%20Rue%2C%20BP%2018%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式サイト](https://www.aubergelamerepoulard.com/en/restaurant-at-mont-st-michel/) / [公式観光局](https://www.ot-montsaintmichel.com/restaurant/la-mere-poulard/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.aubergelamerepoulard.com/en/restaurant-at-mont-st-michel/) / [公式観光局](https://www.ot-montsaintmichel.com/restaurant/la-mere-poulard/)
 
 ### 2. Auberge Saint-Pierre（オーベルジュ・サン＝ピエール）
 
 @@IMG:europe/france/img/montsaintmichel/auberge-saint-pierre.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/auberge-saint-pierre_exterior.jpg@@
 
 `口コミ突出` `子連れ歓迎`
 
@@ -63,11 +67,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可 — [予約サイト](https://www.auberge-saint-pierre.fr/fr/restaurant.html)
 - **選定理由**: 公式サイトが2026年時点の通し営業（11:30〜21:00）とメニューを掲載、料理・店内の実写も確認した。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Auberge%20Saint-Pierre%20Grande%20Rue%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式サイト](https://www.auberge-saint-pierre.fr/fr/restaurant.html)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.auberge-saint-pierre.fr/fr/restaurant.html)
 
 ### 3. Auberge Le Mouton Blanc（オーベルジュ・ル・ムートン・ブラン）
 
 @@IMG:europe/france/img/montsaintmichel/auberge-le-mouton-blanc.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/auberge-le-mouton-blanc_exterior.jpg@@
 
 `口コミ突出`
 
@@ -80,7 +86,7 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可
 - **選定理由**: 公式観光局が2026年2月5日〜12月31日の営業期間と時間を明示、店内・料理写真も掲載していた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Auberge%20Le%20Mouton%20Blanc%20Grande%20Rue%2C%20BP%2018%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/auberge-le-mouton-blanc/)
+- **参照元**: 外観写真: 観光局 Destination Mont Saint-Michel Normandie / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/auberge-le-mouton-blanc/)
 
 ### 4. La Confiance（ラ・コンフィアンス）
 
@@ -103,6 +109,8 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 
 @@IMG:europe/france/img/montsaintmichel/les-terrasses-de-la-baie.jpg@@
 
+@@IMG:europe/france/img/montsaintmichel/les-terrasses-de-la-baie_exterior.jpg@@
+
 `口コミ突出`
 
 修道院の麓、湾と世界有数の大潮を望むパノラマ食堂。ノルマンディーの伝統料理を提供し、La Confianceが運営する。冬季は昼のみ、2月上旬以降は昼夜の通常営業に切り替わる、絶景を楽しめる一軒。
@@ -114,11 +122,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可
 - **選定理由**: 公式観光局が2026年通年の営業と、2月6日以降の昼夜営業への切替を明記、料理・店内写真も掲載。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Les%20Terrasses%20de%20la%20Baie%20Grande%20Rue%2C%20BP%2018%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/les-terrasses-de-la-baie/)
+- **参照元**: 外観写真: 観光局 Destination Mont Saint-Michel Normandie / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/les-terrasses-de-la-baie/)
 
 ### 6. Le Relais Saint-Michel（ル・ルレ・サン＝ミシェル）
 
 @@IMG:europe/france/img/montsaintmichel/le-relais-saint-michel.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-relais-saint-michel_exterior.jpg@@
 
 `口コミ突出`
 
@@ -131,11 +141,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可
 - **選定理由**: 公式観光局が2026年通年・毎晩19:00〜21:30の営業を掲載、店構えと店内の実写も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Relais%20Saint-Michel%20BP%2018%2C%2050170%20Le%20Mont-Saint-Michel%EF%BC%88La%20Caserne%EF%BC%89)
-- **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/le-relais-saint-michel/)
+- **参照元**: 外観写真: 観光局 Destination Mont Saint-Michel Normandie / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/le-relais-saint-michel/)
 
 ### 7. Le Logis Sainte-Catherine（ル・ロジ・サント＝カトリーヌ）
 
 @@IMG:europe/france/img/montsaintmichel/le-logis-sainte-catherine.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-logis-sainte-catherine_exterior.jpg@@
 
 `地元密着`
 
@@ -148,11 +160,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可
 - **選定理由**: 公式観光局が2026年の期間別営業（1〜4月と5〜9月の曜日）を掲載、店内・料理写真も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Logis%20Sainte-Catherine%206%20ruelle%20Sainte-Catherine%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/le-logis-sainte-catherine/)
+- **参照元**: 外観写真: 観光局 Destination Mont Saint-Michel Normandie / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/le-logis-sainte-catherine/)
 
 ### 8. La Salicorne（ラ・サリコルヌ）
 
 @@IMG:europe/france/img/montsaintmichel/la-salicorne.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/la-salicorne_exterior.jpg@@
 
 `地元密着` `子連れ歓迎`
 
@@ -165,13 +179,15 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可
 - **選定理由**: 公式観光局が2026年2月7日〜11月11日の季節営業と時間を明示、料理写真も掲載していた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Salicorne%20Route%20du%20Mont%20Saint-Michel%2C%20BP%208%2C%2050170%20Le%20Mont-Saint-Michel)
-- **参照元**: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/la-salicorne/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.ot-montsaintmichel.com/restaurant/la-salicorne/)
 
 ## 牡蠣・ムール貝・海の幸
 
 ### 9. Le Querrien（ル・ケリアン）
 
 @@IMG:europe/france/img/montsaintmichel/le-querrien.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-querrien_exterior.jpg@@
 
 `隣接市` `口コミ突出`
 
@@ -184,11 +200,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可 — [予約サイト](https://www.le-querrien.com/restaurant/)
 - **選定理由**: 公式サイトが『Ouvert toute l'année 7/7』と明記、公式観光局(saint-malo-tourisme)も2026年通年営業と掲載、料理・店内写真あり。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Querrien%207%20Quai%20Duguay%20Trouin%2C%20Port%20de%20la%20Houle%2C%2035260%20Cancale)
-- **参照元**: [公式サイト](https://www.le-querrien.com/restaurant/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/restaurant-le-querrien-cancale-en-3646170/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.le-querrien.com/restaurant/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/restaurant-le-querrien-cancale-en-3646170/)
 
 ### 10. Au Pied d'Cheval（オー・ピエ・ドゥシュヴァル）
 
 @@IMG:europe/france/img/montsaintmichel/au-pied-dcheval.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/au-pied-dcheval_exterior.jpg@@
 
 `隣接市` `口コミ突出` `地元密着`
 
@@ -201,11 +219,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 要電話（予約は電話）
 - **選定理由**: 公式サイトが2026年表記で稼働し生産者直営・1962年創業と明記、料理・店内の実写を掲載していた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Au%20Pied%20d%27Cheval%2010%20quai%20Gambetta%2C%2035260%20Cancale)
-- **参照元**: [公式サイト](https://www.restaurant-aupieddcheval.fr/restaurant)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイトの写真ギャラリー / 参照元: [公式サイト](https://www.restaurant-aupieddcheval.fr/restaurant)
 
 ### 11. Le Surcouf（ル・スルクフ）
 
 @@IMG:europe/france/img/montsaintmichel/le-surcouf.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-surcouf_exterior.jpg@@
 
 `隣接市` `ブログ推薦`
 
@@ -218,7 +238,7 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可 — [予約サイト](https://www.surcoufcancale.fr/)
 - **選定理由**: 公式サイトが現行稼働し予約受付とメニューを掲載、店内・料理の実写が多数確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Surcouf%207%20Quai%20Gambetta%2C%2035260%20Cancale)
-- **参照元**: [公式サイト](https://www.surcoufcancale.fr/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.surcoufcancale.fr/)
 
 ### 12. Côté Mer（コテ・メール）
 
@@ -258,6 +278,8 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 
 @@IMG:europe/france/img/montsaintmichel/latelier-de-lhuitre.jpg@@
 
+@@IMG:europe/france/img/montsaintmichel/latelier-de-lhuitre_exterior.jpg@@
+
 `隣接市` `地元密着`
 
 カンカルのガンベッタ河岸にある牡蠣バー兼ワインバー。生産者から直送のカンカル産牡蠣を、豊富なワインとともにその場で味わえるほか、持ち帰り用の販売もある。港町の牡蠣文化を気軽に体験できる、火〜土の通し営業の一軒。
@@ -269,11 +291,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可
 - **選定理由**: 公式観光局(saint-malo-tourisme)が生産者直送の牡蠣バーと明記、火〜土営業と実写画像を掲載していた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=L%27Atelier%20de%20l%27Hu%C3%AEtre%2015%20quai%20Gambetta%2C%20Port%20de%20la%20Houle%2C%2035260%20Cancale)
-- **参照元**: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/latelier-de-lhuitre-cancale-en-3646647/)
+- **参照元**: 外観写真: Destination Saint-Malo / 写真: 公式サイト・掲載記事 / 参照元: [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/latelier-de-lhuitre-cancale-en-3646647/)
 
 ### 15. Le Marché aux Huîtres（ル・マルシェ・オー・ズュイットル）
 
 @@IMG:europe/france/img/montsaintmichel/marche-aux-huitres.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/marche-aux-huitres_exterior.jpg@@
 
 `隣接市` `口コミ突出` `地元密着`
 
@@ -286,11 +310,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 不可（予約不要）
 - **選定理由**: 市場の公式サイトが『8軒の生産者が年中毎日営業』と明記、生産者情報も掲載。営業実態が確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20March%C3%A9%20aux%20Hu%C3%AEtres%20Rue%20Benjamin%20Morel%2C%20Port%20de%20la%20Houle%2C%2035260%20Cancale)
-- **参照元**: [公式サイト](https://www.marcheauxhuitres-cancale.com/fr/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト / 参照元: [公式サイト](https://www.marcheauxhuitres-cancale.com/fr/)
 
 ### 16. Au Bouchot（オー・ブショ）
 
 @@IMG:europe/france/img/montsaintmichel/au-bouchot.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/au-bouchot_exterior.jpg@@
 
 `隣接市` `口コミ突出`
 
@@ -303,7 +329,7 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可
 - **選定理由**: 公式ページ(grubbio)が2026年の営業時間と所在地を掲載し、ブショ式ムール貝を看板に明記、料理写真も確認できた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Au%20Bouchot%20Le%20port%20Ouest%2C%2035960%20Le%20Vivier-sur-Mer)
-- **参照元**: [公式ページ](https://au-bouchot.grubbio.com/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式ページ](https://au-bouchot.grubbio.com/)
 
 ### 17. La Dégustation Tonneau（ラ・デギュスタシオン・トノー）
 
@@ -328,6 +354,8 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 
 @@IMG:europe/france/img/montsaintmichel/la-ferme-saint-michel.jpg@@
 
+@@IMG:europe/france/img/montsaintmichel/la-ferme-saint-michel_exterior.jpg@@
+
 `隣接市` `地元密着` `子連れ歓迎`
 
 モン・サン＝ミシェルの対岸、ボーヴォワールのポルダーに建つ古い農家を使ったビストロノミー。看板は薪窯で焼くプレサレの仔羊で、地元産の食材を中心にした郷土料理を出す。7日通しの営業で、素朴で温かい田舎の雰囲気が魅力。
@@ -339,11 +367,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可 — [予約サイト](https://www.restaurantfermesaintmichel.com/)
 - **選定理由**: 公式サイトが『service continu 7j/7 11h30-21h』と明記、公式観光局2ページも現行掲載。料理・店内の実写あり。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Ferme%20Saint-Michel%204%20Route%20de%20la%20Caserne%2C%20Le%20Bas-Pays%2C%2050170%20Le%20Mont-Saint-Michel%EF%BC%88Beauvoir%EF%BC%89)
-- **参照元**: [公式サイト](https://www.restaurantfermesaintmichel.com/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/la-ferme-saint-michel-le-mont-saint-michel-en-4021104/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.restaurantfermesaintmichel.com/) / [公式観光局](https://www.saint-malo-tourisme.co.uk/living-like-home/where-to-eat/restaurants/la-ferme-saint-michel-le-mont-saint-michel-en-4021104/)
 
 ### 19. Le Pré Salé（ル・プレ・サレ）
 
 @@IMG:europe/france/img/montsaintmichel/le-pre-sale.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/le-pre-sale_exterior.jpg@@
 
 `隣接市` `地元密着`
 
@@ -356,11 +386,13 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可 — [予約サイト](https://restaurants.le-mont-saint-michel.com/nos-restaurants/le-pre-sale/)
 - **選定理由**: 運営会社の公式サイトが2026年時点でシェフ名・毎晩19〜21時の営業とプレサレ仔羊の看板を掲載していた。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Pr%C3%A9%20Sal%C3%A9%20Route%20du%20Mont%20Saint-Michel%2C%2050170%20Le%20Mont-Saint-Michel%EF%BC%88La%20Caserne%EF%BC%89)
-- **参照元**: [公式サイト](https://restaurants.le-mont-saint-michel.com/nos-restaurants/le-pre-sale/)
+- **参照元**: 外観写真: 観光局 Destination Mont Saint-Michel Normandie / 写真: 公式サイト（Les Portes du Mont-Saint-Michel） / 参照元: [公式サイト](https://restaurants.le-mont-saint-michel.com/nos-restaurants/le-pre-sale/)
 
 ### 20. La Croix d'Or（ラ・クロワ・ドール）
 
 @@IMG:europe/france/img/montsaintmichel/la-croix-dor.jpg@@
+
+@@IMG:europe/france/img/montsaintmichel/la-croix-dor_exterior.jpg@@
 
 `隣接市` `老舗・歴史`
 
@@ -373,55 +405,4 @@ EUROPE / FRANCE・モン・サン＝ミシェル湾 🇫🇷
 - **予約**: 可 — [予約サイト](https://www.hotelcroixdor-avranches.com/restaurant-terrasse-hotel-restaurant-avranches-normandie)
 - **選定理由**: 公式サイトが『28 Décembre 2025 au 13 Janvier 2026』の冬季休業と昼夜の時間を明記、料理・店内写真も掲載。
 - **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Croix%20d%27Or%2083%20rue%20de%20la%20Constitution%2C%2050300%20Avranches)
-- **参照元**: [公式サイト](https://www.hotelcroixdor-avranches.com/restaurant-terrasse-hotel-restaurant-avranches-normandie)
-
-### 21. Au Marquis de Tombelaine（オー・マルキ・ド・トンブレーヌ）
-
-@@IMG:europe/france/img/montsaintmichel/le-marquis-de-tombelaine.jpg@@
-
-`隣接市` `地元密着`
-
-グランヴィルとアヴランシュの中間、シャンポーの崖の上に建ちモン・サン＝ミシェルを正面に望むレストラン。ノルマンディー沿岸で獲れた魚介や牡蠣、地元の仔羊を、季節で変わる自家製料理として供する。家庭的な雰囲気で絶景と郷土の味を楽しめる。
-
-- **一皿**: フリュイ・ド・メール／アニョー・ド・ペイ（ノルマンディーの魚介と地元仔羊）
-- **営業時間**: 昼・夜（要予約）
-- **定休日**: 不定（要確認）
-- **住所**: 25 Route des Falaises, 50530 Champeaux
-- **予約**: 可
-- **選定理由**: 公式サイト(hotel-les-hermelles.com)が現行のメニューと連絡先を掲載し、湾を望む立地と自家製料理を明記していた。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Au%20Marquis%20de%20Tombelaine%2025%20Route%20des%20Falaises%2C%2050530%20Champeaux)
-- **参照元**: [公式サイト](https://www.hotel-les-hermelles.com/restaurant-baie-mont-saint-michel)
-
-### 22. La Tour Brette（ラ・トゥール・ブレット）
-
-@@IMG:europe/france/img/montsaintmichel/la-tour-brette.jpg@@
-
-`隣接市` `地元密着`
-
-モン・サン＝ミシェルの玄関口ポントルソンにあるロジ系ホテルのレストラン。潮に浸る草地で育つプレサレの仔羊を看板に、フランスの伝統料理を昼夜で供する。街道沿いの家庭的な宿で、島観光の拠点として使いやすい一軒。
-
-- **一皿**: アニョー・デ・プレサレ（塩性湿地育ちの仔羊）
-- **営業時間**: 昼・夜（要確認）
-- **定休日**: 不定（要確認）
-- **住所**: 8 Rue Couesnon, 50170 Pontorson
-- **予約**: 可
-- **選定理由**: ロジ系の宿として稼働し、複数の現行ガイドがプレサレ仔羊を出す昼夜営業のレストランと確認、所在地も一致した。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=La%20Tour%20Brette%208%20Rue%20Couesnon%2C%2050170%20Pontorson)
-- **参照元**: [公式観光局(Petit Futé)](https://www.petitfute.co.uk/v5614-pontorson-50170/c1165-restaurants/)
-
-### 23. Le Tripot（ル・トリポ）
-
-@@IMG:europe/france/img/montsaintmichel/le-tripot.jpg@@
-
-`隣接市` `ブログ推薦`
-
-モン・サン＝ミシェル湾の町アヴランシュにあるレストラン。シェフが世界各地の風味を取り入れたフランス料理を出し、タンドリーソースの豚フィレやチョリソークリームの帆立串など創作的な一皿が並ぶ。Guide du RoutardやPetit Futéにも掲載される一軒。
-
-- **一皿**: 創作フランス料理（世界各地の風味を効かせた季節料理）
-- **営業時間**: 昼・夜（要確認）
-- **定休日**: 不定（要確認）
-- **住所**: 11 rue du Tripot, 50300 Avranches
-- **予約**: 可
-- **選定理由**: 複数の現行ガイド(Petit Futé, Guide du Routard等)が営業中と掲載し、公式Facebookも更新されメニュー傾向が確認できた。
-- **地図**: [Googleマップで開く](https://www.google.com/maps/search/?api=1&query=Le%20Tripot%2011%20rue%20du%20Tripot%2C%2050300%20Avranches)
-- **参照元**: [公式Facebook](https://www.facebook.com/RestaurantLeTripotAvranches/)
+- **参照元**: 外観写真: 公式サイト / 写真: 公式サイト・掲載記事 / 参照元: [公式サイト](https://www.hotelcroixdor-avranches.com/restaurant-terrasse-hotel-restaurant-avranches-normandie)
